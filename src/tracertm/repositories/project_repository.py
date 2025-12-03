@@ -1,0 +1,73 @@
+"""Project repository for TraceRTM."""
+
+from uuid import uuid4
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.models.project import Project
+
+
+class ProjectRepository:
+    """Repository for Project CRUD operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        name: str,
+        description: str | None = None,
+        metadata: dict | None = None,
+    ) -> Project:
+        """Create new project."""
+        project = Project(
+            id=str(uuid4()),
+            name=name,
+            description=description,
+            metadata=metadata or {},
+        )
+        self.session.add(project)
+        await self.session.flush()
+        await self.session.refresh(project)
+        return project
+
+    async def get_by_id(self, project_id: str) -> Project | None:
+        """Get project by ID."""
+        result = await self.session.execute(
+            select(Project).where(Project.id == project_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_name(self, name: str) -> Project | None:
+        """Get project by name."""
+        result = await self.session.execute(select(Project).where(Project.name == name))
+        return result.scalar_one_or_none()
+
+    async def get_all(self) -> list[Project]:
+        """Get all projects."""
+        result = await self.session.execute(select(Project))
+        return list(result.scalars().all())
+
+    async def update(
+        self,
+        project_id: str,
+        name: str | None = None,
+        description: str | None = None,
+        metadata: dict | None = None,
+    ) -> Project | None:
+        """Update project."""
+        project = await self.get_by_id(project_id)
+        if not project:
+            return None
+
+        if name is not None:
+            project.name = name
+        if description is not None:
+            project.description = description
+        if metadata is not None:
+            project.metadata = metadata
+
+        await self.session.flush()
+        await self.session.refresh(project)
+        return project

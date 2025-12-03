@@ -1,0 +1,67 @@
+name: Quality Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check (mypy)
+        run: uv run mypy src/
+
+      - name: Type check (basedpyright)
+        run: uv run basedpyright src/
+
+      - name: Architecture check
+        run: tach check
+
+      - name: Security scan (Bandit)
+        run: uv run bandit -r src/
+
+      - name: Security scan (Semgrep)
+        run: uv run semgrep --config=p/security-audit src/
+
+      - name: Docstring coverage
+        run: uv run interrogate -vv --fail-under=80 src/
+
+      - name: Unused imports
+        run: uv run pycln --check src/
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report-${{ matrix.python-version }}
+          path: |
+            .mypy_cache/
+            .ruff_cache/
+

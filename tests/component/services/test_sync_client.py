@@ -1,0 +1,105 @@
+import asyncio
+from datetime import datetime, timedelta
+from types import SimpleNamespace
+
+import httpx
+import pytest
+
+from tracertm.api.sync_client import ApiConfig, SyncClient, ApiError, AuthenticationError, RateLimitError
+
+pytestmark = pytest.mark.integration
+
+
+class _DummyTransport(httpx.AsyncBaseTransport):
+    def __init__(self, handler):
+        self.handler = handler
+
+    async def handle_async_request(self, request):
+        return await self.handler(request)
+
+
+def _client_with(handler):
+    transport = _DummyTransport(handler)
+    client = SyncClient(ApiConfig(base_url="https://example.test"))
+    client._client = httpx.AsyncClient(transport=transport, base_url="https://example.test")
+    return client
+
+
+@pytest.mark.asyncio
+async def test_upload_changes_success():
+    async def handler(request):
+        assert request.url.path == "/api/sync/upload"
+        return httpx.Response(200, json={"applied": ["1"], "conflicts": [], "server_time": datetime.utcnow().isoformat(), "errors": []})
+
+    client = _client_with(handler)
+    result = await client.upload_changes([])
+    assert result.applied == ["1"]
+    assert result.conflicts == []
+
+
+@pytest.mark.asyncio
+async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch):
+    calls = dict(count=0)
+
+    async def handler(request):
+        calls["count"] += 1
+        return httpx.Response(429, json={"error": "rate limit"})
+
+    # Avoid real sleeping
+    async def _noop(*args, **kwargs):
+        return None
+    monkeypatch.setattr(asyncio, "sleep", _noop)
+
+    cfg = ApiConfig(base_url="https://example.test", max_retries=1)
+    client = SyncClient(cfg)
+    client._client = httpx.AsyncClient(transport=_DummyTransport(handler), base_url=cfg.base_url)
+
+    with pytest.raises(ApiError):
+        await client.upload_changes([])
+    assert calls["count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_upload_changes_auth_error():
+    async def handler(request):
+        return httpx.Response(401, json={"error": "unauthorized"})
+
+    client = _client_with(handler)
+    with pytest.raises(AuthenticationError):
+        await client.upload_changes([])
+
+
+@pytest.mark.asyncio
+async def test_get_status_success():
+    now = datetime.utcnow()
+    async def handler(request):
+        return httpx.Response(200, json={
+            "last_sync": now.isoformat(),
+            "pending_changes": 2,
+            "online": True,
+            "server_time": now.isoformat(),
+            "conflicts_pending": 1,
+        })
+
+    client = _client_with(handler)
+    status = await client.get_sync_status()
+    assert status.pending_changes == 2
+    assert status.online is True
+    assert status.conflicts_pending == 1
+
+
+@pytest.mark.asyncio
+async def test_get_status_network_error(monkeypatch):
+    async def handler(request):
+        raise httpx.ConnectTimeout("timeout")
+
+    async def _noop(*args, **kwargs):
+        return None
+    monkeypatch.setattr(asyncio, "sleep", _noop)
+
+    cfg = ApiConfig(base_url="https://example.test", max_retries=1)
+    client = SyncClient(cfg)
+    client._client = httpx.AsyncClient(transport=_DummyTransport(handler), base_url=cfg.base_url)
+
+    with pytest.raises(httpx.ConnectTimeout):
+        await client.get_sync_status()

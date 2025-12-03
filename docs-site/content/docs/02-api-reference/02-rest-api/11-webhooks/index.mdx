@@ -1,0 +1,20 @@
+---
+title: "REST Webhooks"
+description: "Manage webhooks."
+---
+
+## Endpoints
+- POST /v1/webhooks — Create webhook subscription
+- GET /v1/webhooks — List webhooks
+
+## Example
+```http
+POST /v1/webhooks
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

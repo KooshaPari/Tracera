@@ -1,0 +1,440 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  REGISTRY_USERNAME: ${{ github.actor }}
+  GO_VERSION: '1.23'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # Python Tests
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12']
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev,test]"
+
+    - name: Run linting
+      run: |
+        ruff check src/ tests/
+        ruff format --check src/ tests/
+
+    - name: Run type checking
+      run: |
+        mypy src/
+
+    - name: Run tests with coverage
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+        REDIS_URL: redis://localhost:6379
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/ \
+          --cov=src/tracertm \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          -v \
+          --tb=short \
+          --maxfail=5
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+        flags: python
+        name: python-coverage
+        fail_ci_if_error: false
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-test-results
+        path: |
+          htmlcov/
+          test-results/
+          coverage.xml
+
+  # Go Tests
+  go-tests:
+    name: Go Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.23']
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      nats:
+        image: nats:2.10-alpine
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8222/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 4222:4222
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache-dependency-path: backend/go.mod
+
+    - name: Install dependencies
+      working-directory: backend
+      run: |
+        go mod download
+        go mod verify
+
+    - name: Run go vet
+      working-directory: backend
+      run: go vet ./...
+
+    - name: Run go fmt
+      working-directory: backend
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Please run 'go fmt' on the following files:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    - name: Run staticcheck
+      working-directory: backend
+      run: |
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        staticcheck ./...
+
+    - name: Run tests with coverage
+      working-directory: backend
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: tracertm_test
+        DB_USER: tracertm
+        DB_PASSWORD: test_password
+        REDIS_URL: redis://localhost:6379
+        NATS_URL: nats://localhost:4222
+      run: |
+        go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+    - name: Generate coverage report
+      working-directory: backend
+      run: |
+        go tool cover -html=coverage.out -o coverage.html
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./backend/coverage.out
+        flags: go
+        name: go-coverage
+        fail_ci_if_error: false
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-test-results
+        path: |
+          backend/coverage.out
+          backend/coverage.html
+
+  # Security Scanning
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Semgrep
+      if: github.event_name == 'pull_request'
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: p/security-audit
+
+  # Docker Build
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [python-tests, go-tests]
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ env.REGISTRY_USERNAME }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for Python API
+      id: meta-api
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-api
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Python API image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta-api.outputs.tags }}
+        labels: ${{ steps.meta-api.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+    - name: Extract metadata for Go Backend
+      id: meta-backend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-backend
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Go Backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: ${{ steps.meta-backend.outputs.tags }}
+        labels: ${{ steps.meta-backend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  # Infrastructure as Code (Pulumi) - Dev Stack
+  iac-dev:
+    name: IaC Deploy (Pulumi dev)
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    # Only run when a Pulumi access token is configured; otherwise skip gracefully.
+    env:
+      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+    if: env.PULUMI_ACCESS_TOKEN != ''
+
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Pulumi Node.js dependencies
+      working-directory: infra
+      run: npm install
+
+    - name: Pulumi up (dev)
+      uses: pulumi/actions@v5
+      with:
+        command: up
+        stack-name: dev
+        work-dir: infra
+        comment-on-pr: false
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.tracertm.example.com
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to staging
+      env:
+        NAMESPACE: tracertm-staging
+        IMAGE_TAG: develop-${{ github.sha }}
+        DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+      run: |
+        chmod +x scripts/deploy.sh
+        ./scripts/deploy.sh all
+
+    - name: Verify deployment
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api -n tracertm-staging
+        kubectl rollout status deployment/tracertm-backend -n tracertm-staging
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.event_name == 'release'
+    environment:
+      name: production
+      url: https://tracertm.example.com
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to production
+      env:
+        NAMESPACE: tracertm
+        IMAGE_TAG: ${{ github.event.release.tag_name }}
+        DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+      run: |
+        chmod +x scripts/deploy.sh
+        ./scripts/deploy.sh all
+
+    - name: Verify deployment
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api -n tracertm
+        kubectl rollout status deployment/tracertm-backend -n tracertm
+
+    - name: Run smoke tests
+      run: |
+        # Add smoke tests here
+        curl -f https://tracertm.example.com/health || exit 1

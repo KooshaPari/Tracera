@@ -1,0 +1,26 @@
+{
+  "name": "@tracertm/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build",
+    "test": "test-storybook"
+  },
+  "dependencies": {
+    "@tracertm/ui": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-links": "^10.1.2",
+    "@storybook/react": "^10.1.2",
+    "@storybook/react-vite": "^10.1.2",
+    "@storybook/test-runner": "^0.24.2",
+    "storybook": "^10.1.2",
+    "@types/react": "^19.0.1",
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
+    "vite": "^6.0.1",
+    "@storybook/addon-docs": "^10.1.2"
+  }
+}

@@ -1,0 +1,19 @@
+---
+title: "JavaScript SDK Workflows"
+description: "Run workflows with JS."
+---
+
+## JavaScript SDK — Workflows
+- Recommended for applications already using JavaScript.
+- Handles auth, retries, and serialization for you.
+
+## Example
+```javascript
+const run = await client.workflows.trigger({ workflow: 'nightly-sync', projectId: 'proj_123', payload: { env: 'prod' } })
+const status = await client.workflows.status(run.id)
+```
+
+## Tips
+- Initialize the client once per process and reuse it.
+- Set timeouts and retries explicitly in production.
+- Capture request IDs from responses for support cases.

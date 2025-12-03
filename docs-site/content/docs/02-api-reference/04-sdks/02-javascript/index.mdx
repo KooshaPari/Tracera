@@ -1,0 +1,46 @@
+---
+title: "JavaScript SDK"
+description: "Use the JavaScript/TypeScript SDK to manage TraceRTM from Node or browser apps"
+---
+
+# JavaScript SDK
+
+The JavaScript SDK provides typed access to TraceRTM, handling auth, retries, and request shaping for Node and browser environments.
+
+## Overview
+
+- Install via npm/yarn/pnpm.
+- Works in Node; for browsers, use scoped public tokens.
+- Supports artifacts, relationships, workflows, search, and webhooks.
+
+## Getting Started
+
+```bash
+npm install @tracertm/js
+```
+
+```ts
+import { createClient } from '@tracertm/js'
+
+const client = createClient({ apiKey: process.env.TRACE_API_KEY })
+
+async function demo() {
+  const features = await client.artifacts.list({ projectId: 'proj_123', type: 'feature' })
+  const code = await client.artifacts.create({ projectId: 'proj_123', type: 'code', name: 'checkout-api' })
+  await client.relationships.create({ fromId: code.id, toId: features[0].id, type: 'implements' })
+}
+```
+
+## Common tasks
+
+- List/create/update artifacts with filters.
+- Create relationships (`implements`, `tests`, `deploys_to`, etc.).
+- Trigger workflows and check run status.
+- Search across artifacts with text and filters.
+
+## Next Steps
+
+- [Installation](/docs/api-reference/sdks/javascript/01-installation/)
+- [Quickstart](/docs/api-reference/sdks/javascript/02-quickstart/)
+- [API Reference](/docs/api-reference/sdks/javascript/03-api-reference/)
+- [Examples](/docs/api-reference/sdks/javascript/04-examples/)

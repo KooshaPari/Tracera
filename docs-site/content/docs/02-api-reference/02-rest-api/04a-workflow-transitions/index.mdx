@@ -1,0 +1,19 @@
+---
+title: "Workflow Transitions"
+description: "Transition rules."
+---
+
+## Endpoints
+- GET /v1/workflows/{name}/transitions — List transitions
+
+## Example
+```http
+GET /v1/workflows/{name}/transitions
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

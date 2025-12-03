@@ -1,0 +1,18 @@
+---
+title: "API Keys"
+description: "Create and rotate API keys."
+---
+
+## Overview
+Use server-side keys for automation; keep lifetimes short.
+
+## Request shape
+```http
+POST /v1/auth/api-keys
+Authorization: Bearer <token>
+```
+
+## Tips
+- Rotate credentials regularly and record rotation in audit logs.
+- Scope tokens to the minimum set of permissions needed.
+- Enforce MFA for human accounts; restrict service tokens by IP when possible.

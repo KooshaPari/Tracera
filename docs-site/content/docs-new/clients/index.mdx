@@ -1,0 +1,197 @@
+---
+title: "Client Guides"
+description: "Detailed guides for TraceRTM Web UI, CLI, and Desktop applications"
+keywords:
+  - web ui
+  - cli
+  - desktop
+  - tauri
+  - terminal
+audience: client
+toc: true
+---
+
+# Client Guides
+
+TraceRTM is available through multiple clients, each optimized for different
+use cases. Choose the guide that matches how you want to work with TraceRTM.
+
+## Choose Your Client
+
+<Cards>
+  <Card
+    title="Web UI"
+    description="Browser-based interface with visual editing and collaboration"
+    href="/docs/clients/web-ui"
+    icon="Globe"
+  />
+  <Card
+    title="CLI"
+    description="Command-line interface for automation and scripting"
+    href="/docs/clients/cli"
+    icon="Terminal"
+  />
+  <Card
+    title="Desktop App"
+    description="Native application with offline support"
+    href="/docs/clients/desktop"
+    icon="Monitor"
+  />
+</Cards>
+
+## Client Comparison
+
+| Feature | Web UI | CLI | Desktop |
+|---------|--------|-----|---------|
+| Visual Editing | Yes | No | Yes |
+| Offline Support | No | Partial | Yes |
+| Bulk Operations | Limited | Yes | Yes |
+| Automation | No | Yes | No |
+| Real-time Collab | Yes | No | Yes |
+| System Requirements | Browser | Python 3.10+ | 200MB disk |
+| Authentication | SSO/OAuth | API Key | SSO/OAuth |
+
+## Web UI
+
+The web interface is the most visual and collaborative way to use TraceRTM.
+
+**Best for:**
+- Day-to-day requirements management
+- Visual traceability matrix editing
+- Team collaboration
+- Report generation and sharing
+- Stakeholder reviews
+
+<ScreenshotFrame src="/images/screenshots/web-dashboard.png" alt="TraceRTM Web Dashboard">
+  The TraceRTM dashboard showing project overview and recent activity
+</ScreenshotFrame>
+
+[Go to Web UI Guide](/docs/clients/web-ui)
+
+## CLI (Command Line Interface)
+
+The CLI is built with Python and Typer, providing a powerful interface for
+automation and scripting.
+
+**Best for:**
+- CI/CD pipeline integration
+- Bulk import/export operations
+- Scripting and automation
+- Git workflow integration
+- Power users who prefer terminals
+
+<CLICommand
+  command="tracertm item list --project my-project --format json | jq '.[] | .title'"
+  description="List all item titles in a project"
+  output={`"User Authentication"
+"Password Reset"
+"Session Management"
+"Two-Factor Auth"`}
+/>
+
+[Go to CLI Guide](/docs/clients/cli)
+
+## Desktop App
+
+The desktop application is built with Tauri and provides native performance
+with offline capabilities.
+
+**Best for:**
+- Working offline or with limited connectivity
+- Large datasets that benefit from local processing
+- Sensitive data that should stay on-device
+- Native OS integrations (file associations, etc.)
+
+**Supported Platforms:**
+- macOS (Intel and Apple Silicon)
+- Windows 10/11
+- Linux (Ubuntu, Fedora, Arch)
+
+[Go to Desktop Guide](/docs/clients/desktop)
+
+## Feature Matrix by Client
+
+### Requirements Management
+
+| Feature | Web UI | CLI | Desktop |
+|---------|:------:|:---:|:-------:|
+| Create items | Yes | Yes | Yes |
+| Edit items | Yes | Yes | Yes |
+| Bulk create | Limited | Yes | Yes |
+| Rich text editing | Yes | No | Yes |
+| Drag & drop | Yes | No | Yes |
+| Inline editing | Yes | No | Yes |
+
+### Traceability
+
+| Feature | Web UI | CLI | Desktop |
+|---------|:------:|:---:|:-------:|
+| Matrix view | Yes | No | Yes |
+| Graph view | Yes | No | Yes |
+| Impact analysis | Yes | Yes | Yes |
+| Coverage reports | Yes | Yes | Yes |
+| Gap detection | Yes | Yes | Yes |
+
+### Import/Export
+
+| Feature | Web UI | CLI | Desktop |
+|---------|:------:|:---:|:-------:|
+| CSV import | Yes | Yes | Yes |
+| Excel import | Yes | Yes | Yes |
+| JSON import | No | Yes | Yes |
+| DOORS import | Limited | Yes | Yes |
+| PDF export | Yes | Yes | Yes |
+| HTML export | Yes | Yes | Yes |
+
+### Collaboration
+
+| Feature | Web UI | CLI | Desktop |
+|---------|:------:|:---:|:-------:|
+| Real-time sync | Yes | No | Yes |
+| Comments | Yes | No | Yes |
+| Notifications | Yes | No | Yes |
+| @mentions | Yes | No | Yes |
+| Sharing links | Yes | No | No |
+
+## Getting Started
+
+<Tabs items={["Web UI", "CLI", "Desktop"]}>
+  <Tab value="Web UI">
+    1. Go to [app.tracertm.com](https://app.tracertm.com)
+    2. Sign in with your account
+    3. Select or create a project
+    4. Start managing requirements!
+
+    [Full Web UI Guide](/docs/clients/web-ui)
+  </Tab>
+
+  <Tab value="CLI">
+    ```bash
+    # Install via pip
+    pip install tracertm
+
+    # Authenticate
+    tracertm login
+
+    # Verify installation
+    tracertm --version
+    ```
+
+    [Full CLI Guide](/docs/clients/cli)
+  </Tab>
+
+  <Tab value="Desktop">
+    1. Download from [tracertm.com/download](https://tracertm.com/download)
+    2. Install for your platform
+    3. Launch and sign in
+    4. Choose online or offline mode
+
+    [Full Desktop Guide](/docs/clients/desktop)
+  </Tab>
+</Tabs>
+
+## Need Help?
+
+- [Troubleshooting Guide](/docs/user/faq/troubleshooting)
+- [Feature Comparison](/docs/user/faq/client-comparison)
+- [Contact Support](mailto:support@tracertm.com)

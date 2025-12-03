@@ -1,0 +1,17 @@
+---
+title: "Testing Setup"
+description: "Configure tests locally."
+---
+
+## Steps
+- Run unit tests per package.
+- Start required services (DB/Redis) for integration tests.
+
+```bash
+npm test
+go test ./...
+```
+
+## Tips
+- Seed minimal fixtures for deterministic runs.
+- Use coverage reports to spot gaps.

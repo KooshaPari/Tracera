@@ -1,0 +1,109 @@
+version: '3.8'
+
+# Development Docker Compose configuration
+# This extends the base docker-compose.yml with development-specific settings
+
+services:
+  postgres:
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./scripts/dev-init.sql:/docker-entrypoint-initdb.d/dev-init.sql
+    environment:
+      POSTGRES_DB: tracertm_dev
+      POSTGRES_USER: tracertm_dev
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+
+  redis:
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+
+  nats:
+    command: ["-js", "-m", "8222", "--store_dir", "/data"]
+    volumes:
+      - nats_data:/data
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for hot reload
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: tracertm_dev
+      DB_PASSWORD: dev_password
+      DB_NAME: tracertm_dev
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+      PORT: 8080
+      GIN_MODE: debug
+      LOG_LEVEL: DEBUG
+    volumes:
+      - ./backend:/app
+    command: |
+      sh -c '
+        go install github.com/cosmtrek/air@latest &&
+        air -c .air.toml
+      '
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for development
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tracertm_dev:dev_password@postgres:5432/tracertm_dev
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+      LOG_LEVEL: DEBUG
+      BACKEND_URL: http://backend:8080
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./alembic:/app/alembic:ro
+      - ./pyproject.toml:/app/pyproject.toml:ro
+    command: |
+      sh -c '
+        alembic upgrade head &&
+        uvicorn tracertm.api.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+      '
+
+  # Development tools
+  adminer:
+    image: adminer:latest
+    container_name: tracertm-adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8081:8080"
+    networks:
+      - tracertm-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: tracertm-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8082:8081"
+    networks:
+      - tracertm-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  nats_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  tracertm-network:
+    driver: bridge

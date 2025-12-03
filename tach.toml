@@ -1,0 +1,50 @@
+# Tach Configuration - Architecture Enforcement
+
+source_roots = ["src"]
+
+exclude = [
+  "**/__pycache__",
+  "**/.pytest_cache",
+  "**/.venv",
+  "**/venv",
+  "**/*.egg-info",
+]
+
+[[modules]]
+path = "tracertm.config"
+depends_on = ["tracertm.core"]
+
+[[modules]]
+path = "tracertm.models"
+depends_on = ["tracertm.core"]
+
+[[modules]]
+path = "tracertm.services"
+depends_on = [
+    "tracertm.config",
+    "tracertm.models",
+    "tracertm.database",
+    "tracertm.core"
+]
+
+[[modules]]
+path = "tracertm.cli"
+depends_on = [
+    "tracertm.config",
+    "tracertm.models",
+    "tracertm.services",
+    "tracertm.core",
+    "tracertm.database"
+]
+
+[[modules]]
+path = "tracertm.database"
+depends_on = [
+    "tracertm.config",
+    "tracertm.models",
+    "tracertm.core"
+]
+
+[[modules]]
+path = "tracertm.core"
+depends_on = ["tracertm.models"]

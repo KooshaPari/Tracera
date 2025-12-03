@@ -1,0 +1,214 @@
+---
+title: "Getting Started"
+description: "Get up and running with TraceRTM, the multi-view requirements traceability system"
+---
+
+# Getting Started with TraceRTM
+
+Welcome to TraceRTM, a hybrid, agent-native requirements traceability and project management system designed for modern software development. TraceRTM helps you manage complex projects with 16 professional views, 60+ link types, and intelligent automation.
+
+## What is TraceRTM?
+
+TraceRTM is a comprehensive requirements traceability system that provides:
+
+- **16 Professional Views**: From features and code to tests, architecture, and monitoring
+- **60+ Link Types**: Rich relationship modeling across hierarchical, dependency, implementation, testing, and operational categories
+- **Intelligent CRUD**: Auto-generation, smart extension, and intelligent collapse
+- **Agent-Native**: Support for 1-1000 concurrent autonomous agents
+- **Event Sourcing**: Complete audit trail and time-travel capabilities
+- **Multi-Platform**: CLI (Python), REST API (Go), Web UI (React), Desktop (Tauri)
+
+## Why TraceRTM?
+
+Traditional requirements management tools fall short in modern development:
+
+- **Traceability Gaps**: Hard to track relationships between requirements, code, tests, and deployments
+- **Multiple Views**: Features, architecture, tests, and infrastructure are managed in separate tools
+- **Manual Updates**: Changes require updating multiple systems manually
+- **Poor Agent Support**: Not designed for AI agents or automation
+
+TraceRTM solves these problems with a unified, agent-native platform for complete traceability.
+
+## Quick Overview
+
+### Five-Minute Setup
+
+Get TraceRTM running in 5 minutes:
+
+```bash
+# Clone and start infrastructure
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+docker-compose up -d postgres redis nats
+
+# Start backend
+cd backend
+go run main.go
+
+# Install and verify CLI
+cd ../cli
+pip install -e .
+trace health
+```
+
+### Create Your First Project
+
+```bash
+# Create a project
+trace project create "E-commerce Platform"
+
+# Create a feature
+trace item create <project-id> "Shopping Cart" --type feature
+
+# Create implementation
+trace item create <project-id> "CartService.go" --type code
+
+# Link implementation to feature
+trace link create <code-id> <feature-id> --type implements
+```
+
+## Learning Path
+
+### 1. Installation (10 minutes)
+
+Install TraceRTM on your platform:
+
+- [Docker Installation](/docs/getting-started/installation/docker) - Recommended for getting started
+- [macOS Installation](/docs/getting-started/installation/macos) - Native installation on Mac
+- [Linux Installation](/docs/getting-started/installation/linux) - Native installation on Linux
+- [Windows Installation](/docs/getting-started/installation/windows) - Native installation on Windows
+
+### 2. Quick Start (15 minutes)
+
+Get hands-on experience:
+
+- [5-Minute Tutorial](/docs/getting-started/quick-start/5-minute-tutorial) - Basic workflow
+- [System Requirements](/docs/getting-started/system-requirements) - Prerequisites and dependencies
+
+### 3. Core Concepts (20 minutes)
+
+Understand the fundamentals:
+
+- [16 Professional Views](/docs/getting-started/core-concepts/architecture) - Multi-view system
+- [60+ Link Types](/docs/getting-started/core-concepts/data-model) - Rich relationships
+- [Traceability Matrix](/docs/getting-started/core-concepts/workflows) - Complete traceability
+- [Agent Architecture](/docs/getting-started/core-concepts/workflows) - Autonomous agents
+
+### 4. First Project (30 minutes)
+
+Build a real traceability project:
+
+- [Project Setup](/docs/getting-started/first-project/project-setup) - Create your first project
+- [Define Requirements](/docs/getting-started/first-project/requirements) - Features and specifications
+- [Create Test Cases](/docs/getting-started/first-project/test-cases) - Test coverage
+- [Link Everything](/docs/getting-started/first-project/traceability) - Complete traceability
+
+### 5. Basic Workflow (15 minutes)
+
+Learn daily operations:
+
+- [Development Workflow](/docs/getting-started/basic-workflow/daily-workflow) - Feature to deployment
+- [Team Collaboration](/docs/getting-started/basic-workflow/team-collaboration) - Multi-agent workflows
+
+## Key Features
+
+### Multi-View System
+
+TraceRTM organizes your project across 16 professional views:
+
+**Core Views**: Feature, Code, Test, API
+**Design Views**: Wireframe, Architecture, Domain Model, User Journey
+**Infrastructure Views**: Database, Infrastructure, Configuration, Dependency
+**Operational Views**: Data Flow, Security, Performance, Monitoring
+
+Each view provides specialized tools for managing that aspect of your project while maintaining complete traceability across all views.
+
+### Rich Link System
+
+Connect items with 60+ link types across 12 categories:
+
+- **Hierarchical**: parent_of, child_of, contains, part_of
+- **Dependency**: depends_on, blocks, enables, requires
+- **Implementation**: implements, realizes, satisfies
+- **Testing**: tests, verifies, validates
+- **Temporal**: precedes, follows, triggers
+- **Operational**: deploys_to, monitors, alerts_on
+
+### Intelligent Automation
+
+TraceRTM automatically:
+
+- Generates boilerplate items when you create features
+- Extends existing items when you add related requirements
+- Collapses redundant items to keep your project clean
+- Tracks all changes with event sourcing
+
+### Agent-Native Design
+
+Built for autonomous agents:
+
+- Register 1-1000 concurrent agents
+- Heartbeat monitoring for agent health
+- NATS-based message passing
+- Multi-agent workflow orchestration
+- Automatic conflict resolution
+
+## Technology Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Backend API** | Go 1.23+ with Echo framework |
+| **Database** | PostgreSQL 14+ (pgx driver) + Neo4j (graph) |
+| **Query Builder** | SQLC (type-safe SQL) |
+| **Web UI** | React 19 + TypeScript + Vite |
+| **Desktop App** | Tauri 2 (Rust + React) |
+| **CLI/TUI** | Python 3.12+ with Typer + Textual |
+| **Caching** | Redis 7+ |
+| **Messaging** | NATS 2.9+ |
+
+## Use Cases
+
+### Software Development
+
+- Track features from requirements to deployment
+- Link code to requirements and tests
+- Monitor test coverage across requirements
+- Trace bugs to affected features
+
+### Compliance & Auditing
+
+- Complete audit trail with event sourcing
+- Traceability matrix for compliance reports
+- Time-travel to any point in project history
+- Export traceability reports
+
+### Multi-Agent Systems
+
+- Coordinate multiple autonomous agents
+- Track agent actions and decisions
+- Resolve conflicts automatically
+- Monitor agent health and activity
+
+### Enterprise Projects
+
+- Manage large-scale projects with thousands of items
+- Support distributed teams
+- Integration with existing tools
+- Custom views and link types
+
+## What's Next?
+
+Ready to get started? Choose your path:
+
+- **Quick Start**: [Install with Docker](/docs/getting-started/installation/docker) and complete the [5-minute tutorial](/docs/getting-started/quick-start/5-minute-tutorial)
+- **Deep Dive**: Read the [Core Concepts](/docs/getting-started/core-concepts) to understand the architecture
+- **Hands-On**: Follow the [First Project](/docs/getting-started/first-project) guide to build a real traceability project
+
+## Getting Help
+
+- **Documentation**: Browse the complete docs
+- **FAQ**: Check the [Frequently Asked Questions](/docs/getting-started/faq)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/tracertm/tracertm/issues)
+- **Discussions**: [Join the community](https://github.com/tracertm/tracertm/discussions)
+
+Let's build something amazing with TraceRTM!

@@ -1,0 +1,19 @@
+---
+title: "REST Sorting"
+description: "Sort results."
+---
+
+## Endpoints
+- GET /v1/artifacts?sort=-updated_at — Sort by field
+
+## Example
+```http
+GET /v1/artifacts?sort=-updated_at
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

@@ -1,0 +1,15 @@
+{
+  "name": "@tracertm/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    "./tailwind": "./tailwind.config.ts",
+    "./tsconfig": "./tsconfig.base.json",
+    "./biome": "./biome.config.json"
+  },
+  "devDependencies": {
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
+  }
+}

@@ -1,0 +1,21 @@
+---
+title: "Go SDK Authentication"
+description: "Authenticate using the Go SDK."
+---
+
+## Go SDK — Authentication
+- Recommended for applications already using Go.
+- Handles auth, retries, and serialization for you.
+
+## Example
+```go
+import tracertm "github.com/tracertm/sdk-go"
+client := tracertm.NewClient(tracertm.Config{APIKey: os.Getenv("TRACE_API_KEY")})
+_, err := client.Health.Check(ctx)
+if err != nil { log.Fatal(err) }
+```
+
+## Tips
+- Initialize the client once per process and reuse it.
+- Set timeouts and retries explicitly in production.
+- Capture request IDs from responses for support cases.

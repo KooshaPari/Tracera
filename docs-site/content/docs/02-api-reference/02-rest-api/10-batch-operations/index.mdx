@@ -1,0 +1,19 @@
+---
+title: "REST Batch Operations"
+description: "Batch operations."
+---
+
+## Endpoints
+- POST /v1/batch — Execute multiple operations atomically
+
+## Example
+```http
+POST /v1/batch
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

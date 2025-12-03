@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "bmm-workflows": {
+      "command": "python3",
+      "args": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/scripts/mcp/bmm_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+      }
+    }
+  }
+}
+

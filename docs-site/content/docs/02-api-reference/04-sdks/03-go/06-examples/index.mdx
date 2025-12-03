@@ -1,0 +1,21 @@
+---
+title: "Go SDK Examples"
+description: "Practical Go SDK examples."
+---
+
+## Go SDK — Examples
+- Recommended for applications already using Go.
+- Handles auth, retries, and serialization for you.
+
+## Example
+```go
+// list features
+a, _ := client.Artifacts.List(ctx, tracertm.ListOpts{Type: "feature", ProjectID: "proj_123"})
+// link code to feature
+_, _ = client.Relationships.Create(ctx, tracertm.LinkCreate{From: "code_1", To: "feat_1", Type: "implements"})
+```
+
+## Tips
+- Initialize the client once per process and reuse it.
+- Set timeouts and retries explicitly in production.
+- Capture request IDs from responses for support cases.

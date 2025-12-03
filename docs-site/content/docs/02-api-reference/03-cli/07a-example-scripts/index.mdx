@@ -1,0 +1,11 @@
+---
+title: "Example Scripts"
+description: "Reusable CLI scripts."
+---
+
+## Bash script
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+trace artifacts list --project "$1" | jq "{id,name,type}"
+```

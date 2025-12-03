@@ -1,0 +1,18 @@
+---
+title: "Authentication Overview"
+description: "Auth patterns in TraceRTM."
+---
+
+## Overview
+TraceRTM supports API keys, OAuth2, and JWT with scoped permissions.
+
+## Request shape
+```http
+POST /v1/auth/overview
+Authorization: Bearer <token>
+```
+
+## Tips
+- Rotate credentials regularly and record rotation in audit logs.
+- Scope tokens to the minimum set of permissions needed.
+- Enforce MFA for human accounts; restrict service tokens by IP when possible.

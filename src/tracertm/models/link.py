@@ -1,0 +1,61 @@
+"""
+Link model for TraceRTM.
+"""
+
+import uuid
+
+from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from tracertm.models.base import Base, TimestampMixin
+from tracertm.models.types import JSONType
+
+
+def generate_link_uuid() -> str:
+    """Generate a UUID string for link ID."""
+    return str(uuid.uuid4())
+
+
+class Link(Base, TimestampMixin):
+    """
+    Link model representing relationships between items.
+
+    Links are bidirectional and typed (implements, tests, depends_on, etc.).
+    """
+
+    __tablename__ = "links"
+    __table_args__ = (
+        Index("idx_links_source_target", "source_item_id", "target_item_id"),
+        Index("idx_links_project_type", "project_id", "link_type"),
+        {"extend_existing": True},
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_link_uuid
+    )
+    project_id: Mapped[str] = mapped_column(
+        String(255),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    source_item_id: Mapped[str] = mapped_column(
+        String(255),
+        ForeignKey("items.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    target_item_id: Mapped[str] = mapped_column(
+        String(255),
+        ForeignKey("items.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    link_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    link_metadata: Mapped[dict] = mapped_column(JSONType, nullable=False, default=dict)
+
+    def __repr__(self) -> str:
+        return f"<Link(id={self.id!r}, type={self.link_type!r})>"

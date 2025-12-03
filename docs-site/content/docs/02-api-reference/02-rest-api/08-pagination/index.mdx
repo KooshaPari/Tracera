@@ -1,0 +1,19 @@
+---
+title: "REST Pagination"
+description: "Paginate large collections."
+---
+
+## Endpoints
+- GET /v1/artifacts?page=2&per_page=50 — Cursor or offset pagination
+
+## Example
+```http
+GET /v1/artifacts?page=2&per_page=50
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

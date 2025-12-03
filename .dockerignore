@@ -1,0 +1,152 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation
+*.md
+docs/
+DOCUMENTATION/
+research/
+PLANNING/
+GUIDES/
+AGENTS/
+EPICS/
+PHASES/
+STATUS/
+TESTING/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+.venv*/
+venv*/
+ENV/
+env/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+go.work
+
+# Testing
+test-results/
+test.db
+test_functionality.db
+*.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.log
+
+# Node.js (if any frontend build artifacts)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# Monitoring
+prometheus_data/
+grafana_data/
+
+# Deployment
+k8s/
+scripts/
+docker-compose*.yml
+Dockerfile*
+
+# Backend specific (when building backend)
+backend/.env
+backend/tmp/
+
+# CLI tools
+.bmad/
+.claude/
+.cursor/
+.codex/
+.augment/
+.factory/
+.gemini/
+.planning/
+.tracertm/
+
+# Lock files (reduce layer size, deps are in pyproject.toml/go.mod)
+package-lock.json
+bun.lock
+uv.lock
+
+# Pre-commit
+.pre-commit-config.yaml
+hooks/
+
+# Misc
+*.txt
+!requirements.txt
+alembic.ini
+conftest.py
+mypy.ini
+pyproject.toml
+tach.toml
+settings.yml
+Makefile

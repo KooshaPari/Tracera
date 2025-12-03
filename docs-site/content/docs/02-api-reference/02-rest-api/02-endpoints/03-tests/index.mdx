@@ -1,0 +1,115 @@
+---
+title: "Tests API"
+description: "Documentation for Tests API"
+---
+
+# Tests API
+
+
+## Overview
+
+Complete API reference for Tests API.
+
+## Authentication
+
+All API requests require authentication:
+
+```typescript
+const headers = {
+  'Authorization': 'Bearer YOUR_JWT_TOKEN',
+  'Content-Type': 'application/json'
+}
+```
+
+## Endpoints
+
+### List All Tests API
+
+```http
+GET /api/v1/tests-api
+```
+
+**Response:**
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 100
+  }
+}
+```
+
+### Get Tests API by ID
+
+```http
+GET /api/v1/tests-api/:id
+```
+
+### Create Tests API
+
+```http
+POST /api/v1/tests-api
+```
+
+**Request Body:**
+```json
+{
+  "name": "Example Tests API",
+  "description": "Description here"
+}
+```
+
+### Update Tests API
+
+```http
+PUT /api/v1/tests-api/:id
+```
+
+### Delete Tests API
+
+```http
+DELETE /api/v1/tests-api/:id
+```
+
+## Query Parameters
+
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 20)
+- `sort` - Sort field
+- `order` - Sort order (asc/desc)
+- `filter` - Filter criteria
+
+## Error Responses
+
+### 400 Bad Request
+Invalid request parameters
+
+### 401 Unauthorized
+Missing or invalid authentication token
+
+### 404 Not Found
+Resource not found
+
+### 500 Internal Server Error
+Server error
+
+## SDK Examples
+
+### TypeScript
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
+const items = await client.tests-api.list()
+```
+
+### Python
+```python
+from tracertm import Client
+
+client = Client(api_key='YOUR_KEY')
+items = client.tests-api.list()
+```
+

@@ -1,0 +1,95 @@
+# Bandit Security Configuration
+# Detects common security issues in Python code
+
+[bandit]
+# Exclude test files from security checks
+exclude_dirs = [
+    "/tests",
+    "/.venv",
+    "/venv",
+    "/__pycache__",
+    "/.pytest_cache",
+]
+
+# Tests to run (all by default)
+tests = []
+
+# Tests to skip
+skips = []
+
+# Severity level: LOW, MEDIUM, HIGH
+severity = "MEDIUM"
+
+# Confidence level: LOW, MEDIUM, HIGH
+confidence = "MEDIUM"
+
+# Report format: json, csv, txt, xml
+format = "txt"
+
+# Recursive scanning
+recursive = true
+
+# Aggregate output
+aggregate = true
+
+# Show line numbers
+show_line_numbers = true
+
+# Exclude patterns
+exclude_patterns = [
+    "*/test_*.py",
+    "*/tests.py",
+    "*/.venv/*",
+    "*/venv/*",
+]
+
+# Security checks to enforce
+# B101: assert_used
+# B102: exec_used
+# B103: set_bad_file_permissions
+# B104: hardcoded_bind_all_interfaces
+# B105: hardcoded_password_string
+# B106: hardcoded_password_funcarg
+# B107: hardcoded_password_default
+# B108: hardcoded_tmp_directory
+# B110: try_except_pass
+# B112: try_except_continue
+# B201: flask_debug_true
+# B301: pickle
+# B302: marshal
+# B303: md5
+# B304: des
+# B305: cipher
+# B306: mktemp_q
+# B307: eval
+# B308: mark_safe
+# B309: httpsconnection
+# B310: urllib_urlopen
+# B311: random
+# B312: telnetlib
+# B313: xml_bad_etree
+# B314: xml_bad_expat
+# B315: xml_bad_sax
+# B316: xml_bad_pulldom
+# B317: xml_bad_etree_iterparse
+# B318: xml_bad_etree_parse
+# B319: xml_bad_etree_iterparse
+# B320: xml_bad_etree_parse
+# B321: ftplib
+# B322: unverified_context
+# B323: unverified_context
+# B324: hashlib
+# B325: tempnam
+
+# Assertions in tests are allowed
+assert_used:
+  skips = ["*/tests/*", "*/test_*.py"]
+
+# Pickle usage
+pickle_used:
+  skips = ["*/tests/*"]
+
+# Hardcoded SQL
+hardcoded_sql_strings:
+  skips = ["*/migrations/*"]
+

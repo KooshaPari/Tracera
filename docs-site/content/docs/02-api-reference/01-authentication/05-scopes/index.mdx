@@ -1,0 +1,18 @@
+---
+title: "Scopes"
+description: "Scope-based authorization."
+---
+
+## Overview
+Assign least-privilege scopes per client.
+
+## Request shape
+```http
+POST /v1/auth/scopes
+Authorization: Bearer <token>
+```
+
+## Tips
+- Rotate credentials regularly and record rotation in audit logs.
+- Scope tokens to the minimum set of permissions needed.
+- Enforce MFA for human accounts; restrict service tokens by IP when possible.

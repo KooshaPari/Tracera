@@ -1,0 +1,23 @@
+---
+title: "CLI Import"
+description: "Import data safely with validation."
+---
+
+## What this covers
+- How to manage import with the Trace CLI
+- Expected inputs, flags, and outputs
+- Safety checks before executing
+
+## Quick commands
+```bash
+trace import project --file project.json --dry-run
+```
+
+```bash
+trace import links --file links.csv --project <id> --dry-run
+```
+
+## Best practices
+- Use `--project` to scope actions and avoid cross-project edits.
+- Prefer idempotent operations (`trace ... upsert`) in automation.
+- Pipe to jq for verification before destructive changes.

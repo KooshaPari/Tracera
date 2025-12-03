@@ -1,0 +1,201 @@
+"""Service for export and import functionality."""
+
+import csv
+import json
+from io import StringIO
+from typing import Any
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.link_repository import LinkRepository
+from tracertm.repositories.project_repository import ProjectRepository
+
+
+class ExportImportService:
+    """Service for exporting and importing project data."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.items = ItemRepository(session)
+        self.links = LinkRepository(session)
+        self.projects = ProjectRepository(session)
+
+    async def export_to_json(self, project_id: str) -> dict[str, Any]:
+        """Export project to JSON format."""
+        project = await self.projects.get_by_id(project_id)
+        if not project:
+            return {"error": "Project not found"}
+
+        items = await self.items.query(project_id, {})
+
+        items_data = []
+        for item in items:
+            items_data.append(
+                {
+                    "id": item.id,
+                    "title": item.title if hasattr(item, "title") else "",
+                    "view": item.view if hasattr(item, "view") else "",
+                    "type": item.item_type if hasattr(item, "item_type") else "",
+                    "status": item.status if hasattr(item, "status") else "",
+                    "description": (
+                        item.description if hasattr(item, "description") else ""
+                    ),
+                }
+            )
+
+        return {
+            "format": "json",
+            "project": {
+                "id": project.id,
+                "name": project.name if hasattr(project, "name") else "",
+                "description": (
+                    project.description if hasattr(project, "description") else ""
+                ),
+            },
+            "items": items_data,
+            "item_count": len(items_data),
+        }
+
+    async def export_to_csv(self, project_id: str) -> dict[str, Any]:
+        """Export project to CSV format."""
+        items = await self.items.query(project_id, {})
+
+        output = StringIO()
+        writer = csv.writer(output)
+
+        # Write header
+        writer.writerow(["ID", "Title", "View", "Type", "Status", "Description"])
+
+        # Write items
+        for item in items:
+            writer.writerow(
+                [
+                    item.id,
+                    item.title if hasattr(item, "title") else "",
+                    item.view if hasattr(item, "view") else "",
+                    item.item_type if hasattr(item, "item_type") else "",
+                    item.status if hasattr(item, "status") else "",
+                    item.description if hasattr(item, "description") else "",
+                ]
+            )
+
+        return {
+            "format": "csv",
+            "content": output.getvalue(),
+            "item_count": len(items),
+        }
+
+    async def export_to_markdown(self, project_id: str) -> dict[str, Any]:
+        """Export project to Markdown format."""
+        project = await self.projects.get_by_id(project_id)
+        if not project:
+            return {"error": "Project not found"}
+
+        items = await self.items.query(project_id, {})
+
+        md = f"# {project.name if hasattr(project, 'name') else 'Project'}\n\n"
+        md += f"{project.description if hasattr(project, 'description') else ''}\n\n"
+
+        # Group by view
+        by_view = {}
+        for item in items:
+            view = item.view if hasattr(item, "view") else "Unknown"
+            if view not in by_view:
+                by_view[view] = []
+            by_view[view].append(item)
+
+        for view, view_items in by_view.items():
+            md += f"## {view}\n\n"
+            for item in view_items:
+                md += f"- **{item.title if hasattr(item, 'title') else 'Unknown'}** "
+                md += f"({item.status if hasattr(item, 'status') else 'unknown'})\n"
+                if hasattr(item, "description") and item.description:
+                    md += f"  - {item.description}\n"
+            md += "\n"
+
+        return {
+            "format": "markdown",
+            "content": md,
+            "item_count": len(items),
+        }
+
+    async def import_from_json(
+        self,
+        project_id: str,
+        json_data: str,
+    ) -> dict[str, Any]:
+        """Import project from JSON format."""
+        try:
+            data = json.loads(json_data)
+        except json.JSONDecodeError:
+            return {"error": "Invalid JSON format"}
+
+        if "items" not in data:
+            return {"error": "Missing 'items' field"}
+
+        imported_count = 0
+        errors = []
+
+        for item_data in data["items"]:
+            try:
+                await self.items.create(
+                    project_id=project_id,
+                    title=item_data.get("title", ""),
+                    view=item_data.get("view", "FEATURE"),
+                    item_type=item_data.get("type", "feature"),
+                    status=item_data.get("status", "todo"),
+                )
+                imported_count += 1
+            except Exception as e:
+                errors.append(str(e))
+
+        return {
+            "success": True,
+            "imported_count": imported_count,
+            "error_count": len(errors),
+            "errors": errors,
+        }
+
+    async def import_from_csv(
+        self,
+        project_id: str,
+        csv_data: str,
+    ) -> dict[str, Any]:
+        """Import project from CSV format."""
+        try:
+            reader = csv.DictReader(StringIO(csv_data))
+            rows = list(reader)
+        except Exception as e:
+            return {"error": f"Invalid CSV format: {e!s}"}
+
+        imported_count = 0
+        errors = []
+
+        for row in rows:
+            try:
+                await self.items.create(
+                    project_id=project_id,
+                    title=row.get("Title", ""),
+                    view=row.get("View", "FEATURE"),
+                    item_type=row.get("Type", "feature"),
+                    status=row.get("Status", "todo"),
+                )
+                imported_count += 1
+            except Exception as e:
+                errors.append(str(e))
+
+        return {
+            "success": True,
+            "imported_count": imported_count,
+            "error_count": len(errors),
+            "errors": errors,
+        }
+
+    async def get_export_formats(self) -> list[str]:
+        """Get available export formats."""
+        return ["json", "csv", "markdown"]
+
+    async def get_import_formats(self) -> list[str]:
+        """Get available import formats."""
+        return ["json", "csv"]

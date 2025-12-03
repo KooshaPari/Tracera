@@ -1,0 +1,19 @@
+---
+title: "REST Error Handling"
+description: "Error models and retries."
+---
+
+## Endpoints
+- GET /v1/health — Check service health
+
+## Example
+```http
+GET /v1/health
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

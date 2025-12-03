@@ -1,0 +1,20 @@
+---
+title: "REST Relationships"
+description: "Manage links via REST."
+---
+
+## Endpoints
+- POST /v1/relationships — Create link between items
+- GET /v1/relationships — List links with filters
+
+## Example
+```http
+POST /v1/relationships
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

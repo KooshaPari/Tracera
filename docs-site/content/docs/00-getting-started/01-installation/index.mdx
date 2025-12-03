@@ -1,0 +1,459 @@
+---
+title: "Installation"
+description: "Install TraceRTM on your platform - Docker, macOS, Linux, or Windows"
+---
+
+# Installation
+
+TraceRTM can be installed on any modern operating system. This guide covers installation methods for all supported platforms.
+
+## Prerequisites
+
+Before installing TraceRTM, ensure you have:
+
+### Required Components
+
+- **Go 1.23 or higher** - Backend API runtime
+- **Python 3.12 or higher** - CLI/TUI runtime
+- **PostgreSQL 14 or higher** - Primary database
+- **Docker** (optional) - Simplifies infrastructure setup
+
+### Optional Components
+
+- **Neo4j 5.0+** - Graph database for advanced queries (optional)
+- **Redis 7.0+** - Caching layer (optional, recommended for production)
+- **NATS 2.9+** - Message broker for agents (optional, required for multi-agent)
+
+### System Requirements
+
+- **RAM**: 4GB minimum, 8GB recommended
+- **Disk**: 10GB free space minimum
+- **CPU**: 2 cores minimum, 4+ cores recommended
+- **Network**: Internet connection for initial setup
+
+## Quick Install (Recommended)
+
+The fastest way to get TraceRTM running is with Docker:
+
+```bash
+# Clone repository
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+
+# Start all infrastructure services
+docker-compose up -d
+
+# Verify services are running
+docker-compose ps
+
+# Install CLI
+cd cli
+pip install -e .
+
+# Verify installation
+trace health
+```
+
+This starts PostgreSQL, Redis, and NATS in Docker containers and installs the Python CLI.
+
+## Platform-Specific Installation
+
+Choose your platform for detailed installation instructions:
+
+### [Docker Installation](/docs/getting-started/installation/docker)
+
+**Recommended for:**
+- Getting started quickly
+- Development environments
+- Testing and evaluation
+- Local development
+
+**Pros:**
+- Fastest setup (5 minutes)
+- No manual database configuration
+- Easy to tear down and restart
+- Consistent across platforms
+
+**Cons:**
+- Requires Docker Desktop
+- Additional resource overhead
+- Not suitable for production
+
+### [macOS Installation](/docs/getting-started/installation/macos)
+
+**Recommended for:**
+- macOS developers
+- Production deployments on macOS
+- Native performance
+
+**Pros:**
+- Native performance
+- No Docker overhead
+- Better integration with macOS tools
+
+**Cons:**
+- More complex setup
+- Manual database configuration
+- Platform-specific
+
+### [Linux Installation](/docs/getting-started/installation/linux)
+
+**Recommended for:**
+- Linux servers
+- Production deployments
+- CI/CD environments
+
+**Pros:**
+- Best performance
+- Production-ready
+- Most flexible
+
+**Cons:**
+- Most complex setup
+- Distribution-specific steps
+
+### [Windows Installation](/docs/getting-started/installation/windows)
+
+**Recommended for:**
+- Windows developers
+- WSL2 environments
+
+**Pros:**
+- Native Windows support
+- WSL2 for Linux compatibility
+
+**Cons:**
+- Windows-specific quirks
+- WSL2 recommended over native
+
+## Installation Methods Comparison
+
+| Method | Setup Time | Difficulty | Use Case |
+|--------|-----------|------------|----------|
+| **Docker** | 5 min | Easy | Development, Testing |
+| **macOS Native** | 15 min | Medium | macOS Development, Production |
+| **Linux Native** | 20 min | Medium | Linux Production, Servers |
+| **Windows Native** | 20 min | Medium | Windows Development |
+| **Kubernetes** | 30 min | Hard | Enterprise Production |
+| **Cloud** | 15 min | Medium | Cloud Deployments |
+
+## Component Installation
+
+TraceRTM consists of three main components:
+
+### 1. Backend API (Go)
+
+The backend provides the REST API, GraphQL endpoint, and WebSocket server.
+
+```bash
+cd backend
+go mod download
+sqlc generate
+cp .env.example .env
+# Edit .env with your database credentials
+go run main.go
+```
+
+The API will be available at `http://localhost:8080`.
+
+### 2. CLI/TUI (Python)
+
+The command-line interface for managing projects, items, and links.
+
+```bash
+cd cli
+pip install -e .
+trace --version
+trace health
+```
+
+### 3. Web UI (React) - Coming Soon
+
+The web interface is under development (Phase 3).
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Database Setup
+
+### PostgreSQL Setup
+
+TraceRTM requires PostgreSQL 14 or higher.
+
+**With Docker:**
+```bash
+docker-compose up -d postgres
+```
+
+**Manual Setup:**
+
+1. Install PostgreSQL 14+
+2. Create database:
+```sql
+CREATE DATABASE tracertm;
+CREATE USER tracertm WITH PASSWORD 'your-password';
+GRANT ALL PRIVILEGES ON DATABASE tracertm TO tracertm;
+```
+
+3. Run migrations:
+```bash
+cd backend
+sqlc generate
+go run main.go migrate
+```
+
+### Neo4j Setup (Optional)
+
+For advanced graph queries:
+
+**With Docker:**
+```bash
+docker-compose up -d neo4j
+```
+
+**Manual Setup:**
+
+1. Install Neo4j 5.0+
+2. Configure connection in `.env`:
+```bash
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your-password
+```
+
+## Infrastructure Services
+
+### Redis (Optional, Recommended)
+
+For caching and improved performance:
+
+**With Docker:**
+```bash
+docker-compose up -d redis
+```
+
+**Manual Setup:**
+```bash
+# macOS
+brew install redis
+redis-server
+
+# Ubuntu/Debian
+sudo apt-get install redis-server
+sudo systemctl start redis
+```
+
+### NATS (Required for Multi-Agent)
+
+For message passing between agents:
+
+**With Docker:**
+```bash
+docker-compose up -d nats
+```
+
+**Manual Setup:**
+```bash
+# Download and run NATS server
+curl -sf https://binaries.nats.dev/nats-io/nats-server/v2@latest | sh
+./nats-server
+```
+
+## Verification
+
+After installation, verify everything is working:
+
+### 1. Check Backend
+
+```bash
+curl http://localhost:8080/health
+# Expected: {"status":"ok","database":"connected"}
+```
+
+### 2. Check CLI
+
+```bash
+trace health
+# Expected: ✓ API is healthy
+#           ✓ Database is connected
+```
+
+### 3. Create Test Project
+
+```bash
+trace project create "Test Project"
+trace project list
+```
+
+## Environment Configuration
+
+TraceRTM uses environment variables for configuration. Copy the example file:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Key configuration options:
+
+```bash
+# Database
+DATABASE_URL=postgres://tracertm:password@localhost:5432/tracertm
+
+# Server
+PORT=8080
+HOST=localhost
+
+# Optional services
+REDIS_URL=redis://localhost:6379
+NATS_URL=nats://localhost:4222
+NEO4J_URI=bolt://localhost:7687
+
+# API Keys (for production)
+JWT_SECRET=your-secret-key
+```
+
+## Post-Installation Steps
+
+### 1. Initialize Database Schema
+
+```bash
+cd backend
+go run main.go migrate
+```
+
+### 2. Create Admin User (Optional)
+
+```bash
+trace user create admin --email admin@example.com --role admin
+```
+
+### 3. Configure CLI
+
+```bash
+trace config set api-url http://localhost:8080
+trace config set api-key your-api-key
+```
+
+### 4. Verify Installation
+
+```bash
+trace health
+trace project list
+```
+
+## Upgrading
+
+To upgrade TraceRTM to the latest version:
+
+```bash
+# Update code
+git pull origin main
+
+# Update backend dependencies
+cd backend
+go mod download
+sqlc generate
+
+# Update CLI
+cd ../cli
+pip install -e . --upgrade
+
+# Run migrations
+cd ../backend
+go run main.go migrate
+```
+
+## Troubleshooting
+
+### Database Connection Errors
+
+**Error**: "Failed to connect to database"
+
+**Solution**:
+1. Verify PostgreSQL is running:
+   ```bash
+   docker-compose ps postgres
+   # or
+   psql -U tracertm -d tracertm
+   ```
+
+2. Check database credentials in `.env`
+3. Verify network connectivity
+
+### Port Conflicts
+
+**Error**: "Port 8080 already in use"
+
+**Solution**:
+1. Check what's using the port:
+   ```bash
+   lsof -i :8080
+   ```
+
+2. Either stop the conflicting service or change TraceRTM port:
+   ```bash
+   export PORT=8081
+   ```
+
+### Python Version Issues
+
+**Error**: "Python 3.12+ required"
+
+**Solution**:
+1. Check Python version:
+   ```bash
+   python --version
+   ```
+
+2. Install Python 3.12+:
+   ```bash
+   # macOS
+   brew install python@3.12
+
+   # Ubuntu/Debian
+   sudo add-apt-repository ppa:deadsnakes/ppa
+   sudo apt-get update
+   sudo apt-get install python3.12
+   ```
+
+### Go Version Issues
+
+**Error**: "Go 1.23+ required"
+
+**Solution**:
+```bash
+# Download from https://golang.org/dl/
+# or use version manager
+go install golang.org/dl/go1.23@latest
+go1.23 download
+```
+
+## Next Steps
+
+Now that TraceRTM is installed:
+
+1. **Quick Start**: Complete the [5-minute tutorial](/docs/getting-started/quick-start/5-minute-tutorial)
+2. **Learn Concepts**: Read the [Core Concepts](/docs/getting-started/core-concepts)
+3. **Build Project**: Follow the [First Project](/docs/getting-started/first-project) guide
+4. **API Reference**: Explore the [API Documentation](/docs/api)
+
+## Additional Resources
+
+- [Troubleshooting Guide](/docs/getting-started/installation/troubleshooting)
+- [Docker Deployment](/docs/getting-started/installation/docker)
+- [Kubernetes Deployment](/docs/getting-started/installation/kubernetes)
+- [Cloud Deployment](/docs/getting-started/installation/cloud)
+- [Development Setup](/docs/development)
+
+## Getting Help
+
+If you encounter issues:
+
+1. Check the [Troubleshooting Guide](/docs/getting-started/installation/troubleshooting)
+2. Search [GitHub Issues](https://github.com/tracertm/tracertm/issues)
+3. Ask in [GitHub Discussions](https://github.com/tracertm/tracertm/discussions)
+4. Review the [FAQ](/docs/getting-started/faq)

@@ -1,0 +1,20 @@
+---
+title: "REST Metadata"
+description: "Work with metadata fields."
+---
+
+## Endpoints
+- GET /v1/metadata — List metadata definitions
+- POST /v1/metadata — Create metadata field
+
+## Example
+```http
+GET /v1/metadata
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

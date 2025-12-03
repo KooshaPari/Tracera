@@ -1,0 +1,21 @@
+---
+title: "REST Artifacts"
+description: "CRUD for artifacts over REST."
+---
+
+## Endpoints
+- GET /v1/artifacts — List artifacts with filters
+- POST /v1/artifacts — Create artifact
+- PATCH /v1/artifacts/{id} — Update artifact
+
+## Example
+```http
+GET /v1/artifacts
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

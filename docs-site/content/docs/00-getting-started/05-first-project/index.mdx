@@ -1,0 +1,62 @@
+---
+title: "First Project"
+description: "Create your first TraceRTM project with requirements, code, tests, and trace links"
+---
+
+# First Project
+
+Ship your first TraceRTM project by creating artifacts, linking them, and enforcing a basic workflow.
+
+## Overview
+
+- Create a project and seed requirements.
+- Add code and test artifacts.
+- Link everything for traceability.
+- Run a small workflow to Done with audit trails.
+
+## Steps
+
+1. **Create a project**
+   ```bash
+   trace project create "Checkout" --org org_123
+   ```
+2. **Add requirements**
+   ```bash
+   trace artifacts create --project proj_123 --type feature --name "Checkout Flow" --owner alice
+   trace artifacts create --project proj_123 --type feature --name "Payment Authorization" --owner bob
+   ```
+3. **Add code and tests**
+   ```bash
+   trace artifacts create --project proj_123 --type code --name "checkout-api"
+   trace artifacts create --project proj_123 --type test --name "checkout-api e2e"
+   ```
+4. **Link for traceability**
+   ```bash
+   trace link create --from code_123 --to feat_123 --type implements
+   trace link create --from test_123 --to feat_123 --type tests
+   ```
+5. **Run the workflow**
+   - Move features to In Progress → Ready → Done.
+   - Block Done until code and tests are linked and passing.
+6. **Deploy and monitor (optional)**
+   ```bash
+   trace link create --from deploy_123 --to code_123 --type deploys_to
+   trace link create --from monitor_123 --to deploy_123 --type monitors
+   ```
+
+## What good looks like
+
+- Every feature has code + tests linked.
+- Owners are set; statuses reflect reality.
+- Audit trail shows who did what and when.
+- Deployments and monitors tie runtime back to intent.
+
+## Next Steps
+
+- Add custom fields for your domain (e.g., risk, component, compliance tags).
+- Import existing work with `trace import --dry-run` then apply.
+- Set up CI to check links/tests before allowing Done.
+
+- [Learn more about related topics](#)
+- [View examples](#)
+- [Check the API reference](#)

@@ -1,0 +1,20 @@
+---
+title: "REST Workflows"
+description: "Trigger and inspect workflows."
+---
+
+## Endpoints
+- POST /v1/workflows/{name}:trigger — Start a workflow
+- GET /v1/workflow-runs/{id} — Check status
+
+## Example
+```http
+POST /v1/workflows/{name}:trigger
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+## Guidance
+- Use pagination headers (`Link`) for large result sets.
+- Prefer filters over client-side slicing to reduce payload size.
+- Check 429 headers for rate-limit backoff instructions.

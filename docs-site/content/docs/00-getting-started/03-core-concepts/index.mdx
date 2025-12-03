@@ -1,0 +1,57 @@
+---
+title: "Core Concepts"
+description: "The mental model for TraceRTM: artifacts, relationships, views, and automation"
+---
+
+# Core Concepts
+
+TraceRTM centers on a connected graph of artifacts and relationships, presented through multiple views and backed by automation and auditability.
+
+## Artifact model
+
+- **Artifacts** represent work: features, code, tests, APIs, infra, wireframes, etc.
+- Required fields: `id`, `type`, `title`, `status`, `owner`, timestamps; optional metadata and attachments.
+- All artifacts belong to a project; everything is versioned and auditable.
+
+## Relationship graph
+
+- Typed, directional links express hierarchy, implementation, testing, dependency, and operational relationships.
+- Integrity rules prevent invalid graph shapes and enforce required links per type.
+- The graph powers matrices, impact analysis, and coverage reporting.
+
+## Views
+
+- 16 professional views organize the same graph for different roles (Feature, Code, Test, API, Wireframe, Architecture, Domain Model, User Journey, Database, Infrastructure, Configuration, Dependency, Data Flow, Security, Performance, Monitoring).
+- Views are filters/slices; they never duplicate data.
+
+## Workflows and states
+
+- Each artifact type has a lifecycle with guarded transitions.
+- Automations can enforce preconditions (links, reviewers) and emit webhooks or agent tasks.
+- Every transition is recorded with actor and timestamps.
+
+## Automation and agents
+
+- Agent-native by design: NATS-backed messaging, heartbeats, health checks.
+- Supports CRUD helpers, idempotent operations, and conflict resolution for many agents.
+- Webhooks and jobs extend automation to external systems.
+
+## Event sourcing and audit
+
+- Every change is an event; projections feed search, views, and reports.
+- Time travel enables forensic analysis; diffs show who changed what and why.
+- Soft-delete with retention and background cleanup to collapse duplicates.
+
+## How to apply
+
+1. Model your work as artifacts.
+2. Link artifacts with the correct relationship types.
+3. Use views to align with each role’s workflow.
+4. Automate transitions and validations with agents/CLI/SDK.
+5. Rely on audit trails for compliance and debugging.
+
+## Related topics
+
+- [Relationship Types](/docs/wiki/concepts/relationship-types/)
+- [Workflow States](/docs/wiki/concepts/workflow-states/)
+- [Traceability Matrix](/docs/getting-started/core-concepts/workflows/)

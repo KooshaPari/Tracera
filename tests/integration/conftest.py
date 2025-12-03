@@ -1,0 +1,226 @@
+"""
+Integration test fixtures.
+
+Provides database session fixtures with all tables created.
+"""
+
+import os
+import tempfile
+from pathlib import Path
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from tracertm.models.base import Base
+
+
+# Mark every test in this directory as integration to keep layering explicit.
+pytestmark = pytest.mark.integration
+
+
+@pytest.fixture(scope="function")
+def test_db():
+    """Create a test database with all tables."""
+    # Create temporary database file
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+        db_path = f.name
+
+    # Create engine and tables
+    engine = create_engine(f"sqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+
+    yield engine
+
+    # Cleanup
+    engine.dispose()
+    Path(db_path).unlink(missing_ok=True)
+
+
+@pytest.fixture(scope="function")
+def db_session(test_db):
+    """Create a database session with all tables created."""
+    SessionLocal = sessionmaker(bind=test_db)
+    session = SessionLocal()
+
+    yield session
+
+    session.close()
+
+
+@pytest.fixture(scope="function")
+def initialized_db(db_session):
+    """Database session with sample project data."""
+    from tracertm.models.project import Project
+    from tracertm.models.item import Item
+
+    # Create test project
+    project = Project(id="test-project", name="Test Project")
+    db_session.add(project)
+    db_session.commit()
+
+    # Create test items
+    item1 = Item(
+        id="STORY-123",
+        project_id="test-project",
+        title="Test Story",
+        view="STORY",
+        item_type="story",
+        status="todo"
+    )
+    item2 = Item(
+        id="FEATURE-456",
+        project_id="test-project",
+        title="Test Feature",
+        view="FEATURE",
+        item_type="feature",
+        status="in_progress"
+    )
+    db_session.add(item1)
+    db_session.add(item2)
+    db_session.commit()
+
+    yield db_session
+
+
+@pytest.fixture(scope="function")
+def db_with_sample_data(db_session):
+    """Database with comprehensive sample projects, items, links, and events for testing."""
+    from tracertm.models.project import Project
+    from tracertm.models.item import Item
+    from tracertm.models.link import Link
+    from tracertm.models.event import Event
+
+    # Create sample project
+    project = Project(
+        id="test-project",
+        name="Test Project",
+        description="Comprehensive test project with full data"
+    )
+    db_session.add(project)
+    db_session.commit()
+
+    # Create sample items across different views
+    items = [
+        Item(
+            id="item-1",
+            project_id="test-project",
+            title="User Authentication Feature",
+            view="FEATURE",
+            item_type="feature",
+            status="in_progress",
+            item_metadata={"priority": "high", "assignee": "alice"}
+        ),
+        Item(
+            id="item-2",
+            project_id="test-project",
+            title="Login API Endpoint",
+            view="API",
+            item_type="api",
+            status="todo",
+            item_metadata={"method": "POST", "path": "/api/auth/login"}
+        ),
+        Item(
+            id="item-3",
+            project_id="test-project",
+            title="Auth Database Schema",
+            view="DATABASE",
+            item_type="schema",
+            status="done",
+            item_metadata={"tables": ["users", "sessions"]}
+        ),
+        Item(
+            id="item-4",
+            project_id="test-project",
+            title="Login Integration Tests",
+            view="TEST",
+            item_type="test",
+            status="todo",
+            item_metadata={"test_type": "integration"}
+        ),
+    ]
+
+    for item in items:
+        db_session.add(item)
+    db_session.commit()
+
+    # Create sample links between items
+    links = [
+        Link(
+            id="link-1",
+            project_id="test-project",
+            source_item_id="item-1",
+            target_item_id="item-2",
+            link_type="implements"
+        ),
+        Link(
+            id="link-2",
+            project_id="test-project",
+            source_item_id="item-1",
+            target_item_id="item-3",
+            link_type="depends_on"
+        ),
+        Link(
+            id="link-3",
+            project_id="test-project",
+            source_item_id="item-4",
+            target_item_id="item-2",
+            link_type="tests"
+        ),
+    ]
+
+    for link in links:
+        db_session.add(link)
+    db_session.commit()
+
+    # Create sample events for history tracking
+    events = [
+        Event(
+            project_id="test-project",
+            event_type="item_created",
+            entity_type="item",
+            entity_id="item-1",
+            agent_id="test-agent",
+            data={"title": "User Authentication Feature", "view": "FEATURE"}
+        ),
+        Event(
+            project_id="test-project",
+            event_type="item_updated",
+            entity_type="item",
+            entity_id="item-1",
+            agent_id="test-agent",
+            data={"field": "status", "old_value": "todo", "new_value": "in_progress"}
+        ),
+        Event(
+            project_id="test-project",
+            event_type="link_created",
+            entity_type="link",
+            entity_id="link-1",
+            agent_id="test-agent",
+            data={"source": "item-1", "target": "item-2", "link_type": "implements"}
+        ),
+    ]
+
+    for event in events:
+        db_session.add(event)
+    db_session.commit()
+
+    yield db_session
+
+
+@pytest.fixture(scope="function", autouse=True)
+def isolated_cli_environment(tmp_path, monkeypatch):
+    """
+    Isolate CLI tests from the repository's .trace/ directory.
+
+    Changes the working directory to a temporary directory so that
+    CLI commands don't find the repository's .trace/ directory.
+    """
+    # Change to temp directory to avoid finding repo's .trace/
+    original_cwd = os.getcwd()
+    os.chdir(tmp_path)
+
+    yield tmp_path
+
+    # Restore original directory
+    os.chdir(original_cwd)

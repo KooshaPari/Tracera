@@ -1,0 +1,15 @@
+{
+  "title": "Client Guides",
+  "description": "Guides for TraceRTM clients - Web UI, CLI, and Desktop",
+  "icon": "Monitor",
+  "root": true,
+  "pages": [
+    "index",
+    "---Web UI---",
+    "web-ui/...",
+    "---Command Line---",
+    "cli/...",
+    "---Desktop App---",
+    "desktop/..."
+  ]
+}

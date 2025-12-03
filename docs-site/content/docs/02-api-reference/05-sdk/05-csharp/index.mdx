@@ -1,0 +1,115 @@
+---
+title: "C# SDK"
+description: "Documentation for C# SDK"
+---
+
+# C# SDK
+
+
+## Overview
+
+Complete API reference for C# SDK.
+
+## Authentication
+
+All API requests require authentication:
+
+```typescript
+const headers = {
+  'Authorization': 'Bearer YOUR_JWT_TOKEN',
+  'Content-Type': 'application/json'
+}
+```
+
+## Endpoints
+
+### List All C# SDK
+
+```http
+GET /api/v1/c#-sdk
+```
+
+**Response:**
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 100
+  }
+}
+```
+
+### Get C# SDK by ID
+
+```http
+GET /api/v1/c#-sdk/:id
+```
+
+### Create C# SDK
+
+```http
+POST /api/v1/c#-sdk
+```
+
+**Request Body:**
+```json
+{
+  "name": "Example C# SDK",
+  "description": "Description here"
+}
+```
+
+### Update C# SDK
+
+```http
+PUT /api/v1/c#-sdk/:id
+```
+
+### Delete C# SDK
+
+```http
+DELETE /api/v1/c#-sdk/:id
+```
+
+## Query Parameters
+
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 20)
+- `sort` - Sort field
+- `order` - Sort order (asc/desc)
+- `filter` - Filter criteria
+
+## Error Responses
+
+### 400 Bad Request
+Invalid request parameters
+
+### 401 Unauthorized
+Missing or invalid authentication token
+
+### 404 Not Found
+Resource not found
+
+### 500 Internal Server Error
+Server error
+
+## SDK Examples
+
+### TypeScript
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
+const items = await client.c#-sdk.list()
+```
+
+### Python
+```python
+from tracertm import Client
+
+client = Client(api_key='YOUR_KEY')
+items = client.c#-sdk.list()
+```
+

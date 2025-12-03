@@ -1,0 +1,733 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TraceRTM API",
+    "version": "1.0.0",
+    "description": "Traceability Requirements Tracking Management API - Comprehensive REST API for managing requirements, items, links, and performing advanced analysis.",
+    "contact": {
+      "name": "TraceRTM Support",
+      "email": "support@tracertm.com",
+      "url": "https://tracertm.com/support"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "https://api.tracertm.com",
+      "description": "Production Server"
+    },
+    {
+      "url": "https://staging-api.tracertm.com",
+      "description": "Staging Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check and system status endpoints"
+    },
+    {
+      "name": "Items",
+      "description": "Operations for managing requirements items"
+    },
+    {
+      "name": "Links",
+      "description": "Operations for managing relationships between items"
+    },
+    {
+      "name": "Analysis",
+      "description": "Advanced analysis operations including impact analysis, cycle detection, and path finding"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health Check",
+        "description": "Check the health status of the API service",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "status": "healthy",
+                  "version": "1.0.0",
+                  "service": "TraceRTM API"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items": {
+      "get": {
+        "tags": ["Items"],
+        "summary": "List Items",
+        "description": "Retrieve a paginated list of items in a project",
+        "operationId": "listItems",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier for the project",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Number of items to skip (for pagination)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of items to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/items/{item_id}": {
+      "get": {
+        "tags": ["Items"],
+        "summary": "Get Item",
+        "description": "Retrieve detailed information about a specific item",
+        "operationId": "getItem",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier for the item",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/links": {
+      "get": {
+        "tags": ["Links"],
+        "summary": "List Links",
+        "description": "Retrieve a paginated list of links between items in a project",
+        "operationId": "listLinks",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier for the project",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved links",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/impact/{item_id}": {
+      "get": {
+        "tags": ["Analysis"],
+        "summary": "Impact Analysis",
+        "description": "Analyze the impact of changes to a specific item, including all downstream dependencies",
+        "operationId": "getImpactAnalysis",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier for the item to analyze",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier for the project",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Impact analysis completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImpactAnalysisResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/cycles/{project_id}": {
+      "get": {
+        "tags": ["Analysis"],
+        "summary": "Detect Cycles",
+        "description": "Detect circular dependencies in the project's dependency graph",
+        "operationId": "detectCycles",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier for the project",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cycle detection completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CycleDetectionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/shortest-path": {
+      "get": {
+        "tags": ["Analysis"],
+        "summary": "Find Shortest Path",
+        "description": "Find the shortest dependency path between two items",
+        "operationId": "findShortestPath",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier for the project",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "query",
+            "required": true,
+            "description": "Starting item ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "query",
+            "required": true,
+            "description": "Target item ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Path search completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortestPathResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Bearer token authentication"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key authentication"
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": ["status", "version", "service"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"],
+            "description": "Current health status of the service"
+          },
+          "version": {
+            "type": "string",
+            "description": "API version"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service name"
+          }
+        }
+      },
+      "ItemSummary": {
+        "type": "object",
+        "required": ["id", "title", "view", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the item"
+          },
+          "title": {
+            "type": "string",
+            "description": "Item title"
+          },
+          "view": {
+            "type": "string",
+            "description": "View type of the item"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "in_progress", "completed", "approved", "rejected"],
+            "description": "Current status of the item"
+          }
+        }
+      },
+      "ItemListResponse": {
+        "type": "object",
+        "required": ["total", "items"],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of items"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemSummary"
+            }
+          }
+        }
+      },
+      "ItemDetailResponse": {
+        "type": "object",
+        "required": ["id", "title", "view", "status", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "view": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LinkSummary": {
+        "type": "object",
+        "required": ["id", "source_id", "target_id", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Source item ID"
+          },
+          "target_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Target item ID"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["depends_on", "implements", "tests", "derives_from"],
+            "description": "Type of relationship"
+          }
+        }
+      },
+      "LinkListResponse": {
+        "type": "object",
+        "required": ["total", "links"],
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkSummary"
+            }
+          }
+        }
+      },
+      "ImpactAnalysisResponse": {
+        "type": "object",
+        "required": ["root_item_id", "total_affected", "max_depth", "affected_items"],
+        "properties": {
+          "root_item_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the item being analyzed"
+          },
+          "total_affected": {
+            "type": "integer",
+            "description": "Total number of items affected by changes"
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Maximum depth of dependency chain"
+          },
+          "affected_items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "List of affected item IDs"
+          }
+        }
+      },
+      "CycleDetectionResponse": {
+        "type": "object",
+        "required": ["has_cycles", "total_cycles", "severity", "affected_items"],
+        "properties": {
+          "has_cycles": {
+            "type": "boolean",
+            "description": "Whether cycles were detected"
+          },
+          "total_cycles": {
+            "type": "integer",
+            "description": "Number of cycles found"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["none", "low", "medium", "high", "critical"],
+            "description": "Severity level of detected cycles"
+          },
+          "affected_items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Items involved in cycles"
+          }
+        }
+      },
+      "ShortestPathResponse": {
+        "type": "object",
+        "required": ["exists", "distance", "path", "link_types"],
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "description": "Whether a path exists between the items"
+          },
+          "distance": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Number of hops in the shortest path"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ordered list of item IDs in the path"
+          },
+          "link_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Types of links in the path"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["detail"],
+        "properties": {
+          "detail": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Error code for programmatic handling"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - Invalid input parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "detail": "Invalid project_id format",
+              "code": "INVALID_INPUT"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - Missing or invalid authentication",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "detail": "Authentication required",
+              "code": "UNAUTHORIZED"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found - Resource does not exist",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "detail": "Item not found",
+              "code": "NOT_FOUND"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "detail": "An unexpected error occurred",
+              "code": "INTERNAL_ERROR"
+            }
+          }
+        }
+      }
+    }
+  }
+}

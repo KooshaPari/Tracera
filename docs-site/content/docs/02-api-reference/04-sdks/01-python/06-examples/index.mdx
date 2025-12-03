@@ -1,0 +1,21 @@
+---
+title: "Python SDK Examples"
+description: "Usage patterns for the Python SDK."
+---
+
+## Python SDK — Examples
+- Recommended for applications already using Python.
+- Handles auth, retries, and serialization for you.
+
+## Example
+```python
+# link code to feature
+client.relationships.create(from_id="code_1", to_id="feat_1", type="implements")
+# search artifacts
+client.search.query(project_id="proj_123", text="payment")
+```
+
+## Tips
+- Initialize the client once per process and reuse it.
+- Set timeouts and retries explicitly in production.
+- Capture request IDs from responses for support cases.

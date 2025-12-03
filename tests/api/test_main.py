@@ -1,0 +1,205 @@
+import asyncio
+from datetime import datetime
+from types import SimpleNamespace
+from uuid import uuid4
+
+import pytest
+import pytest_asyncio
+from fastapi import HTTPException
+from httpx import ASGITransport, AsyncClient
+
+from tracertm.api import main
+
+
+class _FakeItem:
+    def __init__(self, item_id: str, title: str, view: str = "FEATURE", status: str = "OPEN"):
+        self.id = item_id
+        self.title = title
+        self.view = view
+        self.status = status
+        now = datetime.utcnow()
+        self.created_at = now
+        self.updated_at = now
+        self.description = f"{title} description"
+
+
+class _FakeLink:
+    def __init__(self, link_id: str, source: str, target: str, link_type: str = "DEPENDS_ON"):
+        self.id = link_id
+        self.source_item_id = source
+        self.target_item_id = target
+        self.link_type = link_type
+
+
+class _FakeItemRepository:
+    _seeded_ids = ["item-a", "item-b", "item-c"]
+
+    def __init__(self, _db):
+        self._items = [
+            _FakeItem(self._seeded_ids[0], "Item A"),
+            _FakeItem(self._seeded_ids[1], "Item B"),
+            _FakeItem(self._seeded_ids[2], "Item C"),
+        ]
+
+    async def get_by_project(self, _project_id: str):
+        return self._items
+
+    async def get_by_id(self, item_id: str):
+        return next((item for item in self._items if item.id == item_id), None)
+
+
+class _FakeLinkRepository:
+    def __init__(self, _db):
+        self._links = [
+            _FakeLink(str(uuid4()), "source-1", "target-1"),
+            _FakeLink(str(uuid4()), "source-2", "target-2"),
+        ]
+
+    async def get_by_project(self, _project_id: str):
+        return self._links
+
+
+class _FakeImpactService:
+    def __init__(self, _db):
+        pass
+
+    async def analyze_impact(self, item_id: str):
+        return SimpleNamespace(
+            root_item_id=item_id,
+            total_affected=2,
+            max_depth_reached=3,
+            affected_items=["a1", "a2"],
+        )
+
+
+class _FakeCycleService:
+    def __init__(self, _db):
+        pass
+
+    async def detect_cycles(self, project_id: str):
+        return SimpleNamespace(has_cycles=True, total_cycles=1, severity="medium", affected_items={"n1", "n2"})
+
+
+class _FakeShortestPathService:
+    def __init__(self, _db):
+        pass
+
+    async def find_shortest_path(self, project_id: str, source_id: str, target_id: str):
+        return SimpleNamespace(exists=True, distance=2, path=[source_id, "mid", target_id], link_types=["DEPENDS_ON"])
+
+
+@pytest.fixture(autouse=True)
+def reset_overrides():
+    main.app.dependency_overrides.clear()
+    yield
+    main.app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def patch_repositories(monkeypatch):
+    monkeypatch.setattr("tracertm.repositories.item_repository.ItemRepository", _FakeItemRepository)
+    monkeypatch.setattr("tracertm.repositories.link_repository.LinkRepository", _FakeLinkRepository)
+    monkeypatch.setattr("tracertm.services.impact_analysis_service.ImpactAnalysisService", _FakeImpactService)
+    monkeypatch.setattr("tracertm.services.cycle_detection_service.CycleDetectionService", _FakeCycleService)
+    monkeypatch.setattr("tracertm.services.shortest_path_service.ShortestPathService", _FakeShortestPathService)
+
+
+@pytest_asyncio.fixture
+async def client():
+    async def fake_db():
+        yield object()
+
+    main.app.dependency_overrides[main.get_db] = fake_db
+    transport = ASGITransport(app=main.app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        yield client
+
+
+@pytest.mark.asyncio
+async def test_health_check(client: AsyncClient):
+    response = await client.get("/health")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["service"] == "TraceRTM API"
+
+
+@pytest.mark.asyncio
+async def test_list_items_returns_paginated_subset(client: AsyncClient):
+    response = await client.get("/api/v1/items", params={"project_id": "p1", "skip": 1, "limit": 1})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total"] == 3
+    assert len(payload["items"]) == 1
+    assert {"id", "title", "view", "status"}.issubset(payload["items"][0].keys())
+
+
+@pytest.mark.asyncio
+async def test_get_item_returns_data(client: AsyncClient):
+    target_id = _FakeItemRepository._seeded_ids[0]
+    response = await client.get(f"/api/v1/items/{target_id}")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["id"] == target_id
+    assert payload["title"]
+    assert payload["status"]
+
+
+@pytest.mark.asyncio
+async def test_get_item_not_found_returns_404(client: AsyncClient):
+    response = await client.get("/api/v1/items/missing-id")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_list_links(client: AsyncClient):
+    response = await client.get("/api/v1/links", params={"project_id": "p1"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total"] == 2
+    assert len(payload["links"]) == 2
+    assert {"id", "source_id", "target_id", "type"}.issubset(payload["links"][0].keys())
+
+
+@pytest.mark.asyncio
+async def test_get_impact_analysis(client: AsyncClient):
+    response = await client.get("/api/v1/analysis/impact/item-1", params={"project_id": "p1"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["root_item_id"] == "item-1"
+    assert payload["total_affected"] == 2
+    assert payload["max_depth"] == 3
+    assert payload["affected_items"] == ["a1", "a2"]
+
+
+@pytest.mark.asyncio
+async def test_detect_cycles(client: AsyncClient):
+    response = await client.get("/api/v1/analysis/cycles/p1")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["has_cycles"] is True
+    assert payload["total_cycles"] == 1
+    assert payload["severity"] == "medium"
+    assert set(payload["affected_items"]) == {"n1", "n2"}
+
+
+@pytest.mark.asyncio
+async def test_find_shortest_path(client: AsyncClient):
+    response = await client.get(
+        "/api/v1/analysis/shortest-path",
+        params={"project_id": "p1", "source_id": "a", "target_id": "b"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["exists"] is True
+    assert payload["distance"] == 2
+    assert payload["path"] == ["a", "mid", "b"]
+    assert payload["link_types"] == ["DEPENDS_ON"]
+
+
+@pytest.mark.asyncio
+async def test_get_db_raises_when_missing_database_url(monkeypatch):
+    monkeypatch.setattr("tracertm.config.manager.ConfigManager.get", lambda self, key: None)
+    with pytest.raises(HTTPException) as exc:
+        await anext(main.get_db())
+    assert exc.value.status_code == 500

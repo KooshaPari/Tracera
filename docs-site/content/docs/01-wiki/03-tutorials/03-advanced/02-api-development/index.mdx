@@ -1,0 +1,115 @@
+---
+title: "API Development"
+description: "Documentation for API Development"
+---
+
+# API Development
+
+
+## Overview
+
+Complete API reference for API Development.
+
+## Authentication
+
+All API requests require authentication:
+
+```typescript
+const headers = {
+  'Authorization': 'Bearer YOUR_JWT_TOKEN',
+  'Content-Type': 'application/json'
+}
+```
+
+## Endpoints
+
+### List All API Development
+
+```http
+GET /api/v1/api-development
+```
+
+**Response:**
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 100
+  }
+}
+```
+
+### Get API Development by ID
+
+```http
+GET /api/v1/api-development/:id
+```
+
+### Create API Development
+
+```http
+POST /api/v1/api-development
+```
+
+**Request Body:**
+```json
+{
+  "name": "Example API Development",
+  "description": "Description here"
+}
+```
+
+### Update API Development
+
+```http
+PUT /api/v1/api-development/:id
+```
+
+### Delete API Development
+
+```http
+DELETE /api/v1/api-development/:id
+```
+
+## Query Parameters
+
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 20)
+- `sort` - Sort field
+- `order` - Sort order (asc/desc)
+- `filter` - Filter criteria
+
+## Error Responses
+
+### 400 Bad Request
+Invalid request parameters
+
+### 401 Unauthorized
+Missing or invalid authentication token
+
+### 404 Not Found
+Resource not found
+
+### 500 Internal Server Error
+Server error
+
+## SDK Examples
+
+### TypeScript
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
+const items = await client.api-development.list()
+```
+
+### Python
+```python
+from tracertm import Client
+
+client = Client(api_key='YOUR_KEY')
+items = client.api-development.list()
+```
+

@@ -1,0 +1,58 @@
+{
+  "name": "@tracertm/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "electron-builder",
+    "package:mac": "electron-builder --mac",
+    "package:win": "electron-builder --win",
+    "package:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2",
+    "@tracertm/types": "workspace:*"
+  },
+  "devDependencies": {
+    "electron": "^39.2.4",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^4.0.1",
+    "@types/node": "^22.9.0",
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
+    "vite": "^7.2.4"
+  },
+  "build": {
+    "appId": "com.tracertm.desktop",
+    "productName": "TraceRTM",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "resources/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "resources/icon.png"
+    }
+  }
+}

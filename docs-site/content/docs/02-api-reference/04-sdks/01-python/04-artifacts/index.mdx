@@ -1,0 +1,19 @@
+---
+title: "Python SDK Artifacts"
+description: "Manage artifacts with Python."
+---
+
+## Python SDK — Artifacts
+- Recommended for applications already using Python.
+- Handles auth, retries, and serialization for you.
+
+## Example
+```python
+items = client.artifacts.list(project_id="proj_123", type="feature")
+created = client.artifacts.create(project_id="proj_123", name="Checkout", type="code")
+```
+
+## Tips
+- Initialize the client once per process and reuse it.
+- Set timeouts and retries explicitly in production.
+- Capture request IDs from responses for support cases.

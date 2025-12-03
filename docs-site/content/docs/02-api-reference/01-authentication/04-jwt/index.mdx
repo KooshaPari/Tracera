@@ -1,0 +1,18 @@
+---
+title: "JWT"
+description: "JWT token usage."
+---
+
+## Overview
+JWTs carry scopes; validate issuer and audience.
+
+## Request shape
+```http
+POST /v1/auth/jwt
+Authorization: Bearer <token>
+```
+
+## Tips
+- Rotate credentials regularly and record rotation in audit logs.
+- Scope tokens to the minimum set of permissions needed.
+- Enforce MFA for human accounts; restrict service tokens by IP when possible.

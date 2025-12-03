@@ -1,0 +1,115 @@
+---
+title: "SDKs"
+description: "Documentation for SDKs"
+---
+
+# SDKs
+
+
+## Overview
+
+Complete API reference for SDKs.
+
+## Authentication
+
+All API requests require authentication:
+
+```typescript
+const headers = {
+  'Authorization': 'Bearer YOUR_JWT_TOKEN',
+  'Content-Type': 'application/json'
+}
+```
+
+## Endpoints
+
+### List All SDKs
+
+```http
+GET /api/v1/sdks
+```
+
+**Response:**
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 100
+  }
+}
+```
+
+### Get SDKs by ID
+
+```http
+GET /api/v1/sdks/:id
+```
+
+### Create SDKs
+
+```http
+POST /api/v1/sdks
+```
+
+**Request Body:**
+```json
+{
+  "name": "Example SDKs",
+  "description": "Description here"
+}
+```
+
+### Update SDKs
+
+```http
+PUT /api/v1/sdks/:id
+```
+
+### Delete SDKs
+
+```http
+DELETE /api/v1/sdks/:id
+```
+
+## Query Parameters
+
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 20)
+- `sort` - Sort field
+- `order` - Sort order (asc/desc)
+- `filter` - Filter criteria
+
+## Error Responses
+
+### 400 Bad Request
+Invalid request parameters
+
+### 401 Unauthorized
+Missing or invalid authentication token
+
+### 404 Not Found
+Resource not found
+
+### 500 Internal Server Error
+Server error
+
+## SDK Examples
+
+### TypeScript
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
+const items = await client.sdks.list()
+```
+
+### Python
+```python
+from tracertm import Client
+
+client = Client(api_key='YOUR_KEY')
+items = client.sdks.list()
+```
+

@@ -1,0 +1,13 @@
+---
+title: "Build Process"
+description: "How to build TraceRTM."
+---
+
+## Steps
+- Build backend: `go build ./...`
+- Build frontend/docs: `npm run build`
+- Package desktop if needed.
+
+## Tips
+- CI should cache module downloads.
+- Fail builds on lint/test failures to keep main clean.

@@ -1,0 +1,23 @@
+---
+title: "CLI Export"
+description: "Export items and links for backup or integrations."
+---
+
+## What this covers
+- How to manage export with the Trace CLI
+- Expected inputs, flags, and outputs
+- Safety checks before executing
+
+## Quick commands
+```bash
+trace export project --project <id> --format json --out export.json
+```
+
+```bash
+trace export links --project <id> --type implements --out links.csv
+```
+
+## Best practices
+- Use `--project` to scope actions and avoid cross-project edits.
+- Prefer idempotent operations (`trace ... upsert`) in automation.
+- Pipe to jq for verification before destructive changes.

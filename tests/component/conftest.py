@@ -1,0 +1,38 @@
+"""Component-level fixtures (between unit and e2e).
+
+Provides async and sync database sessions backed by in-memory SQLite for
+repository and service contract tests.
+"""
+
+import pytest
+import pytest_asyncio
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from tracertm.models.base import Base
+
+pytestmark = pytest.mark.integration
+
+
+@pytest.fixture
+def sync_session():
+    """Sync SQLAlchemy Session on in-memory SQLite."""
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    SessionLocal = sessionmaker(bind=engine)
+    with SessionLocal() as session:
+        yield session
+    engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def async_session():
+    """Async SQLAlchemy AsyncSession on in-memory SQLite."""
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+    async with AsyncSessionLocal() as session:
+        yield session
+    await engine.dispose()

@@ -1,0 +1,43 @@
+---
+title: "CLI"
+description: "TraceRTM CLI for projects, artifacts, links, workflows, and automation"
+---
+
+# CLI
+
+The TraceRTM CLI is the fastest way to script projects, artifacts, relationships, workflows, and exports/imports. It supports interactive use and automation in CI.
+
+## Overview
+
+- Install via macOS/Linux/Windows packages or `pipx` for the Python CLI.
+- Commands are idempotent where possible; use `--project` to scope changes.
+- Outputs are structured for piping into `jq`/`yq`.
+
+## Quick start
+
+- Install and authenticate.
+- Create a project, add artifacts, and link them.
+- Export or import data safely with `--dry-run`.
+
+```bash
+trace project create "Checkout" --org org_123
+trace artifacts create --project proj_123 --type feature --name "Checkout Flow"
+trace artifacts create --project proj_123 --type code --name "checkout-api"
+trace link create --from code_123 --to feat_123 --type implements
+trace artifacts list --project proj_123 | jq '{id,name,type}'
+```
+
+## Key areas
+
+- Installation & configuration
+- Commands (projects, artifacts, links, workflows)
+- Import/export and scripting
+- Plugins and troubleshooting
+
+## Next Steps
+
+- [Installation](/docs/api-reference/cli/installation/)
+- [Configuration](/docs/api-reference/cli/configuration/)
+- [Commands](/docs/api-reference/cli/commands/)
+- [Scripting](/docs/api-reference/cli/scripting/)
+- [Plugins](/docs/api-reference/cli/plugins/)
