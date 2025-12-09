@@ -24,7 +24,7 @@ from tracertm.models.project import Project
 pytestmark = pytest.mark.integration
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def sync_session():
     """Sync SQLAlchemy Session on in-memory SQLite."""
     engine = create_engine("sqlite:///:memory:")

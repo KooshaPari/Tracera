@@ -434,16 +434,16 @@ class BulkOperationService:
                         normalized_key = key.strip().title()
                         normalized_row[normalized_key] = value.strip() if value else None
 
-                    # Extract fields
-                    title = normalized_row.get("Title", "").strip()
-                    view = normalized_row.get("View", "").strip().upper()
-                    item_type = normalized_row.get("Type", "").strip()
-                    description = normalized_row.get("Description", "").strip() or None
-                    status = normalized_row.get("Status", "todo").strip() or "todo"
-                    priority = normalized_row.get("Priority", "medium").strip() or "medium"
-                    owner = normalized_row.get("Owner", "").strip() or None
-                    parent_id = normalized_row.get("Parent Id", "").strip() or None
-                    metadata_str = normalized_row.get("Metadata", "").strip() or None
+                    # Extract fields - safely handle None values
+                    title = (normalized_row.get("Title") or "").strip()
+                    view = (normalized_row.get("View") or "").strip().upper()
+                    item_type = (normalized_row.get("Type") or "").strip()
+                    description = (normalized_row.get("Description") or "").strip() or None
+                    status = (normalized_row.get("Status") or "todo").strip() or "todo"
+                    priority = (normalized_row.get("Priority") or "medium").strip() or "medium"
+                    owner = (normalized_row.get("Owner") or "").strip() or None
+                    parent_id = (normalized_row.get("Parent Id") or "").strip() or None
+                    metadata_str = (normalized_row.get("Metadata") or "").strip() or None
 
                     # Parse metadata JSON if provided
                     metadata = {}
