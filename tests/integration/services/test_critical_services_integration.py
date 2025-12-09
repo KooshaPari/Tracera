@@ -28,6 +28,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
+from tracertm.models.base import Base
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -46,7 +47,7 @@ from tracertm.services.stateless_ingestion_service import StatelessIngestionServ
 # FIXTURES
 # ============================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_project(db_session: AsyncSession) -> Project:
     """Create a test project for integration tests."""
     project = Project(
@@ -59,7 +60,7 @@ async def test_project(db_session: AsyncSession) -> Project:
     return project
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def sample_items(db_session: AsyncSession, test_project: Project) -> list[Item]:
     """Create sample items for graph/path testing."""
     items_repo = ItemRepository(db_session)
@@ -91,7 +92,7 @@ async def sample_items(db_session: AsyncSession, test_project: Project) -> list[
     return items
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def dependency_graph(
     db_session: AsyncSession, test_project: Project, sample_items: list[Item]
 ) -> list[Link]:
@@ -130,15 +131,19 @@ def sync_db_session(test_db_engine):
     """
     Create a synchronous database session for services that require sync Session.
 
-    This fixture creates a separate sync session from the same engine, allowing
-    synchronous services to operate alongside async tests.
+    This fixture uses the same database as test_db_engine (which should be file-based
+    for compatibility between async and sync access).
     """
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
 
-    # Create synchronous engine from async engine's URL
-    # Convert aiosqlite:// to sqlite://
-    sync_url = str(test_db_engine.url).replace('+aiosqlite', '')
+    # Extract the file path from the async engine URL
+    # URL format: sqlite+aiosqlite:////path/to/file.db
+    db_url = str(test_db_engine.url)
+    # Convert aiosqlite:// URL to sqlite:// URL
+    # Replace the +aiosqlite part to get sqlite://
+    sync_url = db_url.replace("sqlite+aiosqlite://", "sqlite://")
+
     sync_engine = create_engine(sync_url, echo=False)
 
     SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)

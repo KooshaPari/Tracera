@@ -12,7 +12,7 @@ from services.database import DatabaseConfig
 class TestDatabaseIntegration:
     """Test database integration"""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def db_service(self):
         """Create database service"""
         config = DatabaseConfig(

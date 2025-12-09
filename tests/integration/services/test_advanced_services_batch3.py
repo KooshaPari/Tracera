@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 # ============================================================
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_project(db_session: AsyncSession) -> Project:
     """Create a test project."""
     project = Project(
@@ -64,7 +64,7 @@ async def test_project(db_session: AsyncSession) -> Project:
     return project
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def complex_item_hierarchy(
     db_session: AsyncSession, test_project: Project
 ) -> dict[str, Item]:
@@ -214,7 +214,7 @@ async def complex_item_hierarchy(
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def traceability_test_items(
     db_session: AsyncSession, test_project: Project
 ) -> dict[str, list[Item]]:

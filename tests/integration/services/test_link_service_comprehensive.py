@@ -39,7 +39,7 @@ pytestmark = pytest.mark.integration
 # FIXTURES
 # ============================================================
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 def db_engine():
     """Create an in-memory SQLite engine for testing."""
     engine = create_engine("sqlite:///:memory:", echo=False)
@@ -64,7 +64,7 @@ def async_db_engine():
     yield engine
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def async_db_session(async_db_engine):
     """Create an async database session."""
     async with async_db_engine.begin() as conn:

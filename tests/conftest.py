@@ -40,9 +40,19 @@ except ImportError:
 
 @pytest_asyncio.fixture(scope="session")
 async def test_db_engine():
-    """Create test database engine with SQLite."""
-    # Use in-memory SQLite for tests by default, or file-based if specified
-    db_url = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+    """Create test database engine with SQLite (file-based for sync/async compatibility)."""
+    import tempfile
+
+    # Use file-based SQLite for both async and sync access
+    # In-memory databases can't be reliably shared between async and sync engines
+    db_url = os.getenv("TEST_DATABASE_URL")
+
+    if db_url is None:
+        # Create a temporary file-based database
+        temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        db_path = temp_db.name
+        temp_db.close()
+        db_url = f"sqlite+aiosqlite:///{db_path}"
 
     engine = create_async_engine(
         db_url,
@@ -58,10 +68,18 @@ async def test_db_engine():
     yield engine
 
     # Cleanup
-    async with engine.begin() as conn:
-        if Base is not None:
-            await conn.run_sync(Base.metadata.drop_all)
-    await engine.dispose()
+    try:
+        async with engine.begin() as conn:
+            if Base is not None:
+                await conn.run_sync(Base.metadata.drop_all)
+        await engine.dispose()
+    finally:
+        # Clean up temp file if it was created
+        if not os.getenv("TEST_DATABASE_URL"):
+            try:
+                Path(db_url.replace("sqlite+aiosqlite:///", "")).unlink()
+            except Exception:
+                pass
 
 
 @pytest_asyncio.fixture(scope="function")
