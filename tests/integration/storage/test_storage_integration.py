@@ -23,6 +23,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+import pytest_asyncio
 import yaml
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -1277,7 +1278,7 @@ class TestSyncEngineIntegration:
         mock_db.engine = sync_db
         return SyncStateManager(mock_db)
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def sync_engine(self, sync_db, storage_manager):
         """Create SyncEngine instance."""
         mock_db = Mock()

@@ -39,7 +39,7 @@ from tracertm.services.visualization_service import VisualizationService
 # FIXTURES
 # ============================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_project() -> Project:
     """Create a test project using sync session."""
     from sqlalchemy import create_engine
@@ -82,7 +82,7 @@ async def test_project() -> Project:
             os.unlink(db_path)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_items(test_project: Project) -> list[Item]:
     """Create test items across multiple views."""
     from sqlalchemy import create_engine
@@ -149,7 +149,7 @@ async def test_items(test_project: Project) -> list[Item]:
             os.unlink(db_path)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_links(
     test_project: Project,
     test_items: list[Item],

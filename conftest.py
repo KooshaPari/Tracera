@@ -32,7 +32,7 @@ except ImportError:
     Base = None
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def test_db_engine():
     """Create test database engine with SQLite."""
     # Use in-memory SQLite for tests by default, or file-based if specified
@@ -72,31 +72,39 @@ async def db_session(test_db_engine):
         await session.rollback()
 
 
-@pytest.fixture
-def project_factory(db_session):
+@pytest_asyncio.fixture
+async def project_factory(db_session):
     """Factory for creating test projects."""
-    async def create_project(name="Test Project", description="Test project"):
-        from tracertm.models.project import Project
-        project = Project(name=name, description=description)
-        db_session.add(project)
+    async def create_project(name="Test Project", description="Test project", metadata=None):
+        from tracertm.repositories.project_repository import ProjectRepository
+        repo = ProjectRepository(db_session)
+        project = await repo.create(name=name, description=description, metadata=metadata)
         await db_session.flush()
         return project
     return create_project
 
 
-@pytest.fixture
-def item_factory(db_session):
+@pytest_asyncio.fixture
+async def item_factory(db_session):
     """Factory for creating test items."""
-    async def create_item(project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo"):
-        from tracertm.models.item import Item
-        item = Item(
+    async def create_item(
+        project_id,
+        title="Test Item",
+        view="FEATURE",
+        item_type="feature",
+        status="todo",
+        **kwargs
+    ):
+        from tracertm.repositories.item_repository import ItemRepository
+        repo = ItemRepository(db_session)
+        item = await repo.create(
             project_id=project_id,
             title=title,
             view=view,
             item_type=item_type,
             status=status,
+            **kwargs
         )
-        db_session.add(item)
         await db_session.flush()
         return item
     return create_item

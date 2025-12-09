@@ -90,6 +90,8 @@ async def test_get_status_success():
 
 @pytest.mark.asyncio
 async def test_get_status_network_error(monkeypatch):
+    from tracertm.api.sync_client import NetworkError
+
     async def handler(request):
         raise httpx.ConnectTimeout("timeout")
 
@@ -101,5 +103,5 @@ async def test_get_status_network_error(monkeypatch):
     client = SyncClient(cfg)
     client._client = httpx.AsyncClient(transport=_DummyTransport(handler), base_url=cfg.base_url)
 
-    with pytest.raises(httpx.ConnectTimeout):
+    with pytest.raises(NetworkError):
         await client.get_sync_status()

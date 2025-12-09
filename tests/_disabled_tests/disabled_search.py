@@ -11,7 +11,7 @@ from services.database import DatabaseConfig
 class TestSearchIntegration:
     """Test search integration"""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def search_service(self):
         """Create search service"""
         config = DatabaseConfig(

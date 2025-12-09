@@ -819,7 +819,7 @@ Should not be included"""
 class TestCriticalPathServiceGapCoverage:
     """Integration tests for CriticalPathService covering untested paths."""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def async_session(self):
         """Create async database session."""
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")

@@ -595,17 +595,17 @@ class TestAPIWebhooksServiceIntegration:
 class TestCommitLinkingServiceIntegration:
     """Integration tests for CommitLinkingService."""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def commit_service(self, db_session):
         """Create CommitLinkingService instance."""
         return CommitLinkingService(db_session)
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def test_project(self, db_session, project_factory):
         """Create a test project."""
         return await project_factory(name="Test Project")
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def test_item(self, db_session, item_factory, test_project):
         """Create a test item."""
         return await item_factory(
@@ -1360,24 +1360,24 @@ class TestDocumentationServiceIntegration:
 class TestEventSourcingServiceIntegration:
     """Integration tests for EventSourcingService."""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def event_service(self, db_session):
         """Create EventSourcingService instance."""
         return EventSourcingService(db_session)
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def test_project(self, db_session, project_factory):
         """Create a test project."""
         return await project_factory(name="Event Test Project")
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def test_item(self, db_session, item_factory, test_project):
         """Create a test item."""
         return await item_factory(
             project_id=test_project.id, title="Event Test Item"
         )
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def create_test_events(self, db_session, test_project, test_item):
         """Create test events."""
         from tracertm.repositories.event_repository import EventRepository

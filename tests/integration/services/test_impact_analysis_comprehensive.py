@@ -34,7 +34,7 @@ from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_test_db():
     """Create an async test database."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
@@ -47,7 +47,7 @@ async def async_test_db():
     await engine.dispose()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_session(async_test_db):
     """Create an async database session."""
     async_session_factory = sessionmaker(
@@ -268,7 +268,7 @@ class TestFindCriticalPaths:
 class TestAnalyzeImpactBasic:
     """Test basic analyze_impact functionality."""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     def service(self):
         """Create service instance with mocked repositories."""
         session = AsyncMock()
