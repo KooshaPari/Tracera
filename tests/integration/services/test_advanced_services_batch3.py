@@ -15,6 +15,7 @@ Coverage Targets:
 import json
 import logging
 import pytest
+import pytest_asyncio
 from datetime import datetime, timedelta
 from io import StringIO
 

@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import pytest
+import pytest_asyncio
 
 from tracertm.services.api_webhooks_service import APIWebhooksService, WebhookEvent
 from tracertm.services.commit_linking_service import CommitLinkingService

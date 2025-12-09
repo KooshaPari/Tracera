@@ -15,6 +15,7 @@ Test count: 45+
 """
 
 import pytest
+import pytest_asyncio
 import time
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch, MagicMock

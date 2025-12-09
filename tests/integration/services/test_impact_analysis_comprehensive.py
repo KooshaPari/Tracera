@@ -15,6 +15,7 @@ Tests: 35+
 """
 
 import pytest
+import pytest_asyncio
 import time
 from unittest.mock import AsyncMock, Mock, patch
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession

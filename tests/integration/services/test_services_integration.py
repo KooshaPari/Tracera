@@ -14,6 +14,7 @@ Current Coverage:
 import csv
 import json
 import pytest
+import pytest_asyncio
 from datetime import datetime
 from io import StringIO
 

@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.agent import Agent
@@ -51,7 +52,7 @@ from tracertm.services.agent_performance_service import AgentPerformanceService
 # ============================================================
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_project(db_session: AsyncSession) -> Project:
     """Create a test project for integration tests."""
     project = Project(
@@ -64,7 +65,7 @@ async def test_project(db_session: AsyncSession) -> Project:
     return project
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def sample_items(db_session: AsyncSession, test_project: Project) -> list[Item]:
     """Create diverse sample items for analytics testing."""
     items_repo = ItemRepository(db_session)
@@ -99,7 +100,7 @@ async def sample_items(db_session: AsyncSession, test_project: Project) -> list[
     return items
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def dependency_graph(
     db_session: AsyncSession, test_project: Project, sample_items: list[Item]
 ) -> list[Link]:
@@ -137,7 +138,7 @@ async def dependency_graph(
     return links
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def sample_events(
     db_session: AsyncSession, test_project: Project, sample_items: list[Item]
 ) -> list[Event]:
@@ -175,7 +176,7 @@ async def sample_events(
     return events
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def sample_agents(
     db_session: AsyncSession, test_project: Project
 ) -> list[Agent]:
@@ -191,7 +192,7 @@ async def sample_agents(
         ("Epsilon Agent", "reviewer", "active", {"skill": "review"}),
     ]
 
-    for name, agent_type, status, metadata in agent_data:
+    for i, (name, agent_type, status, metadata) in enumerate(agent_data):
         agent = await agents_repo.create(
             project_id=test_project.id,
             name=name,

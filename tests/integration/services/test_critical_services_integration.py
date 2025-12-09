@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import pytest_asyncio
 import yaml
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -9,8 +9,10 @@ import tempfile
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tracertm.models.base import Base
 # Import ALL models to ensure they're registered with Base.metadata
@@ -47,8 +49,8 @@ def test_db():
 
 
 @pytest.fixture(scope="function")
-def db_session(test_db):
-    """Create a database session with all tables created."""
+def sync_db_session(test_db):
+    """Create a synchronous database session with all tables created."""
     SessionLocal = sessionmaker(bind=test_db)
     session = SessionLocal()
 
@@ -58,15 +60,15 @@ def db_session(test_db):
 
 
 @pytest.fixture(scope="function")
-def initialized_db(db_session):
+def initialized_db(sync_db_session):
     """Database session with sample project data."""
     from tracertm.models.project import Project
     from tracertm.models.item import Item
 
     # Create test project
     project = Project(id="test-project", name="Test Project")
-    db_session.add(project)
-    db_session.commit()
+    sync_db_session.add(project)
+    sync_db_session.commit()
 
     # Create test items
     item1 = Item(
@@ -85,15 +87,15 @@ def initialized_db(db_session):
         item_type="feature",
         status="in_progress"
     )
-    db_session.add(item1)
-    db_session.add(item2)
-    db_session.commit()
+    sync_db_session.add(item1)
+    sync_db_session.add(item2)
+    sync_db_session.commit()
 
-    yield db_session
+    yield sync_db_session
 
 
 @pytest.fixture(scope="function")
-def db_with_sample_data(db_session):
+def db_with_sample_data(sync_db_session):
     """Database with comprehensive sample projects, items, links, and events for testing."""
     from tracertm.models.project import Project
     from tracertm.models.item import Item
@@ -106,8 +108,8 @@ def db_with_sample_data(db_session):
         name="Test Project",
         description="Comprehensive test project with full data"
     )
-    db_session.add(project)
-    db_session.commit()
+    sync_db_session.add(project)
+    sync_db_session.commit()
 
     # Create sample items across different views
     items = [
@@ -150,8 +152,8 @@ def db_with_sample_data(db_session):
     ]
 
     for item in items:
-        db_session.add(item)
-    db_session.commit()
+        sync_db_session.add(item)
+    sync_db_session.commit()
 
     # Create sample links between items
     links = [
@@ -179,8 +181,8 @@ def db_with_sample_data(db_session):
     ]
 
     for link in links:
-        db_session.add(link)
-    db_session.commit()
+        sync_db_session.add(link)
+    sync_db_session.commit()
 
     # Create sample events for history tracking
     events = [
@@ -211,10 +213,60 @@ def db_with_sample_data(db_session):
     ]
 
     for event in events:
-        db_session.add(event)
-    db_session.commit()
+        sync_db_session.add(event)
+    sync_db_session.commit()
 
-    yield db_session
+    yield sync_db_session
+
+
+# ============================================================
+# ASYNC FIXTURES FOR ASYNC TESTS (Services Tests, etc.)
+# ============================================================
+
+
+@pytest_asyncio.fixture(scope="session")
+async def async_test_db_engine():
+    """Create async test database engine with SQLite."""
+    db_url = "sqlite+aiosqlite:///:memory:"
+
+    engine = create_async_engine(
+        db_url,
+        echo=False,
+        future=True,
+    )
+
+    # Create all tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    yield engine
+
+    # Cleanup
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def db_session(async_test_db_engine):
+    """
+    Create an async test database session for async tests.
+
+    This fixture provides a clean async session for each test.
+    """
+    async_session_maker = async_sessionmaker(
+        async_test_db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    async with async_session_maker() as session:
+        try:
+            yield session
+        finally:
+            # Always rollback to ensure test isolation
+            await session.rollback()
+            await session.close()
 
 
 @pytest.fixture(scope="function", autouse=True)

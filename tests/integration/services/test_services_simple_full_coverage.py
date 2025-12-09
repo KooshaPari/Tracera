@@ -16,6 +16,7 @@ in a single test module, organized by functional category.
 
 import json
 import pytest
+import pytest_asyncio
 from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from sqlalchemy import create_engine
