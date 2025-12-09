@@ -19,12 +19,13 @@ import asyncio
 import csv
 import json
 import pytest
+import pytest_asyncio
 from datetime import datetime
 from io import StringIO
 from typing import Any
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -178,7 +179,7 @@ def sync_items_with_links(sync_db_session, sync_project):
 # ASYNC FIXTURES (for async services)
 # ============================================================
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def async_db_session():
     """Create an asynchronous database session."""
     engine = create_async_engine(
@@ -191,7 +192,7 @@ async def async_db_session():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    AsyncSessionLocal = sessionmaker(
+    AsyncSessionLocal = async_sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
     )
 
@@ -201,7 +202,7 @@ async def async_db_session():
     await engine.dispose()
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def async_project(async_db_session):
     """Create a test project for async tests."""
     project = Project(
@@ -214,7 +215,7 @@ async def async_project(async_db_session):
     return project
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def async_items_with_links(async_db_session, async_project):
     """Create items and links for async testing."""
     items = [
