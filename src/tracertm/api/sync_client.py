@@ -351,11 +351,26 @@ class ApiClient:
                 return response
 
             except httpx.HTTPStatusError as e:
+                # Handle 409 Conflict errors specially
+                if e.response.status_code == 409:
+                    data = e.response.json() if e.response.content else {}
+                    conflicts = [Conflict.from_dict(c) for c in data.get("conflicts", [])]
+                    raise ConflictError(
+                        "Conflicts detected during request",
+                        conflicts=conflicts,
+                        status_code=409,
+                        response_data=data,
+                    ) from e
                 last_error = e
                 logger.warning(
                     f"HTTP error on attempt {attempt + 1}/{self.config.max_retries}: "
                     f"{e.response.status_code} - {e.response.text}"
                 )
+
+            except httpx.TimeoutException as e:
+                # Wrap timeout exceptions as NetworkError
+                last_error = e
+                logger.warning(f"Timeout error on attempt {attempt + 1}/{self.config.max_retries}: {e}")
 
             except httpx.NetworkError as e:
                 last_error = e
@@ -386,7 +401,7 @@ class ApiClient:
                 delay *= self.config.retry_backoff_base
 
         # All retries failed
-        if isinstance(last_error, httpx.NetworkError):
+        if isinstance(last_error, (httpx.TimeoutException, httpx.NetworkError)):
             raise NetworkError(f"Network error after {self.config.max_retries} retries: {last_error}")
         elif isinstance(last_error, httpx.HTTPStatusError):
             raise ApiError(
@@ -409,8 +424,8 @@ class ApiClient:
             response = await self._retry_request("GET", "/api/health")
             data = response.json()
             return data.get("status") == "healthy"
-        except Exception as e:
-            logger.error(f"Health check failed: {e}")
+        except (ApiError, AuthenticationError, NetworkError, RateLimitError):
+            logger.error(f"Health check failed: API error")
             return False
 
     async def upload_changes(
@@ -429,6 +444,7 @@ class ApiClient:
             UploadResult with applied changes and conflicts
 
         Raises:
+            ConflictError: If conflicts are detected
             ApiError: On upload failure
         """
         payload = {
@@ -437,22 +453,9 @@ class ApiClient:
             "last_sync": last_sync.isoformat() if last_sync else None,
         }
 
-        try:
-            response = await self._retry_request("POST", "/api/sync/upload", json=payload)
-            data = response.json()
-            return UploadResult.from_dict(data)
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 409:
-                # Conflict detected
-                data = e.response.json()
-                conflicts = [Conflict.from_dict(c) for c in data.get("conflicts", [])]
-                raise ConflictError(
-                    "Conflicts detected during upload",
-                    conflicts=conflicts,
-                    status_code=409,
-                    response_data=data,
-                ) from e
-            raise
+        response = await self._retry_request("POST", "/api/sync/upload", json=payload)
+        data = response.json()
+        return UploadResult.from_dict(data)
 
     async def download_changes(
         self,

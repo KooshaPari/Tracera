@@ -908,6 +908,7 @@ class TraceRTMClient:
                 "status": item.status,
                 "view": item.view,
                 "type": item.item_type,
+                "owner": item.owner,
             }
             for item in items
         ]

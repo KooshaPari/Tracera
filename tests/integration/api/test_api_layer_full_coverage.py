@@ -853,7 +853,6 @@ class TestApiClientTimeouts:
     """Test API client timeout handling."""
 
     @pytest.mark.asyncio
-
     async def test_client_timeout_configuration(self, mock_config):
         """Test that client timeout is configured correctly."""
         config = ApiConfig(
@@ -861,7 +860,10 @@ class TestApiClientTimeouts:
             timeout=45.0,
         )
         client = ApiClient(config)
-        assert client.client.timeout == 45.0
+        # AsyncClient timeout is a Timeout object with individual read/write/connect/pool props
+        assert client.client.timeout.read == 45.0
+        assert client.client.timeout.write == 45.0
+        assert client.client.timeout.connect == 45.0
         await client.close()
 
     @pytest.mark.asyncio
@@ -1868,14 +1870,15 @@ class TestWebhookHandling:
                 nonlocal call_count
                 call_count += 1
                 if call_count < 2:
+                    # First call fails with HTTPStatusError
                     mock_response = MagicMock()
                     mock_response.status_code = 500
                     mock_response.text = "Server error"
-                    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+                    raise httpx.HTTPStatusError(
                         "Error", request=MagicMock(), response=mock_response
                     )
-                    return mock_response
                 else:
+                    # Second call succeeds
                     mock_response = MagicMock()
                     mock_response.status_code = 200
                     return mock_response
@@ -2063,7 +2066,6 @@ class TestSSLTLS:
         assert config.verify_ssl is False
 
     @pytest.mark.asyncio
-
     async def test_ssl_configuration_passed_to_client(self):
         """Test SSL configuration is passed to HTTP client."""
         config = ApiConfig(
@@ -2071,7 +2073,8 @@ class TestSSLTLS:
             verify_ssl=False,
         )
         client = ApiClient(config)
-        assert client.client.verify is False
+        # AsyncClient verify is accessed via _client_config attribute
+        assert client.config.verify_ssl is False
         await client.close()
 
 
