@@ -22,8 +22,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Trailing slashes for better static file structure
-  trailingSlash: true,
+  // Trailing slashes disabled to fix routing conflicts
+  trailingSlash: false,
+  
+  // Force correct working directory
+  turbopack: {
+    root: __dirname,
+  },
 };
 
 export default withMDX(nextConfig);

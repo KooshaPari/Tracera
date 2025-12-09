@@ -1,32 +1,715 @@
 ---
-title: "Error Codes"
-description: "Documentation for Error Codes"
+title: Error Codes
+description: Complete reference of all error codes returned by the TraceRTM API
 ---
 
 # Error Codes
 
-This page contains documentation for Error Codes.
+This reference documents all error codes that can be returned by the TraceRTM API, organized by category.
 
-## Overview
+## Error Code Format
 
-This section covers the key aspects of Error Codes in TraceRTM.
+All error codes follow a consistent naming convention:
 
-## Getting Started
+```
+CATEGORY_SPECIFIC_ERROR
+```
 
-To get started with Error Codes:
+Examples: `AUTHENTICATION_REQUIRED`, `ITEM_NOT_FOUND`, `VALIDATION_ERROR`
 
-- Review the Error Codes and fundamentals
-- Explore practical examples
-- Check out the API reference
+---
 
-## Key Concepts
+## Authentication Errors
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `AUTHENTICATION_REQUIRED` | 401 | No API key provided |
+| `INVALID_API_KEY` | 401 | API key is malformed or doesn't exist |
+| `API_KEY_EXPIRED` | 401 | API key has expired |
+| `API_KEY_REVOKED` | 401 | API key was revoked |
+| `API_KEY_DISABLED` | 401 | API key is disabled |
+| `INVALID_TOKEN` | 401 | OAuth/JWT token is invalid |
+| `TOKEN_EXPIRED` | 401 | OAuth/JWT token has expired |
+| `INVALID_SIGNATURE` | 401 | Request signature is invalid |
+| `INVALID_AGENT_KEY` | 401 | Agent API key is invalid |
 
-## Next Steps
+### AUTHENTICATION_REQUIRED
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+```json
+{
+  "error": {
+    "code": "AUTHENTICATION_REQUIRED",
+    "message": "API key is required",
+    "details": {
+      "header": "Authorization",
+      "expected_format": "Bearer rtm_live_sk_..."
+    }
+  }
+}
+```
+
+### INVALID_API_KEY
+
+```json
+{
+  "error": {
+    "code": "INVALID_API_KEY",
+    "message": "The provided API key is invalid",
+    "details": {
+      "key_prefix": "rtm_live_sk_abc",
+      "reason": "key_not_found"
+    }
+  }
+}
+```
+
+### API_KEY_EXPIRED
+
+```json
+{
+  "error": {
+    "code": "API_KEY_EXPIRED",
+    "message": "This API key has expired",
+    "details": {
+      "expired_at": "2024-01-15T00:00:00Z",
+      "action": "Generate a new API key in your dashboard"
+    }
+  }
+}
+```
+
+---
+
+## Authorization Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `FORBIDDEN` | 403 | General permission denied |
+| `INSUFFICIENT_PERMISSIONS` | 403 | Missing required permission |
+| `PROJECT_ACCESS_DENIED` | 403 | No access to project |
+| `TEAM_ACCESS_DENIED` | 403 | No access to team resource |
+| `ORGANIZATION_ACCESS_DENIED` | 403 | No access to organization |
+| `RESOURCE_ACCESS_DENIED` | 403 | No access to specific resource |
+| `ROLE_REQUIRED` | 403 | Specific role required |
+| `PLAN_LIMIT_EXCEEDED` | 403 | Plan doesn't allow this action |
+| `FEATURE_NOT_AVAILABLE` | 403 | Feature not in current plan |
+| `IP_NOT_ALLOWED` | 403 | Request from non-whitelisted IP |
+
+### FORBIDDEN
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "You don't have permission to perform this action",
+    "details": {
+      "required_permission": "items:write",
+      "user_permissions": ["items:read", "projects:read"],
+      "resource": "item_req_001"
+    }
+  }
+}
+```
+
+### PROJECT_ACCESS_DENIED
+
+```json
+{
+  "error": {
+    "code": "PROJECT_ACCESS_DENIED",
+    "message": "You don't have access to this project",
+    "details": {
+      "project_id": "proj_abc123",
+      "action": "Request access from the project owner"
+    }
+  }
+}
+```
+
+### PLAN_LIMIT_EXCEEDED
+
+```json
+{
+  "error": {
+    "code": "PLAN_LIMIT_EXCEEDED",
+    "message": "Your plan doesn't support this feature",
+    "details": {
+      "feature": "advanced_analytics",
+      "current_plan": "free",
+      "required_plan": "pro",
+      "upgrade_url": "https://tracertm.dev/pricing"
+    }
+  }
+}
+```
+
+---
+
+## Not Found Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `NOT_FOUND` | 404 | General resource not found |
+| `PROJECT_NOT_FOUND` | 404 | Project doesn't exist |
+| `ITEM_NOT_FOUND` | 404 | Item doesn't exist |
+| `LINK_NOT_FOUND` | 404 | Link doesn't exist |
+| `USER_NOT_FOUND` | 404 | User doesn't exist |
+| `TEAM_NOT_FOUND` | 404 | Team doesn't exist |
+| `WORKFLOW_NOT_FOUND` | 404 | Workflow doesn't exist |
+| `WEBHOOK_NOT_FOUND` | 404 | Webhook doesn't exist |
+| `ATTACHMENT_NOT_FOUND` | 404 | Attachment doesn't exist |
+| `COMMENT_NOT_FOUND` | 404 | Comment doesn't exist |
+| `BASELINE_NOT_FOUND` | 404 | Baseline doesn't exist |
+| `ENDPOINT_NOT_FOUND` | 404 | API endpoint doesn't exist |
+
+### NOT_FOUND
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "The requested resource was not found",
+    "details": {
+      "resource_type": "item",
+      "resource_id": "item_req_999",
+      "suggestion": "Verify the ID and ensure the resource exists"
+    }
+  }
+}
+```
+
+### PROJECT_NOT_FOUND
+
+```json
+{
+  "error": {
+    "code": "PROJECT_NOT_FOUND",
+    "message": "Project not found",
+    "details": {
+      "project_id": "proj_invalid",
+      "suggestion": "Check the project ID or list available projects"
+    }
+  }
+}
+```
+
+### ITEM_NOT_FOUND
+
+```json
+{
+  "error": {
+    "code": "ITEM_NOT_FOUND",
+    "message": "Item not found",
+    "details": {
+      "item_id": "item_req_999",
+      "project_id": "proj_abc123",
+      "suggestion": "The item may have been deleted or moved"
+    }
+  }
+}
+```
+
+---
+
+## Validation Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `VALIDATION_ERROR` | 422 | General validation failure |
+| `REQUIRED_FIELD_MISSING` | 422 | Required field not provided |
+| `INVALID_FIELD_VALUE` | 422 | Field value is invalid |
+| `INVALID_FIELD_TYPE` | 422 | Field type mismatch |
+| `INVALID_FIELD_FORMAT` | 422 | Field format is wrong |
+| `FIELD_TOO_LONG` | 422 | Field exceeds max length |
+| `FIELD_TOO_SHORT` | 422 | Field below min length |
+| `VALUE_OUT_OF_RANGE` | 422 | Numeric value out of range |
+| `INVALID_ENUM_VALUE` | 422 | Value not in allowed list |
+| `INVALID_DATE_FORMAT` | 422 | Date format is invalid |
+| `INVALID_JSON` | 400 | Request body is not valid JSON |
+| `INVALID_QUERY_PARAM` | 400 | Query parameter is invalid |
+
+### VALIDATION_ERROR
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": {
+      "errors": [
+        {
+          "field": "title",
+          "code": "required",
+          "message": "Title is required"
+        },
+        {
+          "field": "priority",
+          "code": "invalid_value",
+          "message": "Priority must be one of: critical, high, medium, low, trivial",
+          "received": "urgent"
+        },
+        {
+          "field": "due_date",
+          "code": "invalid_format",
+          "message": "Due date must be in ISO 8601 format",
+          "received": "January 20, 2024"
+        }
+      ]
+    }
+  }
+}
+```
+
+### FIELD_TOO_LONG
+
+```json
+{
+  "error": {
+    "code": "FIELD_TOO_LONG",
+    "message": "Field value exceeds maximum length",
+    "details": {
+      "field": "description",
+      "max_length": 50000,
+      "actual_length": 52340
+    }
+  }
+}
+```
+
+---
+
+## Conflict Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `CONFLICT` | 409 | General conflict error |
+| `DUPLICATE_RESOURCE` | 409 | Resource already exists |
+| `DUPLICATE_KEY` | 409 | Item key already exists |
+| `CONCURRENT_MODIFICATION` | 409 | Resource modified by another request |
+| `VERSION_CONFLICT` | 409 | Version mismatch (optimistic locking) |
+| `LINK_ALREADY_EXISTS` | 409 | Link between items already exists |
+| `CIRCULAR_LINK` | 409 | Link would create a cycle |
+| `STATE_CONFLICT` | 409 | Operation conflicts with current state |
+
+### DUPLICATE_RESOURCE
+
+```json
+{
+  "error": {
+    "code": "DUPLICATE_RESOURCE",
+    "message": "A resource with this key already exists",
+    "details": {
+      "field": "key",
+      "value": "REQ-001",
+      "existing_resource_id": "item_req_001"
+    }
+  }
+}
+```
+
+### CONCURRENT_MODIFICATION
+
+```json
+{
+  "error": {
+    "code": "CONCURRENT_MODIFICATION",
+    "message": "Resource was modified by another request",
+    "details": {
+      "resource_id": "item_req_001",
+      "your_version": 5,
+      "current_version": 6,
+      "modified_by": "user_def456",
+      "modified_at": "2024-01-20T10:30:00Z"
+    }
+  }
+}
+```
+
+### CIRCULAR_LINK
+
+```json
+{
+  "error": {
+    "code": "CIRCULAR_LINK",
+    "message": "This link would create a circular dependency",
+    "details": {
+      "source_id": "item_req_001",
+      "target_id": "item_req_005",
+      "link_type": "depends_on",
+      "cycle_path": ["item_req_001", "item_req_003", "item_req_005", "item_req_001"]
+    }
+  }
+}
+```
+
+---
+
+## Workflow Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `INVALID_STATUS_TRANSITION` | 422 | Status change not allowed |
+| `WORKFLOW_NOT_CONFIGURED` | 422 | Item type has no workflow |
+| `APPROVAL_REQUIRED` | 422 | Transition requires approval |
+| `TRANSITION_BLOCKED` | 422 | Transition is blocked |
+| `WORKFLOW_STEP_FAILED` | 422 | Workflow step execution failed |
+
+### INVALID_STATUS_TRANSITION
+
+```json
+{
+  "error": {
+    "code": "INVALID_STATUS_TRANSITION",
+    "message": "Invalid status transition",
+    "details": {
+      "current_status": "draft",
+      "requested_status": "approved",
+      "allowed_transitions": ["in_review", "rejected"],
+      "workflow": "requirement_workflow"
+    }
+  }
+}
+```
+
+### APPROVAL_REQUIRED
+
+```json
+{
+  "error": {
+    "code": "APPROVAL_REQUIRED",
+    "message": "This transition requires approval",
+    "details": {
+      "transition": "in_review → approved",
+      "required_approvers": ["project_admin", "qa_lead"],
+      "current_approvals": 0,
+      "required_approvals": 2
+    }
+  }
+}
+```
+
+---
+
+## Rate Limit Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `RATE_LIMITED` | 429 | Rate limit exceeded |
+| `QUOTA_EXCEEDED` | 429 | Monthly quota exceeded |
+| `BURST_LIMIT_EXCEEDED` | 429 | Burst rate limit exceeded |
+| `CONCURRENT_REQUEST_LIMIT` | 429 | Too many concurrent requests |
+
+### RATE_LIMITED
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded. Please retry after 45 seconds.",
+    "details": {
+      "limit": 300,
+      "window": "1 minute",
+      "remaining": 0,
+      "reset_at": "2024-01-20T10:31:00Z",
+      "retry_after": 45
+    }
+  }
+}
+```
+
+### QUOTA_EXCEEDED
+
+```json
+{
+  "error": {
+    "code": "QUOTA_EXCEEDED",
+    "message": "Monthly API quota exceeded",
+    "details": {
+      "quota": 100000,
+      "used": 100000,
+      "resets_at": "2024-02-01T00:00:00Z",
+      "upgrade_url": "https://tracertm.dev/pricing"
+    }
+  }
+}
+```
+
+---
+
+## Server Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+| `DATABASE_ERROR` | 500 | Database operation failed |
+| `SERVICE_ERROR` | 500 | Internal service error |
+| `BAD_GATEWAY` | 502 | Upstream service error |
+| `SERVICE_UNAVAILABLE` | 503 | Service temporarily unavailable |
+| `MAINTENANCE_MODE` | 503 | System under maintenance |
+| `GATEWAY_TIMEOUT` | 504 | Request timeout |
+
+### INTERNAL_ERROR
+
+```json
+{
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "An unexpected error occurred",
+    "details": {
+      "request_id": "req_abc123xyz",
+      "timestamp": "2024-01-20T10:30:00Z",
+      "support_url": "https://support.tracertm.dev"
+    }
+  }
+}
+```
+
+### SERVICE_UNAVAILABLE
+
+```json
+{
+  "error": {
+    "code": "SERVICE_UNAVAILABLE",
+    "message": "Service temporarily unavailable",
+    "details": {
+      "reason": "maintenance",
+      "estimated_recovery": "2024-01-20T11:00:00Z",
+      "status_page": "https://status.tracertm.dev"
+    }
+  }
+}
+```
+
+---
+
+## Filter and Query Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `INVALID_FILTER` | 400 | Filter syntax is invalid |
+| `INVALID_FILTER_OPERATOR` | 400 | Unknown filter operator |
+| `FILTER_TYPE_MISMATCH` | 400 | Operator incompatible with field type |
+| `INVALID_SORT_FIELD` | 400 | Cannot sort by this field |
+| `SORT_LIMIT_EXCEEDED` | 400 | Too many sort fields |
+| `INVALID_CURSOR` | 400 | Pagination cursor is invalid |
+| `CURSOR_EXPIRED` | 400 | Pagination cursor has expired |
+| `INVALID_REGEX` | 400 | Regular expression is invalid |
+| `QUERY_TOO_COMPLEX` | 400 | Query exceeds complexity limit |
+
+### INVALID_FILTER_OPERATOR
+
+```json
+{
+  "error": {
+    "code": "INVALID_FILTER_OPERATOR",
+    "message": "Unknown operator 'invalid' for field 'status'",
+    "details": {
+      "field": "status",
+      "operator": "invalid",
+      "valid_operators": ["eq", "ne", "in", "nin"]
+    }
+  }
+}
+```
+
+### CURSOR_EXPIRED
+
+```json
+{
+  "error": {
+    "code": "CURSOR_EXPIRED",
+    "message": "Pagination cursor has expired",
+    "details": {
+      "cursor_age": "2 hours",
+      "max_age": "1 hour",
+      "suggestion": "Start a new query without a cursor"
+    }
+  }
+}
+```
+
+---
+
+## Batch Operation Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `BATCH_SIZE_EXCEEDED` | 400 | Batch contains too many items |
+| `BATCH_PARTIAL_FAILURE` | 207 | Some operations in batch failed |
+| `BATCH_VALIDATION_ERROR` | 422 | Batch validation failed |
+| `IMPORT_FORMAT_ERROR` | 400 | Import file format invalid |
+| `IMPORT_SIZE_EXCEEDED` | 400 | Import file too large |
+
+### BATCH_PARTIAL_FAILURE
+
+```json
+{
+  "error": {
+    "code": "BATCH_PARTIAL_FAILURE",
+    "message": "Some operations failed",
+    "details": {
+      "total": 10,
+      "successful": 7,
+      "failed": 3,
+      "failures": [
+        {
+          "index": 2,
+          "id": "item_req_003",
+          "error": {
+            "code": "DUPLICATE_KEY",
+            "message": "Key REQ-003 already exists"
+          }
+        },
+        {
+          "index": 5,
+          "id": null,
+          "error": {
+            "code": "VALIDATION_ERROR",
+            "message": "Title is required"
+          }
+        },
+        {
+          "index": 8,
+          "id": "item_req_008",
+          "error": {
+            "code": "ITEM_NOT_FOUND",
+            "message": "Item not found"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+---
+
+## Webhook Errors
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `WEBHOOK_DELIVERY_FAILED` | N/A | Webhook couldn't be delivered |
+| `WEBHOOK_TIMEOUT` | N/A | Webhook endpoint timed out |
+| `WEBHOOK_INVALID_RESPONSE` | N/A | Endpoint returned invalid response |
+| `WEBHOOK_URL_INVALID` | 422 | Webhook URL is invalid |
+| `WEBHOOK_URL_UNREACHABLE` | 422 | Cannot reach webhook URL |
+
+### WEBHOOK_URL_INVALID
+
+```json
+{
+  "error": {
+    "code": "WEBHOOK_URL_INVALID",
+    "message": "Invalid webhook URL",
+    "details": {
+      "url": "not-a-valid-url",
+      "reason": "URL must start with https://"
+    }
+  }
+}
+```
+
+---
+
+## SDK Error Mapping
+
+### Python
+
+```python
+from tracertm.exceptions import (
+    TraceRTMError,
+    AuthenticationError,      # 401 codes
+    PermissionError,          # 403 codes
+    NotFoundError,            # 404 codes
+    ValidationError,          # 422 codes
+    ConflictError,            # 409 codes
+    RateLimitError,           # 429 codes
+    ServerError,              # 5xx codes
+    WorkflowError,            # Workflow-specific
+    BatchError                # Batch operation errors
+)
+
+try:
+    item = client.items.get(project_id, item_id)
+except NotFoundError as e:
+    if e.code == "ITEM_NOT_FOUND":
+        print(f"Item {item_id} not found")
+    elif e.code == "PROJECT_NOT_FOUND":
+        print(f"Project {project_id} not found")
+```
+
+### TypeScript
+
+```typescript
+import {
+  TraceRTMError,
+  AuthenticationError,
+  PermissionError,
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+  RateLimitError,
+  ServerError,
+  WorkflowError,
+  BatchError
+} from '@tracertm/sdk/errors';
+
+try {
+  const item = await client.items.get({ projectId, itemId });
+} catch (error) {
+  if (error instanceof NotFoundError) {
+    if (error.code === 'ITEM_NOT_FOUND') {
+      console.log(`Item ${itemId} not found`);
+    } else if (error.code === 'PROJECT_NOT_FOUND') {
+      console.log(`Project ${projectId} not found`);
+    }
+  }
+}
+```
+
+### Go
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+item, err := client.Items.Get(ctx, projectID, itemID)
+if err != nil {
+    var notFoundErr *tracertm.NotFoundError
+    if errors.As(err, &notFoundErr) {
+        switch notFoundErr.Code {
+        case "ITEM_NOT_FOUND":
+            fmt.Printf("Item %s not found\n", itemID)
+        case "PROJECT_NOT_FOUND":
+            fmt.Printf("Project %s not found\n", projectID)
+        }
+    }
+}
+```
+
+---
+
+## Error Code Index
+
+### By HTTP Status
+
+| Status | Error Codes |
+|--------|-------------|
+| 400 | `INVALID_JSON`, `INVALID_QUERY_PARAM`, `INVALID_FILTER`, `INVALID_FILTER_OPERATOR`, `FILTER_TYPE_MISMATCH`, `INVALID_SORT_FIELD`, `SORT_LIMIT_EXCEEDED`, `INVALID_CURSOR`, `CURSOR_EXPIRED`, `INVALID_REGEX`, `QUERY_TOO_COMPLEX`, `BATCH_SIZE_EXCEEDED`, `IMPORT_FORMAT_ERROR`, `IMPORT_SIZE_EXCEEDED` |
+| 401 | `AUTHENTICATION_REQUIRED`, `INVALID_API_KEY`, `API_KEY_EXPIRED`, `API_KEY_REVOKED`, `API_KEY_DISABLED`, `INVALID_TOKEN`, `TOKEN_EXPIRED`, `INVALID_SIGNATURE`, `INVALID_AGENT_KEY` |
+| 403 | `FORBIDDEN`, `INSUFFICIENT_PERMISSIONS`, `PROJECT_ACCESS_DENIED`, `TEAM_ACCESS_DENIED`, `ORGANIZATION_ACCESS_DENIED`, `RESOURCE_ACCESS_DENIED`, `ROLE_REQUIRED`, `PLAN_LIMIT_EXCEEDED`, `FEATURE_NOT_AVAILABLE`, `IP_NOT_ALLOWED` |
+| 404 | `NOT_FOUND`, `PROJECT_NOT_FOUND`, `ITEM_NOT_FOUND`, `LINK_NOT_FOUND`, `USER_NOT_FOUND`, `TEAM_NOT_FOUND`, `WORKFLOW_NOT_FOUND`, `WEBHOOK_NOT_FOUND`, `ATTACHMENT_NOT_FOUND`, `COMMENT_NOT_FOUND`, `BASELINE_NOT_FOUND`, `ENDPOINT_NOT_FOUND` |
+| 409 | `CONFLICT`, `DUPLICATE_RESOURCE`, `DUPLICATE_KEY`, `CONCURRENT_MODIFICATION`, `VERSION_CONFLICT`, `LINK_ALREADY_EXISTS`, `CIRCULAR_LINK`, `STATE_CONFLICT` |
+| 422 | `VALIDATION_ERROR`, `REQUIRED_FIELD_MISSING`, `INVALID_FIELD_VALUE`, `INVALID_FIELD_TYPE`, `INVALID_FIELD_FORMAT`, `FIELD_TOO_LONG`, `FIELD_TOO_SHORT`, `VALUE_OUT_OF_RANGE`, `INVALID_ENUM_VALUE`, `INVALID_DATE_FORMAT`, `INVALID_STATUS_TRANSITION`, `WORKFLOW_NOT_CONFIGURED`, `APPROVAL_REQUIRED`, `TRANSITION_BLOCKED`, `WORKFLOW_STEP_FAILED`, `WEBHOOK_URL_INVALID`, `WEBHOOK_URL_UNREACHABLE`, `BATCH_VALIDATION_ERROR` |
+| 429 | `RATE_LIMITED`, `QUOTA_EXCEEDED`, `BURST_LIMIT_EXCEEDED`, `CONCURRENT_REQUEST_LIMIT` |
+| 500 | `INTERNAL_ERROR`, `DATABASE_ERROR`, `SERVICE_ERROR` |
+| 502 | `BAD_GATEWAY` |
+| 503 | `SERVICE_UNAVAILABLE`, `MAINTENANCE_MODE` |
+| 504 | `GATEWAY_TIMEOUT` |
+
+---
+
+## Related Documentation
+
+- [Error Handling](/docs/api-reference/rest-api/errors) - Error handling guide
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Rate limit handling
+- [Authentication](/docs/api-reference/authentication/overview) - API authentication

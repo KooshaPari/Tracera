@@ -1,6 +1,6 @@
 """Item repository for TraceRTM."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -134,14 +134,14 @@ class ItemRepository:
             item = await self.get_by_id(item_id)
             if not item:
                 return False
-            item.deleted_at = datetime.utcnow()
+            item.deleted_at = datetime.now(timezone.utc)
 
             # Cascade soft delete to children
             query = select(Item).where(Item.parent_id == item_id, Item.deleted_at.is_(None))
             result = await self.session.execute(query)
             children = result.scalars().all()
             for child in children:
-                child.deleted_at = datetime.utcnow()
+                child.deleted_at = datetime.now(timezone.utc)
 
             await self.session.flush()
             return True
@@ -272,24 +272,6 @@ class ItemRepository:
 
         result = await self.session.execute(query)
         return list(result.scalars().all())
-
-    async def count_by_status(self, project_id: str) -> dict[str, int]:
-        """Count items by status for a project."""
-        from sqlalchemy import func
-
-        query = (
-            select(Item.status, func.count(Item.id))
-            .where(
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),
-            )
-            .group_by(Item.status)
-        )
-
-        result = await self.session.execute(query)
-        rows = result.all()
-
-        return {status: count for status, count in rows}
 
     async def get_descendants(self, item_id: str) -> list[Item]:
         """Get all descendants (recursive CTE)."""

@@ -6,8 +6,8 @@ import {
 } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { Toaster } from '@/components/ui/toaster'
+// import { TooltipProvider } from '@tracertm/ui/components/Tooltip'
+// import { Toaster } from '@tracertm/ui/components/Toaster'
 import { CommandPalette } from '@/components/CommandPalette'
 import '@/styles/globals.css'
 
@@ -25,16 +25,13 @@ const RootComponent = RootComponentProps => {
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
       <body className="font-sans antialiased">
-        <TooltipProvider>
-          <div className="relative flex min-h-screen bg-background">
-            <div className="flex-1">
-              <CommandPalette />
-              <Outlet />
-            </div>
+        <div className="relative flex min-h-screen bg-background">
+          <div className="flex-1">
+            <CommandPalette />
+            <Outlet />
           </div>
-          <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </TooltipProvider>
+        </div>
+        <ReactQueryDevtools initialIsOpen={false} />
         <Scripts />
       </body>
     </html>

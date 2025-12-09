@@ -16,18 +16,20 @@ type MDXContent = FC<{ components?: MDXComponents }>
 
 function getDocPath(slug: string[]): string | null {
   let current: any = DOCS_STRUCTURE
-  const pathParts: string[] = []
-
+  const pathSegments: string[] = []
+  
   for (let i = 0; i < slug.length; i++) {
     const segment = slug[i]
 
     // Check if segment exists in current level
     if (current[segment]) {
       current = current[segment]
-      // Add this item's path to our path parts
+      
+      // Add path segment if it exists
       if (current.path) {
-        pathParts.push(current.path)
+        pathSegments.push(current.path)
       }
+      
       // If this is not the last segment and current has children, move to children
       if (i < slug.length - 1 && current.children) {
         current = current.children
@@ -37,8 +39,8 @@ function getDocPath(slug: string[]): string | null {
     }
   }
 
-  // Return the full path by joining all path parts
-  return pathParts.length > 0 ? pathParts.join('/') : null
+  // Return the full path by joining all segments
+  return pathSegments.join('/')
 }
 
 export async function generateStaticParams() {
@@ -136,12 +138,30 @@ async function getDocContent(slug?: string[]) {
   }
 }
 
-export default async function DocsPage({ params }: { params: { slug?: string[] } }) {
-  const docContent = await getDocContent(params.slug)
+// Fallback function for testing
+function getFallbackContent(slug?: string[]) {
+  if (!slug || slug.length === 0) {
+    return {
+      title: "Documentation",
+      description: "Multi-View Requirements Traceability System - Official Documentation",
+      Content: () => <div>Documentation home page</div>
+    }
+  }
+  
+  return {
+    title: `Debug: ${slug?.join('/')}`,
+    description: `Debug page for ${slug?.join('/')}`,
+    Content: () => <div>Debug content for {slug?.join('/')}. Slug parameter working but content loading failed.</div>
+  }
+}
+
+export default async function DocsPage({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = await params
+  const docContent = await getDocContent(resolvedParams.slug) || getFallbackContent(resolvedParams.slug)
 
   return (
     <DocsPageClient
-      slug={params.slug}
+      slug={resolvedParams.slug}
       heading={docContent ? { title: docContent.title, description: docContent.description } : undefined}
     >
       {docContent?.Content ? (

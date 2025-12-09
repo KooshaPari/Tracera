@@ -1,0 +1,1038 @@
+---
+title: TUI (Terminal User Interface) Guide
+description: Complete guide to using TracerTM's Terminal User Interface for interactive project management
+---
+
+# TUI (Terminal User Interface) Guide
+
+TracerTM provides a powerful Terminal User Interface (TUI) built with [Textual](https://textual.textualize.io/) for interactive project management directly from your terminal. The TUI offers real-time updates, offline-first operation, and an intuitive interface for managing requirements, tests, and traceability links.
+
+## Overview
+
+The TUI consists of three main applications:
+
+1. **Dashboard** - Main application with project state, view switching, and real-time sync
+2. **Browser** - Interactive item browser with hierarchical tree navigation
+3. **Graph** - Relationship visualization showing item links and dependencies
+
+### Key Features
+
+- **Offline-first operation** with local SQLite + Markdown storage
+- **Real-time sync status** with conflict detection
+- **Multiple views** (Epic, Story, Test, Task)
+- **Keyboard-driven navigation** for maximum productivity
+- **Live project statistics** and item browsing
+- **Conflict resolution** interface for sync conflicts
+- **File watcher integration** for automatic updates
+
+---
+
+## Installation
+
+### Prerequisites
+
+The TUI requires Python 3.11+ and the Textual library:
+
+```bash
+# Install TracerTM with TUI support
+pip install tracertm[tui]
+
+# Or install Textual separately
+pip install textual
+```
+
+### Verify Installation
+
+Check that the TUI is available:
+
+```bash
+# List available TUI applications
+rtm tui list
+```
+
+---
+
+## Getting Started
+
+### 1. Initialize a Project
+
+Before launching the TUI, ensure you have a project initialized:
+
+```bash
+# Create a new project
+rtm project init "My Project"
+
+# Verify current project
+rtm project current
+```
+
+### 2. Launch the Dashboard
+
+The enhanced dashboard is the primary TUI interface:
+
+```bash
+# Launch enhanced dashboard (default)
+rtm tui dashboard
+
+# Launch with file watcher
+rtm tui dashboard --watch
+
+# Launch legacy dashboard (without sync)
+rtm tui dashboard --legacy
+```
+
+### 3. Basic Navigation
+
+Once launched, use these keys to navigate:
+
+- `q` - Quit the application
+- `v` - Switch between views
+- `r` - Refresh data
+- `?` - Show help
+- `Tab` - Move focus between panels
+
+---
+
+## Dashboard Application
+
+The Dashboard is the main TUI application providing comprehensive project management capabilities.
+
+### Layout
+
+The dashboard is divided into several panels:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Header                                    [●] Online  10:30  │
+├─────────────────────────────────────────────────────────────┤
+│ Sync Status: [✓] Online | 0 pending | Last sync: 5 min ago │
+├──────────────┬──────────────────────────────────────────────┤
+│              │ Project Statistics                           │
+│  Views       ├──────────────────────────────────────────────┤
+│  ┣ EPIC      │ Type        Count    Status Distribution     │
+│  ┣ STORY     │ EPIC          5                              │
+│  ┣ TEST      │ STORY        12                              │
+│  ┣ TASK      │ TEST          8                              │
+│              │ TASK         15                              │
+│  Project     │ ---         ---      ---                     │
+│  State       │ TOTAL        40      15 links                │
+│  Total: 40   ├──────────────────────────────────────────────┤
+│  Links: 15   │ Items - EPIC                                 │
+│              ├──────────────────────────────────────────────┤
+│  Status:     │ ID         Title              Status  Source │
+│    todo: 15  │ abc12...   User Authent...    todo   SQLite  │
+│    progress:10│ def34...   Payment Inte...   progress SQLite+MD│
+│    done: 10  │ ghi56...   Admin Panel       done   SQLite+MD│
+│    blocked: 5│                                               │
+└──────────────┴──────────────────────────────────────────────┘
+│ q Quit | v Switch View | r Refresh | ^S Sync | c Conflicts │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Panels Explained
+
+#### 1. Sync Status Bar (Top)
+
+Displays real-time synchronization information:
+
+- **Connection Status**: Online (green ●) / Offline (yellow ●) / Syncing (cyan ⟳)
+- **Pending Changes**: Number of uncommitted local changes
+- **Last Sync**: Time since last successful sync
+- **Conflicts**: Warning icon (⚠) with conflict count if any exist
+
+#### 2. Views Sidebar (Left)
+
+Lists available item types:
+
+- **EPIC** - High-level features and capabilities
+- **STORY** - User stories and requirements
+- **TEST** - Test cases and scenarios
+- **TASK** - Implementation tasks
+
+Click or navigate with arrow keys to switch views.
+
+#### 3. Project State Summary (Left Bottom)
+
+Shows aggregated project statistics:
+
+- Total item count
+- Total link count
+- Items grouped by status (todo, in_progress, done, blocked)
+
+#### 4. Statistics Panel (Top Right)
+
+Detailed breakdown of items:
+
+- Count by type (Epic, Story, Test, Task)
+- Total items and links
+- Status distribution
+
+#### 5. Items Table (Bottom Right)
+
+Lists items for the current view:
+
+- **ID**: Shortened item identifier
+- **Title**: Item title (truncated to 40 chars)
+- **Status**: Current status
+- **Priority**: Item priority
+- **Source**: Data source (SQLite, SQLite+MD for markdown-backed items)
+
+### Keyboard Shortcuts
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `q` | Quit | Exit the application |
+| `v` | Switch View | Cycle through views (Epic → Story → Test → Task) |
+| `r` | Refresh | Reload all data from storage |
+| `Ctrl+S` | Sync | Trigger sync with remote server |
+| `s` | Search | Open search dialog (planned) |
+| `c` | Conflicts | Show conflict resolution panel |
+| `?` | Help | Display keyboard shortcuts |
+| `Tab` | Focus | Move focus between panels |
+| `Arrow Keys` | Navigate | Navigate within panels |
+| `Enter` | Select | Select item in tree/table |
+
+### File Watcher Mode
+
+Enable automatic updates when markdown files change:
+
+```bash
+# Watch current directory
+rtm tui dashboard --watch
+
+# Watch specific project path
+rtm tui dashboard --watch --path /path/to/project
+```
+
+When file watcher is active:
+
+- Markdown file changes are detected automatically
+- Changes are parsed and synced to SQLite
+- UI updates in real-time
+- Debounced to prevent excessive updates (500ms delay)
+
+---
+
+## Browser Application
+
+The Browser provides a hierarchical tree view for exploring item relationships.
+
+### Launch Browser
+
+```bash
+rtm tui browser
+```
+
+### Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Header                                            10:30      │
+├──────────────────┬──────────────────────────────────────────┤
+│ Item Hierarchy   │ Item Details                             │
+│                  │                                           │
+│ ┣ Epic: Auth     │ Title: User Authentication               │
+│ ┃ ┣ Story: Login │ View: FEATURE                            │
+│ ┃ ┃ ┣ Test: T01  │ Type: epic                               │
+│ ┃ ┃ ┗ Test: T02  │ Status: in_progress                      │
+│ ┃ ┗ Story: OAuth │ ID: abc123-def456-...                    │
+│ ┗ Epic: Payment  │                                           │
+│   ┣ Story: Stripe│ Description:                             │
+│   ┗ Story: PayPal│ Complete authentication system with      │
+│                  │ login, OAuth, and session management.    │
+│ Filter:          │                                           │
+│ ┗━━━━━━━━━━━━━━━┛│ Metadata:                                │
+│                  │ {"priority": "high", "sprint": 3}        │
+└──────────────────┴──────────────────────────────────────────┘
+│ q Quit | r Refresh | f Filter | ? Help                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Features
+
+#### Tree Navigation
+
+- Parent-child relationships visualized as expandable tree
+- Root items (no parent) shown at top level
+- Recursive child loading
+- Visual tree structure with box-drawing characters
+
+#### Item Details
+
+When you select an item, the detail panel shows:
+
+- Title, view, type, status
+- Full ID
+- Description (full text)
+- Metadata JSON
+
+#### Filtering
+
+Press `f` to activate filter:
+
+- Type to search items by name
+- Real-time filtering as you type
+- Filter applies to item titles
+
+### Keyboard Shortcuts
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `q` | Quit | Exit browser |
+| `r` | Refresh | Reload item tree |
+| `f` | Filter | Focus filter input |
+| `?` | Help | Show help message |
+| `Arrow Keys` | Navigate | Move through tree |
+| `Enter` | Expand/Collapse | Toggle tree node |
+
+---
+
+## Graph Visualization
+
+The Graph view displays items and their traceability links visually.
+
+### Launch Graph
+
+```bash
+rtm tui graph
+```
+
+### Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Header                                            10:30      │
+├──────────────────────────────┬──────────────────────────────┤
+│ Relationship Graph           │ Graph Info                   │
+│                              │                              │
+│ ================================│ Source       Target   Type │
+│ Graph Visualization          │ Auth System  Login    impl  │
+│ Use +/- to zoom, 'r' refresh │ Login Page   Test01   tests │
+│                              │ OAuth Flow   Story05  deps  │
+│ Showing 50 items and 75 links│ Payment      Stripe   impl  │
+│                              │                              │
+│ Nodes: 50                    │                              │
+│ Links: 75                    │                              │
+│ Zoom: 1.0x                   │ Nodes: 50                    │
+│                              │ Links: 75                    │
+│                              │ Zoom: 1.0x                   │
+└──────────────────────────────┴──────────────────────────────┘
+│ q Quit | r Refresh | +/- Zoom | ? Help                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Features
+
+#### Graph Display
+
+- Nodes represent items (max 50 for performance)
+- Links show traceability relationships
+- Simple grid layout algorithm
+
+#### Link Table
+
+Shows connections between items:
+
+- **Source**: Source item title
+- **Target**: Target item title
+- **Type**: Link type (implements, tests, depends_on, etc.)
+
+Limited to 20 links for display
+
+#### Zoom Controls
+
+- Press `+` to zoom in (max 5.0x)
+- Press `-` to zoom out (min 0.5x)
+- Current zoom level displayed in stats panel
+
+### Keyboard Shortcuts
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `q` | Quit | Exit graph view |
+| `r` | Refresh | Reload graph data |
+| `+` | Zoom In | Increase zoom level |
+| `-` | Zoom Out | Decrease zoom level |
+| `?` | Help | Show help message |
+
+---
+
+## Sync Status & Conflict Resolution
+
+### Understanding Sync Status
+
+The sync status bar shows connection and sync state:
+
+#### Status Indicators
+
+**Online (Green ●)**
+- Connected to server
+- Sync operations available
+- Changes will be synced automatically
+
+**Offline (Yellow ●)**
+- No server connection
+- Working in offline mode
+- Changes queued for later sync
+
+**Syncing (Cyan ⟳)**
+- Sync operation in progress
+- Wait for completion
+- Do not modify data during sync
+
+**Error (Red ✗)**
+- Sync failed
+- Error message displayed
+- Check logs for details
+
+### Pending Changes
+
+Shows number of local changes not yet synced:
+
+```
+[bold]3[/bold] pending changes
+```
+
+These changes are:
+- Stored in local sync queue
+- Will be uploaded on next sync
+- Safe across application restarts
+
+### Triggering Manual Sync
+
+Press `Ctrl+S` in the dashboard to manually sync:
+
+```
+Starting sync...
+↓
+Sync complete: 15 entities synced
+```
+
+Sync operations:
+1. Upload pending local changes
+2. Download remote updates
+3. Detect conflicts if versions diverge
+4. Update UI with latest data
+
+### Conflict Resolution
+
+When conflicts are detected, press `c` to view the conflict panel.
+
+#### Conflict Panel Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              ⚠ Sync Conflicts Detected                      │
+├─────────────────────────────────────────────────────────────┤
+│ Unresolved Conflicts:                                       │
+│ Type   ID            Local  Remote  Detected                │
+│ item   abc123...     v3     v4      2024-12-07 10:30       │
+│ link   def456...     v2     v2      2024-12-07 10:29       │
+├─────────────────────────────────────────────────────────────┤
+│ Conflict Details:                                           │
+│                                                             │
+│ Entity: item - abc123-def456-...                           │
+│                                                             │
+│ Local Version:                                              │
+│   Version: 3                                                │
+│   Timestamp: 2024-12-07 10:25:30                           │
+│   Client: client-001                                        │
+│                                                             │
+│ Remote Version:                                             │
+│   Version: 4                                                │
+│   Timestamp: 2024-12-07 10:28:15                           │
+│   Client: client-002                                        │
+│                                                             │
+│ Data Differences:                                           │
+│   Modified fields: title, status                           │
+├─────────────────────────────────────────────────────────────┤
+│ [Use Local L] [Use Remote R] [Merge Manually M] [Close ESC]│
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Resolution Strategies
+
+**Use Local (L)**
+- Keep your local version
+- Discard remote changes
+- Your changes win
+
+**Use Remote (R)**
+- Accept remote version
+- Discard your local changes
+- Remote changes win
+
+**Merge Manually (M)**
+- Combine both versions
+- Opens merge editor
+- You decide field-by-field
+
+**Close (ESC)**
+- Leave conflicts unresolved
+- Return to dashboard
+- Conflicts remain pending
+
+#### Conflict Types
+
+**Concurrent Modifications**
+- Same item edited by multiple clients
+- Vector clocks detect divergence
+- Most common conflict type
+
+**Delete vs Modify**
+- One client deletes, another modifies
+- Usually favor modification
+- Deletion marked as metadata
+
+**Metadata Conflicts**
+- Different metadata values
+- Often auto-mergeable
+- Rarely requires manual intervention
+
+---
+
+## View Switching
+
+### Available Views
+
+TracerTM organizes items into logical views:
+
+#### Epic View
+- High-level features and capabilities
+- Strategic initiatives
+- Large deliverables
+- Example: "User Authentication System"
+
+#### Story View
+- User stories and requirements
+- Detailed functional specs
+- Linked to epics
+- Example: "As a user, I can log in with email"
+
+#### Test View
+- Test cases and scenarios
+- Quality assurance items
+- Linked to stories/epics
+- Example: "Test login with valid credentials"
+
+#### Task View
+- Implementation tasks
+- Technical work items
+- Linked to stories
+- Example: "Implement password hashing"
+
+### Switching Views
+
+**Keyboard Method**
+Press `v` to cycle through views in order:
+```
+Epic → Story → Test → Task → Epic (loops)
+```
+
+**Tree Selection Method**
+1. Navigate to Views sidebar
+2. Use arrow keys to select view
+3. Press Enter to activate
+
+**Current View Indicator**
+Shown in items panel header:
+```
+Items - EPIC
+```
+
+### View-Specific Filtering
+
+Each view shows only items of that type:
+- Epic view: Only items with `item_type="epic"`
+- Story view: Only items with `item_type="story"`
+- Test view: Only items with `item_type="test"`
+- Task view: Only items with `item_type="task"`
+
+Cross-view navigation via links is preserved.
+
+---
+
+## Configuration Options
+
+### TUI-Specific Settings
+
+Configure TUI behavior via config file or environment:
+
+#### Color Scheme
+
+The TUI respects your terminal's color scheme. For best results:
+
+```bash
+# Use a Textual-compatible theme
+export TERM=xterm-256color
+
+# Enable true color if supported
+export COLORTERM=truecolor
+```
+
+#### Performance Tuning
+
+**Large Datasets**
+
+```bash
+# Limit items shown (default: all)
+export RTM_TUI_MAX_ITEMS=100
+
+# Disable animations
+export RTM_TUI_ANIMATE=false
+
+# Reduce sync poll interval (default: 5s)
+export RTM_TUI_SYNC_INTERVAL=10
+```
+
+**Memory Usage**
+
+```bash
+# Limit graph nodes (default: 50)
+export RTM_TUI_MAX_GRAPH_NODES=25
+
+# Disable file watcher auto-start
+export RTM_TUI_AUTO_WATCH=false
+```
+
+#### Database Settings
+
+Configure via `rtm config`:
+
+```bash
+# Set database URL
+rtm config set database_url "postgresql://localhost/tracertm"
+
+# Set current project
+rtm config set current_project "my-project"
+rtm config set current_project_id "abc123-..."
+```
+
+### File Watcher Configuration
+
+Control file watching behavior:
+
+**Debounce Interval**
+
+```python
+# In code or via environment
+export RTM_FILE_WATCHER_DEBOUNCE_MS=500  # Default
+```
+
+Wait time before processing file changes. Longer = fewer updates but more lag.
+
+**Auto-Sync**
+
+```python
+# Enable auto-sync after file changes
+export RTM_FILE_WATCHER_AUTO_SYNC=true
+```
+
+Automatically trigger sync after detecting changes.
+
+**Watch Patterns**
+
+```python
+# Patterns to watch (glob)
+export RTM_FILE_WATCHER_PATTERNS="*.md,*.markdown"
+```
+
+Only watch specific file types.
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### TUI Won't Launch
+
+**Error**: `Textual is required for TUI`
+
+**Solution**:
+```bash
+pip install textual
+# Or
+pip install tracertm[tui]
+```
+
+---
+
+**Error**: `No database configured`
+
+**Solution**:
+```bash
+# Initialize config
+rtm config init
+
+# Set database
+rtm config set database_url "sqlite:///tracertm.db"
+```
+
+---
+
+**Error**: `No current project`
+
+**Solution**:
+```bash
+# List projects
+rtm project list
+
+# Set current project
+rtm project set "my-project"
+
+# Or create new project
+rtm project init "my-project"
+```
+
+---
+
+#### Display Issues
+
+**Problem**: Garbled characters or broken layout
+
+**Solution**:
+```bash
+# Set proper terminal type
+export TERM=xterm-256color
+
+# Enable UTF-8
+export LANG=en_US.UTF-8
+
+# Check terminal size (min 80x24)
+echo $COLUMNS x $LINES
+```
+
+---
+
+**Problem**: Colors look wrong
+
+**Solution**:
+```bash
+# Enable true color
+export COLORTERM=truecolor
+
+# Or use built-in terminal colors
+textual colors  # Check Textual color support
+```
+
+---
+
+**Problem**: TUI is slow or laggy
+
+**Solution**:
+- Reduce items shown: Limit with filters
+- Disable file watcher: Don't use `--watch`
+- Use legacy dashboard: `--legacy` flag
+- Close other terminal applications
+- Check database performance
+
+---
+
+#### Sync Issues
+
+**Problem**: Sync fails with timeout
+
+**Solution**:
+```bash
+# Increase timeout
+export RTM_SYNC_TIMEOUT=60  # seconds
+
+# Check network connectivity
+ping api.tracertm.io
+
+# Verify API credentials
+rtm config get api_key
+```
+
+---
+
+**Problem**: Conflicts always appear
+
+**Solution**:
+- Check system clocks (vector clock sync)
+- Ensure unique client IDs
+- Review conflict resolution strategy
+- Consider manual merge
+
+---
+
+**Problem**: Pending changes don't sync
+
+**Solution**:
+```bash
+# Check sync queue
+rtm sync status
+
+# Force sync
+rtm sync push --force
+
+# Clear stuck items (careful!)
+rtm sync clear-queue
+```
+
+---
+
+#### File Watcher Issues
+
+**Problem**: Changes not detected
+
+**Solution**:
+- Check file watcher is running: Look for "File watcher started" message
+- Verify watch path is correct
+- Ensure files are in watched patterns (*.md)
+- Check file system permissions
+
+---
+
+**Problem**: Too many updates / high CPU
+
+**Solution**:
+- Increase debounce interval
+- Exclude build/temp directories
+- Disable auto-sync
+- Use manual sync instead
+
+---
+
+### Debug Mode
+
+Enable verbose logging for troubleshooting:
+
+```bash
+# Set log level
+export RTM_LOG_LEVEL=DEBUG
+
+# Log to file
+export RTM_LOG_FILE=/tmp/rtm-tui.log
+
+# Launch with debug
+rtm tui dashboard
+```
+
+Check log file for detailed error messages:
+
+```bash
+tail -f /tmp/rtm-tui.log
+```
+
+### Getting Help
+
+**Within TUI**
+- Press `?` for keyboard shortcuts
+- Check status bar for errors
+- Review sync status panel
+
+**Command Line**
+```bash
+# TUI help
+rtm tui --help
+
+# Dashboard help
+rtm tui dashboard --help
+
+# List available commands
+rtm tui list
+```
+
+**Documentation**
+- [Textual Documentation](https://textual.textualize.io/)
+- [TracerTM GitHub Issues](https://github.com/yourusername/tracertm/issues)
+- [CLI Reference](/docs/clients/cli-guide)
+
+---
+
+## Advanced Usage
+
+### Custom Keyboard Shortcuts
+
+Textual supports custom key bindings. Edit your app instance:
+
+```python
+from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
+
+class MyDashboard(EnhancedDashboardApp):
+    BINDINGS = [
+        *EnhancedDashboardApp.BINDINGS,
+        Binding("ctrl+q", "quit", "Quick Quit"),
+        Binding("f5", "refresh", "Refresh (F5)"),
+    ]
+```
+
+### Scripting TUI Operations
+
+While TUI is interactive, you can script setup:
+
+```bash
+#!/bin/bash
+# setup-tui.sh
+
+# Initialize project
+rtm project init "TUI Demo"
+
+# Create sample items
+rtm item create epic "Epic 1"
+rtm item create story "Story 1"
+
+# Launch TUI
+rtm tui dashboard --watch
+```
+
+### Integration with CI/CD
+
+TUI is not meant for CI/CD (headless), but you can:
+
+```bash
+# Use CLI commands instead
+rtm item list --format json > items.json
+
+# Run tests
+rtm test run --headless
+
+# Generate reports
+rtm report matrix --output matrix.html
+```
+
+### Performance Monitoring
+
+Monitor TUI performance:
+
+```python
+from textual import on
+from textual.events import Mount
+
+class MonitoredDashboard(EnhancedDashboardApp):
+    def on_mount(self, event: Mount) -> None:
+        super().on_mount(event)
+        self.set_interval(10.0, self.log_stats)
+
+    def log_stats(self) -> None:
+        stats = {
+            "items": len(self.items),
+            "memory": self.get_memory_usage(),
+            "render_time": self.get_render_time(),
+        }
+        self.log(f"Stats: {stats}")
+```
+
+---
+
+## Best Practices
+
+### Efficient Workflow
+
+1. **Start with Dashboard** - Primary interface for overview
+2. **Use Browser for Details** - Drill into specific items
+3. **Check Graph for Links** - Understand relationships
+4. **Sync Regularly** - Press Ctrl+S often
+5. **Resolve Conflicts Promptly** - Don't let them accumulate
+
+### Keyboard Shortcuts
+
+Learn these core shortcuts:
+
+- `q` - Quit (muscle memory)
+- `v` - Switch view (fast navigation)
+- `r` - Refresh (when in doubt)
+- `Ctrl+S` - Sync (save your work)
+- `c` - Conflicts (stay on top of issues)
+
+### File Organization
+
+Structure your project for TUI efficiency:
+
+```
+project/
+├── epics/
+│   ├── epic-001.md
+│   └── epic-002.md
+├── stories/
+│   ├── story-001.md
+│   └── story-002.md
+├── tests/
+│   └── test-001.md
+└── tasks/
+    └── task-001.md
+```
+
+Enable file watcher to automatically sync markdown changes.
+
+### Collaboration
+
+When working with teams:
+
+1. **Sync before editing** - Get latest changes
+2. **Use descriptive titles** - Visible in TUI
+3. **Leverage status fields** - Shows in dashboard
+4. **Resolve conflicts quickly** - Notify team
+5. **Review sync status** - Ensure changes propagate
+
+---
+
+## Next Steps
+
+- [CLI Reference](/docs/clients/cli-guide) - Command-line operations
+- [Web UI Guide](/docs/clients/web-ui) - Browser-based interface
+- [API Documentation](/docs/api) - REST API integration
+- [Data Model](/docs/getting-started/core-concepts) - Understanding items and links
+
+---
+
+## Appendix: Complete Keyboard Reference
+
+### Dashboard
+
+| Key | Action | Available In |
+|-----|--------|--------------|
+| `q` | Quit application | All views |
+| `v` | Switch view (cycle) | All views |
+| `r` | Refresh data | All views |
+| `Ctrl+S` | Trigger sync | Enhanced only |
+| `s` | Search (planned) | All views |
+| `c` | Show conflicts | Enhanced only |
+| `?` | Show help | All views |
+| `Tab` | Move focus | All views |
+| `Shift+Tab` | Move focus backward | All views |
+| `Arrow Keys` | Navigate panels | All views |
+| `Enter` | Select/expand item | All views |
+| `Esc` | Close dialog/deselect | All views |
+
+### Browser
+
+| Key | Action |
+|-----|--------|
+| `q` | Quit browser |
+| `r` | Refresh tree |
+| `f` | Focus filter input |
+| `?` | Show help |
+| `Arrow Keys` | Navigate tree |
+| `Enter` | Expand/collapse node |
+| `Esc` | Clear filter |
+
+### Graph
+
+| Key | Action |
+|-----|--------|
+| `q` | Quit graph view |
+| `r` | Refresh graph |
+| `+` | Zoom in |
+| `-` | Zoom out |
+| `?` | Show help |
+| `Arrow Keys` | Navigate link table |
+
+### Conflict Panel
+
+| Key | Action |
+|-----|--------|
+| `l` | Use local version |
+| `r` | Use remote version |
+| `m` | Merge manually |
+| `Esc` | Close panel |
+| `Arrow Keys` | Navigate conflicts |
+| `Enter` | Select conflict |
+
+---
+
+**Happy tracing!**
+
+The TUI provides a fast, keyboard-driven interface for managing your requirements and traceability. For more information, consult the [CLI Guide](/docs/clients/cli-guide) or [API Documentation](/docs/api).

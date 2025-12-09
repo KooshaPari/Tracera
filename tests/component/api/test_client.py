@@ -1,0 +1,122 @@
+import pytest
+from types import SimpleNamespace
+from sqlalchemy.orm.exc import StaleDataError
+
+from tracertm.api import client as client_mod
+from tracertm.api.client import TraceRTMClient
+from tracertm.services.concurrent_operations_service import ConcurrencyError
+
+
+def test_init_without_database_url_raises(monkeypatch):
+    class FakeConfig:
+        def get(self, key, default=None):
+            return None
+
+    monkeypatch.setattr(client_mod, "ConfigManager", lambda: FakeConfig())
+    c = TraceRTMClient()
+    with pytest.raises(ValueError):
+        c._get_session()
+
+
+def test_log_operation_rolls_back_on_error(monkeypatch):
+    class FakeSession:
+        def add(self, obj):
+            raise RuntimeError("fail")
+
+        def rollback(self):
+            pass
+
+    class FakeDB:
+        engine = None
+        def connect(self):
+            return None
+
+        def connect(self):
+            return None
+
+        def connect(self):
+            return None
+
+        def connect(self):
+            return None
+
+        def connect(self):
+            return None
+
+    class FakeConfig:
+        def get(self, key, default=None):
+            if key == "database_url":
+                return "sqlite://"
+            if key == "current_project_id":
+                return "proj"
+            return None
+
+    c = TraceRTMClient(agent_id="agent-1")
+    c.config_manager = FakeConfig()
+    c._db = FakeDB()
+    c._session = FakeSession()
+
+    # Should swallow errors and not raise
+    c._log_operation("evt", "item", "i1", {"a": 1})
+
+
+def test_register_agent_stores_assigned_projects(monkeypatch):
+    stored = {}
+
+    class FakeSession:
+        def __init__(self):
+            self.items = []
+
+        def add(self, obj):
+            self.items.append(obj)
+
+        def commit(self):
+            stored["committed"] = True
+
+    class FakeDB:
+        engine = None
+        def connect(self):
+            return None
+
+    class FakeConfig:
+        def get(self, key, default=None):
+            if key == "database_url":
+                return "sqlite://"
+            if key == "current_project_id":
+                return "proj"
+            return None
+
+    monkeypatch.setattr(client_mod, "Session", lambda engine: FakeSession())
+    monkeypatch.setattr(client_mod, "DatabaseConnection", lambda url: FakeDB())
+
+    c = TraceRTMClient(agent_id=None)
+    c.config_manager = FakeConfig()
+    agent_id = c.register_agent("AgentX", project_ids=["p2", "p3"])
+
+    assert stored.get("committed") is True
+    assert any("assigned_projects" in getattr(a, "agent_metadata", {}) for a in c._session.items)
+
+
+def test_update_item_conflict_raises(monkeypatch):
+    class FakeSession:
+        def query(self, model):
+            class _Q:
+                def filter(self, *args, **kwargs):
+                    return self
+
+                def first(self):
+                    raise StaleDataError()
+            return _Q()
+
+        def commit(self):
+            raise StaleDataError()
+
+        def rollback(self):
+            return None
+
+    c = TraceRTMClient(agent_id="agent")
+    c.config_manager = SimpleNamespace(get=lambda key, default=None: "proj" if key == "current_project_id" else "sqlite://")
+    c._get_session = lambda: FakeSession()
+
+    with pytest.raises(ConcurrencyError):
+        c.update_item("i1", status="done")

@@ -5,7 +5,7 @@ import { Card } from '@tracertm/ui/components/Card'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tracertm/ui/components/Tabs'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useDeleteItem, useItem } from '../hooks/useItems'
 import { useLinks } from '../hooks/useLinks'
 

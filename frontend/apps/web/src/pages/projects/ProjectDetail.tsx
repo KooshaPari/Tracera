@@ -1,4 +1,4 @@
-import { Outlet, useParams } from 'react-router-dom'
+import { Outlet, useParams } from '@tanstack/react-router'
 
 export function ProjectDetail() {
   const { projectId } = useParams()

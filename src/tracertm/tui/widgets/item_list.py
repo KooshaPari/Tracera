@@ -14,7 +14,13 @@ if TEXTUAL_AVAILABLE:
 
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
-            self.add_columns("ID", "Title", "Type", "Status")
+            self._columns_added = False
+
+        def on_mount(self) -> None:
+            """Called when widget is mounted - setup columns here."""
+            if not self._columns_added:
+                self.add_columns("ID", "Title", "Type", "Status")
+                self._columns_added = True
 else:
     class ItemListWidget:
         """Placeholder when Textual is not installed."""

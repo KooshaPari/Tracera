@@ -1,125 +1,559 @@
 ---
 title: "Documentation"
-description: "Documentation for Documentation"
+description: "Managing documentation artifacts and their traceability in TraceRTM"
 ---
 
 # Documentation
 
+Documentation artifacts capture knowledge about the system - user guides, technical documentation, API references, and operational runbooks. Tracing documentation ensures it stays current with the features it describes.
 
-## Overview
+## Documentation Types
 
-Welcome to the Documentation documentation.
+| Type | Audience | Example |
+|------|----------|---------|
+| User Guide | End users | "Getting Started Guide" |
+| API Reference | Developers | "REST API Documentation" |
+| Technical Doc | Engineers | "Architecture Overview" |
+| Runbook | Operations | "Deployment Procedures" |
+| Glossary | Everyone | "Term Definitions" |
+| Tutorial | Learners | "First Project Tutorial" |
 
-## Introduction
+## Creating Documentation Artifacts
 
-This page provides comprehensive information about Documentation.
+### User Documentation
 
-## Key Features
+```python
+from tracertm import TraceRTMClient
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+client = TraceRTMClient()
 
-## Getting Started
+# User guide
+user_guide = client.create_item(
+    title="User Authentication Guide",
+    item_type="documentation",
+    description="""
+    # How to Sign In
+
+    This guide explains how to access your account.
+
+    ## Email and Password
+
+    1. Go to the login page
+    2. Enter your email address
+    3. Enter your password
+    4. Click "Sign In"
+
+    ## Social Login
+
+    You can also sign in with:
+    - Google
+    - GitHub
+    - Microsoft
+
+    ## Forgot Password?
+
+    Click "Forgot Password" to reset via email.
+    """,
+    metadata={
+        "doc_type": "user_guide",
+        "audience": "end_user",
+        "format": "markdown",
+        "file_path": "docs/user/authentication.md",
+        "published": True,
+        "version": "2.0"
+    }
+)
+
+# Link to features it documents
+client.create_link(user_guide.id, feature_login.id, "documents")
+client.create_link(user_guide.id, feature_oauth.id, "documents")
+client.create_link(user_guide.id, feature_password_reset.id, "documents")
+```
+
+### API Documentation
+
+```python
+# API reference
+api_doc = client.create_item(
+    title="Authentication API Reference",
+    item_type="documentation",
+    description="""
+    # Authentication API
+
+    ## POST /auth/login
+
+    Authenticate user with credentials.
+
+    ### Request
+
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "secret"
+    }
+    ```
+
+    ### Response
+
+    ```json
+    {
+      "access_token": "eyJ...",
+      "refresh_token": "abc...",
+      "expires_in": 3600
+    }
+    ```
+
+    ### Errors
+
+    | Code | Description |
+    |------|-------------|
+    | 400 | Invalid request format |
+    | 401 | Invalid credentials |
+    | 403 | Account locked |
+    | 429 | Rate limited |
+    """,
+    metadata={
+        "doc_type": "api_reference",
+        "audience": "developer",
+        "api_version": "v1",
+        "openapi_path": "/api/v1/openapi.yaml"
+    }
+)
+
+# Link to API specification
+client.create_link(api_doc.id, api_spec.id, "documents")
+```
+
+### Technical Documentation
+
+```python
+# Architecture documentation
+tech_doc = client.create_item(
+    title="Authentication Architecture Overview",
+    item_type="documentation",
+    description="""
+    # Authentication Architecture
+
+    ## Components
+
+    ```
+    ┌─────────────┐     ┌─────────────┐
+    │   Gateway   │────►│   Auth      │
+    │             │     │   Service   │
+    └─────────────┘     └─────────────┘
+           │                   │
+           │                   ▼
+           │            ┌─────────────┐
+           │            │   Token     │
+           │            │   Store     │
+           │            └─────────────┘
+           ▼
+    ┌─────────────┐
+    │   Session   │
+    │   Cache     │
+    └─────────────┘
+    ```
+
+    ## Design Decisions
+
+    - JWT tokens for stateless auth
+    - Redis for session caching
+    - OAuth2 + OIDC for social login
+
+    ## Security Considerations
+
+    - Token rotation every 15 minutes
+    - Refresh tokens stored encrypted
+    - Session binding to IP/User-Agent
+    """,
+    metadata={
+        "doc_type": "technical",
+        "audience": "engineer",
+        "diagrams": ["auth-components.png", "token-flow.png"]
+    }
+)
+
+# Link to architecture it describes
+client.create_link(tech_doc.id, architecture.id, "documents")
+```
+
+### Operational Runbook
+
+```python
+# Runbook
+runbook = client.create_item(
+    title="Auth Service Deployment Runbook",
+    item_type="documentation",
+    description="""
+    # Auth Service Deployment
+
+    ## Prerequisites
+
+    - [ ] Database migration complete
+    - [ ] Secrets rotated in vault
+    - [ ] Load balancer health check updated
+
+    ## Deployment Steps
+
+    1. Scale down old version to 50%
+    2. Deploy new version alongside
+    3. Run smoke tests
+    4. Gradually shift traffic (25%, 50%, 100%)
+    5. Monitor error rates for 15 minutes
+    6. Scale down old version
+
+    ## Rollback Procedure
+
+    1. Shift traffic back to old version
+    2. Scale up old version
+    3. Investigate failure
+    4. Document in incident report
+
+    ## Contacts
+
+    - On-call: #auth-oncall
+    - Escalation: security@company.com
+    """,
+    metadata={
+        "doc_type": "runbook",
+        "audience": "ops",
+        "environment": "production",
+        "last_tested": "2024-11-15"
+    }
+)
+```
+
+### Glossary
+
+```python
+# Glossary entries
+terms = [
+    ("JWT", "JSON Web Token - A compact, URL-safe token format"),
+    ("OAuth2", "Industry-standard authorization protocol"),
+    ("OIDC", "OpenID Connect - Authentication layer on OAuth2"),
+    ("Refresh Token", "Long-lived token used to obtain new access tokens"),
+    ("MFA", "Multi-Factor Authentication - Additional verification step")
+]
+
+for term, definition in terms:
+    glossary_entry = client.create_item(
+        title=term,
+        item_type="glossary",
+        description=definition,
+        metadata={
+            "category": "authentication"
+        }
+    )
+```
+
+## CLI Usage
 
 ```bash
-tracertm init
-tracertm config set documentation enabled
+# Create documentation
+tracertm create documentation "User Guide: Authentication" \
+  --metadata '{"doc_type": "user_guide", "audience": "end_user"}'
+
+# Link to feature
+tracertm link DOC-001 FEAT-001 --type documents
+
+# List documentation
+tracertm list --type documentation
+tracertm list --type documentation --metadata '{"doc_type": "api_reference"}'
+
+# Search documentation
+tracertm search "authentication" --type documentation
+
+# Get with links
+tracertm get DOC-001 --show-links
 ```
 
-## Usage
+## Traceability for Documentation
 
-### Basic Usage
+### Linking Documentation to Features
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```python
+# Documentation should link to what it describes
+doc = client.create_item(
+    title="Login Guide",
+    item_type="documentation"
+)
 
-const tracertm = new TraceRTM()
-const result = await tracertm.documentation()
+# Link to features
+client.create_link(doc.id, feature_login.id, "documents")
+client.create_link(doc.id, feature_oauth.id, "documents")
+
+# Query: What documentation exists for this feature?
+docs = client.trace_backward(
+    item_id="FEAT-001",
+    link_type="documents",
+    source_type="documentation"
+)
 ```
 
-### Advanced Usage
+### Documentation Coverage
 
-```typescript
-const config = {
-  documentation: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+```bash
+# Check documentation coverage
+tracertm coverage --from feature --to documentation --link-type documented_by
 
-const tracertm = new TraceRTM(config)
+# Output:
+# Documentation Coverage Report
+# ═════════════════════════════
+#
+# Features with documentation: 85% (51/60)
+#
+# Missing documentation:
+#   FEAT-042: Bulk export (no user guide)
+#   FEAT-055: Admin panel (no user guide)
+#   FEAT-067: API webhooks (no API reference)
+#   ...
 ```
 
-## Configuration
+### Stale Documentation Detection
 
-```typescript
-export default {
-  documentation: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+```python
+# Find documentation that may be outdated
+def find_stale_docs():
+    """Find docs where linked features were updated after the doc."""
+
+    docs = client.list_items(item_type="documentation")
+    stale = []
+
+    for doc in docs:
+        features = client.trace_forward(
+            doc.id,
+            link_type="documents",
+            target_type="feature"
+        )
+
+        for feature in features:
+            if feature.updated_at > doc.updated_at:
+                stale.append({
+                    "doc": doc,
+                    "feature": feature,
+                    "doc_updated": doc.updated_at,
+                    "feature_updated": feature.updated_at
+                })
+
+    return stale
 ```
 
-## Examples
+```bash
+# CLI stale check
+tracertm docs check-stale
 
-### Example 1
-
-```typescript
-const example = await tracertm.documentation({
-  option1: 'value1',
-  option2: 'value2'
-})
+# Output:
+# Potentially Stale Documentation
+# ═══════════════════════════════
+#
+# DOC-015: Login Guide
+#   Updated: 2024-10-15
+#   Features updated since:
+#     FEAT-001: User Login (2024-11-20) - Added OAuth
+#     FEAT-005: Password Reset (2024-11-18) - New flow
+#
+# DOC-023: API Reference
+#   Updated: 2024-09-01
+#   Features updated since:
+#     FEAT-012: Rate Limiting (2024-10-30) - New limits
+#
+# Action: Review and update these documents
 ```
 
-### Example 2
+## Documentation Workflows
 
-```typescript
-const advanced = await tracertm.documentation({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+### Review Workflow
+
+```yaml
+# .tracertm/workflows/documentation.yaml
+name: documentation
+states:
+  - draft        # Being written
+  - review       # Under review
+  - published    # Available to users
+  - archived     # No longer current
+
+transitions:
+  - from: draft
+    to: review
+    requires:
+      - field: description
+        min_length: 200
+      - link_type: documents
+        min_count: 1
+        message: "Documentation must link to at least one feature"
+
+  - from: review
+    to: published
+    requires:
+      - approval:
+          role: tech_writer
+      - approval:
+          role: subject_matter_expert
+
+  - from: published
+    to: archived
+    requires:
+      - field: metadata.replacement_doc
+        not_null: true
+        message: "Must specify replacement documentation"
+```
+
+### Versioning
+
+```python
+# Create new version of documentation
+def update_doc_version(doc_id: str, content: str, version: str):
+    """Create new version, archive old."""
+
+    old_doc = client.get_item(doc_id)
+
+    # Archive old version
+    client.update_item(
+        doc_id,
+        status="archived",
+        metadata={
+            **old_doc.metadata,
+            "archived_at": datetime.now().isoformat()
+        }
+    )
+
+    # Create new version
+    new_doc = client.create_item(
+        title=old_doc.title,
+        item_type="documentation",
+        description=content,
+        metadata={
+            **old_doc.metadata,
+            "version": version,
+            "previous_version": doc_id
+        }
+    )
+
+    # Copy links from old version
+    links = client.get_links(doc_id)
+    for link in links:
+        client.create_link(new_doc.id, link.target_id, link.link_type)
+
+    return new_doc
+```
+
+## Auto-Generated Documentation
+
+### From Code Comments
+
+```bash
+# Generate API docs from docstrings
+tracertm docs generate --source src/ --type api --output docs/api/
+
+# Output:
+# Generated documentation:
+#   docs/api/auth.md (from src/auth/)
+#   docs/api/users.md (from src/users/)
+#   docs/api/projects.md (from src/projects/)
+```
+
+### From OpenAPI Specs
+
+```python
+# Create documentation from OpenAPI
+def create_from_openapi(spec_path: str):
+    import yaml
+
+    with open(spec_path) as f:
+        spec = yaml.safe_load(f)
+
+    for path, methods in spec["paths"].items():
+        for method, details in methods.items():
+            doc = client.create_item(
+                title=f"{method.upper()} {path}",
+                item_type="documentation",
+                description=f"""
+                # {details.get('summary', '')}
+
+                {details.get('description', '')}
+
+                ## Parameters
+                {format_parameters(details.get('parameters', []))}
+
+                ## Responses
+                {format_responses(details.get('responses', {}))}
+                """,
+                metadata={
+                    "doc_type": "api_reference",
+                    "path": path,
+                    "method": method,
+                    "openapi_spec": spec_path
+                }
+            )
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Link Documentation to Features
 
-## Troubleshooting
+```python
+# Every feature should have documentation
+feature = client.get_item("FEAT-001")
+docs = client.trace_backward(feature.id, "documents", "documentation")
 
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+if not docs:
+    print(f"Warning: {feature.title} has no documentation")
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+### 2. Keep Documentation Current
+
+```yaml
+# Set up alerts for stale docs
+automation:
+  - name: stale_doc_alert
+    trigger:
+      schedule: "0 9 * * 1"  # Weekly
+    action:
+      type: run_report
+      report: stale_documentation
+      notify:
+        channel: slack
+        to: "#documentation"
 ```
 
-## API Reference
+### 3. Version Documentation with Features
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```python
+# When feature changes, flag documentation for review
+def on_feature_update(feature_id: str):
+    docs = client.trace_backward(
+        feature_id,
+        link_type="documents",
+        source_type="documentation"
+    )
+
+    for doc in docs:
+        client.update_item(
+            doc.id,
+            metadata={
+                **doc.metadata,
+                "needs_review": True,
+                "review_reason": f"Feature {feature_id} updated"
+            }
+        )
+```
+
+### 4. Include All Audiences
+
+```
+Checklist:
+□ User guide (end users)
+□ API reference (developers)
+□ Technical overview (engineers)
+□ Runbook (operations)
+□ Glossary (everyone)
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Requirements](/docs/wiki/concepts/artifacts/requirements) - What to document
+- [Design](/docs/wiki/concepts/artifacts/design) - Technical documentation
+- [API](/docs/api-reference) - API documentation
+- [Reports](/docs/getting-started/first-project/reports) - Documentation coverage
 

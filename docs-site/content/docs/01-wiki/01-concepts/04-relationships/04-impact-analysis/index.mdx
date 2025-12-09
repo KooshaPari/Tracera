@@ -1,125 +1,414 @@
 ---
 title: "Impact Analysis"
-description: "Documentation for Impact Analysis"
+description: "Understand how changes propagate through your traceability graph"
 ---
 
 # Impact Analysis
 
+Impact analysis uses your traceability graph to determine what's affected when something changes. It's one of the most valuable capabilities of a traceability system.
 
-## Overview
+## What is Impact Analysis?
 
-Welcome to the Impact Analysis documentation.
+When a requirement, design, or code changes, impact analysis answers:
 
-## Introduction
+- **What code needs to change?** (implementation impact)
+- **What tests need updating?** (verification impact)
+- **What other requirements are affected?** (dependency impact)
+- **What's the scope of work?** (effort estimation)
 
-This page provides comprehensive information about Impact Analysis.
+## How It Works
 
-## Key Features
+TraceRTM traverses the traceability graph starting from the changed item:
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+```
+Changed: FEAT-001 (User Authentication)
+                    │
+    ┌───────────────┼───────────────┐
+    │ realized_by   │ verified_by   │ blocks
+    ▼               ▼               ▼
+CODE-001        TEST-001        FEAT-002
+CODE-002        TEST-002        FEAT-003
+    │               │
+    ▼               ▼
+TEST-003        TEST-004
+(unit test)     (e2e test)
+```
 
-## Getting Started
+**Direct Impact** (1 hop): CODE-001, CODE-002, TEST-001, TEST-002, FEAT-002, FEAT-003
+**Indirect Impact** (2+ hops): TEST-003, TEST-004
+
+## Running Impact Analysis
+
+### CLI
 
 ```bash
-tracertm init
-tracertm config set impact.analysis enabled
+# Analyze impact of a requirement change
+tracertm impact FEAT-001
+
+# Limit depth
+tracertm impact FEAT-001 --depth 2
+
+# Filter by artifact type
+tracertm impact FEAT-001 --type test
+
+# Export report
+tracertm impact FEAT-001 --output impact-report.html
 ```
 
-## Usage
+### Output
 
-### Basic Usage
+```
+Impact Analysis for FEAT-001 (User Authentication)
+════════════════════════════════════════════════════
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+Source: FEAT-001
+Status: in_progress
+Priority: high
 
-const tracertm = new TraceRTM()
-const result = await tracertm.impactanalysis()
+Direct Impact (6 artifacts)
+────────────────────────────────────────────────────
+CODE:
+  CODE-001: auth/login.py (implements)
+  CODE-002: auth/session.py (implements)
+TEST:
+  TEST-001: test_login_valid (tests)
+  TEST-002: test_login_invalid (tests)
+FEATURE:
+  FEAT-002: Dashboard (depends on)
+  FEAT-003: User Profile (depends on)
+
+Indirect Impact (4 artifacts)
+────────────────────────────────────────────────────
+TEST:
+  TEST-003: test_login_unit (tests CODE-001)
+  TEST-004: test_session_unit (tests CODE-002)
+  TEST-010: test_dashboard_auth (tests FEAT-002)
+  TEST-011: test_profile_auth (tests FEAT-003)
+
+Summary
+────────────────────────────────────────────────────
+Total artifacts affected: 10
+  Direct: 6
+  Indirect: 4
+
+By type:
+  CODE: 2
+  TEST: 6
+  FEATURE: 2
+
+Tests to re-run: 6
+Estimated review effort: Medium
 ```
 
-### Advanced Usage
+### Python SDK
 
-```typescript
-const config = {
-  impact_analysis: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Basic impact analysis
+impact = client.analyze_impact("FEAT-001")
+
+print(f"Total affected: {impact.total_count}")
+print(f"Direct: {len(impact.direct)}")
+print(f"Indirect: {len(impact.indirect)}")
+
+# Access by type
+for item in impact.tests:
+    print(f"Test to update: {item.id} - {item.title}")
+
+for item in impact.code:
+    print(f"Code to review: {item.id} - {item.title}")
+
+# With options
+impact = client.analyze_impact(
+    item_id="FEAT-001",
+    max_depth=3,
+    include_types=["test", "code"],
+    exclude_statuses=["archived"]
+)
+```
+
+## Impact Metrics
+
+### Depth
+
+How far changes propagate through the graph:
+
+| Depth | Meaning |
+|-------|---------|
+| 1 | Direct connections only |
+| 2 | Connections of connections |
+| 3+ | Extended impact chain |
+
+```python
+# Compare impact at different depths
+for depth in [1, 2, 3]:
+    impact = client.analyze_impact("FEAT-001", max_depth=depth)
+    print(f"Depth {depth}: {impact.total_count} artifacts")
+```
+
+### Fan-out
+
+How many items are directly affected:
+
+```
+High fan-out (risky):        Low fan-out (contained):
+     FEAT-001                      FEAT-002
+    /||\\\\\                          |
+   / || \\\\\\                        |
+ 10+ items affected                 2 items affected
+```
+
+### Blast Radius
+
+Total scope of change impact:
+
+```python
+# Calculate blast radius
+impact = client.analyze_impact("FEAT-001", max_depth=5)
+
+blast_radius = {
+    "total": impact.total_count,
+    "by_type": impact.by_type,
+    "max_depth_reached": impact.max_depth_reached,
+    "critical_items": len([i for i in impact.all if i.priority == "critical"])
+}
+```
+
+## Use Cases
+
+### Change Request Review
+
+Before approving a change request:
+
+```python
+# Get impact for change request
+impact = client.analyze_impact(change_request.target_id)
+
+# Generate summary for review
+summary = {
+    "scope": "small" if impact.total_count < 5 else "medium" if impact.total_count < 15 else "large",
+    "tests_affected": len(impact.tests),
+    "code_modules": len(impact.code),
+    "dependent_features": len([i for i in impact.features if i.link_type == "depends_on"]),
+    "estimated_effort": impact.effort_estimate
 }
 
-const tracertm = new TraceRTM(config)
+if summary["scope"] == "large":
+    print("⚠️ Large impact - requires architecture review")
+```
+
+### Sprint Planning
+
+Estimate effort for upcoming work:
+
+```python
+# Analyze impact of all features in sprint
+sprint_features = client.get_items(
+    item_type="feature",
+    metadata={"sprint": "2024-S3"}
+)
+
+total_impact = 0
+for feature in sprint_features:
+    impact = client.analyze_impact(feature.id)
+    total_impact += impact.total_count
+    print(f"{feature.id}: {impact.total_count} items affected")
+
+print(f"Sprint total impact: {total_impact} artifacts")
+```
+
+### Regression Testing
+
+Identify tests to run after a change:
+
+```python
+# Get tests affected by change
+impact = client.analyze_impact("CODE-042", include_types=["test"])
+
+# Generate test suite
+test_ids = [test.id for test in impact.tests]
+
+# Export for CI/CD
+with open("regression_tests.txt", "w") as f:
+    for test_id in test_ids:
+        test = client.get_item(test_id)
+        if test.metadata.get("file_path"):
+            f.write(test.metadata["file_path"] + "\n")
+```
+
+### Risk Assessment
+
+Identify high-risk changes:
+
+```python
+def assess_risk(item_id):
+    impact = client.analyze_impact(item_id, max_depth=3)
+
+    risk_factors = {
+        "blast_radius": impact.total_count,
+        "critical_dependencies": len([i for i in impact.all if i.priority == "critical"]),
+        "untested_code": len([i for i in impact.code if not has_tests(i)]),
+        "downstream_features": len([i for i in impact.features if i.link_type == "depends_on"])
+    }
+
+    # Calculate risk score
+    risk_score = (
+        risk_factors["blast_radius"] * 1 +
+        risk_factors["critical_dependencies"] * 5 +
+        risk_factors["untested_code"] * 3 +
+        risk_factors["downstream_features"] * 2
+    )
+
+    return {
+        "score": risk_score,
+        "level": "low" if risk_score < 10 else "medium" if risk_score < 25 else "high",
+        "factors": risk_factors
+    }
+```
+
+## Visualization
+
+### Impact Graph
+
+```bash
+# Generate visual impact graph
+tracertm impact FEAT-001 --format graph --output impact.svg
+```
+
+Output:
+```
+            FEAT-001
+           /   |   \
+          /    |    \
+     CODE-001  |  CODE-002
+         |     |     |
+     TEST-003  |  TEST-004
+               |
+           TEST-001
+           TEST-002
+```
+
+### Impact Matrix
+
+```bash
+# Show impact in matrix form
+tracertm impact FEAT-001 --format matrix
+
+# Output:
+#                FEAT-001 Impact
+#            Direct   Indirect   Total
+# CODE         2          0        2
+# TEST         2          4        6
+# FEATURE      2          0        2
+# ────────────────────────────────────
+# TOTAL        6          4       10
 ```
 
 ## Configuration
 
-```typescript
-export default {
-  impact_analysis: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+### Default Settings
+
+```yaml
+# .tracertm/config.yaml
+impact_analysis:
+  default_depth: 3
+  include_archived: false
+
+  thresholds:
+    small: 5
+    medium: 15
+    large: 50
+
+  notifications:
+    large_impact:
+      enabled: true
+      recipients:
+        - architect@example.com
 ```
 
-## Examples
+### Link Type Weights
 
-### Example 1
+Not all links are equal. Configure weights for different link types:
 
-```typescript
-const example = await tracertm.impactanalysis({
-  option1: 'value1',
-  option2: 'value2'
-})
-```
-
-### Example 2
-
-```typescript
-const advanced = await tracertm.impactanalysis({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+```yaml
+impact_analysis:
+  link_weights:
+    implements: 1.0      # Direct implementation
+    tests: 0.8           # Test coverage
+    depends_on: 0.6      # Functional dependency
+    related_to: 0.2      # Informational
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Run Before Changes
 
-## Troubleshooting
+Always analyze impact before making changes:
 
-### Common Issues
-
-**Issue 1:**
 ```bash
-tracertm fix issue-1
+# Before editing
+tracertm impact FEAT-001
+
+# Review results, then make changes
 ```
 
-**Issue 2:**
+### 2. Include in Code Review
+
+Add impact analysis to PR templates:
+
+```markdown
+## Impact Analysis
+
 ```bash
-tracertm fix issue-2
+tracertm impact FEAT-001 --format summary
 ```
 
-## API Reference
+- [ ] Reviewed affected code
+- [ ] Updated affected tests
+- [ ] Notified dependent teams
+```
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+### 3. Automate in CI/CD
+
+```yaml
+# .github/workflows/impact.yml
+- name: Impact Analysis
+  run: |
+    changed_features=$(tracertm changed --since ${{ github.event.before }})
+    for feature in $changed_features; do
+      tracertm impact $feature --format json >> impact-report.json
+    done
+
+- name: Check Impact Size
+  run: |
+    total=$(jq '.total_count' impact-report.json)
+    if [ $total -gt 50 ]; then
+      echo "⚠️ Large impact detected - requires review"
+      exit 1
+    fi
+```
+
+### 4. Track Over Time
+
+Monitor impact metrics:
+
+```python
+# Record impact metrics
+impact = client.analyze_impact(item_id)
+client.record_metric(
+    name="impact_blast_radius",
+    value=impact.total_count,
+    tags={"item_id": item_id, "item_type": item.item_type}
+)
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Establishing Traceability](/docs/getting-started/first-project/traceability) - Build the graph
+- [Generating Reports](/docs/getting-started/first-project/reports) - Impact reports
+- [Link Types](/docs/wiki/concepts/relationships/types) - Understanding relationships
+- [Change Management](/docs/wiki/best-practices/traceability) - Process guidance
 

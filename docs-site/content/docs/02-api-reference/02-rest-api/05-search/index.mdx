@@ -1,32 +1,860 @@
 ---
-title: "Search"
-description: "Documentation for Search"
+title: Search API
+description: Full-text and structured search across TraceRTM projects with filters, facets, and relevance scoring
 ---
 
-# Search
+# Search API
 
-This page contains documentation for Search.
+The Search API provides powerful full-text and structured search capabilities across your TraceRTM projects. Search items, links, and related content with advanced filtering, faceted results, and AI-powered relevance ranking.
 
-## Overview
+## Endpoints Overview
 
-This section covers the key aspects of Search in TraceRTM.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/projects/{project_id}/search` | Simple search |
+| `POST` | `/projects/{project_id}/search` | Advanced search with filters |
+| `GET` | `/search` | Cross-project search |
+| `POST` | `/search/suggest` | Search suggestions and autocomplete |
+| `GET` | `/search/recent` | Recent searches |
 
-## Getting Started
+---
 
-To get started with Search:
+## Simple Search
 
-- Review the Search and fundamentals
-- Explore practical examples
-- Check out the API reference
+### `GET /projects/{project_id}/search`
 
-## Key Concepts
+Perform a simple full-text search within a project.
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+#### Query Parameters
 
-## Next Steps
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `q` | string | Yes | Search query (2-500 characters) |
+| `type` | string | No | Filter by item type |
+| `status` | string | No | Filter by status |
+| `limit` | integer | No | Results per page (default: 20, max: 100) |
+| `offset` | integer | No | Pagination offset |
+| `sort` | string | No | Sort order: `relevance`, `created_at`, `updated_at`, `title` |
+| `order` | string | No | Sort direction: `asc`, `desc` |
+| `highlight` | boolean | No | Include highlighted snippets (default: true) |
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+#### Example Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_abc123/search?q=authentication&type=requirement&limit=10" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+#### Response
+
+```json
+{
+  "results": [
+    {
+      "id": "item_req_001",
+      "type": "requirement",
+      "title": "User Authentication Requirements",
+      "description": "The system shall support multi-factor authentication...",
+      "status": "approved",
+      "score": 0.95,
+      "highlights": {
+        "title": ["User <mark>Authentication</mark> Requirements"],
+        "description": ["...support multi-factor <mark>authentication</mark>..."]
+      },
+      "matched_fields": ["title", "description"],
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-20T14:15:00Z"
+    },
+    {
+      "id": "item_tc_042",
+      "type": "test_case",
+      "title": "TC-042: Verify MFA Authentication Flow",
+      "description": "Test multi-factor authentication with various providers...",
+      "status": "passed",
+      "score": 0.87,
+      "highlights": {
+        "title": ["TC-042: Verify MFA <mark>Authentication</mark> Flow"],
+        "description": ["Test multi-factor <mark>authentication</mark> with..."]
+      },
+      "matched_fields": ["title", "description"],
+      "created_at": "2024-01-18T09:00:00Z",
+      "updated_at": "2024-01-22T16:45:00Z"
+    }
+  ],
+  "total": 23,
+  "offset": 0,
+  "limit": 10,
+  "query": {
+    "text": "authentication",
+    "parsed": {
+      "terms": ["authentication"],
+      "filters_applied": ["type:requirement"]
+    }
+  },
+  "took_ms": 45
+}
+```
+
+---
+
+## Advanced Search
+
+### `POST /projects/{project_id}/search`
+
+Perform advanced search with complex filters, facets, and aggregations.
+
+#### Request Body
+
+```json
+{
+  "query": {
+    "text": "authentication security",
+    "fields": ["title", "description", "custom_fields"],
+    "operator": "and"
+  },
+  "filters": {
+    "type": ["requirement", "test_case"],
+    "status": ["approved", "in_progress"],
+    "priority": { "gte": "high" },
+    "created_at": {
+      "gte": "2024-01-01T00:00:00Z",
+      "lte": "2024-12-31T23:59:59Z"
+    },
+    "assignee": ["user_abc123", "user_def456"],
+    "tags": { "all": ["security", "phase-1"] },
+    "custom_fields": {
+      "risk_level": { "in": ["high", "critical"] },
+      "compliance_requirement": true
+    }
+  },
+  "facets": ["type", "status", "priority", "assignee", "tags"],
+  "aggregations": {
+    "by_status": { "field": "status" },
+    "by_month": {
+      "field": "created_at",
+      "interval": "month"
+    }
+  },
+  "sort": [
+    { "field": "score", "order": "desc" },
+    { "field": "updated_at", "order": "desc" }
+  ],
+  "pagination": {
+    "limit": 20,
+    "offset": 0
+  },
+  "options": {
+    "highlight": true,
+    "highlight_pre_tag": "<mark>",
+    "highlight_post_tag": "</mark>",
+    "include_links": true,
+    "include_attachments": false,
+    "fuzzy_matching": true,
+    "fuzzy_distance": 2,
+    "min_score": 0.1
+  }
+}
+```
+
+#### Query Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `and` | All terms must match | `"authentication and security"` |
+| `or` | Any term can match | `"login or signin"` |
+| `not` | Exclude term | `"authentication not deprecated"` |
+| `phrase` | Exact phrase match | `"\"user authentication\""` |
+| `wildcard` | Wildcard matching | `"auth*"` |
+| `prefix` | Prefix matching | `"REQ-*"` |
+
+#### Filter Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `eq` | Equals (default) | `"status": "approved"` |
+| `ne` | Not equals | `"status": { "ne": "deprecated" }` |
+| `in` | In array | `"type": { "in": ["requirement", "test_case"] }` |
+| `nin` | Not in array | `"status": { "nin": ["blocked", "cancelled"] }` |
+| `gt` | Greater than | `"priority": { "gt": "medium" }` |
+| `gte` | Greater than or equal | `"created_at": { "gte": "2024-01-01" }` |
+| `lt` | Less than | `"score": { "lt": 0.5 }` |
+| `lte` | Less than or equal | `"updated_at": { "lte": "2024-06-30" }` |
+| `exists` | Field exists | `"assignee": { "exists": true }` |
+| `all` | All values in array | `"tags": { "all": ["security", "critical"] }` |
+| `any` | Any value in array | `"tags": { "any": ["urgent", "hotfix"] }` |
+| `contains` | Text contains | `"description": { "contains": "must" }` |
+| `regex` | Regular expression | `"title": { "regex": "^REQ-\\d{3}" }` |
+
+#### Response with Facets and Aggregations
+
+```json
+{
+  "results": [
+    {
+      "id": "item_req_001",
+      "type": "requirement",
+      "title": "User Authentication Requirements",
+      "description": "The system shall support multi-factor authentication...",
+      "status": "approved",
+      "priority": "high",
+      "score": 0.95,
+      "highlights": {
+        "title": ["User <mark>Authentication</mark> Requirements"],
+        "description": ["...multi-factor <mark>authentication</mark> <mark>security</mark>..."]
+      },
+      "links": {
+        "total": 5,
+        "by_type": {
+          "verified_by": 3,
+          "traces_to": 2
+        }
+      }
+    }
+  ],
+  "total": 47,
+  "offset": 0,
+  "limit": 20,
+  "facets": {
+    "type": [
+      { "value": "requirement", "count": 23 },
+      { "value": "test_case", "count": 15 },
+      { "value": "user_story", "count": 9 }
+    ],
+    "status": [
+      { "value": "approved", "count": 28 },
+      { "value": "in_progress", "count": 12 },
+      { "value": "draft", "count": 7 }
+    ],
+    "priority": [
+      { "value": "critical", "count": 8 },
+      { "value": "high", "count": 19 },
+      { "value": "medium", "count": 15 },
+      { "value": "low", "count": 5 }
+    ],
+    "assignee": [
+      { "value": "user_abc123", "name": "Alice Smith", "count": 18 },
+      { "value": "user_def456", "name": "Bob Johnson", "count": 14 },
+      { "value": null, "name": "Unassigned", "count": 15 }
+    ],
+    "tags": [
+      { "value": "security", "count": 32 },
+      { "value": "phase-1", "count": 25 },
+      { "value": "authentication", "count": 21 },
+      { "value": "compliance", "count": 18 }
+    ]
+  },
+  "aggregations": {
+    "by_status": {
+      "buckets": [
+        { "key": "approved", "doc_count": 28 },
+        { "key": "in_progress", "doc_count": 12 },
+        { "key": "draft", "doc_count": 7 }
+      ]
+    },
+    "by_month": {
+      "buckets": [
+        { "key": "2024-01", "doc_count": 15 },
+        { "key": "2024-02", "doc_count": 12 },
+        { "key": "2024-03", "doc_count": 20 }
+      ]
+    }
+  },
+  "query": {
+    "text": "authentication security",
+    "parsed": {
+      "terms": ["authentication", "security"],
+      "operator": "and",
+      "filters_applied": 5
+    }
+  },
+  "took_ms": 78
+}
+```
+
+---
+
+## Cross-Project Search
+
+### `GET /search`
+
+Search across multiple projects you have access to.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `q` | string | Yes | Search query |
+| `projects` | string | No | Comma-separated project IDs (default: all accessible) |
+| `type` | string | No | Filter by item type |
+| `limit` | integer | No | Results per page (default: 20, max: 100) |
+
+#### Example Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/search?q=payment+processing&projects=proj_abc123,proj_def456" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+#### Response
+
+```json
+{
+  "results": [
+    {
+      "id": "item_req_payment_001",
+      "project_id": "proj_abc123",
+      "project_name": "Payment Gateway",
+      "type": "requirement",
+      "title": "Payment Processing Requirements",
+      "score": 0.92,
+      "highlights": {
+        "title": ["<mark>Payment</mark> <mark>Processing</mark> Requirements"]
+      }
+    },
+    {
+      "id": "item_tc_payment_042",
+      "project_id": "proj_def456",
+      "project_name": "E-Commerce Platform",
+      "type": "test_case",
+      "title": "TC-042: Verify Payment Processing Flow",
+      "score": 0.88,
+      "highlights": {
+        "title": ["TC-042: Verify <mark>Payment</mark> <mark>Processing</mark> Flow"]
+      }
+    }
+  ],
+  "total": 156,
+  "by_project": {
+    "proj_abc123": { "name": "Payment Gateway", "count": 89 },
+    "proj_def456": { "name": "E-Commerce Platform", "count": 67 }
+  },
+  "took_ms": 125
+}
+```
+
+---
+
+## Search Suggestions
+
+### `POST /search/suggest`
+
+Get autocomplete suggestions and search recommendations.
+
+#### Request Body
+
+```json
+{
+  "text": "auth",
+  "project_id": "proj_abc123",
+  "types": ["term", "item", "tag", "user"],
+  "limit": 10,
+  "context": {
+    "current_type": "requirement",
+    "recent_searches": true
+  }
+}
+```
+
+#### Suggestion Types
+
+| Type | Description |
+|------|-------------|
+| `term` | Query term completions |
+| `item` | Matching item titles |
+| `tag` | Matching tags |
+| `user` | Matching user names |
+| `field` | Field name completions |
+
+#### Response
+
+```json
+{
+  "suggestions": [
+    {
+      "type": "term",
+      "text": "authentication",
+      "score": 0.95,
+      "frequency": 234
+    },
+    {
+      "type": "term",
+      "text": "authorization",
+      "score": 0.82,
+      "frequency": 156
+    },
+    {
+      "type": "item",
+      "text": "Authentication Requirements",
+      "id": "item_req_001",
+      "item_type": "requirement",
+      "score": 0.88
+    },
+    {
+      "type": "tag",
+      "text": "authentication",
+      "count": 45,
+      "score": 0.75
+    },
+    {
+      "type": "user",
+      "text": "auth-team",
+      "id": "team_auth",
+      "score": 0.60
+    }
+  ],
+  "recent": [
+    {
+      "query": "authentication flow",
+      "timestamp": "2024-01-20T10:30:00Z",
+      "results_count": 23
+    }
+  ]
+}
+```
+
+---
+
+## Recent Searches
+
+### `GET /search/recent`
+
+Get the user's recent search history.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | No | Filter by project |
+| `limit` | integer | No | Number of results (default: 10, max: 50) |
+
+#### Response
+
+```json
+{
+  "searches": [
+    {
+      "id": "search_abc123",
+      "query": "authentication security",
+      "project_id": "proj_abc123",
+      "project_name": "Main Project",
+      "filters": {
+        "type": ["requirement"],
+        "status": ["approved"]
+      },
+      "results_count": 23,
+      "timestamp": "2024-01-20T10:30:00Z"
+    },
+    {
+      "id": "search_def456",
+      "query": "payment processing",
+      "project_id": null,
+      "project_name": "All Projects",
+      "filters": {},
+      "results_count": 156,
+      "timestamp": "2024-01-20T09:15:00Z"
+    }
+  ],
+  "total": 47
+}
+```
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Simple search
+results = client.search(
+    project_id="proj_abc123",
+    query="authentication",
+    type="requirement",
+    limit=20
+)
+
+for item in results.items:
+    print(f"{item.id}: {item.title} (score: {item.score})")
+    if item.highlights:
+        print(f"  Match: {item.highlights.get('title', [''])[0]}")
+
+# Advanced search with filters
+from tracertm.search import SearchQuery, SearchFilters
+
+query = SearchQuery(
+    text="authentication security",
+    fields=["title", "description"],
+    operator="and"
+)
+
+filters = SearchFilters(
+    type=["requirement", "test_case"],
+    status=["approved", "in_progress"],
+    priority={"gte": "high"},
+    created_at={"gte": "2024-01-01"},
+    tags={"all": ["security", "phase-1"]}
+)
+
+results = client.search_advanced(
+    project_id="proj_abc123",
+    query=query,
+    filters=filters,
+    facets=["type", "status", "priority"],
+    sort=[{"field": "score", "order": "desc"}],
+    limit=20,
+    highlight=True
+)
+
+# Access faceted results
+print(f"Total results: {results.total}")
+for facet_name, facet_values in results.facets.items():
+    print(f"\n{facet_name}:")
+    for fv in facet_values:
+        print(f"  {fv.value}: {fv.count}")
+
+# Search suggestions
+suggestions = client.search_suggest(
+    text="auth",
+    project_id="proj_abc123",
+    types=["term", "item", "tag"],
+    limit=10
+)
+
+for suggestion in suggestions:
+    print(f"{suggestion.type}: {suggestion.text}")
+
+# Cross-project search
+results = client.search_global(
+    query="payment processing",
+    projects=["proj_abc123", "proj_def456"],
+    limit=50
+)
+
+print(f"Results by project:")
+for project_id, stats in results.by_project.items():
+    print(f"  {stats['name']}: {stats['count']} results")
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient, SearchQuery, SearchFilters } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Simple search
+const simpleResults = await client.search({
+  projectId: 'proj_abc123',
+  query: 'authentication',
+  type: 'requirement',
+  limit: 20
+});
+
+simpleResults.results.forEach(item => {
+  console.log(`${item.id}: ${item.title} (score: ${item.score})`);
+});
+
+// Advanced search
+const advancedResults = await client.searchAdvanced({
+  projectId: 'proj_abc123',
+  query: {
+    text: 'authentication security',
+    fields: ['title', 'description'],
+    operator: 'and'
+  },
+  filters: {
+    type: ['requirement', 'test_case'],
+    status: ['approved', 'in_progress'],
+    priority: { gte: 'high' },
+    createdAt: { gte: '2024-01-01' },
+    tags: { all: ['security', 'phase-1'] },
+    customFields: {
+      riskLevel: { in: ['high', 'critical'] }
+    }
+  },
+  facets: ['type', 'status', 'priority', 'tags'],
+  aggregations: {
+    byStatus: { field: 'status' },
+    byMonth: { field: 'created_at', interval: 'month' }
+  },
+  sort: [
+    { field: 'score', order: 'desc' },
+    { field: 'updatedAt', order: 'desc' }
+  ],
+  pagination: { limit: 20, offset: 0 },
+  options: {
+    highlight: true,
+    includeLinks: true,
+    fuzzyMatching: true
+  }
+});
+
+// Process faceted results
+console.log(`Total: ${advancedResults.total}`);
+Object.entries(advancedResults.facets).forEach(([name, values]) => {
+  console.log(`\n${name}:`);
+  values.forEach(v => console.log(`  ${v.value}: ${v.count}`));
+});
+
+// Search with autocomplete
+const suggestions = await client.searchSuggest({
+  text: 'auth',
+  projectId: 'proj_abc123',
+  types: ['term', 'item', 'tag'],
+  limit: 10
+});
+
+// Cross-project search
+const globalResults = await client.searchGlobal({
+  query: 'payment processing',
+  projects: ['proj_abc123', 'proj_def456']
+});
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+    ctx := context.Background()
+
+    // Simple search
+    results, err := client.Search(ctx, &tracertm.SearchRequest{
+        ProjectID: "proj_abc123",
+        Query:     "authentication",
+        Type:      "requirement",
+        Limit:     20,
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    for _, item := range results.Results {
+        fmt.Printf("%s: %s (score: %.2f)\n", item.ID, item.Title, item.Score)
+    }
+
+    // Advanced search
+    advResults, err := client.SearchAdvanced(ctx, &tracertm.AdvancedSearchRequest{
+        ProjectID: "proj_abc123",
+        Query: tracertm.SearchQuery{
+            Text:     "authentication security",
+            Fields:   []string{"title", "description"},
+            Operator: "and",
+        },
+        Filters: tracertm.SearchFilters{
+            Type:     []string{"requirement", "test_case"},
+            Status:   []string{"approved", "in_progress"},
+            Priority: &tracertm.RangeFilter{GTE: "high"},
+            Tags:     &tracertm.ArrayFilter{All: []string{"security", "phase-1"}},
+        },
+        Facets: []string{"type", "status", "priority"},
+        Sort: []tracertm.SortField{
+            {Field: "score", Order: "desc"},
+            {Field: "updated_at", Order: "desc"},
+        },
+        Pagination: tracertm.Pagination{Limit: 20, Offset: 0},
+        Options: tracertm.SearchOptions{
+            Highlight:     true,
+            IncludeLinks:  true,
+            FuzzyMatching: true,
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Total results: %d\n", advResults.Total)
+
+    // Process facets
+    for name, values := range advResults.Facets {
+        fmt.Printf("\n%s:\n", name)
+        for _, v := range values {
+            fmt.Printf("  %s: %d\n", v.Value, v.Count)
+        }
+    }
+
+    // Search suggestions
+    suggestions, err := client.SearchSuggest(ctx, &tracertm.SuggestRequest{
+        Text:      "auth",
+        ProjectID: "proj_abc123",
+        Types:     []string{"term", "item", "tag"},
+        Limit:     10,
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    for _, s := range suggestions.Suggestions {
+        fmt.Printf("%s: %s\n", s.Type, s.Text)
+    }
+}
+```
+
+---
+
+## Search Query Syntax
+
+### Basic Syntax
+
+```
+authentication                 # Single term
+authentication security        # Multiple terms (OR by default)
+"user authentication"          # Exact phrase
+auth*                         # Wildcard (prefix)
+authenticat?on                # Single character wildcard
+```
+
+### Boolean Operators
+
+```
+authentication AND security    # Both terms required
+authentication OR authorization # Either term
+authentication NOT deprecated  # Exclude term
+(auth OR login) AND security   # Grouped expressions
+```
+
+### Field-Specific Search
+
+```
+title:authentication           # Search in title only
+description:"must support"     # Phrase in description
+type:requirement              # Filter by type
+status:approved               # Filter by status
+assignee:user_abc123          # Filter by assignee
+tags:security                 # Filter by tag
+created_at:[2024-01-01 TO *]  # Date range
+priority:[high TO critical]   # Range filter
+```
+
+### Special Characters
+
+| Character | Escape | Description |
+|-----------|--------|-------------|
+| `+` | `\+` | Must contain |
+| `-` | `\-` | Must not contain |
+| `"` | `\"` | Phrase delimiter |
+| `*` | `\*` | Wildcard |
+| `?` | `\?` | Single char wildcard |
+| `(` `)` | `\(` `\)` | Grouping |
+| `:` | `\:` | Field separator |
+| `[` `]` | `\[` `\]` | Range |
+
+---
+
+## Error Responses
+
+### Invalid Query
+
+```json
+{
+  "error": {
+    "code": "INVALID_QUERY",
+    "message": "Search query is invalid",
+    "details": {
+      "position": 15,
+      "expected": "term or operator",
+      "found": ")",
+      "suggestion": "Check for unmatched parentheses"
+    }
+  }
+}
+```
+
+### Query Too Complex
+
+```json
+{
+  "error": {
+    "code": "QUERY_TOO_COMPLEX",
+    "message": "Search query exceeds complexity limits",
+    "details": {
+      "max_clauses": 100,
+      "found_clauses": 156,
+      "suggestion": "Simplify your query or use multiple smaller searches"
+    }
+  }
+}
+```
+
+### Rate Limited
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Search rate limit exceeded",
+    "details": {
+      "limit": 100,
+      "window": "1 minute",
+      "retry_after": 45
+    }
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### Query Optimization
+
+1. **Use specific fields**: Search `title:auth` instead of just `auth`
+2. **Limit result size**: Use pagination with reasonable limits
+3. **Filter early**: Apply filters to reduce result set
+4. **Avoid leading wildcards**: `*auth` is slower than `auth*`
+5. **Use facets sparingly**: Only request needed facets
+
+### Performance Tips
+
+```python
+# Good: Specific field search with filters
+results = client.search_advanced(
+    project_id="proj_abc123",
+    query={"text": "authentication", "fields": ["title"]},
+    filters={"type": ["requirement"], "status": ["approved"]},
+    limit=20
+)
+
+# Avoid: Broad search without filters
+results = client.search(
+    project_id="proj_abc123",
+    query="*",
+    limit=1000
+)
+```
+
+### Caching Strategies
+
+- Cache frequent searches for 5-15 minutes
+- Use `If-None-Match` with search result ETags
+- Implement client-side suggestion caching
+
+---
+
+## Rate Limits
+
+| Plan | Searches/minute | Max Results | Complex Queries |
+|------|-----------------|-------------|-----------------|
+| Free | 30 | 100 | Limited |
+| Pro | 150 | 500 | Full |
+| Enterprise | 500 | 1000 | Full + Custom |
+
+---
+
+## Related Documentation
+
+- [Advanced Search](/docs/api-reference/rest-api/advanced-search) - Complex queries, saved searches
+- [Items API](/docs/api-reference/rest-api/items) - Item management
+- [Batch Operations](/docs/api-reference/rest-api/batch-operations) - Bulk search operations

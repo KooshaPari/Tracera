@@ -1,21 +1,790 @@
 ---
-title: "REST Artifacts"
-description: "CRUD for artifacts over REST."
+title: "Artifacts API"
+description: "REST API for managing attachments, files, and artifacts in TraceRTM"
 ---
 
-## Endpoints
-- GET /v1/artifacts — List artifacts with filters
-- POST /v1/artifacts — Create artifact
-- PATCH /v1/artifacts/{id} — Update artifact
+# Artifacts API
 
-## Example
-```http
-GET /v1/artifacts
-Authorization: Bearer <token>
-Content-Type: application/json
+Artifacts are files and attachments associated with items, projects, and other resources in TraceRTM. This includes documents, images, test evidence, design files, and any other supporting content.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects/{project_id}/artifacts` | List project artifacts |
+| `POST` | `/v1/projects/{project_id}/artifacts` | Upload artifact |
+| `GET` | `/v1/artifacts/{id}` | Get artifact metadata |
+| `GET` | `/v1/artifacts/{id}/download` | Download artifact |
+| `PATCH` | `/v1/artifacts/{id}` | Update artifact metadata |
+| `DELETE` | `/v1/artifacts/{id}` | Delete artifact |
+| `GET` | `/v1/items/{item_id}/artifacts` | List item artifacts |
+| `POST` | `/v1/items/{item_id}/artifacts` | Attach to item |
+
+---
+
+## Artifact Object
+
+```json
+{
+  "id": "art_abc123xyz",
+  "project_id": "proj_456",
+  "name": "requirements-spec.pdf",
+  "description": "Product Requirements Specification v2.0",
+  "type": "document",
+  "mime_type": "application/pdf",
+  "size_bytes": 1048576,
+  "storage_url": "https://storage.tracertm.dev/artifacts/art_abc123xyz",
+  "checksum": {
+    "algorithm": "sha256",
+    "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "metadata": {
+    "version": "2.0",
+    "author": "Product Team",
+    "reviewed": true
+  },
+  "tags": ["specification", "v2.0"],
+  "linked_items": [
+    {
+      "id": "item_req001",
+      "type": "requirement",
+      "custom_id": "REQ-001"
+    }
+  ],
+  "uploaded_by": "user_xyz789",
+  "created_at": "2025-01-15T10:00:00Z",
+  "updated_at": "2025-01-15T10:00:00Z"
+}
 ```
 
-## Guidance
-- Use pagination headers (`Link`) for large result sets.
-- Prefer filters over client-side slicing to reduce payload size.
-- Check 429 headers for rate-limit backoff instructions.
+### Artifact Types
+
+| Type | Description | Common Extensions |
+|------|-------------|-------------------|
+| `document` | Documents and specs | .pdf, .docx, .doc, .odt |
+| `image` | Images and diagrams | .png, .jpg, .svg, .gif |
+| `spreadsheet` | Spreadsheets | .xlsx, .csv, .ods |
+| `archive` | Compressed files | .zip, .tar.gz, .7z |
+| `code` | Source code files | .py, .js, .ts, .java |
+| `design` | Design files | .fig, .sketch, .xd |
+| `video` | Video evidence | .mp4, .webm, .mov |
+| `other` | Other file types | * |
+
+---
+
+## List Project Artifacts
+
+```http
+GET /v1/projects/{project_id}/artifacts
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | string | Filter by artifact type |
+| `mime_type` | string | Filter by MIME type |
+| `tag` | string | Filter by tag |
+| `search` | string | Search in name/description |
+| `uploaded_by` | string | Filter by uploader |
+| `created_after` | datetime | Created after date |
+| `created_before` | datetime | Created before date |
+| `page` | integer | Page number |
+| `per_page` | integer | Items per page (max: 100) |
+| `sort` | string | Sort field: `name`, `created_at`, `size` |
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/artifacts?type=document&per_page=20" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "art_abc123",
+      "name": "requirements-spec.pdf",
+      "type": "document",
+      "mime_type": "application/pdf",
+      "size_bytes": 1048576,
+      "tags": ["specification"],
+      "linked_items_count": 5,
+      "created_at": "2025-01-15T10:00:00Z"
+    },
+    {
+      "id": "art_def456",
+      "name": "architecture-diagram.svg",
+      "type": "image",
+      "mime_type": "image/svg+xml",
+      "size_bytes": 24576,
+      "tags": ["architecture", "diagram"],
+      "linked_items_count": 3,
+      "created_at": "2025-01-14T09:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 45,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 3
+  }
+}
+```
+
+---
+
+## Upload Artifact
+
+```http
+POST /v1/projects/{project_id}/artifacts
+```
+
+### Multipart Form Upload
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/artifacts" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -F "file=@/path/to/requirements.pdf" \
+  -F "description=Product Requirements v2.0" \
+  -F "tags=specification,v2.0" \
+  -F "metadata={\"version\":\"2.0\",\"author\":\"Product Team\"}"
+```
+
+### JSON Body (for URL upload)
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/artifacts" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/files/requirements.pdf",
+    "name": "requirements-spec.pdf",
+    "description": "Product Requirements v2.0",
+    "tags": ["specification", "v2.0"],
+    "metadata": {
+      "version": "2.0",
+      "author": "Product Team"
+    }
+  }'
+```
+
+### Upload Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | binary | Yes* | File to upload (multipart) |
+| `url` | string | Yes* | URL to fetch file from |
+| `name` | string | No | Override filename |
+| `description` | string | No | Artifact description |
+| `type` | string | No | Artifact type (auto-detected if not provided) |
+| `tags` | array | No | Tags for organization |
+| `metadata` | object | No | Custom metadata |
+| `link_to_items` | array | No | Item IDs to attach artifact to |
+
+*Either `file` or `url` is required
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "art_new123",
+    "project_id": "proj_456",
+    "name": "requirements-spec.pdf",
+    "description": "Product Requirements v2.0",
+    "type": "document",
+    "mime_type": "application/pdf",
+    "size_bytes": 1048576,
+    "storage_url": "https://storage.tracertm.dev/artifacts/art_new123",
+    "checksum": {
+      "algorithm": "sha256",
+      "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tags": ["specification", "v2.0"],
+    "metadata": {
+      "version": "2.0",
+      "author": "Product Team"
+    },
+    "uploaded_by": "user_xyz789",
+    "created_at": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+---
+
+## Get Presigned Upload URL
+
+For large files, use presigned URLs for direct upload to storage.
+
+```http
+POST /v1/projects/{project_id}/artifacts/presigned-upload
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/artifacts/presigned-upload" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename": "large-test-data.zip",
+    "content_type": "application/zip",
+    "size_bytes": 524288000
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "artifact_id": "art_pending123",
+    "upload_url": "https://storage.tracertm.dev/upload/presigned?token=...",
+    "method": "PUT",
+    "headers": {
+      "Content-Type": "application/zip"
+    },
+    "expires_at": "2025-01-15T11:00:00Z",
+    "finalize_url": "https://api.tracertm.dev/v1/artifacts/art_pending123/finalize"
+  }
+}
+```
+
+### Upload with Presigned URL
+
+```bash
+# Upload directly to storage
+curl -X PUT "https://storage.tracertm.dev/upload/presigned?token=..." \
+  -H "Content-Type: application/zip" \
+  --data-binary @large-test-data.zip
+
+# Finalize the upload
+curl -X POST "https://api.tracertm.dev/v1/artifacts/art_pending123/finalize" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Test data archive",
+    "tags": ["test-data", "archive"]
+  }'
+```
+
+---
+
+## Download Artifact
+
+```http
+GET /v1/artifacts/{id}/download
+```
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/artifacts/art_abc123/download" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -o requirements-spec.pdf
+```
+
+### Response Headers
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="requirements-spec.pdf"
+Content-Length: 1048576
+X-Artifact-Checksum: sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+```
+
+### Get Download URL
+
+For large files, get a temporary download URL:
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/artifacts/art_abc123/download-url" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+```json
+{
+  "data": {
+    "download_url": "https://storage.tracertm.dev/download/art_abc123?token=...",
+    "expires_at": "2025-01-15T11:00:00Z",
+    "filename": "requirements-spec.pdf",
+    "size_bytes": 1048576
+  }
+}
+```
+
+---
+
+## Update Artifact
+
+```http
+PATCH /v1/artifacts/{id}
+```
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/artifacts/art_abc123" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated Product Requirements v2.1",
+    "tags": ["specification", "v2.1", "updated"],
+    "metadata": {
+      "version": "2.1",
+      "reviewed": true,
+      "review_date": "2025-01-15"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "art_abc123",
+    "name": "requirements-spec.pdf",
+    "description": "Updated Product Requirements v2.1",
+    "tags": ["specification", "v2.1", "updated"],
+    "metadata": {
+      "version": "2.1",
+      "reviewed": true,
+      "review_date": "2025-01-15"
+    },
+    "updated_at": "2025-01-15T14:00:00Z"
+  }
+}
+```
+
+---
+
+## Delete Artifact
+
+```http
+DELETE /v1/artifacts/{id}
+```
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/artifacts/art_abc123" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```http
+HTTP/1.1 204 No Content
+```
+
+---
+
+## Attach Artifact to Item
+
+```http
+POST /v1/items/{item_id}/artifacts
+```
+
+### Request
+
+```bash
+# Attach existing artifact
+curl -X POST "https://api.tracertm.dev/v1/items/item_req001/artifacts" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "artifact_id": "art_abc123",
+    "relationship": "evidence",
+    "notes": "Supporting specification document"
+  }'
+
+# Upload and attach new artifact
+curl -X POST "https://api.tracertm.dev/v1/items/item_req001/artifacts" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -F "file=@/path/to/screenshot.png" \
+  -F "relationship=evidence" \
+  -F "notes=Test execution screenshot"
+```
+
+### Relationship Types
+
+| Type | Description |
+|------|-------------|
+| `evidence` | Test evidence, proof of completion |
+| `specification` | Design specs, requirements docs |
+| `attachment` | General attachment |
+| `screenshot` | Screenshot or screen capture |
+| `log` | Log files, trace output |
+| `report` | Generated reports |
+
+### Response
+
+```json
+{
+  "data": {
+    "item_id": "item_req001",
+    "artifact_id": "art_abc123",
+    "relationship": "evidence",
+    "notes": "Supporting specification document",
+    "attached_by": "user_xyz789",
+    "attached_at": "2025-01-15T15:00:00Z"
+  }
+}
+```
+
+---
+
+## List Item Artifacts
+
+```http
+GET /v1/items/{item_id}/artifacts
+```
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items/item_req001/artifacts" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "artifact": {
+        "id": "art_abc123",
+        "name": "requirements-spec.pdf",
+        "type": "document",
+        "size_bytes": 1048576
+      },
+      "relationship": "specification",
+      "notes": "Main spec document",
+      "attached_by": "user_abc123",
+      "attached_at": "2025-01-15T10:00:00Z"
+    },
+    {
+      "artifact": {
+        "id": "art_def456",
+        "name": "test-screenshot.png",
+        "type": "image",
+        "size_bytes": 245760
+      },
+      "relationship": "evidence",
+      "notes": "Test execution evidence",
+      "attached_by": "user_xyz789",
+      "attached_at": "2025-01-15T14:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Upload artifact
+artifact = await client.artifacts.upload(
+    project_id="proj_456",
+    file_path="/path/to/requirements.pdf",
+    description="Product Requirements v2.0",
+    tags=["specification", "v2.0"],
+    metadata={"version": "2.0", "author": "Product Team"}
+)
+
+print(f"Uploaded: {artifact.id} ({artifact.size_bytes} bytes)")
+
+# Upload from URL
+artifact = await client.artifacts.upload_from_url(
+    project_id="proj_456",
+    url="https://example.com/design.pdf",
+    name="design-spec.pdf"
+)
+
+# List artifacts
+artifacts = await client.artifacts.list(
+    project_id="proj_456",
+    type="document",
+    per_page=50
+)
+
+for art in artifacts:
+    print(f"{art.name}: {art.size_bytes} bytes")
+
+# Download artifact
+await client.artifacts.download(
+    artifact_id="art_abc123",
+    destination="/path/to/downloads/requirements.pdf"
+)
+
+# Attach to item
+await client.items.attach_artifact(
+    item_id="item_req001",
+    artifact_id="art_abc123",
+    relationship="specification"
+)
+
+# Upload and attach in one call
+artifact = await client.items.upload_artifact(
+    item_id="item_req001",
+    file_path="/path/to/screenshot.png",
+    relationship="evidence",
+    notes="Test execution screenshot"
+)
+
+# Get artifact with download URL
+artifact = await client.artifacts.get(
+    artifact_id="art_abc123",
+    include_download_url=True
+)
+print(f"Download: {artifact.download_url}")
+
+# Large file upload with presigned URL
+presigned = await client.artifacts.get_presigned_upload(
+    project_id="proj_456",
+    filename="large-file.zip",
+    content_type="application/zip",
+    size_bytes=500_000_000
+)
+
+# Upload directly to storage
+await client.artifacts.upload_presigned(
+    presigned_url=presigned.upload_url,
+    file_path="/path/to/large-file.zip"
+)
+
+# Finalize upload
+artifact = await client.artifacts.finalize_upload(
+    artifact_id=presigned.artifact_id,
+    description="Large test data archive"
+)
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+import fs from 'fs';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Upload artifact
+const artifact = await client.artifacts.upload({
+  projectId: 'proj_456',
+  file: fs.createReadStream('/path/to/requirements.pdf'),
+  filename: 'requirements.pdf',
+  description: 'Product Requirements v2.0',
+  tags: ['specification', 'v2.0'],
+  metadata: { version: '2.0', author: 'Product Team' }
+});
+
+console.log(`Uploaded: ${artifact.id}`);
+
+// List artifacts
+const { data: artifacts } = await client.artifacts.list({
+  projectId: 'proj_456',
+  type: 'document',
+  perPage: 50
+});
+
+artifacts.forEach(art => {
+  console.log(`${art.name}: ${art.sizeBytes} bytes`);
+});
+
+// Download artifact
+const downloadUrl = await client.artifacts.getDownloadUrl('art_abc123');
+console.log(`Download: ${downloadUrl.url}`);
+
+// Attach to item
+await client.items.attachArtifact({
+  itemId: 'item_req001',
+  artifactId: 'art_abc123',
+  relationship: 'specification',
+  notes: 'Main spec document'
+});
+
+// Browser file upload
+async function handleFileUpload(file: File, projectId: string) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('description', 'Uploaded from browser');
+
+  const artifact = await client.artifacts.upload({
+    projectId,
+    formData
+  });
+
+  return artifact;
+}
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+    ctx := context.Background()
+
+    // Upload artifact
+    file, _ := os.Open("/path/to/requirements.pdf")
+    defer file.Close()
+
+    artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
+        ProjectID:   "proj_456",
+        File:        file,
+        Filename:    "requirements.pdf",
+        Description: "Product Requirements v2.0",
+        Tags:        []string{"specification", "v2.0"},
+        Metadata: map[string]interface{}{
+            "version": "2.0",
+            "author":  "Product Team",
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Uploaded: %s (%d bytes)\n", artifact.ID, artifact.SizeBytes)
+
+    // List artifacts
+    artifacts, err := client.Artifacts.List(ctx, "proj_456", &tracertm.ArtifactListOptions{
+        Type:    "document",
+        PerPage: 50,
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    for _, art := range artifacts.Data {
+        fmt.Printf("%s: %d bytes\n", art.Name, art.SizeBytes)
+    }
+
+    // Download artifact
+    downloadURL, err := client.Artifacts.GetDownloadURL(ctx, "art_abc123")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("Download: %s\n", downloadURL.URL)
+
+    // Attach to item
+    _, err = client.Items.AttachArtifact(ctx, "item_req001", &tracertm.AttachArtifactInput{
+        ArtifactID:   "art_abc123",
+        Relationship: "specification",
+        Notes:        "Main spec document",
+    })
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+---
+
+## File Size Limits
+
+| Plan | Max File Size | Storage Quota |
+|------|---------------|---------------|
+| Free | 10 MB | 100 MB |
+| Pro | 100 MB | 10 GB |
+| Team | 500 MB | 100 GB |
+| Enterprise | 5 GB | Unlimited |
+
+---
+
+## Supported MIME Types
+
+Common supported file types:
+
+| Category | MIME Types |
+|----------|------------|
+| Documents | application/pdf, application/msword, application/vnd.openxmlformats-* |
+| Images | image/png, image/jpeg, image/gif, image/svg+xml, image/webp |
+| Spreadsheets | application/vnd.ms-excel, application/vnd.openxmlformats-*, text/csv |
+| Archives | application/zip, application/x-tar, application/gzip, application/x-7z-compressed |
+| Code | text/plain, text/x-python, application/javascript, text/x-java |
+| Video | video/mp4, video/webm, video/quicktime |
+
+---
+
+## Error Responses
+
+### File Too Large
+
+```json
+{
+  "error": {
+    "code": "FILE_TOO_LARGE",
+    "message": "File exceeds maximum allowed size",
+    "status": 413,
+    "details": {
+      "max_size_bytes": 104857600,
+      "file_size_bytes": 524288000
+    }
+  }
+}
+```
+
+### Unsupported File Type
+
+```json
+{
+  "error": {
+    "code": "UNSUPPORTED_FILE_TYPE",
+    "message": "File type not allowed",
+    "status": 415,
+    "details": {
+      "mime_type": "application/x-executable",
+      "allowed_types": ["application/pdf", "image/*", "..."]
+    }
+  }
+}
+```
+
+### Storage Quota Exceeded
+
+```json
+{
+  "error": {
+    "code": "STORAGE_QUOTA_EXCEEDED",
+    "message": "Project storage quota exceeded",
+    "status": 413,
+    "details": {
+      "quota_bytes": 10737418240,
+      "used_bytes": 10500000000,
+      "file_size_bytes": 500000000
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Items API](/docs/api-reference/rest-api/items) - Item management
+- [Projects API](/docs/api-reference/rest-api/projects) - Project settings
+- [Batch Operations](/docs/api-reference/rest-api/batch-operations) - Bulk uploads

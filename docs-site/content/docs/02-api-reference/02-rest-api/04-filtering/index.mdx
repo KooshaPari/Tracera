@@ -1,115 +1,491 @@
 ---
 title: "Filtering"
-description: "Documentation for Filtering"
+description: "Complete guide to filtering API results in TraceRTM"
 ---
 
 # Filtering
 
+Filter API results using query parameters, filter expressions, or advanced search syntax.
 
-## Overview
+## Quick Reference
 
-Complete API reference for Filtering.
+```bash
+# Simple equality
+?status=approved
 
-## Authentication
+# Multiple values (OR)
+?status=approved,review
 
-All API requests require authentication:
+# Multiple filters (AND)
+?status=approved&priority=high
+
+# Operators
+?created_at[gte]=2024-01-01
+
+# Full-text search
+?search=authentication
+
+# Filter expression
+?filter=status:approved AND priority:high
+```
+
+---
+
+## Simple Filters
+
+Basic equality filters using query parameters.
+
+### Single Value
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?status=approved" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Multiple Values (OR)
+
+Comma-separated values match any:
+
+```bash
+# Items with status approved OR review
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?status=approved,review" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Multiple Filters (AND)
+
+Multiple parameters combine with AND:
+
+```bash
+# Approved items with high priority
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?status=approved&priority=high" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+---
+
+## Filter Operators
+
+Use bracket notation for comparison operators.
+
+### Comparison Operators
+
+| Operator | Syntax | Description |
+|----------|--------|-------------|
+| `eq` | `?field[eq]=value` | Equal (default) |
+| `ne` | `?field[ne]=value` | Not equal |
+| `gt` | `?field[gt]=value` | Greater than |
+| `gte` | `?field[gte]=value` | Greater than or equal |
+| `lt` | `?field[lt]=value` | Less than |
+| `lte` | `?field[lte]=value` | Less than or equal |
+| `in` | `?field[in]=a,b,c` | In list |
+| `nin` | `?field[nin]=a,b,c` | Not in list |
+| `contains` | `?field[contains]=text` | Contains substring |
+| `starts_with` | `?field[starts_with]=text` | Starts with |
+| `ends_with` | `?field[ends_with]=text` | Ends with |
+| `is_null` | `?field[is_null]=true` | Is null |
+| `is_not_null` | `?field[is_not_null]=true` | Is not null |
+
+### Examples
+
+```bash
+# Items created after January 1, 2024
+curl "https://api.tracertm.dev/v1/items?created_at[gte]=2024-01-01T00:00:00Z" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Items with priority high or critical
+curl "https://api.tracertm.dev/v1/items?priority[in]=high,critical" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Items with title containing "auth"
+curl "https://api.tracertm.dev/v1/items?title[contains]=auth" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Items without an assignee
+curl "https://api.tracertm.dev/v1/items?assignee_id[is_null]=true" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Items not in draft status
+curl "https://api.tracertm.dev/v1/items?status[ne]=draft" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+---
+
+## Date Filters
+
+### Date Ranges
+
+```bash
+# Items created in January 2024
+curl "https://api.tracertm.dev/v1/items?created_at[gte]=2024-01-01&created_at[lt]=2024-02-01" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Items updated in last 7 days
+curl "https://api.tracertm.dev/v1/items?updated_at[gte]=2024-01-08" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Relative Dates
+
+```bash
+# Items created today
+?created_at[gte]=today
+
+# Items updated in last 7 days
+?updated_at[gte]=-7d
+
+# Items due within 30 days
+?due_date[lte]=+30d
+
+# Items created this week
+?created_at[gte]=this_week
+```
+
+| Shorthand | Description |
+|-----------|-------------|
+| `today` | Start of today |
+| `yesterday` | Start of yesterday |
+| `this_week` | Start of current week |
+| `this_month` | Start of current month |
+| `this_year` | Start of current year |
+| `-Nd` | N days ago |
+| `+Nd` | N days from now |
+| `-Nw` | N weeks ago |
+| `-Nm` | N months ago |
+
+---
+
+## Filter Expression Language
+
+Complex filters using expression syntax.
+
+### Syntax
+
+```bash
+?filter=<expression>
+```
+
+### Operators
+
+| Operator | Alias | Example |
+|----------|-------|---------|
+| `AND` | `&&` | `status:approved AND priority:high` |
+| `OR` | `\|\|` | `status:approved OR status:review` |
+| `NOT` | `!` | `NOT status:archived` |
+| `:` | `=` | `status:approved` or `status=approved` |
+| `>` | `gt` | `version>5` |
+| `>=` | `gte` | `priority>=high` |
+| `<` | `lt` | `story_points<8` |
+| `<=` | `lte` | `created_at<=2024-01-01` |
+
+### Examples
+
+```bash
+# Complex AND/OR
+?filter=(status:approved OR status:review) AND priority:high
+
+# Negation
+?filter=type:requirement AND NOT status:archived
+
+# Numeric comparisons
+?filter=custom_fields.story_points>=8 AND custom_fields.story_points<=21
+
+# Date ranges
+?filter=created_at>=2024-01-01 AND created_at<2024-02-01
+
+# Nested field
+?filter=custom_fields.component:auth
+```
+
+### URL Encoding
+
+Remember to URL-encode the filter expression:
+
+```bash
+# Raw filter
+filter=(status:approved OR status:review) AND priority:high
+
+# URL encoded
+filter=%28status%3Aapproved%20OR%20status%3Areview%29%20AND%20priority%3Ahigh
+```
+
+---
+
+## Filterable Fields
+
+### Items
+
+| Field | Type | Operators |
+|-------|------|-----------|
+| `id` | string | eq, ne, in, nin |
+| `type` | string | eq, ne, in, nin |
+| `status` | string | eq, ne, in, nin |
+| `priority` | string | eq, ne, in, nin, gt, gte, lt, lte |
+| `title` | string | eq, contains, starts_with, ends_with |
+| `custom_id` | string | eq, ne, contains |
+| `assignee_id` | string | eq, ne, in, is_null |
+| `reporter_id` | string | eq, ne, in |
+| `parent_id` | string | eq, is_null |
+| `tags` | array | contains, in |
+| `created_at` | datetime | eq, gt, gte, lt, lte |
+| `updated_at` | datetime | eq, gt, gte, lt, lte |
+| `created_by` | string | eq, ne, in |
+| `version` | integer | eq, gt, gte, lt, lte |
+| `custom_fields.*` | varies | depends on field type |
+
+### Projects
+
+| Field | Type | Operators |
+|-------|------|-----------|
+| `id` | string | eq, ne, in, nin |
+| `name` | string | eq, contains, starts_with |
+| `key` | string | eq, ne, in |
+| `status` | string | eq, ne, in |
+| `visibility` | string | eq, ne, in |
+| `owner_id` | string | eq, ne, in |
+| `created_at` | datetime | all comparison |
+| `updated_at` | datetime | all comparison |
+
+### Links
+
+| Field | Type | Operators |
+|-------|------|-----------|
+| `id` | string | eq, ne, in |
+| `type` | string | eq, ne, in |
+| `source_id` | string | eq, ne, in |
+| `target_id` | string | eq, ne, in |
+| `source_type` | string | eq, ne, in |
+| `target_type` | string | eq, ne, in |
+| `created_at` | datetime | all comparison |
+| `created_by` | string | eq, ne, in |
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Simple filters
+items = client.items.list(
+    project_id="proj_123",
+    status="approved",
+    priority="high"
+)
+
+# Multiple values
+items = client.items.list(
+    project_id="proj_123",
+    status=["approved", "review"]
+)
+
+# Operators
+items = client.items.list(
+    project_id="proj_123",
+    created_at__gte="2024-01-01",
+    priority__in=["high", "critical"]
+)
+
+# Filter expression
+items = client.items.list(
+    project_id="proj_123",
+    filter="(status:approved OR status:review) AND priority:high"
+)
+
+# Builder pattern
+from tracertm.filters import Filter, And, Or
+
+query = And(
+    Or(Filter("status", "approved"), Filter("status", "review")),
+    Filter("priority", "high"),
+    Filter("created_at", ">=", "2024-01-01")
+)
+
+items = client.items.list(
+    project_id="proj_123",
+    filter=query
+)
+
+# Custom fields
+items = client.items.list(
+    project_id="proj_123",
+    custom_fields__component="auth",
+    custom_fields__story_points__gte=5
+)
+```
+
+### TypeScript
 
 ```typescript
-const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
-  'Content-Type': 'application/json'
+import { TraceRTMClient, Filter } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Simple filters
+const items = await client.items.list({
+  projectId: 'proj_123',
+  status: 'approved',
+  priority: 'high'
+});
+
+// Multiple values
+const items = await client.items.list({
+  projectId: 'proj_123',
+  status: ['approved', 'review']
+});
+
+// Operators
+const items = await client.items.list({
+  projectId: 'proj_123',
+  createdAt: { gte: '2024-01-01' },
+  priority: { in: ['high', 'critical'] }
+});
+
+// Filter expression
+const items = await client.items.list({
+  projectId: 'proj_123',
+  filter: '(status:approved OR status:review) AND priority:high'
+});
+
+// Builder pattern
+const query = Filter.and(
+  Filter.or(
+    Filter.eq('status', 'approved'),
+    Filter.eq('status', 'review')
+  ),
+  Filter.eq('priority', 'high'),
+  Filter.gte('createdAt', '2024-01-01')
+);
+
+const items = await client.items.list({
+  projectId: 'proj_123',
+  filter: query
+});
+```
+
+### Go
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+client := tracertm.NewClient("rtm_live_sk_...")
+
+// Simple filters
+opts := &tracertm.ItemListOptions{
+    Status:   "approved",
+    Priority: "high",
+}
+items, _ := client.Items.List(ctx, "proj_123", opts)
+
+// Multiple values
+opts := &tracertm.ItemListOptions{
+    Status: []string{"approved", "review"},
+}
+
+// Operators
+opts := &tracertm.ItemListOptions{
+    CreatedAtGte: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+    PriorityIn:   []string{"high", "critical"},
+}
+
+// Filter expression
+opts := &tracertm.ItemListOptions{
+    Filter: "(status:approved OR status:review) AND priority:high",
 }
 ```
 
-## Endpoints
+---
 
-### List All Filtering
+## Combining with Pagination and Sorting
 
-```http
-GET /api/v1/filtering
+```bash
+# Full query with filters, sorting, and pagination
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?\
+status=approved&\
+priority[in]=high,critical&\
+created_at[gte]=2024-01-01&\
+sort=-priority,created_at&\
+page=1&\
+per_page=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
 ```
 
-**Response:**
+```python
+# Combined query
+items = client.items.list(
+    project_id="proj_123",
+    status="approved",
+    priority__in=["high", "critical"],
+    created_at__gte="2024-01-01",
+    sort=["-priority", "created_at"],
+    page=1,
+    per_page=50
+)
+```
+
+---
+
+## Error Responses
+
+### Invalid Filter Field
+
 ```json
 {
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+  "error": {
+    "code": "INVALID_FILTER_FIELD",
+    "message": "Unknown filter field: 'invalid_field'",
+    "status": 400,
+    "details": {
+      "field": "invalid_field",
+      "valid_fields": ["id", "type", "status", "priority", "..."]
+    }
   }
 }
 ```
 
-### Get Filtering by ID
+### Invalid Filter Operator
 
-```http
-GET /api/v1/filtering/:id
-```
-
-### Create Filtering
-
-```http
-POST /api/v1/filtering
-```
-
-**Request Body:**
 ```json
 {
-  "name": "Example Filtering",
-  "description": "Description here"
+  "error": {
+    "code": "INVALID_FILTER_OPERATOR",
+    "message": "Operator 'contains' not supported for field 'priority'",
+    "status": 400,
+    "details": {
+      "field": "priority",
+      "operator": "contains",
+      "valid_operators": ["eq", "ne", "in", "nin", "gt", "gte", "lt", "lte"]
+    }
+  }
 }
 ```
 
-### Update Filtering
+### Invalid Filter Expression
 
-```http
-PUT /api/v1/filtering/:id
+```json
+{
+  "error": {
+    "code": "INVALID_FILTER_EXPRESSION",
+    "message": "Failed to parse filter expression",
+    "status": 400,
+    "details": {
+      "expression": "(status:approved AND",
+      "error": "Unclosed parenthesis",
+      "position": 20
+    }
+  }
+}
 ```
 
-### Delete Filtering
+---
 
-```http
-DELETE /api/v1/filtering/:id
-```
+## Related Documentation
 
-## Query Parameters
-
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
-
-## Error Responses
-
-### 400 Bad Request
-Invalid request parameters
-
-### 401 Unauthorized
-Missing or invalid authentication token
-
-### 404 Not Found
-Resource not found
-
-### 500 Internal Server Error
-Server error
-
-## SDK Examples
-
-### TypeScript
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
-
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.filtering.list()
-```
-
-### Python
-```python
-from tracertm import Client
-
-client = Client(api_key='YOUR_KEY')
-items = client.filtering.list()
-```
-
+- [Pagination](/docs/api-reference/rest-api/pagination) - Paginate results
+- [Sorting](/docs/api-reference/rest-api/sorting) - Sort results
+- [Search](/docs/api-reference/rest-api/endpoints/search) - Full-text search

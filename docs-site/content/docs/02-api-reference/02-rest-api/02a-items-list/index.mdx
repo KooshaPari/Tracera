@@ -1,32 +1,505 @@
 ---
 title: "List Items"
-description: "Documentation for List Items"
+description: "API endpoint for listing and filtering items within a TraceRTM project"
 ---
 
 # List Items
 
-This page contains documentation for List Items.
+Retrieve a paginated, filtered list of items from a specific project.
 
-## Overview
+## Endpoint
 
-This section covers the key aspects of List Items in TraceRTM.
+```http
+GET /v1/projects/{project_id}/items
+```
 
-## Getting Started
+## Authentication
 
-To get started with List Items:
+Requires a valid API key or access token with `read:items` scope.
 
-- Review the List Items and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Path Parameters
 
-## Key Concepts
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project ID (required) |
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+## Query Parameters
 
-## Next Steps
+### Filtering
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | string | Item type: `requirement`, `test_case`, `bug`, `user_story`, `task` |
+| `status` | string | Status filter (comma-separated for multiple) |
+| `priority` | string | Priority: `critical`, `high`, `medium`, `low` |
+| `assignee_id` | string | Assigned user ID (`me` for current user, `none` for unassigned) |
+| `reporter_id` | string | Reporter user ID |
+| `tag` | string | Filter by tag (can repeat for multiple tags) |
+| `custom_id` | string | Filter by custom ID prefix |
+| `parent_id` | string | Filter by parent item (`null` for root items) |
+| `has_links` | boolean | Items with/without links |
+| `has_attachments` | boolean | Items with/without attachments |
+
+### Date Filters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `created_after` | datetime | Created after date (ISO 8601) |
+| `created_before` | datetime | Created before date |
+| `updated_after` | datetime | Updated after date |
+| `updated_before` | datetime | Updated before date |
+
+### Search
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `search` | string | Full-text search in title and description |
+| `title` | string | Search in title only |
+
+### Custom Field Filters
+
+Use `cf.{field_name}` syntax:
+
+| Parameter | Example | Description |
+|-----------|---------|-------------|
+| `cf.{name}` | `cf.component=auth` | Exact match |
+| `cf.{name}[contains]` | `cf.tags[contains]=security` | Contains value |
+| `cf.{name}[gt]` | `cf.story_points[gt]=5` | Greater than |
+| `cf.{name}[gte]` | `cf.story_points[gte]=5` | Greater than or equal |
+| `cf.{name}[lt]` | `cf.story_points[lt]=10` | Less than |
+| `cf.{name}[in]` | `cf.status[in]=todo,doing` | In list |
+
+### Sorting
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sort` | string | `-updated_at` | Sort field with `-` prefix for descending |
+
+Sort fields: `title`, `custom_id`, `type`, `status`, `priority`, `created_at`, `updated_at`, `assignee_id`
+
+### Pagination
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | 1 | Page number |
+| `per_page` | integer | 20 | Items per page (max 100) |
+| `cursor` | string | - | Cursor for cursor-based pagination |
+| `limit` | integer | 20 | Items with cursor pagination |
+
+### Field Selection
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `fields` | string | Comma-separated fields to return |
+| `include` | string | Include related: `links`, `comments`, `attachments`, `children` |
+
+## Request Examples
+
+### Basic Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Filter by Type and Status
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?type=requirement&status=approved,review" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Search with Tags
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?search=authentication&tag=security&tag=mvp" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Filter by Custom Fields
+
+```bash
+# Items with story points > 5
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?cf.story_points[gt]=5" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+
+# Items in specific component
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?cf.component=auth" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Filter by Date Range
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?created_after=2025-01-01T00:00:00Z&created_before=2025-01-31T23:59:59Z" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### My Assigned Items
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?assignee_id=me&status=active,review" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Items Without Links (Coverage Gap)
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?type=requirement&has_links=false" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Include Related Data
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?include=links,comments&per_page=10" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Sparse Fieldsets
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/items?fields=id,custom_id,title,status,priority" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "data": [
+    {
+      "id": "item_abc123xyz",
+      "project_id": "proj_456",
+      "type": "requirement",
+      "title": "User Authentication",
+      "description": "The system shall support OAuth 2.0 authentication.",
+      "status": "approved",
+      "priority": "high",
+      "custom_id": "REQ-001",
+      "custom_fields": {
+        "platform": ["web", "mobile"],
+        "component": "auth",
+        "story_points": 8
+      },
+      "tags": ["security", "mvp"],
+      "assignee_id": "user_xyz789",
+      "reporter_id": "user_abc123",
+      "parent_id": null,
+      "version": 5,
+      "links_count": {
+        "total": 8,
+        "inbound": 3,
+        "outbound": 5
+      },
+      "created_at": "2025-01-10T09:00:00Z",
+      "updated_at": "2025-01-15T14:30:00Z"
+    },
+    {
+      "id": "item_def456uvw",
+      "project_id": "proj_456",
+      "type": "requirement",
+      "title": "Password Reset",
+      "status": "review",
+      "priority": "medium",
+      "custom_id": "REQ-002",
+      "links_count": {"total": 5},
+      "created_at": "2025-01-11T10:00:00Z",
+      "updated_at": "2025-01-14T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 80,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 4,
+    "request_id": "req_xyz789"
+  },
+  "links": {
+    "self": "https://api.tracertm.dev/v1/projects/proj_456/items?page=1",
+    "next": "https://api.tracertm.dev/v1/projects/proj_456/items?page=2",
+    "last": "https://api.tracertm.dev/v1/projects/proj_456/items?page=4"
+  }
+}
+```
+
+### With Included Relations
+
+```json
+{
+  "data": [
+    {
+      "id": "item_abc123",
+      "title": "User Authentication",
+      "links": [
+        {
+          "id": "link_123",
+          "type": "verified_by",
+          "target_id": "item_test1",
+          "target": {
+            "id": "item_test1",
+            "type": "test_case",
+            "title": "Test OAuth Login"
+          }
+        }
+      ],
+      "comments": [
+        {
+          "id": "comment_1",
+          "content": "Approved by security team",
+          "author": {"id": "user_xyz", "name": "Alice"},
+          "created_at": "2025-01-14T10:00:00Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_...")
+
+# Basic list
+items = await client.items.list(project_id="proj_456")
+
+# With filters
+requirements = await client.items.list(
+    project_id="proj_456",
+    type="requirement",
+    status=["approved", "review"],
+    priority="high",
+    sort="-updated_at"
+)
+
+# Search
+results = await client.items.list(
+    project_id="proj_456",
+    search="authentication",
+    tags=["security"]
+)
+
+# Custom field filters
+items = await client.items.list(
+    project_id="proj_456",
+    custom_fields={
+        "story_points__gt": 5,
+        "component": "auth"
+    }
+)
+
+# My items
+my_items = await client.items.list(
+    project_id="proj_456",
+    assignee_id="me"
+)
+
+# Items missing test coverage
+uncovered = await client.items.list(
+    project_id="proj_456",
+    type="requirement",
+    has_links=False
+)
+
+# Paginate through all items
+async for item in client.items.list_all(
+    project_id="proj_456",
+    type="requirement"
+):
+    print(f"{item.custom_id}: {item.title}")
+
+# With includes
+items = await client.items.list(
+    project_id="proj_456",
+    include=["links", "comments"],
+    per_page=10
+)
+for item in items:
+    print(f"{item.title} - {len(item.links)} links")
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient, ItemType, Priority } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_...' })
+
+// Basic list
+const { data: items, meta } = await client.items.list({
+  projectId: 'proj_456'
+})
+
+// With filters
+const requirements = await client.items.list({
+  projectId: 'proj_456',
+  type: ItemType.Requirement,
+  status: ['approved', 'review'],
+  priority: Priority.High,
+  sort: '-updated_at'
+})
+
+// Search with tags
+const searchResults = await client.items.list({
+  projectId: 'proj_456',
+  search: 'authentication',
+  tags: ['security', 'mvp']
+})
+
+// Custom field filters
+const filtered = await client.items.list({
+  projectId: 'proj_456',
+  customFields: {
+    'story_points[gt]': 5,
+    component: 'auth'
+  }
+})
+
+// Async iterator for all items
+for await (const item of client.items.listAll({
+  projectId: 'proj_456',
+  type: ItemType.Requirement
+})) {
+  console.log(`${item.customId}: ${item.title}`)
+}
+
+// Date range filter
+const recentItems = await client.items.list({
+  projectId: 'proj_456',
+  createdAfter: new Date('2025-01-01'),
+  createdBefore: new Date('2025-01-31')
+})
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_...")
+    ctx := context.Background()
+
+    // List with filters
+    items, err := client.Items.List(ctx, "proj_456", &tracertm.ItemListOptions{
+        Type:     tracertm.ItemTypeRequirement,
+        Status:   []string{"approved", "review"},
+        Priority: tracertm.PriorityHigh,
+        Sort:     "-updated_at",
+        PerPage:  50,
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    for _, item := range items.Data {
+        fmt.Printf("%s: %s\n", item.CustomID, item.Title)
+    }
+
+    // Date filter
+    after := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+    recentItems, _ := client.Items.List(ctx, "proj_456", &tracertm.ItemListOptions{
+        CreatedAfter: &after,
+    })
+
+    fmt.Printf("Found %d items created after Jan 1\n", recentItems.Meta.Total)
+}
+```
+
+## Error Responses
+
+### Project Not Found (404)
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Project not found",
+    "details": {"project_id": "proj_invalid"}
+  }
+}
+```
+
+### Invalid Filter (400)
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid filter parameter",
+    "details": [
+      {
+        "field": "type",
+        "message": "Invalid item type: unknown_type"
+      }
+    ]
+  }
+}
+```
+
+## Best Practices
+
+### Use Cursor Pagination for Large Sets
+
+```python
+# For datasets > 1000 items, use cursor pagination
+cursor = None
+all_items = []
+
+while True:
+    response = await client.items.list(
+        project_id="proj_456",
+        cursor=cursor,
+        limit=100
+    )
+    all_items.extend(response.data)
+
+    if not response.meta.has_more:
+        break
+    cursor = response.meta.next_cursor
+```
+
+### Cache Results When Appropriate
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=50, ttl=60)  # Cache for 1 minute
+async def get_project_items(project_id: str, status: str):
+    return await client.items.list(
+        project_id=project_id,
+        status=status
+    )
+```
+
+### Use Sparse Fieldsets
+
+```python
+# Only request needed fields to reduce response size
+items = await client.items.list(
+    project_id="proj_456",
+    fields=["id", "custom_id", "title", "status"]
+)
+```
+
+## Related Documentation
+
+- [Items API](/docs/api-reference/rest-api/items) - All item endpoints
+- [Create Item](/docs/api-reference/rest-api/items-create) - Creating items
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter syntax
+- [Pagination](/docs/api-reference/rest-api/pagination) - Pagination options
+

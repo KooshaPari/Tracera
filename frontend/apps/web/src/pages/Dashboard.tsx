@@ -1,5 +1,5 @@
 import { Activity, ArrowRight, FolderOpen, GitBranch, Link2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link } from '@tanstack/react-router'
 
 const stats = [
   { name: 'Projects', value: '12', icon: FolderOpen, href: '/projects' },

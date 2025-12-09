@@ -1,125 +1,484 @@
 ---
 title: "Jira Integration"
-description: "Documentation for Jira Integration"
+description: "Synchronize Jira issues with TraceRTM artifacts for complete traceability"
 ---
 
 # Jira Integration
 
+Connect TraceRTM with Atlassian Jira to synchronize issues, track requirements, and maintain bidirectional traceability between your project management and requirements management systems.
 
-## Overview
+## Setup
 
-Welcome to the Jira Integration documentation.
+### Prerequisites
 
-## Introduction
+- Jira Cloud or Jira Server/Data Center
+- API token (Cloud) or Personal Access Token (Server)
+- Project admin access for webhook configuration
 
-This page provides comprehensive information about Jira Integration.
+### Configuration
 
-## Key Features
+```yaml
+# .tracertm/config.yaml
+integrations:
+  jira:
+    enabled: true
+    url: "https://yourcompany.atlassian.net"
+    email: "user@example.com"
+    api_token: ${JIRA_API_TOKEN}
+    project_key: "PROJ"
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+    # Optional settings
+    sync_interval: 300  # seconds
+    sync_direction: bidirectional  # or from_jira, to_jira
+```
 
-## Getting Started
+### CLI Setup
 
 ```bash
-tracertm init
-tracertm config set jira enabled
+# Enable Jira integration
+tracertm integrations enable jira
+
+# Configure connection
+tracertm integrations configure jira \
+  --url "https://yourcompany.atlassian.net" \
+  --email "user@example.com" \
+  --token "${JIRA_API_TOKEN}" \
+  --project "PROJ"
+
+# Test connection
+tracertm integrations test jira
+
+# Output:
+# Testing Jira connection...
+# ✓ Connected to Jira Cloud
+# ✓ Project PROJ accessible
+# ✓ Webhook configured
+# ✓ 156 issues available for sync
 ```
 
-## Usage
+## Issue Synchronization
 
-### Basic Usage
+### Import from Jira
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```python
+from tracertm import TraceRTMClient
+from tracertm.integrations import JiraIntegration
 
-const tracertm = new TraceRTM()
-const result = await tracertm.jira()
+client = TraceRTMClient()
+jira = client.get_integration("jira")
+
+# Import all issues from a project
+imported = jira.import_issues(
+    project_key="PROJ",
+    issue_types=["Story", "Bug", "Epic"]
+)
+
+print(f"Imported {imported.count} issues")
+
+# Import specific issue
+item = jira.import_issue("PROJ-123")
+print(f"Created: {item.id} from {item.external_id}")
 ```
 
-### Advanced Usage
+### CLI Import
 
-```typescript
-const config = {
-  jira: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+```bash
+# Import all issues
+tracertm jira import --project PROJ
 
-const tracertm = new TraceRTM(config)
+# Import specific types
+tracertm jira import --project PROJ --types "Story,Bug"
+
+# Import single issue
+tracertm jira import PROJ-123
+
+# Import with JQL filter
+tracertm jira import --jql "project = PROJ AND status = 'In Progress'"
 ```
 
-## Configuration
+### Export to Jira
 
-```typescript
-export default {
-  jira: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+```python
+# Create Jira issue from TraceRTM item
+jira_issue = jira.export_item(
+    item_id="FEAT-001",
+    project_key="PROJ",
+    issue_type="Story"
+)
+
+print(f"Created Jira issue: {jira_issue.key}")
 ```
 
-## Examples
-
-### Example 1
-
-```typescript
-const example = await tracertm.jira({
-  option1: 'value1',
-  option2: 'value2'
-})
+```bash
+# Export to Jira
+tracertm jira export FEAT-001 --project PROJ --type Story
 ```
 
-### Example 2
+## Status Mapping
 
-```typescript
-const advanced = await tracertm.jira({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+### Configure Status Sync
+
+```yaml
+integrations:
+  jira:
+    status_mapping:
+      # Jira status → TraceRTM status
+      from_jira:
+        "To Do": draft
+        "In Progress": in_progress
+        "In Review": review
+        "Done": done
+        "Won't Do": cancelled
+
+      # TraceRTM status → Jira transition
+      to_jira:
+        draft: "To Do"
+        in_progress:
+          status: "In Progress"
+          transition: "Start Progress"
+        review:
+          status: "In Review"
+          transition: "Submit for Review"
+        done:
+          status: "Done"
+          transition: "Mark Done"
 ```
 
-## Best Practices
+### Manual Status Sync
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+```python
+# Sync status from Jira
+jira.sync_status("FEAT-001", direction="from_jira")
+
+# Push status to Jira
+jira.sync_status("FEAT-001", direction="to_jira")
+
+# Sync all
+jira.sync_all_statuses()
+```
+
+## Field Mapping
+
+### Standard Fields
+
+```yaml
+integrations:
+  jira:
+    field_mapping:
+      # Jira field → TraceRTM field
+      summary: title
+      description: description
+      priority: priority
+      assignee: assignee
+      reporter: owner
+      labels: labels
+```
+
+### Custom Fields
+
+```yaml
+integrations:
+  jira:
+    custom_fields:
+      # Jira custom field ID → TraceRTM metadata field
+      customfield_10001: story_points
+      customfield_10002: risk_level
+      customfield_10003: business_value
+      customfield_10004: component
+
+    # Value mapping for enums
+    value_mapping:
+      risk_level:
+        "High Risk": high
+        "Medium Risk": medium
+        "Low Risk": low
+```
+
+### Field Sync
+
+```python
+# Sync specific fields
+jira.sync_fields(
+    item_id="FEAT-001",
+    fields=["status", "story_points", "assignee"]
+)
+
+# Full sync
+jira.full_sync("FEAT-001")
+```
+
+## Issue Type Mapping
+
+### Map Types to Artifacts
+
+```yaml
+integrations:
+  jira:
+    type_mapping:
+      # Jira issue type → TraceRTM artifact type
+      Epic: epic
+      Story: feature
+      Bug: bug
+      Task: task
+      "Sub-task": task
+      "Test Case": test
+      Documentation: doc
+```
+
+### Custom Type Handlers
+
+```python
+from tracertm.integrations.jira import JiraTypeHandler
+
+@jira.register_type_handler("Custom Type")
+class CustomTypeHandler(JiraTypeHandler):
+    def to_tracertm(self, jira_issue):
+        return {
+            "item_type": "feature",
+            "metadata": {
+                "custom_field": jira_issue.fields.customfield_10001
+            }
+        }
+
+    def to_jira(self, tracertm_item):
+        return {
+            "issuetype": {"name": "Custom Type"},
+            "customfield_10001": tracertm_item.metadata.get("custom_field")
+        }
+```
+
+## Link Synchronization
+
+### Link Type Mapping
+
+```yaml
+integrations:
+  jira:
+    link_mapping:
+      # Jira link type → TraceRTM link type
+      "Blocks": blocks
+      "is blocked by": blocked_by
+      "Clones": clones
+      "is cloned by": cloned_from
+      "Duplicate": duplicate
+      "Relates": related_to
+      "Parent-Child": child_of
+```
+
+### Sync Links
+
+```python
+# Import links from Jira
+jira.sync_links("FEAT-001")
+
+# Export links to Jira
+jira.export_links("FEAT-001")
+
+# Sync all links
+jira.sync_all_links()
+```
+
+## Webhooks
+
+### Configure Jira Webhooks
+
+```python
+# Register webhook handler
+@client.on("jira:issue_updated")
+def handle_jira_update(event):
+    issue_key = event.data["issue"]["key"]
+    change_log = event.data["changelog"]
+
+    # Update TraceRTM item
+    jira.sync_from_event(event)
+```
+
+### Webhook Events
+
+| Jira Event | TraceRTM Action |
+|------------|-----------------|
+| `issue_created` | Create artifact |
+| `issue_updated` | Update artifact |
+| `issue_deleted` | Archive artifact |
+| `sprint_started` | Update sprint items |
+| `sprint_closed` | Update completion |
+
+### CLI Webhook Setup
+
+```bash
+# Create webhook in Jira
+tracertm jira webhook create \
+  --events "issue_created,issue_updated,issue_deleted"
+
+# List webhooks
+tracertm jira webhook list
+
+# Delete webhook
+tracertm jira webhook delete <webhook-id>
+```
+
+## JQL Queries
+
+### Query Jira from TraceRTM
+
+```python
+# Search with JQL
+issues = jira.search(
+    jql='project = PROJ AND status = "In Progress" AND assignee = currentUser()'
+)
+
+for issue in issues:
+    print(f"{issue.key}: {issue.summary}")
+```
+
+### CLI JQL
+
+```bash
+# Search Jira
+tracertm jira search 'project = PROJ AND fixVersion = "1.0"'
+
+# Import from JQL
+tracertm jira import --jql 'project = PROJ AND sprint in openSprints()'
+```
+
+## Sprint Integration
+
+### Sync Sprints
+
+```python
+# Import sprint data
+sprints = jira.get_sprints(board_id=123)
+
+for sprint in sprints:
+    print(f"{sprint.name}: {sprint.state}")
+
+# Sync sprint assignments
+jira.sync_sprint_assignments()
+```
+
+### Sprint Mapping
+
+```yaml
+integrations:
+  jira:
+    sprints:
+      sync_enabled: true
+      field: metadata.sprint
+      include_velocity: true
+```
+
+## Reports
+
+### Coverage Report
+
+```bash
+# Generate Jira coverage report
+tracertm jira report coverage
+
+# Output:
+# Jira Coverage Report
+# ════════════════════════════════════════
+# Total Jira Issues: 156
+# Synced to TraceRTM: 152 (97.4%)
+# Missing: 4
+#   - PROJ-145: Custom Type (not mapped)
+#   - PROJ-148: Archived
+#   - PROJ-151: Sync error
+#   - PROJ-154: New (pending sync)
+```
+
+### Sync Status
+
+```bash
+# Check sync status
+tracertm jira status
+
+# Output:
+# Jira Sync Status
+# ════════════════════════════════════════
+# Last sync: 2024-12-10 14:30:00
+# Items synced: 152
+# Pending changes: 3
+# Errors: 0
+# Next sync in: 4m 32s
+```
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Issue 1:**
+**Authentication Failed**
 ```bash
-tracertm fix issue-1
+# Verify credentials
+tracertm jira test-auth
+
+# Check API token permissions
+tracertm jira check-permissions
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+**Sync Conflicts**
+```python
+# Handle sync conflicts
+conflicts = jira.get_conflicts()
+for conflict in conflicts:
+    print(f"{conflict.item_id}: {conflict.field}")
+    print(f"  Jira: {conflict.jira_value}")
+    print(f"  TraceRTM: {conflict.tracertm_value}")
+
+# Resolve conflict
+jira.resolve_conflict(
+    conflict.id,
+    resolution="use_jira"  # or "use_tracertm", "merge"
+)
 ```
 
-## API Reference
+**Missing Custom Fields**
+```bash
+# List available Jira fields
+tracertm jira fields list
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+# Find custom field ID
+tracertm jira fields search "Story Points"
+```
+
+## Best Practices
+
+### 1. Use Consistent IDs
+
+```yaml
+# Store Jira key in TraceRTM
+integrations:
+  jira:
+    store_external_id: true
+    external_id_field: jira_key
+```
+
+### 2. Configure Conflict Resolution
+
+```yaml
+integrations:
+  jira:
+    conflict_resolution:
+      default: use_newer
+      by_field:
+        status: use_jira  # Jira is source of truth
+        description: use_tracertm
+```
+
+### 3. Set Up Notifications
+
+```yaml
+integrations:
+  jira:
+    notifications:
+      sync_errors: true
+      conflict_alerts: true
+      recipients: ["admin@example.com"]
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [GitHub Integration](/docs/wiki/concepts/integrations/github) - Code integration
+- [Custom Integrations](/docs/wiki/concepts/integrations/custom) - Build custom
+- [Workflows](/docs/wiki/concepts/workflows) - Status automation
 

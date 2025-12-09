@@ -1,125 +1,359 @@
 ---
 title: "Versioning Strategies"
-description: "Documentation for Versioning Strategies"
+description: "Choose the right versioning approach for your project and workflow"
 ---
 
 # Versioning Strategies
 
+TraceRTM supports multiple versioning strategies to match your team's workflow, from simple auto-increment to semantic versioning and baseline-driven approaches.
 
-## Overview
+## Auto-Increment Versioning
 
-Welcome to the Versioning Strategies documentation.
+The default strategy automatically increments version numbers on each change:
 
-## Introduction
+```python
+from tracertm import TraceRTMClient
 
-This page provides comprehensive information about Versioning Strategies.
+client = TraceRTMClient()
 
-## Key Features
+# Create item (v1)
+item = client.create_item(
+    title="User Authentication",
+    item_type="feature"
+)
+print(f"Version: {item.version}")  # 1
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+# First update (v2)
+client.update_item(item.id, status="in_progress")
+item = client.get_item(item.id)
+print(f"Version: {item.version}")  # 2
 
-## Getting Started
+# Second update (v3)
+client.update_item(item.id, description="OAuth2 flow")
+item = client.get_item(item.id)
+print(f"Version: {item.version}")  # 3
+```
+
+### Configuration
+
+```yaml
+# .tracertm/config.yaml
+versioning:
+  strategy: auto_increment
+
+  # Which changes trigger version increment
+  version_on:
+    - title
+    - description
+    - status
+    - metadata.*
+
+  # Skip versioning for these fields
+  skip_version_on:
+    - assignee
+    - labels
+```
+
+## Semantic Versioning
+
+For releases and formal baselines, use semantic versioning:
+
+```python
+# Set explicit semantic version
+client.set_version(
+    item_id="FEAT-001",
+    version="2.1.0",
+    reason="Major feature update"
+)
+
+# Bump version components
+client.bump_version("FEAT-001", "patch")  # 2.1.0 → 2.1.1
+client.bump_version("FEAT-001", "minor")  # 2.1.1 → 2.2.0
+client.bump_version("FEAT-001", "major")  # 2.2.0 → 3.0.0
+```
+
+### Configuration
+
+```yaml
+versioning:
+  strategy: semantic
+
+  semantic:
+    format: "{major}.{minor}.{patch}"
+
+    # Auto-bump rules
+    auto_bump:
+      major:
+        on_status: [breaking_change]
+      minor:
+        on_status: [done]
+        on_field_change: [description, acceptance_criteria]
+      patch:
+        on_field_change: [metadata.*]
+```
+
+## Baseline-Driven Versioning
+
+Version artifacts relative to baselines:
+
+```python
+# Create a baseline
+baseline = client.create_baseline(
+    name="sprint-2024-q4-s1",
+    description="Sprint 1 baseline",
+    items=client.list_items(
+        status="done",
+        metadata={"sprint": "2024-Q4-S1"}
+    )
+)
+
+# Items in baseline are frozen
+# New changes create versions relative to baseline
+item = client.get_item("FEAT-001")
+print(f"Baseline version: {item.baseline_version}")  # sprint-2024-q4-s1
+print(f"Current version: {item.version}")            # 5
+print(f"Changes since baseline: {item.changes_since_baseline}")  # 2
+```
+
+### Baseline Types
+
+```yaml
+versioning:
+  strategy: baseline
+
+  baselines:
+    types:
+      # Sprint baselines
+      sprint:
+        auto_create: true
+        trigger:
+          on_status: sprint_complete
+        include:
+          status: done
+
+      # Release baselines
+      release:
+        auto_create: false
+        requires_approval: true
+        frozen: true  # No changes after creation
+
+      # Audit baselines
+      audit:
+        auto_create: false
+        include_history: true
+        signed: true
+```
+
+## Change Set Versioning
+
+Group related changes into logical change sets:
+
+```python
+# Start a change set
+with client.change_set("Add OAuth2 support") as cs:
+    # All changes in this block are grouped
+    client.update_item("FEAT-001", description="OAuth2 authentication")
+    client.update_item("CODE-001", status="in_progress")
+    client.create_link("CODE-001", "FEAT-001", "implements")
+
+# Change set is committed as a single version
+print(f"Change set ID: {cs.id}")
+print(f"Items affected: {cs.affected_items}")
+```
+
+### CLI Change Sets
 
 ```bash
-tracertm init
-tracertm config set strategies enabled
+# Start change set
+tracertm changeset start "Add OAuth2 support"
+
+# Make changes
+tracertm update FEAT-001 --description "OAuth2 authentication"
+tracertm update CODE-001 --status in_progress
+tracertm link CODE-001 FEAT-001 implements
+
+# Commit change set
+tracertm changeset commit
+
+# Or abort
+tracertm changeset abort
 ```
 
-## Usage
+## Draft Mode
 
-### Basic Usage
+Make changes without creating versions until ready:
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```python
+# Enable draft mode for an item
+client.enable_draft("FEAT-001")
 
-const tracertm = new TraceRTM()
-const result = await tracertm.strategies()
+# Changes don't create versions
+client.update_item("FEAT-001", description="Work in progress...")
+client.update_item("FEAT-001", description="Still editing...")
+client.update_item("FEAT-001", description="Final description")
+
+# Publish creates a single new version
+client.publish_draft("FEAT-001", message="Completed description update")
 ```
 
-### Advanced Usage
+### Configuration
 
-```typescript
-const config = {
-  strategies: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+```yaml
+versioning:
+  draft_mode:
+    enabled: true
 
-const tracertm = new TraceRTM(config)
+    # Auto-enable draft for new items
+    auto_draft_status: [draft]
+
+    # Publish on status change
+    auto_publish_on_status: [ready, in_progress]
 ```
 
-## Configuration
+## Version Policies
 
-```typescript
-export default {
-  strategies: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+### Minimum Version Requirements
+
+```yaml
+versioning:
+  policies:
+    # Require version before status change
+    require_version_for_status:
+      review: 2      # Must be v2+ before review
+      done: 3        # Must be v3+ before done
+
+    # Require changes between versions
+    require_changes:
+      done:
+        - description
+        - acceptance_criteria
 ```
 
-## Examples
+### Version Locks
 
-### Example 1
+```python
+# Lock item at current version
+client.lock_version("FEAT-001", reason="Approved for release")
 
-```typescript
-const example = await tracertm.strategies({
-  option1: 'value1',
-  option2: 'value2'
-})
+# Locked items can't be modified
+try:
+    client.update_item("FEAT-001", description="Change")
+except VersionLockedError as e:
+    print(f"Cannot modify: {e.message}")
+
+# Unlock with approval
+client.unlock_version("FEAT-001", approved_by="admin@example.com")
 ```
 
-### Example 2
+## Strategy Comparison
 
-```typescript
-const advanced = await tracertm.strategies({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+| Strategy | Best For | Pros | Cons |
+|----------|----------|------|------|
+| Auto-increment | General use | Simple, automatic | No semantic meaning |
+| Semantic | Releases | Clear version meaning | Manual management |
+| Baseline | Regulated industries | Audit-friendly | More complex |
+| Change set | Team collaboration | Grouped changes | Requires coordination |
+| Draft mode | Iterative work | Reduces noise | Extra workflow step |
+
+## Mixed Strategies
+
+Combine strategies based on artifact type:
+
+```yaml
+versioning:
+  default_strategy: auto_increment
+
+  by_type:
+    feature:
+      strategy: semantic
+
+    requirement:
+      strategy: baseline
+      require_approval: true
+
+    code:
+      strategy: auto_increment
+
+    test:
+      strategy: auto_increment
+      link_to_code_version: true
+```
+
+## CLI Usage
+
+```bash
+# View current strategy
+tracertm config get versioning.strategy
+
+# Set strategy
+tracertm config set versioning.strategy semantic
+
+# Check item version
+tracertm get FEAT-001 --show-version
+
+# Set explicit version
+tracertm version FEAT-001 --set 2.0.0
+
+# Bump version
+tracertm version FEAT-001 --bump minor
+
+# Lock version
+tracertm version FEAT-001 --lock "Release approved"
+
+# Create baseline
+tracertm baseline create "v1.0" --strategy release
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Match Strategy to Workflow
 
-## Troubleshooting
+```yaml
+# Agile teams: Simple auto-increment
+versioning:
+  strategy: auto_increment
 
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+# Regulated industries: Baseline-driven
+versioning:
+  strategy: baseline
+  require_approval: true
+  audit_trail: complete
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+### 2. Use Change Sets for Related Changes
+
+```python
+# Good: Group related changes
+with client.change_set("Implement feature X"):
+    update_feature()
+    update_code()
+    update_tests()
+
+# Avoid: Scattered individual changes
+update_feature()
+update_code()  # Separate version
+update_tests()  # Another separate version
 ```
 
-## API Reference
+### 3. Configure Meaningful Version Triggers
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```yaml
+# Good: Version on meaningful changes
+version_on:
+  - title
+  - description
+  - status
+  - acceptance_criteria
+
+skip_version_on:
+  - assignee  # Administrative
+  - labels    # Tags don't need versioning
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Branching](/docs/wiki/concepts/versioning/branching) - Branch workflows
+- [Merging](/docs/wiki/concepts/versioning/merging) - Combining changes
+- [History](/docs/wiki/concepts/versioning/history) - Change tracking
+- [Rollback](/docs/wiki/concepts/versioning/rollback) - Reverting changes
 

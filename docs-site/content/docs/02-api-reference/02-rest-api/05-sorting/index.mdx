@@ -1,115 +1,392 @@
 ---
 title: "Sorting"
-description: "Documentation for Sorting"
+description: "Complete guide to sorting API results in TraceRTM"
 ---
 
 # Sorting
 
+Sort API results by one or more fields in ascending or descending order.
 
-## Overview
+## Quick Reference
 
-Complete API reference for Sorting.
+```bash
+# Single field, ascending
+?sort=created_at
 
-## Authentication
+# Single field, descending (prefix with -)
+?sort=-created_at
 
-All API requests require authentication:
+# Multiple fields
+?sort=-priority,created_at
+
+# With sort direction parameter
+?sort=priority&order=desc
+```
+
+---
+
+## Sort Syntax
+
+### Single Field Sorting
+
+```bash
+# Ascending (default)
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?sort=title" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Descending (prefix with -)
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?sort=-created_at" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Multiple Field Sorting
+
+Comma-separated fields for multi-level sorting:
+
+```bash
+# Sort by priority (desc), then by created_at (asc)
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?sort=-priority,created_at" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Sort by status (asc), priority (desc), title (asc)
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?sort=status,-priority,title" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Alternative Syntax
+
+Some endpoints support `order` parameter:
+
+```bash
+# Using order parameter
+?sort=priority&order=desc
+
+# Equivalent to
+?sort=-priority
+```
+
+---
+
+## Sortable Fields
+
+### Items
+
+| Field | Description | Type |
+|-------|-------------|------|
+| `id` | Item ID | string |
+| `custom_id` | Custom identifier | string |
+| `title` | Item title | string |
+| `type` | Item type | string |
+| `status` | Current status | string |
+| `priority` | Priority level | ordinal |
+| `created_at` | Creation timestamp | datetime |
+| `updated_at` | Last update timestamp | datetime |
+| `version` | Version number | integer |
+| `assignee_id` | Assigned user | string |
+| `links_count` | Number of links | integer |
+| `comments_count` | Number of comments | integer |
+| `custom_fields.*` | Custom field values | varies |
+
+### Projects
+
+| Field | Description | Type |
+|-------|-------------|------|
+| `name` | Project name | string |
+| `key` | Project key | string |
+| `status` | Project status | string |
+| `created_at` | Creation timestamp | datetime |
+| `updated_at` | Last update timestamp | datetime |
+| `item_count` | Total items | integer |
+| `member_count` | Team size | integer |
+
+### Links
+
+| Field | Description | Type |
+|-------|-------------|------|
+| `type` | Link type | string |
+| `created_at` | Creation timestamp | datetime |
+| `source_id` | Source item ID | string |
+| `target_id` | Target item ID | string |
+
+---
+
+## Ordinal Sorting
+
+Some fields have a defined order beyond alphabetical:
+
+### Priority
+
+```
+critical > high > medium > low
+```
+
+```bash
+# Highest priority first
+?sort=-priority
+
+# Lowest priority first
+?sort=priority
+```
+
+### Status (Workflow-Based)
+
+Status order follows the workflow definition:
+
+```
+draft -> review -> approved -> archived
+```
+
+---
+
+## Custom Field Sorting
+
+Sort by custom fields using dot notation:
+
+```bash
+# Sort by custom field "story_points"
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?sort=-custom_fields.story_points" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Sort by custom field "due_date"
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?sort=custom_fields.due_date" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+---
+
+## Null Handling
+
+By default, null values sort last for ascending and first for descending.
+
+### Control Null Position
+
+```bash
+# Nulls first in ascending order
+?sort=assignee_id&nulls=first
+
+# Nulls last in descending order
+?sort=-priority&nulls=last
+```
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Single field sort
+items = client.items.list(
+    project_id="proj_123",
+    sort="-created_at"
+)
+
+# Multiple field sort
+items = client.items.list(
+    project_id="proj_123",
+    sort=["-priority", "created_at"]
+)
+
+# With filters
+items = client.items.list(
+    project_id="proj_123",
+    status="approved",
+    sort=["-priority", "title"]
+)
+
+# Custom field sort
+items = client.items.list(
+    project_id="proj_123",
+    sort="-custom_fields.story_points"
+)
+
+# Using SortOrder enum
+from tracertm import SortOrder
+
+items = client.items.list(
+    project_id="proj_123",
+    sort=[
+        ("priority", SortOrder.DESC),
+        ("created_at", SortOrder.ASC)
+    ]
+)
+```
+
+### TypeScript
 
 ```typescript
-const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
-  'Content-Type': 'application/json'
+import { TraceRTMClient, SortOrder } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Single field sort
+const items = await client.items.list({
+  projectId: 'proj_123',
+  sort: '-created_at'
+});
+
+// Multiple field sort
+const items = await client.items.list({
+  projectId: 'proj_123',
+  sort: ['-priority', 'created_at']
+});
+
+// With filters
+const items = await client.items.list({
+  projectId: 'proj_123',
+  status: 'approved',
+  sort: ['-priority', 'title']
+});
+
+// Using builder
+const items = await client.items.list({
+  projectId: 'proj_123',
+  sort: [
+    { field: 'priority', order: SortOrder.Desc },
+    { field: 'createdAt', order: SortOrder.Asc }
+  ]
+});
+```
+
+### Go
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+client := tracertm.NewClient("rtm_live_sk_...")
+
+// Single field sort
+opts := &tracertm.ItemListOptions{
+    Sort: "-created_at",
+}
+items, _ := client.Items.List(ctx, "proj_123", opts)
+
+// Multiple field sort
+opts := &tracertm.ItemListOptions{
+    Sort: []string{"-priority", "created_at"},
+}
+
+// With struct
+opts := &tracertm.ItemListOptions{
+    SortFields: []tracertm.SortField{
+        {Field: "priority", Order: tracertm.Desc},
+        {Field: "created_at", Order: tracertm.Asc},
+    },
 }
 ```
 
-## Endpoints
+---
 
-### List All Sorting
+## Combining with Filtering and Pagination
 
-```http
-GET /api/v1/sorting
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?\
+status=approved&\
+priority[in]=high,critical&\
+sort=-priority,created_at&\
+page=1&\
+per_page=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
 ```
 
-**Response:**
+```python
+# Combined query
+items = client.items.list(
+    project_id="proj_123",
+    status="approved",
+    priority__in=["high", "critical"],
+    sort=["-priority", "created_at"],
+    page=1,
+    per_page=50
+)
+```
+
+---
+
+## Stable Sorting
+
+For consistent pagination with sorting, include a unique field (like `id`) as the last sort field:
+
+```bash
+# Stable sort for pagination
+?sort=-priority,created_at,id
+```
+
+This ensures items with identical values for the primary sort fields always appear in the same order across pages.
+
+---
+
+## Performance Considerations
+
+### Indexed Fields
+
+Sorting is fast on indexed fields:
+- `id`, `created_at`, `updated_at` (always indexed)
+- `status`, `priority`, `type` (indexed by default)
+- Custom fields (indexed if configured)
+
+### Non-Indexed Fields
+
+Sorting on non-indexed fields may be slower for large datasets. Consider adding an index for frequently sorted custom fields.
+
+---
+
+## Default Sort Order
+
+When no `sort` parameter is provided:
+
+| Endpoint | Default Sort |
+|----------|--------------|
+| Items | `-updated_at` (most recently updated first) |
+| Projects | `-updated_at` |
+| Links | `-created_at` |
+| Users | `name` (alphabetical) |
+| Webhooks | `-created_at` |
+
+---
+
+## Error Responses
+
+### Invalid Sort Field
+
 ```json
 {
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+  "error": {
+    "code": "INVALID_SORT_FIELD",
+    "message": "Unknown sort field: 'invalid_field'",
+    "status": 400,
+    "details": {
+      "field": "invalid_field",
+      "valid_fields": ["id", "title", "status", "priority", "created_at", "updated_at", "..."]
+    }
   }
 }
 ```
 
-### Get Sorting by ID
+### Too Many Sort Fields
 
-```http
-GET /api/v1/sorting/:id
-```
-
-### Create Sorting
-
-```http
-POST /api/v1/sorting
-```
-
-**Request Body:**
 ```json
 {
-  "name": "Example Sorting",
-  "description": "Description here"
+  "error": {
+    "code": "TOO_MANY_SORT_FIELDS",
+    "message": "Maximum 5 sort fields allowed",
+    "status": 400,
+    "details": {
+      "requested": 8,
+      "maximum": 5
+    }
+  }
 }
 ```
 
-### Update Sorting
+---
 
-```http
-PUT /api/v1/sorting/:id
-```
+## Related Documentation
 
-### Delete Sorting
-
-```http
-DELETE /api/v1/sorting/:id
-```
-
-## Query Parameters
-
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
-
-## Error Responses
-
-### 400 Bad Request
-Invalid request parameters
-
-### 401 Unauthorized
-Missing or invalid authentication token
-
-### 404 Not Found
-Resource not found
-
-### 500 Internal Server Error
-Server error
-
-## SDK Examples
-
-### TypeScript
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
-
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.sorting.list()
-```
-
-### Python
-```python
-from tracertm import Client
-
-client = Client(api_key='YOUR_KEY')
-items = client.sorting.list()
-```
-
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter results
+- [Pagination](/docs/api-reference/rest-api/pagination) - Paginate results
+- [Items API](/docs/api-reference/rest-api/endpoints/requirements) - Item endpoints

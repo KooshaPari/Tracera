@@ -1,125 +1,450 @@
 ---
-title: "Branching Model"
-description: "Documentation for Branching Model"
+title: "Branching"
+description: "Work on isolated changes with branch-based versioning workflows"
 ---
 
-# Branching Model
+# Branching
 
+TraceRTM supports branching workflows for isolating changes, enabling parallel development streams, and managing releases. Branches allow teams to work on changes without affecting the main artifact state.
 
-## Overview
+## Branch Concepts
 
-Welcome to the Branching Model documentation.
+### Main Branch
 
-## Introduction
+The default branch contains the current authoritative state:
 
-This page provides comprehensive information about Branching Model.
+```python
+from tracertm import TraceRTMClient
 
-## Key Features
+client = TraceRTMClient()
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+# All operations default to main branch
+item = client.get_item("FEAT-001")  # From main branch
+print(f"Branch: {item.branch}")  # "main"
+```
 
-## Getting Started
+### Feature Branches
+
+Create branches for isolated work:
+
+```python
+# Create a feature branch
+branch = client.create_branch(
+    name="feature/oauth2-support",
+    from_branch="main",
+    description="Add OAuth2 authentication support"
+)
+
+print(f"Branch: {branch.name}")
+print(f"Created from: {branch.source_branch}")
+print(f"Created at: {branch.created_at}")
+```
+
+## Working with Branches
+
+### Creating Branches
+
+```python
+# Branch from main
+client.create_branch(
+    name="feature/new-auth",
+    from_branch="main"
+)
+
+# Branch from another branch
+client.create_branch(
+    name="feature/new-auth-v2",
+    from_branch="feature/new-auth"
+)
+
+# Branch from a specific baseline
+client.create_branch(
+    name="hotfix/security-patch",
+    from_baseline="v1.0-release"
+)
+```
+
+### CLI Branch Creation
 
 ```bash
-tracertm init
-tracertm config set branching enabled
+# Create branch
+tracertm branch create feature/oauth2 --from main
+
+# Create from baseline
+tracertm branch create hotfix/security --from-baseline v1.0-release
+
+# List branches
+tracertm branch list
+
+# Output:
+# Branches
+# ════════════════════════════════════════
+# * main (default)
+#   feature/oauth2 (from main, 3 changes)
+#   hotfix/security (from v1.0-release, 1 change)
 ```
 
-## Usage
+### Switching Branches
 
-### Basic Usage
+```python
+# Set active branch for session
+client.set_branch("feature/oauth2")
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+# All subsequent operations use this branch
+item = client.get_item("FEAT-001")
+print(f"Branch: {item.branch}")  # "feature/oauth2"
 
-const tracertm = new TraceRTM()
-const result = await tracertm.branching()
+# Or specify branch per operation
+item = client.get_item("FEAT-001", branch="main")
 ```
 
-### Advanced Usage
+```bash
+# CLI branch switching
+tracertm branch checkout feature/oauth2
 
-```typescript
-const config = {
-  branching: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+# View current branch
+tracertm branch current
+# feature/oauth2
 
-const tracertm = new TraceRTM(config)
+# Operations now use this branch
+tracertm get FEAT-001
 ```
 
-## Configuration
+### Making Changes in Branches
 
-```typescript
-export default {
-  branching: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+```python
+# Switch to branch
+client.set_branch("feature/oauth2")
+
+# Make changes (only affect this branch)
+client.update_item(
+    "FEAT-001",
+    description="OAuth2 authentication with SSO support"
+)
+
+# Create new items in branch
+new_item = client.create_item(
+    title="OAuth2 Token Handler",
+    item_type="code"
+)
+
+# Main branch is unaffected
+main_item = client.get_item("FEAT-001", branch="main")
+print(main_item.description)  # Original description
 ```
 
-## Examples
+## Branch Types
 
-### Example 1
+### Feature Branches
 
-```typescript
-const example = await tracertm.branching({
-  option1: 'value1',
-  option2: 'value2'
-})
+For new functionality:
+
+```yaml
+# .tracertm/config.yaml
+branching:
+  patterns:
+    feature:
+      prefix: "feature/"
+      from: main
+      auto_delete_on_merge: true
 ```
 
-### Example 2
+```bash
+tracertm branch create feature/user-profiles
+```
 
-```typescript
-const advanced = await tracertm.branching({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+### Release Branches
+
+For stabilizing releases:
+
+```yaml
+branching:
+  patterns:
+    release:
+      prefix: "release/"
+      from: main
+      protected: true
+      requires_approval: true
+```
+
+```bash
+tracertm branch create release/v2.0
+```
+
+### Hotfix Branches
+
+For urgent fixes:
+
+```yaml
+branching:
+  patterns:
+    hotfix:
+      prefix: "hotfix/"
+      from: release/*  # From latest release
+      merge_to: [main, release/*]
+```
+
+```bash
+tracertm branch create hotfix/security-fix --from release/v1.5
+```
+
+## Branch Protection
+
+### Protected Branches
+
+```yaml
+branching:
+  protected_branches:
+    - main
+    - release/*
+
+  protection_rules:
+    main:
+      require_review: true
+      require_tests: true
+      no_direct_push: true
+
+    release/*:
+      require_approval: true
+      frozen_after: release_date
+```
+
+### Branch Permissions
+
+```yaml
+branching:
+  permissions:
+    main:
+      write: [admin, lead]
+      merge: [admin]
+
+    feature/*:
+      write: [developer, admin]
+      merge: [lead, admin]
+
+    release/*:
+      write: [admin]
+      merge: [admin]
+```
+
+## Comparing Branches
+
+### View Differences
+
+```python
+# Compare branches
+diff = client.compare_branches(
+    source="feature/oauth2",
+    target="main"
+)
+
+print(f"Items added: {len(diff.added)}")
+print(f"Items modified: {len(diff.modified)}")
+print(f"Items deleted: {len(diff.deleted)}")
+
+for item_id, changes in diff.modified.items():
+    print(f"{item_id}:")
+    for field, (old, new) in changes.items():
+        print(f"  {field}: {old} → {new}")
+```
+
+### CLI Comparison
+
+```bash
+# Compare branches
+tracertm branch compare feature/oauth2 main
+
+# Output:
+# Comparing feature/oauth2 → main
+# ════════════════════════════════════════
+#
+# Added (2):
+#   + CODE-015: OAuth2 Token Handler
+#   + TEST-022: test_oauth2_flow
+#
+# Modified (3):
+#   ~ FEAT-001: description changed
+#   ~ CODE-001: status changed (in_progress → done)
+#   ~ TEST-001: metadata.automated changed
+#
+# Deleted (0):
+#   (none)
+
+# Detailed diff
+tracertm branch diff feature/oauth2 main --verbose
+```
+
+## Branch Status
+
+### Track Branch Progress
+
+```python
+# Get branch status
+status = client.get_branch_status("feature/oauth2")
+
+print(f"Changes: {status.total_changes}")
+print(f"Ahead of main: {status.ahead_count}")
+print(f"Behind main: {status.behind_count}")
+print(f"Conflicts: {status.has_conflicts}")
+print(f"Ready to merge: {status.mergeable}")
+```
+
+```bash
+# CLI status
+tracertm branch status feature/oauth2
+
+# Output:
+# Branch: feature/oauth2
+# ════════════════════════════════════════
+# Source: main
+# Created: 2024-12-01 10:00
+# Last change: 2024-12-05 14:30
+#
+# Changes: 5 items modified
+# Ahead of main: 3 commits
+# Behind main: 2 commits
+# Conflicts: None
+# Status: Ready to merge
+```
+
+## Branch Cleanup
+
+### Delete Branches
+
+```python
+# Delete merged branch
+client.delete_branch("feature/oauth2", force=False)
+
+# Force delete (even if not merged)
+client.delete_branch("feature/abandoned", force=True)
+
+# Archive instead of delete
+client.archive_branch("feature/oauth2")
+```
+
+### Auto-Cleanup
+
+```yaml
+branching:
+  cleanup:
+    # Delete merged branches
+    auto_delete_merged: true
+
+    # Archive stale branches
+    archive_after_days: 90
+
+    # Exclude patterns
+    never_delete:
+      - main
+      - release/*
+```
+
+```bash
+# CLI cleanup
+tracertm branch delete feature/oauth2
+
+# Cleanup all merged branches
+tracertm branch cleanup --merged
+
+# Archive stale branches
+tracertm branch cleanup --stale --days 90
+```
+
+## Branch Strategies
+
+### Git Flow Style
+
+```yaml
+branching:
+  strategy: gitflow
+
+  gitflow:
+    main_branch: main
+    develop_branch: develop
+    feature_prefix: feature/
+    release_prefix: release/
+    hotfix_prefix: hotfix/
+```
+
+### Trunk-Based
+
+```yaml
+branching:
+  strategy: trunk
+
+  trunk:
+    main_branch: main
+    short_lived_branches: true
+    max_branch_age_days: 7
+```
+
+### Release Train
+
+```yaml
+branching:
+  strategy: release_train
+
+  release_train:
+    main_branch: main
+    release_schedule: bi-weekly
+    auto_create_release: true
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Keep Branches Short-Lived
 
-## Troubleshooting
+```python
+# Good: Small, focused branches
+client.create_branch("feature/add-logout-button")
 
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+# Avoid: Large, long-running branches
+# client.create_branch("feature/complete-auth-rewrite")
 ```
 
-**Issue 2:**
+### 2. Name Branches Descriptively
+
 ```bash
-tracertm fix issue-2
+# Good: Clear purpose
+tracertm branch create feature/oauth2-google-login
+tracertm branch create hotfix/fix-session-timeout
+tracertm branch create release/v2.1.0
+
+# Avoid: Vague names
+# tracertm branch create feature/auth
+# tracertm branch create fix
 ```
 
-## API Reference
+### 3. Sync Regularly with Main
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```python
+# Keep branch up to date
+client.sync_branch(
+    branch="feature/oauth2",
+    from_branch="main"
+)
+```
+
+```bash
+# CLI sync
+tracertm branch sync feature/oauth2 --from main
+```
+
+### 4. Review Before Merging
+
+```bash
+# Always compare before merge
+tracertm branch compare feature/oauth2 main
+tracertm branch status feature/oauth2
+
+# Then merge
+tracertm branch merge feature/oauth2 --to main
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Merging](/docs/wiki/concepts/versioning/merging) - Combining branches
+- [Strategies](/docs/wiki/concepts/versioning/strategies) - Versioning approaches
+- [History](/docs/wiki/concepts/versioning/history) - Change tracking
+- [Workflows](/docs/wiki/concepts/workflows) - Status workflows
 

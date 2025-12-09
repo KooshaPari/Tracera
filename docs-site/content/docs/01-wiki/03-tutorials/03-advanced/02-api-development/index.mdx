@@ -1,115 +1,1680 @@
 ---
-title: "API Development"
-description: "Documentation for API Development"
+title: "Advanced API Development"
+description: "Build integrations, custom clients, and webhooks with the TracerTM REST API and Python SDK"
 ---
 
-# API Development
+# Advanced API Development
 
+Learn how to build powerful integrations with TracerTM's REST API and Python SDK. This tutorial covers authentication, API design patterns, custom client development, error handling, rate limiting, webhooks, and best practices.
 
-## Overview
+## Table of Contents
 
-Complete API reference for API Development.
+1. [API Architecture Overview](#api-architecture-overview)
+2. [Authentication Methods](#authentication-methods)
+3. [REST API Integration](#rest-api-integration)
+4. [Python SDK Usage](#python-sdk-usage)
+5. [Custom API Clients](#custom-api-clients)
+6. [Error Handling Patterns](#error-handling-patterns)
+7. [Rate Limiting and Pagination](#rate-limiting-and-pagination)
+8. [Webhook Development](#webhook-development)
+9. [Testing API Integrations](#testing-api-integrations)
+10. [Best Practices](#best-practices)
 
-## Authentication
+---
 
-All API requests require authentication:
+## API Architecture Overview
 
-```typescript
+TracerTM provides a comprehensive REST API built with FastAPI, offering high performance and automatic OpenAPI documentation.
+
+### Architecture Components
+
+```
+┌─────────────────────────────────────────────┐
+│           Client Applications                │
+│  (Web, CLI, Custom Integrations)            │
+└──────────────────┬──────────────────────────┘
+                   │
+         ┌─────────▼─────────┐
+         │    FastAPI        │
+         │  REST API Server  │
+         └─────────┬─────────┘
+                   │
+    ┌──────────────┼──────────────┐
+    │              │              │
+┌───▼───┐    ┌────▼────┐    ┌───▼────┐
+│Service│    │Repository│    │Database│
+│ Layer │    │  Layer   │    │ Layer  │
+└───────┘    └──────────┘    └────────┘
+```
+
+### Core Endpoints
+
+The API is organized around these resource types:
+
+- **Projects**: Project management and configuration
+- **Items**: Traceable items (requirements, tests, code)
+- **Links**: Traceability relationships between items
+- **Analysis**: Impact analysis, cycle detection, shortest paths
+- **Sync**: Offline-first synchronization
+- **Search**: Advanced search and filtering
+- **Export/Import**: Data exchange in multiple formats
+
+### Base URL
+
+```
+Production: https://api.tracertm.io
+Development: http://localhost:8000
+```
+
+---
+
+## Authentication Methods
+
+TracerTM supports multiple authentication methods for different use cases.
+
+### API Key Authentication
+
+Create and manage API keys for programmatic access:
+
+```python
+from tracertm.services.api_webhooks_service import APIWebhooksService
+
+# Create API key
+service = APIWebhooksService()
+api_key = service.create_api_key(
+    name="Production Integration",
+    permissions=["read:items", "write:items", "read:projects"],
+    expires_in_days=90
+)
+
+print(f"API Key: {api_key['key']}")
+print(f"Expires: {api_key['expires_at']}")
+```
+
+### Using API Keys in Requests
+
+**Python:**
+```python
+import httpx
+
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+
+async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
+    response = await client.get("/api/v1/projects", headers=headers)
+    projects = response.json()
+```
+
+**JavaScript:**
+```javascript
 const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
+  'Authorization': `Bearer ${apiKey}`,
   'Content-Type': 'application/json'
 }
+
+const response = await fetch('http://localhost:8000/api/v1/projects', {
+  headers
+})
+const projects = await response.json()
 ```
 
-## Endpoints
+### Token Validation
 
-### List All API Development
+```python
+# Validate API key before use
+validation = service.validate_api_key(api_key['key'])
 
-```http
-GET /api/v1/api-development
+if validation['valid']:
+    print(f"Permissions: {validation['permissions']}")
+else:
+    print(f"Error: {validation['error']}")
 ```
 
-**Response:**
-```json
-{
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+### Security Best Practices
+
+1. **Never commit API keys** to version control
+2. **Use environment variables** for key storage
+3. **Rotate keys regularly** (every 90 days recommended)
+4. **Implement least privilege** - only grant necessary permissions
+5. **Revoke compromised keys** immediately
+
+```python
+# Revoke a compromised key
+service.revoke_api_key(compromised_key)
+```
+
+---
+
+## REST API Integration
+
+### Project Management
+
+**List all projects:**
+```python
+import httpx
+
+async def list_projects(skip: int = 0, limit: int = 100):
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.get(
+            "/api/v1/projects",
+            params={"skip": skip, "limit": limit},
+            headers=headers
+        )
+        response.raise_for_status()
+        return response.json()
+```
+
+**JavaScript equivalent:**
+```javascript
+async function listProjects(skip = 0, limit = 100) {
+  const url = new URL('/api/v1/projects', API_BASE_URL)
+  url.searchParams.set('skip', skip)
+  url.searchParams.set('limit', limit)
+
+  const response = await fetch(url, { headers })
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+  return await response.json()
+}
+```
+
+**Create a project:**
+```python
+async def create_project(name: str, description: str = None):
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.post(
+            "/api/v1/projects",
+            json={
+                "name": name,
+                "description": description,
+                "metadata": {"created_via": "api"}
+            },
+            headers=headers
+        )
+        response.raise_for_status()
+        return response.json()
+```
+
+### Item Management
+
+**Query items with filters:**
+```python
+async def query_items(
+    project_id: str,
+    view: str = None,
+    status: str = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    params = {
+        "project_id": project_id,
+        "skip": skip,
+        "limit": limit
+    }
+    if view:
+        params["view"] = view
+    if status:
+        params["status"] = status
+
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.get(
+            "/api/v1/items",
+            params=params,
+            headers=headers
+        )
+        response.raise_for_status()
+        return response.json()
+```
+
+**Create an item:**
+```python
+async def create_item(
+    project_id: str,
+    title: str,
+    view: str,
+    item_type: str,
+    description: str = None
+):
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.post(
+            "/api/v1/items",
+            json={
+                "project_id": project_id,
+                "title": title,
+                "view": view,
+                "item_type": item_type,
+                "description": description,
+                "status": "todo",
+                "priority": "medium"
+            },
+            headers=headers
+        )
+        response.raise_for_status()
+        return response.json()
+```
+
+### Graph and Analysis Endpoints
+
+**Impact Analysis:**
+```python
+async def analyze_impact(item_id: str, project_id: str):
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.get(
+            f"/api/v1/analysis/impact/{item_id}",
+            params={"project_id": project_id},
+            headers=headers
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        print(f"Total affected items: {result['total_affected']}")
+        print(f"Max depth: {result['max_depth']}")
+        return result
+```
+
+**Cycle Detection:**
+```python
+async def detect_cycles(project_id: str):
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.get(
+            f"/api/v1/analysis/cycles/{project_id}",
+            headers=headers
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if result['has_cycles']:
+            print(f"Warning: {result['total_cycles']} cycles detected!")
+            print(f"Severity: {result['severity']}")
+        return result
+```
+
+**Shortest Path:**
+```python
+async def find_shortest_path(project_id: str, source_id: str, target_id: str):
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as client:
+        response = await client.get(
+            "/api/v1/analysis/shortest-path",
+            params={
+                "project_id": project_id,
+                "source_id": source_id,
+                "target_id": target_id
+            },
+            headers=headers
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if result['exists']:
+            print(f"Path distance: {result['distance']}")
+            print(f"Path: {' -> '.join(result['path'])}")
+        else:
+            print("No path exists between items")
+        return result
+```
+
+---
+
+## Python SDK Usage
+
+The TracerTM Python SDK provides a high-level, developer-friendly interface for API interactions.
+
+### Installation and Setup
+
+```python
+from tracertm.api.client import TraceRTMClient
+
+# Initialize client
+client = TraceRTMClient(
+    agent_id=None,  # Optional: for agent tracking
+    agent_name="Data Import Script"  # Optional: for logging
+)
+
+# Or with agent registration
+client = TraceRTMClient()
+agent_id = client.register_agent(
+    name="Integration Service",
+    agent_type="integration",
+    metadata={"version": "1.0.0"}
+)
+```
+
+### Querying Items
+
+```python
+# Query items with filters
+items = client.query_items(
+    view="FEATURE",
+    status="in_progress",
+    limit=50,
+    priority="high"  # Additional filter
+)
+
+for item in items:
+    print(f"{item['id']}: {item['title']} [{item['status']}]")
+```
+
+### Creating and Updating Items
+
+```python
+# Create an item
+new_item = client.create_item(
+    title="New API Endpoint",
+    view="CODE",
+    item_type="api",
+    description="Implement user authentication endpoint",
+    status="todo",
+    priority="high",
+    owner="team-backend"
+)
+
+print(f"Created item: {new_item['id']}")
+
+# Update an item
+updated_item = client.update_item(
+    item_id=new_item['id'],
+    status="in_progress",
+    metadata={
+        "started_at": datetime.utcnow().isoformat(),
+        "sprint": "Sprint 23"
+    }
+)
+
+print(f"Updated to version: {updated_item['version']}")
+```
+
+### Batch Operations
+
+```python
+# Batch create items
+items_data = [
+    {
+        "title": f"Test Case {i}",
+        "view": "TEST",
+        "type": "unit_test",
+        "description": f"Unit test for feature {i}"
+    }
+    for i in range(1, 11)
+]
+
+result = client.batch_create_items(items_data)
+print(f"Created {result['items_created']} items")
+
+# Batch update
+updates = [
+    {"item_id": item['id'], "status": "done"}
+    for item in items
+    if item['priority'] == "low"
+]
+
+result = client.batch_update_items(updates)
+print(f"Updated {result['items_updated']} items")
+```
+
+### Export and Import
+
+```python
+# Export project data
+json_data = client.export_project(format="json")
+print(f"Exported {len(json.loads(json_data)['items'])} items")
+
+# Import from JSON
+import_data = {
+    "items": [
+        {
+            "title": "Imported Requirement",
+            "view": "FEATURE",
+            "type": "requirement",
+            "status": "todo"
+        }
+    ],
+    "links": []
+}
+
+result = client.import_data(import_data)
+print(f"Imported {result['items_created']} items, {result['links_created']} links")
+```
+
+### Context Manager Usage
+
+```python
+# Automatically close connections
+from tracertm.api.client import TraceRTMClient
+
+try:
+    client = TraceRTMClient(agent_name="Automation Script")
+    items = client.query_items(view="FEATURE")
+    # ... process items
+finally:
+    client.close()
+```
+
+---
+
+## Custom API Clients
+
+Build custom API clients for specific use cases or languages.
+
+### TypeScript/JavaScript Client
+
+```typescript
+// Custom TracerTM API Client
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+
+interface TracerTMConfig {
+  baseURL: string
+  apiKey: string
+  timeout?: number
+}
+
+interface Item {
+  id: string
+  title: string
+  view: string
+  status: string
+  type: string
+  description?: string
+  metadata?: Record<string, any>
+}
+
+class TracerTMClient {
+  private client: AxiosInstance
+
+  constructor(config: TracerTMConfig) {
+    this.client = axios.create({
+      baseURL: config.baseURL,
+      timeout: config.timeout || 30000,
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    // Add response interceptor for error handling
+    this.client.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response?.status === 429) {
+          const retryAfter = error.response.headers['retry-after']
+          throw new Error(`Rate limited. Retry after ${retryAfter}s`)
+        }
+        throw error
+      }
+    )
+  }
+
+  // Projects
+  async listProjects(skip = 0, limit = 100): Promise<any[]> {
+    const response = await this.client.get('/api/v1/projects', {
+      params: { skip, limit }
+    })
+    return response.data.projects
+  }
+
+  async getProject(id: string): Promise<any> {
+    const response = await this.client.get(`/api/v1/projects/${id}`)
+    return response.data
+  }
+
+  async createProject(data: {
+    name: string
+    description?: string
+    metadata?: Record<string, any>
+  }): Promise<any> {
+    const response = await this.client.post('/api/v1/projects', data)
+    return response.data
+  }
+
+  // Items
+  async listItems(projectId: string, params?: {
+    skip?: number
+    limit?: number
+    view?: string
+    status?: string
+  }): Promise<Item[]> {
+    const response = await this.client.get('/api/v1/items', {
+      params: { project_id: projectId, ...params }
+    })
+    return response.data.items
+  }
+
+  async getItem(id: string): Promise<Item> {
+    const response = await this.client.get(`/api/v1/items/${id}`)
+    return response.data
+  }
+
+  async createItem(data: Partial<Item>): Promise<Item> {
+    const response = await this.client.post('/api/v1/items', data)
+    return response.data
+  }
+
+  async updateItem(id: string, data: Partial<Item>): Promise<Item> {
+    const response = await this.client.put(`/api/v1/items/${id}`, data)
+    return response.data
+  }
+
+  // Analysis
+  async analyzeImpact(itemId: string, projectId: string): Promise<any> {
+    const response = await this.client.get(
+      `/api/v1/analysis/impact/${itemId}`,
+      { params: { project_id: projectId } }
+    )
+    return response.data
+  }
+
+  async detectCycles(projectId: string): Promise<any> {
+    const response = await this.client.get(
+      `/api/v1/analysis/cycles/${projectId}`
+    )
+    return response.data
+  }
+
+  // Export
+  async exportProject(projectId: string, format: 'json' | 'csv' | 'markdown' = 'json'): Promise<Blob> {
+    const response = await this.client.get(
+      `/api/v1/projects/${projectId}/export`,
+      {
+        params: { format },
+        responseType: 'blob'
+      }
+    )
+    return response.data
   }
 }
+
+// Usage
+const client = new TracerTMClient({
+  baseURL: 'http://localhost:8000',
+  apiKey: process.env.TRACERTM_API_KEY!
+})
+
+// Create and query items
+const project = await client.createProject({
+  name: 'My Project',
+  description: 'Project created via API'
+})
+
+const items = await client.listItems(project.id, {
+  view: 'FEATURE',
+  status: 'todo'
+})
+
+console.log(`Found ${items.length} items`)
 ```
 
-### Get API Development by ID
+### Async Python Client with Retry Logic
 
-```http
-GET /api/v1/api-development/:id
+```python
+import asyncio
+from typing import Optional, Dict, Any, List
+import httpx
+from datetime import datetime, timedelta
+
+class AsyncTracerTMClient:
+    """Async TracerTM API client with automatic retry and error handling."""
+
+    def __init__(
+        self,
+        base_url: str,
+        api_key: str,
+        timeout: float = 30.0,
+        max_retries: int = 3
+    ):
+        self.base_url = base_url.rstrip('/')
+        self.api_key = api_key
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self._client: Optional[httpx.AsyncClient] = None
+
+    async def __aenter__(self):
+        self._client = httpx.AsyncClient(
+            base_url=self.base_url,
+            timeout=self.timeout,
+            headers={
+                'Authorization': f'Bearer {self.api_key}',
+                'Content-Type': 'application/json'
+            }
+        )
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self._client:
+            await self._client.aclose()
+
+    async def _request_with_retry(
+        self,
+        method: str,
+        endpoint: str,
+        **kwargs
+    ) -> httpx.Response:
+        """Execute request with exponential backoff retry."""
+        last_error = None
+        delay = 1.0
+
+        for attempt in range(self.max_retries):
+            try:
+                response = await self._client.request(method, endpoint, **kwargs)
+
+                # Handle rate limiting
+                if response.status_code == 429:
+                    retry_after = int(response.headers.get('Retry-After', 60))
+                    if attempt < self.max_retries - 1:
+                        await asyncio.sleep(retry_after)
+                        continue
+
+                response.raise_for_status()
+                return response
+
+            except httpx.HTTPStatusError as e:
+                last_error = e
+                if e.response.status_code == 401:
+                    raise  # Don't retry auth errors
+
+            except httpx.NetworkError as e:
+                last_error = e
+
+            # Exponential backoff
+            if attempt < self.max_retries - 1:
+                await asyncio.sleep(delay)
+                delay *= 2
+
+        raise last_error
+
+    async def list_projects(
+        self,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """List all projects."""
+        response = await self._request_with_retry(
+            'GET',
+            '/api/v1/projects',
+            params={'skip': skip, 'limit': limit}
+        )
+        data = response.json()
+        return data.get('projects', [])
+
+    async def create_item(
+        self,
+        project_id: str,
+        title: str,
+        view: str,
+        item_type: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Create a new item."""
+        payload = {
+            'project_id': project_id,
+            'title': title,
+            'view': view,
+            'item_type': item_type,
+            **kwargs
+        }
+
+        response = await self._request_with_retry(
+            'POST',
+            '/api/v1/items',
+            json=payload
+        )
+        return response.json()
+
+    async def bulk_create_items(
+        self,
+        items: List[Dict[str, Any]],
+        batch_size: int = 50
+    ) -> List[Dict[str, Any]]:
+        """Create items in batches for better performance."""
+        results = []
+
+        for i in range(0, len(items), batch_size):
+            batch = items[i:i + batch_size]
+            tasks = [
+                self.create_item(**item_data)
+                for item_data in batch
+            ]
+            batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Filter out errors
+            for result in batch_results:
+                if not isinstance(result, Exception):
+                    results.append(result)
+
+        return results
+
+# Usage example
+async def main():
+    async with AsyncTracerTMClient(
+        base_url='http://localhost:8000',
+        api_key='your-api-key'
+    ) as client:
+        # Create multiple items concurrently
+        items = [
+            {
+                'project_id': 'proj-123',
+                'title': f'Feature {i}',
+                'view': 'FEATURE',
+                'item_type': 'requirement'
+            }
+            for i in range(100)
+        ]
+
+        results = await client.bulk_create_items(items)
+        print(f"Created {len(results)} items")
+
+if __name__ == '__main__':
+    asyncio.run(main())
 ```
 
-### Create API Development
+---
 
-```http
-POST /api/v1/api-development
+## Error Handling Patterns
+
+### HTTP Status Codes
+
+TracerTM API uses standard HTTP status codes:
+
+| Code | Meaning | Action |
+|------|---------|--------|
+| 200 | OK | Request successful |
+| 201 | Created | Resource created successfully |
+| 400 | Bad Request | Check request parameters |
+| 401 | Unauthorized | Verify API key |
+| 404 | Not Found | Resource doesn't exist |
+| 409 | Conflict | Version conflict (see below) |
+| 429 | Too Many Requests | Rate limited, retry after delay |
+| 500 | Internal Server Error | Server error, retry with backoff |
+
+### Handling Version Conflicts
+
+```python
+from sqlalchemy.orm.exc import StaleDataError
+
+def update_item_with_conflict_handling(item_id: str, updates: dict):
+    """Update item with automatic conflict resolution."""
+    max_attempts = 3
+
+    for attempt in range(max_attempts):
+        try:
+            client = TraceRTMClient()
+            item = client.get_item(item_id)
+
+            # Apply updates
+            updated = client.update_item(
+                item_id=item_id,
+                **updates
+            )
+
+            return updated
+
+        except StaleDataError:
+            # Version conflict - item was modified by another process
+            if attempt == max_attempts - 1:
+                raise
+
+            # Exponential backoff before retry
+            time.sleep(0.1 * (2 ** attempt))
+            continue
 ```
 
-**Request Body:**
+### Comprehensive Error Handler
+
+```python
+from typing import Optional, Callable, Any
+import httpx
+import logging
+
+logger = logging.getLogger(__name__)
+
+class APIError(Exception):
+    """Base API error."""
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
+
+def handle_api_errors(func: Callable) -> Callable:
+    """Decorator for comprehensive error handling."""
+    async def wrapper(*args, **kwargs) -> Any:
+        try:
+            return await func(*args, **kwargs)
+
+        except httpx.HTTPStatusError as e:
+            status = e.response.status_code
+
+            if status == 400:
+                logger.error(f"Bad request: {e.response.text}")
+                raise APIError("Invalid request parameters", status)
+            elif status == 401:
+                logger.error("Authentication failed")
+                raise APIError("Invalid API key", status)
+            elif status == 404:
+                logger.warning(f"Resource not found: {e.request.url}")
+                raise APIError("Resource not found", status)
+            elif status == 409:
+                logger.warning("Version conflict detected")
+                raise APIError("Conflict - resource was modified", status)
+            elif status == 429:
+                retry_after = e.response.headers.get('Retry-After', 60)
+                logger.warning(f"Rate limited. Retry after {retry_after}s")
+                raise APIError(f"Rate limited. Retry after {retry_after}s", status)
+            else:
+                logger.error(f"HTTP error {status}: {e.response.text}")
+                raise APIError(f"HTTP error {status}", status)
+
+        except httpx.NetworkError as e:
+            logger.error(f"Network error: {e}")
+            raise APIError("Network connection failed")
+
+        except Exception as e:
+            logger.exception("Unexpected error")
+            raise APIError(f"Unexpected error: {str(e)}")
+
+    return wrapper
+
+# Usage
+@handle_api_errors
+async def create_project_safe(name: str):
+    async with AsyncTracerTMClient(BASE_URL, API_KEY) as client:
+        return await client.create_project(name=name)
+```
+
+---
+
+## Rate Limiting and Pagination
+
+### Rate Limiting
+
+TracerTM implements rate limiting to ensure fair usage:
+
+```python
+from tracertm.services.api_webhooks_service import APIWebhooksService
+
+service = APIWebhooksService()
+
+# Set rate limit
+service.set_rate_limit(
+    api_key=your_api_key,
+    requests_per_minute=100
+)
+
+# Check before making request
+rate_check = service.check_rate_limit(your_api_key)
+if not rate_check['allowed']:
+    print(f"Rate limited: {rate_check['reason']}")
+else:
+    print(f"Requests remaining: {rate_check['requests_remaining']}")
+```
+
+### Handling Rate Limits in Client
+
+```python
+import asyncio
+from datetime import datetime, timedelta
+
+class RateLimitedClient:
+    """Client with automatic rate limit handling."""
+
+    def __init__(self, client: AsyncTracerTMClient):
+        self.client = client
+        self.request_times: List[datetime] = []
+        self.max_requests_per_minute = 100
+
+    async def _wait_if_rate_limited(self):
+        """Wait if we're about to exceed rate limit."""
+        now = datetime.utcnow()
+        minute_ago = now - timedelta(minutes=1)
+
+        # Remove old requests
+        self.request_times = [
+            t for t in self.request_times
+            if t > minute_ago
+        ]
+
+        # Check if we're at limit
+        if len(self.request_times) >= self.max_requests_per_minute:
+            # Calculate wait time
+            oldest = min(self.request_times)
+            wait_until = oldest + timedelta(minutes=1)
+            wait_seconds = (wait_until - now).total_seconds()
+
+            if wait_seconds > 0:
+                print(f"Rate limit reached. Waiting {wait_seconds:.1f}s...")
+                await asyncio.sleep(wait_seconds)
+                self.request_times = []
+
+        # Record this request
+        self.request_times.append(now)
+
+    async def make_request(self, method: str, endpoint: str, **kwargs):
+        """Make rate-limited request."""
+        await self._wait_if_rate_limited()
+        return await self.client._request_with_retry(method, endpoint, **kwargs)
+```
+
+### Pagination Patterns
+
+**Offset-based pagination:**
+```python
+async def fetch_all_items(project_id: str, page_size: int = 100):
+    """Fetch all items using offset pagination."""
+    all_items = []
+    skip = 0
+
+    async with AsyncTracerTMClient(BASE_URL, API_KEY) as client:
+        while True:
+            response = await client._request_with_retry(
+                'GET',
+                '/api/v1/items',
+                params={
+                    'project_id': project_id,
+                    'skip': skip,
+                    'limit': page_size
+                }
+            )
+            data = response.json()
+            items = data.get('items', [])
+
+            if not items:
+                break
+
+            all_items.extend(items)
+            skip += page_size
+
+            # Optional: break if we got less than page_size (last page)
+            if len(items) < page_size:
+                break
+
+    return all_items
+```
+
+**Cursor-based pagination (more efficient):**
+```python
+async def fetch_items_cursor(project_id: str, page_size: int = 100):
+    """Fetch items using cursor pagination."""
+    all_items = []
+    cursor = None
+
+    async with AsyncTracerTMClient(BASE_URL, API_KEY) as client:
+        while True:
+            params = {
+                'project_id': project_id,
+                'limit': page_size
+            }
+            if cursor:
+                params['cursor'] = cursor
+
+            response = await client._request_with_retry(
+                'GET',
+                '/api/v1/items',
+                params=params
+            )
+            data = response.json()
+
+            items = data.get('items', [])
+            cursor = data.get('next_cursor')
+
+            if not items:
+                break
+
+            all_items.extend(items)
+
+            if not cursor:  # No more pages
+                break
+
+    return all_items
+```
+
+---
+
+## Webhook Development
+
+### Setting Up Webhooks
+
+```python
+from tracertm.services.api_webhooks_service import APIWebhooksService
+
+service = APIWebhooksService()
+
+# Register webhook
+webhook = service.register_webhook(
+    url="https://your-service.com/webhooks/tracertm",
+    events=[
+        "item.created",
+        "item.updated",
+        "item.deleted",
+        "link.created",
+        "project.updated"
+    ],
+    secret="your-webhook-secret"  # For signature verification
+)
+
+print(f"Webhook ID: {webhook['id']}")
+```
+
+### Webhook Payload Structure
+
 ```json
 {
-  "name": "Example API Development",
-  "description": "Description here"
+  "event_type": "item.created",
+  "resource_id": "item-uuid-123",
+  "resource_type": "item",
+  "action": "created",
+  "timestamp": "2024-12-07T10:30:00Z",
+  "data": {
+    "id": "item-uuid-123",
+    "title": "New Feature",
+    "view": "FEATURE",
+    "status": "todo",
+    "project_id": "proj-456"
+  },
+  "signature": "sha256=abc123..."
 }
 ```
 
-### Update API Development
+### Webhook Receiver (Flask Example)
 
-```http
-PUT /api/v1/api-development/:id
-```
-
-### Delete API Development
-
-```http
-DELETE /api/v1/api-development/:id
-```
-
-## Query Parameters
-
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
-
-## Error Responses
-
-### 400 Bad Request
-Invalid request parameters
-
-### 401 Unauthorized
-Missing or invalid authentication token
-
-### 404 Not Found
-Resource not found
-
-### 500 Internal Server Error
-Server error
-
-## SDK Examples
-
-### TypeScript
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
-
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.api-development.list()
-```
-
-### Python
 ```python
-from tracertm import Client
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
 
-client = Client(api_key='YOUR_KEY')
-items = client.api-development.list()
+app = Flask(__name__)
+WEBHOOK_SECRET = "your-webhook-secret"
+
+def verify_signature(payload: bytes, signature: str) -> bool:
+    """Verify webhook signature."""
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+
+@app.route('/webhooks/tracertm', methods=['POST'])
+def handle_webhook():
+    # Verify signature
+    signature = request.headers.get('X-TracerTM-Signature')
+    if not verify_signature(request.data, signature):
+        return jsonify({'error': 'Invalid signature'}), 401
+
+    # Parse event
+    event = request.json
+    event_type = event['event_type']
+
+    # Handle different event types
+    if event_type == 'item.created':
+        handle_item_created(event)
+    elif event_type == 'item.updated':
+        handle_item_updated(event)
+    elif event_type == 'item.deleted':
+        handle_item_deleted(event)
+
+    return jsonify({'status': 'processed'}), 200
+
+def handle_item_created(event):
+    """Handle item creation event."""
+    item_data = event['data']
+    print(f"New item created: {item_data['title']}")
+
+    # Your business logic here
+    # - Send notification
+    # - Update external system
+    # - Trigger automation
+
+def handle_item_updated(event):
+    """Handle item update event."""
+    item_data = event['data']
+    print(f"Item updated: {item_data['id']}")
+
+def handle_item_deleted(event):
+    """Handle item deletion event."""
+    resource_id = event['resource_id']
+    print(f"Item deleted: {resource_id}")
+
+if __name__ == '__main__':
+    app.run(port=5000)
 ```
 
+### FastAPI Webhook Receiver
+
+```python
+from fastapi import FastAPI, Request, HTTPException, Header
+from typing import Optional
+import hmac
+import hashlib
+
+app = FastAPI()
+WEBHOOK_SECRET = "your-webhook-secret"
+
+async def verify_webhook_signature(
+    request: Request,
+    x_tracertm_signature: Optional[str] = Header(None)
+) -> bool:
+    """Verify webhook signature."""
+    if not x_tracertm_signature:
+        return False
+
+    body = await request.body()
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        body,
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(
+        f"sha256={expected}",
+        x_tracertm_signature
+    )
+
+@app.post("/webhooks/tracertm")
+async def handle_webhook(
+    request: Request,
+    x_tracertm_signature: Optional[str] = Header(None)
+):
+    # Verify signature
+    if not await verify_webhook_signature(request, x_tracertm_signature):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    # Parse event
+    event = await request.json()
+
+    # Process event asynchronously
+    await process_webhook_event(event)
+
+    return {"status": "processed"}
+
+async def process_webhook_event(event: dict):
+    """Process webhook event asynchronously."""
+    event_type = event['event_type']
+
+    handlers = {
+        'item.created': handle_item_created,
+        'item.updated': handle_item_updated,
+        'item.deleted': handle_item_deleted,
+        'link.created': handle_link_created
+    }
+
+    handler = handlers.get(event_type)
+    if handler:
+        await handler(event)
+    else:
+        print(f"Unknown event type: {event_type}")
+
+async def handle_item_created(event: dict):
+    """Handle item creation."""
+    # Async processing
+    pass
+```
+
+### Triggering Webhooks
+
+```python
+# Trigger webhook when item is created
+def create_item_with_webhook(title: str, view: str):
+    client = TraceRTMClient()
+
+    # Create item
+    item = client.create_item(
+        title=title,
+        view=view,
+        item_type="feature"
+    )
+
+    # Trigger webhook event
+    service = APIWebhooksService()
+    service.trigger_webhook_event(
+        event_type="item.created",
+        resource_id=item['id'],
+        resource_type="item",
+        action="created",
+        data=item
+    )
+
+    return item
+```
+
+---
+
+## Testing API Integrations
+
+### Unit Testing with Mocks
+
+```python
+import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
+import httpx
+
+@pytest.fixture
+def mock_client():
+    """Mock httpx client."""
+    client = AsyncMock(spec=httpx.AsyncClient)
+    return client
+
+@pytest.mark.asyncio
+async def test_list_projects(mock_client):
+    """Test listing projects."""
+    # Mock response
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        'total': 2,
+        'projects': [
+            {'id': '1', 'name': 'Project 1'},
+            {'id': '2', 'name': 'Project 2'}
+        ]
+    }
+    mock_client.get.return_value = mock_response
+
+    # Test
+    with patch('httpx.AsyncClient', return_value=mock_client):
+        async with AsyncTracerTMClient('http://test', 'key') as client:
+            projects = await client.list_projects()
+
+            assert len(projects) == 2
+            assert projects[0]['name'] == 'Project 1'
+
+@pytest.mark.asyncio
+async def test_rate_limit_handling(mock_client):
+    """Test rate limit error handling."""
+    # Mock rate limit response
+    mock_response = MagicMock()
+    mock_response.status_code = 429
+    mock_response.headers = {'Retry-After': '60'}
+
+    mock_client.get.side_effect = httpx.HTTPStatusError(
+        "Too Many Requests",
+        request=MagicMock(),
+        response=mock_response
+    )
+
+    with patch('httpx.AsyncClient', return_value=mock_client):
+        async with AsyncTracerTMClient('http://test', 'key') as client:
+            with pytest.raises(httpx.HTTPStatusError):
+                await client.list_projects()
+```
+
+### Integration Testing
+
+```python
+import pytest
+from tracertm.api.client import TraceRTMClient
+
+@pytest.fixture
+def test_client():
+    """Create test client."""
+    client = TraceRTMClient(agent_name="Integration Test")
+    yield client
+    client.close()
+
+def test_create_and_query_items(test_client):
+    """Integration test for item creation and querying."""
+    # Create test project (assumes test database)
+    # In real scenario, use test fixtures
+
+    # Create item
+    item = test_client.create_item(
+        title="Test Item",
+        view="FEATURE",
+        item_type="requirement",
+        description="Test description"
+    )
+
+    assert item['id'] is not None
+    assert item['title'] == "Test Item"
+
+    # Query items
+    items = test_client.query_items(view="FEATURE")
+    item_ids = [i['id'] for i in items]
+    assert item['id'] in item_ids
+
+    # Update item
+    updated = test_client.update_item(
+        item_id=item['id'],
+        status="in_progress"
+    )
+    assert updated['status'] == "in_progress"
+    assert updated['version'] > item['version']
+
+    # Clean up
+    test_client.delete_item(item['id'])
+```
+
+### End-to-End Testing
+
+```python
+import asyncio
+import pytest
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_complete_workflow():
+    """E2E test of complete workflow."""
+    async with AsyncTracerTMClient(
+        base_url='http://localhost:8000',
+        api_key='test-key'
+    ) as client:
+        # Create project
+        project = await client.create_project(
+            name="E2E Test Project",
+            description="End-to-end test"
+        )
+
+        # Create items
+        feature = await client.create_item(
+            project_id=project['id'],
+            title="Feature A",
+            view="FEATURE",
+            item_type="requirement"
+        )
+
+        test_case = await client.create_item(
+            project_id=project['id'],
+            title="Test for Feature A",
+            view="TEST",
+            item_type="test_case"
+        )
+
+        # Create link
+        link = await client.create_link(
+            project_id=project['id'],
+            source_id=feature['id'],
+            target_id=test_case['id'],
+            link_type="tests"
+        )
+
+        # Analyze impact
+        impact = await client.analyze_impact(
+            item_id=feature['id'],
+            project_id=project['id']
+        )
+
+        assert impact['total_affected'] >= 1
+        assert test_case['id'] in impact['affected_items']
+
+        # Export project
+        export_data = await client.export_project(
+            project_id=project['id'],
+            format='json'
+        )
+
+        assert 'items' in export_data
+        assert len(export_data['items']) == 2
+```
+
+---
+
+## Best Practices
+
+### 1. Always Use HTTPS in Production
+
+```python
+# Development
+DEV_BASE_URL = "http://localhost:8000"
+
+# Production
+PROD_BASE_URL = "https://api.tracertm.io"
+
+# Use environment-based configuration
+import os
+BASE_URL = os.getenv('TRACERTM_API_URL', DEV_BASE_URL)
+```
+
+### 2. Store API Keys Securely
+
+```python
+# ❌ Don't do this
+API_KEY = "sk_live_abc123xyz789"
+
+# ✅ Do this
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+API_KEY = os.getenv('TRACERTM_API_KEY')
+
+if not API_KEY:
+    raise ValueError("TRACERTM_API_KEY environment variable not set")
+```
+
+### 3. Implement Timeout and Retry Logic
+
+```python
+# Configure reasonable timeouts
+client = AsyncTracerTMClient(
+    base_url=BASE_URL,
+    api_key=API_KEY,
+    timeout=30.0,  # 30 second timeout
+    max_retries=3  # Retry up to 3 times
+)
+```
+
+### 4. Use Connection Pooling
+
+```python
+# Reuse client connections
+class APIClientManager:
+    _instance = None
+    _client = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    async def get_client(self) -> AsyncTracerTMClient:
+        if self._client is None:
+            self._client = AsyncTracerTMClient(BASE_URL, API_KEY)
+            await self._client.__aenter__()
+        return self._client
+
+    async def close(self):
+        if self._client:
+            await self._client.__aexit__(None, None, None)
+            self._client = None
+
+# Usage
+manager = APIClientManager()
+client = await manager.get_client()
+# ... use client
+await manager.close()
+```
+
+### 5. Log API Interactions
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+async def create_item_logged(client, **kwargs):
+    """Create item with logging."""
+    logger.info(f"Creating item: {kwargs.get('title')}")
+
+    try:
+        item = await client.create_item(**kwargs)
+        logger.info(f"Created item {item['id']}")
+        return item
+    except Exception as e:
+        logger.error(f"Failed to create item: {e}", exc_info=True)
+        raise
+```
+
+### 6. Validate Input Data
+
+```python
+from pydantic import BaseModel, Field, validator
+
+class CreateItemRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=500)
+    view: str = Field(..., regex='^(FEATURE|CODE|TEST|API)$')
+    item_type: str = Field(..., min_length=1)
+    description: str | None = None
+
+    @validator('title')
+    def title_must_not_be_empty(cls, v):
+        if not v.strip():
+            raise ValueError('Title cannot be empty')
+        return v.strip()
+
+# Usage
+def create_item_safe(client, data: dict):
+    """Create item with validation."""
+    request = CreateItemRequest(**data)
+    return client.create_item(**request.dict())
+```
+
+### 7. Handle Pagination Efficiently
+
+```python
+async def fetch_all_items_efficient(client, project_id: str):
+    """Fetch all items with efficient pagination."""
+    items = []
+    page_size = 100
+    skip = 0
+
+    while True:
+        batch = await client.list_items(
+            project_id=project_id,
+            skip=skip,
+            limit=page_size
+        )
+
+        if not batch:
+            break
+
+        items.extend(batch)
+
+        # Stop if we got less than page_size (last page)
+        if len(batch) < page_size:
+            break
+
+        skip += page_size
+
+    return items
+```
+
+### 8. Implement Circuit Breaker Pattern
+
+```python
+from datetime import datetime, timedelta
+
+class CircuitBreaker:
+    def __init__(self, failure_threshold: int = 5, timeout: int = 60):
+        self.failure_threshold = failure_threshold
+        self.timeout = timeout
+        self.failures = 0
+        self.last_failure_time = None
+        self.state = 'CLOSED'  # CLOSED, OPEN, HALF_OPEN
+
+    def call(self, func, *args, **kwargs):
+        if self.state == 'OPEN':
+            if datetime.utcnow() - self.last_failure_time > timedelta(seconds=self.timeout):
+                self.state = 'HALF_OPEN'
+            else:
+                raise Exception('Circuit breaker is OPEN')
+
+        try:
+            result = func(*args, **kwargs)
+            if self.state == 'HALF_OPEN':
+                self.state = 'CLOSED'
+                self.failures = 0
+            return result
+        except Exception as e:
+            self.failures += 1
+            self.last_failure_time = datetime.utcnow()
+
+            if self.failures >= self.failure_threshold:
+                self.state = 'OPEN'
+
+            raise
+
+# Usage
+breaker = CircuitBreaker()
+
+def make_api_call():
+    return breaker.call(client.list_projects)
+```
+
+### 9. Monitor API Usage
+
+```python
+from tracertm.services.api_webhooks_service import APIWebhooksService
+
+def monitor_api_usage():
+    """Monitor API usage and statistics."""
+    service = APIWebhooksService()
+    stats = service.get_api_stats()
+
+    print(f"Total API Keys: {stats['total_api_keys']}")
+    print(f"Active API Keys: {stats['active_api_keys']}")
+    print(f"Total Webhooks: {stats['total_webhooks']}")
+    print(f"Webhook Events: {stats['total_webhook_events']}")
+
+    # Set up alerts if usage is high
+    if stats['active_api_keys'] > 100:
+        send_alert("High number of active API keys")
+```
+
+### 10. Document Your Integration
+
+```python
+"""
+TracerTM Integration Module
+===========================
+
+This module provides integration with TracerTM API for automated
+traceability management.
+
+Configuration:
+    - TRACERTM_API_URL: Base URL for API (default: http://localhost:8000)
+    - TRACERTM_API_KEY: API authentication key
+    - TRACERTM_TIMEOUT: Request timeout in seconds (default: 30)
+
+Usage:
+    >>> from integration import create_requirement
+    >>> req = create_requirement("User can login")
+    >>> print(req['id'])
+
+Error Handling:
+    All functions raise APIError on failure. Implement retry logic
+    for transient errors (429, 500, 503).
+
+Rate Limits:
+    100 requests per minute per API key.
+"""
+```
+
+---
+
+## Summary
+
+You've learned how to:
+
+- ✅ Understand TracerTM's API architecture
+- ✅ Authenticate using API keys
+- ✅ Build integrations with REST API
+- ✅ Use the Python SDK effectively
+- ✅ Create custom API clients in any language
+- ✅ Handle errors and version conflicts
+- ✅ Implement rate limiting and pagination
+- ✅ Develop and consume webhooks
+- ✅ Test API integrations thoroughly
+- ✅ Follow best practices for production deployments
+
+## Next Steps
+
+1. Explore the [API Reference](/docs/api/reference) for complete endpoint documentation
+2. Review [Advanced Patterns](/docs/wiki/tutorials/advanced/patterns) for complex workflows
+3. Check out [Integration Examples](/docs/wiki/examples/integrations) for real-world use cases
+4. Join the community to share your integrations
+
+## Additional Resources
+
+- [OpenAPI/Swagger Documentation](http://localhost:8000/docs)
+- [Python SDK Source](https://github.com/yourusername/tracertm/tree/main/src/tracertm/api)
+- [API Client Examples](https://github.com/yourusername/tracertm-examples)
+- [Community Integrations](https://github.com/yourusername/tracertm-integrations)

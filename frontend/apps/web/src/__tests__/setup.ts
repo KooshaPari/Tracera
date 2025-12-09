@@ -11,6 +11,15 @@ import { expect } from 'vitest'
 // Extend Vitest matchers with jest-axe
 expect.extend(toHaveNoViolations)
 
+// Mock TanStack Router API routes (createAPIFileRoute is from TanStack Start but imported from react-router)
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual('@tanstack/react-router')
+  return {
+    ...actual,
+    createAPIFileRoute: () => () => ({ GET: vi.fn(), POST: vi.fn() }),
+  }
+})
+
 // Setup localStorage mock BEFORE importing MSW
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
@@ -80,6 +89,18 @@ if (typeof globalThis.window !== 'undefined') {
   observe() {}
   unobserve() {}
 } as any
+
+// Mock pointer capture methods for Radix UI components
+if (typeof globalThis !== 'undefined' && typeof Element !== 'undefined') {
+  Element.prototype.hasPointerCapture = vi.fn().mockReturnValue(false)
+  Element.prototype.setPointerCapture = vi.fn()
+  Element.prototype.releasePointerCapture = vi.fn()
+}
+
+// Mock scrollIntoView for Radix UI components
+if (typeof globalThis !== 'undefined' && typeof Element !== 'undefined') {
+  Element.prototype.scrollIntoView = vi.fn()
+}
 
 // Mock WebSocket
 class MockWebSocket {

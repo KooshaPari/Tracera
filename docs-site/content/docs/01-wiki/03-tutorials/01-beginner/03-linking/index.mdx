@@ -1,132 +1,678 @@
 ---
-title: "Linking Artifacts"
-description: "Documentation for Linking Artifacts"
+title: "Linking Items"
+description: "Learn how to create and manage traceability links between items in TraceRTM"
 ---
 
-# Linking Artifacts
+# Linking Items
 
+Learn how to establish traceability relationships between requirements, test cases, and other artifacts in TraceRTM.
 
 ## Overview
 
-Comprehensive guide for Linking Artifacts.
+Traceability links are the foundation of requirements management. They create bidirectional relationships between items, allowing you to track how requirements flow through design, implementation, testing, and beyond. This tutorial builds on the previous tutorials where we created requirements and test cases, showing you how to connect them.
 
-## Introduction
+## What Are Traceability Links?
 
-This guide covers everything you need to know about Linking Artifacts.
+Traceability links are **directed relationships** between items that capture dependencies, implementations, test coverage, and other associations. Each link has:
 
-## Getting Started
+- **Source Item**: The item where the link originates
+- **Target Item**: The item being linked to
+- **Link Type**: The nature of the relationship (e.g., "implements", "tests", "depends_on")
+- **Metadata**: Optional additional information about the link
 
-### Prerequisites
+Links are **bidirectional** - when you create a link from A to B, TraceRTM automatically tracks both the outgoing link from A and the incoming link to B.
 
-- Basic understanding of TraceRTM
-- Access to a TraceRTM workspace
-- Required permissions
+## Prerequisites
 
-### Initial Setup
+Before starting this tutorial, you should have:
+
+- Completed the [First Requirement](/docs/wiki/tutorials/beginner/first-requirement) tutorial
+- Completed the [Creating Test Cases](/docs/wiki/tutorials/beginner/creating-tests) tutorial
+- At least one requirement and one test case in your project
+- TraceRTM CLI installed and configured
+
+## Understanding Link Types
+
+TraceRTM supports multiple link types to capture different relationships:
+
+### Common Link Types
+
+| Link Type | Description | Example |
+|-----------|-------------|---------|
+| `implements` | Target implements the source | EPIC-001 → STORY-001 (Story implements Epic) |
+| `tests` | Target tests the source | REQ-001 → TEST-001 (Test validates Requirement) |
+| `depends_on` | Source depends on target | STORY-002 → STORY-001 (Story 2 depends on Story 1) |
+| `blocks` | Source blocks target | BUG-001 → STORY-001 (Bug blocks Story) |
+| `related_to` | General association | REQ-001 → REQ-002 (Related requirements) |
+| `designs` | Target provides design for source | REQ-001 → DESIGN-001 (Design document for requirement) |
+| `parent_of` | Parent-child hierarchy | EPIC-001 → STORY-001 (Epic contains Story) |
+| `child_of` | Child-parent hierarchy | STORY-001 → EPIC-001 (Story belongs to Epic) |
+| `decomposes_to` | Source breaks down into target | REQ-001 → REQ-002 (Requirement decomposition) |
+
+### Choosing the Right Link Type
+
+- Use `implements` for implementation relationships (requirement → code, epic → story)
+- Use `tests` for test coverage (requirement → test case)
+- Use `depends_on` for dependencies (story → story, requirement → requirement)
+- Use `blocks` for blocking issues
+- Use `parent_of`/`child_of` for hierarchical relationships
+- Use `decomposes_to` for requirement decomposition
+
+## Creating Links via CLI
+
+### Basic Link Creation
+
+Let's link the test case we created in the previous tutorial to its requirement.
+
+First, list your items to get their IDs:
 
 ```bash
-tracertm init
-tracertm config set linking.artifacts enabled
+# List requirements
+rtm item list --view REQ
+
+# List test cases
+rtm item list --view TEST
 ```
 
-## Core Workflows
-
-### Workflow 1: Basic Usage
+Now create a link:
 
 ```bash
-# Step 1: Initialize
-tracertm linking-artifacts init
+# Basic syntax
+rtm link create <source-id> <target-id> --type <link-type>
 
-# Step 2: Execute
-tracertm linking-artifacts run
-
-# Step 3: Verify
-tracertm linking-artifacts status
+# Example: Link test to requirement
+rtm link create REQ-001 TEST-001 --type tests
 ```
 
-### Workflow 2: Advanced Usage
+Output:
+```
+✓ Created link: User Authentication Requirement --[tests]--> Test User Login
+  Link ID: a1b2c3d4
+```
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+### Creating Multiple Links
 
-const tracertm = new TraceRTM()
-await tracertm.linkingartifacts({
-  mode: 'advanced',
-  options: {
-    verbose: true
-  }
-})
+Let's create several links to build a complete traceability chain:
+
+```bash
+# Link epic to story
+rtm link create EPIC-001 STORY-001 --type decomposes_to
+
+# Link story to requirement
+rtm link create STORY-001 REQ-001 --type implements
+
+# Link requirement to test
+rtm link create REQ-001 TEST-001 --type tests
+
+# Link requirement to design doc
+rtm link create REQ-001 DESIGN-001 --type designs
+
+# Create dependency between stories
+rtm link create STORY-002 STORY-001 --type depends_on
+```
+
+### Adding Metadata to Links
+
+You can add custom metadata to links using JSON:
+
+```bash
+# Add metadata about test coverage
+rtm link create REQ-001 TEST-001 --type tests \
+  --metadata '{"coverage": "100%", "priority": "high"}'
+
+# Add dependency reason
+rtm link create STORY-002 STORY-001 --type depends_on \
+  --metadata '{"reason": "Requires authentication system", "blocking": true}'
+```
+
+### Link Validation
+
+TraceRTM automatically validates links to prevent errors:
+
+```bash
+# Try to create a circular dependency (this will fail)
+rtm link create STORY-001 STORY-002 --type depends_on
+rtm link create STORY-002 STORY-001 --type depends_on
+```
+
+Error:
+```
+✗ Circular dependency detected: Adding this link would create a cycle
+  Cannot create depends_on link from Story 2 to Story 1
+```
+
+## Viewing Links and Relationships
+
+### Show Links for an Item
+
+View all links for a specific item:
+
+```bash
+# Show all links for a requirement
+rtm link show REQ-001
+```
+
+Output:
+```
+Links for: User Authentication Requirement
+Item ID: REQ-001, View: REQ
+
+Outgoing Links:
+  → [tests] → Test User Login (TEST-001) [TEST]
+  → [designs] → Auth Design Doc (DESIGN-001) [DESIGN]
+
+Incoming Links:
+  ← [implements] ← Login User Story (STORY-001) [STORY]
+```
+
+### Filter Links by View
+
+Show only links to specific views:
+
+```bash
+# Show only test-related links
+rtm link show REQ-001 --view TEST
+
+# Show only implementation links
+rtm link show EPIC-001 --view STORY
+```
+
+### List All Links
+
+View all links in your project:
+
+```bash
+# List all links
+rtm link list
+
+# List with filters
+rtm link list --type implements --limit 20
+
+# List links for specific item
+rtm link list --item REQ-001
+```
+
+## Creating Links via TUI
+
+The TUI provides a visual way to create and manage links.
+
+### Launch the TUI
+
+```bash
+# Start the dashboard
+rtm tui
+
+# Or directly open the graph view
+rtm tui --view graph
+```
+
+### Creating Links in the TUI
+
+1. Navigate to the **Links** tab or **Graph View**
+2. Select the source item from the item list
+3. Press `L` (Create Link) or use the menu
+4. Choose the target item
+5. Select the link type from the dropdown
+6. Confirm to create the link
+
+### Visualizing Relationships
+
+The TUI Graph View shows items and their connections:
+
+- **Nodes**: Represent items (color-coded by view)
+- **Edges**: Represent links (labeled with link type)
+- **Layout**: Automatically arranged for readability
+
+Navigation:
+- `Arrow Keys`: Move focus
+- `+/-`: Zoom in/out
+- `R`: Refresh graph
+- `F`: Filter by link type
+- `Q`: Return to dashboard
+
+## Understanding Bidirectional Traceability
+
+### Forward Traceability
+
+Follow links from requirements to implementation:
+
+```bash
+# Show what implements this requirement
+rtm link show REQ-001
+```
+
+Shows: REQ-001 → STORY-001 → CODE-001 → TEST-001
+
+### Backward Traceability
+
+Trace from test back to requirement:
+
+```bash
+# Show what this test validates
+rtm link show TEST-001
+```
+
+Shows: TEST-001 → REQ-001 → STORY-001 → EPIC-001
+
+### Impact Analysis
+
+See what would be affected by changing an item:
+
+```bash
+# Analyze impact of changing a requirement
+rtm link impact REQ-001
+```
+
+Output:
+```
+Impact Analysis for: User Authentication Requirement
+Item ID: REQ-001
+
+Total Affected Items: 5
+Max Depth Reached: 3
+
+Affected by Depth:
+  Depth 1: 2 items
+  Depth 2: 2 items
+  Depth 3: 1 items
+
+Affected Items:
+  Depth | Item ID  | Title                  | View   | Type    | Status
+  ------+----------+------------------------+--------+---------+--------
+  1     | TEST-001 | Test User Login        | TEST   | test    | draft
+  1     | DESIGN-1 | Auth Design Doc        | DESIGN | design  | draft
+  2     | CODE-001 | Login Implementation   | CODE   | code    | draft
+  ...
+```
+
+## Link Validation and Constraints
+
+### Cycle Detection
+
+Detect circular dependencies in your project:
+
+```bash
+# Check for cycles in depends_on links
+rtm link detect-cycles --type depends_on
+```
+
+Output if cycles found:
+```
+✗ Found 2 cycle(s) in depends_on relationships
+
+Cycles detected:
+
+  Cycle 1:
+    Story A (STORY-001) →
+    Story B (STORY-002) →
+    Story C (STORY-003) →
+    Story A (STORY-001)
+```
+
+### Missing Dependencies
+
+Find broken links:
+
+```bash
+# Detect links to non-existent items
+rtm link detect-missing --type depends_on
+```
+
+### Orphaned Items
+
+Find items with no links:
+
+```bash
+# Find orphaned items (items with no links)
+rtm link detect-orphans
+
+# Filter by link type
+rtm link detect-orphans --type implements
+```
+
+## Bulk Linking Operations
+
+### Using Auto-Link from Commit Messages
+
+TraceRTM can automatically create links from git commit messages:
+
+```bash
+# Parse commit message for item IDs
+rtm link auto-link "Implement login feature for #REQ-001 and #STORY-001" \
+  --code-item CODE-001 \
+  --commit-hash abc123
+```
+
+This automatically creates:
+- REQ-001 → CODE-001 (implements)
+- STORY-001 → CODE-001 (implements)
+
+### Batch Link Creation Script
+
+For bulk operations, use a shell script:
+
+```bash
+#!/bin/bash
+# bulk_links.sh - Create multiple links at once
+
+# Define arrays
+REQS=("REQ-001" "REQ-002" "REQ-003")
+TESTS=("TEST-001" "TEST-002" "TEST-003")
+
+# Create links
+for i in "${!REQS[@]}"; do
+  rtm link create "${REQS[$i]}" "${TESTS[$i]}" --type tests
+  echo "Linked ${REQS[$i]} to ${TESTS[$i]}"
+done
+```
+
+Run it:
+```bash
+chmod +x bulk_links.sh
+./bulk_links.sh
+```
+
+## Visualizing Links
+
+### Graph Visualization
+
+Generate ASCII art graph of relationships:
+
+```bash
+# Visualize from a requirement
+rtm link graph REQ-001 --depth 3
+```
+
+Output:
+```
+Traceability Graph
+Root: REQ-001, Max Depth: 3, Link Type: all
+
+User Authentication Requirement (REQ-001) [REQ]
+    ├─[tests]
+    └── Test User Login (TEST-001) [TEST]
+    ├─[designs]
+    └── Auth Design Doc (DESIGN-001) [DESIGN]
+    ├─[implements]
+    └── Login Story (STORY-001) [STORY]
+        ├─[implements]
+        └── Login Code (CODE-001) [CODE]
+```
+
+### Traceability Matrix
+
+View all links in table format:
+
+```bash
+# Show full traceability matrix
+rtm link matrix
+
+# Filter by type
+rtm link matrix --type implements
+
+# Filter by view
+rtm link matrix --view EPIC
+```
+
+Output:
+```
+Traceability Matrix (15 links)
+
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━┓
+┃ Source           ┃ Source ID┃ View┃ Link Type   ┃ Target           ┃ Target ID┃ View┃
+┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━┩
+│ Auth Epic        │ EPIC-001 │ EPIC│ decomposes  │ Login Story      │ STORY-001│ STORY
+│ Login Story      │ STORY-001│ STORY implements  │ Auth Requirement │ REQ-001  │ REQ│
+│ Auth Requirement │ REQ-001  │ REQ │ tests       │ Login Test       │ TEST-001 │ TEST│
+└──────────────────┴──────────┴─────┴─────────────┴──────────────────┴──────────┴─────┘
+
+Summary:
+  Total Links: 15
+  By Type:
+    decomposes: 3
+    implements: 5
+    tests: 7
+```
+
+## Common Linking Patterns
+
+### Pattern 1: Requirement to Test Coverage
+
+Standard pattern for test traceability:
+
+```bash
+# 1. Create requirement
+rtm item create --title "User can reset password" \
+  --type requirement --view REQ
+
+# 2. Create test cases
+rtm item create --title "Test password reset email" \
+  --type test --view TEST
+
+rtm item create --title "Test password reset flow" \
+  --type test --view TEST
+
+# 3. Link tests to requirement
+rtm link create REQ-002 TEST-004 --type tests
+rtm link create REQ-002 TEST-005 --type tests
+```
+
+### Pattern 2: Epic to Story Decomposition
+
+Breaking down epics into stories:
+
+```bash
+# Link epic to multiple stories
+rtm link create EPIC-001 STORY-001 --type decomposes_to
+rtm link create EPIC-001 STORY-002 --type decomposes_to
+rtm link create EPIC-001 STORY-003 --type decomposes_to
+
+# Link stories to each other (dependencies)
+rtm link create STORY-002 STORY-001 --type depends_on
+rtm link create STORY-003 STORY-002 --type depends_on
+```
+
+### Pattern 3: Full Traceability Chain
+
+Complete traceability from epic to test:
+
+```bash
+# Epic → Story → Requirement → Code → Test
+rtm link create EPIC-001 STORY-001 --type decomposes_to
+rtm link create STORY-001 REQ-001 --type implements
+rtm link create REQ-001 CODE-001 --type implements
+rtm link create CODE-001 TEST-001 --type tests
+```
+
+### Pattern 4: Design Documentation
+
+Linking requirements to design documents:
+
+```bash
+# Requirement → Design → Architecture
+rtm link create REQ-001 DESIGN-001 --type designs
+rtm link create DESIGN-001 ARCH-001 --type related_to
+```
+
+## Managing Links
+
+### Deleting Links
+
+Remove unwanted links:
+
+```bash
+# Get link ID
+rtm link list --item REQ-001
+
+# Delete by ID
+rtm link delete a1b2c3d4
+```
+
+Output:
+```
+✓ Deleted link a1b2c3d4
+  User Requirement --[tests]--> Login Test
+```
+
+### Updating Links
+
+To update a link, delete and recreate it:
+
+```bash
+# Delete old link
+rtm link delete old-link-id
+
+# Create new link with updated type
+rtm link create REQ-001 TEST-001 --type validates \
+  --metadata '{"updated": true}'
+```
+
+## Troubleshooting Link Issues
+
+### Issue 1: Cannot Create Link - Items Not Found
+
+**Problem**: Error when creating link: "Source item not found"
+
+**Solution**:
+```bash
+# Verify item exists
+rtm item list --search "REQ-001"
+
+# Check item ID (use exact ID, not partial)
+rtm item show REQ-001
+
+# Create link with exact IDs
+rtm link create REQ-00123abc TEST-00456def --type tests
+```
+
+### Issue 2: Circular Dependency Detected
+
+**Problem**: Cannot create depends_on link due to cycle
+
+**Solution**:
+```bash
+# Detect existing cycles
+rtm link detect-cycles --type depends_on
+
+# Analyze the dependency chain
+rtm link graph STORY-001 --type depends_on
+
+# Remove problematic link before adding new one
+rtm link delete cycle-link-id
+```
+
+### Issue 3: Too Many Orphaned Items
+
+**Problem**: Many items have no links
+
+**Solution**:
+```bash
+# Find orphans
+rtm link detect-orphans
+
+# Review and link them
+rtm link show ORPHAN-ITEM-001
+
+# Create appropriate links
+rtm link create PARENT-001 ORPHAN-ITEM-001 --type implements
+```
+
+### Issue 4: Link Type Validation Error
+
+**Problem**: "Invalid link type: validate"
+
+**Solution**:
+```bash
+# Use valid link types only:
+# implements, tests, designs, depends_on, blocks, related_to,
+# parent_of, child_of, tested_by, implemented_by, decomposes_to
+
+# Correct example
+rtm link create REQ-001 TEST-001 --type tests
+```
+
+### Issue 5: Metadata Format Error
+
+**Problem**: "Invalid JSON metadata"
+
+**Solution**:
+```bash
+# Use proper JSON format with single quotes around JSON, double quotes inside
+rtm link create REQ-001 TEST-001 --type tests \
+  --metadata '{"key": "value", "number": 123}'
+
+# Not: --metadata "{key: value}" (invalid JSON)
+# Not: --metadata "{'key': 'value'}" (invalid JSON)
 ```
 
 ## Best Practices
 
-1. **Plan Ahead**: Design before implementation
-2. **Document**: Keep records up-to-date
-3. **Test**: Validate in test environment
-4. **Monitor**: Track performance and issues
-5. **Iterate**: Continuously improve
+### 1. Link Consistently
 
-## Common Tasks
+- Always link requirements to tests
+- Link stories to their epics
+- Link code implementations to requirements
+- Document design decisions with links
 
-### Task 1: Configuration
+### 2. Use Appropriate Link Types
 
-```yaml
-# tracertm.config.yml
-linking_artifacts:
-  enabled: true
-  mode: production
-```
+- Don't use generic `related_to` when specific types exist
+- Use `implements` for implementation relationships
+- Use `tests` for test coverage
+- Use `depends_on` for dependencies
 
-### Task 2: Automation
+### 3. Avoid Circular Dependencies
 
-```bash
-# Automate with scripts
-tracertm linking-artifacts --auto
-```
+- Check for cycles regularly
+- Plan dependency structure before linking
+- Use `detect-cycles` before releases
 
-## Troubleshooting
+### 4. Maintain Bidirectional Traceability
 
-### Issue 1: Configuration Error
+- Ensure forward traceability (requirement → test)
+- Ensure backward traceability (test → requirement)
+- Use impact analysis to understand relationships
 
-**Solution:**
-```bash
-tracertm config validate
-tracertm config reset
-```
+### 5. Add Meaningful Metadata
 
-### Issue 2: Performance
+- Document why links exist
+- Track coverage percentages
+- Mark blocking issues
 
-**Solution:**
-```bash
-tracertm optimize linking-artifacts
-```
+### 6. Regular Validation
 
-## Advanced Topics
+- Run `detect-missing` to find broken links
+- Run `detect-orphans` to find unlinked items
+- Review traceability matrix periodically
 
-### Custom Integration
+## Next Steps
 
-```typescript
-class CustomPlugin {
-  async execute() {
-    // Custom logic
-  }
-}
-```
+Now that you understand linking, you can:
 
-## Examples
+1. **Generate Reports**: Learn how to create traceability reports in the [Reports Tutorial](/docs/wiki/tutorials/beginner/reports)
+2. **Advanced Queries**: Explore complex link queries in [Advanced Queries](/docs/wiki/tutorials/intermediate/advanced-queries)
+3. **Automation**: Automate linking with git hooks in [Automation Tutorial](/docs/wiki/tutorials/intermediate/automation)
+4. **API Integration**: Use the API to create links programmatically
 
-### Complete Example
+## Summary
 
-```typescript
-async function example() {
-  const tracertm = new TraceRTM()
-  const result = await tracertm.linkingartifacts()
-  console.log(result)
-}
-```
+In this tutorial, you learned:
 
-## Resources
+- What traceability links are and why they matter
+- Different link types and when to use them
+- How to create links via CLI and TUI
+- How to view and visualize relationships
+- Bidirectional traceability concepts
+- Link validation and cycle detection
+- Bulk linking operations
+- Common linking patterns
+- Troubleshooting common issues
 
-- [API Reference](/docs/api-reference)
-- [Examples Repository](https://github.com/tracertm/examples)
+Links are the backbone of requirements traceability. By establishing clear relationships between items, you create a web of connections that helps you understand impact, ensure coverage, and maintain project visibility.
 
+## Additional Resources
+
+- [Link Types Reference](/docs/reference/link-types)
+- [CLI Link Commands](/docs/cli/link)
+- [Traceability Matrix Guide](/docs/guides/traceability-matrix)
+- [Impact Analysis Guide](/docs/guides/impact-analysis)

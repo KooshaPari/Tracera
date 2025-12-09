@@ -123,8 +123,17 @@ if TEXTUAL_AVAILABLE:
 
         def update_display(self) -> None:
             """Update the display based on current state."""
-            # Connection status
-            connection_status = self.query_one("#connection-status", Static)
+            # Check if widget is mounted
+            if not self.is_mounted:
+                return
+
+            try:
+                # Connection status
+                connection_status = self.query_one("#connection-status", Static)
+            except Exception:
+                # Widget not yet composed
+                return
+
             if self.is_syncing:
                 connection_status.update("[bold cyan]⟳[/] Syncing...")
                 connection_status.add_class("syncing")

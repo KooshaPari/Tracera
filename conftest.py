@@ -12,6 +12,11 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+# Set asyncio mode to auto for better fixture handling
+@pytest.fixture(scope="session")
+def asyncio_mode():
+    return "auto"
+
 try:
     from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 except ImportError:

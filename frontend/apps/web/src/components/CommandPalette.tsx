@@ -16,7 +16,7 @@ import {
   TestTube,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@tanstack/react-router'
 
 interface Command {
   id: string

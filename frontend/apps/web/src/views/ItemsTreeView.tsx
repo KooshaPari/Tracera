@@ -6,7 +6,7 @@ import { Card } from '@tracertm/ui/components/Card'
 import { Input } from '@tracertm/ui/components/Input'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useItems } from '../hooks/useItems'
 import { useProjects } from '../hooks/useProjects'
 
@@ -133,9 +133,10 @@ function buildTree(items: Item[]): TreeNode[] {
 }
 
 export function ItemsTreeView() {
-  const [searchParams] = useSearchParams()
-  const projectFilter = searchParams.get('project') || undefined
-  const typeFilter = searchParams.get('type') || undefined
+  const navigate = useNavigate()
+  const searchParams = useSearch({ strict: false }) as any
+  const projectFilter = searchParams?.project || undefined
+  const typeFilter = searchParams?.type || undefined
 
   const { data: items, isLoading, error } = useItems({ projectId: projectFilter })
   const { data: projects } = useProjects()
@@ -263,16 +264,13 @@ export function ItemsTreeView() {
             <select
               value={projectFilter || ''}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                const params = new URLSearchParams(searchParams)
                 const value = (e.currentTarget as HTMLSelectElement).value
-                if (value) {
-                  params.set('project', value)
-                } else {
-                  params.delete('project')
-                }
-                if (typeof window !== 'undefined') {
-                  window.history.replaceState({}, '', `?${params.toString()}`)
-                }
+                navigate({
+                  search: (prev: any) => ({
+                    ...prev,
+                    project: value || undefined,
+                  }),
+                })
               }}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
             >
@@ -287,16 +285,13 @@ export function ItemsTreeView() {
           <select
             value={typeFilter || ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              const params = new URLSearchParams(searchParams)
               const value = (e.currentTarget as HTMLSelectElement).value
-              if (value) {
-                params.set('type', value)
-              } else {
-                params.delete('type')
-              }
-              if (typeof window !== 'undefined') {
-                window.history.replaceState({}, '', `?${params.toString()}`)
-              }
+              navigate({
+                search: (prev: any) => ({
+                  ...prev,
+                  type: value || undefined,
+                }),
+              })
             }}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
           >

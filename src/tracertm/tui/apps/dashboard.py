@@ -215,7 +215,7 @@ if TEXTUAL_AVAILABLE:
                         item.status,
                     )
 
-        def on_tree_node_selected(self, event: "Tree.NodeSelected") -> None:
+        def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
             """Handle view tree selection."""
             if event.node.data:
                 self.current_view = event.node.data

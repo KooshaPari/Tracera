@@ -1,19 +1,809 @@
 ---
-title: "REST Error Handling"
-description: "Error models and retries."
+title: Error Handling
+description: Comprehensive guide to API errors, error codes, and error handling strategies in TraceRTM
 ---
 
-## Endpoints
-- GET /v1/health — Check service health
+# Error Handling
 
-## Example
-```http
+TraceRTM uses standard HTTP status codes and structured error responses. This guide covers error formats, common error codes, and best practices for handling errors in your applications.
+
+## Quick Reference
+
+```bash
+# Check service health
 GET /v1/health
-Authorization: Bearer <token>
-Content-Type: application/json
+
+# Error responses always include
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable message",
+    "status": 400,
+    "details": {...},
+    "request_id": "req_abc123"
+  }
+}
 ```
 
-## Guidance
-- Use pagination headers (`Link`) for large result sets.
-- Prefer filters over client-side slicing to reduce payload size.
-- Check 429 headers for rate-limit backoff instructions.
+---
+
+## Error Response Format
+
+All API errors follow a consistent structure:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "status": 422,
+    "details": {
+      "errors": [
+        {
+          "field": "title",
+          "code": "required",
+          "message": "Title is required"
+        },
+        {
+          "field": "priority",
+          "code": "invalid_enum",
+          "message": "Priority must be one of: low, medium, high, critical",
+          "value": "urgent"
+        }
+      ]
+    },
+    "request_id": "req_abc123xyz",
+    "documentation_url": "https://docs.tracertm.dev/errors/VALIDATION_ERROR"
+  }
+}
+```
+
+### Error Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | string | Machine-readable error code |
+| `message` | string | Human-readable error message |
+| `status` | integer | HTTP status code |
+| `details` | object | Additional error context |
+| `request_id` | string | Unique request ID for support |
+| `documentation_url` | string | Link to error documentation |
+
+---
+
+## HTTP Status Codes
+
+### Success Codes (2xx)
+
+| Code | Name | Description |
+|------|------|-------------|
+| `200` | OK | Request succeeded |
+| `201` | Created | Resource created successfully |
+| `202` | Accepted | Request accepted for async processing |
+| `204` | No Content | Success with no response body |
+
+### Client Errors (4xx)
+
+| Code | Name | Common Cause |
+|------|------|--------------|
+| `400` | Bad Request | Invalid JSON, malformed request |
+| `401` | Unauthorized | Missing or invalid authentication |
+| `403` | Forbidden | Insufficient permissions |
+| `404` | Not Found | Resource doesn't exist |
+| `405` | Method Not Allowed | Wrong HTTP method |
+| `409` | Conflict | Duplicate resource, version conflict |
+| `410` | Gone | Resource permanently deleted |
+| `422` | Unprocessable Entity | Validation error |
+| `429` | Too Many Requests | Rate limit exceeded |
+
+### Server Errors (5xx)
+
+| Code | Name | Action |
+|------|------|--------|
+| `500` | Internal Server Error | Retry or contact support |
+| `502` | Bad Gateway | Retry after brief delay |
+| `503` | Service Unavailable | Check status page |
+| `504` | Gateway Timeout | Retry with exponential backoff |
+
+---
+
+## Common Error Codes
+
+### Authentication Errors
+
+#### UNAUTHORIZED
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or missing authentication token",
+    "status": 401,
+    "details": {
+      "hint": "Include a valid API key in the Authorization header"
+    }
+  }
+}
+```
+
+**Causes:**
+- Missing `Authorization` header
+- Invalid API key format
+- API key not found
+
+**Solution:**
+```bash
+# Correct format
+curl -H "Authorization: Bearer rtm_live_sk_..." ...
+```
+
+#### TOKEN_EXPIRED
+
+```json
+{
+  "error": {
+    "code": "TOKEN_EXPIRED",
+    "message": "Access token has expired",
+    "status": 401,
+    "details": {
+      "expired_at": "2024-12-08T10:00:00Z",
+      "hint": "Refresh the token using the refresh endpoint"
+    }
+  }
+}
+```
+
+**Solution:** Refresh the token or re-authenticate.
+
+#### INVALID_API_KEY
+
+```json
+{
+  "error": {
+    "code": "INVALID_API_KEY",
+    "message": "API key is invalid or has been revoked",
+    "status": 401,
+    "details": {
+      "key_prefix": "rtm_live_sk_abc...",
+      "hint": "Generate a new API key from the dashboard"
+    }
+  }
+}
+```
+
+---
+
+### Permission Errors
+
+#### FORBIDDEN
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Insufficient permissions to perform this action",
+    "status": 403,
+    "details": {
+      "required_permission": "items:write",
+      "your_permissions": ["items:read"],
+      "resource": "proj_abc123",
+      "action": "create_item"
+    }
+  }
+}
+```
+
+#### SCOPE_INSUFFICIENT
+
+```json
+{
+  "error": {
+    "code": "SCOPE_INSUFFICIENT",
+    "message": "Token does not have required scope",
+    "status": 403,
+    "details": {
+      "required_scope": "write:items",
+      "token_scopes": ["read:items", "read:projects"]
+    }
+  }
+}
+```
+
+---
+
+### Resource Errors
+
+#### NOT_FOUND
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Resource not found",
+    "status": 404,
+    "details": {
+      "resource_type": "item",
+      "resource_id": "item_nonexistent",
+      "hint": "Verify the ID is correct and you have access"
+    }
+  }
+}
+```
+
+#### RESOURCE_DELETED
+
+```json
+{
+  "error": {
+    "code": "RESOURCE_DELETED",
+    "message": "Resource has been permanently deleted",
+    "status": 410,
+    "details": {
+      "resource_type": "project",
+      "resource_id": "proj_abc123",
+      "deleted_at": "2024-12-01T10:00:00Z",
+      "deleted_by": "user_admin"
+    }
+  }
+}
+```
+
+---
+
+### Validation Errors
+
+#### VALIDATION_ERROR
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "status": 422,
+    "details": {
+      "errors": [
+        {
+          "field": "title",
+          "code": "required",
+          "message": "Title is required"
+        },
+        {
+          "field": "priority",
+          "code": "invalid_enum",
+          "message": "Priority must be one of: low, medium, high, critical",
+          "value": "urgent",
+          "allowed_values": ["low", "medium", "high", "critical"]
+        },
+        {
+          "field": "metadata.due_date",
+          "code": "invalid_format",
+          "message": "Date must be in ISO 8601 format",
+          "value": "12/31/2024",
+          "expected_format": "YYYY-MM-DD"
+        }
+      ]
+    }
+  }
+}
+```
+
+#### INVALID_JSON
+
+```json
+{
+  "error": {
+    "code": "INVALID_JSON",
+    "message": "Request body is not valid JSON",
+    "status": 400,
+    "details": {
+      "parse_error": "Unexpected token '}' at position 42",
+      "line": 3,
+      "column": 15
+    }
+  }
+}
+```
+
+#### MISSING_FIELD
+
+```json
+{
+  "error": {
+    "code": "MISSING_FIELD",
+    "message": "Required field is missing",
+    "status": 422,
+    "details": {
+      "field": "type",
+      "message": "Item type is required"
+    }
+  }
+}
+```
+
+---
+
+### Conflict Errors
+
+#### CONFLICT
+
+```json
+{
+  "error": {
+    "code": "CONFLICT",
+    "message": "Resource already exists",
+    "status": 409,
+    "details": {
+      "conflict_type": "duplicate_key",
+      "field": "key",
+      "value": "VCS",
+      "existing_resource_id": "proj_existing123"
+    }
+  }
+}
+```
+
+#### VERSION_CONFLICT
+
+```json
+{
+  "error": {
+    "code": "VERSION_CONFLICT",
+    "message": "Resource was modified by another request",
+    "status": 409,
+    "details": {
+      "expected_version": 5,
+      "current_version": 7,
+      "modified_by": "user_other",
+      "modified_at": "2024-12-08T09:55:00Z",
+      "hint": "Fetch the latest version and retry"
+    }
+  }
+}
+```
+
+**Solution:** Use optimistic locking:
+```bash
+curl -X PATCH ".../items/item_123" \
+  -H "If-Match: \"version_5\"" \
+  -d '{...}'
+```
+
+---
+
+### Rate Limit Errors
+
+#### RATE_LIMIT_EXCEEDED
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests",
+    "status": 429,
+    "details": {
+      "limit": 300,
+      "remaining": 0,
+      "reset_at": "2024-12-08T10:01:00Z",
+      "retry_after": 45
+    }
+  }
+}
+```
+
+**Headers:**
+```http
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1702036860
+Retry-After: 45
+```
+
+---
+
+### Workflow Errors
+
+#### WORKFLOW_TRANSITION_INVALID
+
+```json
+{
+  "error": {
+    "code": "WORKFLOW_TRANSITION_INVALID",
+    "message": "Invalid status transition",
+    "status": 422,
+    "details": {
+      "current_status": "draft",
+      "requested_status": "approved",
+      "available_transitions": [
+        {"id": "submit", "to": "in_review"}
+      ]
+    }
+  }
+}
+```
+
+#### WORKFLOW_CONDITIONS_NOT_MET
+
+```json
+{
+  "error": {
+    "code": "WORKFLOW_CONDITIONS_NOT_MET",
+    "message": "Transition conditions not satisfied",
+    "status": 422,
+    "details": {
+      "missing_fields": ["description", "rationale"],
+      "missing_links": true,
+      "required_link_types": ["verified_by"]
+    }
+  }
+}
+```
+
+---
+
+## SDK Error Handling
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import (
+    TraceRTMError,
+    AuthenticationError,
+    NotFoundError,
+    ValidationError,
+    RateLimitError,
+    ConflictError,
+    ServerError
+)
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+try:
+    item = client.items.create(
+        project_id="proj_abc123",
+        type="requirement",
+        title=""  # Invalid: empty title
+    )
+except ValidationError as e:
+    print(f"Validation failed: {e.message}")
+    for error in e.details.get('errors', []):
+        print(f"  - {error['field']}: {error['message']}")
+
+except NotFoundError as e:
+    print(f"Resource not found: {e.details.get('resource_id')}")
+    print(f"Request ID: {e.request_id}")
+
+except AuthenticationError as e:
+    print(f"Auth error: {e.message}")
+    # Refresh token or re-authenticate
+
+except RateLimitError as e:
+    print(f"Rate limited. Retry after {e.retry_after}s")
+    time.sleep(e.retry_after)
+    # Retry request
+
+except ConflictError as e:
+    if e.code == "VERSION_CONFLICT":
+        # Fetch latest and retry
+        latest = client.items.get(item_id)
+        client.items.update(item_id, version=latest.version, **updates)
+
+except ServerError as e:
+    print(f"Server error ({e.status}): {e.message}")
+    print(f"Request ID: {e.request_id}")
+    # Retry with exponential backoff
+
+except TraceRTMError as e:
+    # Catch-all for any TraceRTM error
+    print(f"Error [{e.code}]: {e.message}")
+    print(f"Request ID: {e.request_id}")
+```
+
+### TypeScript
+
+```typescript
+import {
+  TraceRTMClient,
+  TraceRTMError,
+  AuthenticationError,
+  NotFoundError,
+  ValidationError,
+  RateLimitError,
+  ConflictError,
+  ServerError
+} from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+try {
+  const item = await client.items.create({
+    projectId: 'proj_abc123',
+    type: 'requirement',
+    title: '' // Invalid
+  });
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.log(`Validation failed: ${error.message}`);
+    error.details.errors?.forEach(err => {
+      console.log(`  - ${err.field}: ${err.message}`);
+    });
+
+  } else if (error instanceof NotFoundError) {
+    console.log(`Not found: ${error.details.resourceId}`);
+
+  } else if (error instanceof AuthenticationError) {
+    console.log(`Auth error: ${error.message}`);
+    // Refresh token
+
+  } else if (error instanceof RateLimitError) {
+    console.log(`Rate limited. Retry after ${error.retryAfter}s`);
+    await sleep(error.retryAfter * 1000);
+    // Retry
+
+  } else if (error instanceof ConflictError) {
+    if (error.code === 'VERSION_CONFLICT') {
+      // Fetch latest and retry
+    }
+
+  } else if (error instanceof ServerError) {
+    console.log(`Server error: ${error.message}`);
+    console.log(`Request ID: ${error.requestId}`);
+
+  } else if (error instanceof TraceRTMError) {
+    console.log(`Error [${error.code}]: ${error.message}`);
+  }
+}
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "errors"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+    "time"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+
+    item, err := client.Items.Create(ctx, "proj_abc123", &tracertm.CreateItemInput{
+        Type:  "requirement",
+        Title: "", // Invalid
+    })
+
+    if err != nil {
+        var validationErr *tracertm.ValidationError
+        var notFoundErr *tracertm.NotFoundError
+        var authErr *tracertm.AuthenticationError
+        var rateLimitErr *tracertm.RateLimitError
+        var conflictErr *tracertm.ConflictError
+        var serverErr *tracertm.ServerError
+
+        switch {
+        case errors.As(err, &validationErr):
+            fmt.Printf("Validation failed: %s\n", validationErr.Message)
+            for _, e := range validationErr.Errors {
+                fmt.Printf("  - %s: %s\n", e.Field, e.Message)
+            }
+
+        case errors.As(err, &notFoundErr):
+            fmt.Printf("Not found: %s\n", notFoundErr.ResourceID)
+
+        case errors.As(err, &authErr):
+            fmt.Printf("Auth error: %s\n", authErr.Message)
+
+        case errors.As(err, &rateLimitErr):
+            fmt.Printf("Rate limited. Retry after %ds\n", rateLimitErr.RetryAfter)
+            time.Sleep(time.Duration(rateLimitErr.RetryAfter) * time.Second)
+
+        case errors.As(err, &conflictErr):
+            fmt.Printf("Conflict: %s\n", conflictErr.Message)
+
+        case errors.As(err, &serverErr):
+            fmt.Printf("Server error: %s (request: %s)\n",
+                serverErr.Message, serverErr.RequestID)
+
+        default:
+            fmt.Printf("Unknown error: %v\n", err)
+        }
+    }
+}
+```
+
+---
+
+## Retry Strategies
+
+### Exponential Backoff
+
+```python
+import time
+import random
+
+def retry_with_backoff(func, max_retries=5, base_delay=1):
+    """Retry with exponential backoff and jitter."""
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except (RateLimitError, ServerError) as e:
+            if attempt == max_retries - 1:
+                raise
+
+            # Use Retry-After if available
+            if hasattr(e, 'retry_after') and e.retry_after:
+                delay = e.retry_after
+            else:
+                # Exponential backoff with jitter
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+
+            print(f"Attempt {attempt + 1} failed. Retrying in {delay:.1f}s...")
+            time.sleep(delay)
+```
+
+### Using tenacity Library
+
+```python
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type
+)
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=1, max=60),
+    retry=retry_if_exception_type((RateLimitError, ServerError))
+)
+def create_item_with_retry(client, data):
+    return client.items.create(**data)
+```
+
+---
+
+## Best Practices
+
+### 1. Always Check Response Status
+
+```python
+response = requests.post(url, json=data, headers=headers)
+
+if not response.ok:
+    error = response.json().get('error', {})
+    logger.error(f"API error: {error.get('code')} - {error.get('message')}")
+    logger.error(f"Request ID: {error.get('request_id')}")
+```
+
+### 2. Log Request IDs
+
+```python
+try:
+    result = client.items.create(**data)
+except TraceRTMError as e:
+    logger.error(
+        "API error",
+        extra={
+            "error_code": e.code,
+            "message": e.message,
+            "request_id": e.request_id,
+            "details": e.details
+        }
+    )
+```
+
+### 3. Handle Validation Errors Gracefully
+
+```python
+def create_item_with_validation(data):
+    try:
+        return client.items.create(**data)
+    except ValidationError as e:
+        # Convert to user-friendly format
+        field_errors = {}
+        for error in e.details.get('errors', []):
+            field_errors[error['field']] = error['message']
+        return {'success': False, 'field_errors': field_errors}
+```
+
+### 4. Use Idempotency Keys
+
+```bash
+curl -X POST ".../items" \
+  -H "Idempotency-Key: unique-request-123" \
+  -d '{...}'
+```
+
+```python
+# Safe to retry - same key returns same result
+client.items.create(
+    idempotency_key="unique-request-123",
+    **item_data
+)
+```
+
+---
+
+## Health Check
+
+Check API health and status:
+
+```http
+GET /v1/health
+```
+
+### Response
+
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "timestamp": "2024-12-08T10:00:00Z",
+  "services": {
+    "api": "healthy",
+    "database": "healthy",
+    "cache": "healthy",
+    "search": "healthy"
+  }
+}
+```
+
+### Degraded Status
+
+```json
+{
+  "status": "degraded",
+  "version": "1.0.0",
+  "timestamp": "2024-12-08T10:00:00Z",
+  "services": {
+    "api": "healthy",
+    "database": "healthy",
+    "cache": "degraded",
+    "search": "healthy"
+  },
+  "incidents": [
+    {
+      "id": "inc_abc123",
+      "title": "Cache Performance Degradation",
+      "status": "investigating",
+      "started_at": "2024-12-08T09:45:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Debugging Tips
+
+### Enable Debug Logging
+
+```python
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    debug=True
+)
+```
+
+### Include Request ID in Support Requests
+
+When contacting support, include:
+- Error code
+- Request ID
+- Timestamp
+- Request details (redacted sensitive data)
+
+---
+
+## Related Documentation
+
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Rate limits
+- [Authentication](/docs/api-reference/authentication) - Auth errors
+- [API Overview](/docs/api-reference/rest-api/overview) - API basics
+- [Webhooks](/docs/api-reference/rest-api/webhooks) - Webhook errors

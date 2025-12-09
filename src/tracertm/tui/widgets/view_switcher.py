@@ -14,6 +14,9 @@ if TEXTUAL_AVAILABLE:
 
         def __init__(self, *args, **kwargs) -> None:
             super().__init__("Views", *args, **kwargs)
+
+        def on_mount(self) -> None:
+            """Called when widget is mounted - setup views here."""
             self.setup_views()
 
         def setup_views(self) -> None:

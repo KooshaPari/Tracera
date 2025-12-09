@@ -1,0 +1,566 @@
+/**
+ * CommandPalette Component Tests
+ *
+ * Comprehensive tests covering:
+ * - Rendering and visibility
+ * - Keyboard shortcuts (Cmd/Ctrl+K)
+ * - Search and filtering
+ * - Command selection
+ * - Navigation
+ * - Arrow key interaction
+ * - Edge cases and error states
+ */
+
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { CommandPalette } from '@/components/CommandPalette'
+
+// Mock TanStack Router
+const mockNavigate = vi.fn()
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual('@tanstack/react-router')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useRouter: () => ({
+      navigate: mockNavigate
+    }),
+    useLocation: () => ({ pathname: '/' }),
+    useParams: () => ({}),
+    Link: ({ children, to, ...props }: any) => (
+      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
+        {children}
+      </a>
+    ),
+  }
+})
+
+const renderCommandPalette = () => {
+  return render(<CommandPalette />)
+}
+
+describe('CommandPalette Component', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('Visibility and Rendering', () => {
+    it('should not render initially (closed by default)', () => {
+      renderCommandPalette()
+      expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument()
+    })
+
+    it('should render when opened with Cmd+K on macOS', async () => {
+      renderCommandPalette()
+
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should render when opened with Ctrl+K on Windows/Linux', async () => {
+      renderCommandPalette()
+
+      fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should close when Escape key is pressed', async () => {
+      renderCommandPalette()
+
+      // Open palette
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // Close with Escape
+      fireEvent.keyDown(window, { key: 'Escape' })
+
+      await waitFor(() => {
+        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it('should close when clicking backdrop', async () => {
+      renderCommandPalette()
+
+      // Open palette
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // Click backdrop (the parent div with fixed positioning)
+      const backdrop = screen.getByPlaceholderText(/search commands/i).closest('.fixed')
+      if (backdrop) {
+        fireEvent.click(backdrop)
+      }
+
+      await waitFor(() => {
+        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it('should display search input with autofocus', async () => {
+      renderCommandPalette()
+
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        const input = screen.getByPlaceholderText(/search commands/i)
+        expect(input).toBeInTheDocument()
+        // autoFocus is a React prop, not a DOM attribute - check if element is focused
+        expect(input).toHaveFocus()
+      })
+    })
+
+    it('should display ESC keyboard hint', async () => {
+      renderCommandPalette()
+
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText('ESC')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Command Categories', () => {
+    it('should display navigation category commands', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText('navigation')).toBeInTheDocument()
+        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument()
+        expect(screen.getByText('Go to Projects')).toBeInTheDocument()
+        expect(screen.getByText('Go to Settings')).toBeInTheDocument()
+      })
+    })
+
+    it('should display view category commands', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText('view')).toBeInTheDocument()
+        expect(screen.getByText('Feature View')).toBeInTheDocument()
+        expect(screen.getByText('Code View')).toBeInTheDocument()
+        expect(screen.getByText('Test View')).toBeInTheDocument()
+        expect(screen.getByText('Graph View')).toBeInTheDocument()
+      })
+    })
+
+    it('should display action category commands', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText('action')).toBeInTheDocument()
+        expect(screen.getByText('Create New Item')).toBeInTheDocument()
+      })
+    })
+
+    it('should display command descriptions', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText('Epics, features, stories')).toBeInTheDocument()
+        expect(screen.getByText('Modules and files')).toBeInTheDocument()
+        expect(screen.getByText('Test suites and cases')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Search and Filtering', () => {
+    it('should filter commands by title', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      await user.type(input, 'dashboard')
+
+      await waitFor(() => {
+        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument()
+        expect(screen.queryByText('Go to Projects')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should filter commands by description', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      await user.type(input, 'epics')
+
+      await waitFor(() => {
+        expect(screen.getByText('Feature View')).toBeInTheDocument()
+        expect(screen.queryByText('Code View')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should filter commands by keywords', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      await user.type(input, 'home')
+
+      await waitFor(() => {
+        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument()
+      })
+    })
+
+    it('should show no results message when search has no matches', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      await user.type(input, 'nonexistentcommand12345')
+
+      await waitFor(() => {
+        expect(screen.getByText(/no results found/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should perform case-insensitive search', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      await user.type(input, 'DASHBOARD')
+
+      await waitFor(() => {
+        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument()
+      })
+    })
+
+    it('should clear search query when reopening palette', async () => {
+      renderCommandPalette()
+
+      // Open, search, close
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+      await user.type(input, 'test')
+      fireEvent.keyDown(window, { key: 'Escape' })
+
+      // Reopen
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const newInput = await screen.findByPlaceholderText(/search commands/i)
+      expect(newInput).toHaveValue('')
+    })
+  })
+
+  describe('Keyboard Navigation', () => {
+    it('should navigate down with ArrowDown key', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // First item should be selected by default (index 0)
+      const firstItem = screen.getByText('Go to Dashboard').closest('button')
+      expect(firstItem).toHaveClass('bg-accent')
+
+      // Navigate down
+      fireEvent.keyDown(window, { key: 'ArrowDown' })
+
+      await waitFor(() => {
+        const secondItem = screen.getByText('Go to Projects').closest('button')
+        expect(secondItem).toHaveClass('bg-accent')
+      })
+    })
+
+    it('should navigate up with ArrowUp key', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // Navigate down twice
+      fireEvent.keyDown(window, { key: 'ArrowDown' })
+      fireEvent.keyDown(window, { key: 'ArrowDown' })
+
+      // Navigate up once
+      fireEvent.keyDown(window, { key: 'ArrowUp' })
+
+      await waitFor(() => {
+        const secondItem = screen.getByText('Go to Projects').closest('button')
+        expect(secondItem).toHaveClass('bg-accent')
+      })
+    })
+
+    it('should not go below 0 when navigating up from first item', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // Try to navigate up from first item
+      fireEvent.keyDown(window, { key: 'ArrowUp' })
+
+      const firstItem = screen.getByText('Go to Dashboard').closest('button')
+      expect(firstItem).toHaveClass('bg-accent')
+    })
+
+    it('should not go beyond last item when navigating down', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // Navigate down many times (more than total commands)
+      for (let i = 0; i < 50; i++) {
+        fireEvent.keyDown(window, { key: 'ArrowDown' })
+      }
+
+      // Should stay at last item
+      const lastItem = screen.getByText('Create New Item').closest('button')
+      expect(lastItem).toHaveClass('bg-accent')
+    })
+
+    it('should reset selection when search query changes', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      // Navigate down
+      fireEvent.keyDown(window, { key: 'ArrowDown' })
+
+      // Change search query
+      await user.type(input, 'test')
+
+      // Selection should reset to first item
+      await waitFor(() => {
+        const testView = screen.getByText('Test View').closest('button')
+        expect(testView).toHaveClass('bg-accent')
+      })
+    })
+  })
+
+  describe('Command Execution', () => {
+    it('should execute selected command on Enter', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      // Execute first command (Go to Dashboard)
+      fireEvent.keyDown(window, { key: 'Enter' })
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/')
+      })
+    })
+
+    it('should execute command on click', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const dashboardCommand = await screen.findByText('Go to Dashboard')
+      fireEvent.click(dashboardCommand)
+
+      expect(mockNavigate).toHaveBeenCalledWith('/')
+    })
+
+    it('should close palette after command execution via Enter', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+
+      fireEvent.keyDown(window, { key: 'Enter' })
+
+      await waitFor(() => {
+        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it('should close palette after command execution via click', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const dashboardCommand = await screen.findByText('Go to Dashboard')
+      fireEvent.click(dashboardCommand)
+
+      await waitFor(() => {
+        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it('should navigate to projects page', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const projectsCommand = await screen.findByText('Go to Projects')
+      fireEvent.click(projectsCommand)
+
+      expect(mockNavigate).toHaveBeenCalledWith('/projects')
+    })
+
+    it('should navigate to settings page', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const settingsCommand = await screen.findByText('Go to Settings')
+      fireEvent.click(settingsCommand)
+
+      expect(mockNavigate).toHaveBeenCalledWith('/settings')
+    })
+
+    it('should navigate to view pages', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const codeViewCommand = await screen.findByText('Code View')
+      fireEvent.click(codeViewCommand)
+
+      expect(mockNavigate).toHaveBeenCalledWith('/projects/1/code')
+    })
+  })
+
+  describe('Edge Cases', () => {
+    it('should handle rapid toggling', async () => {
+      renderCommandPalette()
+
+      // Rapidly toggle open/close
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should not execute command if none is selected', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      // Search for something that doesn't exist
+      await user.type(input, 'nonexistent')
+
+      // Try to execute with Enter
+      fireEvent.keyDown(window, { key: 'Enter' })
+
+      // Should not call navigate
+      expect(mockNavigate).not.toHaveBeenCalled()
+    })
+
+    it('should prevent default on Cmd+K', () => {
+      renderCommandPalette()
+
+      const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true })
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
+
+      window.dispatchEvent(event)
+
+      expect(preventDefaultSpy).toHaveBeenCalled()
+    })
+
+    it('should handle empty search gracefully', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const user = userEvent.setup()
+      const input = await screen.findByPlaceholderText(/search commands/i)
+
+      // Type and delete
+      await user.type(input, 'test')
+      await user.clear(input)
+
+      // Should show all commands again
+      await waitFor(() => {
+        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument()
+        expect(screen.getByText('Go to Projects')).toBeInTheDocument()
+      })
+    })
+
+    it.skip('should not render when window is undefined (SSR)', () => {
+      // This test is skipped because setting window = undefined breaks React rendering in JSDOM
+      // The component correctly checks for window existence (lines 202-203)
+      // but React DOM requires window to render, making this test incompatible with JSDOM
+      const originalWindow = globalThis.window
+
+      // Simulate SSR environment
+      Object.defineProperty(globalThis, 'window', {
+        value: undefined,
+        writable: true,
+        configurable: true
+      })
+
+      renderCommandPalette()
+
+      // Restore window
+      Object.defineProperty(globalThis, 'window', {
+        value: originalWindow,
+        writable: true,
+        configurable: true
+      })
+
+      expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Accessibility', () => {
+    it('should have proper ARIA attributes', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      const input = await screen.findByPlaceholderText(/search commands/i)
+      expect(input).toHaveAttribute('type', 'text')
+    })
+
+    it('should display keyboard shortcuts', async () => {
+      renderCommandPalette()
+      fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText('↑↓')).toBeInTheDocument()
+        expect(screen.getByText('↵')).toBeInTheDocument()
+        expect(screen.getByText('⌘K')).toBeInTheDocument()
+      })
+    })
+  })
+})

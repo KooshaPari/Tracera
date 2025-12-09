@@ -2,6 +2,7 @@ import pytest
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
+from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.services.impact_analysis_service import ImpactAnalysisService
@@ -12,6 +13,15 @@ pytestmark = pytest.mark.integration
 
 
 async def _seed_items_and_links(session, edges, project_id="proj-1"):
+    # CRITICAL: Create project first to satisfy foreign key constraint
+    from sqlalchemy import select
+    result = await session.execute(select(Project).where(Project.id == project_id))
+    existing_project = result.scalar_one_or_none()
+    if not existing_project:
+        project = Project(id=project_id, name=f"Test Project {project_id}")
+        session.add(project)
+        await session.commit()
+
     items = {}
     for node in {n for edge in edges for n in edge[:2]}:
         item = Item(id=node, project_id=project_id, title=node, view="FEATURE", item_type="feature", status="todo")

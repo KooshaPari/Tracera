@@ -379,34 +379,54 @@ if TEXTUAL_AVAILABLE:
 
         def _on_sync_status_change(self, state) -> None:
             """Handle sync status changes."""
-            self.call_later(self.update_sync_status)
+            # Use call_from_thread for thread-safe updates
+            try:
+                self.call_from_thread(self.update_sync_status)
 
-            # Show notification for important status changes
-            if state.status == SyncStatus.SUCCESS:
-                self.notify(
-                    f"Sync completed: {state.synced_entities} entities",
-                    severity="information",
-                )
-            elif state.status == SyncStatus.ERROR:
-                self.notify(f"Sync error: {state.last_error}", severity="error")
-            elif state.status == SyncStatus.CONFLICT:
-                self.notify(
-                    f"Conflicts detected: {state.conflicts_count}",
-                    severity="warning",
-                )
+                # Show notification for important status changes
+                if state.status == SyncStatus.SUCCESS:
+                    self.call_from_thread(
+                        self.notify,
+                        f"Sync completed: {state.synced_entities} entities",
+                        severity="information",
+                    )
+                elif state.status == SyncStatus.ERROR:
+                    self.call_from_thread(
+                        self.notify,
+                        f"Sync error: {state.last_error}",
+                        severity="error",
+                    )
+                elif state.status == SyncStatus.CONFLICT:
+                    self.call_from_thread(
+                        self.notify,
+                        f"Conflicts detected: {state.conflicts_count}",
+                        severity="warning",
+                    )
+            except Exception:
+                # If app is not running, ignore
+                pass
 
         def _on_conflict_detected(self, conflict) -> None:
             """Handle conflict detection."""
-            self.notify(
-                f"Conflict detected: {conflict.entity_type} {conflict.entity_id[:12]}",
-                severity="warning",
-            )
-            self.call_later(self.update_sync_status)
+            try:
+                self.call_from_thread(
+                    self.notify,
+                    f"Conflict detected: {conflict.entity_type} {conflict.entity_id[:12]}",
+                    severity="warning",
+                )
+                self.call_from_thread(self.update_sync_status)
+            except Exception:
+                # If app is not running, ignore
+                pass
 
         def _on_item_change(self, item_id: str) -> None:
             """Handle item changes."""
             # Refresh items list after change
-            self.call_later(self.refresh_data)
+            try:
+                self.call_from_thread(self.refresh_data)
+            except Exception:
+                # If app is not running, ignore
+                pass
 
         def on_unmount(self) -> None:
             """Cleanup on exit."""

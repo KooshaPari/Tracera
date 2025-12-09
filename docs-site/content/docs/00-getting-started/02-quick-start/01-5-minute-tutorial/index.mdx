@@ -1,132 +1,542 @@
 ---
 title: "5-Minute Tutorial"
-description: "Documentation for 5-Minute Tutorial"
+description: "Get started with TracerTM in 5 minutes - from installation to your first traceability matrix"
 ---
 
 # 5-Minute Tutorial
 
+Get TracerTM up and running in just 5 minutes. This tutorial walks you through installation, creating your first project, adding requirements and tests, linking them together, and generating your first traceability report.
 
-## Overview
+## What You'll Build
 
-Comprehensive guide for 5-Minute Tutorial.
+By the end of this tutorial, you'll have:
+- A TracerTM project initialized
+- A requirement (epic) created
+- A test case linked to the requirement
+- A traceability matrix showing the relationship
+- Your first coverage report
 
-## Introduction
+**Time to complete:** ~5 minutes
 
-This guide covers everything you need to know about 5-Minute Tutorial.
+## Prerequisites
 
-## Getting Started
+- Python 3.12 or higher
+- pip (Python package manager)
+- A terminal/command prompt
 
-### Prerequisites
+## Step 1: Install TracerTM
 
-- Basic understanding of TraceRTM
-- Access to a TraceRTM workspace
-- Required permissions
-
-### Initial Setup
-
-```bash
-tracertm init
-tracertm config set 5.minute.tutorial enabled
-```
-
-## Core Workflows
-
-### Workflow 1: Basic Usage
+Install TracerTM using pip:
 
 ```bash
-# Step 1: Initialize
-tracertm 5-minute-tutorial init
-
-# Step 2: Execute
-tracertm 5-minute-tutorial run
-
-# Step 3: Verify
-tracertm 5-minute-tutorial status
+pip install tracertm
 ```
 
-### Workflow 2: Advanced Usage
-
-```typescript
-import { TraceRTM } from '@tracertm/core'
-
-const tracertm = new TraceRTM()
-await tracertm.5minutetutorial({
-  mode: 'advanced',
-  options: {
-    verbose: true
-  }
-})
-```
-
-## Best Practices
-
-1. **Plan Ahead**: Design before implementation
-2. **Document**: Keep records up-to-date
-3. **Test**: Validate in test environment
-4. **Monitor**: Track performance and issues
-5. **Iterate**: Continuously improve
-
-## Common Tasks
-
-### Task 1: Configuration
-
-```yaml
-# tracertm.config.yml
-5_minute_tutorial:
-  enabled: true
-  mode: production
-```
-
-### Task 2: Automation
+Verify the installation:
 
 ```bash
-# Automate with scripts
-tracertm 5-minute-tutorial --auto
+rtm --version
 ```
+
+Expected output:
+```
+TraceRTM version 0.1.0
+```
+
+## Step 2: Initialize Your First Project
+
+Create a new directory for your project and initialize TracerTM:
+
+```bash
+# Create and navigate to project directory
+mkdir my-first-project
+cd my-first-project
+
+# Initialize TracerTM
+rtm init
+```
+
+Expected output:
+```
+Initializing TraceRTM project: my-first-project
+
+✓ Created .trace/ directory structure
+
+.trace/
+├─ project.yaml
+├─ epics/
+├─ stories/
+├─ tests/
+├─ tasks/
+├─ docs/
+└─ .meta/
+   ├─ links.yaml
+   ├─ agents.yaml
+   └─ sync.yaml (gitignored)
+
+✓ Added .trace/.meta/sync.yaml to .gitignore
+✓ Registered project in ~/.tracertm/tracertm.db
+   Project ID: abc12345
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              Success
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Project 'my-first-project' initialized successfully!
+
+Local: /path/to/my-first-project/.trace
+Global DB: ~/.tracertm/tracertm.db
+
+Next steps:
+  • Create items: rtm create epic "My Epic"
+  • List items: rtm list
+  • Index changes: rtm index
+```
+
+**What just happened?**
+- Created a `.trace/` directory with organized subdirectories for different item types
+- Created `project.yaml` with project metadata and counters
+- Registered the project in a global SQLite database at `~/.tracertm/tracertm.db`
+- Set up `.gitignore` to exclude sync metadata
+
+## Step 3: Create Your First Requirement
+
+Let's create an epic (high-level requirement):
+
+```bash
+rtm create epic "User Authentication System"
+```
+
+Expected output:
+```
+✓ Created EPIC-001: User Authentication System
+  File: .trace/epics/EPIC-001.md
+  Project: my-first-project
+  Indexed: ~/.tracertm/tracertm.db
+  Queued for sync to remote
+```
+
+**What just happened?**
+- Created a markdown file at `.trace/epics/EPIC-001.md`
+- Auto-generated the external ID `EPIC-001` using the project counter
+- Indexed the epic in the SQLite database for fast querying
+- Set default status to `todo` and priority to `medium`
+
+Let's look at the created file:
+
+```bash
+cat .trace/epics/EPIC-001.md
+```
+
+Expected content:
+```markdown
+---
+id: abc12345-def6-7890-ghij-klmnopqrstuv
+external_id: EPIC-001
+title: User Authentication System
+status: todo
+priority: medium
+created_at: 2025-12-07T10:30:00Z
+version: 1
+---
+
+# User Authentication System
+```
+
+## Step 4: Add a Child Story
+
+Add a more detailed story under the epic:
+
+```bash
+rtm create story "Login with Email and Password" \
+  --description "Users should be able to log in using their email and password" \
+  --parent EPIC-001
+```
+
+Expected output:
+```
+✓ Created STORY-001: Login with Email and Password
+  File: .trace/stories/STORY-001.md
+  Project: my-first-project
+  Indexed: ~/.tracertm/tracertm.db
+```
+
+## Step 5: Create a Test Case
+
+Now create a test case that will verify the login functionality:
+
+```bash
+rtm create test "Verify successful login with valid credentials" \
+  --description "Given valid email and password, user should be logged in successfully"
+```
+
+Expected output:
+```
+✓ Created TEST-001: Verify successful login with valid credentials
+  File: .trace/tests/TEST-001.md
+  Project: my-first-project
+  Indexed: ~/.tracertm/tracertm.db
+```
+
+## Step 6: Create Traceability Links
+
+Link the test case to the story to establish traceability:
+
+```bash
+rtm link create STORY-001 TEST-001 --type tests
+```
+
+Expected output:
+```
+✓ Created link: STORY-001 → tests → TEST-001
+  Link ID: xyz12345
+  Updated .trace/.meta/links.yaml
+  Indexed: ~/.tracertm/tracertm.db
+```
+
+Also link the story to its parent epic:
+
+```bash
+rtm link create EPIC-001 STORY-001 --type decomposes_to
+```
+
+Expected output:
+```
+✓ Created link: EPIC-001 → decomposes_to → STORY-001
+  Link ID: xyz67890
+  Updated .trace/.meta/links.yaml
+  Indexed: ~/.tracertm/tracertm.db
+```
+
+**What just happened?**
+- Created directional links between items
+- Updated `.trace/.meta/links.yaml` with link metadata
+- Indexed links in SQLite for fast querying
+- Established a traceability chain: Epic → Story → Test
+
+## Step 7: View Your Items
+
+List all items in your project:
+
+```bash
+rtm list
+```
+
+Expected output:
+```
+                Items in my-first-project (3)
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━┓
+┃ External ID ┃ Title                             ┃ Type  ┃ Status ┃ Priority┃ Owner ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━┩
+│ EPIC-001    │ User Authentication System        │ epic  │ todo   │ medium  │       │
+│ STORY-001   │ Login with Email and Password     │ story │ todo   │ medium  │       │
+│ TEST-001    │ Verify successful login with va...│ test  │ todo   │ medium  │       │
+└─────────────┴───────────────────────────────────┴───────┴────────┴─────────┴───────┘
+
+Current project: my-first-project
+Global database: ~/.tracertm/tracertm.db
+```
+
+Filter by type:
+
+```bash
+rtm list --type test
+```
+
+## Step 8: View the Traceability Matrix
+
+Generate a traceability matrix to see all relationships:
+
+```bash
+rtm view matrix
+```
+
+Expected output:
+```
+                    Traceability Matrix
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+┃ Requirement ┃ Title                             ┃ Tests              ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+│ EPIC-001    │ User Authentication System        │ (via STORY-001)    │
+│ STORY-001   │ Login with Email and Password     │ TEST-001 ✓         │
+└─────────────┴───────────────────────────────────┴────────────────────┘
+
+Coverage: 100% (1/1 stories have tests)
+Orphaned Requirements: 0
+Orphaned Tests: 0
+```
+
+View detailed item information:
+
+```bash
+rtm show STORY-001
+```
+
+Expected output:
+```
+Item: Login with Email and Password
+ID: def67890-1234-5678-abcd-ef1234567890
+View: FEATURE
+Type: story
+Status: todo
+Priority: medium
+Version: 1
+
+Description:
+Users should be able to log in using their email and password
+
+Path:
+  User Authentication System (abc12345) > Login with Email and Password
+
+Links (2):
+  ← decomposes_to ← User Authentication System (abc12345)
+  → tests → Verify successful login with valid credentials (xyz12345)
+
+Created: 2025-12-07 10:31:00
+Updated: 2025-12-07 10:31:00
+```
+
+## Step 9: Generate a Coverage Report
+
+Generate a simple coverage report:
+
+```bash
+rtm view coverage
+```
+
+Expected output:
+```
+                Coverage Report - my-first-project
+
+Requirements Coverage:
+  Total Epics: 1
+  Total Stories: 1
+  Stories with Tests: 1 (100%)
+  Stories without Tests: 0
+
+Test Coverage:
+  Total Tests: 1
+  Tests with Requirements: 1 (100%)
+  Orphaned Tests: 0
+
+Traceability Chain Health:
+  Complete Chains: 1
+  Broken Chains: 0
+  Missing Links: 0
+
+Status: ✓ All requirements are covered by tests
+```
+
+## Step 10: Update Item Status
+
+As you make progress, update item statuses:
+
+```bash
+rtm item update STORY-001 --status in_progress
+```
+
+Expected output:
+```
+✓ Updated STORY-001: Login with Email and Password
+  Version: 2
+  Markdown updated in .trace/stories/STORY-001.md
+  Queued for sync to remote
+```
+
+Mark the test as done:
+
+```bash
+rtm item update TEST-001 --status done
+```
+
+## What You've Learned
+
+Congratulations! You've just:
+
+1. ✅ Installed TracerTM
+2. ✅ Initialized a project with `.trace/` directory structure
+3. ✅ Created a requirement hierarchy (Epic → Story)
+4. ✅ Created a test case
+5. ✅ Established traceability links
+6. ✅ Viewed the traceability matrix
+7. ✅ Generated a coverage report
+8. ✅ Updated item statuses
+
+## Next Steps
+
+Now that you have the basics, explore more features:
+
+- **Multi-view System**: Switch between FEATURE, TEST, API, CODE, and more views
+  ```bash
+  rtm view switch API
+  rtm create endpoint "POST /api/login"
+  ```
+
+- **Advanced Linking**: Create different types of links
+  ```bash
+  rtm link create API-001 CODE-001 --type implements
+  ```
+
+- **Bulk Operations**: Update multiple items at once
+  ```bash
+  rtm item bulk-update --status todo --new-status in_progress
+  ```
+
+- **TUI (Terminal UI)**: Launch the interactive interface
+  ```bash
+  rtm tui
+  ```
+
+- **Export & Import**: Backup or share your project
+  ```bash
+  rtm export --output backup.json
+  rtm import backup.json
+  ```
+
+- **Git Integration**: Commit your work (sync.yaml is gitignored)
+  ```bash
+  git add .trace/
+  git commit -m "Add authentication requirements and tests"
+  ```
+
+## Project Structure
+
+Your project now looks like this:
+
+```
+my-first-project/
+├── .trace/
+│   ├── project.yaml           # Project metadata and counters
+│   ├── epics/
+│   │   └── EPIC-001.md        # User Authentication System
+│   ├── stories/
+│   │   └── STORY-001.md       # Login with Email and Password
+│   ├── tests/
+│   │   └── TEST-001.md        # Verify successful login
+│   ├── tasks/
+│   ├── docs/
+│   └── .meta/
+│       ├── links.yaml         # Traceability links (versioned)
+│       ├── agents.yaml        # AI agent metadata
+│       └── sync.yaml          # Local sync state (gitignored)
+├── .gitignore                 # Updated to exclude sync.yaml
+└── [your application code]
+```
+
+## Key Concepts
+
+### Offline-First Architecture
+- All data stored locally in `.trace/` markdown files
+- Fast SQLite index at `~/.tracertm/tracertm.db` for querying
+- Sync to remote is optional and async
+
+### External IDs
+- Auto-generated IDs like `EPIC-001`, `STORY-001`, `TEST-001`
+- Human-readable and incrementing
+- Stored in frontmatter and filenames
+
+### Traceability Links
+- Directional relationships between items
+- Stored in `.trace/.meta/links.yaml`
+- Types: implements, tests, depends_on, blocks, related_to, etc.
+
+### Multi-View System
+- Same items can be viewed through different lenses
+- FEATURE view: epics, stories, tasks
+- TEST view: test suites, test cases
+- API view: endpoints, schemas
+- And more...
+
+## Common Commands Quick Reference
+
+```bash
+# Project Management
+rtm init                          # Initialize new project
+rtm project list                  # List all projects
+rtm project switch <name>         # Switch to different project
+
+# Item Management
+rtm create <type> "<title>"       # Create item (epic, story, test, task)
+rtm list                          # List all items
+rtm list --type test --status todo  # Filter items
+rtm show <ID>                     # Show item details
+rtm item update <ID> --status done  # Update item
+
+# Link Management
+rtm link create <source> <target> --type tests  # Create link
+rtm link list                     # List all links
+rtm link delete <link-id>         # Delete link
+
+# Views & Reports
+rtm view list                     # List available views
+rtm view switch <VIEW>            # Switch view context
+rtm view matrix                   # Show traceability matrix
+rtm view coverage                 # Show coverage report
+
+# Sync & Backup
+rtm index                         # Re-index .trace/ directory
+rtm sync                          # Sync with remote (if configured)
+rtm export --output backup.json   # Export project
+rtm import backup.json            # Import project
+
+# TUI (Terminal UI)
+rtm tui                           # Launch interactive interface
+```
+
+## Tips & Best Practices
+
+1. **Commit `.trace/` to Git**: All markdown files should be versioned
+2. **`.gitignore` sync.yaml**: Local sync state shouldn't be shared
+3. **Use External IDs**: Reference items by `EPIC-001` not UUIDs
+4. **Establish Links Early**: Create traceability as you build
+5. **Run `rtm index` After Manual Edits**: If you edit `.md` files directly
+6. **Use Bulk Operations**: For large changes, bulk update is faster
 
 ## Troubleshooting
 
-### Issue 1: Configuration Error
-
-**Solution:**
+### Items not showing up?
 ```bash
-tracertm config validate
-tracertm config reset
+rtm index  # Re-index .trace/ directory
 ```
 
-### Issue 2: Performance
-
-**Solution:**
+### Lost project context?
 ```bash
-tracertm optimize 5-minute-tutorial
+rtm project list  # See all projects
+rtm project switch my-first-project
 ```
 
-## Advanced Topics
-
-### Custom Integration
-
-```typescript
-class CustomPlugin {
-  async execute() {
-    // Custom logic
-  }
-}
+### Database issues?
+```bash
+rtm db reset  # Warning: deletes global SQLite database
+rtm register  # Re-register project from .trace/
 ```
 
-## Examples
-
-### Complete Example
-
-```typescript
-async function example() {
-  const tracertm = new TraceRTM()
-  const result = await tracertm.5minutetutorial()
-  console.log(result)
-}
+### Need help?
+```bash
+rtm --help
+rtm item --help
+rtm link --help
 ```
 
-## Resources
+## What's Next?
 
-- [API Reference](/docs/api-reference)
-- [Examples Repository](https://github.com/tracertm/examples)
+Continue your TracerTM journey:
 
+- [Core Concepts](/docs/getting-started/core-concepts) - Deep dive into architecture
+- [First Project Guide](/docs/getting-started/first-project) - Detailed walkthrough
+- [CLI Reference](/docs/cli-reference) - Complete command documentation
+- [API Documentation](/docs/api-reference) - REST API for integrations
+- [TUI Guide](/docs/tui-guide) - Terminal UI features
+
+## Summary
+
+In just 5 minutes, you've set up a complete requirements traceability system:
+
+- **Local-first**: All data in markdown files you control
+- **Fast**: SQLite index for instant queries
+- **Flexible**: Multi-view system adapts to your workflow
+- **Git-friendly**: Version control ready
+- **Traceable**: Full chain from requirements to tests
+
+TracerTM scales from small projects to enterprise systems, supporting AI agents, multi-project dashboards, and advanced analytics.
+
+**Ready to build something bigger? Let's go!** 🚀

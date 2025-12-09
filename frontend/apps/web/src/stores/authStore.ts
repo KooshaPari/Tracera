@@ -44,12 +44,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setToken: (token) => {
-        if (token) {
-          localStorage.setItem('auth_token', token)
+        // Treat empty string as null
+        const normalizedToken = token && token.trim() ? token : null
+        if (normalizedToken) {
+          localStorage.setItem('auth_token', normalizedToken)
         } else {
           localStorage.removeItem('auth_token')
         }
-        set({ token })
+        set({ token: normalizedToken })
       },
 
       login: async (email, _password) => {
@@ -57,6 +59,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           // TODO: Implement actual login API call
           // For now, mock authentication
+          if (!email || !_password) {
+            throw new Error('Email and password are required')
+          }
+
           const mockUser: User = {
             id: '1',
             email,
@@ -67,6 +73,7 @@ export const useAuthStore = create<AuthState>()(
           get().setToken(mockToken)
           get().setUser(mockUser)
         } catch (error) {
+          set({ user: null, token: null, isAuthenticated: false })
           console.error('Login failed:', error)
           throw error
         } finally {

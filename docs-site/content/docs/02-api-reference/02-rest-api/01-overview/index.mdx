@@ -1,115 +1,445 @@
 ---
 title: "REST API Overview"
-description: "Documentation for REST API Overview"
+description: "Complete guide to the TraceRTM REST API - endpoints, conventions, and best practices"
 ---
 
 # REST API Overview
 
+The TraceRTM REST API provides comprehensive access to all platform features including projects, items, links, workflows, and more. This guide covers API fundamentals, conventions, and best practices.
 
-## Overview
+## API Basics
 
-Complete API reference for REST API Overview.
+### Base URL
 
-## Authentication
-
-All API requests require authentication:
-
-```typescript
-const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
-  'Content-Type': 'application/json'
-}
+```
+https://api.tracertm.dev/v1
 ```
 
-## Endpoints
+All API endpoints are relative to this base URL.
 
-### List All REST API Overview
+### Request Format
 
-```http
-GET /api/v1/rest-api-overview
+The API accepts and returns JSON. Include the `Content-Type` header for requests with bodies:
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Project", "key": "PROJ"}'
 ```
 
-**Response:**
+### Response Format
+
+All responses follow a consistent structure:
+
 ```json
 {
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+  "data": { ... },
+  "meta": {
+    "request_id": "req_abc123xyz"
   }
 }
 ```
 
-### Get REST API Overview by ID
+List responses include pagination:
 
-```http
-GET /api/v1/rest-api-overview/:id
-```
-
-### Create REST API Overview
-
-```http
-POST /api/v1/rest-api-overview
-```
-
-**Request Body:**
 ```json
 {
-  "name": "Example REST API Overview",
-  "description": "Description here"
+  "data": [ ... ],
+  "meta": {
+    "total": 245,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 13
+  },
+  "links": {
+    "self": "https://api.tracertm.dev/v1/projects?page=1",
+    "next": "https://api.tracertm.dev/v1/projects?page=2",
+    "last": "https://api.tracertm.dev/v1/projects?page=13"
+  }
 }
 ```
 
-### Update REST API Overview
+---
+
+## Authentication
+
+The API supports multiple authentication methods:
+
+### API Keys
+
+```bash
+curl -H "Authorization: Bearer rtm_live_sk_..." \
+  "https://api.tracertm.dev/v1/projects"
+```
+
+### OAuth 2.0 Tokens
+
+```bash
+curl -H "Authorization: Bearer eyJhbGciOi..." \
+  "https://api.tracertm.dev/v1/projects"
+```
+
+See [Authentication](/docs/api-reference/authentication) for detailed documentation.
+
+---
+
+## Core Resources
+
+### Projects
+
+Projects are containers for items, links, and workflows.
 
 ```http
-PUT /api/v1/rest-api-overview/:id
+GET    /v1/projects                 # List projects
+POST   /v1/projects                 # Create project
+GET    /v1/projects/{id}            # Get project
+PATCH  /v1/projects/{id}            # Update project
+DELETE /v1/projects/{id}            # Delete project
 ```
 
-### Delete REST API Overview
+### Items
+
+Items represent requirements, test cases, bugs, and other trackable entities.
 
 ```http
-DELETE /api/v1/rest-api-overview/:id
+GET    /v1/projects/{project_id}/items          # List items
+POST   /v1/projects/{project_id}/items          # Create item
+GET    /v1/items/{id}                           # Get item
+PATCH  /v1/items/{id}                           # Update item
+DELETE /v1/items/{id}                           # Delete item
+POST   /v1/items/{id}/transition                # Change status
 ```
 
-## Query Parameters
+### Links
 
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
+Links create traceability relationships between items.
 
-## Error Responses
-
-### 400 Bad Request
-Invalid request parameters
-
-### 401 Unauthorized
-Missing or invalid authentication token
-
-### 404 Not Found
-Resource not found
-
-### 500 Internal Server Error
-Server error
-
-## SDK Examples
-
-### TypeScript
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
-
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.rest-api-overview.list()
+```http
+GET    /v1/projects/{project_id}/links          # List links
+POST   /v1/links                                # Create link
+GET    /v1/links/{id}                           # Get link
+DELETE /v1/links/{id}                           # Delete link
 ```
+
+### Workflows
+
+Workflows define item lifecycles and status transitions.
+
+```http
+GET    /v1/projects/{project_id}/workflows      # List workflows
+POST   /v1/projects/{project_id}/workflows      # Create workflow
+GET    /v1/workflows/{id}                       # Get workflow
+PATCH  /v1/workflows/{id}                       # Update workflow
+```
+
+---
+
+## HTTP Methods
+
+| Method | Description | Idempotent |
+|--------|-------------|------------|
+| `GET` | Retrieve resources | Yes |
+| `POST` | Create resources | No |
+| `PATCH` | Partial update | Yes |
+| `PUT` | Full replacement | Yes |
+| `DELETE` | Delete resources | Yes |
+
+---
+
+## Common Parameters
+
+### Pagination
+
+```bash
+# Offset-based pagination
+?page=2&per_page=50
+
+# Cursor-based pagination
+?cursor=eyJpZCI6MTAwfQ&limit=50
+```
+
+### Filtering
+
+```bash
+# Simple equality
+?status=approved
+
+# Multiple values
+?status=approved,review
+
+# Operators
+?created_at[gte]=2024-01-01
+```
+
+### Sorting
+
+```bash
+# Ascending
+?sort=created_at
+
+# Descending
+?sort=-created_at
+
+# Multiple fields
+?sort=-priority,created_at
+```
+
+### Field Selection
+
+```bash
+# Return only specific fields
+?fields=id,title,status
+
+# Include related resources
+?include=links,comments
+```
+
+---
+
+## Response Codes
+
+### Success Codes
+
+| Code | Description | When Used |
+|------|-------------|-----------|
+| `200` | OK | Successful GET, PATCH |
+| `201` | Created | Successful POST |
+| `204` | No Content | Successful DELETE |
+
+### Client Errors
+
+| Code | Description | Common Cause |
+|------|-------------|--------------|
+| `400` | Bad Request | Invalid JSON, malformed request |
+| `401` | Unauthorized | Invalid or missing authentication |
+| `403` | Forbidden | Insufficient permissions |
+| `404` | Not Found | Resource doesn't exist |
+| `409` | Conflict | Duplicate or version conflict |
+| `422` | Unprocessable Entity | Validation error |
+| `429` | Too Many Requests | Rate limit exceeded |
+
+### Server Errors
+
+| Code | Description | Action |
+|------|-------------|--------|
+| `500` | Internal Server Error | Retry or contact support |
+| `502` | Bad Gateway | Retry after delay |
+| `503` | Service Unavailable | Check status page |
+| `504` | Gateway Timeout | Retry with backoff |
+
+---
+
+## Error Format
+
+All errors follow a consistent structure:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "status": 422,
+    "details": {
+      "field": "title",
+      "reason": "Title is required"
+    },
+    "request_id": "req_abc123xyz"
+  }
+}
+```
+
+---
+
+## Rate Limiting
+
+API requests are rate limited per account:
+
+| Plan | Requests/Minute | Burst |
+|------|-----------------|-------|
+| Free | 60 | 10 |
+| Pro | 300 | 50 |
+| Team | 600 | 100 |
+| Enterprise | 1,200 | 200 |
+
+Rate limit headers are included in all responses:
+
+```http
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 287
+X-RateLimit-Reset: 1704067260
+```
+
+See [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) for details.
+
+---
+
+## Versioning
+
+The API uses URL versioning. The current version is `v1`.
+
+```
+https://api.tracertm.dev/v1/projects
+```
+
+Breaking changes result in new versions. Non-breaking changes are added to the current version.
+
+---
+
+## SDK Support
+
+Official SDKs are available for major languages:
 
 ### Python
-```python
-from tracertm import Client
 
-client = Client(api_key='YOUR_KEY')
-items = client.rest-api-overview.list()
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List projects
+projects = client.projects.list()
+
+# Create item
+item = client.items.create(
+    project_id="proj_123",
+    type="requirement",
+    title="User Authentication"
+)
 ```
 
+### TypeScript/JavaScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List projects
+const projects = await client.projects.list();
+
+// Create item
+const item = await client.items.create({
+  projectId: 'proj_123',
+  type: 'requirement',
+  title: 'User Authentication'
+});
+```
+
+### Go
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+client := tracertm.NewClient("rtm_live_sk_...")
+
+// List projects
+projects, _ := client.Projects.List(ctx, nil)
+
+// Create item
+item, _ := client.Items.Create(ctx, "proj_123", &tracertm.CreateItemInput{
+    Type:  "requirement",
+    Title: "User Authentication",
+})
+```
+
+---
+
+## Best Practices
+
+### Use Pagination
+
+Always paginate list requests to avoid large responses:
+
+```python
+# Good: Use pagination
+for page in client.projects.list_pages(per_page=50):
+    process_projects(page.data)
+
+# Avoid: Fetching all at once for large datasets
+all_projects = client.projects.list(per_page=10000)  # May timeout
+```
+
+### Handle Errors
+
+Implement proper error handling:
+
+```python
+from tracertm.exceptions import NotFoundError, RateLimitError
+
+try:
+    item = client.items.get("item_123")
+except NotFoundError:
+    print("Item not found")
+except RateLimitError as e:
+    time.sleep(e.retry_after)
+    # Retry
+```
+
+### Use Idempotency Keys
+
+For critical operations, use idempotency keys:
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_123/items" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Idempotency-Key: unique-request-id-123" \
+  -d '{"type": "requirement", "title": "..."}'
+```
+
+### Cache Appropriately
+
+Cache responses to reduce API calls:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def get_project(project_id: str):
+    return client.projects.get(project_id)
+```
+
+### Use Webhooks for Events
+
+Instead of polling, use webhooks for real-time updates:
+
+```python
+webhook = client.webhooks.create(
+    url="https://your-app.com/webhook",
+    events=["item.created", "item.updated"]
+)
+```
+
+---
+
+## Quick Reference
+
+### Common Endpoints
+
+| Operation | Endpoint |
+|-----------|----------|
+| List projects | `GET /v1/projects` |
+| Create project | `POST /v1/projects` |
+| List items | `GET /v1/projects/{id}/items` |
+| Create item | `POST /v1/projects/{id}/items` |
+| Create link | `POST /v1/links` |
+| Search | `GET /v1/projects/{id}/search?q=...` |
+| Batch operations | `POST /v1/projects/{id}/batch` |
+
+### Required Headers
+
+```http
+Authorization: Bearer rtm_live_sk_...
+Content-Type: application/json
+Accept: application/json
+```
+
+---
+
+## Related Documentation
+
+- [Authentication](/docs/api-reference/authentication) - API authentication
+- [Pagination](/docs/api-reference/rest-api/pagination) - Pagination methods
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter syntax
+- [Error Handling](/docs/api-reference/rest-api/errors) - Error codes
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Rate limits

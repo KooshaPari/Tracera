@@ -1,10 +1,13 @@
 // Export all views
 
+export { AdvancedSearchView } from './AdvancedSearchView'
 export { AgentsView } from './AgentsView'
 export { DashboardView } from './DashboardView'
 export { EventsTimelineView } from './EventsTimelineView'
+export { ExportView } from './ExportView'
 export { GraphView } from './GraphView'
 export { ImpactAnalysisView } from './ImpactAnalysisView'
+export { ImportView } from './ImportView'
 export { ItemDetailView } from './ItemDetailView'
 export { ItemsKanbanView } from './ItemsKanbanView'
 export { ItemsTableView } from './ItemsTableView'

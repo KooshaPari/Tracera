@@ -8,6 +8,7 @@ try:
     from textual.app import ComposeResult
     from textual.binding import Binding
     from textual.containers import Container, Vertical
+    from textual.message import Message
     from textual.widgets import Button, DataTable, Label, Static
 
     TEXTUAL_AVAILABLE = True
@@ -33,6 +34,9 @@ except ImportError:
         pass
 
     class Binding:
+        pass
+
+    class Message:
         pass
 
 
@@ -247,17 +251,19 @@ if TEXTUAL_AVAILABLE:
                 self.action_close()
 
         # Custom messages for parent app
-        class ConflictResolved:
+        class ConflictResolved(Message):
             """Message sent when conflict is resolved."""
 
             def __init__(self, conflict, strategy: str):
+                super().__init__()
                 self.conflict = conflict
                 self.strategy = strategy
 
-        class ConflictPanelClosed:
+        class ConflictPanelClosed(Message):
             """Message sent when panel is closed."""
 
-            pass
+            def __init__(self):
+                super().__init__()
 
 
 else:

@@ -22,6 +22,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
 
+from sqlalchemy import text
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 
 logger = logging.getLogger(__name__)
@@ -185,7 +186,7 @@ class SyncQueue:
         """Ensure sync tables exist."""
         with self.db.engine.connect() as conn:
             # Create sync_queue table
-            conn.execute("""
+            conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS sync_queue (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     entity_type TEXT NOT NULL,
@@ -197,16 +198,16 @@ class SyncQueue:
                     last_error TEXT,
                     UNIQUE(entity_type, entity_id, operation)
                 )
-            """)
+            """))
 
             # Create sync_state table
-            conn.execute("""
+            conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS sync_state (
                     key TEXT PRIMARY KEY,
                     value TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
-            """)
+            """))
 
             conn.commit()
 
@@ -232,25 +233,25 @@ class SyncQueue:
         with self.db.engine.connect() as conn:
             # Use INSERT OR REPLACE to handle uniqueness constraint
             result = conn.execute(
-                """
+                text("""
                 INSERT OR REPLACE INTO sync_queue
                 (entity_type, entity_id, operation, payload, created_at, retry_count)
-                VALUES (?, ?, ?, ?, ?, COALESCE(
+                VALUES (:entity_type, :entity_id, :operation, :payload, :created_at, COALESCE(
                     (SELECT retry_count FROM sync_queue
-                     WHERE entity_type = ? AND entity_id = ? AND operation = ?),
+                     WHERE entity_type = :entity_type2 AND entity_id = :entity_id2 AND operation = :operation2),
                     0
                 ))
-                """,
-                (
-                    entity_type.value,
-                    entity_id,
-                    operation.value,
-                    json.dumps(payload),
-                    datetime.utcnow().isoformat(),
-                    entity_type.value,
-                    entity_id,
-                    operation.value
-                )
+                """),
+                {
+                    "entity_type": entity_type.value,
+                    "entity_id": entity_id,
+                    "operation": operation.value,
+                    "payload": json.dumps(payload),
+                    "created_at": datetime.utcnow().isoformat(),
+                    "entity_type2": entity_type.value,
+                    "entity_id2": entity_id,
+                    "operation2": operation.value
+                }
             )
             conn.commit()
             return result.lastrowid
@@ -267,14 +268,14 @@ class SyncQueue:
         """
         with self.db.engine.connect() as conn:
             result = conn.execute(
-                """
+                text("""
                 SELECT id, entity_type, entity_id, operation, payload,
                        created_at, retry_count, last_error
                 FROM sync_queue
                 ORDER BY created_at ASC
-                LIMIT ?
-                """,
-                (limit,)
+                LIMIT :limit
+                """),
+                {"limit": limit}
             )
 
             changes = []
@@ -301,8 +302,8 @@ class SyncQueue:
         """
         with self.db.engine.connect() as conn:
             conn.execute(
-                "DELETE FROM sync_queue WHERE id = ?",
-                (queue_id,)
+                text("DELETE FROM sync_queue WHERE id = :queue_id"),
+                {"queue_id": queue_id}
             )
             conn.commit()
 
@@ -316,20 +317,20 @@ class SyncQueue:
         """
         with self.db.engine.connect() as conn:
             conn.execute(
-                """
+                text("""
                 UPDATE sync_queue
                 SET retry_count = retry_count + 1,
-                    last_error = ?
-                WHERE id = ?
-                """,
-                (error, queue_id)
+                    last_error = :error
+                WHERE id = :queue_id
+                """),
+                {"error": error, "queue_id": queue_id}
             )
             conn.commit()
 
     def clear(self) -> None:
         """Clear all entries from the queue."""
         with self.db.engine.connect() as conn:
-            conn.execute("DELETE FROM sync_queue")
+            conn.execute(text("DELETE FROM sync_queue"))
             conn.commit()
 
     def get_count(self) -> int:
@@ -340,7 +341,7 @@ class SyncQueue:
             Number of pending changes
         """
         with self.db.engine.connect() as conn:
-            result = conn.execute("SELECT COUNT(*) FROM sync_queue")
+            result = conn.execute(text("SELECT COUNT(*) FROM sync_queue"))
             return result.scalar()
 
 
@@ -360,6 +361,19 @@ class SyncStateManager:
             db_connection: DatabaseConnection instance
         """
         self.db = db_connection
+        self._ensure_tables()
+
+    def _ensure_tables(self) -> None:
+        """Ensure sync_state table exists."""
+        with self.db.engine.connect() as conn:
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS sync_state (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+            """))
+            conn.commit()
 
     def get_state(self) -> SyncState:
         """
@@ -371,25 +385,25 @@ class SyncStateManager:
         with self.db.engine.connect() as conn:
             # Get last_sync timestamp
             result = conn.execute(
-                "SELECT value FROM sync_state WHERE key = 'last_sync'"
+                text("SELECT value FROM sync_state WHERE key = 'last_sync'")
             )
             row = result.fetchone()
             last_sync = datetime.fromisoformat(row[0]) if row else None
 
             # Get pending changes count
-            result = conn.execute("SELECT COUNT(*) FROM sync_queue")
+            result = conn.execute(text("SELECT COUNT(*) FROM sync_queue"))
             pending_changes = result.scalar()
 
             # Get status
             result = conn.execute(
-                "SELECT value FROM sync_state WHERE key = 'status'"
+                text("SELECT value FROM sync_state WHERE key = 'status'")
             )
             row = result.fetchone()
             status = SyncStatus(row[0]) if row else SyncStatus.IDLE
 
             # Get last error
             result = conn.execute(
-                "SELECT value FROM sync_state WHERE key = 'last_error'"
+                text("SELECT value FROM sync_state WHERE key = 'last_error'")
             )
             row = result.fetchone()
             last_error = row[0] if row else None
@@ -413,11 +427,15 @@ class SyncStateManager:
 
         with self.db.engine.connect() as conn:
             conn.execute(
-                """
+                text("""
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
-                VALUES ('last_sync', ?, ?)
-                """,
-                (timestamp.isoformat(), datetime.utcnow().isoformat())
+                VALUES (:key, :value, :updated_at)
+                """),
+                {
+                    "key": "last_sync",
+                    "value": timestamp.isoformat(),
+                    "updated_at": datetime.utcnow().isoformat()
+                }
             )
             conn.commit()
 
@@ -430,11 +448,15 @@ class SyncStateManager:
         """
         with self.db.engine.connect() as conn:
             conn.execute(
-                """
+                text("""
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
-                VALUES ('status', ?, ?)
-                """,
-                (status.value, datetime.utcnow().isoformat())
+                VALUES (:key, :value, :updated_at)
+                """),
+                {
+                    "key": "status",
+                    "value": status.value,
+                    "updated_at": datetime.utcnow().isoformat()
+                }
             )
             conn.commit()
 
@@ -447,14 +469,14 @@ class SyncStateManager:
         """
         with self.db.engine.connect() as conn:
             if error is None:
-                conn.execute("DELETE FROM sync_state WHERE key = 'last_error'")
+                conn.execute(text("DELETE FROM sync_state WHERE key = 'last_error'"))
             else:
                 conn.execute(
-                    """
+                    text("""
                     INSERT OR REPLACE INTO sync_state (key, value, updated_at)
-                    VALUES ('last_error', ?, ?)
-                    """,
-                    (error, datetime.utcnow().isoformat())
+                    VALUES (:error_key, :error_value, :updated_at)
+                    """),
+                    {"error_key": "last_error", "error_value": error, "updated_at": datetime.utcnow().isoformat()}
                 )
             conn.commit()
 

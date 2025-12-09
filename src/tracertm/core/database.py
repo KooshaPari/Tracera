@@ -21,14 +21,21 @@ def get_engine() -> AsyncEngine:
         # Convert postgresql:// to postgresql+asyncpg://
         url = config.database.url.replace("postgresql://", "postgresql+asyncpg://")
 
-        _engine = create_async_engine(
-            url,
-            pool_size=config.database.pool_size,
-            max_overflow=config.database.max_overflow,
-            pool_pre_ping=True,
-            pool_recycle=3600,
-            echo=False,
-        )
+        # SQLite doesn't support pool_size and max_overflow
+        engine_kwargs = {
+            "pool_pre_ping": True,
+            "echo": False,
+        }
+        
+        # Only add pool parameters for non-SQLite databases
+        if "sqlite" not in url.lower():
+            engine_kwargs.update({
+                "pool_size": config.database.pool_size,
+                "max_overflow": config.database.max_overflow,
+                "pool_recycle": 3600,
+            })
+
+        _engine = create_async_engine(url, **engine_kwargs)
     return _engine
 
 

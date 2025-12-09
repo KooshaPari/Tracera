@@ -1,32 +1,839 @@
 ---
 title: "GitHub Integration"
-description: "Documentation for GitHub Integration"
+description: "Complete guide to integrating TraceRTM with GitHub for commit linking, PR traceability, and automated workflows"
 ---
 
 # GitHub Integration
 
-This page contains documentation for GitHub Integration.
+Integrate TraceRTM with GitHub to automatically link commits to requirements, track pull requests, synchronize issues, and maintain complete traceability throughout your development workflow.
 
 ## Overview
 
-This section covers the key aspects of GitHub Integration in TraceRTM.
+GitHub integration enables:
 
-## Getting Started
+- **Commit Linking**: Automatically link commits to requirements using commit message patterns
+- **PR Traceability**: Track which requirements are addressed in each pull request
+- **Issue Synchronization**: Bidirectional sync between GitHub Issues and TraceRTM items
+- **Webhook Events**: Real-time updates when code changes occur
+- **GitHub Actions Integration**: Automated traceability checks in CI/CD pipelines
+- **Branch-to-Requirement Mapping**: Track feature branches and their associated requirements
+- **Code Review Traceability**: Link review comments to specific requirements
 
-To get started with GitHub Integration:
+## Prerequisites
 
-- Review the GitHub Integration and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Required Tools
 
-## Key Concepts
+- TraceRTM CLI installed and configured
+- GitHub account with repository access
+- GitHub Personal Access Token (PAT) or GitHub App credentials
+- Git 2.30+ installed locally
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Permissions Required
 
-## Next Steps
+For GitHub Personal Access Token:
+- `repo` - Full repository access
+- `read:org` - Read organization membership
+- `workflow` - Update GitHub Actions workflows (optional)
+- `admin:repo_hook` - Manage webhooks (optional)
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+For GitHub App:
+- Repository permissions: Read & Write access to code, pull requests, issues
+- Organization permissions: Read access to members
+- Subscribe to events: push, pull_request, issues
+
+## Setup
+
+### Step 1: Configure GitHub Authentication
+
+Create a GitHub Personal Access Token:
+
+```bash
+# Navigate to GitHub Settings → Developer settings → Personal access tokens
+# Generate new token (classic) with required scopes
+
+# Store token securely in TraceRTM config
+trace config set github.token "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Alternatively, use environment variable
+export TRACERTM_GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Or store in .env file
+echo "TRACERTM_GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >> .env
+```
+
+Configure GitHub repository:
+
+```bash
+# Set default GitHub organization and repository
+trace config set github.org "your-org"
+trace config set github.repo "your-repo"
+
+# Or set per project
+trace project update proj_123 \
+  --metadata '{
+    "github": {
+      "org": "your-org",
+      "repo": "your-repo",
+      "default_branch": "main"
+    }
+  }'
+```
+
+### Step 2: GitHub App Setup (Alternative)
+
+For teams, using a GitHub App provides better security and rate limits:
+
+```bash
+# Create GitHub App at https://github.com/settings/apps/new
+# Configure the following:
+# - Name: TraceRTM Integration
+# - Homepage URL: https://tracertm.io
+# - Webhook URL: https://your-domain.com/api/webhooks/github
+# - Repository permissions: Contents (Read & Write), Pull requests (Read & Write)
+# - Subscribe to events: push, pull_request, issues
+
+# Install app to your organization
+
+# Configure app credentials
+trace config set github.app_id "123456"
+trace config set github.installation_id "98765432"
+trace config set github.private_key_path "/path/to/private-key.pem"
+
+# Verify connection
+trace github verify-connection
+
+# Output:
+# ✓ GitHub connection successful
+# Organization: your-org
+# Repositories: 24 accessible
+# Rate limit: 5000/5000 remaining
+# Authentication: GitHub App (TraceRTM Integration)
+```
+
+### Step 3: Initialize Git Integration
+
+```bash
+# Initialize TraceRTM in existing repository
+cd /path/to/your-repo
+trace init --with-git
+
+# This creates .tracertm/ directory with:
+# - config.yaml (project configuration)
+# - .gitignore (ignore patterns)
+# - hooks/ (Git hooks for automatic linking)
+
+# Install Git hooks
+trace git install-hooks
+
+# Available hooks:
+# - commit-msg: Validate commit message format
+# - pre-push: Check traceability before push
+# - post-commit: Auto-link commits to items
+```
+
+Git hook example (commit-msg):
+
+```bash
+#!/bin/bash
+# .git/hooks/commit-msg
+# Validates commit message format and links to requirements
+
+commit_msg=$(cat "$1")
+
+# Check if commit message references TraceRTM items
+# Format: [ITEM-123] Commit message
+if [[ ! "$commit_msg" =~ ^\[([A-Z]+-[0-9]+)\] ]]; then
+  echo "Error: Commit message must reference a TraceRTM item"
+  echo "Format: [ITEM-123] Your commit message"
+  echo ""
+  echo "Example: [REQ-001] Implement user authentication"
+  exit 1
+fi
+
+item_id="${BASH_REMATCH[1]}"
+
+# Verify item exists in TraceRTM
+if ! trace item exists "$item_id" --quiet; then
+  echo "Error: Item $item_id not found in TraceRTM"
+  echo ""
+  echo "Create item first: trace item create ..."
+  exit 1
+fi
+
+echo "✓ Commit linked to $item_id"
+exit 0
+```
+
+## Commit Linking
+
+### Automatic Linking via Commit Messages
+
+TraceRTM automatically creates links between commits and items when commit messages follow specific patterns:
+
+```bash
+# Single item reference
+git commit -m "[REQ-001] Implement user registration endpoint"
+
+# Multiple items
+git commit -m "[REQ-001][REQ-002] Add email validation and password hashing"
+
+# Different link types
+git commit -m "[FEAT-123] implements user auth
+- Implements REQ-001 (registration)
+- Fixes BUG-045 (validation error)
+- Tests TEST-012"
+
+# After commit, TraceRTM automatically creates links
+trace item get REQ-001 --show-commits
+
+# Output:
+# REQ-001: User Registration
+#
+# Commits (3):
+# ├─ a1b2c3d - [REQ-001] Implement user registration endpoint
+# │  Author: Alice <alice@example.com>
+# │  Date: 2024-12-02 10:30:00
+# │  Files: backend/auth/register.go (+120, -0)
+# │
+# ├─ d4e5f6g - [REQ-001][REQ-002] Add email validation
+# │  Author: Bob <bob@example.com>
+# │  Date: 2024-12-02 14:15:00
+# │  Files: backend/validators/email.go (+45, -10)
+# │
+# └─ h7i8j9k - [FEAT-123] implements user auth
+#    Author: Alice <alice@example.com>
+#    Date: 2024-12-03 09:00:00
+#    Files: 5 files changed (+320, -45)
+```
+
+### Manual Commit Linking
+
+Link existing commits to items:
+
+```bash
+# Link single commit
+trace link create-git \
+  --commit a1b2c3d4e5f6 \
+  --item REQ-001 \
+  --type implements
+
+# Link commit range
+trace link create-git-range \
+  --from-commit main \
+  --to-commit feature/auth \
+  --item FEAT-123 \
+  --type implements
+
+# Link all commits in branch
+trace link create-git-branch \
+  --branch feature/user-management \
+  --item EPIC-005 \
+  --type implements
+
+# Bulk import commit history
+trace import git-history \
+  --since "2024-01-01" \
+  --pattern "\[([A-Z]+-[0-9]+)\]" \
+  --auto-link
+```
+
+### View Commit Traceability
+
+```bash
+# Show commits for specific item
+trace item get REQ-001 --show-commits
+
+# Generate commit traceability report
+trace report generate \
+  --type git-traceability \
+  --output commits-report.html
+
+# Find orphaned commits (not linked to any item)
+trace validate git-orphans \
+  --since "2024-01-01" \
+  --report
+
+# Output:
+# Git Orphan Analysis
+# ══════════════════════════════════════
+#
+# Orphaned Commits: 12 found
+#
+# Commit: a1b2c3d
+# Author: Charlie <charlie@example.com>
+# Date: 2024-11-15 16:20:00
+# Message: Fix typo in README
+# Files: README.md
+# Suggestion: Link to DOC-001 (Documentation)
+#
+# Commit: e4f5a6b
+# Author: David <david@example.com>
+# Date: 2024-11-20 10:05:00
+# Message: Refactor database connection
+# Files: database/connection.go
+# Suggestion: Link to TECH-042 (Database Optimization)
+```
+
+## Pull Request Integration
+
+### Link PRs to Requirements
+
+Create TraceRTM items for pull requests:
+
+```bash
+# Automatically create item when PR is opened (via webhook)
+# Or manually create PR item
+trace item create proj_123 \
+  --type pull_request \
+  --title "PR #42: Implement OAuth integration" \
+  --metadata '{
+    "pr_number": 42,
+    "pr_url": "https://github.com/your-org/your-repo/pull/42",
+    "github_id": "PR_kwDOABCDEFM4ABC",
+    "author": "alice",
+    "status": "open",
+    "branch": "feature/oauth",
+    "base": "main"
+  }'
+
+# Output: item_pr_042
+
+# Link PR to requirements
+trace link create item_pr_042 REQ-003 \
+  --type implements \
+  --metadata '{
+    "pr_number": 42,
+    "files_changed": 8,
+    "lines_added": 320,
+    "lines_deleted": 45
+  }'
+
+# Check PR traceability
+trace item get item_pr_042 --show-links
+
+# Output:
+# Pull Request #42: Implement OAuth integration
+# Status: Open
+# Author: alice
+# Branch: feature/oauth → main
+#
+# Implements (2):
+# ├─ REQ-003: OAuth Integration
+# │  Files: 8 files changed (+320, -45)
+# │  Coverage: 87%
+# │
+# └─ REQ-004: Social Login
+#    Files: 3 files changed (+150, -20)
+#    Coverage: 92%
+#
+# Commits (5):
+# ├─ a1b2c3d - [REQ-003] Add OAuth service
+# ├─ b2c3d4e - [REQ-003] Implement Google provider
+# ├─ c3d4e5f - [REQ-003] Implement Facebook provider
+# ├─ d4e5f6g - [REQ-004] Add social login UI
+# └─ e5f6g7h - [REQ-003][REQ-004] Add integration tests
+#
+# Tests (3):
+# ✓ Test OAuth flow - PASSED
+# ✓ Test Google login - PASSED
+# ✓ Test Facebook login - PASSED
+```
+
+### PR Status Synchronization
+
+Automatically sync PR status with TraceRTM:
+
+```bash
+# Configure PR sync
+trace config set github.pr_sync.enabled true
+trace config set github.pr_sync.status_mapping '{
+  "open": "in_progress",
+  "merged": "completed",
+  "closed": "cancelled"
+}'
+
+# When PR #42 is merged, linked requirements auto-update
+# REQ-003 status: planned → in_progress → completed
+
+# View PR impact
+trace analytics pr-impact \
+  --pr 42 \
+  --show-affected-items
+
+# Output:
+# PR #42 Impact Analysis
+# ═════════════════════════════════════
+#
+# Direct Requirements (2):
+# ├─ REQ-003: OAuth Integration [completed]
+# └─ REQ-004: Social Login [completed]
+#
+# Downstream Impact (5):
+# ├─ TEST-012: OAuth test suite [needs update]
+# ├─ DOC-008: API documentation [needs update]
+# ├─ DEPLOY-003: Production deployment [blocked]
+# ├─ FEAT-050: User profile [unblocked]
+# └─ BUG-032: Login timeout [resolved]
+#
+# Files Changed: 8
+# Lines Added: 320
+# Lines Deleted: 45
+# Test Coverage: 87% → 91%
+# Risk Level: Medium
+```
+
+## Issue Synchronization
+
+### Bidirectional GitHub Issues Sync
+
+```bash
+# Enable issue sync
+trace config set github.issues.sync_enabled true
+trace config set github.issues.sync_direction "bidirectional"
+trace config set github.issues.label_mapping '{
+  "bug": "bug",
+  "enhancement": "feature",
+  "documentation": "documentation"
+}'
+
+# Import existing GitHub issues
+trace import github-issues \
+  --repo your-org/your-repo \
+  --state all \
+  --since "2024-01-01"
+
+# Output:
+# Importing GitHub Issues...
+# ✓ Imported 45 issues
+# ✓ Created 45 items
+# ✓ Synced 12 labels
+# ✓ Linked 8 pull requests
+#
+# Summary:
+# - Bugs: 18
+# - Features: 22
+# - Documentation: 5
+# - Already synced: 3 (skipped)
+
+# Create item that syncs to GitHub
+trace item create proj_123 \
+  --type bug \
+  --title "Login fails with special characters in password" \
+  --description "Users cannot login when password contains @#$ characters" \
+  --metadata '{
+    "github_sync": true,
+    "github_labels": ["bug", "auth", "high-priority"]
+  }'
+
+# Output:
+# ✓ Item created: item_bug_045
+# ✓ GitHub issue created: #123
+# ✓ Sync enabled
+# URL: https://github.com/your-org/your-repo/issues/123
+
+# View sync status
+trace github sync-status item_bug_045
+
+# Output:
+# Item: item_bug_045
+# GitHub Issue: #123
+# Sync Status: Active
+# Last Sync: 2024-12-02T10:30:00Z
+# Direction: Bidirectional
+#
+# Synced Fields:
+# ✓ Title
+# ✓ Description
+# ✓ Status (open ↔ in_progress)
+# ✓ Labels (bug, auth, high-priority)
+# ✓ Assignee (alice)
+# ✓ Comments (5 comments synced)
+```
+
+## Webhook Configuration
+
+### Set Up GitHub Webhooks
+
+```bash
+# Create webhook endpoint
+trace webhook create github \
+  --url "https://your-domain.com/api/webhooks/github" \
+  --secret "your-webhook-secret" \
+  --events push,pull_request,issues,issue_comment
+
+# Output:
+# ✓ Webhook created
+# Webhook ID: whk_123456789
+# URL: https://your-domain.com/api/webhooks/github
+# Secret: your-webhook-secret
+# Events: push, pull_request, issues, issue_comment
+#
+# Add to GitHub:
+# 1. Go to https://github.com/your-org/your-repo/settings/hooks
+# 2. Click "Add webhook"
+# 3. Payload URL: https://your-domain.com/api/webhooks/github
+# 4. Content type: application/json
+# 5. Secret: your-webhook-secret
+# 6. Events: Select individual events
+#    - Pushes
+#    - Pull requests
+#    - Issues
+#    - Issue comments
+# 7. Active: checked
+# 8. Click "Add webhook"
+
+# Test webhook
+trace webhook test whk_123456789
+
+# View webhook logs
+trace webhook logs whk_123456789 --limit 10
+
+# Output:
+# Webhook Logs (whk_123456789)
+# ════════════════════════════════════════
+#
+# 2024-12-02 10:35:00 - push
+# ✓ Success (200ms)
+# Payload: { ref: "refs/heads/main", commits: 1 }
+# Created: item_commit_a1b2c3d
+# Linked: REQ-001
+#
+# 2024-12-02 10:30:00 - pull_request (opened)
+# ✓ Success (450ms)
+# Payload: { number: 42, action: "opened" }
+# Created: item_pr_042
+# Linked: REQ-003, REQ-004
+#
+# 2024-12-02 10:25:00 - issues (opened)
+# ✓ Success (320ms)
+# Payload: { number: 123, action: "opened" }
+# Created: item_bug_045
+# Synced: Bidirectional
+```
+
+## GitHub Actions Integration
+
+### Traceability Check Action
+
+Create `.github/workflows/traceability-check.yml`:
+
+```yaml
+name: Traceability Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  traceability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for commit analysis
+
+      - name: Install TraceRTM CLI
+        run: |
+          curl -sSL https://get.tracertm.io | sh
+          trace --version
+
+      - name: Configure TraceRTM
+        env:
+          TRACERTM_API_URL: ${{ secrets.TRACERTM_API_URL }}
+          TRACERTM_API_KEY: ${{ secrets.TRACERTM_API_KEY }}
+          TRACERTM_PROJECT_ID: ${{ secrets.TRACERTM_PROJECT_ID }}
+        run: |
+          trace config set api.url "$TRACERTM_API_URL"
+          trace config set api.key "$TRACERTM_API_KEY"
+          trace config set current_project_id "$TRACERTM_PROJECT_ID"
+
+      - name: Validate commit messages
+        run: |
+          trace validate commits \
+            --from-ref ${{ github.event.pull_request.base.sha }} \
+            --to-ref ${{ github.event.pull_request.head.sha }} \
+            --require-item-reference
+
+      - name: Check requirement links
+        run: |
+          trace validate pr-traceability \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --require-links \
+            --fail-on-orphans
+
+      - name: Generate traceability report
+        if: always()
+        run: |
+          trace report generate \
+            --type pr-traceability \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --format markdown \
+            --output traceability-report.md
+
+      - name: Post report as comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('traceability-report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: report
+            });
+
+      - name: Update PR status
+        if: success()
+        run: |
+          trace github update-pr-status \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --status success \
+            --message "All traceability checks passed"
+```
+
+### Automated Link Creation
+
+Create `.github/workflows/auto-link.yml`:
+
+```yaml
+name: Auto-Link Commits
+
+on:
+  push:
+    branches: [main, develop, 'release/**']
+
+jobs:
+  auto-link:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install TraceRTM CLI
+        run: curl -sSL https://get.tracertm.io | sh
+
+      - name: Link commits to requirements
+        env:
+          TRACERTM_API_KEY: ${{ secrets.TRACERTM_API_KEY }}
+        run: |
+          # Extract item references from commits
+          trace import git-commits \
+            --from-ref ${{ github.event.before }} \
+            --to-ref ${{ github.event.after }} \
+            --pattern "\[([A-Z]+-[0-9]+)\]" \
+            --auto-link \
+            --link-type implements
+
+      - name: Notify Slack
+        if: success()
+        run: |
+          trace notify slack \
+            --message "Commits linked to requirements in ${{ github.ref_name }}" \
+            --channel "#traceability"
+```
+
+## CLI Commands Reference
+
+### GitHub Connection Commands
+
+```bash
+# Verify GitHub connection
+trace github verify-connection
+
+# List accessible repositories
+trace github repos list
+
+# Get repository info
+trace github repo info your-org/your-repo
+
+# Test API access
+trace github test-api
+```
+
+### Commit Commands
+
+```bash
+# Link commit to item
+trace link create-git --commit SHA --item ITEM-ID --type TYPE
+
+# Link commit range
+trace link create-git-range --from-commit SHA1 --to-commit SHA2 --item ITEM-ID
+
+# Import git history
+trace import git-history --since DATE --pattern REGEX --auto-link
+
+# Find orphaned commits
+trace validate git-orphans --report
+
+# Show commits for item
+trace item get ITEM-ID --show-commits
+```
+
+### Pull Request Commands
+
+```bash
+# Create PR item
+trace item create-pr --number PR_NUM --repo REPO
+
+# Link PR to requirements
+trace link create PR-ITEM REQ-ID --type implements
+
+# Get PR traceability
+trace item get PR-ITEM --show-links --show-commits
+
+# Analyze PR impact
+trace analytics pr-impact --pr PR_NUM
+
+# Validate PR traceability
+trace validate pr-traceability --pr-number PR_NUM
+```
+
+### Issue Sync Commands
+
+```bash
+# Import GitHub issues
+trace import github-issues --repo REPO --state all
+
+# Sync single issue
+trace github sync-issue ISSUE_NUM
+
+# Enable auto-sync
+trace config set github.issues.sync_enabled true
+
+# View sync status
+trace github sync-status ITEM-ID
+
+# Force sync
+trace github force-sync ITEM-ID
+```
+
+## Best Practices
+
+### Commit Message Standards
+
+```bash
+# ✓ Good: Single requirement reference
+git commit -m "[REQ-001] Implement user registration"
+
+# ✓ Good: Multiple requirements
+git commit -m "[REQ-001][TEST-012] Add registration with tests"
+
+# ✓ Good: Descriptive with context
+git commit -m "[FEAT-123] Implement OAuth integration
+
+- Add Google OAuth provider
+- Add Facebook OAuth provider
+- Implements REQ-003
+- Tests TEST-045, TEST-046"
+
+# ✗ Bad: No item reference
+git commit -m "Fix bug"
+
+# ✗ Bad: Vague description
+git commit -m "[REQ-001] Update code"
+
+# ✗ Bad: Invalid item ID
+git commit -m "[TODO-001] Do something"
+```
+
+### Development Workflow Integration
+
+```bash
+# 1. Start with requirement
+trace item create proj_123 \
+  --type requirement \
+  --title "REQ-AUTH-005: Password reset flow"
+
+# 2. Create feature branch
+git checkout -b feature/password-reset
+export CURRENT_ITEM="REQ-AUTH-005"
+
+# 3. Make commits with references
+git commit -m "[$CURRENT_ITEM] Add password reset endpoint"
+git commit -m "[$CURRENT_ITEM] Add email templates"
+git commit -m "[$CURRENT_ITEM] Add rate limiting"
+
+# 4. Create PR
+gh pr create \
+  --title "[$CURRENT_ITEM] Implement password reset flow" \
+  --body "Implements $CURRENT_ITEM"
+
+# 5. TraceRTM automatically:
+# - Creates PR item
+# - Links PR to REQ-AUTH-005
+# - Links all commits
+# - Updates requirement status
+# - Tracks test coverage
+```
+
+### Branch Strategy
+
+```bash
+# Map branches to requirement lifecycle
+trace config set github.branch_mapping '{
+  "feature/*": "in_progress",
+  "release/*": "testing",
+  "hotfix/*": "urgent",
+  "main": "completed"
+}'
+
+# Automatically update item status based on branch
+trace github auto-status-from-branch --enable
+
+# Example: Create feature branch
+git checkout -b feature/REQ-123-oauth
+# Item REQ-123 status automatically set to "in_progress"
+
+# Merge to main
+git checkout main
+git merge feature/REQ-123-oauth
+# Item REQ-123 status automatically set to "completed"
+```
+
+## Troubleshooting
+
+### Common Issues
+
+```bash
+# Issue: Webhook not receiving events
+trace webhook test whk_123456789
+trace webhook logs whk_123456789 --errors
+
+# Issue: Commits not auto-linking
+trace validate commits --from-ref HEAD~10 --to-ref HEAD --verbose
+
+# Issue: GitHub rate limit exceeded
+trace github rate-limit
+# Switch to GitHub App authentication for higher limits
+
+# Issue: Item references not found
+trace validate item-references --in-commits --fix-missing
+
+# Issue: Orphaned pull requests
+trace github sync-prs --repair --dry-run
+```
+
+## Summary
+
+GitHub integration provides:
+
+1. **Automatic Traceability**: Commit messages create requirement links
+2. **PR Tracking**: Full visibility into what each PR implements
+3. **Issue Sync**: Bidirectional synchronization with GitHub Issues
+4. **Webhook Automation**: Real-time updates from GitHub events
+5. **CI/CD Integration**: Automated traceability checks in workflows
+6. **Audit Trail**: Complete history of code changes linked to requirements
+
+This enables development teams to maintain full traceability from requirements through code to deployment, with minimal manual overhead.
+
+## Files Referenced
+
+- `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs-site/content/docs/01-wiki/03-examples/03b-github-integration/index.mdx`
+- `.github/workflows/traceability-check.yml` (example)
+- `.github/workflows/auto-link.yml` (example)
+- `.git/hooks/commit-msg` (example)

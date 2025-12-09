@@ -1,32 +1,704 @@
 ---
 title: "Pull Requests"
-description: "Documentation for Pull Requests"
+description: "Guidelines for creating and managing pull requests in TraceRTM"
 ---
 
 # Pull Requests
 
-This page contains documentation for Pull Requests.
+A comprehensive guide to creating, managing, and merging pull requests in the TraceRTM project.
 
 ## Overview
 
-This section covers the key aspects of Pull Requests in TraceRTM.
+Pull requests (PRs) are the primary mechanism for contributing code changes to TraceRTM. This guide covers the entire PR lifecycle, from preparation to merge and cleanup.
 
-## Getting Started
+---
 
-To get started with Pull Requests:
+## Before Creating a PR
 
-- Review the Pull Requests and fundamentals
-- Explore practical examples
-- Check out the API reference
+Before you start working on a pull request, ensure you:
 
-## Key Concepts
+### 1. Check for Existing Work
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+- Search existing PRs and issues to avoid duplicate work
+- Comment on related issues to indicate you're working on them
+- Check the project roadmap for planned features
+
+### 2. Discuss Major Changes
+
+For significant changes, open an issue first to discuss:
+- New features or major enhancements
+- Breaking changes
+- Architectural modifications
+- Changes affecting multiple components
+
+### 3. Set Up Your Environment
+
+Ensure your development environment is properly configured:
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/trace.git
+cd trace
+
+# Add upstream remote
+git remote add upstream https://github.com/tracertm/trace.git
+
+# Install dependencies
+npm install  # Frontend
+uv sync      # Backend
+```
+
+### 4. Stay Updated
+
+Always work from the latest main branch:
+
+```bash
+# Fetch latest changes
+git fetch upstream
+
+# Update your main branch
+git checkout main
+git merge upstream/main
+
+# Push to your fork
+git push origin main
+```
+
+---
+
+## Branch Naming Conventions
+
+Use descriptive branch names that follow this format:
+
+```
+<type>/<short-description>
+```
+
+### Branch Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| `feature/` | New features or enhancements | `feature/graph-visualization` |
+| `fix/` | Bug fixes | `fix/session-timeout` |
+| `docs/` | Documentation updates | `docs/api-reference` |
+| `refactor/` | Code refactoring | `refactor/database-layer` |
+| `test/` | Adding or updating tests | `test/integration-coverage` |
+| `chore/` | Maintenance tasks | `chore/update-dependencies` |
+| `perf/` | Performance improvements | `perf/query-optimization` |
+| `style/` | Code style/formatting | `style/eslint-fixes` |
+
+### Examples
+
+```bash
+# Good branch names
+git checkout -b feature/traceability-matrix
+git checkout -b fix/markdown-parser-crash
+git checkout -b docs/cli-commands
+git checkout -b test/repository-layer
+
+# Avoid
+git checkout -b my-changes        # Too vague
+git checkout -b fix                # No description
+git checkout -b john-feature       # Don't use personal names
+```
+
+---
+
+## PR Title Format
+
+Use clear, descriptive titles that follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```
+<type>(<scope>): <description>
+```
+
+### Components
+
+- **type**: The type of change (see table below)
+- **scope** (optional): The component or area affected
+- **description**: A brief summary in imperative mood
+
+### Types
+
+| Type | Description |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Code style changes (formatting, semicolons, etc.) |
+| `refactor` | Code refactoring without changing functionality |
+| `perf` | Performance improvements |
+| `test` | Adding or updating tests |
+| `chore` | Maintenance tasks, dependency updates |
+| `ci` | CI/CD pipeline changes |
+| `build` | Build system or external dependencies |
+
+### Examples
+
+```
+feat(api): add traceability matrix endpoint
+fix(tui): resolve crash when loading empty projects
+docs(contributing): update PR guidelines
+refactor(storage): simplify sync engine architecture
+test(integration): add repository layer tests
+perf(database): optimize item query performance
+chore(deps): upgrade FastAPI to 0.115.0
+```
+
+---
+
+## PR Description Template
+
+Use this template for your PR descriptions:
+
+```markdown
+## Summary
+
+Brief description of what this PR does (2-3 sentences).
+
+## Motivation
+
+Why is this change needed? What problem does it solve?
+
+## Changes
+
+- List of specific changes made
+- Use bullet points for clarity
+- Include both code and documentation changes
+
+## Type of Change
+
+- [ ] Bug fix (non-breaking change that fixes an issue)
+- [ ] New feature (non-breaking change that adds functionality)
+- [ ] Breaking change (fix or feature that breaks existing functionality)
+- [ ] Documentation update
+- [ ] Performance improvement
+- [ ] Code refactoring
+- [ ] Test coverage improvement
+
+## Testing
+
+Describe how you tested these changes:
+
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] E2E tests added/updated
+- [ ] Manual testing performed
+
+**Test coverage**: XX% (before) -> YY% (after)
+
+## Screenshots/Demo
+
+If applicable, add screenshots or a demo GIF showing the changes.
+
+## Breaking Changes
+
+If this is a breaking change, describe:
+- What breaks
+- Migration path for users
+- Deprecation warnings added
+
+## Checklist
+
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated
+- [ ] Tests added/updated
+- [ ] All tests pass locally
+- [ ] No new warnings or errors
+- [ ] Commit messages follow conventions
+
+## Related Issues
+
+Closes #123
+Related to #456
+
+## Additional Context
+
+Any other information that reviewers should know.
+```
+
+---
+
+## Checklist Before Submitting
+
+Before submitting your PR, ensure:
+
+### Code Quality
+
+- [ ] Code follows project style guidelines (ESLint, Ruff, Prettier)
+- [ ] No linting errors or warnings
+- [ ] Code is properly formatted
+- [ ] Complex logic is documented with comments
+- [ ] No debug code or console.logs left in
+
+### Testing
+
+- [ ] All existing tests pass
+- [ ] New tests added for new functionality
+- [ ] Edge cases are tested
+- [ ] Test coverage maintained or improved
+- [ ] Manual testing completed
+
+### Documentation
+
+- [ ] README updated if needed
+- [ ] API documentation updated
+- [ ] Code comments added for complex logic
+- [ ] CHANGELOG.md updated (if applicable)
+- [ ] Migration guide provided (for breaking changes)
+
+### Git Hygiene
+
+- [ ] Commits are logical and atomic
+- [ ] Commit messages are descriptive
+- [ ] Branch is up to date with main
+- [ ] No merge conflicts
+- [ ] No unnecessary files committed
+
+### Run Pre-submission Checks
+
+```bash
+# Backend checks
+cd trace
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest
+
+# Frontend checks
+cd frontend/apps/web
+npm run lint
+npm run type-check
+npm run test
+
+# Docs site checks
+cd docs-site
+npm run build
+```
+
+---
+
+## Linking Issues
+
+Always link related issues in your PR:
+
+### Closing Issues
+
+Use keywords to automatically close issues when the PR merges:
+
+```markdown
+Closes #123
+Fixes #456
+Resolves #789
+```
+
+### Related Issues
+
+For related but not closed issues:
+
+```markdown
+Related to #123
+See also #456
+Part of #789
+```
+
+### Multiple Issues
+
+```markdown
+Closes #123, #456, #789
+Fixes #111
+Related to #222
+```
+
+### Best Practices
+
+- Link the most specific issue (not epic/milestone)
+- Create issues if they don't exist
+- Update issue status when opening PR
+- Reference issues in commit messages too
+
+---
+
+## Requesting Reviews
+
+### Who to Request
+
+- Automatic reviewers are assigned via CODEOWNERS
+- Request additional reviewers for:
+  - Domain expertise
+  - Architectural changes
+  - Security-sensitive code
+
+### When to Request
+
+1. Mark as draft initially if work is in progress
+2. Request reviews when ready for feedback
+3. Re-request after addressing feedback
+
+### How to Request
+
+```markdown
+@username Could you review the authentication changes?
+@team/core-team Please review the API modifications
+```
+
+### Review Etiquette
+
+- Respond to all review comments
+- Ask questions if feedback is unclear
+- Push updates to address feedback
+- Mark conversations as resolved when addressed
+
+---
+
+## Addressing Review Feedback
+
+### Responding to Comments
+
+1. **Acknowledge**: Thank reviewers for their feedback
+2. **Discuss**: Ask questions if something is unclear
+3. **Implement**: Make requested changes
+4. **Update**: Push commits addressing feedback
+5. **Respond**: Comment on what you changed
+
+### Making Changes
+
+```bash
+# Make requested changes
+git add .
+git commit -m "Address review feedback: optimize query"
+
+# Push to update PR
+git push origin feature/my-branch
+```
+
+### Comment Format
+
+```markdown
+> Suggestion: Use a more descriptive variable name
+
+Good catch! Changed `data` to `traceabilityMatrix` in commit abc123.
+```
+
+### Resolving Conversations
+
+- Resolve conversations after implementing changes
+- Leave unresolved if you disagree (discuss first)
+- Don't resolve other people's comments
+
+### Requesting Re-review
+
+After addressing feedback:
+
+```markdown
+@reviewer Changes implemented, ready for another look:
+- Optimized database query
+- Added error handling
+- Updated tests
+```
+
+---
+
+## Merging Strategy
+
+TraceRTM uses different merge strategies based on the situation:
+
+### Squash and Merge (Default)
+
+**When to use**: Most PRs with multiple commits
+
+**Advantages**:
+- Clean, linear history
+- Single commit per feature
+- Easy to revert
+
+**Process**:
+```bash
+# GitHub UI: "Squash and merge" button
+# Ensure commit message is clean
+```
+
+### Rebase and Merge
+
+**When to use**: PRs with clean, atomic commits
+
+**Advantages**:
+- Preserves individual commits
+- Shows incremental changes
+- Better for large features
+
+**Process**:
+```bash
+# Update branch with main
+git fetch upstream
+git rebase upstream/main
+
+# Push (force with lease)
+git push origin feature/my-branch --force-with-lease
+```
+
+### Merge Commit
+
+**When to use**: Rarely (for merging release branches)
+
+**Advantages**:
+- Preserves branch context
+- Shows parallel development
+
+**Process**:
+```bash
+# GitHub UI: "Create a merge commit" button
+```
+
+### Decision Tree
+
+```
+Is the PR a single logical change?
+├─ Yes: Does it have clean, atomic commits?
+│  ├─ Yes: Rebase and merge
+│  └─ No: Squash and merge
+└─ No: Split into multiple PRs
+```
+
+---
+
+## After Merge Cleanup
+
+Once your PR is merged:
+
+### 1. Delete Your Branch
+
+```bash
+# Delete local branch
+git checkout main
+git branch -d feature/my-branch
+
+# Delete remote branch (if not auto-deleted)
+git push origin --delete feature/my-branch
+```
+
+### 2. Update Your Main
+
+```bash
+# Fetch latest changes
+git fetch upstream
+
+# Update main
+git checkout main
+git merge upstream/main
+
+# Push to your fork
+git push origin main
+```
+
+### 3. Close Related Issues
+
+If issues weren't auto-closed:
+- Manually close related issues
+- Add a comment linking to the merged PR
+
+### 4. Update Documentation
+
+- Verify docs are published correctly
+- Update any related wiki pages
+- Notify stakeholders if needed
+
+---
+
+## Draft PRs
+
+Use draft PRs for work in progress:
+
+### When to Use Drafts
+
+- Early feedback on approach
+- Showing progress on long-running work
+- CI/CD testing before final review
+- Experimental features
+
+### Creating a Draft
+
+```bash
+# GitHub UI: "Create draft pull request" button
+# Or via CLI:
+gh pr create --draft --title "WIP: Feature name" --body "Early draft for feedback"
+```
+
+### Draft PR Title
+
+Prefix with `WIP:` or `[DRAFT]`:
+
+```
+WIP: Add graph visualization feature
+[DRAFT] Refactor database layer
+```
+
+### Converting to Ready
+
+1. Complete all planned work
+2. Run full test suite
+3. Update PR description
+4. Remove `WIP:` prefix
+5. Click "Ready for review"
+
+---
+
+## PR Best Practices
+
+### Keep PRs Small and Focused
+
+- **Good**: Single feature or bug fix
+- **Bad**: Multiple unrelated changes
+- **Target**: < 400 lines changed (excluding tests)
+
+### Write Clear Descriptions
+
+- Explain the "why" not just the "what"
+- Include context for reviewers
+- Add screenshots for UI changes
+- Link to design docs or RFCs
+
+### Maintain Good Commits
+
+```bash
+# Good commits
+git commit -m "Add user authentication endpoint"
+git commit -m "Add tests for auth endpoint"
+git commit -m "Update API documentation"
+
+# Bad commits
+git commit -m "fix stuff"
+git commit -m "oops"
+git commit -m "asdf"
+```
+
+### Respond Promptly
+
+- Review comments within 24-48 hours
+- Keep the conversation moving
+- Ask for help if stuck
+
+### Be Respectful
+
+- Assume good intent
+- Be open to feedback
+- Explain your reasoning
+- Agree to disagree professionally
+
+### Test Thoroughly
+
+- Run full test suite locally
+- Test edge cases manually
+- Verify in different environments
+- Check for performance regressions
+
+### Update Regularly
+
+```bash
+# Keep branch current with main
+git fetch upstream
+git merge upstream/main
+git push origin feature/my-branch
+```
+
+### Use CI/CD Feedback
+
+- Fix failing tests immediately
+- Address linting errors
+- Check coverage reports
+- Review security scan results
+
+### Document Everything
+
+- Update relevant docs
+- Add inline comments
+- Update CHANGELOG
+- Create migration guides
+
+---
+
+## Example PR
+
+Here's a complete example of a well-formed PR:
+
+**Title**: `feat(api): add traceability matrix export endpoint`
+
+**Description**:
+```markdown
+## Summary
+
+Adds a new API endpoint to export traceability matrices in multiple formats (PDF, CSV, Excel).
+
+## Motivation
+
+Users need to export traceability matrices for documentation and compliance purposes. Currently, they can only view matrices in the UI, which doesn't meet their reporting needs.
+
+Closes #234
+
+## Changes
+
+- Added `/api/v1/projects/{id}/matrix/export` endpoint
+- Implemented PDF export using ReportLab
+- Implemented CSV export with proper escaping
+- Implemented Excel export with formatting
+- Added rate limiting to prevent abuse
+- Updated API documentation
+- Added integration tests
+
+## Type of Change
+
+- [x] New feature (non-breaking change that adds functionality)
+
+## Testing
+
+- [x] Unit tests added for export formatters
+- [x] Integration tests added for API endpoint
+- [x] Manual testing with various matrix sizes
+
+**Test coverage**: 87% -> 89%
+
+Tested with:
+- Small matrices (< 100 items)
+- Large matrices (> 1000 items)
+- Empty projects
+- Various link configurations
+
+## Screenshots
+
+![Export dialog](./screenshots/export-dialog.png)
+![PDF output](./screenshots/pdf-output.png)
+
+## Checklist
+
+- [x] Code follows project style guidelines
+- [x] Self-review completed
+- [x] Comments added for complex logic
+- [x] Documentation updated
+- [x] Tests added/updated
+- [x] All tests pass locally
+- [x] No new warnings or errors
+- [x] Commit messages follow conventions
+
+## Related Issues
+
+Closes #234
+Related to #189 (export feature epic)
+```
+
+---
+
+## Getting Help
+
+If you need help with your PR:
+
+- Ask in the PR comments
+- Join the community Discord
+- Check the contributing guide
+- Review similar merged PRs
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- [Code Review Guidelines](../code-review)
+- [Testing Guide](../testing)
+- [Git Workflow](../git-workflow)

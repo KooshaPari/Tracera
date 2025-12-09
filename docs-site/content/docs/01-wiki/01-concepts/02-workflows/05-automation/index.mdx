@@ -1,125 +1,682 @@
 ---
 title: "Workflow Automation"
-description: "Documentation for Workflow Automation"
+description: "Automating state transitions, notifications, and integrations"
 ---
 
 # Workflow Automation
 
+Workflow automation reduces manual overhead by automatically triggering transitions, sending notifications, and integrating with external systems. This guide covers setting up automation for TraceRTM workflows.
 
-## Overview
+## Automation Overview
 
-Welcome to the Workflow Automation documentation.
+### What Can Be Automated?
 
-## Introduction
+| Automation Type | Example | Benefit |
+|-----------------|---------|---------|
+| **Auto-transitions** | Move to "done" when tests pass | Reduce manual updates |
+| **Notifications** | Alert team when blocked | Faster response |
+| **Webhooks** | Sync with Jira on status change | Keep systems in sync |
+| **Agent triggers** | Run code review agent | AI-powered assistance |
+| **Scheduled tasks** | Archive old items weekly | Maintenance automation |
+| **Field updates** | Set timestamps automatically | Data accuracy |
 
-This page provides comprehensive information about Workflow Automation.
+### Automation Architecture
 
-## Key Features
-
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
-
-## Getting Started
-
-```bash
-tracertm init
-tracertm config set automation enabled
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    TraceRTM Event Bus                       │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+        ▼                  ▼                  ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│  Transitions  │  │ Notifications │  │   Webhooks    │
+│    Engine     │  │    Service    │  │    Gateway    │
+└───────────────┘  └───────────────┘  └───────────────┘
+        │                  │                  │
+        ▼                  ▼                  ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│ State Machine │  │ Slack/Email/  │  │ Jira/GitHub/  │
+│    Updates    │  │    Teams      │  │   CI/CD       │
+└───────────────┘  └───────────────┘  └───────────────┘
 ```
 
-## Usage
+## Event-Driven Automation
 
-### Basic Usage
+### Available Events
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```yaml
+# Events that can trigger automation
+events:
+  # Item events
+  - item.created
+  - item.updated
+  - item.deleted
+  - item.status_changed
+  - item.assigned
 
-const tracertm = new TraceRTM()
-const result = await tracertm.automation()
+  # Link events
+  - link.created
+  - link.deleted
+
+  # Workflow events
+  - workflow.transition
+  - workflow.transition_blocked
+  - workflow.state_entered
+  - workflow.state_exited
+
+  # Test events
+  - tests.passed
+  - tests.failed
+  - tests.coverage_changed
+
+  # External events
+  - webhook.received
+  - schedule.triggered
 ```
 
-### Advanced Usage
+### Automation Rules
 
-```typescript
-const config = {
-  automation: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+```yaml
+# .tracertm/automation/rules.yaml
+rules:
+  # Auto-transition on test pass
+  - name: auto_complete_on_test_pass
+    trigger:
+      event: tests.passed
+      filter:
+        item_type: feature
+        status: in_progress
+    conditions:
+      - all_tests_passing: true
+      - coverage_min: 80
+    actions:
+      - type: transition
+        to: review
 
-const tracertm = new TraceRTM(config)
+  # Notify on block
+  - name: notify_on_blocked
+    trigger:
+      event: workflow.state_entered
+      filter:
+        state: blocked
+    actions:
+      - type: notify
+        channel: slack
+        webhook: "{{ env.SLACK_WEBHOOK }}"
+        message: |
+          :warning: *{{ item.title }}* is blocked
+          Reason: {{ item.blocked_reason }}
+          Assignee: <@{{ item.assignee.slack_id }}>
+
+  # Sync to Jira
+  - name: sync_status_to_jira
+    trigger:
+      event: item.status_changed
+      filter:
+        item_type: [feature, bug]
+        metadata.jira_key: exists
+    actions:
+      - type: webhook
+        url: "https://company.atlassian.net/rest/api/3/issue/{{ item.metadata.jira_key }}/transitions"
+        method: POST
+        auth: jira_api_token
+        body:
+          transition:
+            id: "{{ map_status_to_jira(item.status) }}"
 ```
 
-## Configuration
+## Auto-Transitions
 
-```typescript
-export default {
-  automation: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+### Based on Links
+
+```yaml
+# Auto-transition when links are created
+auto_transitions:
+  # Move to "ready" when all required links exist
+  - name: ready_when_linked
+    trigger:
+      event: link.created
+      item_type: feature
+    from_state: draft
+    to_state: ready
+    when:
+      all:
+        - link_exists:
+            type: acceptance_criteria
+            min_count: 1
+        - link_exists:
+            type: design
+            min_count: 1
+
+  # Move to "review" when code and tests linked
+  - name: review_when_implemented
+    trigger:
+      event: link.created
+      item_type: feature
+    from_state: in_progress
+    to_state: review
+    when:
+      all:
+        - link_exists:
+            type: realized_by
+            target_type: code
+        - link_exists:
+            type: verified_by
+            target_type: test
+        - field:
+            name: code_review_complete
+            equals: true
 ```
 
-## Examples
+### Based on External Events
 
-### Example 1
+```yaml
+# Auto-transition based on CI/CD events
+auto_transitions:
+  # Move to "done" when deployed
+  - name: done_when_deployed
+    trigger:
+      event: webhook.received
+      source: github_actions
+      action: deployment_succeeded
+    from_state: approved
+    to_state: done
+    actions:
+      - type: set_field
+        field: deployed_at
+        value: "{{ event.timestamp }}"
+      - type: set_field
+        field: deployed_to
+        value: "{{ event.environment }}"
 
-```typescript
-const example = await tracertm.automation({
-  option1: 'value1',
-  option2: 'value2'
-})
+  # Move to "failed" on deployment failure
+  - name: failed_when_deploy_fails
+    trigger:
+      event: webhook.received
+      source: github_actions
+      action: deployment_failed
+    from_state: approved
+    to_state: in_progress
+    actions:
+      - type: set_field
+        field: deployment_failure
+        value: "{{ event.error }}"
+      - type: notify
+        channel: slack
+        message: "Deployment failed for {{ item.title }}: {{ event.error }}"
 ```
 
-### Example 2
+### Based on Time
 
-```typescript
-const advanced = await tracertm.automation({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+```yaml
+# Time-based auto-transitions
+scheduled_transitions:
+  # Auto-close resolved items after 7 days
+  - name: auto_close_resolved
+    schedule: "0 0 * * *"  # Daily at midnight
+    query:
+      status: resolved
+      resolved_at:
+        older_than: 7d
+    action:
+      type: transition
+      to: closed
+      comment: "Auto-closed after 7 days in resolved state"
+
+  # Escalate stale items
+  - name: escalate_stale
+    schedule: "0 9 * * 1-5"  # Weekdays at 9am
+    query:
+      status: in_progress
+      updated_at:
+        older_than: 5d
+      priority: critical
+    action:
+      type: transition
+      to: escalated
+      actions:
+        - type: notify
+          channel: email
+          to: "{{ item.assignee.manager.email }}"
+          subject: "Escalation: {{ item.title }} stale for 5+ days"
+```
+
+## Notifications
+
+### Channel Configuration
+
+```yaml
+# .tracertm/automation/notifications.yaml
+channels:
+  slack:
+    type: slack
+    webhook_url: "{{ env.SLACK_WEBHOOK_URL }}"
+    default_channel: "#traceability"
+
+  email:
+    type: email
+    smtp_host: smtp.company.com
+    from: "tracertm@company.com"
+
+  teams:
+    type: microsoft_teams
+    webhook_url: "{{ env.TEAMS_WEBHOOK_URL }}"
+
+  pagerduty:
+    type: pagerduty
+    api_key: "{{ env.PAGERDUTY_KEY }}"
+    service_id: "{{ env.PAGERDUTY_SERVICE }}"
+```
+
+### Notification Rules
+
+```yaml
+notifications:
+  # Team notification on critical items
+  - name: critical_item_created
+    trigger:
+      event: item.created
+      filter:
+        priority: critical
+    notify:
+      - channel: slack
+        to: "#critical-items"
+        message: |
+          :rotating_light: *New Critical Item*
+          *{{ item.title }}*
+          Type: {{ item.type }}
+          Created by: {{ item.created_by }}
+          <{{ item.url }}|View in TraceRTM>
+
+  # Assignee notification
+  - name: notify_assignee
+    trigger:
+      event: item.assigned
+    notify:
+      - channel: email
+        to: "{{ item.assignee.email }}"
+        subject: "You've been assigned: {{ item.title }}"
+        template: assignment_email
+
+  # Manager escalation
+  - name: escalation_notification
+    trigger:
+      event: workflow.state_entered
+      filter:
+        state: escalated
+    notify:
+      - channel: slack
+        to: "{{ item.assignee.manager.slack_id }}"
+        message: "{{ item.title }} has been escalated"
+      - channel: pagerduty
+        severity: warning
+        summary: "Item escalated: {{ item.title }}"
+```
+
+### Digest Notifications
+
+```yaml
+# Scheduled digest notifications
+digests:
+  - name: daily_coverage_report
+    schedule: "0 9 * * 1-5"  # Weekdays at 9am
+    channel: slack
+    to: "#qa-team"
+    template: coverage_digest
+    data:
+      coverage: "{{ get_coverage_summary() }}"
+      gaps: "{{ get_untested_items() }}"
+
+  - name: weekly_progress_report
+    schedule: "0 9 * * 1"  # Monday at 9am
+    channel: email
+    to: ["pm@company.com", "leads@company.com"]
+    template: weekly_progress
+    data:
+      completed: "{{ items_completed_last_week() }}"
+      in_progress: "{{ items_in_progress() }}"
+      blocked: "{{ blocked_items() }}"
+```
+
+## Webhooks
+
+### Incoming Webhooks
+
+```yaml
+# .tracertm/automation/webhooks.yaml
+incoming_webhooks:
+  # GitHub webhook
+  - name: github
+    path: /webhooks/github
+    secret: "{{ env.GITHUB_WEBHOOK_SECRET }}"
+    events:
+      pull_request:
+        opened:
+          - action: create_or_update_item
+            type: pull_request
+            fields:
+              title: "{{ payload.pull_request.title }}"
+              external_id: "{{ payload.pull_request.number }}"
+              url: "{{ payload.pull_request.html_url }}"
+
+        closed:
+          - action: transition
+            query:
+              external_id: "{{ payload.pull_request.number }}"
+            to: "{{ payload.pull_request.merged ? 'merged' : 'closed' }}"
+
+      check_suite:
+        completed:
+          - action: update_test_status
+            item_query:
+              external_id: "{{ payload.check_suite.head_sha }}"
+            test_status: "{{ payload.check_suite.conclusion }}"
+
+  # Jira webhook
+  - name: jira
+    path: /webhooks/jira
+    auth: jira_webhook_secret
+    events:
+      issue_updated:
+        - action: sync_from_jira
+          fields:
+            status: "{{ map_jira_status(payload.issue.fields.status.name) }}"
+            priority: "{{ map_jira_priority(payload.issue.fields.priority.name) }}"
+```
+
+### Outgoing Webhooks
+
+```yaml
+outgoing_webhooks:
+  # Sync to external system on any change
+  - name: sync_to_data_lake
+    trigger:
+      event: [item.created, item.updated, item.deleted]
+    url: "https://data-lake.company.com/ingest"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ env.DATA_LAKE_TOKEN }}"
+      Content-Type: application/json
+    body:
+      event_type: "{{ event.type }}"
+      timestamp: "{{ event.timestamp }}"
+      item: "{{ item.to_json() }}"
+      changes: "{{ event.changes }}"
+
+  # Trigger CI pipeline
+  - name: trigger_ci_on_approve
+    trigger:
+      event: workflow.transition
+      filter:
+        to_state: approved
+    url: "https://ci.company.com/api/pipelines"
+    method: POST
+    auth: ci_api_token
+    body:
+      ref: "{{ item.metadata.branch }}"
+      variables:
+        ITEM_ID: "{{ item.id }}"
+        ITEM_TYPE: "{{ item.type }}"
+```
+
+## Agent Automation
+
+### Triggering Agents
+
+```yaml
+agent_automation:
+  # Code review agent
+  - name: auto_code_review
+    trigger:
+      event: workflow.state_entered
+      filter:
+        state: review
+        item_type: feature
+    agent:
+      id: code-review-agent
+      task: |
+        Review code changes for {{ item.title }}.
+
+        Code files:
+        {{ item.linked_items('code') | map('path') | join('\n') }}
+
+        Requirements:
+        {{ item.linked_items('requirement') | map('description') | join('\n') }}
+
+        Focus on:
+        - Code quality
+        - Test coverage
+        - Security issues
+        - Performance concerns
+      on_complete:
+        - action: update_item
+          field: code_review_summary
+          value: "{{ agent.response.summary }}"
+        - action: create_items
+          type: code_review_comment
+          from: "{{ agent.response.comments }}"
+
+  # Test generation agent
+  - name: auto_test_generation
+    trigger:
+      event: link.created
+      filter:
+        link_type: realized_by
+        target_type: code
+    agent:
+      id: test-generator-agent
+      task: |
+        Generate tests for {{ target.path }}.
+
+        Related requirement:
+        {{ source.description }}
+
+        Generate:
+        - Unit tests for key functions
+        - Integration test outline
+      on_complete:
+        - action: create_item
+          type: test
+          title: "Generated tests for {{ target.title }}"
+          content: "{{ agent.response.tests }}"
+          link_to: "{{ source.id }}"
+```
+
+### Agent Scheduling
+
+```yaml
+scheduled_agents:
+  # Weekly traceability audit
+  - name: weekly_audit
+    schedule: "0 6 * * 1"  # Monday 6am
+    agent:
+      id: traceability-auditor
+      task: |
+        Audit traceability for all active projects.
+
+        Check:
+        - Orphan items (no links)
+        - Coverage gaps
+        - Stale items
+        - Broken links
+
+        Generate report with recommendations.
+      on_complete:
+        - action: create_item
+          type: audit_report
+          title: "Weekly Audit - {{ now | format('YYYY-MM-DD') }}"
+          content: "{{ agent.response.report }}"
+        - action: notify
+          channel: email
+          to: ["qa-lead@company.com"]
+          template: audit_report
+          data: "{{ agent.response }}"
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/traceability.yml
+name: Traceability Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main]
+
+jobs:
+  traceability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TraceRTM CLI
+        run: pip install tracertm
+
+      - name: Scan for new items
+        run: |
+          tracertm scan src/ --auto-link
+          tracertm scan tests/ --framework pytest --auto-link
+
+      - name: Validate traceability
+        run: |
+          tracertm validate --check coverage --min 80
+          tracertm validate --check orphans
+
+      - name: Update PR status
+        if: github.event_name == 'pull_request'
+        env:
+          TRACERTM_API_KEY: ${{ secrets.TRACERTM_API_KEY }}
+        run: |
+          tracertm webhook send \
+            --event pull_request \
+            --action synchronized \
+            --pr ${{ github.event.pull_request.number }} \
+            --status ${{ job.status }}
+```
+
+### GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+traceability:
+  stage: test
+  script:
+    - pip install tracertm
+    - tracertm scan src/ --auto-link
+    - tracertm validate --check coverage --min 80
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: tracertm-coverage.xml
+```
+
+## Configuration Reference
+
+### Full Automation Config
+
+```yaml
+# .tracertm/automation/config.yaml
+automation:
+  enabled: true
+
+  # Event processing
+  events:
+    queue_size: 1000
+    retry_count: 3
+    retry_delay: 5s
+    dead_letter_queue: true
+
+  # Rate limiting
+  rate_limits:
+    webhooks: 100/minute
+    notifications: 50/minute
+    agent_triggers: 10/minute
+
+  # Logging
+  logging:
+    level: info
+    include_payloads: false
+    retention: 30d
+
+  # Error handling
+  on_error:
+    notify:
+      channel: slack
+      to: "#tracertm-errors"
+    retry: true
+    max_retries: 3
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Start Simple
 
-## Troubleshooting
+```yaml
+# Start with basic automation
+automation:
+  - notify on blocked
+  - sync status to Jira
 
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+# Add complexity gradually
+# - Auto-transitions
+# - Agent triggers
+# - Complex workflows
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+### 2. Use Idempotent Actions
+
+```yaml
+# Good: Idempotent (safe to retry)
+- action: set_field
+  field: status
+  value: done
+
+# Bad: Not idempotent
+- action: increment_field
+  field: retry_count
 ```
 
-## API Reference
+### 3. Include Error Handling
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```yaml
+actions:
+  - type: webhook
+    url: "https://api.example.com/sync"
+    on_error:
+      - action: log
+        level: error
+      - action: notify
+        channel: slack
+        message: "Webhook failed: {{ error }}"
+      - action: retry
+        delay: 5m
+        max_attempts: 3
+```
+
+### 4. Monitor Automation Health
+
+```bash
+# Check automation status
+tracertm automation status
+
+# View recent executions
+tracertm automation logs --last 100
+
+# Debug specific rule
+tracertm automation debug --rule auto_complete_on_test_pass
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Custom Workflows](/docs/wiki/concepts/workflows/custom) - Building workflows
+- [Agent Coordination](/docs/wiki/concepts/agent-coordination) - AI agents
+- [Integrations](/docs/wiki/concepts/integrations) - External system integration
+- [CLI Reference](/docs/api-reference/cli) - Command-line automation
 

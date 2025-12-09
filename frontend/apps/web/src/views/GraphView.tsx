@@ -2,13 +2,14 @@ import { Button } from '@tracertm/ui/components/Button'
 import { Card } from '@tracertm/ui/components/Card'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useItems } from '../hooks/useItems'
 import { useLinks } from '../hooks/useLinks'
 
 export function GraphView() {
-  const [searchParams] = useSearchParams()
-  const projectFilter = searchParams.get('project') || undefined
+  const navigate = useNavigate()
+  const searchParams = useSearch({ strict: false }) as any
+  const projectFilter = searchParams?.project || undefined
 
   const { data: items, isLoading: itemsLoading } = useItems({ projectId: projectFilter })
   const { data: links, isLoading: linksLoading } = useLinks({ projectId: projectFilter })

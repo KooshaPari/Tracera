@@ -3,7 +3,7 @@ import { Card } from '@tracertm/ui/components/Card'
 import { Input } from '@tracertm/ui/components/Input'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@tanstack/react-router'
 import { useSearch } from '../hooks/useSearch'
 
 export function SearchView() {

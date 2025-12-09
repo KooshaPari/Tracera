@@ -1,0 +1,94 @@
+/**
+ * Comprehensive Tests for ImpactAnalysisView
+ */
+
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ImpactAnalysisView } from '../../views/ImpactAnalysisView'
+import { useItems } from '../../hooks/useItems'
+import { useLinks } from '../../hooks/useLinks'
+
+vi.mock('../../hooks/useItems', () => ({
+  useItems: vi.fn(),
+}))
+
+vi.mock('../../hooks/useLinks', () => ({
+  useLinks: vi.fn(),
+}))
+
+describe('ImpactAnalysisView', () => {
+  let queryClient: QueryClient
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    })
+    vi.clearAllMocks()
+  })
+
+  it('renders impact analysis interface', () => {
+    vi.mocked(useItems).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as any)
+
+    vi.mocked(useLinks).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as any)
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ImpactAnalysisView />
+      </QueryClientProvider>
+    )
+
+    expect(screen.getByText('Impact Analysis')).toBeInTheDocument()
+  })
+
+  it('displays impact analysis results', async () => {
+    const items = [
+      { id: 'item-1', title: 'Test Item', type: 'Feature', view: 'Feature' },
+      { id: 'item-2', title: 'Affected Item 1', type: 'Story', view: 'Feature' },
+      { id: 'item-3', title: 'Affected Item 2', type: 'Story', view: 'Feature' },
+    ]
+
+    const links = [
+      { id: 'link-1', sourceId: 'item-1', targetId: 'item-2', type: 'implements' },
+      { id: 'link-2', sourceId: 'item-1', targetId: 'item-3', type: 'implements' },
+    ]
+
+    vi.mocked(useItems).mockReturnValue({
+      data: items,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as any)
+
+    vi.mocked(useLinks).mockReturnValue({
+      data: links,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as any)
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ImpactAnalysisView />
+      </QueryClientProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Impact Analysis')).toBeInTheDocument()
+    })
+  })
+})

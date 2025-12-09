@@ -1,80 +1,70 @@
 """
-Pydantic factories for test data generation.
+Manual factories for test data generation.
 
-Provides factory classes for creating test instances of Pydantic models.
+Provides factory functions for creating test instances of Pydantic models.
+Compatible with Pydantic v2 (no pydantic-factories dependency).
 """
 
-
-from pydantic_factories import ModelFactory
+import uuid
+from datetime import datetime
 
 from tracertm.models import Item, Link, Project
 
 
-class ItemFactory(ModelFactory[Item]):
-    """Factory for generating Item instances."""
-
-    __model__ = Item
-
-    class Config:
-        """Factory configuration."""
-
-        arbitrary_types_allowed = True
-
-
-class LinkFactory(ModelFactory[Link]):
-    """Factory for generating Link instances."""
-
-    __model__ = Link
-
-    class Config:
-        """Factory configuration."""
-
-        arbitrary_types_allowed = True
-
-
-class ProjectFactory(ModelFactory[Project]):
-    """Factory for generating Project instances."""
-
-    __model__ = Project
-
-    class Config:
-        """Factory configuration."""
-
-        arbitrary_types_allowed = True
-
-
 def create_item(
+    id: str | None = None,
     title: str = "Test Item",
     view: str = "FEATURE",
     item_type: str = "feature",
+    project_id: str = "test-project",
+    status: str = "todo",
+    priority: str = "medium",
+    description: str = "",
 ) -> Item:
     """Create a test item with custom values."""
-    return ItemFactory.create(  # type: ignore
+    return Item(
+        id=id or str(uuid.uuid4()),
         title=title,
         view=view,
         item_type=item_type,
+        project_id=project_id,
+        status=status,
+        priority=priority,
+        description=description,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
 
 def create_link(
+    id: str | None = None,
     source_item_id: str = "source",
     target_item_id: str = "target",
     link_type: str = "depends_on",
+    project_id: str = "test-project",
 ) -> Link:
     """Create a test link with custom values."""
-    return LinkFactory.create(  # type: ignore
+    return Link(
+        id=id or str(uuid.uuid4()),
         source_item_id=source_item_id,
         target_item_id=target_item_id,
         link_type=link_type,
+        project_id=project_id,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
 
 def create_project(
+    id: str | None = None,
     name: str = "Test Project",
     description: str = "A test project",
 ) -> Project:
     """Create a test project with custom values."""
-    return ProjectFactory.create(  # type: ignore
+    return Project(
+        id=id or str(uuid.uuid4()),
         name=name,
         description=description,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )

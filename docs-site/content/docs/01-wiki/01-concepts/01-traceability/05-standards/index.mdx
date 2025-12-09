@@ -1,125 +1,501 @@
 ---
 title: "Industry Standards"
-description: "Documentation for Industry Standards"
+description: "Traceability requirements in DO-178C, ISO 26262, IEC 62304, and other standards"
 ---
 
-# Industry Standards
+# Industry Standards for Traceability
 
+Many industries require traceability as part of regulatory compliance. This guide covers the major standards and how TraceRTM helps you meet their requirements.
 
-## Overview
+## Overview of Standards
 
-Welcome to the Industry Standards documentation.
+| Standard | Industry | Traceability Requirement |
+|----------|----------|-------------------------|
+| DO-178C | Aerospace | Bidirectional trace, all levels |
+| ISO 26262 | Automotive | Safety requirements traced |
+| IEC 62304 | Medical Devices | Software requirements traced |
+| FDA 21 CFR Part 11 | Pharmaceutical | Audit trails, electronic records |
+| ISO 27001 | Information Security | Change management traced |
+| CMMI | General | Process area requirements |
+| IEEE 830 | General | Requirements specification |
 
-## Introduction
+## Aerospace: DO-178C
 
-This page provides comprehensive information about Industry Standards.
+### Overview
 
-## Key Features
+DO-178C (Software Considerations in Airborne Systems and Equipment Certification) is the primary standard for aerospace software certification.
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+### Traceability Requirements
 
-## Getting Started
+DO-178C requires **bidirectional traceability** at all Design Assurance Levels (DAL):
+
+```
+High-Level Requirements (HLR)
+        ↕ (bidirectional)
+Low-Level Requirements (LLR)
+        ↕ (bidirectional)
+Source Code
+        ↕ (bidirectional)
+Test Cases
+        ↕ (bidirectional)
+Test Results
+```
+
+### Requirements by DAL Level
+
+| DAL | Level | Traceability Requirements |
+|-----|-------|--------------------------|
+| A | Catastrophic | Full bidirectional, 100% coverage |
+| B | Hazardous | Full bidirectional, 100% coverage |
+| C | Major | Bidirectional, high coverage |
+| D | Minor | Forward traceability required |
+| E | No Effect | Minimal requirements |
+
+### TraceRTM Configuration
+
+```yaml
+# .tracertm/config.yaml
+compliance:
+  standard: DO-178C
+  dal_level: B
+
+traceability:
+  directions: [forward, backward]
+  required_coverage: 100
+
+  required_traces:
+    - from: high_level_requirement
+      to: low_level_requirement
+      bidirectional: true
+
+    - from: low_level_requirement
+      to: source_code
+      bidirectional: true
+
+    - from: source_code
+      to: test_case
+      bidirectional: true
+
+    - from: test_case
+      to: test_result
+      bidirectional: true
+
+audit:
+  change_tracking: required
+  baseline_management: required
+  electronic_signatures: required
+```
+
+### Compliance Report
 
 ```bash
-tracertm init
-tracertm config set standards enabled
+tracertm report compliance --standard DO-178C --dal B
+
+# Output:
+# DO-178C DAL B Compliance Report
+# ═══════════════════════════════════════════
+#
+# Traceability Coverage:
+#   HLR → LLR: 100% ✓
+#   LLR → Code: 100% ✓
+#   Code → Test: 98% ✗ (2 modules untested)
+#   Test → Results: 100% ✓
+#
+# Bidirectional Traces:
+#   All required traces: ✓
+#
+# Issues:
+#   - CODE-042: No test coverage
+#   - CODE-089: No test coverage
+#
+# Status: NOT COMPLIANT (fix 2 issues)
 ```
 
-## Usage
+## Automotive: ISO 26262
 
-### Basic Usage
+### Overview
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+ISO 26262 (Road Vehicles - Functional Safety) covers functional safety for automotive electrical/electronic systems.
 
-const tracertm = new TraceRTM()
-const result = await tracertm.standards()
+### Traceability Requirements
+
+ISO 26262 requires traceability for safety-related requirements:
+
+```
+Safety Goals
+    ↓
+Functional Safety Requirements
+    ↓
+Technical Safety Requirements
+    ↓
+Software Safety Requirements
+    ↓
+Software Architecture
+    ↓
+Software Unit Design
+    ↓
+Software Unit Implementation
+    ↓
+Software Unit Verification
 ```
 
-### Advanced Usage
+### ASIL Levels
 
-```typescript
-const config = {
-  standards: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+| ASIL | Risk Level | Traceability Required |
+|------|------------|----------------------|
+| D | Highest | Full bidirectional |
+| C | High | Full bidirectional |
+| B | Medium | Forward + key backward |
+| A | Low | Forward traceability |
+| QM | Quality | Recommended |
 
-const tracertm = new TraceRTM(config)
+### TraceRTM Configuration
+
+```yaml
+# .tracertm/config.yaml
+compliance:
+  standard: ISO-26262
+  asil_level: C
+
+traceability:
+  required_traces:
+    - from: safety_goal
+      to: functional_safety_req
+      bidirectional: true
+
+    - from: functional_safety_req
+      to: technical_safety_req
+      bidirectional: true
+
+    - from: software_safety_req
+      to: software_unit
+      bidirectional: true
+
+    - from: software_unit
+      to: verification
+      bidirectional: true
+
+  safety_classification:
+    enabled: true
+    inherit_from_parent: true
 ```
 
-## Configuration
+### Safety Traceability Report
 
-```typescript
-export default {
-  standards: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
-```
-
-## Examples
-
-### Example 1
-
-```typescript
-const example = await tracertm.standards({
-  option1: 'value1',
-  option2: 'value2'
-})
-```
-
-### Example 2
-
-```typescript
-const advanced = await tracertm.standards({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
-```
-
-## Best Practices
-
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue 1:**
 ```bash
-tracertm fix issue-1
+tracertm report safety --standard ISO-26262 --asil C
+
+# Output:
+# ISO 26262 ASIL C Safety Traceability Report
+# ═══════════════════════════════════════════
+#
+# Safety Goals Traced: 12/12 (100%) ✓
+# Functional Safety Requirements: 45/45 (100%) ✓
+# Technical Safety Requirements: 128/130 (98%) ✗
+# Software Requirements: 256/260 (98%) ✗
+# Verification Coverage: 95% ✗
+#
+# Gaps:
+#   TSR-042: Not traced to software requirement
+#   TSR-089: Not traced to software requirement
+#   SWREQ-201..204: No verification evidence
+#
+# ASIL Inheritance Check:
+#   All safety requirements properly classified ✓
 ```
 
-**Issue 2:**
+## Medical Devices: IEC 62304
+
+### Overview
+
+IEC 62304 (Medical Device Software - Software Life Cycle Processes) defines software development requirements for medical devices.
+
+### Traceability Requirements
+
+```
+Software Requirements
+    ↓
+Software Architecture
+    ↓
+Software Detailed Design
+    ↓
+Software Unit Implementation
+    ↓
+Software Unit Verification
+    ↓
+Software Integration Testing
+    ↓
+Software System Testing
+```
+
+### Software Safety Classes
+
+| Class | Risk | Traceability |
+|-------|------|--------------|
+| A | No injury possible | Basic traceability |
+| B | Non-serious injury | Forward + verification |
+| C | Death or serious injury | Full bidirectional |
+
+### TraceRTM Configuration
+
+```yaml
+# .tracertm/config.yaml
+compliance:
+  standard: IEC-62304
+  safety_class: C
+
+traceability:
+  required_traces:
+    - from: software_requirement
+      to: architecture
+      bidirectional: true
+
+    - from: architecture
+      to: detailed_design
+      bidirectional: true
+
+    - from: detailed_design
+      to: unit_implementation
+      bidirectional: true
+
+    - from: unit_implementation
+      to: unit_verification
+      required: true
+
+risk_management:
+  integration: required
+  hazard_traceability: true
+```
+
+## FDA: 21 CFR Part 11
+
+### Overview
+
+21 CFR Part 11 establishes requirements for electronic records and electronic signatures in FDA-regulated industries.
+
+### Requirements
+
+| Requirement | Description |
+|-------------|-------------|
+| Audit Trails | Track all changes to records |
+| Electronic Signatures | Authenticate record creators |
+| Access Controls | Role-based permissions |
+| Data Integrity | Prevent unauthorized changes |
+
+### TraceRTM Configuration
+
+```yaml
+# .tracertm/config.yaml
+compliance:
+  standard: FDA-21-CFR-Part-11
+
+audit:
+  enabled: true
+  retention_years: 7
+
+  track:
+    - item_created
+    - item_updated
+    - item_deleted
+    - link_created
+    - link_deleted
+    - status_changed
+    - baseline_created
+
+electronic_signatures:
+  enabled: true
+  require_for:
+    - baseline_approval
+    - release_approval
+    - change_approval
+
+access_control:
+  rbac: true
+  require_authentication: true
+  session_timeout: 30m
+```
+
+### Audit Trail Report
+
 ```bash
-tracertm fix issue-2
+tracertm report audit --standard FDA-21-CFR-Part-11 --period 90d
+
+# Output:
+# FDA 21 CFR Part 11 Audit Report
+# ═══════════════════════════════════════════
+# Period: September 1 - November 30, 2024
+#
+# Change Summary:
+#   Items created: 234
+#   Items modified: 567
+#   Items deleted: 12
+#   Links created: 890
+#   Status changes: 456
+#
+# Electronic Signatures:
+#   Baselines approved: 3
+#   Releases approved: 2
+#   All signatures valid: ✓
+#
+# Access Control Events:
+#   Login attempts: 1,234
+#   Failed logins: 23
+#   Permission changes: 5
+#
+# Data Integrity:
+#   Hash verification: All records valid ✓
+#   No unauthorized modifications detected ✓
 ```
 
-## API Reference
+## General: CMMI
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+### Overview
+
+CMMI (Capability Maturity Model Integration) provides process improvement guidance across industries.
+
+### Requirements Management (REQM)
+
+| Practice | Traceability Aspect |
+|----------|---------------------|
+| SP 1.1 | Understand requirements |
+| SP 1.2 | Obtain commitment |
+| SP 1.3 | Manage changes |
+| SP 1.4 | Maintain bidirectional traceability |
+| SP 1.5 | Identify inconsistencies |
+
+### TraceRTM Support
+
+```yaml
+# .tracertm/config.yaml
+compliance:
+  framework: CMMI
+  level: 3
+
+traceability:
+  bidirectional: true
+
+change_management:
+  approval_workflow: true
+  impact_analysis_required: true
+
+consistency_checks:
+  - orphan_detection
+  - cycle_detection
+  - coverage_analysis
+```
+
+## IEEE 830
+
+### Overview
+
+IEEE 830 (Recommended Practice for Software Requirements Specifications) provides guidance for writing requirements.
+
+### Traceability Section
+
+IEEE 830 recommends including traceability information in requirements:
+
+```markdown
+## 3.2.1 User Login (FEAT-001)
+
+### Description
+The system shall allow users to authenticate with email and password.
+
+### Traces
+- **Source**: Business Need BN-003 (Self-service access)
+- **Implements**: Use Case UC-001 (User Authentication)
+- **Verified by**: TEST-001, TEST-002, TEST-003
+- **Implemented in**: CODE-001 (auth_handler.py)
+
+### Priority
+High
+
+### Rationale
+Required for secure access to user-specific functionality.
+```
+
+## Implementing Compliance
+
+### Step 1: Select Standards
+
+```yaml
+# .tracertm/config.yaml
+compliance:
+  standards:
+    - name: IEC-62304
+      safety_class: C
+    - name: FDA-21-CFR-Part-11
+      audit_retention: 7years
+```
+
+### Step 2: Configure Traceability Rules
+
+```yaml
+traceability:
+  rules:
+    - name: "All requirements must have tests"
+      from_type: requirement
+      to_type: test
+      link_type: verified_by
+      min_count: 1
+
+    - name: "All code must trace to requirements"
+      from_type: code
+      to_type: requirement
+      link_type: implements
+      min_count: 1
+```
+
+### Step 3: Enable Audit Trails
+
+```yaml
+audit:
+  enabled: true
+  events:
+    - all
+  retention: 7years
+  export_format: json
+```
+
+### Step 4: Generate Compliance Reports
+
+```bash
+# Generate all compliance reports
+tracertm report compliance --all --output compliance-package/
+
+# Output:
+# Generated:
+#   compliance-package/iec-62304-report.pdf
+#   compliance-package/fda-21-cfr-11-audit.pdf
+#   compliance-package/traceability-matrix.pdf
+#   compliance-package/coverage-report.pdf
+#   compliance-package/change-history.pdf
+```
+
+### Step 5: Maintain During Development
+
+```yaml
+# CI/CD compliance checks
+- name: Compliance Validation
+  run: |
+    tracertm validate --compliance IEC-62304
+    tracertm validate --compliance FDA-21-CFR-Part-11
+```
+
+## Summary
+
+| Standard | Key Requirements | TraceRTM Support |
+|----------|-----------------|------------------|
+| DO-178C | Bidirectional, full coverage | ✓ Full |
+| ISO 26262 | Safety traceability | ✓ Full |
+| IEC 62304 | Software lifecycle traces | ✓ Full |
+| FDA 21 CFR Part 11 | Audit trails, e-signatures | ✓ Full |
+| CMMI | Requirements management | ✓ Full |
+| IEEE 830 | Requirements documentation | ✓ Full |
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [What is Traceability?](/docs/wiki/concepts/traceability/what-is) - Fundamentals
+- [Types of Traceability](/docs/wiki/concepts/traceability/types) - Different approaches
+- [Best Practices](/docs/wiki/concepts/traceability/best-practices) - Implementation guidance
+- [Generating Reports](/docs/getting-started/first-project/reports) - Compliance reports
 

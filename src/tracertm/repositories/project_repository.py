@@ -25,7 +25,7 @@ class ProjectRepository:
             id=str(uuid4()),
             name=name,
             description=description,
-            metadata=metadata or {},
+            project_metadata=metadata or {},
         )
         self.session.add(project)
         await self.session.flush()
@@ -66,7 +66,7 @@ class ProjectRepository:
         if description is not None:
             project.description = description
         if metadata is not None:
-            project.metadata = metadata
+            project.project_metadata = metadata
 
         await self.session.flush()
         await self.session.refresh(project)
