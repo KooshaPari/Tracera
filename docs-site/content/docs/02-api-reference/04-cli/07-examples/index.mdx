@@ -3,21 +3,194 @@ title: "CLI Examples"
 description: "CLI usage patterns."
 ---
 
-## What this covers
-- How to manage examples with the Trace CLI
-- Expected inputs, flags, and outputs
-- Safety checks before executing
+## Overview
 
-## Quick commands
+This section provides practical examples demonstrating common TracerTM CLI operations. Each example shows real-world usage patterns with proper flags and output handling.
+
+## Project Management
+
+Create a new project:
+```bash
+trace projects create --name "My Project" --description "Project description"
+```
+
+List all projects with JSON output:
+```bash
+trace projects list --format json | jq '.[] | {id, name, created_at}'
+```
+
+Get detailed project information:
+```bash
+trace projects get <project-id>
+```
+
+Delete a project (with confirmation):
+```bash
+trace projects delete <project-id> --force
+```
+
+## Artifact Operations
+
+Create multiple artifacts:
+```bash
+trace artifacts create \
+  --project <project-id> \
+  --name "User Authentication" \
+  --type requirement \
+  --content "System must support OAuth2 and SAML"
+```
+
+List artifacts with filtering by type:
+```bash
+trace artifacts list --project <project-id> --type requirement --format json
+```
+
+Search for artifacts containing specific keywords:
 ```bash
 trace search "latency" --project <id>
 ```
 
+Update artifact status:
+```bash
+trace artifacts update <artifact-id> --status approved --assigned-to user@example.com
+```
+
+Delete artifacts safely:
+```bash
+# Preview what will be deleted
+trace artifacts list --project <id> --type deprecated
+
+# Delete with confirmation
+trace artifacts delete <artifact-id> --force
+```
+
+## Traceability Links
+
+Create links between artifacts:
+```bash
+trace links create \
+  --from <requirement-id> \
+  --to <test-id> \
+  --relationship "traces"
+```
+
+List all links in a project:
+```bash
+trace links list --project <project-id> --format json | jq '.[] | {from_id, to_id, relationship}'
+```
+
+Find all artifacts linked to a specific requirement:
+```bash
+trace links list --project <project-id> --from <requirement-id>
+```
+
+Delete broken or deprecated links:
+```bash
+trace links delete <link-id>
+```
+
+## Search and Query
+
+Basic search for artifacts:
+```bash
+trace artifacts search --project <project-id> --query "authentication"
+```
+
+Advanced search with multiple filters:
+```bash
+trace artifacts search \
+  --project <project-id> \
+  --type requirement \
+  --status approved \
+  --created-after 2024-01-01 \
+  --format csv > requirements_2024.csv
+```
+
+Search for incomplete traceability:
+```bash
+trace artifacts list --project <project-id> | jq '.[] | select(.linked_count == 0)'
+```
+
+## Workflows and Automation
+
+Trigger a workflow:
 ```bash
 trace workflows trigger --workflow regression-run --project <id>
 ```
 
-## Best practices
-- Use `--project` to scope actions and avoid cross-project edits.
-- Prefer idempotent operations (`trace ... upsert`) in automation.
-- Pipe to jq for verification before destructive changes.
+Monitor workflow execution:
+```bash
+trace workflows status --workflow-id <id> --watch
+```
+
+Export workflow results:
+```bash
+trace workflows export --workflow-id <id> --format json > results.json
+```
+
+## Data Export and Reporting
+
+Generate traceability report:
+```bash
+trace reports generate --project <project-id> --type traceability --format pdf
+```
+
+Export entire project:
+```bash
+trace export --project <project-id> --output backup.json.gz
+```
+
+Generate coverage metrics:
+```bash
+trace metrics coverage --project <project-id> --format json
+```
+
+Export to different formats:
+```bash
+# CSV for spreadsheets
+trace artifacts list --project <id> --format csv > artifacts.csv
+
+# JSON for programmatic processing
+trace artifacts list --project <id> --format json > artifacts.json
+
+# HTML for reports
+trace reports generate --project <id> --format html --output report.html
+```
+
+## Best Practices
+
+### Safety First
+- Use `--project` flag to scope all actions and prevent cross-project edits
+- Preview changes before executing (use `--dry-run` when available)
+- Pipe to `jq` for verification before destructive operations:
+```bash
+# Verify before deletion
+trace artifacts list --project <id> --type deprecated | jq '.[] | {id, name}' > review.json
+# Review review.json, then delete
+```
+
+### Automation Patterns
+- Prefer idempotent operations like `upsert` in CI/CD pipelines
+- Always specify `--format json` for machine-readable output
+- Use `-q` or `--quiet` flags in scripts to reduce output
+- Handle exit codes:
+```bash
+trace projects get <id> && echo "Success" || echo "Failed"
+```
+
+### Performance Tips
+- Use `--limit` and `--offset` for pagination on large datasets
+- Filter at query time rather than post-processing:
+```bash
+# Good: filter in query
+trace artifacts list --project <id> --type requirement
+
+# Less efficient: filter with jq
+trace artifacts list --project <id> | jq '.[] | select(.type == "requirement")'
+```
+
+- Cache project IDs in variables to reduce lookups:
+```bash
+PROJECT_ID=$(trace projects list --format json | jq -r '.[0].id')
+trace artifacts list --project $PROJECT_ID
+```

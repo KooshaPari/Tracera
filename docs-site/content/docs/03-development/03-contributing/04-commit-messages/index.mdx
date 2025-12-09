@@ -3,10 +3,191 @@ title: "Commit Messages"
 description: "Commit message standards."
 ---
 
-## Format
-- Use Conventional Commits (feat, fix, docs, chore, refactor, test, perf).
-- Scope optional: `feat(api): add pagination`.
+## Commit Message Format
 
-## Tips
-- Reference tickets in body.
-- Keep subject <= 72 chars.
+Follow conventional commit format for clarity and automated tooling:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+## Commit Types
+
+Use these commit types to categorize your changes:
+
+- **feat:** New feature or capability
+- **fix:** Bug fix or resolved issue
+- **docs:** Documentation only (no code change)
+- **style:** Code formatting (no logic change)
+- **refactor:** Code restructuring without changing behavior
+- **perf:** Performance improvements
+- **test:** Test additions or modifications
+- **chore:** Build system, dependencies, tooling changes
+
+## Subject Line Rules
+
+- **Imperative mood:** "add feature" not "added feature" or "adds feature"
+- **No capital letter:** Start with lowercase
+- **No period:** Don't end with punctuation
+- **Specific:** What did you change? Be concrete
+- **Under 50 characters:** Keep it short and sweet
+
+Good subject examples:
+```
+feat(api): add pagination to artifact list
+fix(cli): resolve database connection timeout
+docs: update installation guide for macOS
+refactor(storage): simplify cache implementation
+test: add edge case tests for link validation
+```
+
+## Body Section
+
+Explain the "why" and "how" of your changes:
+
+- What problem does this solve?
+- Why is this the best solution?
+- What side effects might occur?
+- Any migration notes for users?
+
+Keep lines at 72 characters. Example:
+
+```
+Add pagination support to artifact list endpoint.
+
+This allows clients to retrieve large result sets in
+manageable chunks. When not specified, limit/offset
+default to 100 results and offset 0.
+
+Migration: Clients currently expecting all results
+must implement pagination logic.
+```
+
+## Footer Section
+
+Add metadata and references:
+
+- `Closes #123` - Automatically closes linked issue
+- `Fixes #456` - Links to fixed bug
+- `Related-To: #789` - Related issues or PRs
+- `BREAKING CHANGE: <description>` - Breaking API changes
+
+Example:
+
+```
+feat: add artifact versioning system
+
+Artifacts can now be versioned with semantic
+versioning (major.minor.patch).
+
+Closes #234
+BREAKING CHANGE: The GET /artifacts endpoint now
+requires a version parameter
+```
+
+## Best Practices
+
+**Write commits for the future:**
+- Assume someone reads this 6 months later
+- Explain context and rationale
+- Reference issues and related work
+
+**Keep commits logical:**
+- One feature/fix per commit
+- Don't mix refactoring with new features
+- Don't include multiple unrelated fixes
+
+**Use interactive rebase to clean up:**
+
+```bash
+# Before submitting PR, rebase and clean commits
+git rebase -i main
+
+# Interactive commands:
+# pick   = use commit
+# reword = use, but edit message
+# squash = meld into previous commit
+# fixup  = like squash but discard message
+```
+
+**Example workflow:**
+
+```bash
+# Make changes
+git add src/file.ts
+
+# Commit with clear message
+git commit -m "feat(api): add user authentication
+
+Add JWT-based authentication with refresh tokens.
+Supports both bearer token and OAuth2 flows.
+
+Closes #123"
+
+# Before pushing, verify message
+git log --oneline -1
+```
+
+## Common Mistakes
+
+- Long rambling subject lines
+- Mixing unrelated changes
+- Committing directly to main
+- Poor quality or missing messages
+- Not referencing related issues
+- Mixing code changes with formatting
+- Forgetting to update documentation
+
+## Examples
+
+Complete feature commit:
+
+```
+feat(cli): add interactive mode for artifact creation
+
+Add `trace artifacts create --interactive` flag that
+prompts for each field with validation. Improves UX
+for new users unfamiliar with CLI options.
+
+When interactive mode is enabled:
+- Prompt for artifact type
+- Validate required fields
+- Show examples of valid input
+- Offer to create additional artifacts
+
+Closes #567
+```
+
+Bug fix commit:
+
+```
+fix(sync): prevent race condition in concurrent updates
+
+Fix issue where multiple concurrent updates could
+cause lost writes to database. Add mutex to
+synchronize artifact updates.
+
+Also improves logging for concurrent operation
+debugging.
+
+Fixes #890
+```
+
+Documentation commit:
+
+```
+docs: add examples for custom workflow creation
+
+Include practical examples showing how to:
+- Define custom workflow states
+- Create workflow transitions
+- Attach hooks to workflow events
+
+Add to "Advanced Usage" section of docs.
+
+Related-To: #123
+```
