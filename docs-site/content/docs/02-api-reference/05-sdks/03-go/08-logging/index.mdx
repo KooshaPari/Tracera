@@ -1,32 +1,515 @@
 ---
 title: "Logging"
-description: "Documentation for Logging"
+description: "Logging configuration and patterns for the TraceRTM Go SDK"
 ---
 
 # Logging
 
-This page contains documentation for Logging.
+The TraceRTM Go SDK provides configurable logging for debugging and monitoring.
 
-## Overview
+## Enabling Debug Logging
 
-This section covers the key aspects of Logging in TraceRTM.
+### Basic Debug Mode
 
-## Getting Started
+```go
+client := tracertm.NewClient(
+    os.Getenv("TRACERTM_API_KEY"),
+    tracertm.WithDebug(true),
+)
+```
 
-To get started with Logging:
+Output:
+```
+[TraceRTM] GET https://api.tracertm.dev/v1/projects
+[TraceRTM] Response: 200 OK (145ms)
+[TraceRTM] Body: {"data":[...],"total":5}
+```
 
-- Review the Logging and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Custom Logger
 
-## Key Concepts
+Implement the `Logger` interface for custom logging:
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```go
+type Logger interface {
+    Debug(msg string, args ...interface{})
+    Info(msg string, args ...interface{})
+    Warn(msg string, args ...interface{})
+    Error(msg string, args ...interface{})
+}
+```
 
-## Next Steps
+---
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+## Logger Implementations
+
+### Standard Library Logger
+
+```go
+type StdLogger struct {
+    logger *log.Logger
+    level  LogLevel
+}
+
+type LogLevel int
+
+const (
+    LogLevelDebug LogLevel = iota
+    LogLevelInfo
+    LogLevelWarn
+    LogLevelError
+)
+
+func NewStdLogger(level LogLevel) *StdLogger {
+    return &StdLogger{
+        logger: log.New(os.Stderr, "[TraceRTM] ", log.LstdFlags),
+        level:  level,
+    }
+}
+
+func (l *StdLogger) Debug(msg string, args ...interface{}) {
+    if l.level <= LogLevelDebug {
+        l.logger.Printf("DEBUG: "+msg, args...)
+    }
+}
+
+func (l *StdLogger) Info(msg string, args ...interface{}) {
+    if l.level <= LogLevelInfo {
+        l.logger.Printf("INFO: "+msg, args...)
+    }
+}
+
+func (l *StdLogger) Warn(msg string, args ...interface{}) {
+    if l.level <= LogLevelWarn {
+        l.logger.Printf("WARN: "+msg, args...)
+    }
+}
+
+func (l *StdLogger) Error(msg string, args ...interface{}) {
+    l.logger.Printf("ERROR: "+msg, args...)
+}
+
+// Usage
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithLogger(NewStdLogger(LogLevelInfo)),
+)
+```
+
+### slog Logger (Go 1.21+)
+
+```go
+import "log/slog"
+
+type SlogLogger struct {
+    logger *slog.Logger
+}
+
+func NewSlogLogger(handler slog.Handler) *SlogLogger {
+    return &SlogLogger{
+        logger: slog.New(handler),
+    }
+}
+
+func (l *SlogLogger) Debug(msg string, args ...interface{}) {
+    l.logger.Debug(fmt.Sprintf(msg, args...))
+}
+
+func (l *SlogLogger) Info(msg string, args ...interface{}) {
+    l.logger.Info(fmt.Sprintf(msg, args...))
+}
+
+func (l *SlogLogger) Warn(msg string, args ...interface{}) {
+    l.logger.Warn(fmt.Sprintf(msg, args...))
+}
+
+func (l *SlogLogger) Error(msg string, args ...interface{}) {
+    l.logger.Error(fmt.Sprintf(msg, args...))
+}
+
+// Usage
+handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+    Level: slog.LevelDebug,
+})
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithLogger(NewSlogLogger(handler)),
+)
+```
+
+### Zerolog Logger
+
+```go
+import "github.com/rs/zerolog"
+
+type ZerologLogger struct {
+    logger zerolog.Logger
+}
+
+func NewZerologLogger(logger zerolog.Logger) *ZerologLogger {
+    return &ZerologLogger{logger: logger}
+}
+
+func (l *ZerologLogger) Debug(msg string, args ...interface{}) {
+    l.logger.Debug().Msgf(msg, args...)
+}
+
+func (l *ZerologLogger) Info(msg string, args ...interface{}) {
+    l.logger.Info().Msgf(msg, args...)
+}
+
+func (l *ZerologLogger) Warn(msg string, args ...interface{}) {
+    l.logger.Warn().Msgf(msg, args...)
+}
+
+func (l *ZerologLogger) Error(msg string, args ...interface{}) {
+    l.logger.Error().Msgf(msg, args...)
+}
+
+// Usage
+logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithLogger(NewZerologLogger(logger)),
+)
+```
+
+### Zap Logger
+
+```go
+import "go.uber.org/zap"
+
+type ZapLogger struct {
+    logger *zap.SugaredLogger
+}
+
+func NewZapLogger(logger *zap.Logger) *ZapLogger {
+    return &ZapLogger{logger: logger.Sugar()}
+}
+
+func (l *ZapLogger) Debug(msg string, args ...interface{}) {
+    l.logger.Debugf(msg, args...)
+}
+
+func (l *ZapLogger) Info(msg string, args ...interface{}) {
+    l.logger.Infof(msg, args...)
+}
+
+func (l *ZapLogger) Warn(msg string, args ...interface{}) {
+    l.logger.Warnf(msg, args...)
+}
+
+func (l *ZapLogger) Error(msg string, args ...interface{}) {
+    l.logger.Errorf(msg, args...)
+}
+
+// Usage
+zapLogger, _ := zap.NewProduction()
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithLogger(NewZapLogger(zapLogger)),
+)
+```
+
+---
+
+## Structured Logging
+
+### Adding Context to Logs
+
+```go
+type ContextLogger struct {
+    logger Logger
+    fields map[string]interface{}
+}
+
+func NewContextLogger(logger Logger) *ContextLogger {
+    return &ContextLogger{
+        logger: logger,
+        fields: make(map[string]interface{}),
+    }
+}
+
+func (l *ContextLogger) With(key string, value interface{}) *ContextLogger {
+    newLogger := &ContextLogger{
+        logger: l.logger,
+        fields: make(map[string]interface{}),
+    }
+    for k, v := range l.fields {
+        newLogger.fields[k] = v
+    }
+    newLogger.fields[key] = value
+    return newLogger
+}
+
+func (l *ContextLogger) formatMessage(msg string) string {
+    if len(l.fields) == 0 {
+        return msg
+    }
+    parts := []string{msg}
+    for k, v := range l.fields {
+        parts = append(parts, fmt.Sprintf("%s=%v", k, v))
+    }
+    return strings.Join(parts, " ")
+}
+
+func (l *ContextLogger) Debug(msg string, args ...interface{}) {
+    l.logger.Debug(l.formatMessage(fmt.Sprintf(msg, args...)))
+}
+
+func (l *ContextLogger) Info(msg string, args ...interface{}) {
+    l.logger.Info(l.formatMessage(fmt.Sprintf(msg, args...)))
+}
+
+func (l *ContextLogger) Warn(msg string, args ...interface{}) {
+    l.logger.Warn(l.formatMessage(fmt.Sprintf(msg, args...)))
+}
+
+func (l *ContextLogger) Error(msg string, args ...interface{}) {
+    l.logger.Error(l.formatMessage(fmt.Sprintf(msg, args...)))
+}
+
+// Usage
+baseLogger := NewStdLogger(LogLevelDebug)
+logger := NewContextLogger(baseLogger).
+    With("service", "requirements").
+    With("version", "1.0.0")
+
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithLogger(logger),
+)
+```
+
+---
+
+## Request/Response Logging
+
+### Logging HTTP Details
+
+```go
+type HTTPLogger struct {
+    logger    Logger
+    logBody   bool
+    maxBody   int
+}
+
+func NewHTTPLogger(logger Logger, logBody bool) *HTTPLogger {
+    return &HTTPLogger{
+        logger:  logger,
+        logBody: logBody,
+        maxBody: 1000,
+    }
+}
+
+func (l *HTTPLogger) LogRequest(req *http.Request) {
+    l.logger.Debug("Request: %s %s", req.Method, req.URL.String())
+
+    for key, values := range req.Header {
+        if key != "Authorization" { // Don't log auth headers
+            l.logger.Debug("Header: %s: %s", key, strings.Join(values, ", "))
+        }
+    }
+}
+
+func (l *HTTPLogger) LogResponse(resp *http.Response, duration time.Duration, body []byte) {
+    l.logger.Info("Response: %d %s (%v)", resp.StatusCode, resp.Status, duration)
+
+    if l.logBody && len(body) > 0 {
+        bodyStr := string(body)
+        if len(bodyStr) > l.maxBody {
+            bodyStr = bodyStr[:l.maxBody] + "..."
+        }
+        l.logger.Debug("Body: %s", bodyStr)
+    }
+}
+```
+
+---
+
+## Logging Levels
+
+### Level Configuration
+
+```go
+type LogConfig struct {
+    Level      LogLevel
+    Format     string // "json" or "text"
+    Output     io.Writer
+    TimeFormat string
+}
+
+func NewConfigurableLogger(config LogConfig) Logger {
+    switch config.Format {
+    case "json":
+        return newJSONLogger(config)
+    default:
+        return newTextLogger(config)
+    }
+}
+
+// Environment-based configuration
+func LoggerFromEnv() Logger {
+    level := LogLevelInfo
+    switch os.Getenv("TRACERTM_LOG_LEVEL") {
+    case "debug":
+        level = LogLevelDebug
+    case "warn":
+        level = LogLevelWarn
+    case "error":
+        level = LogLevelError
+    }
+
+    format := os.Getenv("TRACERTM_LOG_FORMAT")
+    if format == "" {
+        format = "text"
+    }
+
+    return NewConfigurableLogger(LogConfig{
+        Level:  level,
+        Format: format,
+        Output: os.Stderr,
+    })
+}
+
+// Usage
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithLogger(LoggerFromEnv()),
+)
+```
+
+---
+
+## Error Logging
+
+### Logging Errors with Context
+
+```go
+func logError(logger Logger, operation string, err error) {
+    var notFoundErr *tracertm.NotFoundError
+    var validationErr *tracertm.ValidationError
+    var rateLimitErr *tracertm.RateLimitError
+    var serverErr *tracertm.ServerError
+
+    switch {
+    case errors.As(err, &notFoundErr):
+        logger.Warn("%s: resource not found (%s: %s)",
+            operation, notFoundErr.ResourceType, notFoundErr.ResourceID)
+
+    case errors.As(err, &validationErr):
+        logger.Warn("%s: validation failed - %s", operation, validationErr.Message)
+        for _, f := range validationErr.Fields {
+            logger.Debug("  field %s: %s", f.Field, f.Message)
+        }
+
+    case errors.As(err, &rateLimitErr):
+        logger.Warn("%s: rate limited, retry after %d seconds",
+            operation, rateLimitErr.RetryAfter)
+
+    case errors.As(err, &serverErr):
+        logger.Error("%s: server error (request_id=%s, status=%d): %s",
+            operation, serverErr.RequestID, serverErr.StatusCode, serverErr.Message)
+
+    default:
+        logger.Error("%s: %v", operation, err)
+    }
+}
+
+// Usage
+item, err := client.Items.Get(ctx, "item_123")
+if err != nil {
+    logError(logger, "GetItem", err)
+    return nil, err
+}
+```
+
+---
+
+## Logging Best Practices
+
+### 1. Use Appropriate Log Levels
+
+```go
+// Debug - detailed information for debugging
+logger.Debug("Fetching item %s from project %s", itemID, projectID)
+
+// Info - general operational information
+logger.Info("Created item %s", item.Key)
+
+// Warn - unexpected but handled situations
+logger.Warn("Item %s not found, using default", itemID)
+
+// Error - errors that need attention
+logger.Error("Failed to create item: %v", err)
+```
+
+### 2. Include Correlation IDs
+
+```go
+func processRequest(ctx context.Context, client *tracertm.Client, logger Logger) {
+    requestID := ctx.Value("request_id").(string)
+    logger = logger.With("request_id", requestID)
+
+    logger.Info("Starting request processing")
+    // ... process ...
+    logger.Info("Request processing complete")
+}
+```
+
+### 3. Don't Log Sensitive Data
+
+```go
+// Bad - logs API key
+logger.Debug("Using API key: %s", apiKey)
+
+// Good - logs redacted key
+logger.Debug("Using API key: %s...%s", apiKey[:4], apiKey[len(apiKey)-4:])
+
+// Best - don't log keys at all
+logger.Debug("API key configured")
+```
+
+### 4. Log Performance Metrics
+
+```go
+func timed(logger Logger, operation string, fn func() error) error {
+    start := time.Now()
+    err := fn()
+    duration := time.Since(start)
+
+    if err != nil {
+        logger.Error("%s failed after %v: %v", operation, duration, err)
+    } else {
+        logger.Info("%s completed in %v", operation, duration)
+    }
+
+    return err
+}
+
+// Usage
+err := timed(logger, "FetchItems", func() error {
+    _, err := client.Items.List(ctx, projectID, nil)
+    return err
+})
+```
+
+### 5. Disable Debug in Production
+
+```go
+func main() {
+    debug := os.Getenv("DEBUG") == "true"
+
+    client := tracertm.NewClient(
+        os.Getenv("TRACERTM_API_KEY"),
+        tracertm.WithDebug(debug),
+    )
+}
+```
+
+---
+
+## Related Documentation
+
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error types
+- [Configuration](/docs/api-reference/sdks/go/quickstart) - Client configuration
+- [Debugging](/docs/api-reference/sdks/go/examples) - Debugging examples

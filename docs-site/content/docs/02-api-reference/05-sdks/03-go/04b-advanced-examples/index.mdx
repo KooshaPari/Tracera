@@ -1,32 +1,777 @@
 ---
 title: "Advanced Examples"
-description: "Documentation for Advanced Examples"
+description: "Advanced examples and patterns for the TraceRTM Go SDK"
 ---
 
 # Advanced Examples
 
-This page contains documentation for Advanced Examples.
+Advanced examples demonstrating complex patterns and real-world use cases with the TraceRTM Go SDK.
 
-## Overview
+## Concurrent Data Loading
 
-This section covers the key aspects of Advanced Examples in TraceRTM.
+Load multiple resources in parallel:
 
-## Getting Started
+```go
+package main
 
-To get started with Advanced Examples:
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+    "sync"
+    "time"
 
-- Review the Advanced Examples and fundamentals
-- Explore practical examples
-- Check out the API reference
+    "github.com/tracertm/tracertm-go"
+)
 
-## Key Concepts
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+    projectID := "proj_abc123"
 
-## Next Steps
+    var wg sync.WaitGroup
+    var requirements, testCases *tracertm.ItemList
+    var coverage *tracertm.CoverageReport
+    var reqErr, tcErr, covErr error
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+    wg.Add(3)
+
+    // Load requirements
+    go func() {
+        defer wg.Done()
+        requirements, reqErr = client.Items.List(ctx, projectID, &tracertm.ListItemsOptions{
+            Type: "requirement",
+        })
+    }()
+
+    // Load test cases
+    go func() {
+        defer wg.Done()
+        testCases, tcErr = client.Items.List(ctx, projectID, &tracertm.ListItemsOptions{
+            Type: "test_case",
+        })
+    }()
+
+    // Load coverage report
+    go func() {
+        defer wg.Done()
+        coverage, covErr = client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+            ProjectID:  projectID,
+            SourceType: "requirement",
+            TargetType: "test_case",
+        })
+    }()
+
+    wg.Wait()
+
+    // Check errors
+    for _, err := range []error{reqErr, tcErr, covErr} {
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+
+    fmt.Printf("Requirements: %d\n", len(requirements.Data))
+    fmt.Printf("Test Cases: %d\n", len(testCases.Data))
+    fmt.Printf("Coverage: %.1f%%\n", coverage.CoveragePercent)
+}
+```
+
+---
+
+## Batch Processing with Worker Pool
+
+Process items in parallel with controlled concurrency:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+    "sync"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    projectID := "proj_abc123"
+
+    // Collect all item IDs
+    var itemIDs []string
+    iter := client.Items.Iterate(ctx, projectID, nil)
+    for iter.Next() {
+        itemIDs = append(itemIDs, iter.Item().ID)
+    }
+    if err := iter.Err(); err != nil {
+        log.Fatal(err)
+    }
+
+    // Process with worker pool
+    const workers = 5
+    jobs := make(chan string, len(itemIDs))
+    results := make(chan *tracertm.Item, len(itemIDs))
+
+    var wg sync.WaitGroup
+
+    // Start workers
+    for w := 0; w < workers; w++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for id := range jobs {
+                item, err := client.Items.Get(ctx, id)
+                if err != nil {
+                    log.Printf("Error getting item %s: %v", id, err)
+                    continue
+                }
+                results <- item
+            }
+        }()
+    }
+
+    // Send jobs
+    for _, id := range itemIDs {
+        jobs <- id
+    }
+    close(jobs)
+
+    // Wait for completion
+    go func() {
+        wg.Wait()
+        close(results)
+    }()
+
+    // Collect results
+    var items []*tracertm.Item
+    for item := range results {
+        items = append(items, item)
+    }
+
+    fmt.Printf("Processed %d items\n", len(items))
+}
+```
+
+---
+
+## Retry with Exponential Backoff
+
+Custom retry logic for resilient operations:
+
+```go
+package main
+
+import (
+    "context"
+    "errors"
+    "fmt"
+    "log"
+    "math"
+    "os"
+    "time"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    item, err := retryWithBackoff(ctx, 5, func() (*tracertm.Item, error) {
+        return client.Items.Get(ctx, "item_abc123")
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Got item: %s\n", item.Title)
+}
+
+func retryWithBackoff[T any](ctx context.Context, maxRetries int, fn func() (T, error)) (T, error) {
+    var result T
+    var lastErr error
+
+    for attempt := 0; attempt < maxRetries; attempt++ {
+        result, lastErr = fn()
+        if lastErr == nil {
+            return result, nil
+        }
+
+        // Check if retryable
+        var rateLimitErr *tracertm.RateLimitError
+        var serverErr *tracertm.ServerError
+
+        if errors.As(lastErr, &rateLimitErr) {
+            // Use retry-after from rate limit
+            time.Sleep(time.Duration(rateLimitErr.RetryAfter) * time.Second)
+            continue
+        }
+
+        if !errors.As(lastErr, &serverErr) {
+            // Not a server error, don't retry
+            return result, lastErr
+        }
+
+        // Exponential backoff
+        backoff := time.Duration(math.Pow(2, float64(attempt))) * time.Second
+        select {
+        case <-ctx.Done():
+            return result, ctx.Err()
+        case <-time.After(backoff):
+        }
+    }
+
+    return result, fmt.Errorf("max retries exceeded: %w", lastErr)
+}
+```
+
+---
+
+## Streaming Large Exports
+
+Stream large datasets efficiently:
+
+```go
+package main
+
+import (
+    "context"
+    "encoding/csv"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    projectID := "proj_abc123"
+
+    // Create CSV file
+    file, err := os.Create("export.csv")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer file.Close()
+
+    writer := csv.NewWriter(file)
+    defer writer.Flush()
+
+    // Write header
+    writer.Write([]string{"Key", "Type", "Title", "Status", "Priority"})
+
+    // Stream items
+    iter := client.Items.Iterate(ctx, projectID, nil)
+    count := 0
+
+    for iter.Next() {
+        item := iter.Item()
+        writer.Write([]string{
+            item.Key,
+            item.Type,
+            item.Title,
+            item.Status,
+            item.Priority,
+        })
+        count++
+
+        // Flush periodically
+        if count%100 == 0 {
+            writer.Flush()
+            fmt.Printf("Exported %d items...\n", count)
+        }
+    }
+
+    if err := iter.Err(); err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Exported %d items to export.csv\n", count)
+}
+```
+
+---
+
+## Webhook Event Handler
+
+Handle TraceRTM webhooks:
+
+```go
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+type WebhookPayload struct {
+    Event     string          `json:"event"`
+    Timestamp string          `json:"timestamp"`
+    Data      json.RawMessage `json:"data"`
+}
+
+type ItemEventData struct {
+    Item      *tracertm.Item `json:"item"`
+    ChangedBy string         `json:"changed_by"`
+    Changes   []string       `json:"changes"`
+}
+
+var client *tracertm.Client
+
+func main() {
+    client = tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+    http.HandleFunc("/webhook", webhookHandler)
+
+    fmt.Println("Listening on :8080...")
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func webhookHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    var payload WebhookPayload
+    if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+        http.Error(w, "Invalid payload", http.StatusBadRequest)
+        return
+    }
+
+    ctx := r.Context()
+
+    switch payload.Event {
+    case "item.created":
+        handleItemCreated(ctx, payload.Data)
+    case "item.updated":
+        handleItemUpdated(ctx, payload.Data)
+    case "item.deleted":
+        handleItemDeleted(ctx, payload.Data)
+    case "link.created":
+        handleLinkCreated(ctx, payload.Data)
+    default:
+        log.Printf("Unknown event: %s", payload.Event)
+    }
+
+    w.WriteHeader(http.StatusOK)
+}
+
+func handleItemCreated(ctx context.Context, data json.RawMessage) {
+    var eventData ItemEventData
+    if err := json.Unmarshal(data, &eventData); err != nil {
+        log.Printf("Error parsing item data: %v", err)
+        return
+    }
+
+    log.Printf("Item created: %s - %s", eventData.Item.Key, eventData.Item.Title)
+
+    // Auto-create test case for new requirements
+    if eventData.Item.Type == "requirement" {
+        testCase, err := client.Items.Create(ctx, eventData.Item.ProjectID, &tracertm.CreateItemInput{
+            Type:        "test_case",
+            Title:       fmt.Sprintf("Test: %s", eventData.Item.Title),
+            Description: fmt.Sprintf("Verify: %s", eventData.Item.Description),
+        })
+        if err != nil {
+            log.Printf("Error creating test case: %v", err)
+            return
+        }
+
+        // Link requirement to test case
+        _, err = client.Links.Create(ctx, &tracertm.CreateLinkInput{
+            SourceID: eventData.Item.ID,
+            TargetID: testCase.ID,
+            LinkType: "verified_by",
+        })
+        if err != nil {
+            log.Printf("Error creating link: %v", err)
+        }
+    }
+}
+
+func handleItemUpdated(ctx context.Context, data json.RawMessage) {
+    var eventData ItemEventData
+    if err := json.Unmarshal(data, &eventData); err != nil {
+        return
+    }
+    log.Printf("Item updated: %s by %s", eventData.Item.Key, eventData.ChangedBy)
+}
+
+func handleItemDeleted(ctx context.Context, data json.RawMessage) {
+    log.Println("Item deleted")
+}
+
+func handleLinkCreated(ctx context.Context, data json.RawMessage) {
+    log.Println("Link created")
+}
+```
+
+---
+
+## Pipeline Processing
+
+Build a data processing pipeline:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    projectID := "proj_abc123"
+
+    // Build pipeline
+    items := source(ctx, client, projectID)
+    filtered := filter(items, func(i *tracertm.Item) bool {
+        return i.Type == "requirement" && i.Priority == "high"
+    })
+    transformed := transform(filtered, func(i *tracertm.Item) *tracertm.Item {
+        // Add a tag
+        i.Tags = append(i.Tags, "processed")
+        return i
+    })
+
+    // Process results
+    for item := range transformed {
+        fmt.Printf("Processed: %s - %s\n", item.Key, item.Title)
+    }
+}
+
+func source(ctx context.Context, client *tracertm.Client, projectID string) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        iter := client.Items.Iterate(ctx, projectID, nil)
+        for iter.Next() {
+            select {
+            case <-ctx.Done():
+                return
+            case out <- iter.Item():
+            }
+        }
+    }()
+    return out
+}
+
+func filter(in <-chan *tracertm.Item, fn func(*tracertm.Item) bool) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        for item := range in {
+            if fn(item) {
+                out <- item
+            }
+        }
+    }()
+    return out
+}
+
+func transform(in <-chan *tracertm.Item, fn func(*tracertm.Item) *tracertm.Item) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        for item := range in {
+            out <- fn(item)
+        }
+    }()
+    return out
+}
+```
+
+---
+
+## Import from External System
+
+Import data from an external system:
+
+```go
+package main
+
+import (
+    "context"
+    "encoding/csv"
+    "fmt"
+    "io"
+    "log"
+    "os"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    projectID := "proj_abc123"
+
+    // Open CSV file
+    file, err := os.Open("requirements.csv")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer file.Close()
+
+    reader := csv.NewReader(file)
+
+    // Skip header
+    reader.Read()
+
+    var created, errors int
+
+    for {
+        record, err := reader.Read()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            log.Printf("Error reading CSV: %v", err)
+            errors++
+            continue
+        }
+
+        // CSV format: title, description, priority, tags
+        item, err := client.Items.Create(ctx, projectID, &tracertm.CreateItemInput{
+            Type:        "requirement",
+            Title:       record[0],
+            Description: record[1],
+            Priority:    record[2],
+            Tags:        parseCSVTags(record[3]),
+        })
+        if err != nil {
+            log.Printf("Error creating item: %v", err)
+            errors++
+            continue
+        }
+
+        created++
+        fmt.Printf("Created: %s\n", item.Key)
+    }
+
+    fmt.Printf("\nImport complete: %d created, %d errors\n", created, errors)
+}
+
+func parseCSVTags(s string) []string {
+    if s == "" {
+        return nil
+    }
+    return []string{s} // Simplified; parse comma-separated in real code
+}
+```
+
+---
+
+## Custom Client Wrapper
+
+Create a domain-specific wrapper:
+
+```go
+package main
+
+import (
+    "context"
+    "os"
+    "time"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+// RequirementsManager wraps TraceRTM client for requirements management
+type RequirementsManager struct {
+    client    *tracertm.Client
+    projectID string
+}
+
+func NewRequirementsManager(projectID string) *RequirementsManager {
+    client := tracertm.NewClient(
+        os.Getenv("TRACERTM_API_KEY"),
+        tracertm.WithTimeout(30*time.Second),
+        tracertm.WithMaxRetries(3),
+    )
+    return &RequirementsManager{
+        client:    client,
+        projectID: projectID,
+    }
+}
+
+func (rm *RequirementsManager) CreateRequirement(ctx context.Context, title, description, priority string) (*tracertm.Item, error) {
+    return rm.client.Items.Create(ctx, rm.projectID, &tracertm.CreateItemInput{
+        Type:        "requirement",
+        Title:       title,
+        Description: description,
+        Priority:    priority,
+    })
+}
+
+func (rm *RequirementsManager) CreateTestCase(ctx context.Context, title string, requirementID string) (*tracertm.Item, *tracertm.Link, error) {
+    // Create test case
+    tc, err := rm.client.Items.Create(ctx, rm.projectID, &tracertm.CreateItemInput{
+        Type:  "test_case",
+        Title: title,
+    })
+    if err != nil {
+        return nil, nil, err
+    }
+
+    // Link to requirement
+    link, err := rm.client.Links.Create(ctx, &tracertm.CreateLinkInput{
+        SourceID: requirementID,
+        TargetID: tc.ID,
+        LinkType: "verified_by",
+    })
+    if err != nil {
+        return tc, nil, err
+    }
+
+    return tc, link, nil
+}
+
+func (rm *RequirementsManager) GetUncoveredRequirements(ctx context.Context) ([]*tracertm.Item, error) {
+    coverage, err := rm.client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+        ProjectID:  rm.projectID,
+        SourceType: "requirement",
+        TargetType: "test_case",
+    })
+    if err != nil {
+        return nil, err
+    }
+    return coverage.UncoveredItems, nil
+}
+
+func (rm *RequirementsManager) GetCoveragePercent(ctx context.Context) (float64, error) {
+    coverage, err := rm.client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+        ProjectID:  rm.projectID,
+        SourceType: "requirement",
+        TargetType: "test_case",
+    })
+    if err != nil {
+        return 0, err
+    }
+    return coverage.CoveragePercent, nil
+}
+```
+
+---
+
+## Context Propagation
+
+Proper context handling for observability:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/tracertm/tracertm-go"
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/trace"
+)
+
+var tracer = otel.Tracer("tracertm-example")
+
+func main() {
+    client := tracertm.NewClient(
+        os.Getenv("TRACERTM_API_KEY"),
+        tracertm.WithHeaders(map[string]string{
+            "X-Request-ID": "req-123",
+        }),
+    )
+
+    ctx := context.Background()
+
+    if err := processProject(ctx, client, "proj_abc123"); err != nil {
+        log.Fatal(err)
+    }
+}
+
+func processProject(ctx context.Context, client *tracertm.Client, projectID string) error {
+    ctx, span := tracer.Start(ctx, "processProject")
+    defer span.End()
+
+    span.SetAttributes(
+        attribute.String("project.id", projectID),
+    )
+
+    // Get project
+    project, err := getProject(ctx, client, projectID)
+    if err != nil {
+        span.RecordError(err)
+        return err
+    }
+
+    span.SetAttributes(
+        attribute.String("project.name", project.Name),
+    )
+
+    // Get items
+    items, err := getItems(ctx, client, projectID)
+    if err != nil {
+        span.RecordError(err)
+        return err
+    }
+
+    span.SetAttributes(
+        attribute.Int("items.count", len(items)),
+    )
+
+    fmt.Printf("Processed project %s with %d items\n", project.Name, len(items))
+    return nil
+}
+
+func getProject(ctx context.Context, client *tracertm.Client, id string) (*tracertm.Project, error) {
+    ctx, span := tracer.Start(ctx, "getProject")
+    defer span.End()
+    return client.Projects.Get(ctx, id)
+}
+
+func getItems(ctx context.Context, client *tracertm.Client, projectID string) ([]*tracertm.Item, error) {
+    ctx, span := tracer.Start(ctx, "getItems")
+    defer span.End()
+
+    var items []*tracertm.Item
+    iter := client.Items.Iterate(ctx, projectID, nil)
+    for iter.Next() {
+        items = append(items, iter.Item())
+    }
+    return items, iter.Err()
+}
+```
+
+---
+
+## Related Documentation
+
+- [Basic Examples](/docs/api-reference/sdks/go/basic-examples) - Getting started examples
+- [Concurrency](/docs/api-reference/sdks/go/concurrency) - Concurrent patterns
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error handling
+- [Testing](/docs/api-reference/sdks/go/testing) - Testing patterns

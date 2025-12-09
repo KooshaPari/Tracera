@@ -1,125 +1,756 @@
 ---
 title: "Frontend Architecture"
-description: "Documentation for Frontend Architecture"
+description: "React application architecture, component design, state management, and frontend patterns in TraceRTM"
 ---
 
 # Frontend Architecture
 
+TraceRTM's frontend is built with React 18 and TypeScript, following modern best practices for scalability, type safety, and developer experience.
 
-## Overview
+## Technology Stack
 
-Welcome to the Frontend Architecture documentation.
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI framework with concurrent features |
+| **TypeScript 5** | Type safety and developer tooling |
+| **TanStack Router** | Type-safe file-based routing |
+| **TanStack Query** | Server state management and caching |
+| **Zustand** | Client state management |
+| **shadcn/ui** | Component library (Radix + Tailwind) |
+| **Tailwind CSS** | Utility-first styling |
+| **React Flow** | Graph visualization |
+| **D3.js** | Data visualization and charts |
 
-## Introduction
+---
 
-This page provides comprehensive information about Frontend Architecture.
+## Project Structure
 
-## Key Features
-
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
-
-## Getting Started
-
-```bash
-tracertm init
-tracertm config set frontend enabled
+```
+frontend/apps/web/src/
+├── api/                    # API client and endpoints
+│   ├── client.ts           # Axios instance configuration
+│   ├── endpoints.ts        # API endpoint definitions
+│   └── types.ts            # API response types
+├── components/             # Reusable UI components
+│   ├── ui/                 # Base UI primitives (shadcn)
+│   ├── forms/              # Form components
+│   ├── layout/             # Layout components
+│   └── shared/             # Shared components
+├── features/               # Feature modules
+│   ├── projects/           # Project management
+│   ├── items/              # Item management
+│   ├── links/              # Link management
+│   └── reports/            # Reporting
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utility libraries
+├── routes/                 # TanStack Router routes
+├── stores/                 # Zustand state stores
+├── styles/                 # Global styles
+├── types/                  # TypeScript type definitions
+└── views/                  # Page-level components
 ```
 
-## Usage
+---
 
-### Basic Usage
+## Component Architecture
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+### Component Hierarchy
 
-const tracertm = new TraceRTM()
-const result = await tracertm.frontend()
+```
+App
+├── RouterProvider
+│   └── RootLayout
+│       ├── Header
+│       │   ├── Navigation
+│       │   ├── CommandPalette
+│       │   └── UserMenu
+│       ├── Sidebar
+│       │   ├── ProjectSelector
+│       │   └── NavigationMenu
+│       └── MainContent
+│           └── [Route Components]
+└── Providers
+    ├── QueryClientProvider
+    ├── ThemeProvider
+    └── AuthProvider
 ```
 
-### Advanced Usage
+### Component Categories
+
+#### 1. UI Components (`/components/ui`)
+
+Base primitives from shadcn/ui:
 
 ```typescript
-const config = {
-  frontend: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
+// Button component with variants
+import { Button } from '@/components/ui/button'
+
+<Button variant="default">Primary</Button>
+<Button variant="outline">Secondary</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="ghost">Ghost</Button>
+```
+
+#### 2. Feature Components (`/features`)
+
+Domain-specific components organized by feature:
+
+```typescript
+// features/items/components/ItemCard.tsx
+interface ItemCardProps {
+  item: Item
+  onEdit?: (item: Item) => void
+  onDelete?: (id: string) => void
 }
 
-const tracertm = new TraceRTM(config)
-```
-
-## Configuration
-
-```typescript
-export default {
-  frontend: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
+export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <ItemTypeIcon type={item.type} />
+        <CardTitle>{item.title}</CardTitle>
+        <StatusBadge status={item.status} />
+      </CardHeader>
+      <CardContent>
+        <p>{item.description}</p>
+        <TagList tags={item.tags} />
+      </CardContent>
+      <CardFooter>
+        <ItemActions item={item} onEdit={onEdit} onDelete={onDelete} />
+      </CardFooter>
+    </Card>
+  )
 }
 ```
 
-## Examples
+#### 3. Layout Components (`/components/layout`)
 
-### Example 1
+Structural components:
 
 ```typescript
-const example = await tracertm.frontend({
-  option1: 'value1',
-  option2: 'value2'
+// components/layout/Layout.tsx
+export function Layout({ children }: { children: React.ReactNode }) {
+  const { isCollapsed } = useSidebarStore()
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex">
+        <Sidebar collapsed={isCollapsed} />
+        <main className={cn(
+          "flex-1 p-6 transition-all",
+          isCollapsed ? "ml-16" : "ml-64"
+        )}>
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}
+```
+
+---
+
+## Routing
+
+### TanStack Router Configuration
+
+```typescript
+// routes/__root.tsx
+import { createRootRoute, Outlet } from '@tanstack/react-router'
+
+export const Route = createRootRoute({
+  component: () => (
+    <Layout>
+      <Outlet />
+    </Layout>
+  ),
 })
 ```
 
-### Example 2
+### Route Structure
 
 ```typescript
-const advanced = await tracertm.frontend({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
+// routes/projects/$projectId/items/$itemId.tsx
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/projects/$projectId/items/$itemId')({
+  // Type-safe params
+  parseParams: (params) => ({
+    projectId: params.projectId,
+    itemId: params.itemId,
+  }),
+
+  // Data loading
+  loader: async ({ params, context }) => {
+    const { queryClient } = context
+    return queryClient.ensureQueryData(itemQueryOptions(params.itemId))
+  },
+
+  // Component
+  component: ItemDetailPage,
+})
+
+function ItemDetailPage() {
+  const { projectId, itemId } = Route.useParams()
+  const item = Route.useLoaderData()
+
+  return <ItemDetailView item={item} />
+}
+```
+
+### Type-Safe Navigation
+
+```typescript
+import { Link, useNavigate } from '@tanstack/react-router'
+
+// Type-safe link
+<Link
+  to="/projects/$projectId/items/$itemId"
+  params={{ projectId: 'proj_123', itemId: 'item_456' }}
+>
+  View Item
+</Link>
+
+// Programmatic navigation
+const navigate = useNavigate()
+navigate({
+  to: '/projects/$projectId/items',
+  params: { projectId },
+  search: { type: 'requirement', status: 'draft' },
 })
 ```
 
-## Best Practices
+---
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+## State Management
 
-## Troubleshooting
+### Server State (TanStack Query)
 
-### Common Issues
+```typescript
+// hooks/useItems.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-**Issue 1:**
-```bash
-tracertm fix issue-1
+// Query keys factory
+export const itemKeys = {
+  all: ['items'] as const,
+  lists: () => [...itemKeys.all, 'list'] as const,
+  list: (projectId: string, filters?: ItemFilters) =>
+    [...itemKeys.lists(), projectId, filters] as const,
+  details: () => [...itemKeys.all, 'detail'] as const,
+  detail: (id: string) => [...itemKeys.details(), id] as const,
+}
+
+// Query hook
+export function useItems(projectId: string, filters?: ItemFilters) {
+  return useQuery({
+    queryKey: itemKeys.list(projectId, filters),
+    queryFn: () => api.items.list(projectId, filters),
+    staleTime: 30_000, // 30 seconds
+  })
+}
+
+// Mutation hook
+export function useCreateItem() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: CreateItemInput) => api.items.create(data),
+    onSuccess: (newItem) => {
+      // Invalidate list queries
+      queryClient.invalidateQueries({ queryKey: itemKeys.lists() })
+
+      // Optimistically add to cache
+      queryClient.setQueryData(
+        itemKeys.detail(newItem.id),
+        newItem
+      )
+    },
+  })
+}
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+### Client State (Zustand)
+
+```typescript
+// stores/uiStore.ts
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+interface UIState {
+  sidebarCollapsed: boolean
+  theme: 'light' | 'dark' | 'system'
+  viewMode: 'grid' | 'list' | 'table'
+  toggleSidebar: () => void
+  setTheme: (theme: UIState['theme']) => void
+  setViewMode: (mode: UIState['viewMode']) => void
+}
+
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      sidebarCollapsed: false,
+      theme: 'system',
+      viewMode: 'list',
+      toggleSidebar: () =>
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      setTheme: (theme) => set({ theme }),
+      setViewMode: (viewMode) => set({ viewMode }),
+    }),
+    { name: 'ui-storage' }
+  )
+)
 ```
 
-## API Reference
+### Auth State
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```typescript
+// stores/authStore.ts
+import { create } from 'zustand'
 
-## Related Topics
+interface AuthState {
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  login: (credentials: LoginCredentials) => Promise<void>
+  logout: () => Promise<void>
+  refreshToken: () => Promise<void>
+}
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
 
+  login: async (credentials) => {
+    const response = await api.auth.login(credentials)
+    set({ user: response.user, isAuthenticated: true })
+    localStorage.setItem('token', response.token)
+  },
+
+  logout: async () => {
+    await api.auth.logout()
+    set({ user: null, isAuthenticated: false })
+    localStorage.removeItem('token')
+  },
+
+  refreshToken: async () => {
+    try {
+      const response = await api.auth.refresh()
+      localStorage.setItem('token', response.token)
+    } catch {
+      get().logout()
+    }
+  },
+}))
+```
+
+---
+
+## API Layer
+
+### API Client Configuration
+
+```typescript
+// api/client.ts
+import axios from 'axios'
+
+export const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Request interceptor
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// Response interceptor
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Handle token refresh
+      const authStore = useAuthStore.getState()
+      await authStore.refreshToken()
+      return apiClient(error.config)
+    }
+    return Promise.reject(error)
+  }
+)
+```
+
+### Type-Safe API Endpoints
+
+```typescript
+// api/endpoints.ts
+import { apiClient } from './client'
+import type {
+  Project, Item, Link,
+  CreateItemInput, UpdateItemInput,
+  PaginatedResponse, ItemFilters
+} from '@/types'
+
+export const api = {
+  projects: {
+    list: () =>
+      apiClient.get<PaginatedResponse<Project>>('/v1/projects'),
+    get: (id: string) =>
+      apiClient.get<Project>(`/v1/projects/${id}`),
+    create: (data: CreateProjectInput) =>
+      apiClient.post<Project>('/v1/projects', data),
+    update: (id: string, data: UpdateProjectInput) =>
+      apiClient.patch<Project>(`/v1/projects/${id}`, data),
+    delete: (id: string) =>
+      apiClient.delete(`/v1/projects/${id}`),
+  },
+
+  items: {
+    list: (projectId: string, filters?: ItemFilters) =>
+      apiClient.get<PaginatedResponse<Item>>(`/v1/projects/${projectId}/items`, {
+        params: filters,
+      }),
+    get: (id: string) =>
+      apiClient.get<Item>(`/v1/items/${id}`),
+    create: (projectId: string, data: CreateItemInput) =>
+      apiClient.post<Item>(`/v1/projects/${projectId}/items`, data),
+    update: (id: string, data: UpdateItemInput) =>
+      apiClient.patch<Item>(`/v1/items/${id}`, data),
+    delete: (id: string) =>
+      apiClient.delete(`/v1/items/${id}`),
+    transition: (id: string, transition: string) =>
+      apiClient.post<Item>(`/v1/items/${id}/transition`, { transition }),
+  },
+
+  links: {
+    list: (params: ListLinksParams) =>
+      apiClient.get<PaginatedResponse<Link>>('/v1/links', { params }),
+    create: (data: CreateLinkInput) =>
+      apiClient.post<Link>('/v1/links', data),
+    delete: (id: string) =>
+      apiClient.delete(`/v1/links/${id}`),
+  },
+}
+```
+
+---
+
+## Form Handling
+
+### React Hook Form Integration
+
+```typescript
+// features/items/components/ItemForm.tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const itemSchema = z.object({
+  type: z.enum(['requirement', 'test_case', 'bug', 'task']),
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']),
+  status: z.string(),
+  tags: z.array(z.string()).default([]),
+  assigneeId: z.string().optional(),
+  dueDate: z.string().optional(),
+})
+
+type ItemFormData = z.infer<typeof itemSchema>
+
+interface ItemFormProps {
+  defaultValues?: Partial<ItemFormData>
+  onSubmit: (data: ItemFormData) => Promise<void>
+}
+
+export function ItemForm({ defaultValues, onSubmit }: ItemFormProps) {
+  const form = useForm<ItemFormData>({
+    resolver: zodResolver(itemSchema),
+    defaultValues: {
+      type: 'requirement',
+      priority: 'medium',
+      tags: [],
+      ...defaultValues,
+    },
+  })
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="requirement">Requirement</SelectItem>
+                  <SelectItem value="test_case">Test Case</SelectItem>
+                  <SelectItem value="bug">Bug</SelectItem>
+                  <SelectItem value="task">Task</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? 'Saving...' : 'Save'}
+        </Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+---
+
+## Graph Visualization
+
+### React Flow Integration
+
+```typescript
+// features/graph/components/TraceabilityGraph.tsx
+import ReactFlow, {
+  Node,
+  Edge,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+} from 'reactflow'
+
+import { ItemNode } from './ItemNode'
+import { LinkEdge } from './LinkEdge'
+
+const nodeTypes = {
+  item: ItemNode,
+}
+
+const edgeTypes = {
+  link: LinkEdge,
+}
+
+interface TraceabilityGraphProps {
+  items: Item[]
+  links: Link[]
+  onNodeClick?: (item: Item) => void
+}
+
+export function TraceabilityGraph({
+  items,
+  links,
+  onNodeClick
+}: TraceabilityGraphProps) {
+  const initialNodes = items.map((item) => ({
+    id: item.id,
+    type: 'item',
+    position: item.position ?? { x: 0, y: 0 },
+    data: item,
+  }))
+
+  const initialEdges = links.map((link) => ({
+    id: link.id,
+    type: 'link',
+    source: link.sourceId,
+    target: link.targetId,
+    data: link,
+  }))
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+
+  return (
+    <div className="h-[600px] w-full border rounded-lg">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onNodeClick={(_, node) => onNodeClick?.(node.data)}
+        fitView
+      >
+        <Controls />
+        <Background />
+      </ReactFlow>
+    </div>
+  )
+}
+```
+
+---
+
+## Testing
+
+### Component Testing
+
+```typescript
+// features/items/__tests__/ItemCard.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import { ItemCard } from '../components/ItemCard'
+import { mockItem } from '@/test/mocks'
+
+describe('ItemCard', () => {
+  it('renders item information', () => {
+    render(<ItemCard item={mockItem} />)
+
+    expect(screen.getByText(mockItem.title)).toBeInTheDocument()
+    expect(screen.getByText(mockItem.status)).toBeInTheDocument()
+  })
+
+  it('calls onEdit when edit button clicked', () => {
+    const onEdit = vi.fn()
+    render(<ItemCard item={mockItem} onEdit={onEdit} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /edit/i }))
+
+    expect(onEdit).toHaveBeenCalledWith(mockItem)
+  })
+})
+```
+
+### Hook Testing
+
+```typescript
+// hooks/__tests__/useItems.test.tsx
+import { renderHook, waitFor } from '@testing-library/react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { useItems } from '../useItems'
+import { createTestQueryClient } from '@/test/utils'
+
+describe('useItems', () => {
+  it('fetches items for project', async () => {
+    const queryClient = createTestQueryClient()
+
+    const { result } = renderHook(
+      () => useItems('proj_123'),
+      {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        ),
+      }
+    )
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data?.data).toHaveLength(10)
+  })
+})
+```
+
+---
+
+## Performance Optimization
+
+### Code Splitting
+
+```typescript
+// routes/projects/$projectId/graph.tsx
+import { lazy, Suspense } from 'react'
+
+const TraceabilityGraph = lazy(() =>
+  import('@/features/graph/components/TraceabilityGraph')
+)
+
+function GraphPage() {
+  return (
+    <Suspense fallback={<GraphSkeleton />}>
+      <TraceabilityGraph />
+    </Suspense>
+  )
+}
+```
+
+### Memoization
+
+```typescript
+// Memoize expensive computations
+const filteredItems = useMemo(() =>
+  items.filter(item =>
+    item.title.toLowerCase().includes(search.toLowerCase())
+  ),
+  [items, search]
+)
+
+// Memoize callbacks
+const handleSelect = useCallback((item: Item) => {
+  setSelectedItem(item)
+}, [])
+
+// Memoize components
+const MemoizedItemCard = memo(ItemCard)
+```
+
+### Virtual Lists
+
+```typescript
+import { useVirtualizer } from '@tanstack/react-virtual'
+
+function VirtualItemList({ items }: { items: Item[] }) {
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 80,
+  })
+
+  return (
+    <div ref={parentRef} className="h-[600px] overflow-auto">
+      <div style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((virtualRow) => (
+          <div
+            key={virtualRow.key}
+            style={{
+              position: 'absolute',
+              top: 0,
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+          >
+            <ItemCard item={items[virtualRow.index]} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+---
+
+## Related Documentation
+
+- [Architecture Overview](/docs/development/architecture/overview) - System architecture
+- [Backend Architecture](/docs/development/architecture/backend) - API design
+- [Setup Guide](/docs/development/setup) - Development environment
+- [Testing](/docs/development/setup/testing) - Test strategies

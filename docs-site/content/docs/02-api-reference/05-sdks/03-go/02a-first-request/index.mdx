@@ -1,32 +1,404 @@
 ---
 title: "First Request"
-description: "Documentation for First Request"
+description: "Make your first API request with the TraceRTM Go SDK"
 ---
 
 # First Request
 
-This page contains documentation for First Request.
+This guide walks you through making your first API request with the TraceRTM Go SDK.
 
-## Overview
+## Prerequisites
 
-This section covers the key aspects of First Request in TraceRTM.
+- Go 1.21+ installed
+- TraceRTM SDK installed (`go get github.com/tracertm/tracertm-go`)
+- API key from your TraceRTM dashboard
 
-## Getting Started
+---
 
-To get started with First Request:
+## Step 1: Set Up Your Environment
 
-- Review the First Request and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Create a New Project
 
-## Key Concepts
+```bash
+mkdir my-tracertm-app && cd my-tracertm-app
+go mod init my-tracertm-app
+go get github.com/tracertm/tracertm-go
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Set Your API Key
+
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_your_key_here"
+```
+
+---
+
+## Step 2: Create a Simple Program
+
+Create `main.go`:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    // Create client
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+    // Create context
+    ctx := context.Background()
+
+    // Make your first request - list projects
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        log.Fatalf("Error listing projects: %v", err)
+    }
+
+    // Display results
+    fmt.Printf("Successfully connected to TraceRTM!\n")
+    fmt.Printf("Found %d projects:\n", len(projects.Data))
+
+    for _, project := range projects.Data {
+        fmt.Printf("  - [%s] %s\n", project.Key, project.Name)
+    }
+}
+```
+
+---
+
+## Step 3: Run Your Program
+
+```bash
+go run main.go
+```
+
+Expected output:
+```
+Successfully connected to TraceRTM!
+Found 2 projects:
+  - [DEMO] Demo Project
+  - [TEST] Test Project
+```
+
+---
+
+## Understanding the Response
+
+### Project Object
+
+```go
+type Project struct {
+    ID          string            `json:"id"`
+    Name        string            `json:"name"`
+    Key         string            `json:"key"`
+    Description string            `json:"description"`
+    OwnerID     string            `json:"owner_id"`
+    Settings    ProjectSettings   `json:"settings"`
+    CreatedAt   time.Time         `json:"created_at"`
+    UpdatedAt   time.Time         `json:"updated_at"`
+}
+```
+
+### Paginated Response
+
+```go
+type ProjectList struct {
+    Data    []*Project `json:"data"`
+    Total   int        `json:"total"`
+    Limit   int        `json:"limit"`
+    Offset  int        `json:"offset"`
+    HasMore bool       `json:"has_more"`
+}
+```
+
+---
+
+## Common First Requests
+
+### Get a Specific Project
+
+```go
+project, err := client.Projects.Get(ctx, "proj_abc123")
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Project: %s (%s)\n", project.Name, project.Key)
+```
+
+### List Items in a Project
+
+```go
+items, err := client.Items.List(ctx, "proj_abc123", nil)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Found %d items\n", len(items.Data))
+```
+
+### Get Current User
+
+```go
+user, err := client.Users.Me(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Logged in as: %s (%s)\n", user.Name, user.Email)
+```
+
+### Search for Items
+
+```go
+results, err := client.Search.Items(ctx, &tracertm.SearchInput{
+    Query:     "authentication",
+    ProjectID: "proj_abc123",
+})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Found %d matching items\n", len(results.Data))
+```
+
+---
+
+## Adding Options
+
+### List with Filters
+
+```go
+items, err := client.Items.List(ctx, projectID, &tracertm.ListItemsOptions{
+    Type:     "requirement",
+    Status:   "approved",
+    Priority: "high",
+    Limit:    25,
+    Offset:   0,
+    Sort:     "created_at",
+    Order:    "desc",
+})
+```
+
+### Project Options
+
+```go
+projects, err := client.Projects.List(ctx, &tracertm.ListProjectsOptions{
+    Limit:  10,
+    Offset: 0,
+    Sort:   "name",
+})
+```
+
+---
+
+## Error Handling
+
+### Basic Error Handling
+
+```go
+project, err := client.Projects.Get(ctx, "invalid_id")
+if err != nil {
+    fmt.Printf("Error: %v\n", err)
+    return
+}
+```
+
+### Type-Specific Error Handling
+
+```go
+import "errors"
+
+project, err := client.Projects.Get(ctx, "invalid_id")
+if err != nil {
+    var notFoundErr *tracertm.NotFoundError
+    var authErr *tracertm.AuthenticationError
+
+    switch {
+    case errors.As(err, &notFoundErr):
+        fmt.Printf("Project not found: %s\n", notFoundErr.ResourceID)
+
+    case errors.As(err, &authErr):
+        fmt.Println("Invalid API key - please check your credentials")
+
+    default:
+        fmt.Printf("Unexpected error: %v\n", err)
+    }
+    return
+}
+```
+
+---
+
+## Using Context
+
+### With Timeout
+
+```go
+import "time"
+
+ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+defer cancel()
+
+projects, err := client.Projects.List(ctx, nil)
+if err != nil {
+    if ctx.Err() == context.DeadlineExceeded {
+        fmt.Println("Request timed out")
+    } else {
+        fmt.Printf("Error: %v\n", err)
+    }
+    return
+}
+```
+
+### With Cancellation
+
+```go
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+// Can call cancel() to abort the request
+go func() {
+    time.Sleep(5 * time.Second)
+    cancel() // Cancel after 5 seconds
+}()
+
+projects, err := client.Projects.List(ctx, nil)
+```
+
+---
+
+## Debug Mode
+
+Enable debug logging to see request/response details:
+
+```go
+client := tracertm.NewClient(
+    os.Getenv("TRACERTM_API_KEY"),
+    tracertm.WithDebug(true),
+)
+```
+
+Output:
+```
+[TraceRTM] GET https://api.tracertm.dev/v1/projects
+[TraceRTM] Response: 200 OK (145ms)
+[TraceRTM] Body: {"data":[...],"total":2,"limit":100,"offset":0,"has_more":false}
+```
+
+---
+
+## Complete First Request Example
+
+```go
+package main
+
+import (
+    "context"
+    "errors"
+    "fmt"
+    "log"
+    "os"
+    "time"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    // Check for API key
+    apiKey := os.Getenv("TRACERTM_API_KEY")
+    if apiKey == "" {
+        log.Fatal("TRACERTM_API_KEY environment variable not set")
+    }
+
+    // Create client with options
+    client := tracertm.NewClient(
+        apiKey,
+        tracertm.WithTimeout(30*time.Second),
+        tracertm.WithMaxRetries(3),
+    )
+
+    // Create context with timeout
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    // Make request
+    fmt.Println("Connecting to TraceRTM...")
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        handleError(err)
+        return
+    }
+
+    // Success!
+    fmt.Printf("\n✓ Connected successfully!\n\n")
+    fmt.Printf("Your projects (%d total):\n", projects.Total)
+
+    if len(projects.Data) == 0 {
+        fmt.Println("  No projects yet. Create one to get started!")
+    } else {
+        for _, p := range projects.Data {
+            fmt.Printf("  • [%s] %s\n", p.Key, p.Name)
+            if p.Description != "" {
+                fmt.Printf("    %s\n", p.Description)
+            }
+        }
+    }
+
+    fmt.Println("\n✓ First request complete!")
+}
+
+func handleError(err error) {
+    var notFoundErr *tracertm.NotFoundError
+    var authErr *tracertm.AuthenticationError
+    var rateLimitErr *tracertm.RateLimitError
+    var serverErr *tracertm.ServerError
+
+    switch {
+    case errors.As(err, &authErr):
+        fmt.Println("✗ Authentication failed")
+        fmt.Println("  Please check your API key is correct")
+
+    case errors.As(err, &notFoundErr):
+        fmt.Printf("✗ Resource not found: %s\n", notFoundErr.ResourceID)
+
+    case errors.As(err, &rateLimitErr):
+        fmt.Printf("✗ Rate limited. Retry after %d seconds\n", rateLimitErr.RetryAfter)
+
+    case errors.As(err, &serverErr):
+        fmt.Println("✗ Server error")
+        fmt.Printf("  Request ID: %s (save this for support)\n", serverErr.RequestID)
+
+    case err == context.DeadlineExceeded:
+        fmt.Println("✗ Request timed out")
+        fmt.Println("  Check your network connection")
+
+    default:
+        fmt.Printf("✗ Error: %v\n", err)
+    }
+}
+```
+
+---
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+Now that you've made your first request:
+
+1. [Create your first project](/docs/api-reference/sdks/go/quickstart)
+2. [Add items and requirements](/docs/api-reference/sdks/go/examples)
+3. [Create traceability links](/docs/wiki/concepts/relationships)
+4. [Generate reports](/docs/api-reference/rest-api/endpoints/reports)
+
+---
+
+## Related Documentation
+
+- [Quick Start](/docs/api-reference/sdks/go/quickstart) - Complete getting started guide
+- [API Reference](/docs/api-reference/sdks/go/api-reference) - Full method reference
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Handle errors properly
+- [Authentication](/docs/api-reference/sdks/go/authentication) - Authentication options

@@ -1,32 +1,630 @@
 ---
 title: "Mocking"
-description: "Documentation for Mocking"
+description: "Mocking strategies for testing TraceRTM JavaScript SDK integrations"
 ---
 
 # Mocking
 
-This page contains documentation for Mocking.
+Comprehensive guide to mocking the TraceRTM SDK for testing.
 
 ## Overview
 
-This section covers the key aspects of Mocking in TraceRTM.
+Mocking allows you to:
 
-## Getting Started
+- Test code without making real API calls
+- Control responses and errors
+- Test edge cases and error handling
+- Run tests quickly and reliably
 
-To get started with Mocking:
+---
 
-- Review the Mocking and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Jest Mocking
 
-## Key Concepts
+### Auto-Mocking the SDK
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```typescript
+// Automatically mock all exports
+jest.mock("@tracertm/sdk");
 
-## Next Steps
+import { TraceRTMClient } from "@tracertm/sdk";
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+test("client is mocked", () => {
+  const client = new TraceRTMClient({ apiKey: "test" });
+
+  // All methods are automatically jest.fn()
+  expect(jest.isMockFunction(client.projects.get)).toBe(true);
+});
+```
+
+### Manual Mock Implementation
+
+```typescript
+// tests/__mocks__/@tracertm/sdk.ts
+const createMockMethods = () => ({
+  get: jest.fn(),
+  list: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+});
+
+export class TraceRTMClient {
+  projects = createMockMethods();
+  items = { ...createMockMethods(), bulkCreate: jest.fn(), bulkUpdate: jest.fn() };
+  links = { ...createMockMethods(), bulkCreate: jest.fn() };
+  reports = {
+    coverage: jest.fn(),
+    traceabilityMatrix: jest.fn(),
+    impactAnalysis: jest.fn(),
+  };
+  search = { items: jest.fn(), suggest: jest.fn() };
+
+  constructor(public options: { apiKey: string }) {}
+}
+
+export class NotFoundError extends Error {
+  name = "NotFoundError";
+  code = "NOT_FOUND";
+}
+
+export class ValidationError extends Error {
+  name = "ValidationError";
+  code = "VALIDATION_ERROR";
+  constructor(message: string, public details: any[] = []) {
+    super(message);
+  }
+}
+
+export class RateLimitError extends Error {
+  name = "RateLimitError";
+  code = "RATE_LIMITED";
+  retryAfter = 60;
+}
+```
+
+---
+
+## Mock Patterns
+
+### Mock Return Values
+
+```typescript
+describe("mocking return values", () => {
+  let client: jest.Mocked<TraceRTMClient>;
+
+  beforeEach(() => {
+    client = new TraceRTMClient({ apiKey: "test" }) as jest.Mocked<TraceRTMClient>;
+  });
+
+  test("mockResolvedValue for single call", async () => {
+    client.projects.get.mockResolvedValue({
+      id: "proj_123",
+      name: "Test",
+      key: "TP",
+    } as any);
+
+    const result = await client.projects.get("proj_123");
+
+    expect(result.name).toBe("Test");
+  });
+
+  test("mockResolvedValueOnce for sequential calls", async () => {
+    client.projects.get
+      .mockResolvedValueOnce({ id: "proj_1", name: "First" } as any)
+      .mockResolvedValueOnce({ id: "proj_2", name: "Second" } as any);
+
+    const first = await client.projects.get("proj_1");
+    const second = await client.projects.get("proj_2");
+
+    expect(first.name).toBe("First");
+    expect(second.name).toBe("Second");
+  });
+
+  test("mockImplementation for custom logic", async () => {
+    const projects: Record<string, any> = {
+      proj_1: { id: "proj_1", name: "Project 1" },
+      proj_2: { id: "proj_2", name: "Project 2" },
+    };
+
+    client.projects.get.mockImplementation(async (id: string) => {
+      if (projects[id]) return projects[id];
+      throw new NotFoundError(`Project ${id} not found`);
+    });
+
+    expect(await client.projects.get("proj_1")).toEqual(projects.proj_1);
+    await expect(client.projects.get("invalid")).rejects.toThrow(NotFoundError);
+  });
+});
+```
+
+### Mock Errors
+
+```typescript
+describe("mocking errors", () => {
+  test("mockRejectedValue for errors", async () => {
+    client.items.get.mockRejectedValue(new NotFoundError("Not found"));
+
+    await expect(client.items.get("invalid")).rejects.toThrow(NotFoundError);
+  });
+
+  test("mockRejectedValueOnce for transient errors", async () => {
+    client.items.get
+      .mockRejectedValueOnce(new Error("Network error"))
+      .mockResolvedValueOnce({ id: "item_123" } as any);
+
+    // First call fails
+    await expect(client.items.get("item_123")).rejects.toThrow("Network error");
+
+    // Second call succeeds
+    const result = await client.items.get("item_123");
+    expect(result.id).toBe("item_123");
+  });
+
+  test("mock rate limiting", async () => {
+    const rateLimitError = new RateLimitError("Rate limited");
+    rateLimitError.retryAfter = 30;
+
+    client.items.list.mockRejectedValueOnce(rateLimitError);
+
+    try {
+      await client.items.list({ projectId: "proj_123" });
+    } catch (error) {
+      expect(error).toBeInstanceOf(RateLimitError);
+      expect((error as RateLimitError).retryAfter).toBe(30);
+    }
+  });
+});
+```
+
+---
+
+## Mock Factories
+
+### Creating Test Data
+
+```typescript
+// tests/factories/mock-data.ts
+import type { Project, Item, Link, CoverageReport } from "@tracertm/sdk";
+
+let idCounter = 0;
+const nextId = (prefix: string) => `${prefix}_${++idCounter}`;
+
+export const mockProject = (overrides: Partial<Project> = {}): Project => ({
+  id: nextId("proj"),
+  name: "Test Project",
+  key: "TP",
+  description: "A test project",
+  ownerId: "user_123",
+  settings: {},
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
+  ...overrides,
+});
+
+export const mockItem = (overrides: Partial<Item> = {}): Item => ({
+  id: nextId("item"),
+  projectId: "proj_123",
+  type: "requirement",
+  title: "Test Item",
+  description: "A test item",
+  status: "draft",
+  statusCategory: "initial",
+  priority: "medium",
+  tags: [],
+  createdBy: "user_123",
+  fields: {},
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
+  ...overrides,
+});
+
+export const mockLink = (overrides: Partial<Link> = {}): Link => ({
+  id: nextId("link"),
+  sourceId: "item_1",
+  targetId: "item_2",
+  type: "verified_by",
+  createdBy: "user_123",
+  createdAt: "2024-01-01T00:00:00Z",
+  ...overrides,
+});
+
+export const mockPaginatedResponse = <T>(
+  data: T[],
+  options: { total?: number; hasMore?: boolean } = {}
+) => ({
+  data,
+  total: options.total ?? data.length,
+  limit: 100,
+  offset: 0,
+  hasMore: options.hasMore ?? false,
+});
+
+export const mockCoverageReport = (
+  overrides: Partial<CoverageReport> = {}
+): CoverageReport => ({
+  projectId: "proj_123",
+  sourceType: "requirement",
+  targetType: "test_case",
+  totalSources: 10,
+  coveredCount: 8,
+  uncoveredCount: 2,
+  coveragePercent: 80,
+  coveredItems: [],
+  uncoveredItems: [],
+  generatedAt: "2024-01-01T00:00:00Z",
+  ...overrides,
+});
+```
+
+### Using Factories
+
+```typescript
+import { mockProject, mockItem, mockPaginatedResponse } from "../factories/mock-data";
+
+test("uses mock factories", async () => {
+  const project = mockProject({ name: "My Project" });
+  const items = [
+    mockItem({ projectId: project.id, title: "Req 1" }),
+    mockItem({ projectId: project.id, title: "Req 2" }),
+  ];
+
+  client.projects.get.mockResolvedValue(project);
+  client.items.list.mockResolvedValue(mockPaginatedResponse(items));
+
+  const result = await service.getProjectWithItems(project.id);
+
+  expect(result.project.name).toBe("My Project");
+  expect(result.items).toHaveLength(2);
+});
+```
+
+---
+
+## Spying
+
+### Spy on Methods
+
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
+
+describe("spying", () => {
+  test("spy on existing implementation", () => {
+    const client = new TraceRTMClient({ apiKey: "test" });
+    const getSpy = jest.spyOn(client.projects, "get");
+
+    // Original implementation still runs
+    client.projects.get("proj_123");
+
+    expect(getSpy).toHaveBeenCalledWith("proj_123");
+  });
+
+  test("spy and mock implementation", () => {
+    const client = new TraceRTMClient({ apiKey: "test" });
+    const getSpy = jest
+      .spyOn(client.projects, "get")
+      .mockResolvedValue({ id: "proj_123" } as any);
+
+    // Mocked implementation runs
+    const result = client.projects.get("proj_123");
+
+    expect(getSpy).toHaveBeenCalled();
+  });
+});
+```
+
+### Verify Call Arguments
+
+```typescript
+test("verify call arguments", async () => {
+  await service.createItem({
+    projectId: "proj_123",
+    type: "requirement",
+    title: "New Requirement",
+    priority: "high",
+  });
+
+  expect(client.items.create).toHaveBeenCalledWith({
+    projectId: "proj_123",
+    type: "requirement",
+    title: "New Requirement",
+    priority: "high",
+  });
+
+  // Check specific argument
+  expect(client.items.create).toHaveBeenCalledWith(
+    expect.objectContaining({
+      type: "requirement",
+      priority: "high",
+    })
+  );
+});
+```
+
+### Verify Call Count and Order
+
+```typescript
+test("verify call count", async () => {
+  await service.syncItems(["item_1", "item_2", "item_3"]);
+
+  expect(client.items.get).toHaveBeenCalledTimes(3);
+});
+
+test("verify call order", async () => {
+  await service.createLinkedItems();
+
+  const createCalls = client.items.create.mock.calls;
+
+  // First call creates requirement
+  expect(createCalls[0][0].type).toBe("requirement");
+
+  // Second call creates test case
+  expect(createCalls[1][0].type).toBe("test_case");
+});
+```
+
+---
+
+## MSW (Mock Service Worker)
+
+### Setup MSW
+
+```bash
+npm install --save-dev msw
+```
+
+```typescript
+// tests/mocks/handlers.ts
+import { rest } from "msw";
+
+const API_BASE = "https://api.tracertm.dev/v1";
+
+export const handlers = [
+  // Projects
+  rest.get(`${API_BASE}/projects/:id`, (req, res, ctx) => {
+    const { id } = req.params;
+    return res(
+      ctx.json({
+        id,
+        name: "Mock Project",
+        key: "MP",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  }),
+
+  rest.post(`${API_BASE}/projects`, async (req, res, ctx) => {
+    const body = await req.json();
+    return res(
+      ctx.status(201),
+      ctx.json({
+        id: "proj_new",
+        ...body,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  }),
+
+  // Items
+  rest.get(`${API_BASE}/items`, (req, res, ctx) => {
+    const projectId = req.url.searchParams.get("projectId");
+    return res(
+      ctx.json({
+        data: [
+          { id: "item_1", projectId, type: "requirement", title: "Item 1" },
+          { id: "item_2", projectId, type: "test_case", title: "Item 2" },
+        ],
+        total: 2,
+        limit: 100,
+        offset: 0,
+        hasMore: false,
+      })
+    );
+  }),
+
+  rest.get(`${API_BASE}/items/:id`, (req, res, ctx) => {
+    const { id } = req.params;
+    if (id === "not_found") {
+      return res(
+        ctx.status(404),
+        ctx.json({ code: "NOT_FOUND", message: "Item not found" })
+      );
+    }
+    return res(
+      ctx.json({
+        id,
+        projectId: "proj_123",
+        type: "requirement",
+        title: "Mock Item",
+      })
+    );
+  }),
+
+  // Error simulation
+  rest.get(`${API_BASE}/error/rate-limit`, (req, res, ctx) => {
+    return res(
+      ctx.status(429),
+      ctx.set("Retry-After", "60"),
+      ctx.json({ code: "RATE_LIMITED", message: "Rate limit exceeded" })
+    );
+  }),
+];
+```
+
+### Using MSW in Tests
+
+```typescript
+// tests/mocks/server.ts
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
+
+export const server = setupServer(...handlers);
+```
+
+```typescript
+// tests/setup.ts
+import { server } from "./mocks/server";
+
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+```typescript
+// tests/integration/items.test.ts
+import { rest } from "msw";
+import { server } from "../mocks/server";
+import { TraceRTMClient } from "@tracertm/sdk";
+
+describe("Items Integration", () => {
+  const client = new TraceRTMClient({ apiKey: "test_key" });
+
+  test("fetches items", async () => {
+    const result = await client.items.list({ projectId: "proj_123" });
+
+    expect(result.data).toHaveLength(2);
+    expect(result.data[0].title).toBe("Item 1");
+  });
+
+  test("handles 404", async () => {
+    await expect(client.items.get("not_found")).rejects.toThrow("Not found");
+  });
+
+  test("handles custom response", async () => {
+    server.use(
+      rest.get("https://api.tracertm.dev/v1/items/:id", (req, res, ctx) => {
+        return res(
+          ctx.json({
+            id: req.params.id,
+            title: "Custom Mock",
+          })
+        );
+      })
+    );
+
+    const item = await client.items.get("item_custom");
+
+    expect(item.title).toBe("Custom Mock");
+  });
+});
+```
+
+---
+
+## Partial Mocking
+
+### Mock Only Specific Methods
+
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
+
+jest.mock("@tracertm/sdk", () => {
+  const actual = jest.requireActual("@tracertm/sdk");
+
+  return {
+    ...actual,
+    TraceRTMClient: class extends actual.TraceRTMClient {
+      projects = {
+        ...new actual.TraceRTMClient({ apiKey: "test" }).projects,
+        // Override only get method
+        get: jest.fn(),
+      };
+    },
+  };
+});
+```
+
+### Conditional Mocking
+
+```typescript
+const mockClient = (overrides: Partial<TraceRTMClient> = {}) => {
+  const defaultMethods = {
+    projects: {
+      get: jest.fn().mockResolvedValue(mockProject()),
+      list: jest.fn().mockResolvedValue(mockPaginatedResponse([])),
+      create: jest.fn().mockImplementation((data) =>
+        Promise.resolve(mockProject(data))
+      ),
+    },
+    items: {
+      get: jest.fn().mockResolvedValue(mockItem()),
+      list: jest.fn().mockResolvedValue(mockPaginatedResponse([])),
+      create: jest.fn().mockImplementation((data) =>
+        Promise.resolve(mockItem(data))
+      ),
+    },
+  };
+
+  return {
+    ...defaultMethods,
+    ...overrides,
+  } as unknown as jest.Mocked<TraceRTMClient>;
+};
+
+// Usage
+const client = mockClient({
+  projects: {
+    ...mockClient().projects,
+    get: jest.fn().mockRejectedValue(new NotFoundError()),
+  },
+});
+```
+
+---
+
+## Best Practices
+
+### 1. Reset Mocks Between Tests
+
+```typescript
+beforeEach(() => {
+  jest.clearAllMocks(); // Clear call history
+  // or
+  jest.resetAllMocks(); // Clear history and implementations
+});
+```
+
+### 2. Use Type-Safe Mocks
+
+```typescript
+import type { TraceRTMClient } from "@tracertm/sdk";
+
+type MockedClient = {
+  [K in keyof TraceRTMClient]: {
+    [M in keyof TraceRTMClient[K]]: jest.Mock;
+  };
+};
+
+const createMockedClient = (): MockedClient => ({
+  projects: {
+    get: jest.fn(),
+    list: jest.fn(),
+    // ... all methods
+  },
+  // ... all namespaces
+});
+```
+
+### 3. Keep Mocks Close to Tests
+
+```typescript
+describe("specific behavior", () => {
+  beforeEach(() => {
+    // Setup specific to this describe block
+    client.items.get.mockResolvedValue(mockItem({ status: "approved" }));
+  });
+
+  test("handles approved items", () => {
+    // Test uses the mock defined above
+  });
+});
+```
+
+---
+
+## Related Documentation
+
+- [Testing](/docs/api-reference/sdks/javascript/testing) - Testing overview
+- [Jest Tests](/docs/api-reference/sdks/javascript/jest-tests) - Jest patterns
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error types

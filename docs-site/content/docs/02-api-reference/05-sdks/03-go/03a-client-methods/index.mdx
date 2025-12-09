@@ -1,32 +1,827 @@
 ---
 title: "Client Methods"
-description: "Documentation for Client Methods"
+description: "Complete reference for all TraceRTM Go SDK client methods"
 ---
 
 # Client Methods
 
-This page contains documentation for Client Methods.
+Complete reference documentation for all methods available on the TraceRTM Go SDK client.
 
-## Overview
+## Client Initialization
 
-This section covers the key aspects of Client Methods in TraceRTM.
+### NewClient
 
-## Getting Started
+Create a new TraceRTM client with an API key:
 
-To get started with Client Methods:
+```go
+func NewClient(apiKey string, opts ...ClientOption) *Client
+```
 
-- Review the Client Methods and fundamentals
-- Explore practical examples
-- Check out the API reference
+```go
+client := tracertm.NewClient("rtm_live_sk_...")
+```
 
-## Key Concepts
+### NewClientFromEnv
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+Create a client from environment variables:
 
-## Next Steps
+```go
+func NewClientFromEnv() (*Client, error)
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+```go
+client, err := tracertm.NewClientFromEnv()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+Environment variables:
+- `TRACERTM_API_KEY` - Required API key
+- `TRACERTM_BASE_URL` - Optional custom base URL
+
+---
+
+## Client Options
+
+Configure the client behavior with options:
+
+### WithBaseURL
+
+```go
+func WithBaseURL(url string) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithBaseURL("https://api.tracertm.example.com/v1"),
+)
+```
+
+### WithTimeout
+
+```go
+func WithTimeout(d time.Duration) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithTimeout(60*time.Second),
+)
+```
+
+### WithMaxRetries
+
+```go
+func WithMaxRetries(n int) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithMaxRetries(5),
+)
+```
+
+### WithRetryDelay
+
+```go
+func WithRetryDelay(d time.Duration) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithRetryDelay(500*time.Millisecond),
+)
+```
+
+### WithHTTPClient
+
+```go
+func WithHTTPClient(client *http.Client) ClientOption
+```
+
+```go
+httpClient := &http.Client{
+    Transport: &http.Transport{
+        MaxIdleConns:    100,
+        IdleConnTimeout: 90 * time.Second,
+    },
+}
+
+client := tracertm.NewClient(apiKey,
+    tracertm.WithHTTPClient(httpClient),
+)
+```
+
+### WithDebug
+
+```go
+func WithDebug(enabled bool) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithDebug(true),
+)
+```
+
+### WithHeaders
+
+```go
+func WithHeaders(headers map[string]string) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithHeaders(map[string]string{
+        "X-Custom-Header": "value",
+        "X-Request-ID":    "req-123",
+    }),
+)
+```
+
+### WithLogger
+
+```go
+func WithLogger(logger Logger) ClientOption
+```
+
+```go
+client := tracertm.NewClient(apiKey,
+    tracertm.WithLogger(myLogger),
+)
+```
+
+### WithTokenProvider
+
+```go
+func WithTokenProvider(provider TokenProvider) ClientOption
+```
+
+```go
+provider := &MyOAuthProvider{...}
+client := tracertm.NewClient("",
+    tracertm.WithTokenProvider(provider),
+)
+```
+
+---
+
+## Projects Service
+
+Access via `client.Projects`.
+
+### List
+
+```go
+func (p *ProjectsService) List(ctx context.Context, opts *ListProjectsOptions) (*ProjectList, error)
+```
+
+```go
+projects, err := client.Projects.List(ctx, &tracertm.ListProjectsOptions{
+    Limit:  50,
+    Offset: 0,
+    Sort:   "name",
+    Order:  "asc",
+})
+```
+
+### Get
+
+```go
+func (p *ProjectsService) Get(ctx context.Context, id string) (*Project, error)
+```
+
+```go
+project, err := client.Projects.Get(ctx, "proj_abc123")
+```
+
+### Create
+
+```go
+func (p *ProjectsService) Create(ctx context.Context, input *CreateProjectInput) (*Project, error)
+```
+
+```go
+project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
+    Name:        "My Project",
+    Key:         "MYPROJ",
+    Description: "Project description",
+})
+```
+
+### Update
+
+```go
+func (p *ProjectsService) Update(ctx context.Context, id string, input *UpdateProjectInput) (*Project, error)
+```
+
+```go
+project, err := client.Projects.Update(ctx, "proj_abc123", &tracertm.UpdateProjectInput{
+    Name:        "Updated Name",
+    Description: "Updated description",
+})
+```
+
+### Delete
+
+```go
+func (p *ProjectsService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Projects.Delete(ctx, "proj_abc123")
+```
+
+### GetStats
+
+```go
+func (p *ProjectsService) GetStats(ctx context.Context, id string) (*ProjectStats, error)
+```
+
+```go
+stats, err := client.Projects.GetStats(ctx, "proj_abc123")
+fmt.Printf("Items: %d, Links: %d\n", stats.ItemCount, stats.LinkCount)
+```
+
+### Iterate
+
+```go
+func (p *ProjectsService) Iterate(ctx context.Context, opts *ListProjectsOptions) *ProjectIterator
+```
+
+```go
+iter := client.Projects.Iterate(ctx, nil)
+for iter.Next() {
+    project := iter.Project()
+    fmt.Println(project.Name)
+}
+if err := iter.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+---
+
+## Items Service
+
+Access via `client.Items`.
+
+### List
+
+```go
+func (i *ItemsService) List(ctx context.Context, projectID string, opts *ListItemsOptions) (*ItemList, error)
+```
+
+```go
+items, err := client.Items.List(ctx, "proj_abc123", &tracertm.ListItemsOptions{
+    Type:     "requirement",
+    Status:   "approved",
+    Priority: "high",
+    Tags:     []string{"security"},
+    Limit:    50,
+    Offset:   0,
+    Sort:     "created_at",
+    Order:    "desc",
+})
+```
+
+### Get
+
+```go
+func (i *ItemsService) Get(ctx context.Context, id string) (*Item, error)
+```
+
+```go
+item, err := client.Items.Get(ctx, "item_abc123")
+```
+
+### Create
+
+```go
+func (i *ItemsService) Create(ctx context.Context, projectID string, input *CreateItemInput) (*Item, error)
+```
+
+```go
+item, err := client.Items.Create(ctx, "proj_abc123", &tracertm.CreateItemInput{
+    Type:        "requirement",
+    Title:       "User Authentication",
+    Description: "Implement secure login",
+    Priority:    "high",
+    Status:      "draft",
+    Tags:        []string{"security", "auth"},
+    ParentID:    "item_parent_001",
+    AssigneeID:  "user_123",
+    DueDate:     "2025-03-01",
+    CustomFields: map[string]interface{}{
+        "story_points": 8,
+        "epic":         "Authentication",
+    },
+})
+```
+
+### Update
+
+```go
+func (i *ItemsService) Update(ctx context.Context, id string, input *UpdateItemInput) (*Item, error)
+```
+
+```go
+item, err := client.Items.Update(ctx, "item_abc123", &tracertm.UpdateItemInput{
+    Title:       "Updated Title",
+    Priority:    "critical",
+    Description: "Updated description",
+})
+```
+
+### Delete
+
+```go
+func (i *ItemsService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Items.Delete(ctx, "item_abc123")
+```
+
+### Iterate
+
+```go
+func (i *ItemsService) Iterate(ctx context.Context, projectID string, opts *ListItemsOptions) *ItemIterator
+```
+
+```go
+iter := client.Items.Iterate(ctx, "proj_abc123", &tracertm.ListItemsOptions{
+    Type: "requirement",
+})
+for iter.Next() {
+    item := iter.Item()
+    fmt.Printf("%s: %s\n", item.Key, item.Title)
+}
+if err := iter.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+### Transition
+
+```go
+func (i *ItemsService) Transition(ctx context.Context, id string, input *TransitionInput) (*Item, error)
+```
+
+```go
+item, err := client.Items.Transition(ctx, "item_abc123", &tracertm.TransitionInput{
+    Transition: "approve",
+    Comment:    "Approved by tech lead",
+})
+```
+
+### AvailableTransitions
+
+```go
+func (i *ItemsService) AvailableTransitions(ctx context.Context, id string) ([]*Transition, error)
+```
+
+```go
+transitions, err := client.Items.AvailableTransitions(ctx, "item_abc123")
+for _, t := range transitions {
+    fmt.Printf("%s -> %s\n", t.Name, t.ToState)
+}
+```
+
+### BulkCreate
+
+```go
+func (i *ItemsService) BulkCreate(ctx context.Context, projectID string, inputs []*CreateItemInput) ([]*Item, error)
+```
+
+```go
+items, err := client.Items.BulkCreate(ctx, "proj_abc123", []*tracertm.CreateItemInput{
+    {Type: "requirement", Title: "Req 1"},
+    {Type: "requirement", Title: "Req 2"},
+})
+```
+
+### BulkUpdate
+
+```go
+func (i *ItemsService) BulkUpdate(ctx context.Context, updates []*BulkUpdateInput) ([]*BulkUpdateResult, error)
+```
+
+```go
+results, err := client.Items.BulkUpdate(ctx, []*tracertm.BulkUpdateInput{
+    {ID: "item_1", Update: &tracertm.UpdateItemInput{Priority: "high"}},
+    {ID: "item_2", Update: &tracertm.UpdateItemInput{Priority: "high"}},
+})
+```
+
+### BulkDelete
+
+```go
+func (i *ItemsService) BulkDelete(ctx context.Context, ids []string) (*BulkDeleteResult, error)
+```
+
+```go
+result, err := client.Items.BulkDelete(ctx, []string{"item_1", "item_2", "item_3"})
+fmt.Printf("Deleted: %d, Failed: %d\n", result.Deleted, result.Failed)
+```
+
+### GetHistory
+
+```go
+func (i *ItemsService) GetHistory(ctx context.Context, id string, opts *HistoryOptions) (*HistoryList, error)
+```
+
+```go
+history, err := client.Items.GetHistory(ctx, "item_abc123", nil)
+for _, entry := range history.Data {
+    fmt.Printf("%s: %s changed %s\n", entry.Timestamp, entry.User, entry.Field)
+}
+```
+
+---
+
+## Links Service
+
+Access via `client.Links`.
+
+### List
+
+```go
+func (l *LinksService) List(ctx context.Context, opts *ListLinksInput) (*LinkList, error)
+```
+
+```go
+links, err := client.Links.List(ctx, &tracertm.ListLinksInput{
+    ProjectID: "proj_abc123",
+    SourceID:  "item_req_001",
+    LinkType:  "verified_by",
+})
+```
+
+### Get
+
+```go
+func (l *LinksService) Get(ctx context.Context, id string) (*Link, error)
+```
+
+```go
+link, err := client.Links.Get(ctx, "link_abc123")
+```
+
+### Create
+
+```go
+func (l *LinksService) Create(ctx context.Context, input *CreateLinkInput) (*Link, error)
+```
+
+```go
+link, err := client.Links.Create(ctx, &tracertm.CreateLinkInput{
+    SourceID:    "item_req_001",
+    TargetID:    "item_tc_001",
+    LinkType:    "verified_by",
+    Description: "Test verifies requirement",
+})
+```
+
+### Delete
+
+```go
+func (l *LinksService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Links.Delete(ctx, "link_abc123")
+```
+
+### BulkCreate
+
+```go
+func (l *LinksService) BulkCreate(ctx context.Context, inputs []*CreateLinkInput) ([]*Link, error)
+```
+
+```go
+links, err := client.Links.BulkCreate(ctx, []*tracertm.CreateLinkInput{
+    {SourceID: "req_1", TargetID: "tc_1", LinkType: "verified_by"},
+    {SourceID: "req_1", TargetID: "tc_2", LinkType: "verified_by"},
+})
+```
+
+### BulkDelete
+
+```go
+func (l *LinksService) BulkDelete(ctx context.Context, ids []string) (*BulkDeleteResult, error)
+```
+
+```go
+result, err := client.Links.BulkDelete(ctx, []string{"link_1", "link_2"})
+```
+
+---
+
+## Reports Service
+
+Access via `client.Reports`.
+
+### Coverage
+
+```go
+func (r *ReportsService) Coverage(ctx context.Context, input *CoverageReportInput) (*CoverageReport, error)
+```
+
+```go
+report, err := client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+    ProjectID:  "proj_abc123",
+    SourceType: "requirement",
+    TargetType: "test_case",
+    LinkType:   "verified_by",
+})
+
+fmt.Printf("Coverage: %.1f%%\n", report.CoveragePercent)
+fmt.Printf("Covered: %d/%d\n", report.CoveredCount, report.TotalSources)
+```
+
+### TraceabilityMatrix
+
+```go
+func (r *ReportsService) TraceabilityMatrix(ctx context.Context, input *TraceabilityMatrixInput) (*TraceabilityMatrix, error)
+```
+
+```go
+matrix, err := client.Reports.TraceabilityMatrix(ctx, &tracertm.TraceabilityMatrixInput{
+    ProjectID: "proj_abc123",
+    RowType:   "requirement",
+    ColType:   "test_case",
+})
+```
+
+### ImpactAnalysis
+
+```go
+func (r *ReportsService) ImpactAnalysis(ctx context.Context, input *ImpactAnalysisInput) (*ImpactAnalysis, error)
+```
+
+```go
+impact, err := client.Reports.ImpactAnalysis(ctx, &tracertm.ImpactAnalysisInput{
+    ItemID:    "item_req_001",
+    Direction: "downstream",
+    Depth:     3,
+})
+
+fmt.Printf("Impacted items: %d\n", len(impact.ImpactedItems))
+```
+
+### GapAnalysis
+
+```go
+func (r *ReportsService) GapAnalysis(ctx context.Context, input *GapAnalysisInput) (*GapAnalysis, error)
+```
+
+```go
+gaps, err := client.Reports.GapAnalysis(ctx, &tracertm.GapAnalysisInput{
+    ProjectID:  "proj_abc123",
+    SourceType: "requirement",
+    TargetType: "test_case",
+})
+```
+
+---
+
+## Search Service
+
+Access via `client.Search`.
+
+### Items
+
+```go
+func (s *SearchService) Items(ctx context.Context, input *SearchInput) (*SearchResults, error)
+```
+
+```go
+results, err := client.Search.Items(ctx, &tracertm.SearchInput{
+    Query:     "authentication security",
+    ProjectID: "proj_abc123",
+    Type:      "requirement",
+    Limit:     20,
+})
+
+for _, result := range results.Data {
+    fmt.Printf("%s: %s (score: %.2f)\n", result.Key, result.Title, result.Score)
+}
+```
+
+### Suggest
+
+```go
+func (s *SearchService) Suggest(ctx context.Context, input *SuggestInput) (*SuggestResults, error)
+```
+
+```go
+suggestions, err := client.Search.Suggest(ctx, &tracertm.SuggestInput{
+    Query:     "auth",
+    ProjectID: "proj_abc123",
+    Limit:     5,
+})
+```
+
+### Advanced
+
+```go
+func (s *SearchService) Advanced(ctx context.Context, input *AdvancedSearchInput) (*SearchResults, error)
+```
+
+```go
+results, err := client.Search.Advanced(ctx, &tracertm.AdvancedSearchInput{
+    Query: "type:requirement AND priority:high AND status:approved",
+    ProjectID: "proj_abc123",
+})
+```
+
+---
+
+## Workflows Service
+
+Access via `client.Workflows`.
+
+### List
+
+```go
+func (w *WorkflowsService) List(ctx context.Context, input *ListWorkflowsInput) (*WorkflowList, error)
+```
+
+```go
+workflows, err := client.Workflows.List(ctx, &tracertm.ListWorkflowsInput{
+    ProjectID: "proj_abc123",
+})
+```
+
+### Get
+
+```go
+func (w *WorkflowsService) Get(ctx context.Context, id string) (*Workflow, error)
+```
+
+```go
+workflow, err := client.Workflows.Get(ctx, "wf_abc123")
+for _, state := range workflow.States {
+    fmt.Printf("State: %s (%s)\n", state.Name, state.Category)
+}
+```
+
+### Create
+
+```go
+func (w *WorkflowsService) Create(ctx context.Context, input *CreateWorkflowInput) (*Workflow, error)
+```
+
+```go
+workflow, err := client.Workflows.Create(ctx, &tracertm.CreateWorkflowInput{
+    Name:        "Requirements Workflow",
+    Description: "Workflow for requirements management",
+    States: []*tracertm.WorkflowStateInput{
+        {Name: "Draft", Category: "todo"},
+        {Name: "Review", Category: "in_progress"},
+        {Name: "Approved", Category: "done"},
+    },
+})
+```
+
+---
+
+## Users Service
+
+Access via `client.Users`.
+
+### Me
+
+```go
+func (u *UsersService) Me(ctx context.Context) (*User, error)
+```
+
+```go
+user, err := client.Users.Me(ctx)
+fmt.Printf("Logged in as: %s\n", user.Email)
+```
+
+### List
+
+```go
+func (u *UsersService) List(ctx context.Context, projectID string) (*UserList, error)
+```
+
+```go
+users, err := client.Users.List(ctx, "proj_abc123")
+```
+
+### Get
+
+```go
+func (u *UsersService) Get(ctx context.Context, id string) (*User, error)
+```
+
+```go
+user, err := client.Users.Get(ctx, "user_abc123")
+```
+
+---
+
+## Artifacts Service
+
+Access via `client.Artifacts`.
+
+### Upload
+
+```go
+func (a *ArtifactsService) Upload(ctx context.Context, itemID string, input *UploadArtifactInput) (*Artifact, error)
+```
+
+```go
+file, _ := os.Open("document.pdf")
+defer file.Close()
+
+artifact, err := client.Artifacts.Upload(ctx, "item_abc123", &tracertm.UploadArtifactInput{
+    Name:     "document.pdf",
+    File:     file,
+    MimeType: "application/pdf",
+})
+```
+
+### Download
+
+```go
+func (a *ArtifactsService) Download(ctx context.Context, id string) (io.ReadCloser, error)
+```
+
+```go
+reader, err := client.Artifacts.Download(ctx, "artifact_abc123")
+defer reader.Close()
+
+file, _ := os.Create("downloaded.pdf")
+defer file.Close()
+io.Copy(file, reader)
+```
+
+### Delete
+
+```go
+func (a *ArtifactsService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Artifacts.Delete(ctx, "artifact_abc123")
+```
+
+---
+
+## Utility Methods
+
+### SetAPIKey
+
+```go
+func (c *Client) SetAPIKey(apiKey string)
+```
+
+```go
+client.SetAPIKey("rtm_live_sk_new_key")
+```
+
+### SetBaseURL
+
+```go
+func (c *Client) SetBaseURL(url string)
+```
+
+```go
+client.SetBaseURL("https://api.tracertm.example.com/v1")
+```
+
+### GetBaseURL
+
+```go
+func (c *Client) GetBaseURL() string
+```
+
+```go
+url := client.GetBaseURL()
+```
+
+### Ping
+
+```go
+func (c *Client) Ping(ctx context.Context) error
+```
+
+```go
+if err := client.Ping(ctx); err != nil {
+    log.Fatal("Cannot connect to TraceRTM")
+}
+```
+
+---
+
+## Related Documentation
+
+- [API Reference](/docs/api-reference/sdks/go/api-reference) - Full API reference
+- [Types](/docs/api-reference/sdks/go/types) - Type definitions
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Handle errors
+- [Examples](/docs/api-reference/sdks/go/examples) - Code examples

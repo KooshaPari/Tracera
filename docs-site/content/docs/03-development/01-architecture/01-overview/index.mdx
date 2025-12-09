@@ -1,125 +1,381 @@
 ---
 title: "Architecture Overview"
-description: "Documentation for Architecture Overview"
+description: "High-level overview of TraceRTM system architecture, design principles, and technology stack"
 ---
 
 # Architecture Overview
 
+TraceRTM is built on a modern, scalable architecture designed for requirements traceability at scale. This document provides a comprehensive overview of the system's design principles, components, and technology choices.
 
-## Overview
+## Design Philosophy
 
-Welcome to the Architecture Overview documentation.
+TraceRTM follows several core architectural principles:
 
-## Introduction
+### Agent-Native Design
 
-This page provides comprehensive information about Architecture Overview.
+TraceRTM is designed from the ground up for AI-agent interaction:
 
-## Key Features
+- **Structured APIs** - All operations exposed through well-typed REST APIs
+- **Deterministic responses** - Consistent, predictable response formats
+- **Batch operations** - Efficient bulk processing for agent workflows
+- **Event-driven updates** - Real-time notifications for state changes
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+### Graph-First Data Model
 
-## Getting Started
+Requirements traceability is fundamentally a graph problem:
 
-```bash
-tracertm init
-tracertm config set overview enabled
+- **Items as nodes** - Requirements, test cases, and artifacts are vertices
+- **Links as edges** - Relationships form directed edges between items
+- **Traversal queries** - Impact analysis and coverage via graph algorithms
+- **Hybrid storage** - PostgreSQL for ACID + Neo4j for graph queries
+
+### Multi-Tenancy
+
+Enterprise-ready isolation and customization:
+
+- **Organization-level isolation** - Complete data separation between orgs
+- **Project-scoped access** - Fine-grained permissions per project
+- **Customizable workflows** - Per-project item types and statuses
+- **Audit compliance** - Full audit trail for regulated industries
+
+---
+
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Client Layer                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  Web App (React)  │  CLI (Python)  │  SDKs  │  AI Agents           │
+└────────┬──────────┴────────┬───────┴───┬────┴────────┬─────────────┘
+         │                   │           │             │
+         ▼                   ▼           ▼             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          API Gateway                                │
+│                     (Auth, Rate Limiting, Routing)                  │
+└────────────────────────────┬────────────────────────────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         ▼                   ▼                   ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   REST API      │ │   WebSocket     │ │   GraphQL       │
+│   (FastAPI)     │ │   (Real-time)   │ │   (Optional)    │
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Service Layer                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│ Project │ Item │ Link │ Workflow │ Search │ Report │ Sync │ AI     │
+│ Service │ Svc  │ Svc  │ Service  │ Service│ Service│ Svc  │ Service│
+└────────────────────────────┬────────────────────────────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         ▼                   ▼                   ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   Repository    │ │   Cache Layer   │ │   Event Bus     │
+│   Layer         │ │   (Redis)       │ │   (Redis PubSub)│
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Data Layer                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│  PostgreSQL     │  Neo4j          │  Meilisearch   │  Object Store  │
+│  (Primary)      │  (Graph)        │  (Full-text)   │  (Attachments) │
+└─────────────────┴─────────────────┴────────────────┴────────────────┘
 ```
 
-## Usage
+---
 
-### Basic Usage
+## Technology Stack
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+### Backend
 
-const tracertm = new TraceRTM()
-const result = await tracertm.overview()
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **API Framework** | FastAPI (Python 3.11+) | High-performance async REST API |
+| **ORM** | SQLAlchemy 2.0 | Database abstraction, migrations |
+| **Validation** | Pydantic v2 | Request/response validation |
+| **Authentication** | WorkOS | SSO, SAML, SCIM provisioning |
+| **Task Queue** | Celery + Redis | Background job processing |
+
+### Frontend
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Framework** | React 18 + TypeScript | UI components and state |
+| **Routing** | TanStack Router | Type-safe routing |
+| **State** | TanStack Query | Server state management |
+| **UI Library** | shadcn/ui + Tailwind | Component library |
+| **Visualization** | D3.js, React Flow | Graph visualization |
+
+### Data Storage
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Primary DB** | PostgreSQL 16 | Transactional data, ACID compliance |
+| **Graph DB** | Neo4j 5.x | Link traversal, impact analysis |
+| **Search** | Meilisearch | Full-text search, fuzzy matching |
+| **Cache** | Redis 7 | Session cache, rate limiting |
+| **Object Store** | S3/MinIO | File attachments, exports |
+
+### Infrastructure
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Container** | Docker | Application packaging |
+| **Orchestration** | Kubernetes | Production deployment |
+| **CI/CD** | GitHub Actions | Automated testing, deployment |
+| **Monitoring** | Prometheus + Grafana | Metrics and alerting |
+| **Logging** | ELK Stack | Centralized logging |
+
+---
+
+## Core Components
+
+### API Server
+
+The API server is the primary entry point for all client interactions:
+
+```python
+# Simplified API structure
+from fastapi import FastAPI, Depends
+from tracertm.api.routers import projects, items, links, reports
+
+app = FastAPI(
+    title="TraceRTM API",
+    version="1.0.0",
+    docs_url="/docs",
+)
+
+# Mount routers
+app.include_router(projects.router, prefix="/v1/projects", tags=["projects"])
+app.include_router(items.router, prefix="/v1/items", tags=["items"])
+app.include_router(links.router, prefix="/v1/links", tags=["links"])
+app.include_router(reports.router, prefix="/v1/reports", tags=["reports"])
 ```
 
-### Advanced Usage
+Key features:
+- Async request handling with uvicorn/gunicorn
+- OpenAPI spec generation for SDK generation
+- Middleware chain for auth, logging, rate limiting
+- Health check endpoints for load balancers
 
-```typescript
-const config = {
-  overview: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+### Service Layer
 
-const tracertm = new TraceRTM(config)
+Business logic is encapsulated in service classes:
+
+```python
+class ItemService:
+    """Service for item operations."""
+
+    def __init__(
+        self,
+        item_repo: ItemRepository,
+        link_repo: LinkRepository,
+        search_service: SearchService,
+        event_bus: EventBus,
+    ):
+        self.item_repo = item_repo
+        self.link_repo = link_repo
+        self.search_service = search_service
+        self.event_bus = event_bus
+
+    async def create_item(
+        self,
+        project_id: str,
+        data: CreateItemInput,
+        user_id: str,
+    ) -> Item:
+        """Create a new item with validation and indexing."""
+        # Validate project access
+        # Create item in database
+        # Index in search engine
+        # Emit creation event
+        # Return created item
 ```
 
-## Configuration
+### Repository Layer
 
-```typescript
-export default {
-  overview: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+Data access is abstracted through repositories:
+
+```python
+class ItemRepository:
+    """Repository for item data access."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_id(self, item_id: str) -> Item | None:
+        """Get item by ID."""
+        stmt = select(ItemModel).where(ItemModel.id == item_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def list_by_project(
+        self,
+        project_id: str,
+        filters: ItemFilters,
+        pagination: Pagination,
+    ) -> PaginatedResult[Item]:
+        """List items with filtering and pagination."""
 ```
 
-## Examples
+---
 
-### Example 1
+## Data Flow
 
-```typescript
-const example = await tracertm.overview({
-  option1: 'value1',
-  option2: 'value2'
-})
+### Request Processing
+
+1. **API Gateway** receives request, validates JWT
+2. **Middleware** checks rate limits, logs request
+3. **Router** dispatches to appropriate handler
+4. **Handler** validates input via Pydantic
+5. **Service** executes business logic
+6. **Repository** performs database operations
+7. **Response** serialized and returned
+
+### Event-Driven Updates
+
+When state changes occur:
+
+1. **Service** performs operation
+2. **Service** publishes event to Redis PubSub
+3. **WebSocket** server receives event
+4. **WebSocket** broadcasts to subscribed clients
+5. **Background workers** process async tasks
+
+```python
+# Event publishing example
+class EventBus:
+    async def publish(self, event: Event):
+        await self.redis.publish(
+            f"events:{event.project_id}",
+            event.model_dump_json()
+        )
 ```
 
-### Example 2
+---
 
-```typescript
-const advanced = await tracertm.overview({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+## Scalability Design
+
+### Horizontal Scaling
+
+- **Stateless API servers** - Scale by adding instances
+- **Shared Redis** - Session and cache coordination
+- **Database pooling** - PgBouncer for connection management
+- **Read replicas** - Scale read operations independently
+
+### Performance Optimization
+
+- **Async I/O** - Non-blocking database and HTTP operations
+- **Connection pooling** - Reuse database connections
+- **Caching strategy** - Redis for frequently accessed data
+- **Bulk operations** - Batch inserts/updates for efficiency
+
+### High Availability
+
+- **Multi-AZ deployment** - Database and services across zones
+- **Load balancing** - Distribute traffic across instances
+- **Circuit breakers** - Graceful degradation on failures
+- **Health checks** - Automatic instance replacement
+
+---
+
+## Security Architecture
+
+### Authentication
+
+- **API Keys** - For service-to-service and CLI authentication
+- **OAuth 2.0** - For user authentication via WorkOS
+- **SSO/SAML** - Enterprise identity provider integration
+- **JWT tokens** - Short-lived access tokens with refresh
+
+### Authorization
+
+```python
+# Permission check example
+class PermissionChecker:
+    async def check_project_access(
+        self,
+        user_id: str,
+        project_id: str,
+        required_permission: Permission,
+    ) -> bool:
+        membership = await self.get_membership(user_id, project_id)
+        if not membership:
+            return False
+        return membership.role.has_permission(required_permission)
 ```
 
-## Best Practices
+### Data Security
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+- **Encryption at rest** - Database and object storage encryption
+- **Encryption in transit** - TLS 1.3 for all connections
+- **Field-level encryption** - Sensitive custom fields
+- **Audit logging** - All mutations logged for compliance
 
-## Troubleshooting
+---
 
-### Common Issues
+## Integration Points
 
-**Issue 1:**
-```bash
-tracertm fix issue-1
+### External Systems
+
+| Integration | Protocol | Purpose |
+|-------------|----------|---------|
+| **Jira** | REST API | Issue synchronization |
+| **GitHub** | Webhooks | Code reference linking |
+| **GitLab** | Webhooks | Code reference linking |
+| **Jenkins** | REST API | Test result import |
+| **Slack** | Webhooks | Notifications |
+| **Teams** | Webhooks | Notifications |
+
+### AI/Agent Integration
+
+```python
+# Agent-optimized endpoints
+@router.post("/items/bulk")
+async def bulk_create_items(
+    items: list[CreateItemInput],
+    service: ItemService = Depends(get_item_service),
+) -> list[Item]:
+    """
+    Create multiple items in a single transaction.
+    Optimized for AI agent bulk operations.
+    """
+    return await service.bulk_create(items)
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
-```
+---
 
-## API Reference
+## Deployment Models
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+### Self-Hosted
 
-## Related Topics
+For organizations requiring on-premises deployment:
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- Docker Compose for development/small teams
+- Kubernetes Helm charts for production
+- Support for air-gapped environments
 
+### Cloud-Hosted
+
+Managed TraceRTM instances:
+
+- Multi-tenant SaaS offering
+- Single-tenant dedicated instances
+- Region-specific deployments for data residency
+
+---
+
+## Related Documentation
+
+- [Frontend Architecture](/docs/development/architecture/frontend) - React application design
+- [Backend Architecture](/docs/development/architecture/backend) - API server design
+- [Database Schema](/docs/development/architecture/database) - Data model design
+- [Infrastructure](/docs/development/architecture/infrastructure) - Deployment architecture

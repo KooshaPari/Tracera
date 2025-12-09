@@ -1,32 +1,645 @@
 ---
 title: "Logging"
-description: "Documentation for Logging"
+description: "Logging and debugging with the TraceRTM JavaScript SDK"
 ---
 
 # Logging
 
-This page contains documentation for Logging.
+Configure logging and debugging for the TraceRTM JavaScript SDK.
 
-## Overview
+## Built-in Debug Mode
 
-This section covers the key aspects of Logging in TraceRTM.
+### Enable Debug Logging
 
-## Getting Started
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
 
-To get started with Logging:
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+  debug: true, // Enable debug logging
+});
+```
 
-- Review the Logging and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Debug Output
 
-## Key Concepts
+With debug enabled, the SDK logs:
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+- Request details (method, URL, headers)
+- Request body (sanitized)
+- Response status and timing
+- Error details
 
-## Next Steps
+```
+[TraceRTM] POST https://api.tracertm.dev/v1/items
+[TraceRTM] Request: {"projectId":"proj_123","type":"requirement","title":"New Req"}
+[TraceRTM] Response: 201 Created (145ms)
+[TraceRTM] Body: {"id":"item_abc123","projectId":"proj_123",...}
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+---
+
+## Custom Logger
+
+### Logger Interface
+
+```typescript
+interface Logger {
+  debug(message: string, data?: Record<string, unknown>): void;
+  info(message: string, data?: Record<string, unknown>): void;
+  warn(message: string, data?: Record<string, unknown>): void;
+  error(message: string, data?: Record<string, unknown>): void;
+}
+```
+
+### Implementing a Custom Logger
+
+```typescript
+const customLogger: Logger = {
+  debug(message, data) {
+    console.debug(`[DEBUG] ${message}`, data);
+  },
+  info(message, data) {
+    console.info(`[INFO] ${message}`, data);
+  },
+  warn(message, data) {
+    console.warn(`[WARN] ${message}`, data);
+  },
+  error(message, data) {
+    console.error(`[ERROR] ${message}`, data);
+  },
+};
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+  logger: customLogger,
+});
+```
+
+### Using Winston
+
+```typescript
+import winston from "winston";
+
+const winstonLogger = winston.createLogger({
+  level: "debug",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: "tracertm.log" }),
+  ],
+});
+
+const logger: Logger = {
+  debug: (msg, data) => winstonLogger.debug(msg, data),
+  info: (msg, data) => winstonLogger.info(msg, data),
+  warn: (msg, data) => winstonLogger.warn(msg, data),
+  error: (msg, data) => winstonLogger.error(msg, data),
+};
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+  logger,
+});
+```
+
+### Using Pino
+
+```typescript
+import pino from "pino";
+
+const pinoLogger = pino({
+  name: "tracertm",
+  level: "debug",
+});
+
+const logger: Logger = {
+  debug: (msg, data) => pinoLogger.debug(data, msg),
+  info: (msg, data) => pinoLogger.info(data, msg),
+  warn: (msg, data) => pinoLogger.warn(data, msg),
+  error: (msg, data) => pinoLogger.error(data, msg),
+};
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+  logger,
+});
+```
+
+---
+
+## Request Logging
+
+### Log All Requests
+
+```typescript
+class RequestLogger {
+  private client: TraceRTMClient;
+
+  constructor(apiKey: string) {
+    this.client = new TraceRTMClient({ apiKey });
+  }
+
+  private async logRequest<T>(
+    operation: string,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    const start = Date.now();
+    const requestId = Math.random().toString(36).slice(2, 10);
+
+    console.log(`[${requestId}] Starting: ${operation}`);
+
+    try {
+      const result = await fn();
+      const duration = Date.now() - start;
+      console.log(`[${requestId}] Completed: ${operation} (${duration}ms)`);
+      return result;
+    } catch (error) {
+      const duration = Date.now() - start;
+      console.error(`[${requestId}] Failed: ${operation} (${duration}ms)`, error);
+      throw error;
+    }
+  }
+
+  async getProject(id: string) {
+    return this.logRequest(`getProject(${id})`, () =>
+      this.client.projects.get(id)
+    );
+  }
+
+  async listItems(projectId: string) {
+    return this.logRequest(`listItems(${projectId})`, () =>
+      this.client.items.list({ projectId })
+    );
+  }
+}
+```
+
+### Structured Request Logs
+
+```typescript
+interface RequestLog {
+  id: string;
+  operation: string;
+  timestamp: string;
+  duration?: number;
+  status: "started" | "completed" | "failed";
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+function createRequestLogger(onLog: (log: RequestLog) => void) {
+  return async function logRequest<T>(
+    operation: string,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    const id = Math.random().toString(36).slice(2, 10);
+    const timestamp = new Date().toISOString();
+    const start = Date.now();
+
+    onLog({ id, operation, timestamp, status: "started" });
+
+    try {
+      const result = await fn();
+      onLog({
+        id,
+        operation,
+        timestamp,
+        duration: Date.now() - start,
+        status: "completed",
+      });
+      return result;
+    } catch (error: any) {
+      onLog({
+        id,
+        operation,
+        timestamp,
+        duration: Date.now() - start,
+        status: "failed",
+        error: {
+          code: error.code || "UNKNOWN",
+          message: error.message,
+        },
+      });
+      throw error;
+    }
+  };
+}
+
+// Usage
+const logRequest = createRequestLogger((log) => {
+  // Send to logging service
+  console.log(JSON.stringify(log));
+});
+
+const item = await logRequest("items.get", () =>
+  client.items.get("item_123")
+);
+```
+
+---
+
+## Log Levels
+
+### Configurable Log Levels
+
+```typescript
+type LogLevel = "debug" | "info" | "warn" | "error" | "none";
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+  none: 4,
+};
+
+class ConfigurableLogger implements Logger {
+  constructor(private level: LogLevel = "info") {}
+
+  private shouldLog(level: LogLevel): boolean {
+    return LOG_LEVELS[level] >= LOG_LEVELS[this.level];
+  }
+
+  debug(message: string, data?: Record<string, unknown>) {
+    if (this.shouldLog("debug")) {
+      console.debug(`[DEBUG] ${message}`, data ?? "");
+    }
+  }
+
+  info(message: string, data?: Record<string, unknown>) {
+    if (this.shouldLog("info")) {
+      console.info(`[INFO] ${message}`, data ?? "");
+    }
+  }
+
+  warn(message: string, data?: Record<string, unknown>) {
+    if (this.shouldLog("warn")) {
+      console.warn(`[WARN] ${message}`, data ?? "");
+    }
+  }
+
+  error(message: string, data?: Record<string, unknown>) {
+    if (this.shouldLog("error")) {
+      console.error(`[ERROR] ${message}`, data ?? "");
+    }
+  }
+}
+
+// Usage
+const logger = new ConfigurableLogger(
+  process.env.NODE_ENV === "production" ? "error" : "debug"
+);
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+  logger,
+});
+```
+
+---
+
+## Sensitive Data
+
+### Sanitizing Logs
+
+```typescript
+function sanitize(data: Record<string, unknown>): Record<string, unknown> {
+  const sensitiveKeys = ["apiKey", "token", "password", "secret", "authorization"];
+  const sanitized: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    if (sensitiveKeys.some((k) => key.toLowerCase().includes(k))) {
+      sanitized[key] = "[REDACTED]";
+    } else if (typeof value === "object" && value !== null) {
+      sanitized[key] = sanitize(value as Record<string, unknown>);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+
+  return sanitized;
+}
+
+const secureLogger: Logger = {
+  debug(message, data) {
+    console.debug(message, data ? sanitize(data) : "");
+  },
+  info(message, data) {
+    console.info(message, data ? sanitize(data) : "");
+  },
+  warn(message, data) {
+    console.warn(message, data ? sanitize(data) : "");
+  },
+  error(message, data) {
+    console.error(message, data ? sanitize(data) : "");
+  },
+};
+```
+
+### PII Filtering
+
+```typescript
+function filterPII(data: unknown): unknown {
+  if (typeof data !== "object" || data === null) {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    return data.map(filterPII);
+  }
+
+  const filtered: Record<string, unknown> = {};
+  const piiFields = ["email", "phone", "ssn", "address", "name"];
+
+  for (const [key, value] of Object.entries(data)) {
+    if (piiFields.some((f) => key.toLowerCase().includes(f))) {
+      filtered[key] = "[PII_FILTERED]";
+    } else {
+      filtered[key] = filterPII(value);
+    }
+  }
+
+  return filtered;
+}
+```
+
+---
+
+## Performance Logging
+
+### Timing Metrics
+
+```typescript
+class PerformanceLogger {
+  private metrics: Map<string, number[]> = new Map();
+
+  recordTiming(operation: string, duration: number) {
+    const times = this.metrics.get(operation) || [];
+    times.push(duration);
+    this.metrics.set(operation, times);
+  }
+
+  getStats(operation: string) {
+    const times = this.metrics.get(operation) || [];
+    if (times.length === 0) return null;
+
+    const sorted = [...times].sort((a, b) => a - b);
+    return {
+      count: times.length,
+      min: sorted[0],
+      max: sorted[sorted.length - 1],
+      avg: times.reduce((a, b) => a + b, 0) / times.length,
+      p50: sorted[Math.floor(sorted.length * 0.5)],
+      p95: sorted[Math.floor(sorted.length * 0.95)],
+      p99: sorted[Math.floor(sorted.length * 0.99)],
+    };
+  }
+
+  logStats() {
+    console.log("\n=== API Performance Stats ===");
+    for (const [operation, times] of this.metrics) {
+      const stats = this.getStats(operation);
+      if (stats) {
+        console.log(`\n${operation}:`);
+        console.log(`  Count: ${stats.count}`);
+        console.log(`  Min: ${stats.min}ms`);
+        console.log(`  Max: ${stats.max}ms`);
+        console.log(`  Avg: ${stats.avg.toFixed(2)}ms`);
+        console.log(`  P95: ${stats.p95}ms`);
+      }
+    }
+  }
+}
+
+// Usage
+const perfLogger = new PerformanceLogger();
+
+async function timedRequest<T>(operation: string, fn: () => Promise<T>): Promise<T> {
+  const start = Date.now();
+  try {
+    return await fn();
+  } finally {
+    perfLogger.recordTiming(operation, Date.now() - start);
+  }
+}
+
+// Log stats periodically
+setInterval(() => perfLogger.logStats(), 60000);
+```
+
+---
+
+## Error Logging
+
+### Structured Error Logs
+
+```typescript
+interface ErrorLog {
+  timestamp: string;
+  level: "warn" | "error";
+  code: string;
+  message: string;
+  requestId?: string;
+  statusCode?: number;
+  operation?: string;
+  stack?: string;
+}
+
+function logError(error: unknown, context?: Record<string, unknown>): ErrorLog {
+  const timestamp = new Date().toISOString();
+
+  if (error instanceof TraceRTMError) {
+    const log: ErrorLog = {
+      timestamp,
+      level: error.statusCode && error.statusCode < 500 ? "warn" : "error",
+      code: error.code,
+      message: error.message,
+      requestId: error.requestId,
+      statusCode: error.statusCode,
+      ...context,
+    };
+
+    if (process.env.NODE_ENV !== "production") {
+      log.stack = error.stack;
+    }
+
+    console.error(JSON.stringify(log));
+    return log;
+  }
+
+  const unknownLog: ErrorLog = {
+    timestamp,
+    level: "error",
+    code: "UNKNOWN_ERROR",
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
+    ...context,
+  };
+
+  console.error(JSON.stringify(unknownLog));
+  return unknownLog;
+}
+```
+
+---
+
+## Integration Examples
+
+### DataDog Integration
+
+```typescript
+import { datadogLogs } from "@datadog/browser-logs";
+
+datadogLogs.init({
+  clientToken: "your-client-token",
+  site: "datadoghq.com",
+  service: "my-app",
+  env: process.env.NODE_ENV,
+});
+
+const logger: Logger = {
+  debug(message, data) {
+    datadogLogs.logger.debug(message, data);
+  },
+  info(message, data) {
+    datadogLogs.logger.info(message, data);
+  },
+  warn(message, data) {
+    datadogLogs.logger.warn(message, data);
+  },
+  error(message, data) {
+    datadogLogs.logger.error(message, data);
+  },
+};
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+  logger,
+});
+```
+
+### Sentry Integration
+
+```typescript
+import * as Sentry from "@sentry/node";
+
+Sentry.init({
+  dsn: "your-sentry-dsn",
+  environment: process.env.NODE_ENV,
+});
+
+const logger: Logger = {
+  debug(message, data) {
+    Sentry.addBreadcrumb({
+      category: "tracertm",
+      message,
+      level: "debug",
+      data,
+    });
+  },
+  info(message, data) {
+    Sentry.addBreadcrumb({
+      category: "tracertm",
+      message,
+      level: "info",
+      data,
+    });
+  },
+  warn(message, data) {
+    Sentry.addBreadcrumb({
+      category: "tracertm",
+      message,
+      level: "warning",
+      data,
+    });
+  },
+  error(message, data) {
+    Sentry.captureMessage(message, {
+      level: "error",
+      extra: data,
+    });
+  },
+};
+```
+
+---
+
+## Debug Utilities
+
+### Debug npm Package
+
+```typescript
+import debug from "debug";
+
+const log = debug("app:tracertm");
+const logRequest = debug("app:tracertm:request");
+const logResponse = debug("app:tracertm:response");
+const logError = debug("app:tracertm:error");
+
+const logger: Logger = {
+  debug: (msg, data) => log("%s %O", msg, data),
+  info: (msg, data) => log("%s %O", msg, data),
+  warn: (msg, data) => logError("WARN: %s %O", msg, data),
+  error: (msg, data) => logError("ERROR: %s %O", msg, data),
+};
+
+// Enable with: DEBUG=app:tracertm* node app.js
+```
+
+---
+
+## Best Practices
+
+### 1. Use Environment-Based Configuration
+
+```typescript
+const logger = new ConfigurableLogger(
+  process.env.LOG_LEVEL as LogLevel || "info"
+);
+```
+
+### 2. Include Request IDs
+
+```typescript
+function logWithRequestId(requestId: string) {
+  return {
+    debug: (msg: string) => console.debug(`[${requestId}] ${msg}`),
+    error: (msg: string) => console.error(`[${requestId}] ${msg}`),
+  };
+}
+```
+
+### 3. Don't Log Sensitive Data
+
+```typescript
+// Always sanitize before logging
+console.log("Request:", sanitize(requestBody));
+```
+
+### 4. Use Structured Logging in Production
+
+```typescript
+// Bad
+console.log(`Error fetching item ${id}: ${error.message}`);
+
+// Good
+console.log(JSON.stringify({
+  event: "item_fetch_error",
+  itemId: id,
+  error: error.message,
+  code: error.code,
+}));
+```
+
+---
+
+## Related Documentation
+
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error types
+- [Testing](/docs/api-reference/sdks/javascript/testing) - Testing with logs
+- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - Type-safe logging

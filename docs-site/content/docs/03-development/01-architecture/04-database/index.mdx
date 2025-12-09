@@ -1,125 +1,646 @@
 ---
 title: "Database Design"
-description: "Documentation for Database Design"
+description: "PostgreSQL and Neo4j database architecture, schema design, and data synchronization patterns in TraceRTM"
 ---
 
 # Database Design
 
+TraceRTM uses a hybrid database architecture combining PostgreSQL for transactional data and Neo4j for graph queries, optimized for requirements traceability at scale.
 
-## Overview
+## Architecture Overview
 
-Welcome to the Database Design documentation.
-
-## Introduction
-
-This page provides comprehensive information about Database Design.
-
-## Key Features
-
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
-
-## Getting Started
-
-```bash
-tracertm init
-tracertm config set database enabled
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       Application Layer                              │
+└─────────────────────────────┬───────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+│  PostgreSQL   │    │    Neo4j      │    │  Meilisearch  │
+│  (Primary)    │◄──►│   (Graph)     │    │   (Search)    │
+│               │    │               │    │               │
+│ • ACID        │    │ • Traversal   │    │ • Full-text   │
+│ • Relations   │    │ • Impact      │    │ • Fuzzy match │
+│ • Constraints │    │ • Paths       │    │ • Facets      │
+└───────────────┘    └───────────────┘    └───────────────┘
+        │                     │                     │
+        └─────────────────────┼─────────────────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │   Sync Service    │
+                    │  (Event-driven)   │
+                    └───────────────────┘
 ```
 
-## Usage
+---
 
-### Basic Usage
+## PostgreSQL Schema
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+### Core Tables
 
-const tracertm = new TraceRTM()
-const result = await tracertm.database()
+#### Organizations
+
+```sql
+CREATE TABLE organizations (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    settings JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_organizations_slug ON organizations(slug);
 ```
 
-### Advanced Usage
+#### Users
 
-```typescript
-const config = {
-  database: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+```sql
+CREATE TABLE users (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    organization_id VARCHAR(36) REFERENCES organizations(id) ON DELETE CASCADE,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    role VARCHAR(50) DEFAULT 'member',
+    settings JSONB DEFAULT '{}',
+    last_login_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-const tracertm = new TraceRTM(config)
+CREATE INDEX idx_users_organization ON users(organization_id);
+CREATE INDEX idx_users_email ON users(email);
 ```
 
-## Configuration
+#### Projects
 
-```typescript
-export default {
-  database: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+```sql
+CREATE TABLE projects (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    organization_id VARCHAR(36) REFERENCES organizations(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    key VARCHAR(20) NOT NULL,
+    description TEXT,
+    owner_id VARCHAR(36) REFERENCES users(id),
+    settings JSONB DEFAULT '{}',
+    archived_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    UNIQUE(organization_id, key)
+);
+
+CREATE INDEX idx_projects_organization ON projects(organization_id);
+CREATE INDEX idx_projects_key ON projects(key);
+CREATE INDEX idx_projects_owner ON projects(owner_id);
 ```
 
-## Examples
+#### Items
 
-### Example 1
+```sql
+CREATE TABLE items (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    project_id VARCHAR(36) REFERENCES projects(id) ON DELETE CASCADE,
+    parent_id VARCHAR(36) REFERENCES items(id) ON DELETE SET NULL,
 
-```typescript
-const example = await tracertm.database({
-  option1: 'value1',
-  option2: 'value2'
+    -- Identification
+    key VARCHAR(50) NOT NULL,
+    key_number INTEGER NOT NULL,
+    external_id VARCHAR(255),
+
+    -- Content
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(500) NOT NULL,
+    description TEXT,
+
+    -- State
+    status VARCHAR(50) NOT NULL,
+    status_category VARCHAR(20) NOT NULL,
+    priority VARCHAR(20),
+
+    -- Classification
+    tags TEXT[] DEFAULT '{}',
+    labels JSONB DEFAULT '[]',
+
+    -- Assignment
+    assignee_id VARCHAR(36) REFERENCES users(id) ON DELETE SET NULL,
+    created_by VARCHAR(36) REFERENCES users(id),
+
+    -- Dates
+    due_date DATE,
+    started_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE,
+
+    -- Custom data
+    custom_fields JSONB DEFAULT '{}',
+
+    -- Versioning
+    version INTEGER DEFAULT 1,
+
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    UNIQUE(project_id, key)
+);
+
+-- Indexes for common queries
+CREATE INDEX idx_items_project ON items(project_id);
+CREATE INDEX idx_items_project_type ON items(project_id, type);
+CREATE INDEX idx_items_project_status ON items(project_id, status);
+CREATE INDEX idx_items_assignee ON items(assignee_id);
+CREATE INDEX idx_items_parent ON items(parent_id);
+CREATE INDEX idx_items_tags ON items USING GIN(tags);
+CREATE INDEX idx_items_custom_fields ON items USING GIN(custom_fields);
+CREATE INDEX idx_items_created_at ON items(created_at DESC);
+```
+
+#### Links
+
+```sql
+CREATE TABLE links (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    source_id VARCHAR(36) REFERENCES items(id) ON DELETE CASCADE,
+    target_id VARCHAR(36) REFERENCES items(id) ON DELETE CASCADE,
+    link_type VARCHAR(50) NOT NULL,
+    description TEXT,
+    metadata JSONB DEFAULT '{}',
+    created_by VARCHAR(36) REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Prevent duplicate links
+    UNIQUE(source_id, target_id, link_type),
+
+    -- Prevent self-links
+    CHECK(source_id != target_id)
+);
+
+CREATE INDEX idx_links_source ON links(source_id);
+CREATE INDEX idx_links_target ON links(target_id);
+CREATE INDEX idx_links_type ON links(link_type);
+CREATE INDEX idx_links_source_type ON links(source_id, link_type);
+CREATE INDEX idx_links_target_type ON links(target_id, link_type);
+```
+
+### Supporting Tables
+
+#### Workflows
+
+```sql
+CREATE TABLE workflows (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    project_id VARCHAR(36) REFERENCES projects(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    item_type VARCHAR(50) NOT NULL,
+    is_default BOOLEAN DEFAULT false,
+    states JSONB NOT NULL,
+    transitions JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    UNIQUE(project_id, item_type, is_default)
+);
+```
+
+#### Item History
+
+```sql
+CREATE TABLE item_history (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    item_id VARCHAR(36) REFERENCES items(id) ON DELETE CASCADE,
+    user_id VARCHAR(36) REFERENCES users(id),
+    action VARCHAR(50) NOT NULL,
+    changes JSONB NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_item_history_item ON item_history(item_id);
+CREATE INDEX idx_item_history_item_time ON item_history(item_id, created_at DESC);
+```
+
+#### Comments
+
+```sql
+CREATE TABLE comments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    item_id VARCHAR(36) REFERENCES items(id) ON DELETE CASCADE,
+    user_id VARCHAR(36) REFERENCES users(id),
+    parent_id VARCHAR(36) REFERENCES comments(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    mentions VARCHAR(36)[] DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_comments_item ON comments(item_id);
+```
+
+#### Attachments
+
+```sql
+CREATE TABLE attachments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT generate_ulid(),
+    item_id VARCHAR(36) REFERENCES items(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    storage_path TEXT NOT NULL,
+    uploaded_by VARCHAR(36) REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_attachments_item ON attachments(item_id);
+```
+
+---
+
+## Neo4j Graph Schema
+
+### Node Types
+
+```cypher
+// Item node
+CREATE CONSTRAINT item_id IF NOT EXISTS
+FOR (i:Item) REQUIRE i.id IS UNIQUE;
+
+(:Item {
+  id: String,
+  project_id: String,
+  key: String,
+  type: String,
+  title: String,
+  status: String,
+  status_category: String,
+  priority: String,
+  tags: [String],
+  created_at: DateTime,
+  updated_at: DateTime
+})
+
+// Project node
+CREATE CONSTRAINT project_id IF NOT EXISTS
+FOR (p:Project) REQUIRE p.id IS UNIQUE;
+
+(:Project {
+  id: String,
+  key: String,
+  name: String
 })
 ```
 
-### Example 2
+### Relationship Types
 
-```typescript
-const advanced = await tracertm.database({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+```cypher
+// Link relationships
+(:Item)-[:VERIFIED_BY]->(:Item)
+(:Item)-[:SATISFIES]->(:Item)
+(:Item)-[:DEPENDS_ON]->(:Item)
+(:Item)-[:BLOCKS]->(:Item)
+(:Item)-[:RELATES_TO]->(:Item)
+(:Item)-[:PARENT_OF]->(:Item)
+(:Item)-[:TESTS]->(:Item)
+(:Item)-[:IMPLEMENTS]->(:Item)
+
+// Project membership
+(:Item)-[:BELONGS_TO]->(:Project)
 ```
 
-## Best Practices
+### Example Graph Queries
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+#### Impact Analysis
 
-## Troubleshooting
-
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+```cypher
+// Find all items impacted by a change (downstream)
+MATCH path = (source:Item {id: $itemId})-[*1..5]->(impacted:Item)
+WHERE ALL(r IN relationships(path) WHERE type(r) IN ['VERIFIED_BY', 'SATISFIES', 'DEPENDS_ON'])
+RETURN impacted, length(path) as depth
+ORDER BY depth
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+#### Coverage Analysis
+
+```cypher
+// Find requirements without test coverage
+MATCH (req:Item {type: 'requirement', project_id: $projectId})
+WHERE NOT (req)<-[:VERIFIED_BY]-(:Item {type: 'test_case'})
+RETURN req.key as key, req.title as title
 ```
 
-## API Reference
+#### Path Finding
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```cypher
+// Find traceability path between two items
+MATCH path = shortestPath(
+  (source:Item {id: $sourceId})-[*..10]-(target:Item {id: $targetId})
+)
+RETURN path
+```
 
-## Related Topics
+#### Cycle Detection
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+```cypher
+// Detect circular dependencies
+MATCH path = (i:Item {project_id: $projectId})-[:DEPENDS_ON*2..10]->(i)
+RETURN [node in nodes(path) | node.key] as cycle
+```
 
+---
+
+## Data Synchronization
+
+### Sync Strategy
+
+PostgreSQL is the source of truth. Changes are propagated to Neo4j and Meilisearch asynchronously:
+
+```python
+# services/sync_service.py
+from tracertm.models.item import Item
+from tracertm.core.neo4j import neo4j_driver
+from tracertm.core.search import search_client
+
+class SyncService:
+    """Synchronize data across PostgreSQL, Neo4j, and Meilisearch."""
+
+    async def sync_item(self, item: Item, action: str) -> None:
+        """Sync item to Neo4j and Meilisearch."""
+        if action == "create":
+            await self._create_in_neo4j(item)
+            await self._index_in_search(item)
+        elif action == "update":
+            await self._update_in_neo4j(item)
+            await self._update_in_search(item)
+        elif action == "delete":
+            await self._delete_from_neo4j(item.id)
+            await self._delete_from_search(item.id)
+
+    async def _create_in_neo4j(self, item: Item) -> None:
+        """Create item node in Neo4j."""
+        async with neo4j_driver.session() as session:
+            await session.run(
+                """
+                MERGE (i:Item {id: $id})
+                SET i += $props
+                WITH i
+                MATCH (p:Project {id: $project_id})
+                MERGE (i)-[:BELONGS_TO]->(p)
+                """,
+                id=item.id,
+                project_id=item.project_id,
+                props={
+                    "key": item.key,
+                    "type": item.type,
+                    "title": item.title,
+                    "status": item.status,
+                    "status_category": item.status_category,
+                    "priority": item.priority,
+                    "tags": item.tags,
+                    "updated_at": item.updated_at.isoformat(),
+                }
+            )
+
+    async def sync_link(self, link: Link, action: str) -> None:
+        """Sync link to Neo4j."""
+        if action == "create":
+            await self._create_link_in_neo4j(link)
+        elif action == "delete":
+            await self._delete_link_from_neo4j(link.id)
+
+    async def _create_link_in_neo4j(self, link: Link) -> None:
+        """Create link relationship in Neo4j."""
+        # Convert link_type to relationship type
+        rel_type = link.link_type.upper().replace("-", "_")
+
+        async with neo4j_driver.session() as session:
+            await session.run(
+                f"""
+                MATCH (source:Item {{id: $source_id}})
+                MATCH (target:Item {{id: $target_id}})
+                MERGE (source)-[r:{rel_type} {{id: $id}}]->(target)
+                SET r.created_at = $created_at
+                """,
+                id=link.id,
+                source_id=link.source_id,
+                target_id=link.target_id,
+                created_at=link.created_at.isoformat(),
+            )
+```
+
+### Event-Driven Sync
+
+```python
+# services/event_service.py
+import asyncio
+from redis import asyncio as aioredis
+
+class EventService:
+    """Event bus for data change notifications."""
+
+    def __init__(self, redis_url: str):
+        self.redis = aioredis.from_url(redis_url)
+        self.pubsub = self.redis.pubsub()
+
+    async def emit(self, event_type: str, **data) -> None:
+        """Emit event to Redis pub/sub."""
+        event = {
+            "type": event_type,
+            "timestamp": datetime.utcnow().isoformat(),
+            **data,
+        }
+        await self.redis.publish("tracertm:events", json.dumps(event))
+
+    async def subscribe(self, handler: callable) -> None:
+        """Subscribe to events and handle them."""
+        await self.pubsub.subscribe("tracertm:events")
+
+        async for message in self.pubsub.listen():
+            if message["type"] == "message":
+                event = json.loads(message["data"])
+                await handler(event)
+
+# Sync worker
+async def sync_worker():
+    """Background worker to sync data changes."""
+    event_service = EventService(settings.REDIS_URL)
+    sync_service = SyncService()
+
+    async def handle_event(event: dict):
+        event_type = event["type"]
+
+        if event_type == "item.created":
+            item = await item_repo.get_by_id(event["item_id"])
+            await sync_service.sync_item(item, "create")
+        elif event_type == "item.updated":
+            item = await item_repo.get_by_id(event["item_id"])
+            await sync_service.sync_item(item, "update")
+        elif event_type == "item.deleted":
+            await sync_service.sync_item_deleted(event["item_id"])
+        elif event_type == "link.created":
+            link = await link_repo.get_by_id(event["link_id"])
+            await sync_service.sync_link(link, "create")
+
+    await event_service.subscribe(handle_event)
+```
+
+---
+
+## Migrations
+
+### Alembic Setup
+
+```python
+# alembic/env.py
+from alembic import context
+from sqlalchemy import engine_from_config, pool
+from tracertm.models.base import Base
+from tracertm.core.config import settings
+
+target_metadata = Base.metadata
+
+def run_migrations_online():
+    connectable = engine_from_config(
+        {"sqlalchemy.url": settings.DATABASE_URL},
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+        )
+
+        with context.begin_transaction():
+            context.run_migrations()
+```
+
+### Example Migration
+
+```python
+# alembic/versions/001_initial.py
+"""Initial schema
+
+Revision ID: 001
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
+revision = '001'
+down_revision = None
+
+def upgrade():
+    # Create organizations table
+    op.create_table(
+        'organizations',
+        sa.Column('id', sa.String(36), primary_key=True),
+        sa.Column('name', sa.String(255), nullable=False),
+        sa.Column('slug', sa.String(100), unique=True, nullable=False),
+        sa.Column('settings', postgresql.JSONB, default={}),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    # Create items table
+    op.create_table(
+        'items',
+        sa.Column('id', sa.String(36), primary_key=True),
+        sa.Column('project_id', sa.String(36), sa.ForeignKey('projects.id', ondelete='CASCADE')),
+        sa.Column('key', sa.String(50), nullable=False),
+        sa.Column('type', sa.String(50), nullable=False),
+        sa.Column('title', sa.String(500), nullable=False),
+        # ... more columns
+    )
+
+    # Create indexes
+    op.create_index('idx_items_project', 'items', ['project_id'])
+    op.create_index('idx_items_project_type', 'items', ['project_id', 'type'])
+
+def downgrade():
+    op.drop_table('items')
+    op.drop_table('organizations')
+```
+
+---
+
+## Query Patterns
+
+### Efficient Pagination
+
+```python
+# Use keyset pagination for large datasets
+async def list_items_keyset(
+    project_id: str,
+    cursor: str | None = None,
+    limit: int = 50,
+) -> tuple[list[Item], str | None]:
+    """List items using keyset pagination."""
+    stmt = (
+        select(Item)
+        .where(Item.project_id == project_id)
+        .order_by(Item.created_at.desc(), Item.id.desc())
+        .limit(limit + 1)
+    )
+
+    if cursor:
+        cursor_time, cursor_id = decode_cursor(cursor)
+        stmt = stmt.where(
+            sa.or_(
+                Item.created_at < cursor_time,
+                sa.and_(
+                    Item.created_at == cursor_time,
+                    Item.id < cursor_id
+                )
+            )
+        )
+
+    result = await session.execute(stmt)
+    items = result.scalars().all()
+
+    # Determine next cursor
+    next_cursor = None
+    if len(items) > limit:
+        items = items[:limit]
+        last = items[-1]
+        next_cursor = encode_cursor(last.created_at, last.id)
+
+    return list(items), next_cursor
+```
+
+### Batch Operations
+
+```python
+# Efficient bulk insert
+async def bulk_create_items(items: list[dict]) -> list[Item]:
+    """Create multiple items in single transaction."""
+    stmt = (
+        insert(Item)
+        .values(items)
+        .returning(Item)
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+# Batch update
+async def bulk_update_status(item_ids: list[str], status: str) -> int:
+    """Update status for multiple items."""
+    stmt = (
+        update(Item)
+        .where(Item.id.in_(item_ids))
+        .values(status=status, updated_at=datetime.utcnow())
+    )
+    result = await session.execute(stmt)
+    return result.rowcount
+```
+
+---
+
+## Related Documentation
+
+- [Architecture Overview](/docs/development/architecture/overview) - System architecture
+- [Backend Architecture](/docs/development/architecture/backend) - API design
+- [PostgreSQL Schema](/docs/development/architecture/postgres-schema) - Detailed PostgreSQL schema
+- [Neo4j Schema](/docs/development/architecture/neo4j-schema) - Graph database schema

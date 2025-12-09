@@ -1,32 +1,634 @@
 ---
 title: "API Reference"
-description: "Documentation for API Reference"
+description: "Complete API reference for the TraceRTM Go SDK"
 ---
 
 # API Reference
 
-This page contains documentation for API Reference.
+Complete reference documentation for all TraceRTM Go SDK methods and types.
 
-## Overview
+## Client
 
-This section covers the key aspects of API Reference in TraceRTM.
+### NewClient
 
-## Getting Started
+Create a new TraceRTM client:
 
-To get started with API Reference:
+```go
+func NewClient(apiKey string, opts ...ClientOption) *Client
+```
 
-- Review the API Reference and fundamentals
-- Explore practical examples
-- Check out the API reference
+```go
+client := tracertm.NewClient("rtm_live_sk_...")
+```
 
-## Key Concepts
+### Client Options
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```go
+// Base URL
+tracertm.WithBaseURL(url string)
 
-## Next Steps
+// Timeout
+tracertm.WithTimeout(d time.Duration)
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+// Retry configuration
+tracertm.WithMaxRetries(n int)
+tracertm.WithRetryDelay(d time.Duration)
+
+// Custom HTTP client
+tracertm.WithHTTPClient(client *http.Client)
+
+// Debug mode
+tracertm.WithDebug(enabled bool)
+
+// Custom headers
+tracertm.WithHeaders(headers map[string]string)
+
+// Custom logger
+tracertm.WithLogger(logger Logger)
+```
+
+### NewClientFromEnv
+
+Create client from environment variables:
+
+```go
+func NewClientFromEnv() (*Client, error)
+```
+
+```go
+client, err := tracertm.NewClientFromEnv()
+```
+
+---
+
+## Projects
+
+### List
+
+List all projects:
+
+```go
+func (p *ProjectsService) List(ctx context.Context, opts *ListProjectsOptions) (*ProjectList, error)
+```
+
+```go
+projects, err := client.Projects.List(ctx, &tracertm.ListProjectsOptions{
+    Limit:  50,
+    Offset: 0,
+    Sort:   "name",
+})
+```
+
+### Get
+
+Get a project by ID:
+
+```go
+func (p *ProjectsService) Get(ctx context.Context, id string) (*Project, error)
+```
+
+```go
+project, err := client.Projects.Get(ctx, "proj_abc123")
+```
+
+### Create
+
+Create a new project:
+
+```go
+func (p *ProjectsService) Create(ctx context.Context, input *CreateProjectInput) (*Project, error)
+```
+
+```go
+project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
+    Name:        "My Project",
+    Key:         "MYPROJ",
+    Description: "Project description",
+})
+```
+
+### Update
+
+Update a project:
+
+```go
+func (p *ProjectsService) Update(ctx context.Context, id string, input *UpdateProjectInput) (*Project, error)
+```
+
+```go
+project, err := client.Projects.Update(ctx, "proj_abc123", &tracertm.UpdateProjectInput{
+    Name:        "Updated Name",
+    Description: "Updated description",
+})
+```
+
+### Delete
+
+Delete a project:
+
+```go
+func (p *ProjectsService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Projects.Delete(ctx, "proj_abc123")
+```
+
+### GetStats
+
+Get project statistics:
+
+```go
+func (p *ProjectsService) GetStats(ctx context.Context, id string) (*ProjectStats, error)
+```
+
+```go
+stats, err := client.Projects.GetStats(ctx, "proj_abc123")
+fmt.Printf("Items: %d, Links: %d\n", stats.ItemCount, stats.LinkCount)
+```
+
+---
+
+## Items
+
+### List
+
+List items in a project:
+
+```go
+func (i *ItemsService) List(ctx context.Context, projectID string, opts *ListItemsOptions) (*ItemList, error)
+```
+
+```go
+items, err := client.Items.List(ctx, "proj_abc123", &tracertm.ListItemsOptions{
+    Type:     "requirement",
+    Status:   "approved",
+    Priority: "high",
+    Tags:     []string{"security"},
+    Limit:    50,
+    Offset:   0,
+    Sort:     "created_at",
+    Order:    "desc",
+})
+```
+
+### Iterate
+
+Iterate through all items (handles pagination):
+
+```go
+func (i *ItemsService) Iterate(ctx context.Context, projectID string, opts *ListItemsOptions) *ItemIterator
+```
+
+```go
+iter := client.Items.Iterate(ctx, "proj_abc123", nil)
+for iter.Next() {
+    item := iter.Item()
+    fmt.Println(item.Key, item.Title)
+}
+if err := iter.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+### Get
+
+Get an item by ID:
+
+```go
+func (i *ItemsService) Get(ctx context.Context, id string) (*Item, error)
+```
+
+```go
+item, err := client.Items.Get(ctx, "item_abc123")
+```
+
+### Create
+
+Create a new item:
+
+```go
+func (i *ItemsService) Create(ctx context.Context, projectID string, input *CreateItemInput) (*Item, error)
+```
+
+```go
+item, err := client.Items.Create(ctx, "proj_abc123", &tracertm.CreateItemInput{
+    Type:        "requirement",
+    Title:       "User Authentication",
+    Description: "Implement secure login",
+    Priority:    "high",
+    Status:      "draft",
+    Tags:        []string{"security", "auth"},
+    ParentID:    "item_parent_001",
+    AssigneeID:  "user_123",
+    DueDate:     "2025-03-01",
+    CustomFields: map[string]interface{}{
+        "story_points": 8,
+        "epic":         "Authentication",
+    },
+})
+```
+
+### Update
+
+Update an item:
+
+```go
+func (i *ItemsService) Update(ctx context.Context, id string, input *UpdateItemInput) (*Item, error)
+```
+
+```go
+item, err := client.Items.Update(ctx, "item_abc123", &tracertm.UpdateItemInput{
+    Title:       "Updated Title",
+    Priority:    "critical",
+    Description: "Updated description",
+})
+```
+
+### Delete
+
+Delete an item:
+
+```go
+func (i *ItemsService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Items.Delete(ctx, "item_abc123")
+```
+
+### Transition
+
+Transition item to new status:
+
+```go
+func (i *ItemsService) Transition(ctx context.Context, id string, input *TransitionInput) (*Item, error)
+```
+
+```go
+item, err := client.Items.Transition(ctx, "item_abc123", &tracertm.TransitionInput{
+    Transition: "approve",
+    Comment:    "Approved by tech lead",
+})
+```
+
+### AvailableTransitions
+
+Get available transitions for an item:
+
+```go
+func (i *ItemsService) AvailableTransitions(ctx context.Context, id string) ([]*Transition, error)
+```
+
+```go
+transitions, err := client.Items.AvailableTransitions(ctx, "item_abc123")
+for _, t := range transitions {
+    fmt.Printf("%s -> %s\n", t.Name, t.ToState)
+}
+```
+
+### BulkCreate
+
+Create multiple items:
+
+```go
+func (i *ItemsService) BulkCreate(ctx context.Context, projectID string, inputs []*CreateItemInput) ([]*Item, error)
+```
+
+```go
+items, err := client.Items.BulkCreate(ctx, "proj_abc123", []*tracertm.CreateItemInput{
+    {Type: "requirement", Title: "Req 1"},
+    {Type: "requirement", Title: "Req 2"},
+})
+```
+
+### BulkUpdate
+
+Update multiple items:
+
+```go
+func (i *ItemsService) BulkUpdate(ctx context.Context, updates []*BulkUpdateInput) ([]*BulkUpdateResult, error)
+```
+
+```go
+results, err := client.Items.BulkUpdate(ctx, []*tracertm.BulkUpdateInput{
+    {ID: "item_1", Update: &tracertm.UpdateItemInput{Priority: "high"}},
+    {ID: "item_2", Update: &tracertm.UpdateItemInput{Priority: "high"}},
+})
+```
+
+### BulkDelete
+
+Delete multiple items:
+
+```go
+func (i *ItemsService) BulkDelete(ctx context.Context, ids []string) (*BulkDeleteResult, error)
+```
+
+```go
+result, err := client.Items.BulkDelete(ctx, []string{"item_1", "item_2", "item_3"})
+fmt.Printf("Deleted: %d, Failed: %d\n", result.Deleted, result.Failed)
+```
+
+---
+
+## Links
+
+### List
+
+List links:
+
+```go
+func (l *LinksService) List(ctx context.Context, opts *ListLinksInput) (*LinkList, error)
+```
+
+```go
+links, err := client.Links.List(ctx, &tracertm.ListLinksInput{
+    ProjectID: "proj_abc123",
+    SourceID:  "item_req_001",
+    LinkType:  "verified_by",
+})
+```
+
+### Get
+
+Get a link by ID:
+
+```go
+func (l *LinksService) Get(ctx context.Context, id string) (*Link, error)
+```
+
+```go
+link, err := client.Links.Get(ctx, "link_abc123")
+```
+
+### Create
+
+Create a new link:
+
+```go
+func (l *LinksService) Create(ctx context.Context, input *CreateLinkInput) (*Link, error)
+```
+
+```go
+link, err := client.Links.Create(ctx, &tracertm.CreateLinkInput{
+    SourceID:    "item_req_001",
+    TargetID:    "item_tc_001",
+    LinkType:    "verified_by",
+    Description: "Test verifies requirement",
+})
+```
+
+### Delete
+
+Delete a link:
+
+```go
+func (l *LinksService) Delete(ctx context.Context, id string) error
+```
+
+```go
+err := client.Links.Delete(ctx, "link_abc123")
+```
+
+### BulkCreate
+
+Create multiple links:
+
+```go
+func (l *LinksService) BulkCreate(ctx context.Context, inputs []*CreateLinkInput) ([]*Link, error)
+```
+
+```go
+links, err := client.Links.BulkCreate(ctx, []*tracertm.CreateLinkInput{
+    {SourceID: "req_1", TargetID: "tc_1", LinkType: "verified_by"},
+    {SourceID: "req_1", TargetID: "tc_2", LinkType: "verified_by"},
+})
+```
+
+---
+
+## Reports
+
+### Coverage
+
+Generate coverage report:
+
+```go
+func (r *ReportsService) Coverage(ctx context.Context, input *CoverageReportInput) (*CoverageReport, error)
+```
+
+```go
+report, err := client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+    ProjectID:  "proj_abc123",
+    SourceType: "requirement",
+    TargetType: "test_case",
+    LinkType:   "verified_by",
+})
+
+fmt.Printf("Coverage: %.1f%%\n", report.CoveragePercent)
+fmt.Printf("Covered: %d/%d\n", report.CoveredCount, report.TotalSources)
+```
+
+### TraceabilityMatrix
+
+Generate traceability matrix:
+
+```go
+func (r *ReportsService) TraceabilityMatrix(ctx context.Context, input *TraceabilityMatrixInput) (*TraceabilityMatrix, error)
+```
+
+```go
+matrix, err := client.Reports.TraceabilityMatrix(ctx, &tracertm.TraceabilityMatrixInput{
+    ProjectID: "proj_abc123",
+    RowType:   "requirement",
+    ColType:   "test_case",
+})
+```
+
+### ImpactAnalysis
+
+Analyze impact of changes:
+
+```go
+func (r *ReportsService) ImpactAnalysis(ctx context.Context, input *ImpactAnalysisInput) (*ImpactAnalysis, error)
+```
+
+```go
+impact, err := client.Reports.ImpactAnalysis(ctx, &tracertm.ImpactAnalysisInput{
+    ItemID:    "item_req_001",
+    Direction: "downstream",
+    Depth:     3,
+})
+
+fmt.Printf("Impacted items: %d\n", len(impact.ImpactedItems))
+```
+
+---
+
+## Search
+
+### Items
+
+Search for items:
+
+```go
+func (s *SearchService) Items(ctx context.Context, input *SearchInput) (*SearchResults, error)
+```
+
+```go
+results, err := client.Search.Items(ctx, &tracertm.SearchInput{
+    Query:     "authentication security",
+    ProjectID: "proj_abc123",
+    Type:      "requirement",
+    Limit:     20,
+})
+
+for _, result := range results.Data {
+    fmt.Printf("%s: %s (score: %.2f)\n", result.Key, result.Title, result.Score)
+}
+```
+
+### Suggest
+
+Get search suggestions:
+
+```go
+func (s *SearchService) Suggest(ctx context.Context, input *SuggestInput) (*SuggestResults, error)
+```
+
+```go
+suggestions, err := client.Search.Suggest(ctx, &tracertm.SuggestInput{
+    Query:     "auth",
+    ProjectID: "proj_abc123",
+    Limit:     5,
+})
+```
+
+---
+
+## Workflows
+
+### List
+
+List workflows:
+
+```go
+func (w *WorkflowsService) List(ctx context.Context, input *ListWorkflowsInput) (*WorkflowList, error)
+```
+
+```go
+workflows, err := client.Workflows.List(ctx, &tracertm.ListWorkflowsInput{
+    ProjectID: "proj_abc123",
+})
+```
+
+### Get
+
+Get workflow details:
+
+```go
+func (w *WorkflowsService) Get(ctx context.Context, id string) (*Workflow, error)
+```
+
+```go
+workflow, err := client.Workflows.Get(ctx, "wf_abc123")
+for _, state := range workflow.States {
+    fmt.Printf("State: %s (%s)\n", state.Name, state.Category)
+}
+```
+
+---
+
+## Users
+
+### Me
+
+Get current user:
+
+```go
+func (u *UsersService) Me(ctx context.Context) (*User, error)
+```
+
+```go
+user, err := client.Users.Me(ctx)
+fmt.Printf("Logged in as: %s\n", user.Email)
+```
+
+### List
+
+List project members:
+
+```go
+func (u *UsersService) List(ctx context.Context, projectID string) (*UserList, error)
+```
+
+```go
+users, err := client.Users.List(ctx, "proj_abc123")
+```
+
+---
+
+## Types
+
+### Project
+
+```go
+type Project struct {
+    ID          string            `json:"id"`
+    Name        string            `json:"name"`
+    Key         string            `json:"key"`
+    Description string            `json:"description"`
+    OwnerID     string            `json:"owner_id"`
+    Settings    *ProjectSettings  `json:"settings"`
+    CreatedAt   time.Time         `json:"created_at"`
+    UpdatedAt   time.Time         `json:"updated_at"`
+}
+```
+
+### Item
+
+```go
+type Item struct {
+    ID             string                 `json:"id"`
+    ProjectID      string                 `json:"project_id"`
+    Key            string                 `json:"key"`
+    Type           string                 `json:"type"`
+    Title          string                 `json:"title"`
+    Description    string                 `json:"description"`
+    Status         string                 `json:"status"`
+    StatusCategory string                 `json:"status_category"`
+    Priority       string                 `json:"priority"`
+    Tags           []string               `json:"tags"`
+    AssigneeID     string                 `json:"assignee_id"`
+    CreatedBy      string                 `json:"created_by"`
+    ParentID       string                 `json:"parent_id"`
+    DueDate        string                 `json:"due_date"`
+    CustomFields   map[string]interface{} `json:"custom_fields"`
+    CreatedAt      time.Time              `json:"created_at"`
+    UpdatedAt      time.Time              `json:"updated_at"`
+}
+```
+
+### Link
+
+```go
+type Link struct {
+    ID          string    `json:"id"`
+    SourceID    string    `json:"source_id"`
+    TargetID    string    `json:"target_id"`
+    LinkType    string    `json:"link_type"`
+    Description string    `json:"description"`
+    CreatedBy   string    `json:"created_by"`
+    CreatedAt   time.Time `json:"created_at"`
+}
+```
+
+---
+
+## Related Documentation
+
+- [Client Methods](/docs/api-reference/sdks/go/client-methods) - Detailed method reference
+- [Types](/docs/api-reference/sdks/go/types) - Type definitions
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error types
+- [Examples](/docs/api-reference/sdks/go/examples) - Code examples
