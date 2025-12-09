@@ -1,32 +1,510 @@
 ---
-title: "Go"
-description: "Documentation for Go"
+title: "Go SDK"
+description: "Official Go SDK for TraceRTM - idiomatic Go with full type safety and context support"
 ---
 
-# Go
+# Go SDK
 
-This page contains documentation for Go.
+The official Go SDK for TraceRTM provides an idiomatic Go interface with full type safety, context support for cancellation, and comprehensive error handling.
 
-## Overview
+## Installation
 
-This section covers the key aspects of Go in TraceRTM.
+```bash
+go get github.com/tracertm/tracertm-go
+```
 
-## Getting Started
+## Requirements
 
-To get started with Go:
+- Go 1.21 or higher
 
-- Review the Go and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Quick Start
 
-## Key Concepts
+```go
+package main
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
 
-## Next Steps
+    "github.com/tracertm/tracertm-go"
+)
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+func main() {
+    // Initialize the client
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+    ctx := context.Background()
+
+    // List all projects
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for _, project := range projects.Data {
+        fmt.Printf("%s: %s\n", project.Key, project.Name)
+    }
+
+    // Create an item
+    item, err := client.Items.Create(ctx, "proj_abc123", &tracertm.CreateItemInput{
+        Type:        "requirement",
+        Title:       "User Authentication",
+        Description: "Implement secure user authentication",
+        Priority:    "high",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created: %s\n", item.Key)
+}
+```
+
+---
+
+## Features
+
+### Full Type Safety
+
+Complete struct definitions with proper Go types:
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+// Type-safe input
+input := &tracertm.CreateItemInput{
+    Type:        tracertm.ItemTypeRequirement,
+    Title:       "User Authentication",
+    Priority:    tracertm.PriorityHigh,
+    CustomFields: map[string]interface{}{
+        "story_points": 5,
+    },
+}
+
+// Type-safe response
+item, err := client.Items.Create(ctx, "proj_abc123", input)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Use typed fields
+fmt.Println(item.ID)
+fmt.Println(item.Title)
+fmt.Println(item.Status)
+```
+
+### Context Support
+
+All methods accept `context.Context` for cancellation and timeouts:
+
+```go
+// With timeout
+ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+defer cancel()
+
+item, err := client.Items.Get(ctx, "item_abc123")
+
+// With cancellation
+ctx, cancel := context.WithCancel(context.Background())
+go func() {
+    // Cancel after some condition
+    cancel()
+}()
+
+items, err := client.Items.List(ctx, "proj_abc123", nil)
+```
+
+### Iterator Pattern
+
+Automatic pagination with iterator:
+
+```go
+iter := client.Items.Iterate(ctx, "proj_abc123", nil)
+for iter.Next() {
+    item := iter.Item()
+    fmt.Printf("%s: %s\n", item.Key, item.Title)
+}
+if err := iter.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+### Retry Logic
+
+Built-in retry with exponential backoff:
+
+```go
+client := tracertm.NewClient(
+    apiKey,
+    tracertm.WithMaxRetries(3),
+    tracertm.WithRetryDelay(time.Second),
+)
+```
+
+---
+
+## Configuration
+
+### Client Options
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+client := tracertm.NewClient(
+    "rtm_live_sk_...",
+
+    // Base URL (default: production)
+    tracertm.WithBaseURL("https://api.tracertm.dev/v1"),
+
+    // Timeout
+    tracertm.WithTimeout(30 * time.Second),
+
+    // Retry configuration
+    tracertm.WithMaxRetries(3),
+    tracertm.WithRetryDelay(time.Second),
+
+    // Custom HTTP client
+    tracertm.WithHTTPClient(&http.Client{}),
+
+    // Debug mode
+    tracertm.WithDebug(true),
+)
+```
+
+### Environment Variables
+
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+```go
+// Read from environment
+client := tracertm.NewClientFromEnv()
+```
+
+---
+
+## Resources
+
+### Projects
+
+```go
+ctx := context.Background()
+
+// List projects
+projects, err := client.Projects.List(ctx, nil)
+
+// Create project
+project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
+    Name:        "My Project",
+    Key:         "PROJ",
+    Description: "Project description",
+})
+
+// Get project
+project, err := client.Projects.Get(ctx, "proj_abc123")
+
+// Update project
+project, err := client.Projects.Update(ctx, "proj_abc123", &tracertm.UpdateProjectInput{
+    Name: "Updated Name",
+})
+
+// Delete project
+err := client.Projects.Delete(ctx, "proj_abc123")
+```
+
+### Items
+
+```go
+// List items with filters
+items, err := client.Items.List(ctx, "proj_abc123", &tracertm.ListItemsOptions{
+    Type:   "requirement",
+    Status: "approved",
+    Limit:  50,
+})
+
+// Create item
+item, err := client.Items.Create(ctx, "proj_abc123", &tracertm.CreateItemInput{
+    Type:        "requirement",
+    Title:       "User Authentication",
+    Description: "Implement secure login",
+    Priority:    "high",
+    CustomFields: map[string]interface{}{
+        "story_points": 5,
+    },
+})
+
+// Get item
+item, err := client.Items.Get(ctx, "item_req_001")
+
+// Update item
+item, err := client.Items.Update(ctx, "item_req_001", &tracertm.UpdateItemInput{
+    Title:    "Updated Title",
+    Priority: "critical",
+})
+
+// Transition item status
+item, err := client.Items.Transition(ctx, "item_req_001", &tracertm.TransitionInput{
+    Transition: "approve",
+    Comment:    "Approved by tech lead",
+})
+
+// Delete item
+err := client.Items.Delete(ctx, "item_req_001")
+```
+
+### Links
+
+```go
+// List links
+links, err := client.Links.List(ctx, "proj_abc123", nil)
+
+// Create link
+link, err := client.Links.Create(ctx, &tracertm.CreateLinkInput{
+    SourceID: "item_req_001",
+    TargetID: "item_tc_001",
+    LinkType: "verified_by",
+})
+
+// Bulk create links
+links, err := client.Links.BulkCreate(ctx, []tracertm.CreateLinkInput{
+    {SourceID: "item_req_001", TargetID: "item_tc_001", LinkType: "verified_by"},
+    {SourceID: "item_req_001", TargetID: "item_tc_002", LinkType: "verified_by"},
+})
+
+// Delete link
+err := client.Links.Delete(ctx, "link_abc123")
+```
+
+### Workflows
+
+```go
+// List workflows
+workflows, err := client.Workflows.List(ctx, "proj_abc123", nil)
+
+// Get workflow with states and transitions
+workflow, err := client.Workflows.Get(ctx, "wf_abc123")
+
+// Get available transitions for an item
+transitions, err := client.Items.AvailableTransitions(ctx, "item_req_001")
+```
+
+---
+
+## Error Handling
+
+```go
+import (
+    "errors"
+    "github.com/tracertm/tracertm-go"
+)
+
+item, err := client.Items.Get(ctx, "item_nonexistent")
+if err != nil {
+    var notFoundErr *tracertm.NotFoundError
+    var validationErr *tracertm.ValidationError
+    var authErr *tracertm.AuthenticationError
+    var rateLimitErr *tracertm.RateLimitError
+    var conflictErr *tracertm.ConflictError
+    var serverErr *tracertm.ServerError
+
+    switch {
+    case errors.As(err, &notFoundErr):
+        fmt.Printf("Item not found: %s\n", notFoundErr.ResourceID)
+        fmt.Printf("Request ID: %s\n", notFoundErr.RequestID)
+
+    case errors.As(err, &validationErr):
+        fmt.Println("Validation failed:")
+        for _, e := range validationErr.Errors {
+            fmt.Printf("  - %s: %s\n", e.Field, e.Message)
+        }
+
+    case errors.As(err, &authErr):
+        fmt.Printf("Authentication failed: %s\n", authErr.Message)
+
+    case errors.As(err, &rateLimitErr):
+        fmt.Printf("Rate limited. Retry after %d seconds\n", rateLimitErr.RetryAfter)
+        time.Sleep(time.Duration(rateLimitErr.RetryAfter) * time.Second)
+
+    case errors.As(err, &conflictErr):
+        fmt.Printf("Conflict: %s\n", conflictErr.Message)
+
+    case errors.As(err, &serverErr):
+        fmt.Printf("Server error: %s\n", serverErr.Message)
+        fmt.Printf("Request ID for support: %s\n", serverErr.RequestID)
+
+    default:
+        fmt.Printf("Unknown error: %v\n", err)
+    }
+}
+```
+
+---
+
+## Concurrency Patterns
+
+### Goroutines for Concurrent Requests
+
+```go
+var wg sync.WaitGroup
+items := make([]*tracertm.Item, 3)
+errors := make([]error, 3)
+
+ids := []string{"item_1", "item_2", "item_3"}
+
+for i, id := range ids {
+    wg.Add(1)
+    go func(idx int, itemID string) {
+        defer wg.Done()
+        items[idx], errors[idx] = client.Items.Get(ctx, itemID)
+    }(i, id)
+}
+
+wg.Wait()
+
+for i, err := range errors {
+    if err != nil {
+        log.Printf("Error fetching item %d: %v", i, err)
+    }
+}
+```
+
+### Worker Pool Pattern
+
+```go
+func processItems(ctx context.Context, projectID string, workers int) error {
+    itemChan := make(chan *tracertm.Item, 100)
+    errChan := make(chan error, workers)
+
+    // Start workers
+    var wg sync.WaitGroup
+    for i := 0; i < workers; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for item := range itemChan {
+                if err := processItem(ctx, item); err != nil {
+                    errChan <- err
+                }
+            }
+        }()
+    }
+
+    // Feed items to workers
+    go func() {
+        iter := client.Items.Iterate(ctx, projectID, nil)
+        for iter.Next() {
+            itemChan <- iter.Item()
+        }
+        close(itemChan)
+        if err := iter.Err(); err != nil {
+            errChan <- err
+        }
+    }()
+
+    // Wait for completion
+    wg.Wait()
+    close(errChan)
+
+    // Collect errors
+    var errs []error
+    for err := range errChan {
+        errs = append(errs, err)
+    }
+
+    if len(errs) > 0 {
+        return fmt.Errorf("processing errors: %v", errs)
+    }
+    return nil
+}
+```
+
+### Context Cancellation
+
+```go
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+go func() {
+    // Cancel processing after condition
+    <-signalChan
+    cancel()
+}()
+
+iter := client.Items.Iterate(ctx, "proj_abc123", nil)
+for iter.Next() {
+    item := iter.Item()
+    if err := processItem(ctx, item); err != nil {
+        if errors.Is(err, context.Canceled) {
+            log.Println("Processing cancelled")
+            return
+        }
+        log.Printf("Error: %v", err)
+    }
+}
+```
+
+---
+
+## Testing
+
+### Mock Client
+
+```go
+import (
+    "testing"
+    "github.com/tracertm/tracertm-go/mock"
+)
+
+func TestMyFunction(t *testing.T) {
+    mockClient := mock.NewClient()
+
+    // Setup expectations
+    mockClient.Items.On("Get", mock.Anything, "item_123").Return(&tracertm.Item{
+        ID:    "item_123",
+        Title: "Test Item",
+    }, nil)
+
+    // Test your code
+    result := myFunction(mockClient)
+
+    // Verify
+    mockClient.AssertExpectations(t)
+}
+```
+
+### Using interfaces
+
+```go
+// Define interface for testing
+type ItemsService interface {
+    Get(ctx context.Context, id string) (*tracertm.Item, error)
+    List(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error)
+}
+
+// Your code uses the interface
+type MyService struct {
+    items ItemsService
+}
+
+// In tests, provide a mock implementation
+type mockItemsService struct {
+    getFunc func(ctx context.Context, id string) (*tracertm.Item, error)
+}
+
+func (m *mockItemsService) Get(ctx context.Context, id string) (*tracertm.Item, error) {
+    return m.getFunc(ctx, id)
+}
+```
+
+---
+
+## Related Documentation
+
+- [Installation](/docs/api-reference/sdks/go/installation) - Detailed installation
+- [Quick Start](/docs/api-reference/sdks/go/quickstart) - Get started quickly
+- [API Reference](/docs/api-reference/sdks/go/api-reference) - Method reference
+- [Examples](/docs/api-reference/sdks/go/examples) - Code examples
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error handling
+- [Concurrency](/docs/api-reference/sdks/go/concurrency) - Concurrency patterns

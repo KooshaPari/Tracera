@@ -293,8 +293,8 @@ All materials for agent execution have been created and organized. This document
 ├── TEST_COVERAGE_AUDIT_2025.md ........... Test infrastructure
 ├── WORK_PACKAGE_DELIVERABLES_SUMMARY.md . This file
 └── [Supporting files]
-    ├── tests/integration-full/TEMPLATE.py . Test template
-    ├── tests/integration-full/conftest.py . Test fixtures
+    ├── tests/integration/TEMPLATE.py . Test template
+    ├── tests/integration/conftest.py . Test fixtures
     ├── pyproject.toml ..................... Dependencies
     └── .coverage ......................... Coverage database
 ```

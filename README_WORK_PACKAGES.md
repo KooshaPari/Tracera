@@ -118,7 +118,7 @@
    git checkout -b coverage/WP-X-Y-description
    # Follow AGENT_QUICK_START.md test patterns
    # Write 1 simple test
-   # Run: pytest tests/integration-full/test_sample.py -v
+   # Run: pytest tests/integration/test_sample.py -v
    ```
 
 6. **Daily Standup** (15 min)
@@ -301,26 +301,26 @@ WPs:    6 (WP-4.1 through WP-4.6)
 
 ```bash
 # Run tests for your module
-pytest tests/integration-full/test_YOUR_SERVICE.py -v
+pytest tests/integration/test_YOUR_SERVICE.py -v
 
 # Check coverage
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=term-with-missing
 
 # Generate HTML report
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=html
 open htmlcov/index.html
 
 # Run with timeout (catch hangs)
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --timeout=10
 
 # Git workflow
 git checkout -b coverage/WP-X-Y-description
-git add tests/integration-full/test_YOUR_SERVICE.py
+git add tests/integration/test_YOUR_SERVICE.py
 git commit -m "WP-X.Y: [X tests], coverage [%]"
 git push origin coverage/WP-X-Y-description
 ```
@@ -336,7 +336,7 @@ src/tracertm/                      # Code to test
 ├── tui/                          # Terminal UI
 └── api/                          # REST API
 
-tests/integration-full/
+tests/integration/
 ├── TEMPLATE.py                   # Copy this template
 ├── conftest.py                   # Fixtures & database setup
 └── [Your test files]             # Create these
@@ -442,7 +442,7 @@ A: After tests pass locally and coverage is verified.
 ### In Codebase
 - **Example Tests:** `tests/unit/` and `tests/component/`
 - **Service APIs:** `src/tracertm/services/`
-- **Test Fixtures:** `tests/integration-full/conftest.py`
+- **Test Fixtures:** `tests/integration/conftest.py`
 - **Data Models:** `src/tracertm/schemas/`
 
 ---

@@ -256,8 +256,8 @@ End of Week:
 6. **COVERAGE_PROGRESS_DASHBOARD.md** - Track progress
 
 ### Examples
-7. **tests/integration-full/TEMPLATE.py** - Test structure template
-8. **tests/integration-full/conftest.py** - Fixtures & setup
+7. **tests/integration/TEMPLATE.py** - Test structure template
+8. **tests/integration/conftest.py** - Fixtures & setup
 
 ---
 
@@ -316,18 +316,18 @@ End of Week:
 python3 -m pip install -e ".[dev,test]"
 
 # Run single test file
-pytest tests/integration-full/test_YOUR_SERVICE.py -v
+pytest tests/integration/test_YOUR_SERVICE.py -v
 
 # Run with coverage
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=term-with-missing
 
 # Run in parallel
-pytest tests/integration-full/test_YOUR_SERVICE.py -v -n auto
+pytest tests/integration/test_YOUR_SERVICE.py -v -n auto
 
 # Generate HTML report
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=html
 
@@ -337,7 +337,7 @@ open htmlcov/index.html
 # Git workflow
 git checkout -b coverage/WP-X-Y-description
 # ... write tests ...
-git add tests/integration-full/test_YOUR_SERVICE.py
+git add tests/integration/test_YOUR_SERVICE.py
 git commit -m "WP-X.Y: [X tests], coverage [%]"
 git push origin coverage/WP-X-Y-description
 # Create PR on GitHub

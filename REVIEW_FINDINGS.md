@@ -90,15 +90,15 @@
 **Problem:** Documents reference these files 100+ times but existence not confirmed.
 
 **Files Referenced:**
-- `tests/integration-full/TEMPLATE.py` (60+ references)
-- `tests/integration-full/conftest.py` (40+ references)
+- `tests/integration/TEMPLATE.py` (60+ references)
+- `tests/integration/conftest.py` (40+ references)
 
 **Impact:** HIGH - Agents cannot start tests on Day 1 without these
 
 **What's Needed:** Verify these exist:
 ```bash
-ls tests/integration-full/TEMPLATE.py
-ls tests/integration-full/conftest.py
+ls tests/integration/TEMPLATE.py
+ls tests/integration/conftest.py
 ```
 
 **Fix:** Either confirm files exist, or create them before agent launch
@@ -216,8 +216,8 @@ ls tests/integration-full/conftest.py
 ### Before Day 1 Launch
 
 - [ ] All 10 core documents accessible
-- [ ] Test template exists: `tests/integration-full/TEMPLATE.py`
-- [ ] Fixtures exist: `tests/integration-full/conftest.py`
+- [ ] Test template exists: `tests/integration/TEMPLATE.py`
+- [ ] Fixtures exist: `tests/integration/conftest.py`
 - [ ] Database can initialize (SQLite)
 - [ ] Pytest works: `pytest --version` (should be 9.0.0+)
 - [ ] Coverage works: `coverage --version` (should be 7.11.3+)

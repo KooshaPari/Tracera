@@ -33,7 +33,7 @@ pytest HELLO_WORLD_TEST.py -v
 3. **Read your work package:** `WORK_PACKAGES_AGENTS.md` (find your WP-X.Y)
 4. **Create your test file** from template
 5. **Write 50-100 tests** covering your assigned service/module
-6. **Run tests locally:** `pytest tests/integration-full/test_*.py -v`
+6. **Run tests locally:** `pytest tests/integration/test_*.py -v`
 7. **Check coverage:** `pytest --cov=src/tracertm/services/X --cov-report=term-with-missing`
 8. **Submit PR** with coverage report
 9. **Repeat** for next work package
@@ -156,10 +156,10 @@ cat WORK_PACKAGES_AGENTS.md | grep "WP-X.Y" -A 30
 ### Step 2: Create Test File From Template
 ```bash
 # Copy template
-cp tests/integration-full/TEMPLATE.py tests/integration-full/test_YOUR_SERVICE.py
+cp tests/integration/TEMPLATE.py tests/integration/test_YOUR_SERVICE.py
 
 # Edit the class name and description
-vi tests/integration-full/test_YOUR_SERVICE.py
+vi tests/integration/test_YOUR_SERVICE.py
 ```
 
 ### Step 3: Write Tests
@@ -196,24 +196,24 @@ def test_multiple_inputs(self, input, expected):
 ### Step 4: Run Tests Incrementally
 ```bash
 # Run one test
-pytest tests/integration-full/test_YOUR_SERVICE.py::TestClass::test_one -v
+pytest tests/integration/test_YOUR_SERVICE.py::TestClass::test_one -v
 
 # Run class
-pytest tests/integration-full/test_YOUR_SERVICE.py::TestClass -v
+pytest tests/integration/test_YOUR_SERVICE.py::TestClass -v
 
 # Run all with coverage
-pytest tests/integration-full/test_YOUR_SERVICE.py -v --cov=src/tracertm/services/YOUR_SERVICE
+pytest tests/integration/test_YOUR_SERVICE.py -v --cov=src/tracertm/services/YOUR_SERVICE
 ```
 
 ### Step 5: Check Coverage
 ```bash
 # Simple report
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=term-with-missing
 
 # HTML report (open in browser)
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=html
 open htmlcov/index.html
@@ -396,12 +396,12 @@ ImportError: cannot import name 'QueryService' from 'src.tracertm.services'
 2. **Run pytest from project root**
    ```bash
    # WRONG (running from subdirectory):
-   cd tests/integration-full
+   cd tests/integration
    pytest test_YOUR_SERVICE.py -v  # Will fail with import error
 
    # RIGHT (run from project root):
    cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace
-   pytest tests/integration-full/test_YOUR_SERVICE.py -v  # Works!
+   pytest tests/integration/test_YOUR_SERVICE.py -v  # Works!
    ```
 
 3. **Verify pip install completed successfully**
@@ -440,7 +440,7 @@ ImportError: cannot import name 'QueryService' from 'src.tracertm.services'
 ### Problem: Tests Hang
 ```bash
 # Use timeout to catch hangs
-pytest tests/integration-full/test_YOUR_SERVICE.py -v --timeout=10
+pytest tests/integration/test_YOUR_SERVICE.py -v --timeout=10
 # If tests hang >10 seconds, fail and show where
 
 # Fix: Add fixture cleanup
@@ -454,7 +454,7 @@ def setup(self):
 ### Problem: Coverage Doesn't Increase
 ```bash
 # See what's NOT covered
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=term-with-missing
 
@@ -511,16 +511,16 @@ sys.path.insert(0, '/path/to/src')
 ### pytest - Test Runner
 ```bash
 # Run single file
-pytest tests/integration-full/test_file.py -v
+pytest tests/integration/test_file.py -v
 
 # Run single test
-pytest tests/integration-full/test_file.py::ClassName::test_name -v
+pytest tests/integration/test_file.py::ClassName::test_name -v
 
 # Run with output
-pytest tests/integration-full/test_file.py -v -s
+pytest tests/integration/test_file.py -v -s
 
 # Run in parallel
-pytest tests/integration-full/test_file.py -v -n auto
+pytest tests/integration/test_file.py -v -n auto
 ```
 
 ### coverage - Coverage Measurement
@@ -541,7 +541,7 @@ pytest --cov=src/tracertm/services/X --cov-report=json
 git checkout -b coverage/WP-X-Y-description
 
 # Commit your work
-git add tests/integration-full/test_YOUR_SERVICE.py
+git add tests/integration/test_YOUR_SERVICE.py
 git commit -m "WP-X.Y: Add test coverage for service"
 
 # Push to remote
@@ -566,10 +566,10 @@ cat WORK_PACKAGES_AGENTS.md | grep "WP-YOUR" -A 20
 ```bash
 # Develop tests
 # Run tests frequently
-pytest tests/integration-full/test_YOUR_SERVICE.py -v
+pytest tests/integration/test_YOUR_SERVICE.py -v
 
 # Check coverage
-pytest tests/integration-full/test_YOUR_SERVICE.py \
+pytest tests/integration/test_YOUR_SERVICE.py \
     --cov=src/tracertm/services/YOUR_SERVICE \
     --cov-report=term-with-missing
 ```
@@ -595,7 +595,7 @@ git push origin coverage/WP-X-Y-description
 ## When You're Done
 
 ### Checklist
-- [ ] All tests passing: `pytest tests/integration-full/test_YOUR_SERVICE.py -v`
+- [ ] All tests passing: `pytest tests/integration/test_YOUR_SERVICE.py -v`
 - [ ] Coverage >80%: Verified with coverage report
 - [ ] File documented: Docstrings on all classes/methods
 - [ ] No mocks: Service layer not mocked
@@ -626,10 +626,10 @@ git push origin coverage/WP-X-Y-description
 - `CODE_COVERAGE_EVALUATION_85-100.md` - Why coverage is low
 
 **Example Test:**
-- `tests/integration-full/TEMPLATE.py` - Use this as template
+- `tests/integration/TEMPLATE.py` - Use this as template
 
 **Fixtures Available:**
-- `tests/integration-full/conftest.py` - Database/service fixtures
+- `tests/integration/conftest.py` - Database/service fixtures
 - `tests/fixtures.py` - Shared fixtures
 
 **Service Documentation:**

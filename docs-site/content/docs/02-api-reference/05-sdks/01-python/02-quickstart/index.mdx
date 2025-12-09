@@ -1,32 +1,314 @@
 ---
 title: "Quick Start"
-description: "Documentation for Quick Start"
+description: "Get started with the TraceRTM Python SDK in minutes"
 ---
 
 # Quick Start
 
-This page contains documentation for Quick Start.
+This guide will help you get started with the TraceRTM Python SDK in just a few minutes. You'll learn how to install the SDK, authenticate, and make your first API calls.
 
-## Overview
+## Prerequisites
 
-This section covers the key aspects of Quick Start in TraceRTM.
+- Python 3.9 or higher
+- A TraceRTM account with an API key
+- pip or another Python package manager
 
-## Getting Started
+## Step 1: Install the SDK
 
-To get started with Quick Start:
+```bash
+pip install tracertm
+```
 
-- Review the Quick Start and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Step 2: Set Up Authentication
 
-## Key Concepts
+Get your API key from the [TraceRTM Dashboard](https://app.tracertm.dev/settings/api-keys).
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+## Step 3: Create Your First Script
+
+```python
+from tracertm import TraceRTMClient
+
+# Initialize the client (reads API key from environment)
+client = TraceRTMClient()
+
+# List all projects
+projects = client.projects.list()
+print(f"Found {len(projects.data)} projects")
+
+for project in projects.data:
+    print(f"  - {project.key}: {project.name}")
+```
+
+---
+
+## Common Operations
+
+### Working with Projects
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create a new project
+project = client.projects.create(
+    name="My Requirements Project",
+    key="MRP",
+    description="Track requirements for my application"
+)
+print(f"Created project: {project.id}")
+
+# Get project details
+project = client.projects.get(project.id)
+print(f"Project: {project.name}")
+print(f"Items: {project.item_count}")
+
+# Update project
+project = client.projects.update(
+    project.id,
+    description="Updated description"
+)
+```
+
+### Working with Items
+
+```python
+# Create a requirement
+requirement = client.items.create(
+    project_id=project.id,
+    type="requirement",
+    title="User Authentication",
+    description="System shall support secure user authentication via OAuth 2.0",
+    priority="high",
+    custom_fields={
+        "story_points": 8,
+        "sprint": "Sprint 1"
+    }
+)
+print(f"Created requirement: {requirement.key}")
+
+# Create a test case
+test_case = client.items.create(
+    project_id=project.id,
+    type="test_case",
+    title="Verify OAuth login flow",
+    description="Test that users can login via OAuth",
+    priority="high"
+)
+print(f"Created test case: {test_case.key}")
+
+# List all requirements
+requirements = client.items.list(
+    project_id=project.id,
+    type="requirement"
+)
+print(f"Found {len(requirements.data)} requirements")
+
+# Update an item
+requirement = client.items.update(
+    requirement.id,
+    priority="critical"
+)
+
+# Get item details
+item = client.items.get(requirement.id)
+print(f"Status: {item.status}")
+print(f"Priority: {item.priority}")
+```
+
+### Creating Traceability Links
+
+```python
+# Link test case to requirement
+link = client.links.create(
+    source_id=requirement.id,
+    target_id=test_case.id,
+    link_type="verified_by"
+)
+print(f"Created link: {link.id}")
+
+# Get all links for an item
+links = client.links.list(
+    project_id=project.id,
+    source_id=requirement.id
+)
+print(f"Requirement has {len(links.data)} links")
+
+# Bulk create links
+links = client.links.bulk_create([
+    {
+        "source_id": requirement.id,
+        "target_id": test_case.id,
+        "link_type": "verified_by"
+    }
+])
+```
+
+### Status Transitions
+
+```python
+# Get available transitions
+transitions = client.items.available_transitions(requirement.id)
+print("Available transitions:")
+for t in transitions:
+    print(f"  - {t.name}: {t.from_status} -> {t.to_status}")
+
+# Transition item status
+item = client.items.transition(
+    requirement.id,
+    transition="submit_for_review",
+    comment="Ready for review"
+)
+print(f"New status: {item.status}")
+```
+
+---
+
+## Iteration and Pagination
+
+### Automatic Iteration
+
+```python
+# Iterate through all items (handles pagination automatically)
+for item in client.items.iterate(project_id=project.id):
+    print(f"{item.key}: {item.title}")
+```
+
+### Manual Pagination
+
+```python
+# Fetch first page
+page = client.items.list(project_id=project.id, limit=50)
+
+while True:
+    for item in page.data:
+        process(item)
+
+    if not page.has_next:
+        break
+
+    page = page.next_page()
+```
+
+### Async Iteration
+
+```python
+from tracertm import AsyncTraceRTMClient
+import asyncio
+
+async def main():
+    client = AsyncTraceRTMClient()
+
+    async for item in client.items.iterate(project_id=project.id):
+        print(f"{item.key}: {item.title}")
+
+asyncio.run(main())
+```
+
+---
+
+## Error Handling
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import NotFoundError, ValidationError, RateLimitError
+import time
+
+client = TraceRTMClient()
+
+try:
+    item = client.items.get("item_nonexistent")
+except NotFoundError:
+    print("Item not found")
+except ValidationError as e:
+    print(f"Validation error: {e.message}")
+    for error in e.errors:
+        print(f"  - {error['field']}: {error['message']}")
+except RateLimitError as e:
+    print(f"Rate limited, waiting {e.retry_after} seconds")
+    time.sleep(e.retry_after)
+```
+
+---
+
+## Complete Example
+
+```python
+"""
+Complete example: Create a project with requirements and test cases
+"""
+from tracertm import TraceRTMClient
+from tracertm.exceptions import TraceRTMError
+
+def main():
+    # Initialize client
+    client = TraceRTMClient()
+
+    try:
+        # Create project
+        project = client.projects.create(
+            name="Authentication System",
+            key="AUTH",
+            description="Authentication system requirements"
+        )
+        print(f"Created project: {project.key}")
+
+        # Create requirements
+        requirements = []
+        for i, req in enumerate([
+            "User login with email/password",
+            "OAuth 2.0 social login",
+            "Two-factor authentication",
+            "Password reset flow"
+        ], 1):
+            item = client.items.create(
+                project_id=project.id,
+                type="requirement",
+                title=req,
+                priority="high"
+            )
+            requirements.append(item)
+            print(f"Created requirement: {item.key}")
+
+        # Create test cases and link to requirements
+        for req in requirements:
+            test_case = client.items.create(
+                project_id=project.id,
+                type="test_case",
+                title=f"Test: {req.title}",
+                priority="high"
+            )
+
+            link = client.links.create(
+                source_id=req.id,
+                target_id=test_case.id,
+                link_type="verified_by"
+            )
+            print(f"Linked {req.key} -> {test_case.key}")
+
+        # Print summary
+        print(f"\nProject {project.key} created with:")
+        print(f"  - {len(requirements)} requirements")
+        print(f"  - {len(requirements)} test cases")
+        print(f"  - {len(requirements)} traceability links")
+
+    except TraceRTMError as e:
+        print(f"Error: {e.message}")
+        raise
+
+if __name__ == "__main__":
+    main()
+```
+
+---
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- [API Reference](/docs/api-reference/sdks/python/api-reference) - Explore all available methods
+- [Examples](/docs/api-reference/sdks/python/examples) - More code examples
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Handle errors properly
+- [Async Usage](/docs/api-reference/sdks/python/async) - Async/await patterns

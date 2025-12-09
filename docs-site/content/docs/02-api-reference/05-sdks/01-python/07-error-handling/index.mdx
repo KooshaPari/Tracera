@@ -1,32 +1,509 @@
 ---
 title: "Error Handling"
-description: "Documentation for Error Handling"
+description: "Comprehensive guide to handling errors in the TraceRTM Python SDK"
 ---
 
 # Error Handling
 
-This page contains documentation for Error Handling.
+The TraceRTM Python SDK provides typed exceptions for precise error handling. This guide covers all error types, handling strategies, and best practices.
 
-## Overview
+## Exception Hierarchy
 
-This section covers the key aspects of Error Handling in TraceRTM.
+```
+TraceRTMError (base)
+├── AuthenticationError
+│   ├── InvalidAPIKeyError
+│   └── TokenExpiredError
+├── AuthorizationError
+│   ├── ForbiddenError
+│   └── ScopeInsufficientError
+├── ResourceError
+│   ├── NotFoundError
+│   └── ResourceDeletedError
+├── ValidationError
+├── ConflictError
+│   ├── DuplicateError
+│   └── VersionConflictError
+├── RateLimitError
+└── ServerError
+    ├── InternalServerError
+    ├── BadGatewayError
+    ├── ServiceUnavailableError
+    └── GatewayTimeoutError
+```
 
-## Getting Started
+---
 
-To get started with Error Handling:
+## Basic Error Handling
 
-- Review the Error Handling and fundamentals
-- Explore practical examples
-- Check out the API reference
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import TraceRTMError
 
-## Key Concepts
+client = TraceRTMClient()
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+try:
+    item = client.items.get("item_abc123")
+except TraceRTMError as e:
+    print(f"Error: {e.code} - {e.message}")
+    print(f"Request ID: {e.request_id}")
+```
 
-## Next Steps
+---
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+## Exception Types
+
+### AuthenticationError
+
+Raised when authentication fails.
+
+```python
+from tracertm.exceptions import AuthenticationError, InvalidAPIKeyError, TokenExpiredError
+
+try:
+    client = TraceRTMClient(api_key="invalid_key")
+    client.projects.list()
+except InvalidAPIKeyError as e:
+    print(f"Invalid API key: {e.message}")
+    print(f"Key prefix: {e.key_prefix}")  # rtm_live_sk_inv...
+except TokenExpiredError as e:
+    print(f"Token expired at: {e.expired_at}")
+    # Refresh the token
+except AuthenticationError as e:
+    print(f"Auth error: {e.message}")
+```
+
+**Error Codes:**
+- `UNAUTHORIZED` - Missing or invalid authentication
+- `INVALID_API_KEY` - API key is invalid or revoked
+- `TOKEN_EXPIRED` - OAuth token has expired
+
+### ForbiddenError
+
+Raised when you lack permissions for an operation.
+
+```python
+from tracertm.exceptions import ForbiddenError, ScopeInsufficientError
+
+try:
+    client.items.delete("item_abc123")
+except ScopeInsufficientError as e:
+    print(f"Required scope: {e.required_scope}")
+    print(f"Your scopes: {e.token_scopes}")
+except ForbiddenError as e:
+    print(f"Permission denied: {e.message}")
+    print(f"Required permission: {e.required_permission}")
+    print(f"Resource: {e.resource}")
+```
+
+**Error Codes:**
+- `FORBIDDEN` - Insufficient permissions
+- `SCOPE_INSUFFICIENT` - Token lacks required scope
+
+### NotFoundError
+
+Raised when a resource doesn't exist.
+
+```python
+from tracertm.exceptions import NotFoundError, ResourceDeletedError
+
+try:
+    item = client.items.get("item_nonexistent")
+except ResourceDeletedError as e:
+    print(f"Resource was deleted at: {e.deleted_at}")
+except NotFoundError as e:
+    print(f"Resource not found: {e.resource_type} {e.resource_id}")
+```
+
+**Error Codes:**
+- `NOT_FOUND` - Resource doesn't exist
+- `RESOURCE_DELETED` - Resource was deleted (410)
+
+### ValidationError
+
+Raised when request validation fails.
+
+```python
+from tracertm.exceptions import ValidationError
+
+try:
+    item = client.items.create(
+        project_id="proj_abc123",
+        type="invalid_type",
+        title=""  # Empty title
+    )
+except ValidationError as e:
+    print(f"Validation failed: {e.message}")
+    for error in e.errors:
+        print(f"  - {error['field']}: {error['message']}")
+        print(f"    Code: {error['code']}")
+        if 'value' in error:
+            print(f"    Value: {error['value']}")
+```
+
+**Error Codes:**
+- `VALIDATION_ERROR` - Request validation failed
+- `INVALID_JSON` - Request body is not valid JSON
+
+### ConflictError
+
+Raised when there's a resource conflict.
+
+```python
+from tracertm.exceptions import ConflictError, DuplicateError, VersionConflictError
+
+try:
+    project = client.projects.create(name="Project", key="PROJ")
+except DuplicateError as e:
+    print(f"Duplicate: {e.field} = {e.value}")
+    print(f"Existing resource: {e.existing_resource_id}")
+except VersionConflictError as e:
+    print(f"Expected version: {e.expected_version}")
+    print(f"Current version: {e.current_version}")
+    # Fetch latest and retry
+except ConflictError as e:
+    print(f"Conflict: {e.message}")
+```
+
+**Error Codes:**
+- `CONFLICT` - Generic conflict
+- `DUPLICATE_KEY` - Resource with key already exists
+- `VERSION_CONFLICT` - Optimistic locking conflict
+
+### RateLimitError
+
+Raised when rate limits are exceeded.
+
+```python
+from tracertm.exceptions import RateLimitError
+import time
+
+try:
+    for i in range(1000):
+        client.items.get(f"item_{i}")
+except RateLimitError as e:
+    print(f"Rate limited!")
+    print(f"Limit: {e.limit}")
+    print(f"Reset at: {e.reset_at}")
+    print(f"Retry after: {e.retry_after} seconds")
+
+    # Wait and retry
+    time.sleep(e.retry_after)
+```
+
+**Error Codes:**
+- `RATE_LIMIT_EXCEEDED` - Too many requests
+
+### ServerError
+
+Raised for server-side errors.
+
+```python
+from tracertm.exceptions import (
+    ServerError,
+    InternalServerError,
+    BadGatewayError,
+    ServiceUnavailableError,
+    GatewayTimeoutError
+)
+
+try:
+    items = client.items.list(project_id="proj_abc123")
+except ServiceUnavailableError as e:
+    print(f"Service unavailable: {e.message}")
+    # Check status page, retry later
+except GatewayTimeoutError as e:
+    print(f"Gateway timeout: {e.message}")
+    # Retry with backoff
+except ServerError as e:
+    print(f"Server error ({e.status}): {e.message}")
+    print(f"Request ID for support: {e.request_id}")
+```
+
+**Error Codes:**
+- `INTERNAL_SERVER_ERROR` - 500 error
+- `BAD_GATEWAY` - 502 error
+- `SERVICE_UNAVAILABLE` - 503 error
+- `GATEWAY_TIMEOUT` - 504 error
+
+---
+
+## Error Properties
+
+All exceptions include these properties:
+
+```python
+try:
+    item = client.items.get("item_abc123")
+except TraceRTMError as e:
+    # Standard properties
+    e.code           # Error code (e.g., "NOT_FOUND")
+    e.message        # Human-readable message
+    e.status         # HTTP status code
+    e.request_id     # Unique request identifier
+
+    # Additional context
+    e.details        # Dict with extra error info
+    e.documentation_url  # Link to error documentation
+```
+
+---
+
+## Comprehensive Error Handling
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import (
+    TraceRTMError,
+    AuthenticationError,
+    ForbiddenError,
+    NotFoundError,
+    ValidationError,
+    ConflictError,
+    RateLimitError,
+    ServerError
+)
+import time
+import logging
+
+logger = logging.getLogger(__name__)
+client = TraceRTMClient()
+
+def get_item_safely(item_id: str):
+    """Get an item with comprehensive error handling."""
+    try:
+        return client.items.get(item_id)
+
+    except NotFoundError as e:
+        logger.warning(f"Item not found: {e.resource_id}")
+        return None
+
+    except ValidationError as e:
+        logger.error(f"Invalid request: {e.message}")
+        for error in e.errors:
+            logger.error(f"  {error['field']}: {error['message']}")
+        raise
+
+    except AuthenticationError as e:
+        logger.error(f"Authentication failed: {e.message}")
+        # Trigger re-authentication
+        raise
+
+    except ForbiddenError as e:
+        logger.error(f"Permission denied: {e.required_permission}")
+        raise
+
+    except RateLimitError as e:
+        logger.warning(f"Rate limited, retrying in {e.retry_after}s")
+        time.sleep(e.retry_after)
+        return get_item_safely(item_id)  # Retry
+
+    except ServerError as e:
+        logger.error(f"Server error: {e.message} (request: {e.request_id})")
+        raise
+
+    except TraceRTMError as e:
+        logger.error(f"API error: {e.code} - {e.message}")
+        raise
+```
+
+---
+
+## Retry Strategies
+
+### Simple Retry
+
+```python
+import time
+from tracertm.exceptions import RateLimitError, ServerError
+
+def with_retry(func, max_retries=3, base_delay=1.0):
+    """Execute function with retry logic."""
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except RateLimitError as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(e.retry_after)
+        except ServerError as e:
+            if attempt == max_retries - 1:
+                raise
+            delay = base_delay * (2 ** attempt)  # Exponential backoff
+            time.sleep(delay)
+
+# Usage
+item = with_retry(lambda: client.items.get("item_abc123"))
+```
+
+### Using tenacity
+
+```python
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type
+)
+from tracertm.exceptions import RateLimitError, ServerError
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=60),
+    retry=retry_if_exception_type((RateLimitError, ServerError))
+)
+def get_item(item_id: str):
+    return client.items.get(item_id)
+```
+
+### Custom Retry with Rate Limit Awareness
+
+```python
+from tracertm.exceptions import RateLimitError
+import time
+
+class RateLimitAwareClient:
+    def __init__(self, client):
+        self.client = client
+        self._rate_limit_reset = 0
+
+    def _wait_if_rate_limited(self):
+        now = time.time()
+        if now < self._rate_limit_reset:
+            time.sleep(self._rate_limit_reset - now)
+
+    def get_item(self, item_id: str):
+        self._wait_if_rate_limited()
+        try:
+            return self.client.items.get(item_id)
+        except RateLimitError as e:
+            self._rate_limit_reset = time.time() + e.retry_after
+            raise
+```
+
+---
+
+## Logging Errors
+
+### Basic Logging
+
+```python
+import logging
+from tracertm import TraceRTMClient
+from tracertm.exceptions import TraceRTMError
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("tracertm")
+
+client = TraceRTMClient()
+
+try:
+    item = client.items.get("item_abc123")
+except TraceRTMError as e:
+    logger.error(
+        "API error",
+        extra={
+            "error_code": e.code,
+            "message": e.message,
+            "request_id": e.request_id,
+            "status": e.status
+        }
+    )
+```
+
+### Structured Logging
+
+```python
+import structlog
+from tracertm.exceptions import TraceRTMError
+
+logger = structlog.get_logger()
+
+try:
+    item = client.items.get("item_abc123")
+except TraceRTMError as e:
+    logger.error(
+        "api_error",
+        error_code=e.code,
+        message=e.message,
+        request_id=e.request_id,
+        status=e.status,
+        details=e.details
+    )
+```
+
+---
+
+## Best Practices
+
+### 1. Catch Specific Exceptions
+
+```python
+# Good - specific handling
+try:
+    item = client.items.get(item_id)
+except NotFoundError:
+    return create_default_item()
+except ValidationError as e:
+    log_validation_errors(e.errors)
+    raise
+except TraceRTMError:
+    raise
+
+# Bad - catch-all
+try:
+    item = client.items.get(item_id)
+except Exception:
+    pass
+```
+
+### 2. Always Log Request IDs
+
+```python
+except TraceRTMError as e:
+    logger.error(f"Error {e.code}: {e.message} (request_id: {e.request_id})")
+```
+
+### 3. Don't Swallow Errors
+
+```python
+# Bad
+try:
+    client.items.delete(item_id)
+except:
+    pass
+
+# Good
+try:
+    client.items.delete(item_id)
+except NotFoundError:
+    pass  # OK - item already gone
+except TraceRTMError:
+    raise  # Re-raise unexpected errors
+```
+
+### 4. Use Context Managers for Cleanup
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def item_lock(item_id: str):
+    """Lock an item for exclusive access."""
+    lock = client.items.lock(item_id)
+    try:
+        yield lock
+    finally:
+        try:
+            client.items.unlock(item_id)
+        except TraceRTMError:
+            pass  # Best effort unlock
+```
+
+---
+
+## Related Documentation
+
+- [REST API Errors](/docs/api-reference/rest-api/errors) - Error codes reference
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Rate limit details
+- [Authentication](/docs/api-reference/sdks/python/authentication) - Auth errors

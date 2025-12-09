@@ -237,8 +237,8 @@ All critical fixes from REVIEW_FINDINGS.md have been implemented across 6 target
 ## Remaining Items from REVIEW_FINDINGS
 
 **HIGH SEVERITY (Still need verification):**
-- [ ] Test template exists: `tests/integration-full/TEMPLATE.py`
-- [ ] Fixtures exist: `tests/integration-full/conftest.py`
+- [ ] Test template exists: `tests/integration/TEMPLATE.py`
+- [ ] Fixtures exist: `tests/integration/conftest.py`
 - [ ] Database initialization works (SQLite)
 - [ ] Fixture circular dependency resolution
 
