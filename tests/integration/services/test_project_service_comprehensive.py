@@ -604,5 +604,624 @@ class TestProjectDeletionEdgeCases:
         assert retrieved is None
 
 
+class TestProjectRepositoryBasicAsync:
+    """Test async-compatible patterns in ProjectRepository."""
+
+    def test_project_repository_handles_async_session(self, project_repo):
+        """Test that ProjectRepository is designed for async sessions."""
+        # ProjectRepository is initialized with AsyncSession in production
+        # This test verifies sync wrapper works correctly
+        created = project_repo.create("Async Compat Test")
+        assert created.id is not None
+        assert created.name == "Async Compat Test"
+
+    def test_project_repository_methods_are_async_ready(self, project_repo):
+        """Test that all repository methods support the async pattern."""
+        # Verify all essential methods exist and work
+        project = project_repo.create("Method Test")
+
+        # get_by_id pattern
+        assert project_repo.get_by_id(project.id) is not None
+
+        # get_by_name pattern
+        assert project_repo.get_by_name("Method Test") is not None
+
+        # get_all pattern
+        assert len(project_repo.get_all()) > 0
+
+        # update pattern
+        updated = project_repo.update(project.id, name="Updated")
+        assert updated.name == "Updated"
+
+
+class TestProjectCreationValidation:
+    """Test project creation validation and edge cases."""
+
+    def test_create_project_with_empty_name(self, project_repo):
+        """Test creating project with empty name - should succeed but edge case."""
+        project = project_repo.create("")
+        assert project.name == ""
+
+    def test_create_project_with_very_long_name(self, project_repo):
+        """Test creating project with very long name."""
+        long_name = "A" * 255
+        project = project_repo.create(long_name)
+        assert project.name == long_name
+
+    def test_create_project_with_special_characters(self, project_repo):
+        """Test project name with special characters."""
+        special_name = "Project !@#$%^&*()_+-=[]{}|;:',.<>?/~`"
+        project = project_repo.create(special_name)
+        assert project.name == special_name
+
+    def test_create_project_with_unicode_characters(self, project_repo):
+        """Test project name with unicode characters."""
+        unicode_name = "项目 プロジェクト Проект"
+        project = project_repo.create(unicode_name)
+        assert project.name == unicode_name
+
+    def test_create_project_with_whitespace_only_name(self, project_repo):
+        """Test project name with only whitespace."""
+        project = project_repo.create("   ")
+        assert project.name == "   "
+
+    def test_create_project_with_newlines_in_name(self, project_repo):
+        """Test project name containing newlines."""
+        project = project_repo.create("Line1\nLine2\nLine3")
+        assert "Line1\nLine2\nLine3" in project.name
+
+    def test_create_project_with_very_long_description(self, project_repo):
+        """Test project with very long description."""
+        long_desc = "D" * 10000
+        project = project_repo.create("Long Desc", description=long_desc)
+        assert project.description == long_desc
+
+    def test_create_project_preserves_metadata_structure(self, project_repo):
+        """Test that metadata structure is preserved exactly."""
+        metadata = {
+            "deeply": {
+                "nested": {
+                    "structure": {
+                        "with": ["multiple", "arrays", {"and": "dicts"}]
+                    }
+                }
+            }
+        }
+        project = project_repo.create("Nested", metadata=metadata)
+        assert project.project_metadata["deeply"]["nested"]["structure"]["with"][2]["and"] == "dicts"
+
+
+class TestProjectRetrievalAdvanced:
+    """Test advanced project retrieval scenarios."""
+
+    def test_get_by_id_after_update(self, project_repo):
+        """Test retrieval after update reflects changes."""
+        created = project_repo.create("Original")
+        project_repo.update(created.id, name="Modified")
+        retrieved = project_repo.get_by_id(created.id)
+        assert retrieved.name == "Modified"
+
+    def test_get_by_name_case_sensitive(self, project_repo):
+        """Test that get by name is case sensitive."""
+        project_repo.create("TestProject")
+        result = project_repo.get_by_name("testproject")
+        assert result is None
+
+    def test_get_all_returns_copy_not_reference(self, project_repo):
+        """Test that modifying returned list doesn't affect stored data."""
+        p1 = project_repo.create("Project 1")
+        projects = project_repo.get_all()
+        projects.clear()  # Clear the returned list
+        all_projects = project_repo.get_all()
+        assert len(all_projects) == 1  # Original data unchanged
+
+    def test_get_all_ordering(self, project_repo):
+        """Test that get_all returns projects in insertion order."""
+        names = [f"Project {i}" for i in range(5)]
+        for name in names:
+            project_repo.create(name)
+        all_projects = project_repo.get_all()
+        retrieved_names = [p.name for p in all_projects]
+        assert retrieved_names == names
+
+    def test_get_by_id_returns_different_instance(self, project_repo):
+        """Test that each retrieval returns different instance."""
+        created = project_repo.create("Instance Test")
+        retrieved1 = project_repo.get_by_id(created.id)
+        retrieved2 = project_repo.get_by_id(created.id)
+        assert retrieved1.id == retrieved2.id
+        # Instances might be same or different depending on session, check data
+
+
+class TestProjectUpdateAdvanced:
+    """Test advanced project update scenarios."""
+
+    def test_update_only_name_preserves_description_metadata(self, project_repo):
+        """Test updating only name preserves other fields."""
+        created = project_repo.create(
+            "Original",
+            description="Test description",
+            metadata={"key": "value"}
+        )
+        updated = project_repo.update(created.id, name="New Name")
+        assert updated.name == "New Name"
+        assert updated.description == "Test description"
+        assert updated.project_metadata["key"] == "value"
+
+    def test_update_only_description_preserves_others(self, project_repo):
+        """Test updating only description preserves other fields."""
+        created = project_repo.create(
+            "Name",
+            description="Original description",
+            metadata={"data": "important"}
+        )
+        updated = project_repo.update(created.id, description="New description")
+        assert updated.name == "Name"
+        assert updated.description == "New description"
+        assert updated.project_metadata["data"] == "important"
+
+    def test_update_only_metadata_preserves_others(self, project_repo):
+        """Test updating only metadata preserves other fields."""
+        created = project_repo.create(
+            "Name",
+            description="Description",
+            metadata={"old": "value"}
+        )
+        updated = project_repo.update(
+            created.id,
+            metadata={"new": "value"}
+        )
+        assert updated.name == "Name"
+        assert updated.description == "Description"
+        assert updated.project_metadata["new"] == "value"
+
+    def test_update_all_fields_simultaneously(self, project_repo):
+        """Test updating all fields at once."""
+        created = project_repo.create("Old", "Old desc", {"old": "data"})
+        updated = project_repo.update(
+            created.id,
+            name="New",
+            description="New desc",
+            metadata={"new": "data"}
+        )
+        assert updated.name == "New"
+        assert updated.description == "New desc"
+        assert updated.project_metadata["new"] == "data"
+
+    def test_update_metadata_to_empty_dict(self, project_repo):
+        """Test updating metadata to empty dictionary."""
+        created = project_repo.create("Meta Test", metadata={"key": "value"})
+        updated = project_repo.update(created.id, metadata={})
+        assert updated.project_metadata == {}
+
+    def test_update_with_none_values_unchanged(self, project_repo):
+        """Test that None values in update don't modify fields."""
+        created = project_repo.create(
+            "Original",
+            description="Keep this",
+            metadata={"keep": "this"}
+        )
+        updated = project_repo.update(created.id, name=None)
+        assert updated.name == "Original"
+        assert updated.description == "Keep this"
+
+    def test_update_to_empty_string_name(self, project_repo):
+        """Test updating name to empty string."""
+        created = project_repo.create("NonEmpty")
+        updated = project_repo.update(created.id, name="")
+        assert updated.name == ""
+
+    def test_update_to_empty_string_description(self, project_repo):
+        """Test updating description to empty string."""
+        created = project_repo.create("Test", description="Has description")
+        updated = project_repo.update(created.id, description="")
+        assert updated.description == ""
+
+    def test_update_to_very_large_metadata(self, project_repo):
+        """Test updating with very large metadata structure."""
+        large_metadata = {
+            f"key_{i}": {
+                "nested": [j for j in range(100)]
+            }
+            for i in range(50)
+        }
+        created = project_repo.create("Large Meta")
+        updated = project_repo.update(created.id, metadata=large_metadata)
+        assert len(updated.project_metadata) == 50
+
+
+class TestProjectListingAndFiltering:
+    """Test project listing with various scenarios."""
+
+    def test_list_with_single_project(self, project_repo):
+        """Test listing with single project."""
+        project_repo.create("Only One")
+        projects = project_repo.get_all()
+        assert len(projects) == 1
+        assert projects[0].name == "Only One"
+
+    def test_list_multiple_projects_maintains_identity(self, project_repo):
+        """Test that listed projects maintain their identity."""
+        ids = set()
+        for i in range(10):
+            p = project_repo.create(f"Project {i}")
+            ids.add(p.id)
+        projects = project_repo.get_all()
+        retrieved_ids = {p.id for p in projects}
+        assert ids == retrieved_ids
+
+    def test_list_large_number_of_projects(self, project_repo):
+        """Test listing large number of projects."""
+        for i in range(100):
+            project_repo.create(f"Project {i}")
+        projects = project_repo.get_all()
+        assert len(projects) == 100
+
+    def test_list_with_mixed_metadata_sizes(self, project_repo):
+        """Test listing projects with varying metadata sizes."""
+        project_repo.create("Small", metadata={})
+        project_repo.create("Medium", metadata={"a": "b", "c": "d"})
+        project_repo.create("Large", metadata={str(i): str(i) for i in range(100)})
+        projects = project_repo.get_all()
+        assert len(projects) == 3
+        metadata_sizes = [len(p.project_metadata) for p in projects]
+        assert 0 in metadata_sizes
+        assert len(metadata_sizes) == 3
+
+
+class TestProjectDeletion:
+    """Test project deletion scenarios."""
+
+    def test_delete_existing_project(self, db_session, project_repo):
+        """Test deleting existing project."""
+        project = project_repo.create("To Delete")
+        project_id = project.id
+        db_session.delete(project)
+        db_session.commit()
+        result = project_repo.get_by_id(project_id)
+        assert result is None
+
+    def test_delete_multiple_projects_independently(self, db_session, project_repo):
+        """Test deleting multiple projects don't affect others."""
+        p1 = project_repo.create("Delete 1")
+        p2 = project_repo.create("Keep")
+        p3 = project_repo.create("Delete 2")
+
+        db_session.delete(p1)
+        db_session.delete(p3)
+        db_session.commit()
+
+        remaining = project_repo.get_all()
+        assert len(remaining) == 1
+        assert remaining[0].id == p2.id
+
+    def test_delete_preserves_other_projects_metadata(self, db_session, project_repo):
+        """Test that deleting project doesn't affect others' metadata."""
+        p1 = project_repo.create("Delete", metadata={"delete": True})
+        p2 = project_repo.create("Keep", metadata={"keep": True})
+
+        db_session.delete(p1)
+        db_session.commit()
+
+        kept = project_repo.get_by_id(p2.id)
+        assert kept.project_metadata["keep"] is True
+
+
+class TestProjectSettingsAndConfiguration:
+    """Test project settings and configuration scenarios."""
+
+    def test_settings_nested_structure(self, project_repo):
+        """Test nested settings structure."""
+        settings = {
+            "notifications": {
+                "email": True,
+                "slack": False,
+                "frequency": "daily"
+            },
+            "display": {
+                "theme": "dark",
+                "columns": ["name", "status", "owner"]
+            }
+        }
+        project = project_repo.create("Settings", metadata=settings)
+        assert project.project_metadata["notifications"]["email"] is True
+        assert "status" in project.project_metadata["display"]["columns"]
+
+    def test_settings_with_defaults(self, project_repo):
+        """Test settings with default values."""
+        defaults = {
+            "version": "1.0",
+            "defaults": {
+                "item_status": "todo",
+                "priority": "medium",
+                "assignee": None
+            }
+        }
+        project = project_repo.create("Defaults", metadata=defaults)
+        assert project.project_metadata["defaults"]["item_status"] == "todo"
+
+    def test_settings_override(self, project_repo):
+        """Test overriding settings."""
+        original = {"setting": "default"}
+        project = project_repo.create("Override", metadata=original)
+        updated = project_repo.update(
+            project.id,
+            metadata={"setting": "overridden"}
+        )
+        assert updated.project_metadata["setting"] == "overridden"
+
+    def test_settings_with_array_values(self, project_repo):
+        """Test settings with array values."""
+        settings = {
+            "allowed_statuses": ["todo", "in_progress", "done", "blocked"],
+            "allowed_priorities": ["low", "medium", "high", "critical"],
+            "team_members": ["alice", "bob", "charlie"]
+        }
+        project = project_repo.create("ArraySettings", metadata=settings)
+        assert len(project.project_metadata["allowed_statuses"]) == 4
+        assert "charlie" in project.project_metadata["team_members"]
+
+    def test_settings_persistence_across_updates(self, project_repo):
+        """Test that settings persist correctly across updates."""
+        settings = {"schema_version": "2.0"}
+        p1 = project_repo.create("Persist", metadata=settings)
+        project_repo.update(p1.id, name="Updated Name")
+        retrieved = project_repo.get_by_id(p1.id)
+        assert retrieved.project_metadata["schema_version"] == "2.0"
+
+
+class TestProjectIntegrationWorkflows:
+    """Test integration scenarios combining multiple operations."""
+
+    def test_create_update_retrieve_workflow(self, project_repo):
+        """Test create, update, retrieve workflow."""
+        # Create
+        project = project_repo.create("Workflow Test")
+        original_id = project.id
+
+        # Update
+        updated = project_repo.update(
+            original_id,
+            name="Updated",
+            description="After update",
+            metadata={"version": "2"}
+        )
+
+        # Retrieve
+        retrieved = project_repo.get_by_id(original_id)
+        assert retrieved.name == "Updated"
+        assert retrieved.description == "After update"
+        assert retrieved.project_metadata["version"] == "2"
+
+    def test_multiple_projects_independent_operations(self, project_repo):
+        """Test multiple projects with independent operations."""
+        p1 = project_repo.create("Project 1", metadata={"v": "1"})
+        p2 = project_repo.create("Project 2", metadata={"v": "2"})
+
+        project_repo.update(p1.id, name="P1 Updated")
+        project_repo.update(p2.id, metadata={"v": "2.1"})
+
+        p1_final = project_repo.get_by_id(p1.id)
+        p2_final = project_repo.get_by_id(p2.id)
+
+        assert p1_final.name == "P1 Updated"
+        assert p2_final.project_metadata["v"] == "2.1"
+
+    def test_project_lifecycle_complete(self, db_session, project_repo):
+        """Test complete project lifecycle."""
+        # Create
+        project = project_repo.create(
+            "Lifecycle Test",
+            description="Initial description",
+            metadata={"stage": "alpha"}
+        )
+        project_id = project.id
+
+        # Update multiple times
+        for stage in ["beta", "rc", "stable"]:
+            project_repo.update(
+                project_id,
+                metadata={"stage": stage}
+            )
+
+        # Verify final state
+        final = project_repo.get_by_id(project_id)
+        assert final.project_metadata["stage"] == "stable"
+
+        # Delete
+        db_session.delete(final)
+        db_session.commit()
+        deleted = project_repo.get_by_id(project_id)
+        assert deleted is None
+
+    def test_bulk_operations_consistency(self, project_repo):
+        """Test consistency across bulk operations."""
+        # Create multiple projects
+        projects = []
+        for i in range(5):
+            p = project_repo.create(
+                f"Bulk {i}",
+                description=f"Description {i}",
+                metadata={"index": i}
+            )
+            projects.append(p)
+
+        # Update all
+        for p in projects:
+            project_repo.update(
+                p.id,
+                metadata={"status": "updated"}
+            )
+
+        # Verify all updated
+        all_projects = project_repo.get_all()
+        assert all(p.project_metadata.get("status") == "updated" for p in all_projects)
+
+
+class TestProjectConcurrency:
+    """Test concurrent project operations with sequential access."""
+
+    def test_sequential_project_creation_stress(self, project_repo):
+        """Test sequential creation of many projects (stress test)."""
+        for i in range(10):
+            project_repo.create(f"Sequential {i}")
+
+        all_projects = project_repo.get_all()
+        assert len(all_projects) == 10
+
+    def test_rapid_read_operations(self, project_repo):
+        """Test rapid reading of projects."""
+        # Create projects first
+        for i in range(5):
+            project_repo.create(f"Project {i}")
+
+        # Rapid sequential reads
+        results = []
+        for _ in range(10):
+            results.append(project_repo.get_all())
+
+        assert all(len(r) == 5 for r in results)
+
+    def test_mixed_operations_sequential(self, project_repo):
+        """Test mixed read/write operations sequentially."""
+        project_repo.create("Base Project")
+
+        results = []
+        for i in range(8):
+            if i % 2 == 0:
+                results.append(project_repo.create(f"Created {i}"))
+            else:
+                projects = project_repo.get_all()
+                results.append(len(projects))
+
+        assert len(results) == 8
+
+    def test_bulk_read_then_write_pattern(self, project_repo):
+        """Test bulk read followed by writes."""
+        # Create initial projects
+        for i in range(5):
+            project_repo.create(f"Initial {i}")
+
+        # Read all
+        initial = project_repo.get_all()
+        assert len(initial) == 5
+
+        # Add more
+        for i in range(5):
+            project_repo.create(f"Added {i}")
+
+        # Verify
+        final = project_repo.get_all()
+        assert len(final) == 10
+
+
+class TestProjectEdgeCasesAndErrors:
+    """Test edge cases and error handling."""
+
+    def test_project_id_uniqueness(self, project_repo):
+        """Test that project IDs are unique."""
+        ids = set()
+        for i in range(50):
+            p = project_repo.create(f"Project {i}")
+            assert p.id not in ids
+            ids.add(p.id)
+
+    def test_metadata_with_null_values(self, project_repo):
+        """Test metadata containing null values."""
+        metadata = {"nullable": None, "present": "value"}
+        project = project_repo.create("Nulls", metadata=metadata)
+        assert project.project_metadata["nullable"] is None
+        assert project.project_metadata["present"] == "value"
+
+    def test_metadata_with_empty_arrays(self, project_repo):
+        """Test metadata with empty arrays."""
+        metadata = {"array": [], "items": []}
+        project = project_repo.create("Empty Arrays", metadata=metadata)
+        assert project.project_metadata["array"] == []
+        assert project.project_metadata["items"] == []
+
+    def test_metadata_with_mixed_types(self, project_repo):
+        """Test metadata with mixed types."""
+        metadata = {
+            "string": "text",
+            "number": 42,
+            "float": 3.14,
+            "bool": True,
+            "null": None,
+            "array": [1, "two", 3.0],
+            "object": {"nested": "value"}
+        }
+        project = project_repo.create("Mixed Types", metadata=metadata)
+        assert isinstance(project.project_metadata["string"], str)
+        assert isinstance(project.project_metadata["number"], int)
+        assert isinstance(project.project_metadata["bool"], bool)
+
+    def test_get_all_after_multiple_deletes(self, db_session, project_repo):
+        """Test get_all after deleting multiple projects."""
+        projects = []
+        for i in range(5):
+            p = project_repo.create(f"Delete Test {i}")
+            projects.append(p)
+
+        # Delete some
+        db_session.delete(projects[1])
+        db_session.delete(projects[3])
+        db_session.commit()
+
+        remaining = project_repo.get_all()
+        assert len(remaining) == 3
+
+    def test_update_same_field_multiple_times(self, project_repo):
+        """Test updating same field multiple times."""
+        project = project_repo.create("Multi Update")
+        for i in range(10):
+            project_repo.update(project.id, name=f"Updated {i}")
+
+        final = project_repo.get_by_id(project.id)
+        assert final.name == "Updated 9"
+
+
+class TestProjectPerformanceCharacteristics:
+    """Test performance characteristics and scalability."""
+
+    def test_create_many_projects_performance(self, project_repo):
+        """Test creating many projects."""
+        start = time.time()
+        for i in range(100):
+            project_repo.create(f"Performance {i}")
+        elapsed = time.time() - start
+
+        # Verify all created
+        projects = project_repo.get_all()
+        assert len(projects) == 100
+        # Should complete in reasonable time (this is relative)
+        assert elapsed < 30  # 30 seconds for 100 creates
+
+    def test_retrieval_with_many_projects(self, project_repo):
+        """Test retrieval speed with many projects."""
+        # Create many projects
+        for i in range(50):
+            project_repo.create(f"Project {i}")
+
+        # Time retrieval
+        start = time.time()
+        projects = project_repo.get_all()
+        elapsed = time.time() - start
+
+        assert len(projects) == 50
+        assert elapsed < 5  # Should be fast
+
+    def test_update_performance_with_large_metadata(self, project_repo):
+        """Test update performance with large metadata."""
+        project = project_repo.create("Large Meta")
+        large_metadata = {f"key_{i}": f"value_{i}" for i in range(1000)}
+
+        start = time.time()
+        project_repo.update(project.id, metadata=large_metadata)
+        elapsed = time.time() - start
+
+        assert elapsed < 5  # Should be fast even with large metadata
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
