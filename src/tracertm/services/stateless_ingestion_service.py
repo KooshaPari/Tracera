@@ -72,8 +72,8 @@ class StatelessIngestionService:
             raise FileNotFoundError(f"File not found: {file_path}")
 
         # Validate file
-        if validate and path.suffix.lower() not in [".md", ".markdown"]:
-            raise ValueError(f"Invalid file extension: {path.suffix}. Expected .md or .markdown")
+        if validate and path.suffix.lower() not in [".md", ".markdown", ".mdx"]:
+            raise ValueError(f"Invalid file extension: {path.suffix}. Expected .md, .markdown, or .mdx")
 
         content = path.read_text(encoding="utf-8")
 
@@ -365,7 +365,7 @@ class StatelessIngestionService:
         format_type = "yaml"
         if "openapi" in data or "swagger" in data:
             format_type = "openapi"
-        elif "bmad" in str(path).lower() or "bmad" in data or "requirements" in data:
+        elif "bmad" in str(path).lower() or "bmad" in data or "requirements" in data or ("spec" in data and "requirements" in data.get("spec", {})):
             format_type = "bmad"
 
         if dry_run:

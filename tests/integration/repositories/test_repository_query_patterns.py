@@ -129,9 +129,11 @@ async def setup_links(db_session: AsyncSession, setup_items: dict) -> dict[str, 
 
     # Create links between items
     item1, item2, item3 = setup_items["item1"], setup_items["item2"], setup_items["item3"]
+    project_id = item1.project_id
 
     for idx, link_type in enumerate(link_types):
         link = await link_repo.create(
+            project_id=project_id,
             source_item_id=item1.id,
             target_item_id=item2.id if idx == 0 else item3.id,
             link_type=link_type,
@@ -157,7 +159,7 @@ class TestComplexFilters:
 
         # Filter by status
         todo_items = await repo.query(project_id, {"status": "todo"})
-        assert len(todo_items) == 3  # items 1, 4, and child2
+        assert len(todo_items) == 6  # items 1, 4, 6, 7, 8, and child2
         assert all(item.status == "todo" for item in todo_items)
 
     async def test_filter_multiple_attributes(self, db_session: AsyncSession, setup_items: dict):

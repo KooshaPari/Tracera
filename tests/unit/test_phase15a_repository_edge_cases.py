@@ -181,7 +181,7 @@ class TestLinkRepositoryEdgeCases:
             link_type="depends_on"
         )
         mock_result.scalar_one_or_none.return_value = mock_link
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_id("link-1")
@@ -194,7 +194,7 @@ class TestLinkRepositoryEdgeCases:
         mock_session = AsyncMock(spec=AsyncSession)
         mock_result = AsyncMock()
         mock_result.scalar_one_or_none.return_value = None
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_id("nonexistent")
@@ -209,7 +209,7 @@ class TestLinkRepositoryEdgeCases:
         mock_scalars = AsyncMock()
         mock_scalars.all.return_value = []
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_project("proj-1")
@@ -230,7 +230,7 @@ class TestLinkRepositoryEdgeCases:
         mock_scalars = AsyncMock()
         mock_scalars.all.return_value = mock_links
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_project("proj-1")
@@ -246,7 +246,7 @@ class TestLinkRepositoryEdgeCases:
         mock_scalars = AsyncMock()
         mock_scalars.all.return_value = []
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_source("item-1")
@@ -267,7 +267,7 @@ class TestLinkRepositoryEdgeCases:
         mock_scalars = AsyncMock()
         mock_scalars.all.return_value = mock_links
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_source("item-1")
@@ -283,7 +283,7 @@ class TestLinkRepositoryEdgeCases:
         mock_scalars = AsyncMock()
         mock_scalars.all.return_value = []
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_target("item-1")

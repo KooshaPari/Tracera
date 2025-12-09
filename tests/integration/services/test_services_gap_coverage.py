@@ -311,7 +311,26 @@ Content
 
     def test_ingest_mdx_create_new_project(self, service, mock_session):
         """Test MDX creates new project when not specified."""
-        mock_session.query.return_value.filter.return_value.first.return_value = None
+        # Create a mock project that persists across queries
+        mock_project = Mock(spec=Project)
+        mock_project.id = str(uuid4())
+
+        # Set up mock to first return None (project doesn't exist by name)
+        # Then after creation, return the mock project when queried by ID
+        first_call = True
+        def query_side_effect(*args, **kwargs):
+            nonlocal first_call
+            mock_query = Mock()
+            if first_call:
+                # First query: project doesn't exist by name
+                mock_query.filter.return_value.first.return_value = None
+                first_call = False
+            else:
+                # Subsequent queries: return the created project
+                mock_query.filter.return_value.first.return_value = mock_project
+            return mock_query
+
+        mock_session.query.side_effect = query_side_effect
 
         with tempfile.NamedTemporaryFile(mode='w', suffix=".mdx", delete=False) as tmp:
             tmp.write("# Test")

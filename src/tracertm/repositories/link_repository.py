@@ -84,3 +84,15 @@ class LinkRepository:
             )
         )
         return result.rowcount
+
+    async def get_all(self) -> list[Link]:
+        """Get all links."""
+        result = await self.session.execute(select(Link))
+        return list(result.scalars().all())
+
+    async def get_by_type(self, link_type: str) -> list[Link]:
+        """Get all links of a specific type."""
+        result = await self.session.execute(
+            select(Link).where(Link.link_type == link_type)
+        )
+        return list(result.scalars().all())
