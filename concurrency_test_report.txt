@@ -1,0 +1,44 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.11, pytest-8.4.2, pluggy-1.6.0 -- /Users/kooshapari/miniforge3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace
+configfile: pyproject.toml
+plugins: asyncio-0.24.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 33 items
+
+tests/integration/test_concurrency_stress.py::TestBaselineStability::test_single_item_creation PASSED [  3%]
+tests/integration/test_concurrency_stress.py::TestBaselineStability::test_single_item_update PASSED [  6%]
+tests/integration/test_concurrency_stress.py::TestBaselineStability::test_single_link_creation PASSED [  9%]
+tests/integration/test_concurrency_stress.py::TestBaselineStability::test_transaction_rollback PASSED [ 12%]
+tests/integration/test_concurrency_stress.py::TestConcurrentWrites::test_concurrent_item_creation PASSED [ 15%]
+tests/integration/test_concurrency_stress.py::TestConcurrentWrites::test_concurrent_item_updates PASSED [ 18%]
+tests/integration/test_concurrency_stress.py::TestConcurrentWrites::test_concurrent_link_creation PASSED [ 21%]
+tests/integration/test_concurrency_stress.py::TestConcurrentWrites::test_concurrent_mixed_operations PASSED [ 24%]
+tests/integration/test_concurrency_stress.py::TestRaceConditions::test_race_condition_counter_increment PASSED [ 27%]
+tests/integration/test_concurrency_stress.py::TestRaceConditions::test_lost_update_problem PASSED [ 30%]
+tests/integration/test_concurrency_stress.py::TestRaceConditions::test_phantom_read_concurrent_creation PASSED [ 33%]
+tests/integration/test_concurrency_stress.py::TestRaceConditions::test_check_then_act_race PASSED [ 36%]
+tests/integration/test_concurrency_stress.py::TestDeadlockScenarios::test_lock_ordering_prevention PASSED [ 39%]
+tests/integration/test_concurrency_stress.py::TestDeadlockScenarios::test_timeout_deadlock_detection PASSED [ 42%]
+tests/integration/test_concurrency_stress.py::TestDeadlockScenarios::test_high_contention_scenario PASSED [ 45%]
+tests/integration/test_concurrency_stress.py::TestTransactionIsolation::test_dirty_read_prevention PASSED [ 48%]
+tests/integration/test_concurrency_stress.py::TestTransactionIsolation::test_repeatable_read_consistency PASSED [ 51%]
+tests/integration/test_concurrency_stress.py::TestTransactionIsolation::test_serializable_isolation PASSED [ 54%]
+tests/integration/test_concurrency_stress.py::TestRetryAndBackoff::test_retry_decorator_success_on_retry PASSED [ 57%]
+tests/integration/test_concurrency_stress.py::TestRetryAndBackoff::test_retry_decorator_max_retries_exceeded PASSED [ 60%]
+tests/integration/test_concurrency_stress.py::TestRetryAndBackoff::test_exponential_backoff_timing PASSED [ 63%]
+tests/integration/test_concurrency_stress.py::TestRetryAndBackoff::test_jitter_prevents_thundering_herd PASSED [ 66%]
+tests/integration/test_concurrency_stress.py::TestRetryAndBackoff::test_concurrent_retry_operations PASSED [ 69%]
+tests/integration/test_concurrency_stress.py::TestBulkOperationConcurrency::test_concurrent_bulk_updates PASSED [ 72%]
+tests/integration/test_concurrency_stress.py::TestBulkOperationConcurrency::test_concurrent_bulk_preview_and_execute PASSED [ 75%]
+tests/integration/test_concurrency_stress.py::TestStressConditions::test_high_throughput_item_creation PASSED [ 78%]
+tests/integration/test_concurrency_stress.py::TestStressConditions::test_memory_stability_with_many_sessions PASSED [ 81%]
+tests/integration/test_concurrency_stress.py::TestStressConditions::test_rapid_connection_cycling PASSED [ 84%]
+tests/integration/test_concurrency_stress.py::TestConcurrencyIntegration::test_mixed_workload_scenario PASSED [ 87%]
+tests/integration/test_concurrency_stress.py::TestConcurrencyIntegration::test_concurrent_agent_operations PASSED [ 90%]
+tests/integration/test_concurrency_stress.py::TestConcurrencyReport::test_throughput_measurement[5-10] PASSED [ 93%]
+tests/integration/test_concurrency_stress.py::TestConcurrencyReport::test_throughput_measurement[10-20] PASSED [ 96%]
+tests/integration/test_concurrency_stress.py::TestConcurrencyReport::test_throughput_measurement[20-50] PASSED [100%]
+
+============================= 33 passed in 10.23s ==============================
