@@ -20,7 +20,7 @@ class LinkRepository:
         source_item_id: str,
         target_item_id: str,
         link_type: str,
-        metadata: dict | None = None,
+        link_metadata: dict | None = None,
     ) -> Link:
         """Create new link."""
         link = Link(
@@ -29,7 +29,7 @@ class LinkRepository:
             source_item_id=source_item_id,
             target_item_id=target_item_id,
             link_type=link_type,
-            metadata=metadata or {},
+            link_metadata=link_metadata or {},
         )
         self.session.add(link)
         await self.session.flush()

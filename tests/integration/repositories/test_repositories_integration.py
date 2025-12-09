@@ -1276,7 +1276,7 @@ async def test_link_repository_create(db_session: AsyncSession):
         source_item_id=item1.id,
         target_item_id=item2.id,
         link_type="implements",
-        metadata={"confidence": 0.95}
+        link_metadata={"confidence": 0.95}
     )
 
     assert link.id is not None
