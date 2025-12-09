@@ -3,10 +3,258 @@ title: "Contributing: Testing"
 description: "Testing expectations for contributors."
 ---
 
-## Requirements
-- Add/extend unit tests for new code paths.
-- Provide integration tests when touching API contracts.
+## Testing Requirements
 
-## Checklist
-- Fails fast locally before PR.
-- Include fixtures and teardown to keep tests isolated.
+All code contributions must include appropriate tests. This ensures reliability, prevents regressions, and documents expected behavior.
+
+## Test Types
+
+### Unit Tests
+
+Test individual functions and components in isolation.
+
+**When to write:**
+- Adding new functions or methods
+- Modifying business logic
+- Adding utility helpers
+- Fixing bugs
+
+**Python example (pytest):**
+
+```python
+def test_artifact_validation():
+    """Test that artifacts validate required fields."""
+    artifact = Artifact(name="", type="requirement")
+
+    with pytest.raises(ValidationError):
+        artifact.validate()
+
+def test_artifact_with_valid_data():
+    """Test artifact creation with valid data."""
+    artifact = Artifact(
+        name="REQ-001",
+        type="requirement",
+        content="System shall..."
+    )
+
+    assert artifact.is_valid()
+```
+
+**TypeScript/Jest example:**
+
+```typescript
+describe("ItemValidator", () => {
+  it("should validate required fields", () => {
+    const item = { name: "", type: "requirement" };
+    expect(() => validateItem(item)).toThrow();
+  });
+
+  it("should accept valid items", () => {
+    const item = {
+      name: "REQ-001",
+      type: "requirement",
+      content: "Requirement text"
+    };
+    expect(validateItem(item)).toBe(true);
+  });
+});
+```
+
+### Integration Tests
+
+Test how components work together, especially API contracts.
+
+**When to write:**
+- Creating new API endpoints
+- Modifying API response format
+- Adding database queries
+- Changing workflow behavior
+
+**Python example:**
+
+```python
+@pytest.mark.asyncio
+async def test_create_artifact_via_api(client):
+    """Test creating artifact through API endpoint."""
+    response = await client.post(
+        "/api/artifacts",
+        json={
+            "project_id": "proj-123",
+            "name": "REQ-001",
+            "type": "requirement"
+        }
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["id"] == "artifact-123"
+    assert data["name"] == "REQ-001"
+```
+
+## Test Coverage
+
+**Coverage requirements:**
+- New code must have >80% test coverage
+- Core business logic must have >90% coverage
+- External integrations must have >70% coverage
+- Documentation-only changes don't require tests
+
+**Check coverage:**
+
+```bash
+# Python
+poetry run pytest --cov=src tests/
+
+# Node.js/TypeScript
+npm run test -- --coverage
+```
+
+## Test Isolation
+
+Each test must be independent and can run in any order.
+
+**Use fixtures for setup:**
+
+```python
+@pytest.fixture
+def sample_project():
+    """Create a project for testing."""
+    project = Project.create(name="Test Project")
+    yield project
+    project.delete()  # Cleanup
+
+def test_with_project(sample_project):
+    """Test that uses the fixture."""
+    artifact = sample_project.add_artifact(...)
+    assert artifact is not None
+```
+
+**Clean up after tests:**
+
+```typescript
+describe("Artifacts", () => {
+  afterEach(() => {
+    // Clean up test data
+    clearMockData();
+    jest.clearAllMocks();
+  });
+});
+```
+
+## Writing Good Tests
+
+### Test Names
+
+Names should describe what is being tested:
+
+```python
+# Good
+def test_artifact_rejects_empty_name()
+def test_link_creation_updates_artifact_count()
+
+# Poor
+def test_artifact()
+def test_link()
+```
+
+### Arrange-Act-Assert Pattern
+
+```python
+def test_calculate_coverage():
+    # Arrange: Set up test data
+    artifacts = [
+        Artifact(id="1", type="requirement"),
+        Artifact(id="2", type="requirement"),
+        Artifact(id="3", type="requirement"),
+    ]
+    links = [
+        Link(from_id="1", to_id="t1"),
+        Link(from_id="2", to_id="t2"),
+        # Artifact 3 has no links
+    ]
+
+    # Act: Perform the action
+    coverage = calculate_coverage(artifacts, links)
+
+    # Assert: Verify the result
+    assert coverage == 66.67  # 2 of 3 artifacts linked
+```
+
+### Avoid Test Interdependence
+
+```python
+# Bad: Tests depend on order
+def test_1_create_project():
+    global project
+    project = create_project()
+
+def test_2_add_artifact():
+    add_artifact(project)
+
+# Good: Tests are independent
+def test_create_project(client):
+    project = client.create_project()
+    assert project.id is not None
+
+def test_add_artifact(client, sample_project):
+    artifact = client.add_artifact(sample_project)
+    assert artifact.id is not None
+```
+
+## Running Tests
+
+```bash
+# Python: Run all tests
+poetry run pytest
+
+# Python: Run specific test file
+poetry run pytest tests/unit/test_artifacts.py
+
+# Python: Run specific test
+poetry run pytest tests/unit/test_artifacts.py::test_validation
+
+# Node.js: Run all tests
+npm test
+
+# Node.js: Run in watch mode
+npm test -- --watch
+
+# Node.js: Run specific test file
+npm test -- artifacts.test.ts
+```
+
+## Test Checklist
+
+Before submitting PR:
+
+- [ ] All new code has tests
+- [ ] Tests pass locally: `npm test` or `poetry run pytest`
+- [ ] Coverage is adequate (80%+ for new code)
+- [ ] No hard-coded test data
+- [ ] Tests are isolated and don't depend on order
+- [ ] Test names clearly describe what they test
+- [ ] No test files left in staging area
+- [ ] Tests run in CI/CD pipeline
+
+## Common Issues
+
+**Tests failing locally but passing in CI:**
+- Check environment variables
+- Verify database state
+- Check for timezone/timing issues
+
+**Slow tests:**
+- Mock external dependencies
+- Use in-memory databases for tests
+- Reduce setup/teardown work
+
+**Flaky tests:**
+- Don't use real time (mock with freezegun)
+- Avoid file system when possible
+- Remove sleep() calls and race conditions
+
+## Resources
+
+- [Python pytest docs](https://docs.pytest.org/)
+- [Jest testing docs](https://jestjs.io/)
+- [Testing best practices](https://wikipedia.org/wiki/Testing_best_practice)
