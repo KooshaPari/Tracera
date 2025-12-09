@@ -31,16 +31,17 @@
 
 ## Weekly Targets vs. Actual
 
-| Week | Target | Actual | Tests Added | Status |
-|------|--------|--------|-------------|--------|
-| 1 | 25% | - | 200+ | ⏳ Pending |
-| 2 | 35% | - | 300+ | ⏳ Pending |
-| 3 | 50% | - | 300+ | ⏳ Pending |
-| 4 | 60% | - | 150+ | ⏳ Pending |
-| 5 | 70% | - | 250+ | ⏳ Pending |
-| 6 | 80% | - | 200+ | ⏳ Pending |
-| 7 | 90% | - | 200+ | ⏳ Pending |
-| 8 | 95%+ | - | 200+ | ⏳ Pending |
+| Week | Target | Actual | Tests Added | Velocity | Status |
+|------|--------|--------|-------------|----------|--------|
+| 1 | 20% | - | 30-35 | 5.7/day | ⏳ Pending |
+| 2 | 35% | - | 35-40 | 5.7/day | ⏳ Pending |
+| 3 | 48% | - | 35-40 | 5.0/day | ⏳ Pending |
+| 4 | 60% | - | 40-45 | 5.0/day | ⏳ Pending |
+| 5 | 70% | - | 35-40 | 5.0/day | ⏳ Pending |
+| 6 | 80% | - | 40-45 | 5.0/day | ⏳ Pending |
+| 7 | 90% | - | 45-50 | 6.0/day | ⏳ Pending |
+| 8 | 95%+ | - | 45-50 | 6.0/day | ⏳ Pending |
+| **Total** | **95%+** | - | **305-380** | **5.3/day avg** | **1,200-1,350 tests** |
 
 ---
 
