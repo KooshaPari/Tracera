@@ -39,8 +39,8 @@ from tracertm.services.visualization_service import VisualizationService
 # FIXTURES
 # ============================================================
 
-@pytest_asyncio.fixture
-async def test_project() -> Project:
+@pytest.fixture
+def test_project() -> Project:
     """Create a test project using sync session."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
@@ -51,18 +51,18 @@ async def test_project() -> Project:
     temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
     temp_db.close()
     db_path = temp_db.name
-    
+
     try:
         # Create synchronous engine
         sync_engine = create_engine(f'sqlite:///{db_path}', echo=False)
-        
+
         # Create tables
         from tracertm.models.base import Base
         Base.metadata.create_all(sync_engine)
-        
+
         SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
         session = SessionLocal()
-        
+
         project = Project(
             name=f"Integration Test Project {datetime.now().timestamp()}",
             description="Project for integration testing",
@@ -70,20 +70,20 @@ async def test_project() -> Project:
         session.add(project)
         session.commit()
         session.refresh(project)
-        
+
         # Store session for other fixtures to use
         session.close()
-        
+
         yield project
-        
+
     finally:
         # Cleanup
         if os.path.exists(db_path):
             os.unlink(db_path)
 
 
-@pytest_asyncio.fixture
-async def test_items(test_project: Project) -> list[Item]:
+@pytest.fixture
+def test_items(test_project: Project) -> list[Item]:
     """Create test items across multiple views."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
@@ -94,22 +94,22 @@ async def test_items(test_project: Project) -> list[Item]:
     temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
     temp_db.close()
     db_path = temp_db.name
-    
+
     try:
         # Create synchronous engine
         sync_engine = create_engine(f'sqlite:///{db_path}', echo=False)
-        
+
         # Create tables
         from tracertm.models.base import Base
         Base.metadata.create_all(sync_engine)
-        
+
         SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
         session = SessionLocal()
-        
+
         # Add the project first
         session.add(test_project)
         session.commit()
-        
+
         items_repo = ItemRepository(session)
         items = []
 
@@ -140,9 +140,9 @@ async def test_items(test_project: Project) -> list[Item]:
 
         session.commit()
         session.close()
-        
+
         yield items
-        
+
     finally:
         # Cleanup
         if os.path.exists(db_path):
