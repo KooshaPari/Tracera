@@ -6,7 +6,7 @@ Target: LinkRepository and other repository methods
 Coverage Goal: Increase repository coverage with edge cases
 """
 
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch, call
 from uuid import uuid4
 
 import pytest
@@ -172,7 +172,6 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_id_found(self):
         """Test getting link by ID when it exists."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
         mock_link = Link(
             id="link-1",
             project_id="proj-1",
@@ -180,6 +179,8 @@ class TestLinkRepositoryEdgeCases:
             target_item_id="item-2",
             link_type="depends_on"
         )
+        # Use MagicMock for result object (sync methods)
+        mock_result = MagicMock()
         mock_result.scalar_one_or_none.return_value = mock_link
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -192,7 +193,8 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_id_not_found(self):
         """Test getting link by ID when it doesn't exist."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
+        # Use MagicMock for result object (sync methods)
+        mock_result = MagicMock()
         mock_result.scalar_one_or_none.return_value = None
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -205,9 +207,10 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_project_empty(self):
         """Test getting links for project with no links."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = []
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -220,15 +223,16 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_project_multiple_links(self):
         """Test getting multiple links for a project."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
         mock_links = [
             Link(id="link-1", project_id="proj-1", source_item_id="item-1",
                  target_item_id="item-2", link_type="depends_on"),
             Link(id="link-2", project_id="proj-1", source_item_id="item-2",
                  target_item_id="item-3", link_type="related_to"),
         ]
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = mock_links
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -242,9 +246,10 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_source_no_links(self):
         """Test getting links from source item with no outgoing links."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = []
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -257,15 +262,16 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_source_multiple_links(self):
         """Test getting multiple links from source item."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
         mock_links = [
             Link(id="link-1", project_id="proj-1", source_item_id="item-1",
                  target_item_id="item-2", link_type="depends_on"),
             Link(id="link-2", project_id="proj-1", source_item_id="item-1",
                  target_item_id="item-3", link_type="related_to"),
         ]
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = mock_links
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -279,9 +285,10 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_target_no_links(self):
         """Test getting links to target item with no incoming links."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = []
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute = AsyncMock(return_value=mock_result)
 
@@ -294,17 +301,18 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_target_multiple_links(self):
         """Test getting multiple links to target item."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
         mock_links = [
             Link(id="link-1", project_id="proj-1", source_item_id="item-1",
                  target_item_id="item-3", link_type="depends_on"),
             Link(id="link-2", project_id="proj-1", source_item_id="item-2",
                  target_item_id="item-3", link_type="related_to"),
         ]
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = mock_links
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_target("item-3")
@@ -316,11 +324,12 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_item_no_links(self):
         """Test getting links for item with no connections."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = []
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_item("item-1")
@@ -331,17 +340,18 @@ class TestLinkRepositoryEdgeCases:
     async def test_get_by_item_as_source_and_target(self):
         """Test getting links where item is both source and target."""
         mock_session = AsyncMock(spec=AsyncSession)
-        mock_result = AsyncMock()
         mock_links = [
             Link(id="link-1", project_id="proj-1", source_item_id="item-1",
                  target_item_id="item-2", link_type="depends_on"),
             Link(id="link-2", project_id="proj-1", source_item_id="item-3",
                  target_item_id="item-1", link_type="related_to"),
         ]
-        mock_scalars = AsyncMock()
+        # Use MagicMock for result and scalars (sync methods)
+        mock_scalars = MagicMock()
         mock_scalars.all.return_value = mock_links
+        mock_result = MagicMock()
         mock_result.scalars.return_value = mock_scalars
-        mock_session.execute.return_value = mock_result
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
         repo = LinkRepository(mock_session)
         result = await repo.get_by_item("item-1")
