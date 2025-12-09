@@ -478,6 +478,41 @@ export const healthCheck = async (): Promise<{ status: string; service: string }
   return handleApiResponse(apiClient.GET('/health', {}))
 }
 
+// ============================================================================
+// EXPORT/IMPORT ENDPOINTS
+// ============================================================================
+
+export const exportImportApi = {
+  export: async (
+    projectId: string,
+    format: 'json' | 'csv' | 'markdown' = 'json'
+  ): Promise<Blob> => {
+    const response = await fetch(`/api/v1/projects/${projectId}/export?format=${format}`)
+    if (!response.ok) {
+      throw new Error('Export failed')
+    }
+    return response.blob()
+  },
+
+  import: async (
+    projectId: string,
+    format: 'json' | 'csv',
+    data: string
+  ): Promise<{
+    success: boolean
+    imported_count: number
+    error_count: number
+    errors: string[]
+  }> => {
+    return handleApiResponse(
+      apiClient.POST('/api/v1/projects/{project_id}/import', {
+        params: { path: { project_id: projectId } },
+        body: { format, data },
+      })
+    )
+  },
+}
+
 // Export all APIs as a single object for convenience
 export const api = {
   projects: projectsApi,
@@ -486,5 +521,6 @@ export const api = {
   agents: agentsApi,
   graph: graphApi,
   search: searchApi,
+  exportImport: exportImportApi,
   healthCheck,
 }

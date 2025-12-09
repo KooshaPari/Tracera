@@ -1,125 +1,425 @@
 ---
-title: "Traceability Management"
-description: "Documentation for Traceability Management"
+title: "Traceability Best Practices"
+description: "Industry-proven guidelines for effective requirements traceability management"
 ---
 
-# Traceability Management
+# Traceability Best Practices
 
+These best practices are gathered from industry standards (DO-178C, ISO 26262, IEC 62304) and real-world experience managing traceability in large-scale projects.
 
-## Overview
+## 1. Start Early and Stay Current
 
-Welcome to the Traceability Management documentation.
+### Begin Traceability from Day One
 
-## Introduction
+Don't wait until the end of a project to establish traceability. Build it incrementally:
 
-This page provides comprehensive information about Traceability Management.
+```
+Sprint 1: Requirement created → immediately link to design
+Sprint 2: Code written → immediately link to requirement
+Sprint 3: Test created → immediately link to requirement and code
+```
 
-## Key Features
+**Bad**: "We'll trace everything before the audit"
+**Good**: "Every artifact is linked when created"
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+### Maintain Continuously
 
-## Getting Started
+Traceability rot happens when links aren't maintained:
+
+```python
+# Good: Link when creating
+feature = client.create_item(title="User Login", item_type="feature")
+test = client.create_item(title="Test Login", item_type="test")
+client.create_link(test.id, feature.id, "tests")  # Link immediately
+
+# Bad: Create now, link "later"
+feature = client.create_item(title="User Login", item_type="feature")
+test = client.create_item(title="Test Login", item_type="test")
+# TODO: Link these later  ← This never happens
+```
+
+## 2. Use Semantic Link Types
+
+### Be Specific About Relationships
+
+Use meaningful link types, not generic "related to":
+
+| Instead of | Use |
+|------------|-----|
+| `related_to` (code → feature) | `implements` |
+| `related_to` (test → feature) | `tests` or `verifies` |
+| `related_to` (feature → feature) | `depends_on` or `blocks` |
+| `related_to` (test → code) | `tests` |
+
+### Link Type Guidelines
+
+```yaml
+# Code to requirements
+implements: Use when code directly implements a requirement
+realizes: Use when code is part of a larger implementation
+
+# Tests to requirements/code
+tests: Use for verification relationships
+verifies: Use for acceptance/validation tests
+
+# Dependencies
+depends_on: A must complete before B can start
+blocks: A prevents B from proceeding
+prerequisite_for: Softer dependency
+
+# Hierarchy
+parent_of / child_of: Direct containment
+part_of / contains: Component relationships
+```
+
+## 3. Trace at the Right Granularity
+
+### Not Too Coarse
+
+Linking at too high a level loses traceability value:
+
+```
+❌ Too coarse:
+EPIC-001 (Authentication) ← TEST-001 (All auth tests)
+                          ← CODE-001 (auth/ directory)
+
+✓ Right level:
+FEAT-001 (Login) ← TEST-001 (test_login_valid)
+                 ← TEST-002 (test_login_invalid)
+                 ← CODE-001 (login_handler.py)
+
+FEAT-002 (Logout) ← TEST-003 (test_logout)
+                  ← CODE-002 (logout_handler.py)
+```
+
+### Not Too Fine
+
+Over-linking creates noise and maintenance burden:
+
+```
+❌ Too fine:
+FEAT-001 (Login) ← CODE-001 (login_handler.py)
+                 ← CODE-002 (validate_email function)
+                 ← CODE-003 (hash_password function)
+                 ← CODE-004 (create_session function)
+                 ← ... (every helper function)
+
+✓ Right level:
+FEAT-001 (Login) ← CODE-001 (login_handler.py)
+                 ← CODE-005 (auth_utils.py)  // only if substantial
+```
+
+### Granularity Guidelines
+
+| Artifact Type | Good Granularity |
+|--------------|------------------|
+| Requirements | User story or feature level |
+| Design | Component or module level |
+| Code | Module/class level, not function level |
+| Tests | Test case level |
+
+## 4. Enforce Mandatory Links
+
+### Define Required Relationships
+
+Configure rules that enforce traceability:
+
+```yaml
+# .tracertm/config.yaml
+traceability:
+  required_links:
+    feature:
+      - link_type: verified_by
+        target_type: test
+        min_count: 1
+        message: "Features must have at least one test"
+
+      - link_type: realized_by
+        target_type: code
+        before_status: done
+        message: "Features must be linked to code before completion"
+
+    code:
+      - link_type: implements
+        target_type: feature
+        message: "Code must trace to a requirement"
+```
+
+### Validate in CI/CD
+
+```yaml
+# GitHub Actions example
+- name: Validate Traceability
+  run: |
+    tracertm validate --rules required-links
+    if [ $? -ne 0 ]; then
+      echo "Traceability validation failed"
+      exit 1
+    fi
+```
+
+## 5. Use Bidirectional Traceability
+
+### Forward and Backward
+
+Always be able to trace in both directions:
+
+```
+Forward (coverage check):
+FEAT-001 → CODE-001 → TEST-001
+"Is this requirement implemented and tested?"
+
+Backward (justification check):
+TEST-001 → CODE-001 → FEAT-001
+"Why does this test exist? What requirement justifies this code?"
+```
+
+### Identify Orphans
+
+Regularly check for artifacts without links:
 
 ```bash
-tracertm init
-tracertm config set traceability enabled
+# Find orphaned items
+tracertm validate --check orphans
+
+# Output:
+# Orphaned Features (no tests):
+#   FEAT-015: Payment Processing
+#   FEAT-021: Email Notifications
+#
+# Orphaned Tests (no requirements):
+#   TEST-089: test_deprecated_feature
+#
+# Orphaned Code (no requirements):
+#   CODE-045: utils/old_helper.py
 ```
 
-## Usage
+## 6. Document Link Rationale
 
-### Basic Usage
+### Add Context to Links
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+When the relationship isn't obvious, add metadata:
 
-const tracertm = new TraceRTM()
-const result = await tracertm.traceability()
-```
-
-### Advanced Usage
-
-```typescript
-const config = {
-  traceability: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
+```python
+# Good: Include context
+client.create_link(
+    source_id="TEST-042",
+    target_id="FEAT-001",
+    link_type="tests",
+    metadata={
+        "coverage": "partial",
+        "aspect": "security",
+        "notes": "Tests SQL injection prevention in login form"
     }
-  }
-}
+)
 
-const tracertm = new TraceRTM(config)
+# Bad: Link without context
+client.create_link("TEST-042", "FEAT-001", "tests")
+# Later: "Why does this test exist? What aspect does it cover?"
 ```
 
-## Configuration
+### Coverage Levels
 
-```typescript
-export default {
-  traceability: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+Document how completely a test covers a requirement:
+
+| Coverage | Meaning |
+|----------|---------|
+| `full` | Completely tests all acceptance criteria |
+| `partial` | Tests some acceptance criteria |
+| `minimal` | Basic smoke test only |
+| `regression` | Guards against known bugs |
+
+## 7. Automate Where Possible
+
+### Agent-Based Linking
+
+Use TraceRTM agents to suggest and create links:
+
+```python
+# Code scanner agent
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(agent_id="code-scanner")
+
+def scan_and_link():
+    # Scan code for requirement references in comments
+    for code in client.get_items(item_type="code"):
+        content = get_file_content(code.metadata["file_path"])
+
+        # Look for "Implements: FEAT-XXX" patterns
+        for match in re.findall(r"Implements:\s*(FEAT-\d+)", content):
+            if not client.link_exists(code.id, match, "implements"):
+                client.create_link(
+                    source_id=code.id,
+                    target_id=match,
+                    link_type="implements",
+                    metadata={"auto_linked": True, "source": "code-scanner"}
+                )
 ```
 
-## Examples
+### CI/CD Integration
 
-### Example 1
+```yaml
+# Automatically update traceability on merge
+on:
+  push:
+    branches: [main]
 
-```typescript
-const example = await tracertm.traceability({
-  option1: 'value1',
-  option2: 'value2'
-})
+jobs:
+  update-traceability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan code for links
+        run: tracertm scan src/ --auto-link
+
+      - name: Update test links
+        run: tracertm scan tests/ --framework pytest --auto-link
+
+      - name: Validate coverage
+        run: tracertm validate --check coverage --min 80
 ```
 
-### Example 2
+## 8. Review Traceability Regularly
 
-```typescript
-const advanced = await tracertm.traceability({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
-```
+### Periodic Audits
 
-## Best Practices
+Schedule regular traceability reviews:
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue 1:**
 ```bash
-tracertm fix issue-1
+# Weekly gap analysis
+tracertm report gaps --output weekly-gaps.html
+
+# Monthly coverage trending
+tracertm report coverage --period month --trending
 ```
 
-**Issue 2:**
+### Key Metrics to Track
+
+| Metric | Target | Action if Below |
+|--------|--------|-----------------|
+| Feature coverage | > 95% | Prioritize missing tests |
+| Orphan rate | < 5% | Link or archive orphans |
+| Link freshness | < 30 days | Review stale links |
+| Cycle count | 0 | Resolve circular dependencies |
+
+## 9. Handle Changes Properly
+
+### Impact Analysis First
+
+Before making changes, understand the impact:
+
 ```bash
-tracertm fix issue-2
+# Always run impact analysis before changing
+tracertm impact FEAT-001
+
+# Review affected items
+# Update all affected artifacts
+# Re-run tests
 ```
 
-## API Reference
+### Update Links When Refactoring
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+When code moves or is renamed:
+
+```python
+# When refactoring, update traceability
+def refactor_module(old_path, new_path):
+    # Find the code artifact
+    code = client.find_item(metadata={"file_path": old_path})
+
+    # Update the path
+    client.update_item(
+        code.id,
+        metadata={"file_path": new_path}
+    )
+
+    # Links are preserved because they reference the artifact ID
+    # not the file path
+```
+
+## 10. Scale Appropriately
+
+### For Small Projects
+
+- Focus on requirement → test links
+- Use local storage (markdown files)
+- Manual linking is acceptable
+
+### For Large Projects
+
+- Include full traceability (requirements → design → code → test)
+- Use database storage for performance
+- Automate linking with agents
+- Implement CI/CD validation
+
+### For Regulated Projects
+
+- Enforce bidirectional traceability
+- Maintain baseline snapshots
+- Generate audit-ready reports
+- Lock approved baselines
+
+## Anti-Patterns to Avoid
+
+### 1. The "Big Bang" Trace
+
+❌ Creating all traceability at the end of the project
+
+```
+Month 1-11: Write code, no traceability
+Month 12: "Now let's trace everything"
+          (Impossible to remember why things exist)
+```
+
+### 2. The "Everything Links to Everything"
+
+❌ Over-linking without semantic meaning
+
+```
+Every test → Every feature it might relate to
+Every code file → Every feature in the area
+Result: Noise, not signal
+```
+
+### 3. The "Set It and Forget It"
+
+❌ Creating initial links, never updating
+
+```
+v1.0: Perfect traceability
+v2.0: Links are 50% stale
+v3.0: Traceability abandoned
+```
+
+### 4. The "One Type Fits All"
+
+❌ Using only `related_to` links
+
+```
+Everything is "related to" everything else
+Can't distinguish implementation from testing
+Impact analysis is meaningless
+```
+
+## Checklist
+
+Use this checklist to assess your traceability practices:
+
+- [ ] Links created when artifacts are created
+- [ ] Semantic link types used consistently
+- [ ] Bidirectional traceability maintained
+- [ ] Orphan artifacts reviewed weekly
+- [ ] Coverage targets defined and tracked
+- [ ] CI/CD validation in place
+- [ ] Regular audits scheduled
+- [ ] Impact analysis run before changes
+- [ ] Link metadata includes rationale
+- [ ] Traceability reports generated for stakeholders
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [What is Traceability?](/docs/wiki/concepts/traceability/what-is) - Fundamentals
+- [Establishing Traceability](/docs/getting-started/first-project/traceability) - Hands-on guide
+- [Impact Analysis](/docs/wiki/concepts/relationships/impact-analysis) - Understanding changes
+- [Generating Reports](/docs/getting-started/first-project/reports) - Coverage and gap reports
 

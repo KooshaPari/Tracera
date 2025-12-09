@@ -63,8 +63,20 @@ class ApiConfig:
         # Get API configuration
         api_url = config_manager.get("api_url") or "https://api.tracertm.io"
         token = config_manager.get("api_token")
-        timeout = float(config_manager.get("api_timeout", 30.0))
-        max_retries = int(config_manager.get("api_max_retries", 3))
+
+        # Handle timeout - could be string or numeric
+        timeout_value = config_manager.get("api_timeout")
+        if timeout_value is not None:
+            timeout = float(timeout_value)
+        else:
+            timeout = 30.0
+
+        # Handle max_retries - could be string or numeric
+        retries_value = config_manager.get("api_max_retries")
+        if retries_value is not None:
+            max_retries = int(retries_value)
+        else:
+            max_retries = 3
 
         return cls(
             base_url=api_url.rstrip("/"),
@@ -350,11 +362,13 @@ class ApiClient:
                 logger.warning(f"Network error on attempt {attempt + 1}/{self.config.max_retries}: {e}")
 
             except RateLimitError as e:
-                # For rate limiting, wait the specified time
-                if e.retry_after:
+                last_error = e
+                # For rate limiting, wait the specified time and retry
+                if e.retry_after and attempt < self.config.max_retries - 1:
                     logger.info(f"Rate limited. Waiting {e.retry_after}s before retry...")
                     await asyncio.sleep(e.retry_after)
                     continue
+                # If no more retries or no retry_after, raise immediately
                 raise
 
             except AuthenticationError:

@@ -169,6 +169,11 @@ class TraceRTMClient:
         if agent.agent_metadata is None:
             agent.agent_metadata = {}
         agent.agent_metadata["assigned_projects"] = project_ids
+
+        # Mark metadata as modified for SQLAlchemy to detect change
+        from sqlalchemy.orm import attributes
+
+        attributes.flag_modified(agent, "agent_metadata")
         session.commit()
 
         # Log assignment

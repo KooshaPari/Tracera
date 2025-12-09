@@ -6,26 +6,31 @@
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { BrowserRouter } from 'react-router-dom'
 import { CommandPalette } from '@/components/CommandPalette'
 import { axe, pressKey, pressTab, pressEnter, pressEscape, pressArrowDown, pressArrowUp } from './setup'
 
-// Mock navigate
+// Mock TanStack Router
 const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual('@tanstack/react-router')
   return {
     ...actual,
     useNavigate: () => mockNavigate,
+    useRouter: () => ({ navigate: mockNavigate }),
+    useLocation: () => ({ pathname: '/' }),
+    useParams: () => ({}),
+    Link: ({ children, to, ...props }: any) => (
+      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
+        {children}
+      </a>
+    ),
   }
 })
 
 describe('Command Palette Keyboard Navigation', () => {
   it('should not have accessibility violations', async () => {
     const { container } = render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     // Open command palette
@@ -41,9 +46,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
   it('should open with Cmd+K or Ctrl+K', async () => {
     render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     // Test Cmd+K (Mac)
@@ -64,9 +67,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
   it('should close with Escape key', async () => {
     render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     pressKey('k', { metaKey: true })
@@ -82,9 +83,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
   it('should navigate with arrow keys', async () => {
     render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     pressKey('k', { metaKey: true })
@@ -103,9 +102,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
   it('should execute command with Enter key', async () => {
     render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     pressKey('k', { metaKey: true })
@@ -120,9 +117,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
   it('should focus search input when opened', async () => {
     render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     pressKey('k', { metaKey: true })
@@ -136,9 +131,7 @@ describe('Command Palette Keyboard Navigation', () => {
   it('should filter commands as user types', async () => {
     const user = userEvent.setup()
     render(
-      <BrowserRouter>
-        <CommandPalette />
-      </BrowserRouter>
+      <CommandPalette />
     )
 
     pressKey('k', { metaKey: true })

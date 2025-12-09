@@ -1,32 +1,659 @@
 ---
 title: "Update Item"
-description: "Documentation for Update Item"
+description: "API endpoint for updating existing traceable items in TraceRTM"
 ---
 
 # Update Item
 
-This page contains documentation for Update Item.
+Update an existing item's properties. Supports partial updates with optimistic locking.
 
-## Overview
+## Endpoint
 
-This section covers the key aspects of Update Item in TraceRTM.
+```http
+PATCH /v1/items/{id}
+```
 
-## Getting Started
+## Authentication
 
-To get started with Update Item:
+Requires a valid API key or access token with `write:items` scope.
 
-- Review the Update Item and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Path Parameters
 
-## Key Concepts
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Item ID (required) |
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+## Request Headers
 
-## Next Steps
+| Header | Type | Description |
+|--------|------|-------------|
+| `If-Match` | integer | Version number for optimistic locking |
+| `X-Comment` | string | Optional change comment for history |
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+## Request Body
+
+All fields are optional. Only provided fields are updated.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Item title (3-500 characters) |
+| `description` | string | Detailed description (Markdown) |
+| `status` | string | Item status |
+| `priority` | string | Priority: `critical`, `high`, `medium`, `low` |
+| `custom_fields` | object | Custom field values (merged with existing) |
+| `tags` | array | Tags (replaces existing tags) |
+| `assignee_id` | string | Assigned user ID (`null` to unassign) |
+| `parent_id` | string | Parent item ID (`null` to remove parent) |
+
+### Update Modes for Custom Fields
+
+| Mode | Syntax | Description |
+|------|--------|-------------|
+| Replace | `{"field": value}` | Replace field value |
+| Merge | `{"$merge": {"field": value}}` | Merge with existing object |
+| Append | `{"$append": {"field": [values]}}` | Append to array |
+| Remove | `{"$remove": {"field": [values]}}` | Remove from array |
+
+## Request Examples
+
+### Basic Update
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Requirement Title",
+    "priority": "critical"
+  }'
+```
+
+### Update with Optimistic Locking
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "If-Match: 5" \
+  -H "X-Comment: Updated priority after stakeholder review" \
+  -d '{
+    "priority": "critical",
+    "custom_fields": {
+      "story_points": 21
+    }
+  }'
+```
+
+### Update Custom Fields
+
+```bash
+# Replace custom field values
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "custom_fields": {
+      "platform": ["web", "mobile", "desktop"],
+      "story_points": 13,
+      "component": "auth"
+    }
+  }'
+
+# Append to array field
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "custom_fields": {
+      "$append": {
+        "platform": ["desktop"]
+      }
+    }
+  }'
+
+# Remove from array field
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "custom_fields": {
+      "$remove": {
+        "platform": ["mobile"]
+      }
+    }
+  }'
+```
+
+### Update Tags
+
+```bash
+# Replace all tags
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tags": ["security", "mvp", "sprint-2", "urgent"]
+  }'
+
+# Add tags (using append)
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tags": {
+      "$append": ["urgent", "reviewed"]
+    }
+  }'
+```
+
+### Change Assignment
+
+```bash
+# Assign to user
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "assignee_id": "user_xyz789"
+  }'
+
+# Unassign
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "assignee_id": null
+  }'
+```
+
+### Move to Parent (Hierarchy)
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parent_id": "item_parent456"
+  }'
+```
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "data": {
+    "id": "item_abc123",
+    "project_id": "proj_456",
+    "type": "requirement",
+    "title": "Updated Requirement Title",
+    "description": "The system shall support OAuth 2.0 authentication.",
+    "status": "review",
+    "priority": "critical",
+    "custom_id": "REQ-001",
+    "custom_fields": {
+      "platform": ["web", "mobile"],
+      "component": "auth",
+      "story_points": 21
+    },
+    "tags": ["security", "mvp", "urgent"],
+    "assignee_id": "user_xyz789",
+    "reporter_id": "user_abc123",
+    "parent_id": null,
+    "version": 6,
+    "locked": false,
+    "links_count": {
+      "total": 8,
+      "inbound": 3,
+      "outbound": 5
+    },
+    "created_at": "2025-01-10T09:00:00Z",
+    "updated_at": "2025-01-15T16:30:00Z",
+    "updated_by": "user_xyz789"
+  },
+  "meta": {
+    "previous_version": 5,
+    "changes": [
+      {"field": "title", "from": "User Authentication", "to": "Updated Requirement Title"},
+      {"field": "priority", "from": "high", "to": "critical"},
+      {"field": "custom_fields.story_points", "from": 13, "to": 21}
+    ],
+    "request_id": "req_xyz789"
+  }
+}
+```
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import ConflictError
+
+client = TraceRTMClient(api_key="rtm_live_...")
+
+# Basic update
+item = await client.items.update(
+    item_id="item_abc123",
+    title="Updated Title",
+    priority="critical"
+)
+print(f"Updated to version {item.version}")
+
+# Update with optimistic locking
+try:
+    item = await client.items.update(
+        item_id="item_abc123",
+        priority="critical",
+        custom_fields={
+            "story_points": 21
+        },
+        version=5,  # Expected version
+        comment="Updated after stakeholder review"
+    )
+except ConflictError as e:
+    print(f"Version conflict: item was modified by {e.modified_by}")
+    # Fetch latest and retry
+    latest = await client.items.get("item_abc123")
+    # Merge changes and retry...
+
+# Update custom fields with operations
+item = await client.items.update(
+    item_id="item_abc123",
+    custom_fields={
+        "$append": {"platform": ["desktop"]},
+        "$remove": {"labels": ["deprecated"]},
+        "story_points": 13  # Direct set
+    }
+)
+
+# Update tags
+item = await client.items.update(
+    item_id="item_abc123",
+    tags=["security", "mvp", "sprint-2"]
+)
+
+# Add tags without replacing
+item = await client.items.add_tags(
+    item_id="item_abc123",
+    tags=["urgent", "reviewed"]
+)
+
+# Remove tags
+item = await client.items.remove_tags(
+    item_id="item_abc123",
+    tags=["deprecated"]
+)
+
+# Change assignment
+item = await client.items.assign(
+    item_id="item_abc123",
+    assignee_id="user_xyz789"
+)
+
+# Unassign
+item = await client.items.unassign(item_id="item_abc123")
+
+# Move to parent
+item = await client.items.update(
+    item_id="item_abc123",
+    parent_id="item_parent456"
+)
+
+# Remove from parent
+item = await client.items.update(
+    item_id="item_abc123",
+    parent_id=None
+)
+
+# Bulk update
+results = await client.items.bulk_update(
+    items=[
+        {"id": "item_1", "priority": "high"},
+        {"id": "item_2", "priority": "high"},
+        {"id": "item_3", "priority": "medium"}
+    ]
+)
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient, Priority, ConflictError } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_...' })
+
+// Basic update
+const item = await client.items.update({
+  itemId: 'item_abc123',
+  title: 'Updated Title',
+  priority: Priority.Critical
+})
+console.log(`Updated to version ${item.version}`)
+
+// Update with optimistic locking
+try {
+  const updated = await client.items.update({
+    itemId: 'item_abc123',
+    priority: Priority.Critical,
+    customFields: {
+      storyPoints: 21
+    },
+    version: 5,
+    comment: 'Updated after stakeholder review'
+  })
+} catch (error) {
+  if (error instanceof ConflictError) {
+    console.log(`Version conflict: ${error.modifiedBy}`)
+    // Handle conflict...
+  }
+  throw error
+}
+
+// Update custom fields with operations
+const withOperations = await client.items.update({
+  itemId: 'item_abc123',
+  customFields: {
+    $append: { platform: ['desktop'] },
+    $remove: { labels: ['deprecated'] },
+    storyPoints: 13
+  }
+})
+
+// Helper methods
+await client.items.addTags('item_abc123', ['urgent', 'reviewed'])
+await client.items.removeTags('item_abc123', ['deprecated'])
+await client.items.assign('item_abc123', 'user_xyz789')
+await client.items.unassign('item_abc123')
+
+// Bulk update with type safety
+const results = await client.items.bulkUpdate([
+  { id: 'item_1', priority: Priority.High },
+  { id: 'item_2', priority: Priority.High },
+  { id: 'item_3', priority: Priority.Medium }
+])
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_...")
+    ctx := context.Background()
+
+    // Basic update
+    item, err := client.Items.Update(ctx, "item_abc123", &tracertm.UpdateItemInput{
+        Title:    tracertm.String("Updated Title"),
+        Priority: tracertm.Priority(tracertm.PriorityCritical),
+    })
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("Updated to version %d\n", item.Version)
+
+    // Update with optimistic locking
+    version := 5
+    item, err = client.Items.Update(ctx, "item_abc123", &tracertm.UpdateItemInput{
+        Priority: tracertm.Priority(tracertm.PriorityCritical),
+        CustomFields: map[string]interface{}{
+            "story_points": 21,
+        },
+        Version: &version,
+        Comment: tracertm.String("Updated after review"),
+    })
+    if err != nil {
+        if conflictErr, ok := err.(*tracertm.ConflictError); ok {
+            fmt.Printf("Conflict: modified by %s\n", conflictErr.ModifiedBy)
+        }
+    }
+
+    // Update tags
+    item, _ = client.Items.Update(ctx, "item_abc123", &tracertm.UpdateItemInput{
+        Tags: []string{"security", "mvp", "sprint-2"},
+    })
+
+    // Assignment
+    client.Items.Assign(ctx, "item_abc123", "user_xyz789")
+    client.Items.Unassign(ctx, "item_abc123")
+}
+```
+
+## Optimistic Locking
+
+TraceRTM uses optimistic locking to prevent conflicting updates. Each item has a `version` number that increments with every change.
+
+### How It Works
+
+1. Fetch the item to get current version
+2. Include `If-Match: {version}` header in update request
+3. If version matches, update succeeds
+4. If version differs, returns `409 Conflict`
+
+### Example Flow
+
+```python
+# 1. Get current state
+item = await client.items.get("item_abc123")
+print(f"Current version: {item.version}")  # version: 5
+
+# 2. Update with version check
+try:
+    updated = await client.items.update(
+        item_id="item_abc123",
+        priority="critical",
+        version=5  # Must match current version
+    )
+    print(f"New version: {updated.version}")  # version: 6
+except ConflictError as e:
+    print(f"Someone else updated the item!")
+    print(f"Modified by: {e.modified_by}")
+    print(f"Current version: {e.current_version}")
+```
+
+### Handling Conflicts
+
+```python
+async def safe_update(item_id: str, updates: dict, max_retries: int = 3):
+    """Update with automatic conflict resolution."""
+    for attempt in range(max_retries):
+        # Get latest version
+        item = await client.items.get(item_id)
+
+        try:
+            return await client.items.update(
+                item_id=item_id,
+                version=item.version,
+                **updates
+            )
+        except ConflictError:
+            if attempt == max_retries - 1:
+                raise
+            # Retry with latest version
+            continue
+```
+
+## Error Responses
+
+### Version Conflict (409)
+
+```json
+{
+  "error": {
+    "code": "conflict",
+    "message": "Item was modified by another user",
+    "details": {
+      "expected_version": 5,
+      "current_version": 7,
+      "modified_by": "user_xyz789",
+      "modified_at": "2025-01-15T16:25:00Z"
+    }
+  }
+}
+```
+
+### Item Not Found (404)
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Item not found",
+    "details": {
+      "item_id": "item_invalid"
+    }
+  }
+}
+```
+
+### Validation Error (422)
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Validation failed",
+    "details": [
+      {
+        "field": "title",
+        "code": "too_long",
+        "message": "Title must not exceed 500 characters"
+      }
+    ]
+  }
+}
+```
+
+### Item Locked (423)
+
+```json
+{
+  "error": {
+    "code": "locked",
+    "message": "Item is locked for editing",
+    "details": {
+      "locked_by": "user_xyz789",
+      "locked_at": "2025-01-15T16:00:00Z",
+      "lock_expires_at": "2025-01-15T17:00:00Z"
+    }
+  }
+}
+```
+
+### Invalid Status Transition (400)
+
+```json
+{
+  "error": {
+    "code": "invalid_transition",
+    "message": "Invalid status transition",
+    "details": {
+      "current_status": "draft",
+      "requested_status": "approved",
+      "allowed_transitions": ["review", "rejected"]
+    }
+  }
+}
+```
+
+## Webhooks
+
+Updating an item triggers the `item.updated` webhook event:
+
+```json
+{
+  "event": "item.updated",
+  "timestamp": "2025-01-15T16:30:00Z",
+  "data": {
+    "item": {
+      "id": "item_abc123",
+      "project_id": "proj_456",
+      "type": "requirement",
+      "custom_id": "REQ-001",
+      "version": 6
+    },
+    "changes": [
+      {"field": "priority", "from": "high", "to": "critical"},
+      {"field": "custom_fields.story_points", "from": 13, "to": 21}
+    ],
+    "updated_by": "user_xyz789"
+  }
+}
+```
+
+## Best Practices
+
+### Always Use Optimistic Locking for Critical Updates
+
+```python
+# Always include version for important updates
+await client.items.update(
+    item_id="item_abc123",
+    status="approved",
+    version=item.version,  # Prevent race conditions
+    comment="Approved after security review"
+)
+```
+
+### Use Atomic Operations for Arrays
+
+```python
+# Good - atomic append
+await client.items.update(
+    item_id="item_abc123",
+    custom_fields={
+        "$append": {"reviewers": ["user_xyz"]}
+    }
+)
+
+# Avoid - race condition prone
+item = await client.items.get("item_abc123")
+reviewers = item.custom_fields.get("reviewers", [])
+reviewers.append("user_xyz")
+await client.items.update(
+    item_id="item_abc123",
+    custom_fields={"reviewers": reviewers}
+)
+```
+
+### Include Change Comments
+
+```python
+# Good - traceable changes
+await client.items.update(
+    item_id="item_abc123",
+    priority="critical",
+    comment="Escalated priority due to security vulnerability CVE-2025-1234"
+)
+
+# Shows in item history with clear context
+```
+
+### Batch Related Updates
+
+```python
+# Update multiple related items efficiently
+await client.items.bulk_update([
+    {"id": "item_1", "status": "approved"},
+    {"id": "item_2", "status": "approved"},
+    {"id": "item_3", "status": "approved"}
+])
+```
+
+## Related Documentation
+
+- [Items API](/docs/api-reference/rest-api/items) - All item endpoints
+- [Create Item](/docs/api-reference/rest-api/items-create) - Creating items
+- [Item History](/docs/api-reference/rest-api/items-history) - Version history
+- [Batch Operations](/docs/api-reference/rest-api/batch-operations) - Bulk updates
+- [Workflows](/docs/api-reference/rest-api/workflows) - Status transitions
+

@@ -1,32 +1,513 @@
 ---
-title: "Pagination"
-description: "Documentation for Pagination"
+title: Pagination
+description: How to paginate through large result sets using offset-based and cursor-based pagination in TraceRTM
 ---
 
 # Pagination
 
-This page contains documentation for Pagination.
+TraceRTM supports two pagination methods to efficiently navigate large datasets: offset-based pagination for simple use cases and cursor-based pagination for real-time consistency and large datasets.
 
-## Overview
+## Pagination Methods
 
-This section covers the key aspects of Pagination in TraceRTM.
+| Method | Best For | Consistency | Performance |
+|--------|----------|-------------|-------------|
+| Offset | Small datasets, simple navigation | May miss/duplicate on concurrent changes | Good for small sets |
+| Cursor | Large datasets, real-time data | Consistent across changes | Better for large sets |
 
-## Getting Started
+---
 
-To get started with Pagination:
+## Offset-Based Pagination
 
-- Review the Pagination and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Basic Usage
 
-## Key Concepts
+Use `limit` and `offset` parameters to paginate results.
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```bash
+# First page (items 1-20)
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?limit=20&offset=0"
 
-## Next Steps
+# Second page (items 21-40)
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?limit=20&offset=20"
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+# Third page (items 41-60)
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?limit=20&offset=40"
+```
+
+### Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `limit` | integer | 20 | 100 | Number of items per page |
+| `offset` | integer | 0 | - | Number of items to skip |
+
+### Response
+
+```json
+{
+  "data": [
+    {"id": "item_001", "title": "Item 1"},
+    {"id": "item_002", "title": "Item 2"},
+    {"id": "item_003", "title": "Item 3"}
+  ],
+  "pagination": {
+    "total": 156,
+    "limit": 20,
+    "offset": 0,
+    "has_more": true,
+    "total_pages": 8,
+    "current_page": 1
+  }
+}
+```
+
+### Pagination Fields
+
+| Field | Description |
+|-------|-------------|
+| `total` | Total number of items matching the query |
+| `limit` | Items per page (as requested) |
+| `offset` | Current offset |
+| `has_more` | Whether more pages exist |
+| `total_pages` | Total number of pages |
+| `current_page` | Current page number (1-indexed) |
+
+---
+
+## Cursor-Based Pagination
+
+### Basic Usage
+
+Use `cursor` parameter for cursor-based pagination.
+
+```bash
+# First page
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?limit=20"
+
+# Next page (using cursor from previous response)
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?limit=20&cursor=eyJpZCI6Iml0ZW1fMDIwIiwiZCI6ImFzYyJ9"
+
+# Previous page
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?limit=20&cursor=eyJpZCI6Iml0ZW1fMDAxIiwiZCI6ImRlc2MifQ&direction=prev"
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | integer | Number of items per page |
+| `cursor` | string | Opaque cursor from previous response |
+| `direction` | string | `next` (default) or `prev` |
+
+### Response
+
+```json
+{
+  "data": [
+    {"id": "item_021", "title": "Item 21"},
+    {"id": "item_022", "title": "Item 22"},
+    {"id": "item_023", "title": "Item 23"}
+  ],
+  "pagination": {
+    "has_next": true,
+    "has_prev": true,
+    "next_cursor": "eyJpZCI6Iml0ZW1fMDQwIiwiZCI6ImFzYyJ9",
+    "prev_cursor": "eyJpZCI6Iml0ZW1fMDIxIiwiZCI6ImRlc2MifQ"
+  }
+}
+```
+
+### Cursor Pagination Fields
+
+| Field | Description |
+|-------|-------------|
+| `has_next` | Whether a next page exists |
+| `has_prev` | Whether a previous page exists |
+| `next_cursor` | Cursor for the next page |
+| `prev_cursor` | Cursor for the previous page |
+
+---
+
+## Choosing a Pagination Method
+
+### Use Offset Pagination When:
+
+- Dataset is small (<1000 items)
+- Users need to jump to specific pages
+- Random page access is required
+- Simple implementation is preferred
+- Data doesn't change frequently
+
+### Use Cursor Pagination When:
+
+- Dataset is large (>1000 items)
+- Real-time data consistency is important
+- Sequential navigation is sufficient
+- Performance is critical
+- Data changes frequently during navigation
+
+---
+
+## Pagination with Sorting
+
+Both pagination methods work with sorting:
+
+### Offset with Sorting
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?sort=created_at&order=desc&limit=20&offset=40"
+```
+
+### Cursor with Sorting
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?sort=priority,created_at&order=desc,asc&limit=20&cursor=eyJ..."
+```
+
+---
+
+## Pagination with Filtering
+
+Combine pagination with filters:
+
+```bash
+# Offset pagination with filters
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?type=requirement&status=approved&limit=20&offset=0"
+
+# Cursor pagination with filters
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?type=requirement&status=approved&limit=20"
+```
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Offset-based pagination
+def get_all_items_offset(project_id, page_size=50):
+    """Fetch all items using offset pagination"""
+    all_items = []
+    offset = 0
+
+    while True:
+        response = client.items.list(
+            project_id=project_id,
+            limit=page_size,
+            offset=offset
+        )
+
+        all_items.extend(response.data)
+
+        if not response.pagination.has_more:
+            break
+
+        offset += page_size
+        print(f"Fetched {len(all_items)}/{response.pagination.total} items")
+
+    return all_items
+
+# Cursor-based pagination
+def get_all_items_cursor(project_id, page_size=50):
+    """Fetch all items using cursor pagination"""
+    all_items = []
+    cursor = None
+
+    while True:
+        response = client.items.list(
+            project_id=project_id,
+            limit=page_size,
+            cursor=cursor
+        )
+
+        all_items.extend(response.data)
+
+        if not response.pagination.has_next:
+            break
+
+        cursor = response.pagination.next_cursor
+        print(f"Fetched {len(all_items)} items so far")
+
+    return all_items
+
+# Iterate with generator (memory efficient)
+def iterate_items(project_id, page_size=50):
+    """Generator that yields items one at a time"""
+    cursor = None
+
+    while True:
+        response = client.items.list(
+            project_id=project_id,
+            limit=page_size,
+            cursor=cursor
+        )
+
+        for item in response.data:
+            yield item
+
+        if not response.pagination.has_next:
+            break
+
+        cursor = response.pagination.next_cursor
+
+# Usage
+for item in iterate_items("proj_abc123"):
+    process_item(item)
+
+# Built-in pagination helper
+all_items = client.items.list_all(
+    project_id="proj_abc123",
+    method="cursor",  # or "offset"
+    progress=True     # Show progress
+)
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Offset-based pagination
+async function getAllItemsOffset(projectId: string, pageSize = 50) {
+  const allItems = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await client.items.list({
+      projectId,
+      limit: pageSize,
+      offset
+    });
+
+    allItems.push(...response.data);
+
+    if (!response.pagination.hasMore) {
+      break;
+    }
+
+    offset += pageSize;
+  }
+
+  return allItems;
+}
+
+// Cursor-based pagination
+async function getAllItemsCursor(projectId: string, pageSize = 50) {
+  const allItems = [];
+  let cursor: string | undefined;
+
+  while (true) {
+    const response = await client.items.list({
+      projectId,
+      limit: pageSize,
+      cursor
+    });
+
+    allItems.push(...response.data);
+
+    if (!response.pagination.hasNext) {
+      break;
+    }
+
+    cursor = response.pagination.nextCursor;
+  }
+
+  return allItems;
+}
+
+// Async generator (memory efficient)
+async function* iterateItems(projectId: string, pageSize = 50) {
+  let cursor: string | undefined;
+
+  while (true) {
+    const response = await client.items.list({
+      projectId,
+      limit: pageSize,
+      cursor
+    });
+
+    for (const item of response.data) {
+      yield item;
+    }
+
+    if (!response.pagination.hasNext) {
+      break;
+    }
+
+    cursor = response.pagination.nextCursor;
+  }
+}
+
+// Usage
+for await (const item of iterateItems('proj_abc123')) {
+  await processItem(item);
+}
+
+// Built-in helper
+const allItems = await client.items.listAll({
+  projectId: 'proj_abc123',
+  method: 'cursor',
+  onProgress: (count, total) => console.log(`${count}/${total}`)
+});
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+    ctx := context.Background()
+
+    // Offset pagination
+    allItems, err := getAllItemsOffset(ctx, client, "proj_abc123", 50)
+    if err != nil {
+        panic(err)
+    }
+
+    // Cursor pagination
+    allItems, err = getAllItemsCursor(ctx, client, "proj_abc123", 50)
+    if err != nil {
+        panic(err)
+    }
+
+    // Iterator pattern
+    iter := client.Items.Iterate(ctx, "proj_abc123", &tracertm.IterateOptions{
+        PageSize: 50,
+        Method:   "cursor",
+    })
+
+    for iter.Next() {
+        item := iter.Item()
+        fmt.Println(item.Title)
+    }
+
+    if err := iter.Err(); err != nil {
+        panic(err)
+    }
+}
+
+func getAllItemsOffset(ctx context.Context, client *tracertm.Client, projectID string, pageSize int) ([]tracertm.Item, error) {
+    var allItems []tracertm.Item
+    offset := 0
+
+    for {
+        response, err := client.Items.List(ctx, &tracertm.ListItemsRequest{
+            ProjectID: projectID,
+            Limit:     pageSize,
+            Offset:    offset,
+        })
+        if err != nil {
+            return nil, err
+        }
+
+        allItems = append(allItems, response.Data...)
+
+        if !response.Pagination.HasMore {
+            break
+        }
+
+        offset += pageSize
+    }
+
+    return allItems, nil
+}
+
+func getAllItemsCursor(ctx context.Context, client *tracertm.Client, projectID string, pageSize int) ([]tracertm.Item, error) {
+    var allItems []tracertm.Item
+    var cursor string
+
+    for {
+        response, err := client.Items.List(ctx, &tracertm.ListItemsRequest{
+            ProjectID: projectID,
+            Limit:     pageSize,
+            Cursor:    cursor,
+        })
+        if err != nil {
+            return nil, err
+        }
+
+        allItems = append(allItems, response.Data...)
+
+        if !response.Pagination.HasNext {
+            break
+        }
+
+        cursor = response.Pagination.NextCursor
+    }
+
+    return allItems, nil
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Use Appropriate Page Sizes
+
+```python
+# Good: Reasonable page size
+items = client.items.list(project_id, limit=50)
+
+# Bad: Too small (many requests)
+items = client.items.list(project_id, limit=5)
+
+# Bad: Too large (slow response, memory issues)
+items = client.items.list(project_id, limit=100)
+```
+
+### 2. Handle Empty Pages
+
+```python
+response = client.items.list(project_id, limit=50, cursor=cursor)
+
+if len(response.data) == 0:
+    # Handle empty result - could be end of data or filter mismatch
+    pass
+```
+
+### 3. Don't Store Cursors Long-Term
+
+```python
+# Good: Use cursor immediately
+cursor = response.pagination.next_cursor
+next_page = client.items.list(project_id, cursor=cursor)
+
+# Bad: Store cursor for later (may become invalid)
+save_to_database(cursor)  # Don't do this
+```
+
+### 4. Use Generators for Large Datasets
+
+```python
+# Good: Memory efficient
+for item in iterate_items(project_id):
+    process(item)
+
+# Bad: Loads everything into memory
+all_items = get_all_items(project_id)  # Could be millions
+for item in all_items:
+    process(item)
+```
+
+---
+
+## Related Documentation
+
+- [Cursor Pagination](/docs/api-reference/rest-api/cursor-pagination) - Advanced cursor pagination
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter results
+- [Sorting](/docs/api-reference/rest-api/sorting) - Sort results

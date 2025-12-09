@@ -1,0 +1,240 @@
+---
+title: "Data Model"
+description: "Understanding TraceRTM's artifact types, relationships, and data structures"
+---
+
+# Data Model
+
+TraceRTM's data model is built around **artifacts** (work items) and **links** (relationships). This page explains the core entities and how they connect.
+
+## Artifacts
+
+Artifacts are the primary records in TraceRTM. Every artifact represents a discrete unit of work or documentation.
+
+### Core Fields
+
+Every artifact has these required fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier (e.g., `FEAT-001`, `TEST-042`) |
+| `title` | string | Human-readable name |
+| `type` | enum | Artifact category (feature, test, code, etc.) |
+| `status` | enum | Current state (draft, in_progress, done) |
+| `view` | enum | Primary view lens (FEATURE, CODE, TEST, etc.) |
+| `owner` | string | Responsible person or agent |
+| `project_id` | string | Parent project |
+| `created_at` | datetime | Creation timestamp |
+| `updated_at` | datetime | Last modification |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `description` | string | Detailed explanation |
+| `priority` | enum | Urgency level (low, medium, high, critical) |
+| `parent_id` | string | Hierarchical parent artifact |
+| `metadata` | object | Custom key-value pairs |
+| `version` | integer | Optimistic locking counter |
+
+### Artifact Types
+
+TraceRTM supports 16 artifact types across different views:
+
+```python
+class ItemType(str, Enum):
+    # Core
+    FEATURE = "feature"
+    CODE = "code"
+    TEST = "test"
+    API = "api"
+
+    # Design
+    WIREFRAME = "wireframe"
+    ARCHITECTURE = "architecture"
+    DOMAIN_MODEL = "domain_model"
+    USER_JOURNEY = "user_journey"
+
+    # Infrastructure
+    DATABASE = "database"
+    INFRASTRUCTURE = "infrastructure"
+    CONFIGURATION = "configuration"
+    DEPENDENCY = "dependency"
+
+    # Operations
+    DATA_FLOW = "data_flow"
+    SECURITY = "security"
+    PERFORMANCE = "performance"
+    MONITORING = "monitoring"
+```
+
+## Links (Relationships)
+
+Links connect artifacts and form the traceability graph. Each link has a source, target, and type.
+
+### Link Structure
+
+```python
+class Link:
+    id: str              # Unique link ID
+    source_id: str       # Source artifact
+    target_id: str       # Target artifact
+    link_type: LinkType  # Relationship category
+    metadata: dict       # Custom attributes
+    created_at: datetime
+    created_by: str      # Actor who created
+```
+
+### Relationship Types
+
+| Category | Types | Example |
+|----------|-------|---------|
+| **Hierarchical** | `parent_of`, `child_of` | Feature → Sub-feature |
+| **Implementation** | `implements`, `realized_by` | Code → Feature |
+| **Testing** | `tests`, `verified_by` | Test → Feature |
+| **Dependency** | `depends_on`, `blocks` | Feature → Feature |
+| **Operational** | `deploys_to`, `monitors` | Code → Infrastructure |
+
+### Link Directionality
+
+Links are directional. The meaning changes based on perspective:
+
+```
+FEAT-001  ──implements──>  CODE-042
+         <──realized_by──
+```
+
+- From FEAT-001: "This feature is implemented by CODE-042"
+- From CODE-042: "This code realizes FEAT-001"
+
+## Projects
+
+Projects are containers for artifacts and links:
+
+```python
+class Project:
+    id: str
+    name: str
+    description: str
+    owner: str
+    status: ProjectStatus  # active, archived, template
+    settings: dict         # Project-specific configuration
+    created_at: datetime
+    updated_at: datetime
+```
+
+### Project Settings
+
+```json
+{
+  "default_view": "FEATURE",
+  "required_links": {
+    "feature": ["tests"],
+    "code": ["tests", "implements"]
+  },
+  "workflow_enabled": true,
+  "auto_archive_days": 90
+}
+```
+
+## Events (Audit Log)
+
+Every change is recorded as an immutable event:
+
+```python
+class Event:
+    id: str
+    event_type: str      # item_created, link_added, etc.
+    entity_type: str     # item, link, project
+    entity_id: str
+    actor: str           # user or agent ID
+    timestamp: datetime
+    data: dict           # Change payload
+    diff: dict           # Before/after for updates
+```
+
+### Event Types
+
+- `item_created`, `item_updated`, `item_deleted`
+- `link_created`, `link_deleted`
+- `project_created`, `project_updated`
+- `workflow_transition`
+- `agent_registered`, `agent_heartbeat`
+
+## Agents
+
+Agents are automated actors that can create and modify artifacts:
+
+```python
+class Agent:
+    id: str
+    name: str
+    agent_type: str       # crawler, analyzer, linker, etc.
+    project_id: str       # Primary project
+    status: AgentStatus   # active, paused, stopped
+    last_heartbeat: datetime
+    metadata: dict        # Capabilities, configuration
+```
+
+## Data Integrity
+
+### Constraints
+
+1. **Unique IDs**: All artifacts have globally unique IDs
+2. **Valid References**: Links must reference existing artifacts
+3. **No Self-Links**: An artifact cannot link to itself
+4. **Type Validation**: Link types are validated against artifact types
+
+### Soft Deletes
+
+Artifacts are soft-deleted (marked with `deleted_at`) to:
+- Support undo operations
+- Maintain historical references
+- Enable compliance audits
+
+## Example Data
+
+### Feature Artifact
+
+```json
+{
+  "id": "FEAT-001",
+  "title": "User Authentication",
+  "type": "feature",
+  "view": "FEATURE",
+  "status": "in_progress",
+  "priority": "high",
+  "owner": "alice@example.com",
+  "project_id": "proj-web-app",
+  "description": "Implement secure user login with OAuth2 support",
+  "metadata": {
+    "sprint": "2024-Q4-S3",
+    "story_points": 8
+  },
+  "created_at": "2024-12-01T10:00:00Z",
+  "updated_at": "2024-12-05T15:30:00Z"
+}
+```
+
+### Link
+
+```json
+{
+  "id": "link-001",
+  "source_id": "TEST-042",
+  "target_id": "FEAT-001",
+  "link_type": "tests",
+  "metadata": {
+    "coverage": "partial",
+    "test_type": "integration"
+  },
+  "created_at": "2024-12-03T09:00:00Z",
+  "created_by": "agent-linker"
+}
+```
+
+## Related Topics
+
+- [Architecture](/docs/getting-started/core-concepts/architecture) - System design
+- [Workflows](/docs/getting-started/core-concepts/workflows) - State machines
+- [Relationship Types](/docs/wiki/concepts/relationship-types) - Detailed link types

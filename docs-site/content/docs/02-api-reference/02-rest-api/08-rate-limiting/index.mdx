@@ -1,32 +1,495 @@
 ---
-title: "Rate Limiting"
-description: "Documentation for Rate Limiting"
+title: Rate Limiting
+description: Understanding and working with TraceRTM API rate limits for optimal performance and reliability
 ---
 
 # Rate Limiting
 
-This page contains documentation for Rate Limiting.
+TraceRTM implements rate limiting to ensure fair usage and maintain service reliability. This guide explains how rate limits work, how to monitor your usage, and best practices for handling rate limit responses.
 
-## Overview
+## Rate Limit Overview
 
-This section covers the key aspects of Rate Limiting in TraceRTM.
+### Limits by Plan
 
-## Getting Started
+| Plan | Requests/Minute | Requests/Hour | Burst Limit | Concurrent |
+|------|-----------------|---------------|-------------|------------|
+| Free | 60 | 1,000 | 10 | 2 |
+| Pro | 300 | 10,000 | 50 | 10 |
+| Enterprise | 1,000 | 50,000 | 200 | 50 |
+| Custom | Configurable | Configurable | Configurable | Configurable |
 
-To get started with Rate Limiting:
+### Limits by Endpoint Type
 
-- Review the Rate Limiting and fundamentals
-- Explore practical examples
-- Check out the API reference
+| Endpoint Type | Limit Factor | Example |
+|---------------|--------------|---------|
+| Read (GET) | 1x | List items, get project |
+| Write (POST/PUT) | 2x | Create item, update item |
+| Delete (DELETE) | 2x | Delete item |
+| Search | 3x | Full-text search |
+| Batch | 5x | Batch operations |
+| Export | 10x | Export project |
 
-## Key Concepts
+---
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+## Rate Limit Headers
 
-## Next Steps
+Every API response includes rate limit information in headers:
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+```http
+HTTP/1.1 200 OK
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 295
+X-RateLimit-Reset: 1705747860
+X-RateLimit-Policy: 300;w=60
+X-RateLimit-Scope: user
+```
+
+### Header Descriptions
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests allowed in current window |
+| `X-RateLimit-Remaining` | Requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+| `X-RateLimit-Policy` | Rate limit policy (limit;w=window_seconds) |
+| `X-RateLimit-Scope` | Rate limit scope: `user`, `organization`, `api_key` |
+
+### Additional Headers for Complex Limits
+
+```http
+X-RateLimit-Limit-Requests: 300
+X-RateLimit-Remaining-Requests: 295
+X-RateLimit-Limit-Tokens: 100000
+X-RateLimit-Remaining-Tokens: 95000
+```
+
+---
+
+## Rate Limit Scopes
+
+### User Scope
+
+Default scope - limits apply per authenticated user across all their API keys.
+
+```http
+X-RateLimit-Scope: user
+```
+
+### API Key Scope
+
+Limits apply to individual API keys (useful for service accounts).
+
+```http
+X-RateLimit-Scope: api_key
+```
+
+### Organization Scope
+
+Shared limits across all organization members.
+
+```http
+X-RateLimit-Scope: organization
+```
+
+### Project Scope
+
+Some operations have per-project limits.
+
+```http
+X-RateLimit-Scope: project
+X-RateLimit-Project: proj_abc123
+```
+
+---
+
+## Rate Limit Response
+
+When rate limited, the API returns a `429 Too Many Requests` status:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+Retry-After: 45
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1705747860
+```
+
+### Response Body
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded. Please retry after 45 seconds.",
+    "details": {
+      "limit": 300,
+      "window": "1 minute",
+      "remaining": 0,
+      "reset_at": "2024-01-20T10:31:00Z",
+      "retry_after": 45,
+      "scope": "user",
+      "current_usage": {
+        "requests": 300,
+        "tokens": 45000
+      }
+    }
+  }
+}
+```
+
+---
+
+## Handling Rate Limits
+
+### Basic Retry Logic
+
+```python
+import time
+import requests
+
+def make_request_with_retry(url, headers, max_retries=3):
+    for attempt in range(max_retries):
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 429:
+            retry_after = int(response.headers.get('Retry-After', 60))
+            print(f"Rate limited. Retrying in {retry_after} seconds...")
+            time.sleep(retry_after)
+            continue
+
+        return response
+
+    raise Exception("Max retries exceeded")
+```
+
+### Exponential Backoff
+
+```python
+import time
+import random
+import requests
+
+def make_request_with_backoff(url, headers, max_retries=5):
+    base_delay = 1
+    max_delay = 60
+
+    for attempt in range(max_retries):
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 429:
+            # Check Retry-After header first
+            retry_after = response.headers.get('Retry-After')
+            if retry_after:
+                delay = int(retry_after)
+            else:
+                # Exponential backoff with jitter
+                delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
+
+            print(f"Rate limited. Attempt {attempt + 1}, waiting {delay:.2f}s")
+            time.sleep(delay)
+            continue
+
+        return response
+
+    raise Exception("Max retries exceeded")
+```
+
+### Proactive Rate Limiting
+
+```python
+import time
+import threading
+
+class RateLimiter:
+    def __init__(self, requests_per_minute=300):
+        self.requests_per_minute = requests_per_minute
+        self.tokens = requests_per_minute
+        self.last_update = time.time()
+        self.lock = threading.Lock()
+
+    def acquire(self):
+        with self.lock:
+            now = time.time()
+            time_passed = now - self.last_update
+            self.tokens = min(
+                self.requests_per_minute,
+                self.tokens + time_passed * (self.requests_per_minute / 60)
+            )
+            self.last_update = now
+
+            if self.tokens < 1:
+                sleep_time = (1 - self.tokens) / (self.requests_per_minute / 60)
+                time.sleep(sleep_time)
+                self.tokens = 0
+            else:
+                self.tokens -= 1
+
+# Usage
+limiter = RateLimiter(requests_per_minute=250)  # Leave buffer
+
+def make_request(url, headers):
+    limiter.acquire()
+    return requests.get(url, headers=headers)
+```
+
+---
+
+## SDK Rate Limit Handling
+
+### Python SDK
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.config import RateLimitConfig
+
+# Configure rate limit handling
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    rate_limit_config=RateLimitConfig(
+        max_retries=5,
+        retry_strategy="exponential",
+        base_delay=1.0,
+        max_delay=60.0,
+        respect_retry_after=True
+    )
+)
+
+# Automatic retry on rate limit
+items = client.items.list(project_id="proj_abc123")
+
+# Check current rate limit status
+rate_limit = client.get_rate_limit_status()
+print(f"Remaining: {rate_limit.remaining}/{rate_limit.limit}")
+print(f"Resets at: {rate_limit.reset_at}")
+
+# Low-level control
+try:
+    response = client.items.create(project_id="proj_abc123", data={...})
+except RateLimitError as e:
+    print(f"Rate limited. Retry after: {e.retry_after}s")
+```
+
+### TypeScript SDK
+
+```typescript
+import { TraceRTMClient, RateLimitConfig } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({
+  apiKey: 'rtm_live_sk_...',
+  rateLimitConfig: {
+    maxRetries: 5,
+    retryStrategy: 'exponential',
+    baseDelay: 1000,
+    maxDelay: 60000,
+    respectRetryAfter: true
+  }
+});
+
+// Check rate limit status
+const rateLimitStatus = await client.getRateLimitStatus();
+console.log(`Remaining: ${rateLimitStatus.remaining}/${rateLimitStatus.limit}`);
+
+// Handle rate limit errors
+try {
+  const items = await client.items.list({ projectId: 'proj_abc123' });
+} catch (error) {
+  if (error instanceof RateLimitError) {
+    console.log(`Rate limited. Retry after: ${error.retryAfter}s`);
+  }
+}
+```
+
+### Go SDK
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...",
+        tracertm.WithRateLimitConfig(tracertm.RateLimitConfig{
+            MaxRetries:       5,
+            RetryStrategy:    tracertm.ExponentialBackoff,
+            BaseDelay:        time.Second,
+            MaxDelay:         time.Minute,
+            RespectRetryAfter: true,
+        }),
+    )
+
+    ctx := context.Background()
+
+    // Check rate limit
+    status, _ := client.GetRateLimitStatus(ctx)
+    fmt.Printf("Remaining: %d/%d\n", status.Remaining, status.Limit)
+
+    // Automatic retry
+    items, err := client.Items.List(ctx, "proj_abc123", nil)
+    if err != nil {
+        if rateLimitErr, ok := err.(*tracertm.RateLimitError); ok {
+            fmt.Printf("Rate limited. Retry after: %v\n", rateLimitErr.RetryAfter)
+        }
+    }
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Implement Proper Retry Logic
+
+```python
+# Do: Use exponential backoff with jitter
+delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
+
+# Don't: Use fixed delays
+time.sleep(1)  # Always 1 second - poor distribution
+```
+
+### 2. Monitor Rate Limit Headers
+
+```python
+def check_rate_limit_headers(response):
+    remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+    limit = int(response.headers.get('X-RateLimit-Limit', 1))
+
+    usage_percent = (limit - remaining) / limit * 100
+    if usage_percent > 80:
+        print(f"Warning: {usage_percent:.1f}% of rate limit used")
+```
+
+### 3. Use Bulk Operations
+
+```python
+# Good: Single batch request
+client.batch_execute(project_id, [
+    BatchOperation.create("item", item1),
+    BatchOperation.create("item", item2),
+    BatchOperation.create("item", item3),
+])
+
+# Bad: Multiple individual requests
+client.items.create(project_id, item1)
+client.items.create(project_id, item2)
+client.items.create(project_id, item3)
+```
+
+### 4. Cache When Possible
+
+```python
+from functools import lru_cache
+import time
+
+@lru_cache(maxsize=100)
+def get_project_cached(project_id: str, ttl_hash: int):
+    return client.projects.get(project_id)
+
+def get_project(project_id: str, cache_seconds: int = 300):
+    ttl_hash = int(time.time() / cache_seconds)
+    return get_project_cached(project_id, ttl_hash)
+```
+
+### 5. Spread Requests Over Time
+
+```python
+import asyncio
+
+async def process_items_gradually(items, delay_between=0.2):
+    """Process items with delay to avoid bursts"""
+    results = []
+    for item in items:
+        result = await client.items.update_async(item.id, item.data)
+        results.append(result)
+        await asyncio.sleep(delay_between)
+    return results
+```
+
+---
+
+## Rate Limit Monitoring
+
+### Get Current Usage
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/rate-limit" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "limits": {
+    "requests_per_minute": 300,
+    "requests_per_hour": 10000,
+    "burst_limit": 50,
+    "concurrent_limit": 10
+  },
+  "current_usage": {
+    "requests_this_minute": 45,
+    "requests_this_hour": 1250,
+    "active_requests": 2
+  },
+  "windows": {
+    "minute": {
+      "remaining": 255,
+      "resets_at": "2024-01-20T10:31:00Z"
+    },
+    "hour": {
+      "remaining": 8750,
+      "resets_at": "2024-01-20T11:00:00Z"
+    }
+  },
+  "scope": "user",
+  "plan": "pro"
+}
+```
+
+---
+
+## Special Rate Limits
+
+### Search Operations
+
+Search has stricter limits due to resource intensity:
+
+| Plan | Searches/Minute | Complex Searches/Minute |
+|------|-----------------|-------------------------|
+| Free | 10 | 5 |
+| Pro | 50 | 25 |
+| Enterprise | 200 | 100 |
+
+### Webhook Deliveries
+
+Outgoing webhook deliveries are also rate limited:
+
+| Plan | Deliveries/Minute | Concurrent |
+|------|-------------------|------------|
+| Free | 30 | 5 |
+| Pro | 150 | 20 |
+| Enterprise | 500 | 50 |
+
+### Import/Export
+
+Large data operations have separate limits:
+
+| Plan | Concurrent Imports | Max Import Size |
+|------|-------------------|-----------------|
+| Free | 1 | 1,000 items |
+| Pro | 3 | 10,000 items |
+| Enterprise | 10 | 100,000 items |
+
+---
+
+## Related Documentation
+
+- [Rate Limit Headers](/docs/api-reference/rest-api/rate-limit-headers) - Detailed header reference
+- [Error Handling](/docs/api-reference/rest-api/errors) - Error response formats
+- [Batch Operations](/docs/api-reference/rest-api/batch-operations) - Bulk operations to reduce requests

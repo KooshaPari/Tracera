@@ -1,125 +1,796 @@
 ---
 title: "GitLab Integration"
-description: "Documentation for GitLab Integration"
+description: "Connect TraceRTM with GitLab for seamless issue tracking, merge request traceability, and CI/CD integration"
 ---
 
 # GitLab Integration
 
-
 ## Overview
 
-Welcome to the GitLab Integration documentation.
+TraceRTM's GitLab integration provides seamless connectivity with GitLab repositories, enabling automated synchronization of issues, merge requests, commits, and CI/CD pipelines with your traceability matrix. This integration ensures that your requirements and test cases remain linked to actual development work in GitLab.
 
-## Introduction
+### Key Capabilities
 
-This page provides comprehensive information about GitLab Integration.
+- **Bidirectional Issue Sync**: Automatically synchronize GitLab issues with TraceRTM items
+- **Merge Request Traceability**: Link merge requests to requirements and test cases
+- **Commit Linking**: Track code changes against requirements using commit messages
+- **CI/CD Integration**: Monitor pipeline status and test results in your traceability matrix
+- **Webhook Support**: Real-time updates from GitLab events
+- **Label & Milestone Mapping**: Synchronize GitLab labels and milestones with TraceRTM metadata
+- **Multi-Project Support**: Integrate multiple GitLab projects into a single TraceRTM project
 
-## Key Features
+## Authentication
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+TraceRTM supports two authentication methods for GitLab integration:
 
-## Getting Started
+### Personal Access Tokens (Recommended)
+
+Personal Access Tokens (PATs) are the recommended authentication method for most use cases.
+
+#### Creating a Personal Access Token
+
+1. Navigate to GitLab → **User Settings** → **Access Tokens**
+2. Create a new token with the following scopes:
+   - `api` - Full API access (required)
+   - `read_repository` - Read repository data
+   - `write_repository` - Write to repository (for commit linking)
+   - `read_user` - Read user information
+
+3. Copy the generated token (you won't see it again)
+
+#### Configuring TraceRTM
 
 ```bash
-tracertm init
-tracertm config set gitlab enabled
+# Set GitLab personal access token
+tracertm config set gitlab.auth.token YOUR_TOKEN_HERE
+
+# Set GitLab instance URL (for self-hosted GitLab)
+tracertm config set gitlab.url https://gitlab.example.com
+
+# For GitLab.com (default)
+tracertm config set gitlab.url https://gitlab.com
 ```
 
-## Usage
+**Configuration File:**
 
-### Basic Usage
-
-```typescript
-import { TraceRTM } from '@tracertm/core'
-
-const tracertm = new TraceRTM()
-const result = await tracertm.gitlab()
+```yaml
+# .tracertm/config.yaml
+integrations:
+  gitlab:
+    enabled: true
+    url: https://gitlab.com
+    auth:
+      type: pat
+      token: ${GITLAB_TOKEN}  # Use environment variable for security
+    default_project: your-group/your-project
 ```
 
-### Advanced Usage
+### OAuth 2.0 Application
 
-```typescript
-const config = {
-  gitlab: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
+For team environments or applications that need user-specific permissions:
+
+#### Creating an OAuth Application
+
+1. Navigate to GitLab → **User Settings** → **Applications**
+2. Create a new application:
+   - **Name**: TraceRTM Integration
+   - **Redirect URI**: `http://localhost:8080/oauth/callback`
+   - **Scopes**: `api`, `read_user`, `read_repository`, `write_repository`
+
+3. Save the Application ID and Secret
+
+#### OAuth Configuration
+
+```yaml
+# .tracertm/config.yaml
+integrations:
+  gitlab:
+    enabled: true
+    url: https://gitlab.com
+    auth:
+      type: oauth
+      client_id: ${GITLAB_CLIENT_ID}
+      client_secret: ${GITLAB_CLIENT_SECRET}
+      redirect_uri: http://localhost:8080/oauth/callback
+```
+
+```bash
+# Initialize OAuth flow
+tracertm gitlab auth login
+```
+
+## Issue Synchronization
+
+### Automatic Issue Import
+
+Import existing GitLab issues as TraceRTM items:
+
+```bash
+# Import all issues from a project
+tracertm gitlab sync issues --project your-group/your-project
+
+# Import only open issues
+tracertm gitlab sync issues --project your-group/your-project --state opened
+
+# Import issues with specific labels
+tracertm gitlab sync issues --project your-group/your-project --labels requirement,enhancement
+
+# Import specific issue
+tracertm gitlab sync issue --project your-group/your-project --issue-id 123
+```
+
+### Bidirectional Synchronization
+
+Enable automatic bidirectional sync to keep GitLab issues and TraceRTM items in sync:
+
+```yaml
+# .tracertm/config.yaml
+integrations:
+  gitlab:
+    sync:
+      enabled: true
+      interval: 300  # Sync every 5 minutes
+      direction: bidirectional  # Options: import, export, bidirectional
+      issue_mapping:
+        requirement: ["requirement", "feature"]
+        test_case: ["test", "qa"]
+        defect: ["bug", "defect"]
+```
+
+### Field Mapping
+
+Configure how GitLab issue fields map to TraceRTM item attributes:
+
+```yaml
+integrations:
+  gitlab:
+    field_mapping:
+      title: title
+      description: description
+      state:
+        opened: "in_progress"
+        closed: "completed"
+      assignee: assigned_to
+      labels: tags
+      milestone: milestone
+      due_date: due_date
+      weight: priority  # GitLab weight → TraceRTM priority
+```
+
+### Creating GitLab Issues from TraceRTM
+
+```bash
+# Create GitLab issue from TraceRTM item
+tracertm gitlab create-issue --item-id REQ-001 --project your-group/your-project
+
+# Create with custom labels
+tracertm gitlab create-issue --item-id REQ-001 --project your-group/your-project --labels requirement,high-priority
+```
+
+**Python API:**
+
+```python
+from tracertm.integrations.gitlab import GitLabClient
+
+gitlab = GitLabClient()
+
+# Create issue from TraceRTM item
+issue = gitlab.create_issue_from_item(
+    item_id="REQ-001",
+    project="your-group/your-project",
+    labels=["requirement", "high-priority"],
+    assignees=["johndoe"]
+)
+
+print(f"Created GitLab issue: {issue.web_url}")
+```
+
+## Merge Request Traceability
+
+### Linking Merge Requests to Requirements
+
+TraceRTM automatically detects requirement references in merge request titles and descriptions:
+
+```markdown
+# In GitLab merge request title or description:
+Implements REQ-001: User Authentication
+
+# Or use multiple references:
+This MR addresses REQ-001, REQ-002, and TEST-045
+```
+
+### Merge Request Keywords
+
+Configure keywords that TraceRTM recognizes for linking:
+
+```yaml
+integrations:
+  gitlab:
+    merge_request:
+      keywords:
+        implements: ["implements", "implements:", "fulfills"]
+        tests: ["tests", "tests:", "verifies"]
+        fixes: ["fixes", "resolves", "closes"]
+      auto_link: true
+      sync_status: true
+```
+
+### Viewing Merge Request Status
+
+```bash
+# Show all merge requests linked to an item
+tracertm gitlab mrs --item-id REQ-001
+
+# Show merge request details
+tracertm gitlab mr --mr-id 42 --project your-group/your-project
+```
+
+### Merge Request Approval Rules
+
+Track approval status in your traceability matrix:
+
+```yaml
+integrations:
+  gitlab:
+    merge_request:
+      track_approvals: true
+      required_approvals: 2
+      approval_rules:
+        - name: "Code Review"
+          approvers: ["senior-dev-team"]
+        - name: "Security Review"
+          approvers: ["security-team"]
+          applies_to: ["requirement", "security"]
+```
+
+## Commit Linking
+
+### Commit Message Format
+
+Use commit message patterns to automatically link commits to TraceRTM items:
+
+```bash
+git commit -m "feat(auth): Add password reset functionality [REQ-001]"
+git commit -m "test: Add integration tests for API endpoints [TEST-045]"
+git commit -m "fix: Resolve login timeout issue [BUG-123] [REQ-002]"
+```
+
+### Commit Linking Configuration
+
+```yaml
+integrations:
+  gitlab:
+    commits:
+      enabled: true
+      patterns:
+        - '\[([A-Z]+-\d+)\]'  # Matches [REQ-001]
+        - '#([A-Z]+-\d+)'      # Matches #REQ-001
+        - '(REQ-\d+)'          # Matches REQ-001
+      track_authors: true
+      require_item_reference: false  # Set to true to enforce linking
+```
+
+### Pre-commit Hooks
+
+Install a Git hook to validate commit messages:
+
+```bash
+# Install TraceRTM Git hooks
+tracertm gitlab install-hooks --project your-group/your-project
+
+# This creates .git/hooks/commit-msg that validates references
+```
+
+**Manual hook example (.git/hooks/commit-msg):**
+
+```bash
+#!/bin/bash
+# Validate commit message contains TraceRTM item reference
+
+commit_msg=$(cat "$1")
+
+if ! echo "$commit_msg" | grep -qE '\[(REQ|TEST|BUG)-[0-9]+\]'; then
+    echo "Error: Commit message must reference a TraceRTM item"
+    echo "Example: feat: Add new feature [REQ-001]"
+    exit 1
+fi
+```
+
+### Viewing Commit History
+
+```bash
+# Show commits linked to an item
+tracertm gitlab commits --item-id REQ-001
+
+# Show commit details
+tracertm gitlab commit --sha abc123def --project your-group/your-project
+```
+
+## GitLab CI/CD Integration
+
+### Pipeline Status Tracking
+
+Monitor GitLab CI/CD pipeline status in your traceability matrix:
+
+```yaml
+integrations:
+  gitlab:
+    ci_cd:
+      enabled: true
+      track_pipelines: true
+      track_jobs: true
+      track_test_results: true
+      environments: ["production", "staging"]
+```
+
+### GitLab CI Configuration
+
+Add TraceRTM reporting to your `.gitlab-ci.yml`:
+
+```yaml
+# .gitlab-ci.yml
+stages:
+  - test
+  - report
+
+test:
+  stage: test
+  script:
+    - pytest --cov --junit-xml=report.xml
+  artifacts:
+    reports:
+      junit: report.xml
+
+tracertm_report:
+  stage: report
+  dependencies:
+    - test
+  script:
+    - pip install tracertm
+    - tracertm gitlab sync pipeline --pipeline-id $CI_PIPELINE_ID
+    - tracertm gitlab upload-results --file report.xml --item-type test_case
+  only:
+    - main
+    - develop
+```
+
+### Test Result Integration
+
+Automatically link test results to test cases:
+
+```yaml
+integrations:
+  gitlab:
+    ci_cd:
+      test_results:
+        enabled: true
+        formats: ["junit", "pytest", "coverage"]
+        auto_link: true
+        mapping:
+          test_name_pattern: 'test_(.+)'  # Extract item ID from test name
+          default_item_type: test_case
+```
+
+**Example test with item reference:**
+
+```python
+# tests/test_authentication.py
+def test_login_successful_REQ001():
+    """Test successful login - linked to REQ-001"""
+    # Test implementation
+    pass
+
+def test_password_reset_REQ002():
+    """Test password reset flow - linked to REQ-002"""
+    # Test implementation
+    pass
+```
+
+### Deployment Tracking
+
+Track deployments in your traceability matrix:
+
+```bash
+# Record deployment event
+tracertm gitlab deployment --environment production --ref v1.2.3 --project your-group/your-project
+```
+
+## Webhook Configuration
+
+### Setting Up GitLab Webhooks
+
+Configure GitLab to send real-time updates to TraceRTM:
+
+#### 1. Start TraceRTM Webhook Server
+
+```bash
+# Start webhook listener
+tracertm gitlab webhook start --port 8080
+
+# With authentication
+tracertm gitlab webhook start --port 8080 --secret your-webhook-secret
+```
+
+#### 2. Configure in GitLab
+
+1. Navigate to **Project Settings** → **Webhooks**
+2. Add webhook:
+   - **URL**: `https://your-tracertm-server.com/webhooks/gitlab`
+   - **Secret Token**: `your-webhook-secret`
+   - **Trigger**: Select events to track:
+     - ✓ Push events
+     - ✓ Issues events
+     - ✓ Merge request events
+     - ✓ Pipeline events
+     - ✓ Job events
+   - **SSL verification**: Enable for production
+
+#### 3. Webhook Configuration
+
+```yaml
+integrations:
+  gitlab:
+    webhooks:
+      enabled: true
+      secret: ${GITLAB_WEBHOOK_SECRET}
+      port: 8080
+      events:
+        push: true
+        issue: true
+        merge_request: true
+        pipeline: true
+        job: true
+      handlers:
+        push: sync_commits
+        issue: sync_issues
+        merge_request: sync_mrs
+        pipeline: update_pipeline_status
+```
+
+### Webhook Event Handlers
+
+**Custom webhook handler (Python):**
+
+```python
+from tracertm.integrations.gitlab import WebhookHandler
+
+@WebhookHandler.register("merge_request")
+def handle_merge_request(event):
+    """Custom handler for merge request events"""
+    action = event["object_attributes"]["action"]
+
+    if action == "open":
+        # Auto-link MR to requirements
+        mr_title = event["object_attributes"]["title"]
+        item_ids = extract_item_references(mr_title)
+
+        for item_id in item_ids:
+            link_merge_request_to_item(
+                item_id=item_id,
+                mr_iid=event["object_attributes"]["iid"]
+            )
+
+    elif action == "merge":
+        # Update traceability matrix on merge
+        update_item_status(item_ids, "implemented")
+```
+
+## Label and Milestone Mapping
+
+### Label Synchronization
+
+Map GitLab labels to TraceRTM item types and metadata:
+
+```yaml
+integrations:
+  gitlab:
+    labels:
+      sync: true
+      mapping:
+        # GitLab label → TraceRTM item type
+        "type::requirement": requirement
+        "type::test": test_case
+        "type::bug": defect
+
+        # Priority mapping
+        "priority::critical": { priority: critical }
+        "priority::high": { priority: high }
+        "priority::medium": { priority: medium }
+        "priority::low": { priority: low }
+
+        # Status mapping
+        "status::to-do": { status: planned }
+        "status::in-progress": { status: in_progress }
+        "status::review": { status: review }
+        "status::done": { status: completed }
+```
+
+### Milestone Synchronization
+
+Link GitLab milestones to TraceRTM releases or iterations:
+
+```yaml
+integrations:
+  gitlab:
+    milestones:
+      sync: true
+      auto_create: true
+      mapping_field: milestone
+      sync_dates: true
+      sync_description: true
+```
+
+```bash
+# Sync milestones from GitLab
+tracertm gitlab sync milestones --project your-group/your-project
+
+# Create GitLab milestone from TraceRTM release
+tracertm gitlab create-milestone --release-id v1.0.0 --project your-group/your-project
+```
+
+## GitLab API Usage
+
+### API Rate Limiting
+
+GitLab enforces API rate limits. TraceRTM handles rate limiting automatically:
+
+```yaml
+integrations:
+  gitlab:
+    api:
+      rate_limit:
+        enabled: true
+        max_requests: 600  # Requests per hour for GitLab.com
+        retry_on_limit: true
+        backoff_strategy: exponential
+      timeout: 30
+      max_retries: 3
+```
+
+### GraphQL API Support
+
+For complex queries, TraceRTM uses GitLab's GraphQL API:
+
+```python
+from tracertm.integrations.gitlab import GitLabGraphQL
+
+graphql = GitLabGraphQL()
+
+# Query merge requests with detailed information
+query = """
+query($projectPath: ID!) {
+  project(fullPath: $projectPath) {
+    mergeRequests(first: 10, state: opened) {
+      nodes {
+        title
+        description
+        author {
+          username
+        }
+        approvedBy {
+          nodes {
+            username
+          }
+        }
+        pipelines {
+          nodes {
+            status
+          }
+        }
+      }
     }
   }
 }
+"""
 
-const tracertm = new TraceRTM(config)
+result = graphql.query(query, variables={"projectPath": "your-group/your-project"})
 ```
 
-## Configuration
+### Pagination Handling
 
-```typescript
-export default {
-  gitlab: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+TraceRTM automatically handles pagination for large datasets:
+
+```python
+from tracertm.integrations.gitlab import GitLabClient
+
+gitlab = GitLabClient()
+
+# Fetch all issues (handles pagination automatically)
+all_issues = gitlab.get_all_issues(
+    project="your-group/your-project",
+    state="opened",
+    labels=["requirement"]
+)
+
+# With custom page size
+all_issues = gitlab.get_all_issues(
+    project="your-group/your-project",
+    per_page=100  # GitLab max is 100
+)
 ```
 
-## Examples
+## Best Practices for GitLab Workflows
 
-### Example 1
+### 1. Consistent Naming Conventions
 
-```typescript
-const example = await tracertm.gitlab({
-  option1: 'value1',
-  option2: 'value2'
-})
+Establish team conventions for referencing TraceRTM items:
+
+```markdown
+# ✓ Good
+feat(auth): Implement SSO login [REQ-001]
+fix(api): Resolve timeout on large queries [BUG-042] [REQ-015]
+
+# ✗ Avoid
+Added login feature
+Fixed bug
 ```
 
-### Example 2
+### 2. Use Merge Request Templates
 
-```typescript
-const advanced = await tracertm.gitlab({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+Create `.gitlab/merge_request_templates/default.md`:
+
+```markdown
+## Description
+<!-- Describe your changes -->
+
+## Related Requirements
+<!-- List TraceRTM items: REQ-001, TEST-045 -->
+
+## Testing
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing completed
+
+## TraceRTM Items
+Implements: REQ-XXX
+Tests: TEST-XXX
+Fixes: BUG-XXX
+
+## Checklist
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Documentation updated
+- [ ] No new warnings generated
 ```
 
-## Best Practices
+### 3. Automate with GitLab CI/CD
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+Create comprehensive CI/CD workflows:
+
+```yaml
+# .gitlab-ci.yml
+variables:
+  TRACERTM_PROJECT: "aerospace-app"
+
+stages:
+  - validate
+  - test
+  - report
+
+validate_references:
+  stage: validate
+  script:
+    - pip install tracertm
+    - tracertm gitlab validate-mr --mr-id $CI_MERGE_REQUEST_IID
+  only:
+    - merge_requests
+
+run_tests:
+  stage: test
+  script:
+    - pytest --junit-xml=report.xml
+  artifacts:
+    reports:
+      junit: report.xml
+
+update_traceability:
+  stage: report
+  dependencies:
+    - run_tests
+  script:
+    - tracertm gitlab sync pipeline --pipeline-id $CI_PIPELINE_ID
+    - tracertm gitlab upload-results --file report.xml
+  only:
+    - main
+```
+
+### 4. Use GitLab Groups for Organization
+
+Organize related projects under GitLab groups:
+
+```yaml
+integrations:
+  gitlab:
+    projects:
+      - path: "aerospace/requirements"
+        item_types: ["requirement", "specification"]
+      - path: "aerospace/backend"
+        item_types: ["requirement", "test_case", "defect"]
+      - path: "aerospace/frontend"
+        item_types: ["requirement", "test_case", "defect"]
+```
+
+### 5. Security Best Practices
+
+- Store tokens in environment variables or secret managers
+- Use project-specific access tokens when possible
+- Rotate access tokens regularly
+- Enable webhook secret validation
+- Use HTTPS for webhook endpoints
+- Audit GitLab access logs regularly
+
+```bash
+# Use environment variables
+export GITLAB_TOKEN="your-secure-token"
+export GITLAB_WEBHOOK_SECRET="your-webhook-secret"
+
+# Or use secret management
+tracertm config set gitlab.auth.token "$(vault read -field=token secret/gitlab)"
+```
+
+### 6. Monitoring and Observability
+
+Track GitLab integration health:
+
+```bash
+# Check integration status
+tracertm gitlab status
+
+# View sync history
+tracertm gitlab sync-log --last 24h
+
+# Test webhook connectivity
+tracertm gitlab webhook test --project your-group/your-project
+```
 
 ## Troubleshooting
 
-### Common Issues
+### Authentication Issues
 
-**Issue 1:**
 ```bash
-tracertm fix issue-1
+# Verify token permissions
+tracertm gitlab verify-auth
+
+# Test API connectivity
+tracertm gitlab test-connection --url https://gitlab.com
 ```
 
-**Issue 2:**
+**Common errors:**
+
+- `401 Unauthorized`: Invalid or expired token
+- `403 Forbidden`: Insufficient token scopes
+- `404 Not Found`: Project path incorrect or no access
+
+### Sync Issues
+
 ```bash
-tracertm fix issue-2
+# Force full resync
+tracertm gitlab sync --force --project your-group/your-project
+
+# View sync errors
+tracertm gitlab sync-errors --last 24h
+
+# Clear sync cache
+tracertm gitlab clear-cache
 ```
 
-## API Reference
+### Webhook Not Receiving Events
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+1. Verify webhook URL is publicly accessible
+2. Check webhook logs in GitLab: **Project Settings** → **Webhooks** → **Recent Events**
+3. Verify secret token matches configuration
+4. Check firewall/network rules
+
+```bash
+# Test webhook endpoint
+curl -X POST https://your-tracertm-server.com/webhooks/gitlab \
+  -H "X-Gitlab-Token: your-secret" \
+  -d '{"object_kind":"ping"}'
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
-
+- [GitHub Integration](/docs/wiki/concepts/integrations/github)
+- [Jira Integration](/docs/wiki/concepts/integrations/jira)
+- [CI/CD Best Practices](/docs/wiki/guides/cicd)
+- [API Reference](/docs/api-reference/integrations/gitlab)

@@ -1,115 +1,670 @@
 ---
-title: "Users API"
-description: "Documentation for Users API"
+title: Users API
+description: Complete API reference for managing users, profiles, and permissions in TraceRTM
 ---
 
 # Users API
 
+The Users API manages user accounts, profiles, permissions, and authentication settings. Access to user data depends on your role and organizational permissions.
 
-## Overview
+## Endpoints Overview
 
-Complete API reference for Users API.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/users` | List users |
+| `GET` | `/v1/users/me` | Get current user |
+| `GET` | `/v1/users/{user_id}` | Get user |
+| `PATCH` | `/v1/users/{user_id}` | Update user |
+| `GET` | `/v1/users/{user_id}/permissions` | Get user permissions |
+| `PATCH` | `/v1/users/{user_id}/permissions` | Update permissions |
+| `GET` | `/v1/users/{user_id}/activity` | Get user activity |
+| `POST` | `/v1/users/invite` | Invite user |
+| `DELETE` | `/v1/users/{user_id}` | Remove user |
 
-## Authentication
+---
 
-All API requests require authentication:
+## The User Object
 
-```typescript
-const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
-  'Content-Type': 'application/json'
+```json
+{
+  "id": "user_abc123xyz",
+  "email": "jane.engineer@company.com",
+  "name": "Jane Engineer",
+  "display_name": "Jane E.",
+  "avatar_url": "https://...",
+  "role": "member",
+  "status": "active",
+  "teams": [
+    {
+      "id": "team_engineering",
+      "name": "Engineering",
+      "role": "member"
+    }
+  ],
+  "permissions": {
+    "projects": ["proj_abc123", "proj_def456"],
+    "roles": {
+      "proj_abc123": "editor",
+      "proj_def456": "viewer"
+    }
+  },
+  "preferences": {
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "notifications": {
+      "email": true,
+      "mentions": true,
+      "assignments": true
+    }
+  },
+  "last_active_at": "2024-12-08T09:30:00Z",
+  "created_at": "2024-01-15T10:00:00Z",
+  "updated_at": "2024-12-01T14:00:00Z"
 }
 ```
 
-## Endpoints
+### User Fields
 
-### List All Users API
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique user identifier (prefix: `user_`) |
+| `email` | string | Email address |
+| `name` | string | Full name |
+| `display_name` | string | Short display name |
+| `avatar_url` | string | Profile image URL |
+| `role` | string | Organization role: `owner`, `admin`, `member`, `guest` |
+| `status` | string | `active`, `invited`, `suspended`, `deactivated` |
+| `teams` | array | Team memberships |
+| `permissions` | object | Project-level permissions |
+| `preferences` | object | User preferences |
+| `last_active_at` | string | Last activity timestamp |
+| `created_at` | string | Account creation timestamp |
+| `updated_at` | string | Last update timestamp |
+
+### Organization Roles
+
+| Role | Description |
+|------|-------------|
+| `owner` | Full organization access, billing, settings |
+| `admin` | Manage users, teams, all projects |
+| `member` | Access to assigned projects |
+| `guest` | Limited read-only access |
+
+### Project Roles
+
+| Role | Description |
+|------|-------------|
+| `admin` | Full project control |
+| `editor` | Create, edit, delete items |
+| `reviewer` | Review and approve items |
+| `viewer` | Read-only access |
+
+---
+
+## List Users
+
+Retrieve users in your organization.
 
 ```http
-GET /api/v1/users-api
+GET /v1/users
 ```
 
-**Response:**
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `role` | string | — | Filter by organization role |
+| `status` | string | `active` | Filter by status |
+| `team_id` | string | — | Filter by team membership |
+| `search` | string | — | Search name or email |
+| `sort` | string | `name` | Sort field |
+| `order` | string | `asc` | Sort order |
+| `limit` | integer | 20 | Results per page |
+| `cursor` | string | — | Pagination cursor |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/users?status=active&limit=20" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
 ```json
 {
-  "data": [],
+  "data": [
+    {
+      "id": "user_abc123xyz",
+      "email": "jane.engineer@company.com",
+      "name": "Jane Engineer",
+      "role": "member",
+      "status": "active",
+      "teams": [{"id": "team_engineering", "name": "Engineering"}],
+      "last_active_at": "2024-12-08T09:30:00Z"
+    }
+  ],
   "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+    "total": 45,
+    "limit": 20,
+    "has_next": true,
+    "next_cursor": "eyJ1c2VyIjoiYWJjMTIzIn0"
   }
 }
 ```
 
-### Get Users API by ID
+### SDK Examples
 
-```http
-GET /api/v1/users-api/:id
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List active users
+users = client.users.list(status="active")
+
+for user in users.data:
+    print(f"{user.name} ({user.email})")
+
+# Search users
+users = client.users.list(search="jane")
+
+# Users in a specific team
+team_users = client.users.list(team_id="team_engineering")
 ```
 
-### Create Users API
+#### TypeScript
 
-```http
-POST /api/v1/users-api
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List active users
+const users = await client.users.list({ status: 'active' });
+
+users.data.forEach(user => {
+  console.log(`${user.name} (${user.email})`);
+});
 ```
 
-**Request Body:**
+---
+
+## Get Current User
+
+Retrieve the authenticated user's profile.
+
+```http
+GET /v1/users/me
+```
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/users/me" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+Returns the full user object for the authenticated user.
+
+### SDK Examples
+
+#### Python
+
+```python
+me = client.users.me()
+print(f"Logged in as: {me.name}")
+print(f"Role: {me.role}")
+print(f"Teams: {[t.name for t in me.teams]}")
+```
+
+#### TypeScript
+
+```typescript
+const me = await client.users.me();
+console.log(`Logged in as: ${me.name}`);
+console.log(`Role: ${me.role}`);
+```
+
+---
+
+## Get User
+
+Retrieve a specific user by ID.
+
+```http
+GET /v1/users/{user_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `include` | string | — | Include: `permissions`, `teams`, `activity` |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/users/user_abc123?include=permissions,teams" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+---
+
+## Update User
+
+Update a user's profile. Users can update their own profile; admins can update any user.
+
+```http
+PATCH /v1/users/{user_id}
+```
+
+### Request Body
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Full name |
+| `display_name` | string | Display name |
+| `role` | string | Organization role (admin only) |
+| `preferences` | object | User preferences |
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/users/user_abc123" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "display_name": "Jane E.",
+    "preferences": {
+      "timezone": "America/Los_Angeles",
+      "notifications": {
+        "email": true,
+        "assignments": true
+      }
+    }
+  }'
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+user = client.users.update(
+    "user_abc123",
+    display_name="Jane E.",
+    preferences={
+        "timezone": "America/Los_Angeles",
+        "notifications": {"email": True}
+    }
+)
+```
+
+---
+
+## Get User Permissions
+
+Get detailed permissions for a user.
+
+```http
+GET /v1/users/{user_id}/permissions
+```
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/users/user_abc123/permissions" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
 ```json
 {
-  "name": "Example Users API",
-  "description": "Description here"
+  "data": {
+    "user_id": "user_abc123",
+    "organization_role": "member",
+    "projects": [
+      {
+        "id": "proj_abc123",
+        "name": "Vehicle Control System",
+        "role": "editor",
+        "permissions": {
+          "items.create": true,
+          "items.edit": true,
+          "items.delete": false,
+          "items.approve": false,
+          "links.create": true,
+          "links.delete": true,
+          "reports.generate": true,
+          "settings.manage": false
+        }
+      },
+      {
+        "id": "proj_def456",
+        "name": "Medical Device",
+        "role": "viewer",
+        "permissions": {
+          "items.create": false,
+          "items.edit": false,
+          "items.delete": false,
+          "items.approve": false,
+          "links.create": false,
+          "links.delete": false,
+          "reports.generate": true,
+          "settings.manage": false
+        }
+      }
+    ],
+    "teams": [
+      {
+        "id": "team_engineering",
+        "name": "Engineering",
+        "role": "member"
+      }
+    ]
+  }
 }
 ```
 
-### Update Users API
+---
+
+## Update User Permissions
+
+Update a user's project permissions (admin only).
 
 ```http
-PUT /api/v1/users-api/:id
+PATCH /v1/users/{user_id}/permissions
 ```
 
-### Delete Users API
+### Request Body
+
+```json
+{
+  "organization_role": "member",
+  "projects": [
+    {
+      "project_id": "proj_abc123",
+      "role": "editor"
+    },
+    {
+      "project_id": "proj_def456",
+      "role": "reviewer"
+    }
+  ]
+}
+```
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/users/user_abc123/permissions" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projects": [
+      {"project_id": "proj_abc123", "role": "editor"},
+      {"project_id": "proj_def456", "role": "reviewer"}
+    ]
+  }'
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+permissions = client.users.update_permissions(
+    "user_abc123",
+    projects=[
+        {"project_id": "proj_abc123", "role": "editor"},
+        {"project_id": "proj_def456", "role": "reviewer"}
+    ]
+)
+```
+
+---
+
+## Get User Activity
+
+Get recent activity for a user.
 
 ```http
-DELETE /api/v1/users-api/:id
+GET /v1/users/{user_id}/activity
 ```
 
-## Query Parameters
+### Query Parameters
 
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `project_id` | string | — | Filter by project |
+| `action` | string | — | Filter by action type |
+| `after` | string | — | After ISO timestamp |
+| `before` | string | — | Before ISO timestamp |
+| `limit` | integer | 50 | Results per page |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/users/user_abc123/activity?limit=20" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "activity_001",
+      "action": "item.created",
+      "timestamp": "2024-12-08T10:30:00Z",
+      "project_id": "proj_abc123",
+      "resource": {
+        "type": "item",
+        "id": "item_req_045",
+        "title": "New requirement"
+      },
+      "details": {
+        "item_type": "requirement"
+      }
+    },
+    {
+      "id": "activity_002",
+      "action": "item.approved",
+      "timestamp": "2024-12-08T10:15:00Z",
+      "project_id": "proj_abc123",
+      "resource": {
+        "type": "item",
+        "id": "item_req_044",
+        "title": "Sensor processing"
+      }
+    }
+  ],
+  "pagination": {
+    "has_next": true,
+    "next_cursor": "eyJhY3Rpdml0eSI6IjAwMiJ9"
+  }
+}
+```
+
+---
+
+## Invite User
+
+Invite a new user to the organization.
+
+```http
+POST /v1/users/invite
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address |
+| `name` | string | No | Full name |
+| `role` | string | No | Organization role (default: `member`) |
+| `teams` | array | No | Team IDs to add |
+| `projects` | array | No | Project permissions |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/users/invite" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "new.user@company.com",
+    "name": "New User",
+    "role": "member",
+    "teams": ["team_engineering"],
+    "projects": [
+      {"project_id": "proj_abc123", "role": "editor"}
+    ]
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "user_newuser123",
+    "email": "new.user@company.com",
+    "name": "New User",
+    "status": "invited",
+    "role": "member",
+    "invite_sent_at": "2024-12-08T10:00:00Z",
+    "invite_expires_at": "2024-12-15T10:00:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+user = client.users.invite(
+    email="new.user@company.com",
+    name="New User",
+    role="member",
+    teams=["team_engineering"],
+    projects=[
+        {"project_id": "proj_abc123", "role": "editor"}
+    ]
+)
+
+print(f"Invited: {user.email} (expires: {user.invite_expires_at})")
+```
+
+#### TypeScript
+
+```typescript
+const user = await client.users.invite({
+  email: 'new.user@company.com',
+  name: 'New User',
+  role: 'member',
+  teams: ['team_engineering'],
+  projects: [
+    { projectId: 'proj_abc123', role: 'editor' }
+  ]
+});
+
+console.log(`Invited: ${user.email}`);
+```
+
+---
+
+## Remove User
+
+Remove a user from the organization.
+
+```http
+DELETE /v1/users/{user_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `transfer_to` | string | — | User ID to transfer ownership |
+| `reassign_items` | boolean | false | Reassign assigned items |
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/users/user_abc123?transfer_to=user_admin&reassign_items=true" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "user_abc123",
+    "removed": true,
+    "removed_at": "2024-12-08T10:00:00Z",
+    "items_reassigned": 25,
+    "transferred_to": "user_admin"
+  }
+}
+```
+
+---
 
 ## Error Responses
 
-### 400 Bad Request
-Invalid request parameters
+### User Not Found
 
-### 401 Unauthorized
-Missing or invalid authentication token
-
-### 404 Not Found
-Resource not found
-
-### 500 Internal Server Error
-Server error
-
-## SDK Examples
-
-### TypeScript
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
-
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.users-api.list()
+```json
+{
+  "error": {
+    "code": "USER_NOT_FOUND",
+    "message": "User 'user_invalid' not found",
+    "status": 404
+  }
+}
 ```
 
-### Python
-```python
-from tracertm import Client
+### Permission Denied
 
-client = Client(api_key='YOUR_KEY')
-items = client.users-api.list()
+```json
+{
+  "error": {
+    "code": "PERMISSION_DENIED",
+    "message": "You don't have permission to modify this user",
+    "status": 403
+  }
+}
 ```
 
+### Duplicate Email
+
+```json
+{
+  "error": {
+    "code": "EMAIL_EXISTS",
+    "message": "A user with this email already exists",
+    "status": 409,
+    "details": {
+      "email": "existing@company.com"
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Teams API](/docs/api-reference/rest-api/endpoints/teams) - Team management
+- [Authentication](/docs/api-reference/authentication) - Auth methods
+- [Projects API](/docs/api-reference/rest-api/endpoints/projects) - Project access

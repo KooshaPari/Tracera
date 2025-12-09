@@ -1,11 +1,779 @@
 ---
 title: "Risk Management"
-description: "Using TraceRTM for risk management."
+description: "Comprehensive guide to using TraceRTM for risk management and safety engineering."
 ---
 
 ## Overview
-- Track risks as first-class artifacts.
-- Link mitigations, owners, and controls to each risk.
 
-## Workflow
-- Create risk -> link to requirements and tests -> monitor status.
+Risk management is critical for ensuring product safety, regulatory compliance, and project success. TraceRTM provides comprehensive support for risk identification, assessment, mitigation tracking, and compliance verification throughout the product lifecycle.
+
+### Key Benefits for Risk Management
+
+- **Centralized Risk Repository**: Maintain all risks, hazards, and failure modes in one location
+- **Complete Traceability**: Link risks to requirements, design elements, mitigations, and verification activities
+- **Automated Impact Analysis**: Understand downstream effects when risks change
+- **Compliance Documentation**: Generate audit trails and compliance reports automatically
+- **Real-Time Monitoring**: Track risk status, mitigation effectiveness, and residual risk levels
+- **Standards Alignment**: Support for ISO 14971, ISO 26262, DO-178C, and other safety standards
+
+### Risk Management Workflows
+
+TraceRTM supports the complete risk management lifecycle:
+
+1. **Risk Identification** - Capture hazards, failure modes, and risk scenarios
+2. **Risk Assessment** - Evaluate severity, probability, and detectability
+3. **Risk Control** - Define and implement mitigation strategies
+4. **Risk Verification** - Validate mitigation effectiveness
+5. **Risk Monitoring** - Track residual risk and ongoing compliance
+
+---
+
+## Risk Identification and Assessment
+
+### Creating Risk Items
+
+Risks are first-class artifacts in TraceRTM with specialized attributes:
+
+```bash
+# Create a risk item
+rtm item create --type risk \
+  --title "Loss of power during critical operation" \
+  --description "System loses power during safety-critical procedure" \
+  --attributes '{
+    "severity": "catastrophic",
+    "probability": "remote",
+    "detectability": "high",
+    "risk_level": "medium",
+    "risk_owner": "safety-team@company.com",
+    "identified_by": "FMEA-2024-Q1",
+    "identification_date": "2024-01-15"
+  }'
+```
+
+### Risk Classification
+
+Organize risks by category for better analysis:
+
+**Risk Categories:**
+- Safety Risks (patient harm, user injury)
+- Security Risks (data breach, unauthorized access)
+- Performance Risks (system failure, degradation)
+- Operational Risks (process failure, resource unavailability)
+- Compliance Risks (regulatory non-conformance)
+- Environmental Risks (external factors, environmental conditions)
+
+**Risk Severity Levels:**
+- **Catastrophic**: Death or severe injury
+- **Critical**: Major injury or system failure
+- **Marginal**: Minor injury or degraded performance
+- **Negligible**: Minimal impact
+
+**Probability Levels:**
+- **Frequent**: Likely to occur repeatedly
+- **Probable**: Will occur several times
+- **Occasional**: Likely to occur sometime
+- **Remote**: Unlikely but possible
+- **Improbable**: So unlikely can be assumed not to occur
+
+### Risk Assessment Matrix
+
+Calculate risk priority using severity and probability:
+
+```
+Risk Priority Number (RPN) = Severity × Probability × Detectability
+```
+
+**Example Risk Assessment:**
+
+```bash
+# High severity, medium probability = HIGH risk
+rtm item update RISK-001 \
+  --attributes '{
+    "severity_score": 9,
+    "probability_score": 6,
+    "detectability_score": 4,
+    "rpn": 216,
+    "risk_level": "high",
+    "requires_mitigation": true
+  }'
+```
+
+---
+
+## Risk-to-Requirements Traceability
+
+### Linking Risks to System Requirements
+
+Establish clear traceability from identified risks to safety requirements:
+
+```bash
+# Link risk to safety requirement
+rtm link create RISK-001 REQ-SAFE-045 \
+  --type "mitigates" \
+  --rationale "Safety requirement implements redundant power supply"
+
+# Link risk to design requirement
+rtm link create RISK-001 REQ-DES-123 \
+  --type "addresses" \
+  --rationale "Design includes backup battery system"
+```
+
+### Risk-Driven Requirements
+
+Generate requirements directly from risk analysis:
+
+```bash
+# Create requirement from risk
+rtm item create --type requirement \
+  --title "System shall provide uninterruptible power backup" \
+  --description "Maintain critical functions for minimum 30 minutes during power loss" \
+  --parent RISK-001 \
+  --attributes '{
+    "priority": "critical",
+    "safety_related": true,
+    "derived_from_risk": "RISK-001",
+    "verification_method": "test"
+  }'
+```
+
+### Traceability Matrix for Risks
+
+View comprehensive risk traceability:
+
+```bash
+# Generate risk traceability matrix
+rtm matrix generate \
+  --rows risks \
+  --columns requirements,mitigations,tests \
+  --filter "risk_level:high,critical"
+
+# Export for compliance documentation
+rtm matrix export --format xlsx \
+  --output "Risk_Traceability_Matrix_2024.xlsx"
+```
+
+---
+
+## Mitigation Tracking and Verification
+
+### Defining Risk Mitigations
+
+Create mitigation items linked to risks:
+
+```bash
+# Create mitigation control
+rtm item create --type mitigation \
+  --title "Implement uninterruptible power supply (UPS)" \
+  --description "Install 1000VA UPS with 30-minute runtime capacity" \
+  --attributes '{
+    "mitigation_type": "design_control",
+    "implementation_status": "planned",
+    "responsible_team": "hardware-engineering",
+    "target_completion": "2024-06-30",
+    "cost_estimate": 5000,
+    "effectiveness": "high"
+  }'
+
+# Link mitigation to risk
+rtm link create RISK-001 MITG-001 \
+  --type "mitigated_by" \
+  --rationale "UPS eliminates power interruption risk"
+```
+
+### Mitigation Strategies
+
+**Types of Risk Controls:**
+
+1. **Elimination**: Remove the hazard entirely
+2. **Substitution**: Replace with less hazardous alternative
+3. **Engineering Controls**: Design-based risk reduction
+4. **Administrative Controls**: Procedures and training
+5. **Personal Protective Equipment**: User-based protection
+
+### Verification of Mitigation Effectiveness
+
+Link mitigations to verification activities:
+
+```bash
+# Create verification test for mitigation
+rtm item create --type test \
+  --title "UPS Power Transition Test" \
+  --description "Verify system continues operation during power loss" \
+  --attributes '{
+    "test_type": "verification",
+    "test_method": "demonstration",
+    "pass_criteria": "No interruption in critical functions",
+    "test_environment": "production_equivalent"
+  }'
+
+# Link test to mitigation
+rtm link create MITG-001 TEST-567 \
+  --type "verified_by" \
+  --rationale "Demonstrates UPS effectiveness"
+
+# Link test to original risk
+rtm link create RISK-001 TEST-567 \
+  --type "verifies_mitigation_for"
+```
+
+### Residual Risk Assessment
+
+After mitigation, assess remaining risk:
+
+```bash
+# Update risk with residual assessment
+rtm item update RISK-001 \
+  --attributes '{
+    "initial_rpn": 216,
+    "residual_severity": 9,
+    "residual_probability": 2,
+    "residual_detectability": 2,
+    "residual_rpn": 36,
+    "residual_risk_level": "low",
+    "risk_acceptable": true,
+    "acceptance_rationale": "Residual risk reduced to acceptable level per safety policy"
+  }'
+```
+
+---
+
+## FMEA Integration
+
+### Failure Mode and Effects Analysis
+
+TraceRTM supports comprehensive FMEA workflows:
+
+```bash
+# Create FMEA as a project
+rtm project create \
+  --name "Motor Control System FMEA" \
+  --type fmea \
+  --attributes '{
+    "fmea_type": "design",
+    "system": "motor_control",
+    "revision": "A",
+    "team_lead": "safety-engineer@company.com"
+  }'
+
+# Create failure mode
+rtm item create --type failure_mode \
+  --title "Motor overheating due to blocked ventilation" \
+  --attributes '{
+    "component": "DC Motor Assembly",
+    "function": "Provide rotational motion",
+    "failure_effect_local": "Motor shutdown",
+    "failure_effect_system": "Loss of primary actuation",
+    "failure_cause": "Ventilation ports blocked by debris",
+    "current_controls": "Temperature sensor with shutdown",
+    "severity": 8,
+    "occurrence": 4,
+    "detection": 6,
+    "rpn": 192
+  }'
+```
+
+### FMEA Recommendations
+
+Track recommended actions from FMEA:
+
+```bash
+# Create recommendation from FMEA
+rtm item create --type recommendation \
+  --title "Add redundant temperature monitoring" \
+  --description "Implement secondary temperature sensor with independent shutdown path" \
+  --attributes '{
+    "action_priority": "high",
+    "responsible": "hw-team",
+    "target_date": "2024-04-15",
+    "expected_rpn_reduction": "to 64"
+  }'
+
+# Link recommendation to failure mode
+rtm link create FM-123 REC-045 \
+  --type "addressed_by"
+```
+
+---
+
+## Hazard Analysis Workflows
+
+### System-Level Hazard Analysis
+
+Conduct preliminary hazard analysis (PHA):
+
+```bash
+# Create hazard
+rtm item create --type hazard \
+  --title "Electrical shock from exposed high voltage" \
+  --description "User contact with 240VAC power supply terminals" \
+  --attributes '{
+    "hazard_category": "electrical",
+    "exposure_scenario": "maintenance_access",
+    "harm": "severe_injury_or_death",
+    "hazard_level": "unacceptable"
+  }'
+
+# Link to system requirements
+rtm link create HAZ-007 REQ-SAFE-012 \
+  --type "controlled_by" \
+  --rationale "Requirement mandates insulated housing and safety interlocks"
+```
+
+### Hazard Analysis Techniques
+
+**Supported Analysis Methods:**
+- Preliminary Hazard Analysis (PHA)
+- Fault Tree Analysis (FTA)
+- Event Tree Analysis (ETA)
+- Hazard and Operability Study (HAZOP)
+- Failure Mode and Effects Analysis (FMEA)
+- Fault Hazard Analysis (FHA)
+
+### Medical Device Risk Management (ISO 14971)
+
+For medical devices, implement ISO 14971 workflows:
+
+```bash
+# Create risk management file structure
+rtm project create \
+  --name "Device Risk Management File" \
+  --type iso14971 \
+  --attributes '{
+    "device_name": "Infusion Pump Model XYZ",
+    "device_classification": "Class III",
+    "intended_use": "Controlled medication delivery",
+    "risk_management_plan": "RMP-2024-001"
+  }'
+
+# Define use-related hazard
+rtm item create --type hazard \
+  --title "Medication overdose due to programming error" \
+  --attributes '{
+    "hazardous_situation": "Incorrect dose rate entered",
+    "sequence_of_events": "User enters decimal point incorrectly",
+    "harm": "Patient overdose, potential fatality",
+    "p1_occurrence": 0.001,
+    "p2_situation_leads_to_harm": 0.5,
+    "severity": "catastrophic"
+  }'
+```
+
+---
+
+## Risk Monitoring and Reporting
+
+### Real-Time Risk Dashboard
+
+Monitor risk status across projects:
+
+```bash
+# Query open high-priority risks
+rtm query --type risk \
+  --filter "risk_level:high,critical AND status:open" \
+  --sort "rpn:desc"
+
+# Find risks missing mitigations
+rtm query --type risk \
+  --filter "requires_mitigation:true" \
+  --without-links mitigated_by
+
+# Track overdue mitigation actions
+rtm query --type mitigation \
+  --filter "status:in_progress AND target_completion:<today"
+```
+
+### Risk Reporting
+
+Generate compliance reports:
+
+```bash
+# Risk summary report
+rtm report generate risk-summary \
+  --project "Medical Device ABC" \
+  --include-sections "identification,assessment,mitigation,residual" \
+  --format pdf \
+  --output "Risk_Management_Report_Q1_2024.pdf"
+
+# FMEA report
+rtm report generate fmea \
+  --project "Motor Control FMEA" \
+  --sort-by rpn \
+  --include-charts \
+  --output "FMEA_Report.xlsx"
+
+# Traceability report for audits
+rtm report generate traceability \
+  --from-type hazard \
+  --to-type requirement,mitigation,test \
+  --compliance-standard iso14971 \
+  --output "Hazard_Traceability_Audit.pdf"
+```
+
+### Risk Metrics and KPIs
+
+Track risk management effectiveness:
+
+```bash
+# Calculate risk metrics
+rtm analytics risk-metrics \
+  --metrics "total_risks,high_risks,open_risks,mitigation_rate,rpn_reduction"
+
+# Risk closure velocity
+rtm analytics velocity \
+  --type risk \
+  --period monthly \
+  --chart "risk_closure_trend.png"
+
+# Mitigation effectiveness
+rtm analytics effectiveness \
+  --compare "initial_rpn,residual_rpn" \
+  --group-by risk_category
+```
+
+---
+
+## Compliance with Risk Standards
+
+### ISO 14971 - Medical Devices
+
+Complete risk management process:
+
+1. **Risk Analysis**
+   - Identify intended use and characteristics
+   - Identify hazards and hazardous situations
+   - Estimate risks for each hazardous situation
+
+2. **Risk Evaluation**
+   - Compare risks against acceptability criteria
+   - Determine if risk reduction required
+
+3. **Risk Control**
+   - Implement risk control measures
+   - Verify effectiveness
+   - Assess residual risk
+
+4. **Risk Management Review**
+   - Review completeness of risk management
+   - Gather production and post-production information
+
+### ISO 26262 - Automotive Safety
+
+Functional safety for automotive systems:
+
+```bash
+# Create ASIL-rated requirement
+rtm item create --type safety_requirement \
+  --title "Brake system shall detect sensor failure within 100ms" \
+  --attributes '{
+    "asil_level": "D",
+    "safety_goal": "SG-001",
+    "fault_tolerance": "single_point",
+    "verification_method": "test_and_analysis"
+  }'
+```
+
+### DO-178C - Airborne Software
+
+Software development for aviation:
+
+```bash
+# Create software safety requirement
+rtm item create --type software_requirement \
+  --title "Flight control software shall use dissimilar redundancy" \
+  --attributes '{
+    "dal_level": "A",
+    "derived": false,
+    "safety_related": true,
+    "verification_coverage": "MC/DC"
+  }'
+```
+
+### IEC 61508 - Functional Safety
+
+General functional safety standard:
+
+```bash
+# Create SIL-rated safety function
+rtm item create --type safety_function \
+  --title "Emergency shutdown system" \
+  --attributes '{
+    "sil_level": "3",
+    "architecture": "1oo2D",
+    "pfd_avg": 0.0001,
+    "proof_test_interval": "12_months"
+  }'
+```
+
+---
+
+## Real-World Risk Management Workflows
+
+### Workflow 1: New Product Risk Assessment
+
+**Step 1: Establish Risk Management Plan**
+
+```bash
+# Create risk management project
+rtm project create \
+  --name "Product XYZ Risk Management" \
+  --attributes '{
+    "risk_policy": "Corporate Safety Policy v2.1",
+    "acceptability_criteria": "RPN < 100 or severity < 7",
+    "review_frequency": "monthly"
+  }'
+```
+
+**Step 2: Identify Hazards**
+
+```bash
+# Import hazards from brainstorming session
+rtm import hazards \
+  --source "hazard_brainstorm.csv" \
+  --map "title:hazard_description,category:hazard_type"
+```
+
+**Step 3: Conduct FMEA**
+
+```bash
+# Create failure modes for each component
+rtm batch create --type failure_mode \
+  --from-template "fmea_template.json"
+```
+
+**Step 4: Define Risk Controls**
+
+```bash
+# Generate mitigation items for high-RPN failure modes
+rtm query --type failure_mode \
+  --filter "rpn:>125" \
+  --action "create_mitigation"
+```
+
+**Step 5: Verify Controls**
+
+```bash
+# Link mitigations to verification tests
+rtm link batch-create \
+  --from-type mitigation \
+  --to-type test \
+  --link-type verified_by
+```
+
+**Step 6: Review Residual Risk**
+
+```bash
+# Generate residual risk report
+rtm report generate residual-risk \
+  --acceptance-criteria "rpn<100" \
+  --highlight-unacceptable \
+  --output "Residual_Risk_Review.pdf"
+```
+
+### Workflow 2: Change Impact Risk Assessment
+
+When design changes occur, assess risk impact:
+
+```bash
+# Find all risks affected by requirement change
+rtm impact-analysis \
+  --item REQ-123 \
+  --trace-to risk,hazard \
+  --depth 3
+
+# Identify risks requiring reassessment
+rtm query --type risk \
+  --linked-to REQ-123 \
+  --action "flag_for_review"
+
+# Update risk assessments
+rtm batch update --type risk \
+  --filter "review_required:true" \
+  --set "reassessment_status:in_progress"
+```
+
+### Workflow 3: Post-Market Risk Monitoring
+
+Track field incidents and update risk assessments:
+
+```bash
+# Create incident report
+rtm item create --type incident \
+  --title "Device malfunction - Unit 12345" \
+  --attributes '{
+    "incident_date": "2024-03-15",
+    "severity": "minor_injury",
+    "root_cause": "under_investigation",
+    "devices_affected": 1
+  }'
+
+# Link to related risks
+rtm link create INCIDENT-089 RISK-034 \
+  --type "actualizes" \
+  --rationale "Incident confirms identified risk scenario"
+
+# Reassess risk probability based on field data
+rtm item update RISK-034 \
+  --attributes '{
+    "probability": "probable",
+    "probability_source": "field_data",
+    "reassessment_date": "2024-03-20",
+    "requires_new_mitigation": true
+  }'
+```
+
+---
+
+## Best Practices for Risk Managers
+
+### 1. Establish Clear Risk Criteria
+
+Define organizational risk acceptability early:
+
+```bash
+# Document risk acceptance criteria
+rtm item create --type policy \
+  --title "Risk Acceptability Matrix" \
+  --description "Corporate criteria for risk acceptance decisions" \
+  --attributes '{
+    "catastrophic_acceptable_probability": "improbable",
+    "critical_acceptable_probability": "remote",
+    "marginal_acceptable_probability": "occasional",
+    "alarp_region": "defined"
+  }'
+```
+
+### 2. Maintain Complete Traceability
+
+Every risk should trace to:
+- Source of identification (FMEA, hazard analysis, incident)
+- Affected requirements and design elements
+- Mitigation controls
+- Verification evidence
+- Risk acceptance decision
+
+### 3. Use Consistent Risk Assessment Methods
+
+Standardize assessment across organization:
+
+```bash
+# Create risk assessment template
+rtm template create risk-assessment \
+  --fields "severity,probability,detectability,rpn,risk_level" \
+  --validation "rpn = severity * probability * detectability"
+```
+
+### 4. Regular Risk Reviews
+
+Schedule periodic risk management reviews:
+
+```bash
+# Query risks due for review
+rtm query --type risk \
+  --filter "last_review:<90_days_ago" \
+  --notify risk-review-team
+```
+
+### 5. Leverage Impact Analysis
+
+Before approving changes, analyze risk impact:
+
+```bash
+# Automated change impact check
+rtm workflow create change-approval \
+  --trigger "requirement.status=pending_approval" \
+  --action "impact-analysis --trace-to risk" \
+  --condition "if high_risks_affected then require_safety_review"
+```
+
+### 6. Document Risk Decisions
+
+Maintain audit trail of risk acceptance:
+
+```bash
+# Record risk acceptance decision
+rtm item update RISK-045 \
+  --attributes '{
+    "risk_decision": "accepted",
+    "decision_rationale": "Residual RPN of 45 meets acceptability criteria",
+    "decision_maker": "Chief Safety Officer",
+    "decision_date": "2024-02-28",
+    "review_period": "annual"
+  }'
+```
+
+### 7. Integrate with Other Processes
+
+Connect risk management to:
+- Requirements management
+- Design control
+- Verification and validation
+- Change management
+- Incident management
+- CAPA (Corrective and Preventive Action)
+
+### 8. Train Your Team
+
+Ensure consistent risk management practices:
+
+```bash
+# Create training materials
+rtm export documentation \
+  --topic risk-management \
+  --format "training_guide" \
+  --include-examples \
+  --output "Risk_Management_Training.pdf"
+```
+
+### 9. Automate Risk Monitoring
+
+Set up automated alerts and dashboards:
+
+```bash
+# Configure risk monitoring alerts
+rtm alert create \
+  --name "High Risk Opened" \
+  --trigger "risk.created AND risk_level:high,critical" \
+  --notify "safety-team@company.com"
+
+rtm alert create \
+  --name "Mitigation Overdue" \
+  --trigger "mitigation.target_completion < today AND status != completed" \
+  --notify "responsible_team"
+```
+
+### 10. Plan for Continuous Improvement
+
+Use risk data to improve products and processes:
+
+```bash
+# Analyze risk trends
+rtm analytics trends \
+  --type risk \
+  --group-by category,root_cause \
+  --period quarterly \
+  --identify-patterns
+
+# Generate lessons learned
+rtm report generate lessons-learned \
+  --filter "risks.status:closed" \
+  --time-range "last_year" \
+  --output "Risk_Lessons_Learned_2024.pdf"
+```
+
+---
+
+## Conclusion
+
+TraceRTM provides comprehensive support for risk management and safety engineering throughout the product lifecycle. By maintaining complete traceability from hazards through mitigations to verification, you ensure regulatory compliance, product safety, and audit readiness.
+
+**Key Takeaways:**
+- Treat risks as first-class artifacts with full lifecycle management
+- Establish clear traceability from risks to requirements, controls, and verification
+- Leverage automation for impact analysis and compliance reporting
+- Integrate risk management with design, verification, and change processes
+- Maintain comprehensive documentation for regulatory submissions and audits
+
+For more information, see:
+- [Compliance Standards](/docs/wiki/use-cases/compliance)
+- [Traceability Best Practices](/docs/wiki/concepts/traceability)
+- [Reporting and Analytics](/docs/wiki/features/reporting)

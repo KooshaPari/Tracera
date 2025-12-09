@@ -1,0 +1,1824 @@
+{
+  "manifest_version": "1.0",
+  "created_at": "2025-12-04T02:37:50.677933",
+  "summary": {
+    "total_backups": 201,
+    "total_size_bytes": 61911527,
+    "total_size_display": "59.0M",
+    "date_range": {
+      "earliest": "2025-12-02 18:58:10",
+      "latest": "2025-12-03 22:47:08"
+    }
+  },
+  "backups": [
+    {
+      "filename": "tracertm_backup_20251202_185810.json.gz",
+      "timestamp": "20251202_185810",
+      "date": "2025-12-02 18:58:10",
+      "size_bytes": 203,
+      "size_display": "203B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_185810.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_190035.json.gz",
+      "timestamp": "20251202_190035",
+      "date": "2025-12-02 19:00:35",
+      "size_bytes": 204,
+      "size_display": "204B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_190035.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_191833.json.gz",
+      "timestamp": "20251202_191833",
+      "date": "2025-12-02 19:18:33",
+      "size_bytes": 204,
+      "size_display": "204B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_191833.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_191834.json.gz",
+      "timestamp": "20251202_191834",
+      "date": "2025-12-02 19:18:34",
+      "size_bytes": 203,
+      "size_display": "203B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_191834.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_214145.json.gz",
+      "timestamp": "20251202_214145",
+      "date": "2025-12-02 21:41:45",
+      "size_bytes": 204,
+      "size_display": "204B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_214145.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_214146.json.gz",
+      "timestamp": "20251202_214146",
+      "date": "2025-12-02 21:41:46",
+      "size_bytes": 204,
+      "size_display": "204B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_214146.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_220947.json.gz",
+      "timestamp": "20251202_220947",
+      "date": "2025-12-02 22:09:47",
+      "size_bytes": 196369,
+      "size_display": "191K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_220947.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_220954.json.gz",
+      "timestamp": "20251202_220954",
+      "date": "2025-12-02 22:09:54",
+      "size_bytes": 196371,
+      "size_display": "191K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_220954.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_221233.json.gz",
+      "timestamp": "20251202_221233",
+      "date": "2025-12-02 22:12:33",
+      "size_bytes": 201792,
+      "size_display": "197K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_221233.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_221331.json.gz",
+      "timestamp": "20251202_221331",
+      "date": "2025-12-02 22:13:31",
+      "size_bytes": 206121,
+      "size_display": "201K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_221331.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_221332.json.gz",
+      "timestamp": "20251202_221332",
+      "date": "2025-12-02 22:13:32",
+      "size_bytes": 206121,
+      "size_display": "201K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_221332.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_221609.json.gz",
+      "timestamp": "20251202_221609",
+      "date": "2025-12-02 22:16:09",
+      "size_bytes": 211257,
+      "size_display": "206K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_221609.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_231044.json.gz",
+      "timestamp": "20251202_231044",
+      "date": "2025-12-02 23:10:44",
+      "size_bytes": 214155,
+      "size_display": "209K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_231044.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_231045.json.gz",
+      "timestamp": "20251202_231045",
+      "date": "2025-12-02 23:10:45",
+      "size_bytes": 214157,
+      "size_display": "209K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_231045.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_231129.json.gz",
+      "timestamp": "20251202_231129",
+      "date": "2025-12-02 23:11:29",
+      "size_bytes": 218688,
+      "size_display": "213K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_231129.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_231411.json.gz",
+      "timestamp": "20251202_231411",
+      "date": "2025-12-02 23:14:11",
+      "size_bytes": 223065,
+      "size_display": "217K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_231411.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_231503.json.gz",
+      "timestamp": "20251202_231503",
+      "date": "2025-12-02 23:15:03",
+      "size_bytes": 227930,
+      "size_display": "222K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_231503.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_233350.json.gz",
+      "timestamp": "20251202_233350",
+      "date": "2025-12-02 23:33:50",
+      "size_bytes": 232741,
+      "size_display": "227K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_233350.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_233351.json.gz",
+      "timestamp": "20251202_233351",
+      "date": "2025-12-02 23:33:51",
+      "size_bytes": 232739,
+      "size_display": "227K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_233351.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_233804.json.gz",
+      "timestamp": "20251202_233804",
+      "date": "2025-12-02 23:38:04",
+      "size_bytes": 236914,
+      "size_display": "231K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_233804.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_233922.json.gz",
+      "timestamp": "20251202_233922",
+      "date": "2025-12-02 23:39:22",
+      "size_bytes": 240752,
+      "size_display": "235K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_233922.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234347.json.gz",
+      "timestamp": "20251202_234347",
+      "date": "2025-12-02 23:43:47",
+      "size_bytes": 245765,
+      "size_display": "240K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234347.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234348.json.gz",
+      "timestamp": "20251202_234348",
+      "date": "2025-12-02 23:43:48",
+      "size_bytes": 245766,
+      "size_display": "240K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234348.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234431.json.gz",
+      "timestamp": "20251202_234431",
+      "date": "2025-12-02 23:44:31",
+      "size_bytes": 249698,
+      "size_display": "243K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234431.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234432.json.gz",
+      "timestamp": "20251202_234432",
+      "date": "2025-12-02 23:44:32",
+      "size_bytes": 249699,
+      "size_display": "243K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234432.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234546.json.gz",
+      "timestamp": "20251202_234546",
+      "date": "2025-12-02 23:45:46",
+      "size_bytes": 254235,
+      "size_display": "248K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234546.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234547.json.gz",
+      "timestamp": "20251202_234547",
+      "date": "2025-12-02 23:45:47",
+      "size_bytes": 254234,
+      "size_display": "248K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234547.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234628.json.gz",
+      "timestamp": "20251202_234628",
+      "date": "2025-12-02 23:46:28",
+      "size_bytes": 258902,
+      "size_display": "252K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234628.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234629.json.gz",
+      "timestamp": "20251202_234629",
+      "date": "2025-12-02 23:46:29",
+      "size_bytes": 258902,
+      "size_display": "252K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234629.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_234718.json.gz",
+      "timestamp": "20251202_234718",
+      "date": "2025-12-02 23:47:18",
+      "size_bytes": 262814,
+      "size_display": "256K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_234718.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235019.json.gz",
+      "timestamp": "20251202_235019",
+      "date": "2025-12-02 23:50:19",
+      "size_bytes": 267442,
+      "size_display": "261K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235019.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235028.json.gz",
+      "timestamp": "20251202_235028",
+      "date": "2025-12-02 23:50:28",
+      "size_bytes": 270719,
+      "size_display": "264K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235028.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235029.json.gz",
+      "timestamp": "20251202_235029",
+      "date": "2025-12-02 23:50:29",
+      "size_bytes": 270720,
+      "size_display": "264K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235029.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235405.json.gz",
+      "timestamp": "20251202_235405",
+      "date": "2025-12-02 23:54:05",
+      "size_bytes": 275476,
+      "size_display": "269K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235405.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235506.json.gz",
+      "timestamp": "20251202_235506",
+      "date": "2025-12-02 23:55:06",
+      "size_bytes": 279931,
+      "size_display": "273K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235506.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235507.json.gz",
+      "timestamp": "20251202_235507",
+      "date": "2025-12-02 23:55:07",
+      "size_bytes": 279930,
+      "size_display": "273K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235507.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235717.json.gz",
+      "timestamp": "20251202_235717",
+      "date": "2025-12-02 23:57:17",
+      "size_bytes": 286882,
+      "size_display": "280K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235717.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235828.json.gz",
+      "timestamp": "20251202_235828",
+      "date": "2025-12-02 23:58:28",
+      "size_bytes": 291990,
+      "size_display": "285K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235828.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235926.json.gz",
+      "timestamp": "20251202_235926",
+      "date": "2025-12-02 23:59:26",
+      "size_bytes": 297249,
+      "size_display": "290K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235926.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251202_235928.json.gz",
+      "timestamp": "20251202_235928",
+      "date": "2025-12-02 23:59:28",
+      "size_bytes": 297249,
+      "size_display": "290K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251202_235928.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_005804.json.gz",
+      "timestamp": "20251203_005804",
+      "date": "2025-12-03 00:58:04",
+      "size_bytes": 300323,
+      "size_display": "293K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_005804.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_005805.json.gz",
+      "timestamp": "20251203_005805",
+      "date": "2025-12-03 00:58:05",
+      "size_bytes": 300324,
+      "size_display": "293K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_005805.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_012338.json.gz",
+      "timestamp": "20251203_012338",
+      "date": "2025-12-03 01:23:38",
+      "size_bytes": 303251,
+      "size_display": "296K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_012338.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_012339.json.gz",
+      "timestamp": "20251203_012339",
+      "date": "2025-12-03 01:23:39",
+      "size_bytes": 303252,
+      "size_display": "296K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_012339.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_012340.json.gz",
+      "timestamp": "20251203_012340",
+      "date": "2025-12-03 01:23:40",
+      "size_bytes": 303251,
+      "size_display": "296K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_012340.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_015652.json.gz",
+      "timestamp": "20251203_015652",
+      "date": "2025-12-03 01:56:52",
+      "size_bytes": 312784,
+      "size_display": "305K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_015652.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_015653.json.gz",
+      "timestamp": "20251203_015653",
+      "date": "2025-12-03 01:56:53",
+      "size_bytes": 312784,
+      "size_display": "305K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_015653.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_024458.json.gz",
+      "timestamp": "20251203_024458",
+      "date": "2025-12-03 02:44:58",
+      "size_bytes": 319508,
+      "size_display": "312K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_024458.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_024553.json.gz",
+      "timestamp": "20251203_024553",
+      "date": "2025-12-03 02:45:53",
+      "size_bytes": 324688,
+      "size_display": "317K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_024553.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_024554.json.gz",
+      "timestamp": "20251203_024554",
+      "date": "2025-12-03 02:45:54",
+      "size_bytes": 324688,
+      "size_display": "317K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_024554.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025356.json.gz",
+      "timestamp": "20251203_025356",
+      "date": "2025-12-03 02:53:56",
+      "size_bytes": 328351,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025356.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025357.json.gz",
+      "timestamp": "20251203_025357",
+      "date": "2025-12-03 02:53:57",
+      "size_bytes": 328352,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025357.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025430.json.gz",
+      "timestamp": "20251203_025430",
+      "date": "2025-12-03 02:54:30",
+      "size_bytes": 328352,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025430.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025452.json.gz",
+      "timestamp": "20251203_025452",
+      "date": "2025-12-03 02:54:52",
+      "size_bytes": 328466,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025452.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025500.json.gz",
+      "timestamp": "20251203_025500",
+      "date": "2025-12-03 02:55:00",
+      "size_bytes": 328489,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025500.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025521.json.gz",
+      "timestamp": "20251203_025521",
+      "date": "2025-12-03 02:55:21",
+      "size_bytes": 328520,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025521.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025629.json.gz",
+      "timestamp": "20251203_025629",
+      "date": "2025-12-03 02:56:29",
+      "size_bytes": 328541,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025629.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025638.json.gz",
+      "timestamp": "20251203_025638",
+      "date": "2025-12-03 02:56:38",
+      "size_bytes": 328569,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025638.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025744.json.gz",
+      "timestamp": "20251203_025744",
+      "date": "2025-12-03 02:57:44",
+      "size_bytes": 328595,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025744.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025752.json.gz",
+      "timestamp": "20251203_025752",
+      "date": "2025-12-03 02:57:52",
+      "size_bytes": 328620,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025752.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025753.json.gz",
+      "timestamp": "20251203_025753",
+      "date": "2025-12-03 02:57:53",
+      "size_bytes": 328620,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025753.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025809.json.gz",
+      "timestamp": "20251203_025809",
+      "date": "2025-12-03 02:58:09",
+      "size_bytes": 328642,
+      "size_display": "320K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025809.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025848.json.gz",
+      "timestamp": "20251203_025848",
+      "date": "2025-12-03 02:58:48",
+      "size_bytes": 330220,
+      "size_display": "322K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025848.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025849.json.gz",
+      "timestamp": "20251203_025849",
+      "date": "2025-12-03 02:58:49",
+      "size_bytes": 330246,
+      "size_display": "322K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025849.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_025850.json.gz",
+      "timestamp": "20251203_025850",
+      "date": "2025-12-03 02:58:50",
+      "size_bytes": 330243,
+      "size_display": "322K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_025850.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030136.json.gz",
+      "timestamp": "20251203_030136",
+      "date": "2025-12-03 03:01:36",
+      "size_bytes": 335660,
+      "size_display": "327K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030136.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030137.json.gz",
+      "timestamp": "20251203_030137",
+      "date": "2025-12-03 03:01:37",
+      "size_bytes": 335694,
+      "size_display": "327K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030137.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030138.json.gz",
+      "timestamp": "20251203_030138",
+      "date": "2025-12-03 03:01:38",
+      "size_bytes": 335695,
+      "size_display": "327K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030138.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030139.json.gz",
+      "timestamp": "20251203_030139",
+      "date": "2025-12-03 03:01:39",
+      "size_bytes": 335694,
+      "size_display": "327K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030139.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030247.json.gz",
+      "timestamp": "20251203_030247",
+      "date": "2025-12-03 03:02:47",
+      "size_bytes": 338770,
+      "size_display": "330K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030247.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030636.json.gz",
+      "timestamp": "20251203_030636",
+      "date": "2025-12-03 03:06:36",
+      "size_bytes": 338764,
+      "size_display": "330K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030636.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030647.json.gz",
+      "timestamp": "20251203_030647",
+      "date": "2025-12-03 03:06:47",
+      "size_bytes": 338764,
+      "size_display": "330K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030647.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030750.json.gz",
+      "timestamp": "20251203_030750",
+      "date": "2025-12-03 03:07:50",
+      "size_bytes": 160,
+      "size_display": "160B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030750.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030836.json.gz",
+      "timestamp": "20251203_030836",
+      "date": "2025-12-03 03:08:36",
+      "size_bytes": 339311,
+      "size_display": "331K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030836.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030837.json.gz",
+      "timestamp": "20251203_030837",
+      "date": "2025-12-03 03:08:37",
+      "size_bytes": 339339,
+      "size_display": "331K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030837.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030838.json.gz",
+      "timestamp": "20251203_030838",
+      "date": "2025-12-03 03:08:38",
+      "size_bytes": 339337,
+      "size_display": "331K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030838.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030922.json.gz",
+      "timestamp": "20251203_030922",
+      "date": "2025-12-03 03:09:22",
+      "size_bytes": 344972,
+      "size_display": "336K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030922.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030923.json.gz",
+      "timestamp": "20251203_030923",
+      "date": "2025-12-03 03:09:23",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030923.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_030924.json.gz",
+      "timestamp": "20251203_030924",
+      "date": "2025-12-03 03:09:24",
+      "size_bytes": 344992,
+      "size_display": "336K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_030924.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031059.json.gz",
+      "timestamp": "20251203_031059",
+      "date": "2025-12-03 03:10:59",
+      "size_bytes": 349916,
+      "size_display": "341K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031059.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031100.json.gz",
+      "timestamp": "20251203_031100",
+      "date": "2025-12-03 03:11:00",
+      "size_bytes": 349917,
+      "size_display": "341K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031100.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031101.json.gz",
+      "timestamp": "20251203_031101",
+      "date": "2025-12-03 03:11:01",
+      "size_bytes": 349937,
+      "size_display": "341K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031101.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031102.json.gz",
+      "timestamp": "20251203_031102",
+      "date": "2025-12-03 03:11:02",
+      "size_bytes": 349937,
+      "size_display": "341K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031102.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031350.json.gz",
+      "timestamp": "20251203_031350",
+      "date": "2025-12-03 03:13:50",
+      "size_bytes": 354167,
+      "size_display": "345K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031350.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031351.json.gz",
+      "timestamp": "20251203_031351",
+      "date": "2025-12-03 03:13:51",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031351.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031352.json.gz",
+      "timestamp": "20251203_031352",
+      "date": "2025-12-03 03:13:52",
+      "size_bytes": 354181,
+      "size_display": "345K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031352.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031434.json.gz",
+      "timestamp": "20251203_031434",
+      "date": "2025-12-03 03:14:34",
+      "size_bytes": 359248,
+      "size_display": "350K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031434.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031435.json.gz",
+      "timestamp": "20251203_031435",
+      "date": "2025-12-03 03:14:35",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031435.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_031436.json.gz",
+      "timestamp": "20251203_031436",
+      "date": "2025-12-03 03:14:36",
+      "size_bytes": 359275,
+      "size_display": "350K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_031436.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032447.json.gz",
+      "timestamp": "20251203_032447",
+      "date": "2025-12-03 03:24:47",
+      "size_bytes": 364876,
+      "size_display": "356K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032447.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032448.json.gz",
+      "timestamp": "20251203_032448",
+      "date": "2025-12-03 03:24:48",
+      "size_bytes": 364877,
+      "size_display": "356K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032448.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032449.json.gz",
+      "timestamp": "20251203_032449",
+      "date": "2025-12-03 03:24:49",
+      "size_bytes": 364901,
+      "size_display": "356K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032449.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032450.json.gz",
+      "timestamp": "20251203_032450",
+      "date": "2025-12-03 03:24:50",
+      "size_bytes": 364902,
+      "size_display": "356K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032450.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032610.json.gz",
+      "timestamp": "20251203_032610",
+      "date": "2025-12-03 03:26:10",
+      "size_bytes": 368947,
+      "size_display": "360K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032610.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032611.json.gz",
+      "timestamp": "20251203_032611",
+      "date": "2025-12-03 03:26:11",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032611.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032612.json.gz",
+      "timestamp": "20251203_032612",
+      "date": "2025-12-03 03:26:12",
+      "size_bytes": 368965,
+      "size_display": "360K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032612.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032737.json.gz",
+      "timestamp": "20251203_032737",
+      "date": "2025-12-03 03:27:37",
+      "size_bytes": 372737,
+      "size_display": "364K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032737.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032738.json.gz",
+      "timestamp": "20251203_032738",
+      "date": "2025-12-03 03:27:38",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032738.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032739.json.gz",
+      "timestamp": "20251203_032739",
+      "date": "2025-12-03 03:27:39",
+      "size_bytes": 372760,
+      "size_display": "364K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032739.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032740.json.gz",
+      "timestamp": "20251203_032740",
+      "date": "2025-12-03 03:27:40",
+      "size_bytes": 372760,
+      "size_display": "364K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032740.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032844.json.gz",
+      "timestamp": "20251203_032844",
+      "date": "2025-12-03 03:28:44",
+      "size_bytes": 378295,
+      "size_display": "369K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032844.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032846.json.gz",
+      "timestamp": "20251203_032846",
+      "date": "2025-12-03 03:28:46",
+      "size_bytes": 378324,
+      "size_display": "369K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032846.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_032847.json.gz",
+      "timestamp": "20251203_032847",
+      "date": "2025-12-03 03:28:47",
+      "size_bytes": 378320,
+      "size_display": "369K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_032847.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_033104.json.gz",
+      "timestamp": "20251203_033104",
+      "date": "2025-12-03 03:31:04",
+      "size_bytes": 383117,
+      "size_display": "374K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_033104.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_033105.json.gz",
+      "timestamp": "20251203_033105",
+      "date": "2025-12-03 03:31:05",
+      "size_bytes": 178,
+      "size_display": "178B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_033105.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_033106.json.gz",
+      "timestamp": "20251203_033106",
+      "date": "2025-12-03 03:31:06",
+      "size_bytes": 383135,
+      "size_display": "374K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_033106.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_131555.json.gz",
+      "timestamp": "20251203_131555",
+      "date": "2025-12-03 13:15:55",
+      "size_bytes": 387425,
+      "size_display": "378K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_131555.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_131557.json.gz",
+      "timestamp": "20251203_131557",
+      "date": "2025-12-03 13:15:57",
+      "size_bytes": 387425,
+      "size_display": "378K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_131557.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_131600.json.gz",
+      "timestamp": "20251203_131600",
+      "date": "2025-12-03 13:16:00",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_131600.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_131601.json.gz",
+      "timestamp": "20251203_131601",
+      "date": "2025-12-03 13:16:01",
+      "size_bytes": 387447,
+      "size_display": "378K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_131601.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_131604.json.gz",
+      "timestamp": "20251203_131604",
+      "date": "2025-12-03 13:16:04",
+      "size_bytes": 387447,
+      "size_display": "378K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_131604.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_133903.json.gz",
+      "timestamp": "20251203_133903",
+      "date": "2025-12-03 13:39:03",
+      "size_bytes": 391054,
+      "size_display": "381K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_133903.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_133904.json.gz",
+      "timestamp": "20251203_133904",
+      "date": "2025-12-03 13:39:04",
+      "size_bytes": 391051,
+      "size_display": "381K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_133904.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151125.json.gz",
+      "timestamp": "20251203_151125",
+      "date": "2025-12-03 15:11:25",
+      "size_bytes": 392613,
+      "size_display": "383K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151125.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151126.json.gz",
+      "timestamp": "20251203_151126",
+      "date": "2025-12-03 15:11:26",
+      "size_bytes": 392613,
+      "size_display": "383K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151126.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151129.json.gz",
+      "timestamp": "20251203_151129",
+      "date": "2025-12-03 15:11:29",
+      "size_bytes": 180,
+      "size_display": "180B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151129.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151130.json.gz",
+      "timestamp": "20251203_151130",
+      "date": "2025-12-03 15:11:30",
+      "size_bytes": 392636,
+      "size_display": "383K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151130.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151133.json.gz",
+      "timestamp": "20251203_151133",
+      "date": "2025-12-03 15:11:33",
+      "size_bytes": 392636,
+      "size_display": "383K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151133.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151313.json.gz",
+      "timestamp": "20251203_151313",
+      "date": "2025-12-03 15:13:13",
+      "size_bytes": 397135,
+      "size_display": "387K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151313.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151315.json.gz",
+      "timestamp": "20251203_151315",
+      "date": "2025-12-03 15:13:15",
+      "size_bytes": 397164,
+      "size_display": "387K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151315.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_151316.json.gz",
+      "timestamp": "20251203_151316",
+      "date": "2025-12-03 15:13:16",
+      "size_bytes": 397162,
+      "size_display": "387K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_151316.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201451.json.gz",
+      "timestamp": "20251203_201451",
+      "date": "2025-12-03 20:14:51",
+      "size_bytes": 402439,
+      "size_display": "393K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201451.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201452.json.gz",
+      "timestamp": "20251203_201452",
+      "date": "2025-12-03 20:14:52",
+      "size_bytes": 402438,
+      "size_display": "393K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201452.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201453.json.gz",
+      "timestamp": "20251203_201453",
+      "date": "2025-12-03 20:14:53",
+      "size_bytes": 178,
+      "size_display": "178B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201453.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201454.json.gz",
+      "timestamp": "20251203_201454",
+      "date": "2025-12-03 20:14:54",
+      "size_bytes": 402466,
+      "size_display": "393K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201454.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201616.json.gz",
+      "timestamp": "20251203_201616",
+      "date": "2025-12-03 20:16:16",
+      "size_bytes": 405024,
+      "size_display": "395K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201616.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201617.json.gz",
+      "timestamp": "20251203_201617",
+      "date": "2025-12-03 20:16:17",
+      "size_bytes": 405026,
+      "size_display": "395K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201617.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201620.json.gz",
+      "timestamp": "20251203_201620",
+      "date": "2025-12-03 20:16:20",
+      "size_bytes": 159,
+      "size_display": "159B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201620.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201621.json.gz",
+      "timestamp": "20251203_201621",
+      "date": "2025-12-03 20:16:21",
+      "size_bytes": 405052,
+      "size_display": "395K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201621.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_201623.json.gz",
+      "timestamp": "20251203_201623",
+      "date": "2025-12-03 20:16:23",
+      "size_bytes": 405053,
+      "size_display": "395K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_201623.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_202040.json.gz",
+      "timestamp": "20251203_202040",
+      "date": "2025-12-03 20:20:40",
+      "size_bytes": 410863,
+      "size_display": "401K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_202040.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_202041.json.gz",
+      "timestamp": "20251203_202041",
+      "date": "2025-12-03 20:20:41",
+      "size_bytes": 410871,
+      "size_display": "401K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_202041.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_202043.json.gz",
+      "timestamp": "20251203_202043",
+      "date": "2025-12-03 20:20:43",
+      "size_bytes": 160,
+      "size_display": "160B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_202043.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_202047.json.gz",
+      "timestamp": "20251203_202047",
+      "date": "2025-12-03 20:20:47",
+      "size_bytes": 414525,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_202047.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_202048.json.gz",
+      "timestamp": "20251203_202048",
+      "date": "2025-12-03 20:20:48",
+      "size_bytes": 414529,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_202048.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213808.json.gz",
+      "timestamp": "20251203_213808",
+      "date": "2025-12-03 21:38:08",
+      "size_bytes": 414644,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213808.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213809.json.gz",
+      "timestamp": "20251203_213809",
+      "date": "2025-12-03 21:38:09",
+      "size_bytes": 414643,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213809.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213812.json.gz",
+      "timestamp": "20251203_213812",
+      "date": "2025-12-03 21:38:12",
+      "size_bytes": 414641,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213812.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213814.json.gz",
+      "timestamp": "20251203_213814",
+      "date": "2025-12-03 21:38:14",
+      "size_bytes": 414659,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213814.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213821.json.gz",
+      "timestamp": "20251203_213821",
+      "date": "2025-12-03 21:38:21",
+      "size_bytes": 155,
+      "size_display": "155B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213821.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213823.json.gz",
+      "timestamp": "20251203_213823",
+      "date": "2025-12-03 21:38:23",
+      "size_bytes": 414675,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213823.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_213826.json.gz",
+      "timestamp": "20251203_213826",
+      "date": "2025-12-03 21:38:26",
+      "size_bytes": 414675,
+      "size_display": "404K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_213826.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_214955.json.gz",
+      "timestamp": "20251203_214955",
+      "date": "2025-12-03 21:49:55",
+      "size_bytes": 418534,
+      "size_display": "408K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_214955.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_214956.json.gz",
+      "timestamp": "20251203_214956",
+      "date": "2025-12-03 21:49:56",
+      "size_bytes": 418533,
+      "size_display": "408K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_214956.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_214959.json.gz",
+      "timestamp": "20251203_214959",
+      "date": "2025-12-03 21:49:59",
+      "size_bytes": 418534,
+      "size_display": "408K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_214959.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_215001.json.gz",
+      "timestamp": "20251203_215001",
+      "date": "2025-12-03 21:50:01",
+      "size_bytes": 418544,
+      "size_display": "408K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_215001.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_215009.json.gz",
+      "timestamp": "20251203_215009",
+      "date": "2025-12-03 21:50:09",
+      "size_bytes": 160,
+      "size_display": "160B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_215009.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_215010.json.gz",
+      "timestamp": "20251203_215010",
+      "date": "2025-12-03 21:50:10",
+      "size_bytes": 418569,
+      "size_display": "408K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_215010.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_215013.json.gz",
+      "timestamp": "20251203_215013",
+      "date": "2025-12-03 21:50:13",
+      "size_bytes": 418567,
+      "size_display": "408K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_215013.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222051.json.gz",
+      "timestamp": "20251203_222051",
+      "date": "2025-12-03 22:20:51",
+      "size_bytes": 421591,
+      "size_display": "411K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222051.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222052.json.gz",
+      "timestamp": "20251203_222052",
+      "date": "2025-12-03 22:20:52",
+      "size_bytes": 421589,
+      "size_display": "411K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222052.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222054.json.gz",
+      "timestamp": "20251203_222054",
+      "date": "2025-12-03 22:20:54",
+      "size_bytes": 421592,
+      "size_display": "411K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222054.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222055.json.gz",
+      "timestamp": "20251203_222055",
+      "date": "2025-12-03 22:20:55",
+      "size_bytes": 421598,
+      "size_display": "411K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222055.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222102.json.gz",
+      "timestamp": "20251203_222102",
+      "date": "2025-12-03 22:21:02",
+      "size_bytes": 156,
+      "size_display": "156B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222102.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222103.json.gz",
+      "timestamp": "20251203_222103",
+      "date": "2025-12-03 22:21:03",
+      "size_bytes": 421602,
+      "size_display": "411K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222103.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222106.json.gz",
+      "timestamp": "20251203_222106",
+      "date": "2025-12-03 22:21:06",
+      "size_bytes": 421602,
+      "size_display": "411K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222106.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222726.json.gz",
+      "timestamp": "20251203_222726",
+      "date": "2025-12-03 22:27:26",
+      "size_bytes": 425626,
+      "size_display": "415K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222726.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222727.json.gz",
+      "timestamp": "20251203_222727",
+      "date": "2025-12-03 22:27:27",
+      "size_bytes": 425635,
+      "size_display": "415K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222727.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222731.json.gz",
+      "timestamp": "20251203_222731",
+      "date": "2025-12-03 22:27:31",
+      "size_bytes": 159,
+      "size_display": "159B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222731.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222733.json.gz",
+      "timestamp": "20251203_222733",
+      "date": "2025-12-03 22:27:33",
+      "size_bytes": 425651,
+      "size_display": "415K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222733.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222734.json.gz",
+      "timestamp": "20251203_222734",
+      "date": "2025-12-03 22:27:34",
+      "size_bytes": 425650,
+      "size_display": "415K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222734.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222951.json.gz",
+      "timestamp": "20251203_222951",
+      "date": "2025-12-03 22:29:51",
+      "size_bytes": 429286,
+      "size_display": "419K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222951.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222952.json.gz",
+      "timestamp": "20251203_222952",
+      "date": "2025-12-03 22:29:52",
+      "size_bytes": 429295,
+      "size_display": "419K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222952.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_222957.json.gz",
+      "timestamp": "20251203_222957",
+      "date": "2025-12-03 22:29:57",
+      "size_bytes": 160,
+      "size_display": "160B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_222957.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223000.json.gz",
+      "timestamp": "20251203_223000",
+      "date": "2025-12-03 22:30:00",
+      "size_bytes": 429310,
+      "size_display": "419K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223000.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223001.json.gz",
+      "timestamp": "20251203_223001",
+      "date": "2025-12-03 22:30:01",
+      "size_bytes": 429310,
+      "size_display": "419K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223001.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223249.json.gz",
+      "timestamp": "20251203_223249",
+      "date": "2025-12-03 22:32:49",
+      "size_bytes": 432875,
+      "size_display": "422K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223249.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223250.json.gz",
+      "timestamp": "20251203_223250",
+      "date": "2025-12-03 22:32:50",
+      "size_bytes": 432874,
+      "size_display": "422K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223250.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223251.json.gz",
+      "timestamp": "20251203_223251",
+      "date": "2025-12-03 22:32:51",
+      "size_bytes": 432884,
+      "size_display": "422K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223251.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223259.json.gz",
+      "timestamp": "20251203_223259",
+      "date": "2025-12-03 22:32:59",
+      "size_bytes": 160,
+      "size_display": "160B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223259.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223405.json.gz",
+      "timestamp": "20251203_223405",
+      "date": "2025-12-03 22:34:05",
+      "size_bytes": 438021,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223405.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223407.json.gz",
+      "timestamp": "20251203_223407",
+      "date": "2025-12-03 22:34:07",
+      "size_bytes": 438021,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223407.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223413.json.gz",
+      "timestamp": "20251203_223413",
+      "date": "2025-12-03 22:34:13",
+      "size_bytes": 438020,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223413.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223419.json.gz",
+      "timestamp": "20251203_223419",
+      "date": "2025-12-03 22:34:19",
+      "size_bytes": 438030,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223419.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223436.json.gz",
+      "timestamp": "20251203_223436",
+      "date": "2025-12-03 22:34:36",
+      "size_bytes": 438047,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223436.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223437.json.gz",
+      "timestamp": "20251203_223437",
+      "date": "2025-12-03 22:34:37",
+      "size_bytes": 438048,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223437.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223438.json.gz",
+      "timestamp": "20251203_223438",
+      "date": "2025-12-03 22:34:38",
+      "size_bytes": 438055,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223438.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223451.json.gz",
+      "timestamp": "20251203_223451",
+      "date": "2025-12-03 22:34:51",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223451.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223452.json.gz",
+      "timestamp": "20251203_223452",
+      "date": "2025-12-03 22:34:52",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223452.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223503.json.gz",
+      "timestamp": "20251203_223503",
+      "date": "2025-12-03 22:35:03",
+      "size_bytes": 438072,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223503.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223504.json.gz",
+      "timestamp": "20251203_223504",
+      "date": "2025-12-03 22:35:04",
+      "size_bytes": 438067,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223504.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223505.json.gz",
+      "timestamp": "20251203_223505",
+      "date": "2025-12-03 22:35:05",
+      "size_bytes": 438073,
+      "size_display": "427K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223505.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223510.json.gz",
+      "timestamp": "20251203_223510",
+      "date": "2025-12-03 22:35:10",
+      "size_bytes": 441518,
+      "size_display": "431K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223510.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223659.json.gz",
+      "timestamp": "20251203_223659",
+      "date": "2025-12-03 22:36:59",
+      "size_bytes": 446323,
+      "size_display": "435K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223659.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223700.json.gz",
+      "timestamp": "20251203_223700",
+      "date": "2025-12-03 22:37:00",
+      "size_bytes": 446322,
+      "size_display": "435K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223700.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223701.json.gz",
+      "timestamp": "20251203_223701",
+      "date": "2025-12-03 22:37:01",
+      "size_bytes": 446332,
+      "size_display": "435K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223701.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223709.json.gz",
+      "timestamp": "20251203_223709",
+      "date": "2025-12-03 22:37:09",
+      "size_bytes": 178,
+      "size_display": "178B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223709.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223714.json.gz",
+      "timestamp": "20251203_223714",
+      "date": "2025-12-03 22:37:14",
+      "size_bytes": 446360,
+      "size_display": "435K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223714.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_223715.json.gz",
+      "timestamp": "20251203_223715",
+      "date": "2025-12-03 22:37:15",
+      "size_bytes": 446360,
+      "size_display": "435K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_223715.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224056.json.gz",
+      "timestamp": "20251203_224056",
+      "date": "2025-12-03 22:40:56",
+      "size_bytes": 451616,
+      "size_display": "441K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224056.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224057.json.gz",
+      "timestamp": "20251203_224057",
+      "date": "2025-12-03 22:40:57",
+      "size_bytes": 451615,
+      "size_display": "441K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224057.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224058.json.gz",
+      "timestamp": "20251203_224058",
+      "date": "2025-12-03 22:40:58",
+      "size_bytes": 451614,
+      "size_display": "441K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224058.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224059.json.gz",
+      "timestamp": "20251203_224059",
+      "date": "2025-12-03 22:40:59",
+      "size_bytes": 451622,
+      "size_display": "441K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224059.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224108.json.gz",
+      "timestamp": "20251203_224108",
+      "date": "2025-12-03 22:41:08",
+      "size_bytes": 179,
+      "size_display": "179B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224108.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224112.json.gz",
+      "timestamp": "20251203_224112",
+      "date": "2025-12-03 22:41:12",
+      "size_bytes": 451641,
+      "size_display": "441K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224112.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224113.json.gz",
+      "timestamp": "20251203_224113",
+      "date": "2025-12-03 22:41:13",
+      "size_bytes": 451641,
+      "size_display": "441K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224113.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224649.json.gz",
+      "timestamp": "20251203_224649",
+      "date": "2025-12-03 22:46:49",
+      "size_bytes": 454673,
+      "size_display": "444K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224649.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224651.json.gz",
+      "timestamp": "20251203_224651",
+      "date": "2025-12-03 22:46:51",
+      "size_bytes": 454686,
+      "size_display": "444K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224651.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224702.json.gz",
+      "timestamp": "20251203_224702",
+      "date": "2025-12-03 22:47:02",
+      "size_bytes": 160,
+      "size_display": "160B",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224702.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224707.json.gz",
+      "timestamp": "20251203_224707",
+      "date": "2025-12-03 22:47:07",
+      "size_bytes": 454696,
+      "size_display": "444K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224707.json.gz",
+      "purpose": "system_backup"
+    },
+    {
+      "filename": "tracertm_backup_20251203_224708.json.gz",
+      "timestamp": "20251203_224708",
+      "date": "2025-12-03 22:47:08",
+      "size_bytes": 454696,
+      "size_display": "444K",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tracertm_backup_20251203_224708.json.gz",
+      "purpose": "system_backup"
+    }
+  ]
+}

@@ -2,13 +2,14 @@ import { Button } from '@tracertm/ui/components/Button'
 import { Card } from '@tracertm/ui/components/Card'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useItems } from '../hooks/useItems'
 import { useLinks } from '../hooks/useLinks'
 
 export function TraceabilityMatrixView() {
-  const [searchParams] = useSearchParams()
-  const projectFilter = searchParams.get('project')
+  const navigate = useNavigate()
+  const searchParams = useSearch({ strict: false }) as any
+  const projectFilter = searchParams?.project
 
   const { data: items, isLoading } = useItems({ projectId: projectFilter || undefined })
   const { data: links } = useLinks({ projectId: projectFilter || undefined })

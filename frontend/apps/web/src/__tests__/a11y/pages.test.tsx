@@ -4,10 +4,26 @@
  */
 
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
-import { BrowserRouter } from 'react-router-dom'
+import { describe, expect, it, vi } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { axe } from './setup'
+
+// Mock TanStack Router
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual('@tanstack/react-router')
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+    useRouter: () => ({ navigate: vi.fn() }),
+    useLocation: () => ({ pathname: '/' }),
+    useParams: () => ({}),
+    Link: ({ children, to, ...props }: any) => (
+      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
+        {children}
+      </a>
+    ),
+  }
+})
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +35,7 @@ const queryClient = new QueryClient({
 function TestWrapper({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      {children}
     </QueryClientProvider>
   )
 }

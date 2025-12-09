@@ -1,0 +1,1332 @@
+---
+title: Go SDK
+description: Official Go SDK for TraceRTM API integration
+keywords: [go, golang, sdk, api, client, module]
+audience: developer
+difficulty: intermediate
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Go SDK
+
+The official Go SDK for TraceRTM provides an idiomatic Go interface to the REST API with full support for context, goroutines, and Go error handling patterns.
+
+## Installation
+
+Install the SDK using `go get`:
+
+```bash
+go get github.com/tracertm/go-sdk
+```
+
+**Requirements**:
+- Go 1.21+ (recommended)
+- Go 1.19+ (minimum)
+
+## Quick Start
+
+<Steps>
+  <Step>
+    ### Initialize client
+
+    ```go
+    package main
+
+    import (
+        "context"
+        "fmt"
+        "log"
+        "os"
+
+        "github.com/tracertm/go-sdk/tracertm"
+    )
+
+    func main() {
+        // Using API key
+        client := tracertm.NewClient(
+            tracertm.WithAPIKey("your-api-key-here"),
+        )
+
+        // Or using environment variable
+        client := tracertm.NewClient(
+            tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")),
+        )
+
+        // With custom base URL (self-hosted)
+        client := tracertm.NewClient(
+            tracertm.WithAPIKey("your-api-key"),
+            tracertm.WithBaseURL("https://tracertm.yourcompany.com/api/v1"),
+        )
+    }
+    ```
+
+    <Callout type="tip">
+    Store your API key in environment variables, never in code!
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Create a project
+
+    ```go
+    ctx := context.Background()
+
+    project, err := client.Projects.Create(ctx, &tracertm.ProjectCreateRequest{
+        Name:        "My Project",
+        Key:         "MYPROJ",
+        Description: "Requirements tracking for my project",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Created project: %s\n", project.ID)
+    // Output: Created project: proj-abc123
+    ```
+  </Step>
+
+  <Step>
+    ### Create requirements
+
+    ```go
+    // Business requirement
+    br, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+        ProjectID:   project.ID,
+        Type:        "BR",
+        Title:       "Increase user engagement",
+        Description: "Platform shall increase DAU by 20%",
+        Priority:    tracertm.PriorityMust,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Functional requirement
+    fr, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+        ProjectID:   project.ID,
+        Type:        "FR",
+        Title:       "Recommendation engine",
+        Description: "System shall provide personalized recommendations",
+        Priority:    tracertm.PriorityMust,
+        CustomFields: map[string]interface{}{
+            "component": "Engine",
+            "sprint":    5,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Created: %s, %s\n", br.ID, fr.ID)
+    ```
+  </Step>
+
+  <Step>
+    ### Create traceability link
+
+    ```go
+    link, err := client.Links.Create(ctx, &tracertm.LinkCreateRequest{
+        SourceID: fr.ID,
+        TargetID: br.ID,
+        LinkType: tracertm.LinkTypeSatisfies,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Linked %s -> %s\n", fr.ID, br.ID)
+    ```
+  </Step>
+
+  <Step>
+    ### Generate traceability matrix
+
+    ```go
+    matrix, err := client.Views.TraceabilityMatrix(ctx, &tracertm.MatrixRequest{
+        ProjectID:   project.ID,
+        SourceTypes: []string{"BR"},
+        TargetTypes: []string{"FR", "TC"},
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Print coverage
+    fmt.Printf("Coverage: %.1f%%\n", matrix.CoveragePercentage)
+
+    // Show gaps
+    for _, gap := range matrix.Gaps {
+        fmt.Printf("Missing: %s has no %s\n", gap.ItemID, gap.MissingType)
+    }
+    ```
+  </Step>
+</Steps>
+
+## Working with Projects
+
+### List projects
+
+```go
+// List all projects
+projects, err := client.Projects.List(ctx, nil)
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, project := range projects {
+    fmt.Printf("%s: %s\n", project.Key, project.Name)
+}
+
+// With filters
+projects, err = client.Projects.List(ctx, &tracertm.ProjectListOptions{
+    Status: "active",
+    Sort:   "created_at",
+    Order:  "desc",
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Get project by ID
+
+```go
+project, err := client.Projects.Get(ctx, "proj-abc123")
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Project: %s\n", project.Name)
+fmt.Printf("Created: %s\n", project.CreatedAt)
+fmt.Printf("Items: %d\n", project.ItemCount)
+```
+
+### Update project
+
+```go
+project, err := client.Projects.Update(ctx, "proj-abc123", &tracertm.ProjectUpdateRequest{
+    Description: tracertm.String("Updated description"),
+    Settings: map[string]interface{}{
+        "require_approval":   true,
+        "min_test_coverage": 0.90,
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+<Callout type="info">
+Use helper functions like `tracertm.String()`, `tracertm.Int()`, `tracertm.Bool()` for optional fields to distinguish between "not set" and "zero value".
+</Callout>
+
+### Delete project
+
+```go
+err := client.Projects.Delete(ctx, "proj-abc123")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+<Callout type="warn">
+Project deletion is **permanent** and deletes all items, links, and baselines!
+</Callout>
+
+## Working with Items and Requirements
+
+### Create item
+
+```go
+item, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+    ProjectID:   "proj-abc123",
+    Type:        "FR", // FR, BR, NFR, TC, etc.
+    Title:       "User authentication",
+    Description: "System shall authenticate users via email/password",
+    Priority:    tracertm.PriorityMust, // Must, Should, Could, Wont
+    Status:      "draft",
+    AcceptanceCriteria: []string{
+        "Valid credentials create session",
+        "Invalid credentials return 401",
+        "Sessions expire after 24h",
+    },
+    CustomFields: map[string]interface{}{
+        "component":    "Auth",
+        "complexity":   "M",
+        "story_points": 5,
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### List items with filters
+
+```go
+// All items
+items, err := client.Items.List(ctx, &tracertm.ItemListOptions{
+    ProjectID: "proj-abc123",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// With filters
+items, err = client.Items.List(ctx, &tracertm.ItemListOptions{
+    ProjectID: "proj-abc123",
+    Type:      "FR",
+    Status:    "approved",
+    Priorities: []string{
+        string(tracertm.PriorityMust),
+        string(tracertm.PriorityShould),
+    },
+    CustomFields: map[string]interface{}{
+        "component": "Auth",
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Pagination
+items, err = client.Items.List(ctx, &tracertm.ItemListOptions{
+    ProjectID: "proj-abc123",
+    Page:      2,
+    PerPage:   50,
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Search items
+
+```go
+// Full-text search
+results, err := client.Items.Search(ctx, &tracertm.SearchRequest{
+    ProjectID: "proj-abc123",
+    Query:     "authentication login OAuth",
+    Fields:    []string{"title", "description"},
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, item := range results {
+    fmt.Printf("%s: %s\n", item.ID, item.Title)
+}
+```
+
+### Update item
+
+```go
+item, err := client.Items.Update(ctx, "req-fr-123", &tracertm.ItemUpdateRequest{
+    Status:   tracertm.String("approved"),
+    Priority: tracertm.String(string(tracertm.PriorityMust)),
+    CustomFields: map[string]interface{}{
+        "sprint": 6,
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Delete item
+
+```go
+err := client.Items.Delete(ctx, "req-fr-123")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## Working with Links
+
+### Create link
+
+```go
+link, err := client.Links.Create(ctx, &tracertm.LinkCreateRequest{
+    SourceID:  "req-fr-1",
+    TargetID:  "req-br-1",
+    LinkType:  tracertm.LinkTypeSatisfies, // See link types reference
+    Rationale: "FR implements business requirement",
+    Strength:  tracertm.LinkStrengthStrong, // Strong, Weak
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### List links
+
+```go
+// All links for an item
+links, err := client.Links.List(ctx, &tracertm.LinkListOptions{
+    ItemID: "req-fr-1",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Outgoing links only
+outgoing, err := client.Links.List(ctx, &tracertm.LinkListOptions{
+    SourceID: "req-fr-1",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Incoming links only
+incoming, err := client.Links.List(ctx, &tracertm.LinkListOptions{
+    TargetID: "req-fr-1",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// By link type
+satisfies, err := client.Links.List(ctx, &tracertm.LinkListOptions{
+    ItemID:   "req-fr-1",
+    LinkType: string(tracertm.LinkTypeSatisfies),
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Delete link
+
+```go
+err := client.Links.Delete(ctx, "link-abc123")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## Bulk Operations
+
+The SDK provides efficient bulk operations for batch processing:
+
+### Bulk create items
+
+```go
+items, err := client.Items.BulkCreate(ctx, []*tracertm.ItemCreateRequest{
+    {
+        ProjectID: "proj-123",
+        Type:      "FR",
+        Title:     "Requirement 1",
+        Priority:  tracertm.PriorityMust,
+    },
+    {
+        ProjectID: "proj-123",
+        Type:      "FR",
+        Title:     "Requirement 2",
+        Priority:  tracertm.PriorityShould,
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Created %d items\n", len(items))
+```
+
+### Bulk update
+
+```go
+updated, err := client.Items.BulkUpdate(ctx, &tracertm.BulkUpdateRequest{
+    IDs: []string{"req-1", "req-2", "req-3"},
+    Updates: map[string]interface{}{
+        "status": "approved",
+        "custom_fields": map[string]interface{}{
+            "sprint": 5,
+        },
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Updated %d items\n", len(updated))
+```
+
+### Bulk delete
+
+```go
+err := client.Items.BulkDelete(ctx, []string{"req-1", "req-2", "req-3"})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## Querying and Filtering
+
+### Advanced filtering
+
+```go
+// Complex query with multiple filters
+items, err := client.Items.List(ctx, &tracertm.ItemListOptions{
+    ProjectID: "proj-abc123",
+    Type:      "FR",
+    Status:    "approved",
+    Priorities: []string{
+        string(tracertm.PriorityMust),
+        string(tracertm.PriorityShould),
+    },
+    Tags: []string{"security", "authentication"},
+    CustomFields: map[string]interface{}{
+        "component": "Auth",
+        "sprint":    5,
+    },
+    CreatedAfter:  time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+    CreatedBefore: time.Now(),
+    Page:          1,
+    PerPage:       100,
+    Sort:          "created_at",
+    Order:         "desc",
+})
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Using query builder
+
+```go
+// Fluent query builder
+query := tracertm.NewQueryBuilder().
+    Project("proj-abc123").
+    Type("FR").
+    Status("approved").
+    Priority(tracertm.PriorityMust, tracertm.PriorityShould).
+    Tag("security").
+    CustomField("component", "Auth").
+    SortBy("created_at", "desc").
+    Paginate(1, 50)
+
+items, err := client.Items.Query(ctx, query)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## Concurrency Patterns with Goroutines
+
+The SDK is goroutine-safe and designed for concurrent operations:
+
+### Concurrent item creation
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "sync"
+
+    "github.com/tracertm/go-sdk/tracertm"
+)
+
+func main() {
+    client := tracertm.NewClient(
+        tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")),
+    )
+    ctx := context.Background()
+
+    // Create 100 requirements concurrently
+    var wg sync.WaitGroup
+    items := make(chan *tracertm.Item, 100)
+    errors := make(chan error, 100)
+
+    for i := 0; i < 100; i++ {
+        wg.Add(1)
+        go func(index int) {
+            defer wg.Done()
+
+            item, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+                ProjectID: "proj-123",
+                Type:      "FR",
+                Title:     fmt.Sprintf("Requirement %d", index),
+                Priority:  tracertm.PriorityShould,
+            })
+            if err != nil {
+                errors <- err
+                return
+            }
+            items <- item
+        }(i)
+    }
+
+    // Wait for all goroutines
+    go func() {
+        wg.Wait()
+        close(items)
+        close(errors)
+    }()
+
+    // Collect results
+    created := []*tracertm.Item{}
+    for item := range items {
+        created = append(created, item)
+    }
+
+    // Check errors
+    for err := range errors {
+        log.Printf("Error: %v", err)
+    }
+
+    fmt.Printf("Created %d items\n", len(created))
+}
+```
+
+### Worker pool pattern
+
+```go
+func processItemsConcurrently(ctx context.Context, client *tracertm.Client, itemIDs []string) error {
+    // Create worker pool
+    numWorkers := 10
+    jobs := make(chan string, len(itemIDs))
+    results := make(chan *tracertm.Item, len(itemIDs))
+    errors := make(chan error, len(itemIDs))
+
+    // Start workers
+    var wg sync.WaitGroup
+    for w := 0; w < numWorkers; w++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for itemID := range jobs {
+                item, err := client.Items.Get(ctx, itemID)
+                if err != nil {
+                    errors <- err
+                    continue
+                }
+                results <- item
+            }
+        }()
+    }
+
+    // Send jobs
+    for _, id := range itemIDs {
+        jobs <- id
+    }
+    close(jobs)
+
+    // Wait and close channels
+    go func() {
+        wg.Wait()
+        close(results)
+        close(errors)
+    }()
+
+    // Collect results
+    items := []*tracertm.Item{}
+    for item := range results {
+        items = append(items, item)
+    }
+
+    // Check for errors
+    for err := range errors {
+        log.Printf("Error processing item: %v", err)
+    }
+
+    fmt.Printf("Processed %d items\n", len(items))
+    return nil
+}
+```
+
+### Rate-limited concurrent requests
+
+```go
+import (
+    "context"
+    "time"
+
+    "golang.org/x/time/rate"
+)
+
+func createItemsWithRateLimit(ctx context.Context, client *tracertm.Client) error {
+    // Allow 10 requests per second
+    limiter := rate.NewLimiter(10, 1)
+
+    var wg sync.WaitGroup
+    for i := 0; i < 100; i++ {
+        wg.Add(1)
+        go func(index int) {
+            defer wg.Done()
+
+            // Wait for rate limiter
+            if err := limiter.Wait(ctx); err != nil {
+                log.Printf("Rate limit error: %v", err)
+                return
+            }
+
+            item, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+                ProjectID: "proj-123",
+                Type:      "FR",
+                Title:     fmt.Sprintf("Requirement %d", index),
+            })
+            if err != nil {
+                log.Printf("Create error: %v", err)
+                return
+            }
+
+            fmt.Printf("Created: %s\n", item.ID)
+        }(i)
+    }
+
+    wg.Wait()
+    return nil
+}
+```
+
+## Error Handling
+
+The SDK follows Go error handling idioms:
+
+### Standard error handling
+
+```go
+import (
+    "errors"
+    "fmt"
+
+    "github.com/tracertm/go-sdk/tracertm"
+)
+
+item, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+    ProjectID: "proj-123",
+    Type:      "INVALID_TYPE",
+    Title:     "Test",
+})
+if err != nil {
+    // Type assertions for specific errors
+    var apiErr *tracertm.APIError
+    if errors.As(err, &apiErr) {
+        fmt.Printf("API Error: %s (status: %d)\n", apiErr.Message, apiErr.StatusCode)
+        fmt.Printf("Details: %v\n", apiErr.Details)
+    }
+
+    var validationErr *tracertm.ValidationError
+    if errors.As(err, &validationErr) {
+        fmt.Printf("Validation failed: %s\n", validationErr.Message)
+        for field, errors := range validationErr.FieldErrors {
+            fmt.Printf("  %s: %v\n", field, errors)
+        }
+    }
+
+    var notFoundErr *tracertm.NotFoundError
+    if errors.As(err, &notFoundErr) {
+        fmt.Printf("Not found: %s %s\n", notFoundErr.ResourceType, notFoundErr.ResourceID)
+    }
+
+    var authErr *tracertm.AuthenticationError
+    if errors.As(err, &authErr) {
+        fmt.Println("Authentication failed: invalid API key")
+    }
+
+    var rateLimitErr *tracertm.RateLimitError
+    if errors.As(err, &rateLimitErr) {
+        fmt.Printf("Rate limited. Retry after %s\n", rateLimitErr.RetryAfter)
+        time.Sleep(rateLimitErr.RetryAfter)
+        // Retry request
+    }
+
+    return err
+}
+```
+
+### Error types
+
+```go
+// APIError - Generic API error
+type APIError struct {
+    StatusCode int
+    Message    string
+    Details    map[string]interface{}
+}
+
+// ValidationError - Request validation failed
+type ValidationError struct {
+    Message     string
+    FieldErrors map[string][]string
+}
+
+// NotFoundError - Resource not found
+type NotFoundError struct {
+    ResourceType string
+    ResourceID   string
+}
+
+// AuthenticationError - Authentication failed
+type AuthenticationError struct {
+    Message string
+}
+
+// RateLimitError - Rate limit exceeded
+type RateLimitError struct {
+    RetryAfter time.Duration
+    Limit      int
+    Remaining  int
+    Reset      time.Time
+}
+
+// NetworkError - Network communication error
+type NetworkError struct {
+    Err error
+}
+```
+
+### Retry logic
+
+```go
+import (
+    "time"
+
+    "github.com/cenkalti/backoff/v4"
+)
+
+func createItemWithRetry(ctx context.Context, client *tracertm.Client, req *tracertm.ItemCreateRequest) (*tracertm.Item, error) {
+    var item *tracertm.Item
+
+    operation := func() error {
+        var err error
+        item, err = client.Items.Create(ctx, req)
+        if err != nil {
+            // Don't retry validation errors
+            var validationErr *tracertm.ValidationError
+            if errors.As(err, &validationErr) {
+                return backoff.Permanent(err)
+            }
+            return err
+        }
+        return nil
+    }
+
+    // Exponential backoff with max 3 retries
+    bo := backoff.WithMaxRetries(backoff.NewExponentialBackOff(), 3)
+    err := backoff.Retry(operation, backoff.WithContext(bo, ctx))
+
+    return item, err
+}
+```
+
+## Context and Cancellation
+
+The SDK fully supports Go's context package for cancellation and timeouts:
+
+### Request timeout
+
+```go
+import (
+    "context"
+    "time"
+)
+
+// Set timeout for single request
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+item, err := client.Items.Get(ctx, "req-123")
+if err != nil {
+    if errors.Is(err, context.DeadlineExceeded) {
+        log.Println("Request timed out")
+    }
+    return err
+}
+```
+
+### Cancellation
+
+```go
+// Create cancellable context
+ctx, cancel := context.WithCancel(context.Background())
+
+// Start long-running operation
+go func() {
+    items, err := client.Items.List(ctx, &tracertm.ItemListOptions{
+        ProjectID: "proj-123",
+    })
+    if err != nil {
+        if errors.Is(err, context.Canceled) {
+            log.Println("Request was cancelled")
+            return
+        }
+        log.Fatal(err)
+    }
+    fmt.Printf("Got %d items\n", len(items))
+}()
+
+// Cancel after 2 seconds
+time.Sleep(2 * time.Second)
+cancel()
+```
+
+### Context with values
+
+```go
+type contextKey string
+
+const (
+    requestIDKey contextKey = "request_id"
+    userIDKey    contextKey = "user_id"
+)
+
+// Add values to context
+ctx := context.Background()
+ctx = context.WithValue(ctx, requestIDKey, "req-abc123")
+ctx = context.WithValue(ctx, userIDKey, "user-xyz")
+
+// The client will include these in request headers
+item, err := client.Items.Get(ctx, "req-123")
+```
+
+## Configuration Options
+
+### Client configuration
+
+```go
+import (
+    "net/http"
+    "time"
+
+    "github.com/tracertm/go-sdk/tracertm"
+)
+
+client := tracertm.NewClient(
+    // Required: API key
+    tracertm.WithAPIKey("your-api-key"),
+
+    // Optional: Custom base URL
+    tracertm.WithBaseURL("https://api.tracertm.io/v1"),
+
+    // Optional: Request timeout
+    tracertm.WithTimeout(30 * time.Second),
+
+    // Optional: HTTP client
+    tracertm.WithHTTPClient(&http.Client{
+        Timeout: 30 * time.Second,
+        Transport: &http.Transport{
+            MaxIdleConns:        100,
+            MaxIdleConnsPerHost: 10,
+            IdleConnTimeout:     90 * time.Second,
+        },
+    }),
+
+    // Optional: Retry configuration
+    tracertm.WithRetry(tracertm.RetryConfig{
+        MaxRetries: 3,
+        MinWait:    1 * time.Second,
+        MaxWait:    30 * time.Second,
+    }),
+
+    // Optional: User agent
+    tracertm.WithUserAgent("MyApp/1.0"),
+
+    // Optional: Debug mode
+    tracertm.WithDebug(true),
+)
+```
+
+### Per-request options
+
+```go
+// Override timeout for specific request
+ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+defer cancel()
+
+item, err := client.Items.Get(ctx, "req-123")
+
+// Add custom headers
+ctx = tracertm.WithHeader(ctx, "X-Custom-Header", "value")
+item, err = client.Items.Get(ctx, "req-123")
+```
+
+## Traceability Analysis
+
+### Coverage analysis
+
+```go
+coverage, err := client.Analysis.Coverage(ctx, &tracertm.CoverageRequest{
+    ProjectID:  "proj-123",
+    SourceType: "FR",
+    TargetType: "TC",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Coverage: %.1f%%\n", coverage.Percentage)
+fmt.Printf("Covered: %d/%d\n", coverage.CoveredCount, coverage.TotalCount)
+
+// Items without coverage
+for _, item := range coverage.Gaps {
+    fmt.Printf("Missing coverage: %s\n", item.ID)
+}
+```
+
+### Impact analysis
+
+```go
+impact, err := client.Analysis.Impact(ctx, &tracertm.ImpactRequest{
+    ItemID: "req-fr-1",
+    Depth:  3, // How many levels deep
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Affects %d items:\n", len(impact.AffectedItems))
+for _, item := range impact.AffectedItems {
+    fmt.Printf("  %s %s: %s\n", item.Type, item.ID, item.Title)
+}
+```
+
+### Gap analysis
+
+```go
+gaps, err := client.Analysis.Gaps(ctx, &tracertm.GapAnalysisRequest{
+    ProjectID: "proj-123",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Println("Requirements without tests:")
+for _, req := range gaps.UntestedRequirements {
+    fmt.Printf("  %s: %s\n", req.ID, req.Title)
+}
+
+fmt.Println("\nTests without requirements:")
+for _, test := range gaps.OrphanedTests {
+    fmt.Printf("  %s: %s\n", test.ID, test.Title)
+}
+```
+
+## Complete Workflow Example
+
+Here's a complete example demonstrating common workflows:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+    "time"
+
+    "github.com/tracertm/go-sdk/tracertm"
+)
+
+func main() {
+    // Initialize client
+    client := tracertm.NewClient(
+        tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")),
+        tracertm.WithTimeout(30*time.Second),
+    )
+
+    ctx := context.Background()
+
+    // Create project
+    project, err := client.Projects.Create(ctx, &tracertm.ProjectCreateRequest{
+        Name:        "Mobile App",
+        Key:         "MOBILE",
+        Description: "Mobile application requirements",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created project: %s\n", project.ID)
+
+    // Create business requirement
+    br, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+        ProjectID:   project.ID,
+        Type:        "BR",
+        Title:       "User authentication",
+        Description: "Users must be able to authenticate securely",
+        Priority:    tracertm.PriorityMust,
+        Status:      "approved",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created BR: %s\n", br.ID)
+
+    // Create functional requirements
+    frs := []struct {
+        title    string
+        priority tracertm.Priority
+    }{
+        {"Email/password login", tracertm.PriorityMust},
+        {"OAuth social login", tracertm.PriorityShould},
+        {"Two-factor authentication", tracertm.PriorityShould},
+        {"Password reset flow", tracertm.PriorityMust},
+    }
+
+    createdFRs := make([]*tracertm.Item, 0, len(frs))
+    for _, fr := range frs {
+        item, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+            ProjectID:   project.ID,
+            Type:        "FR",
+            Title:       fr.title,
+            Priority:    fr.priority,
+            Status:      "draft",
+            CustomFields: map[string]interface{}{
+                "component": "Authentication",
+            },
+        })
+        if err != nil {
+            log.Printf("Error creating FR: %v", err)
+            continue
+        }
+        createdFRs = append(createdFRs, item)
+        fmt.Printf("Created FR: %s - %s\n", item.ID, item.Title)
+
+        // Link FR to BR
+        _, err = client.Links.Create(ctx, &tracertm.LinkCreateRequest{
+            SourceID: item.ID,
+            TargetID: br.ID,
+            LinkType: tracertm.LinkTypeSatisfies,
+        })
+        if err != nil {
+            log.Printf("Error creating link: %v", err)
+        }
+    }
+
+    // Create test cases
+    testCases := []struct {
+        title string
+        frID  string
+    }{
+        {"Test email login success", createdFRs[0].ID},
+        {"Test email login failure", createdFRs[0].ID},
+        {"Test OAuth Google login", createdFRs[1].ID},
+        {"Test 2FA flow", createdFRs[2].ID},
+        {"Test password reset", createdFRs[3].ID},
+    }
+
+    for _, tc := range testCases {
+        test, err := client.Items.Create(ctx, &tracertm.ItemCreateRequest{
+            ProjectID:   project.ID,
+            Type:        "TC",
+            Title:       tc.title,
+            Status:      "draft",
+            CustomFields: map[string]interface{}{
+                "test_type": "automated",
+            },
+        })
+        if err != nil {
+            log.Printf("Error creating test case: %v", err)
+            continue
+        }
+        fmt.Printf("Created TC: %s - %s\n", test.ID, test.Title)
+
+        // Link test to requirement
+        _, err = client.Links.Create(ctx, &tracertm.LinkCreateRequest{
+            SourceID: test.ID,
+            TargetID: tc.frID,
+            LinkType: tracertm.LinkTypeVerifies,
+        })
+        if err != nil {
+            log.Printf("Error creating link: %v", err)
+        }
+    }
+
+    // Analyze coverage
+    coverage, err := client.Analysis.Coverage(ctx, &tracertm.CoverageRequest{
+        ProjectID:  project.ID,
+        SourceType: "FR",
+        TargetType: "TC",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("\n=== Coverage Analysis ===\n")
+    fmt.Printf("Test coverage: %.1f%%\n", coverage.Percentage)
+    fmt.Printf("Covered: %d/%d FRs\n", coverage.CoveredCount, coverage.TotalCount)
+
+    if len(coverage.Gaps) > 0 {
+        fmt.Println("\nRequirements without tests:")
+        for _, gap := range coverage.Gaps {
+            fmt.Printf("  - %s\n", gap.ID)
+        }
+    }
+
+    // Generate traceability matrix
+    matrix, err := client.Views.TraceabilityMatrix(ctx, &tracertm.MatrixRequest{
+        ProjectID:   project.ID,
+        SourceTypes: []string{"BR"},
+        TargetTypes: []string{"FR", "TC"},
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("\n=== Traceability Matrix ===\n")
+    fmt.Printf("Overall coverage: %.1f%%\n", matrix.CoveragePercentage)
+    fmt.Printf("Total relationships: %d\n", len(matrix.Relationships))
+
+    // Export matrix to file (optional)
+    if err := matrix.ExportToExcel("traceability_matrix.xlsx"); err != nil {
+        log.Printf("Error exporting matrix: %v", err)
+    } else {
+        fmt.Println("Exported matrix to traceability_matrix.xlsx")
+    }
+
+    // Perform impact analysis on a requirement
+    if len(createdFRs) > 0 {
+        impact, err := client.Analysis.Impact(ctx, &tracertm.ImpactRequest{
+            ItemID: createdFRs[0].ID,
+            Depth:  3,
+        })
+        if err != nil {
+            log.Printf("Error analyzing impact: %v", err)
+        } else {
+            fmt.Printf("\n=== Impact Analysis for %s ===\n", createdFRs[0].Title)
+            fmt.Printf("Affects %d items:\n", len(impact.AffectedItems))
+            for _, item := range impact.AffectedItems {
+                fmt.Printf("  %s: %s\n", item.Type, item.Title)
+            }
+        }
+    }
+
+    fmt.Println("\nWorkflow completed successfully!")
+}
+```
+
+## Baselines
+
+### Create baseline
+
+```go
+baseline, err := client.Baselines.Create(ctx, &tracertm.BaselineCreateRequest{
+    ProjectID:    "proj-123",
+    Name:         "v1.0.0",
+    Description:  "Release 1.0.0",
+    Freeze:       true, // Make immutable
+    IncludeTypes: []string{"BR", "FR", "NFR", "TC"},
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Baseline: %s\n", baseline.ID)
+fmt.Printf("Items: %d\n", baseline.ItemCount)
+```
+
+### Compare baselines
+
+```go
+diff, err := client.Baselines.Compare(ctx, &tracertm.BaselineCompareRequest{
+    BaselineID: "baseline-v1.0.0",
+    CompareTo:  "current", // or another baseline ID
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Added: %d\n", len(diff.Added))
+fmt.Printf("Modified: %d\n", len(diff.Modified))
+fmt.Printf("Deleted: %d\n", len(diff.Deleted))
+
+for _, item := range diff.Added {
+    fmt.Printf("  + %s: %s\n", item.ID, item.Title)
+}
+```
+
+## Best Practices
+
+### 1. Always use context
+
+```go
+// Good
+ctx := context.Background()
+item, err := client.Items.Get(ctx, "req-123")
+
+// Better - with timeout
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+item, err := client.Items.Get(ctx, "req-123")
+```
+
+### 2. Handle errors explicitly
+
+```go
+// Good
+item, err := client.Items.Create(ctx, req)
+if err != nil {
+    var apiErr *tracertm.APIError
+    if errors.As(err, &apiErr) {
+        // Handle specific error
+    }
+    return err
+}
+```
+
+### 3. Use bulk operations for efficiency
+
+```go
+// Bad - Multiple sequential requests
+for _, req := range requests {
+    _, err := client.Items.Create(ctx, req)
+}
+
+// Good - Single bulk request
+items, err := client.Items.BulkCreate(ctx, requests)
+```
+
+### 4. Reuse client instances
+
+```go
+// Bad - Creating new client for each request
+func processItem(apiKey, itemID string) {
+    client := tracertm.NewClient(tracertm.WithAPIKey(apiKey))
+    item, _ := client.Items.Get(ctx, itemID)
+}
+
+// Good - Reuse client
+var client *tracertm.Client
+
+func init() {
+    client = tracertm.NewClient(tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")))
+}
+
+func processItem(itemID string) {
+    item, _ := client.Items.Get(ctx, itemID)
+}
+```
+
+### 5. Use goroutines for concurrent operations
+
+```go
+// Process multiple items concurrently
+var wg sync.WaitGroup
+for _, id := range itemIDs {
+    wg.Add(1)
+    go func(itemID string) {
+        defer wg.Done()
+        item, err := client.Items.Get(ctx, itemID)
+        // Process item
+    }(id)
+}
+wg.Wait()
+```
+
+## Next Steps
+
+- [API Reference](/docs/api/rest-api) - Complete REST API documentation
+- [Go SDK Examples](https://github.com/tracertm/go-sdk/tree/main/examples) - More code examples
+- [GoDoc](https://pkg.go.dev/github.com/tracertm/go-sdk) - Complete package documentation
+
+<Callout type="info">
+**Questions?** Check [GitHub Issues](https://github.com/tracertm/go-sdk/issues) or join [Discord #sdk-help](https://discord.gg/tracertm)
+</Callout>

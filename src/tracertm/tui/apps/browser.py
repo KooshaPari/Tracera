@@ -142,7 +142,7 @@ if TEXTUAL_AVAILABLE:
                     node = item_tree.root.add(item.title, data=item.id)
                     self._add_children(session, node, item.id)
 
-        def _add_children(self, session: Session, parent_node: "Tree.Node", parent_id: str) -> None:
+        def _add_children(self, session: Session, parent_node, parent_id: str) -> None:
             """Recursively add children to tree."""
             children = session.query(Item).filter(
                 Item.project_id == self.project_id,
@@ -154,7 +154,7 @@ if TEXTUAL_AVAILABLE:
                 child_node = parent_node.add(child.title, data=child.id)
                 self._add_children(session, child_node, child.id)
 
-        def on_tree_node_selected(self, event: "Tree.NodeSelected") -> None:
+        def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
             """Handle item selection."""
             if event.node.data:
                 self.selected_item_id = event.node.data
@@ -187,7 +187,7 @@ if TEXTUAL_AVAILABLE:
                 item_details = self.query_one("#item-details", Static)
                 item_details.update(details)
 
-        def on_input_changed(self, event: "Input.Changed") -> None:
+        def on_input_changed(self, event: Input.Changed) -> None:
             """Handle filter input change."""
             # TODO: Implement filtering
             pass

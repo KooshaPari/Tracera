@@ -7,7 +7,9 @@
     "---Web UI---",
     "web-ui",
     "---CLI---",
-    "cli",
+    "cli-guide",
+    "---TUI---",
+    "tui-guide",
     "---Desktop App---",
     "desktop"
   ]

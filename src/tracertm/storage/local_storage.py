@@ -532,7 +532,11 @@ class LocalStorageManager:
                 existing.parent_id = parent_id
                 existing.version = version
                 if updated:
-                    existing.updated_at = datetime.fromisoformat(updated)
+                    # Handle both string and datetime objects from YAML
+                    if isinstance(updated, str):
+                        existing.updated_at = datetime.fromisoformat(updated)
+                    elif isinstance(updated, datetime):
+                        existing.updated_at = updated
                 session.commit()
                 session.refresh(existing)
                 item = existing
@@ -562,10 +566,17 @@ class LocalStorageManager:
                     version=version,
                 )
 
+                # Handle both string and datetime objects from YAML
                 if created:
-                    item.created_at = datetime.fromisoformat(created)
+                    if isinstance(created, str):
+                        item.created_at = datetime.fromisoformat(created)
+                    elif isinstance(created, datetime):
+                        item.created_at = created
                 if updated:
-                    item.updated_at = datetime.fromisoformat(updated)
+                    if isinstance(updated, str):
+                        item.updated_at = datetime.fromisoformat(updated)
+                    elif isinstance(updated, datetime):
+                        item.updated_at = updated
 
                 session.add(item)
                 session.commit()

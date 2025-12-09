@@ -1,32 +1,586 @@
 ---
-title: "Projects"
-description: "Documentation for Projects"
+title: "Projects API"
+description: "REST API endpoints for managing TraceRTM projects"
 ---
 
-# Projects
+# Projects API
 
-This page contains documentation for Projects.
+Projects are the top-level containers in TraceRTM. They organize items, links, workflows, and team access. This guide covers all project-related API endpoints.
 
-## Overview
+## Endpoints Overview
 
-This section covers the key aspects of Projects in TraceRTM.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects` | List all projects |
+| `POST` | `/v1/projects` | Create a project |
+| `GET` | `/v1/projects/{id}` | Get project details |
+| `PATCH` | `/v1/projects/{id}` | Update a project |
+| `DELETE` | `/v1/projects/{id}` | Delete a project |
+| `POST` | `/v1/projects/{id}/clone` | Clone a project |
+| `GET` | `/v1/projects/{id}/stats` | Get project statistics |
 
-## Getting Started
+## Project Object
 
-To get started with Projects:
+```json
+{
+  "id": "proj_abc123xyz",
+  "name": "Product Requirements",
+  "description": "Requirements for Q1 2025 release",
+  "key": "PRD",
+  "status": "active",
+  "visibility": "private",
+  "owner_id": "user_xyz789",
+  "organization_id": "org_456",
+  "settings": {
+    "default_workflow_id": "wf_standard",
+    "require_approval": true,
+    "enable_versioning": true,
+    "custom_fields": [
+      {"name": "priority", "type": "select", "options": ["low", "medium", "high"]},
+      {"name": "component", "type": "string"}
+    ]
+  },
+  "item_counts": {
+    "total": 150,
+    "by_type": {
+      "requirement": 80,
+      "test_case": 50,
+      "bug": 20
+    },
+    "by_status": {
+      "draft": 30,
+      "active": 100,
+      "archived": 20
+    }
+  },
+  "link_count": 245,
+  "member_count": 12,
+  "created_at": "2025-01-01T10:00:00Z",
+  "updated_at": "2025-01-15T14:30:00Z",
+  "created_by": "user_xyz789"
+}
+```
 
-- Review the Projects and fundamentals
-- Explore practical examples
-- Check out the API reference
+## List Projects
 
-## Key Concepts
+Retrieve all projects accessible to the authenticated user.
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```http
+GET /v1/projects
+```
 
-## Next Steps
+### Query Parameters
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | integer | Page number (default: 1) |
+| `per_page` | integer | Items per page (default: 20, max: 100) |
+| `status` | string | Filter by status: `active`, `archived` |
+| `visibility` | string | Filter by visibility: `private`, `public`, `organization` |
+| `search` | string | Search in name and description |
+| `sort` | string | Sort field: `name`, `created_at`, `updated_at` |
+| `order` | string | Sort order: `asc`, `desc` |
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects?status=active&sort=-updated_at" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "proj_abc123",
+      "name": "Product Requirements",
+      "key": "PRD",
+      "status": "active",
+      "item_counts": {"total": 150},
+      "updated_at": "2025-01-15T14:30:00Z"
+    },
+    {
+      "id": "proj_def456",
+      "name": "Test Suite",
+      "key": "TST",
+      "status": "active",
+      "item_counts": {"total": 200},
+      "updated_at": "2025-01-14T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 25,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 2
+  }
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_...")
+
+# List all active projects
+projects = await client.projects.list(
+    status="active",
+    sort="-updated_at"
+)
+
+for project in projects:
+    print(f"{project.key}: {project.name} ({project.item_counts.total} items)")
+
+# With pagination
+async for project in client.projects.list_all(status="active"):
+    print(project.name)
+```
+
+### TypeScript Example
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_...' })
+
+// List active projects
+const { data: projects, meta } = await client.projects.list({
+  status: 'active',
+  sort: '-updated_at',
+  page: 1,
+  perPage: 20
+})
+
+projects.forEach(project => {
+  console.log(`${project.key}: ${project.name}`)
+})
+```
+
+## Create Project
+
+Create a new project.
+
+```http
+POST /v1/projects
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Project name (3-100 chars) |
+| `key` | string | Yes | Unique key (2-10 chars, uppercase) |
+| `description` | string | No | Project description |
+| `visibility` | string | No | `private`, `public`, `organization` |
+| `settings` | object | No | Project settings |
+| `template_id` | string | No | Clone from template project |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Mobile App Requirements",
+    "key": "MOB",
+    "description": "Requirements for iOS and Android mobile applications",
+    "visibility": "organization",
+    "settings": {
+      "default_workflow_id": "wf_standard",
+      "require_approval": true,
+      "custom_fields": [
+        {
+          "name": "platform",
+          "type": "select",
+          "options": ["ios", "android", "both"],
+          "required": true
+        }
+      ]
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_ghi789",
+    "name": "Mobile App Requirements",
+    "key": "MOB",
+    "description": "Requirements for iOS and Android mobile applications",
+    "status": "active",
+    "visibility": "organization",
+    "owner_id": "user_xyz789",
+    "settings": {
+      "default_workflow_id": "wf_standard",
+      "require_approval": true,
+      "custom_fields": [
+        {
+          "name": "platform",
+          "type": "select",
+          "options": ["ios", "android", "both"],
+          "required": true
+        }
+      ]
+    },
+    "item_counts": {"total": 0},
+    "created_at": "2025-01-15T15:00:00Z",
+    "created_by": "user_xyz789"
+  }
+}
+```
+
+### Python Example
+
+```python
+# Create a new project
+project = await client.projects.create(
+    name="Mobile App Requirements",
+    key="MOB",
+    description="Requirements for iOS and Android",
+    visibility="organization",
+    settings={
+        "default_workflow_id": "wf_standard",
+        "require_approval": True,
+        "custom_fields": [
+            {
+                "name": "platform",
+                "type": "select",
+                "options": ["ios", "android", "both"],
+                "required": True
+            }
+        ]
+    }
+)
+
+print(f"Created project: {project.id}")
+```
+
+## Get Project
+
+Retrieve a specific project by ID.
+
+```http
+GET /v1/projects/{id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `include` | string | Include related data: `members`, `workflows`, `stats` |
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_abc123?include=members,stats" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "name": "Product Requirements",
+    "key": "PRD",
+    "description": "Requirements for Q1 2025 release",
+    "status": "active",
+    "visibility": "private",
+    "owner_id": "user_xyz789",
+    "settings": {
+      "default_workflow_id": "wf_standard",
+      "require_approval": true
+    },
+    "item_counts": {
+      "total": 150,
+      "by_type": {"requirement": 80, "test_case": 50, "bug": 20},
+      "by_status": {"draft": 30, "active": 100, "archived": 20}
+    },
+    "members": [
+      {"user_id": "user_xyz789", "role": "owner", "joined_at": "2025-01-01T10:00:00Z"},
+      {"user_id": "user_abc123", "role": "editor", "joined_at": "2025-01-05T12:00:00Z"}
+    ],
+    "stats": {
+      "coverage": {
+        "requirements_with_tests": 65,
+        "requirements_without_tests": 15,
+        "coverage_percentage": 81.25
+      },
+      "activity": {
+        "items_created_last_7_days": 12,
+        "items_updated_last_7_days": 28,
+        "links_created_last_7_days": 15
+      }
+    },
+    "created_at": "2025-01-01T10:00:00Z",
+    "updated_at": "2025-01-15T14:30:00Z"
+  }
+}
+```
+
+## Update Project
+
+Update a project's properties.
+
+```http
+PATCH /v1/projects/{id}
+```
+
+### Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Project name |
+| `description` | string | Project description |
+| `status` | string | `active`, `archived` |
+| `visibility` | string | `private`, `public`, `organization` |
+| `settings` | object | Project settings (merged with existing) |
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/projects/proj_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated description for Q2 2025",
+    "settings": {
+      "require_approval": false
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "name": "Product Requirements",
+    "description": "Updated description for Q2 2025",
+    "settings": {
+      "default_workflow_id": "wf_standard",
+      "require_approval": false
+    },
+    "updated_at": "2025-01-15T15:30:00Z"
+  }
+}
+```
+
+## Delete Project
+
+Delete a project. This is a soft delete by default.
+
+```http
+DELETE /v1/projects/{id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `permanent` | boolean | Permanently delete (default: false) |
+
+### Request
+
+```bash
+# Soft delete (can be restored)
+curl -X DELETE "https://api.tracertm.dev/v1/projects/proj_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+
+# Permanent delete
+curl -X DELETE "https://api.tracertm.dev/v1/projects/proj_abc123?permanent=true" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```http
+HTTP/1.1 204 No Content
+```
+
+## Clone Project
+
+Create a copy of an existing project.
+
+```http
+POST /v1/projects/{id}/clone
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | New project name |
+| `key` | string | Yes | New project key |
+| `include_items` | boolean | No | Clone items (default: true) |
+| `include_links` | boolean | No | Clone links (default: true) |
+| `include_members` | boolean | No | Clone member list (default: false) |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/clone" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Product Requirements - Q2",
+    "key": "PRD2",
+    "include_items": true,
+    "include_links": true,
+    "include_members": false
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_new789",
+    "name": "Product Requirements - Q2",
+    "key": "PRD2",
+    "status": "active",
+    "item_counts": {"total": 150},
+    "created_at": "2025-01-15T16:00:00Z",
+    "cloned_from": "proj_abc123"
+  },
+  "meta": {
+    "items_cloned": 150,
+    "links_cloned": 245
+  }
+}
+```
+
+## Project Statistics
+
+Get detailed statistics for a project.
+
+```http
+GET /v1/projects/{id}/stats
+```
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_abc123/stats" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "project_id": "proj_abc123",
+    "coverage": {
+      "total_requirements": 80,
+      "requirements_with_tests": 65,
+      "requirements_without_tests": 15,
+      "coverage_percentage": 81.25,
+      "by_priority": {
+        "high": {"total": 20, "covered": 18, "percentage": 90.0},
+        "medium": {"total": 40, "covered": 35, "percentage": 87.5},
+        "low": {"total": 20, "covered": 12, "percentage": 60.0}
+      }
+    },
+    "items": {
+      "total": 150,
+      "by_type": {
+        "requirement": 80,
+        "test_case": 50,
+        "bug": 20
+      },
+      "by_status": {
+        "draft": 30,
+        "review": 20,
+        "approved": 80,
+        "archived": 20
+      }
+    },
+    "links": {
+      "total": 245,
+      "by_type": {
+        "satisfies": 65,
+        "verified_by": 120,
+        "relates_to": 60
+      }
+    },
+    "activity": {
+      "items_created_last_7_days": 12,
+      "items_created_last_30_days": 45,
+      "items_updated_last_7_days": 28,
+      "links_created_last_7_days": 15,
+      "most_active_contributors": [
+        {"user_id": "user_xyz", "actions": 45},
+        {"user_id": "user_abc", "actions": 32}
+      ]
+    },
+    "computed_at": "2025-01-15T16:30:00Z"
+  }
+}
+```
+
+## Error Responses
+
+### Project Not Found
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Project not found",
+    "details": {
+      "project_id": "proj_invalid"
+    }
+  }
+}
+```
+
+### Key Already Exists
+
+```json
+{
+  "error": {
+    "code": "conflict",
+    "message": "Project key already exists",
+    "details": {
+      "key": "PRD",
+      "existing_project_id": "proj_abc123"
+    }
+  }
+}
+```
+
+### Permission Denied
+
+```json
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Insufficient permissions to access this project",
+    "details": {
+      "required_permission": "project:read",
+      "your_permissions": []
+    }
+  }
+}
+```
+
+## Related Documentation
+
+- [List Projects](/docs/api-reference/rest-api/projects-list) - Detailed list endpoint
+- [Create Project](/docs/api-reference/rest-api/projects-create) - Detailed create endpoint
+- [Items API](/docs/api-reference/rest-api/items) - Managing items within projects
+- [Project Members](/docs/api-reference/rest-api/projects-members) - Team management
+

@@ -4,19 +4,38 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+# Import ALL models to ensure they're registered with Base.metadata
+from tracertm.models.base import Base
+from tracertm.models.agent import Agent
+from tracertm.models.agent_event import AgentEvent
+from tracertm.models.agent_lock import AgentLock
+from tracertm.models.event import Event
 from tracertm.models.item import Item
+from tracertm.models.link import Link
+from tracertm.models.project import Project
 from tracertm.services.progress_service import ProgressService
 
 
 def _session():
     engine = create_engine("sqlite:///:memory:")
-    from tracertm.models.base import Base
-
+    # All models are already imported above, so Base.metadata is complete
     Base.metadata.create_all(engine)
     return Session(bind=engine)
 
 
+def _ensure_project(session, project_id):
+    """Ensure a project exists before creating items (foreign key requirement)."""
+    existing = session.query(Project).filter(Project.id == project_id).first()
+    if not existing:
+        project = Project(id=project_id, name=f"Test Project {project_id}")
+        session.add(project)
+        session.commit()
+
+
 def _seed_items(session, project_id="proj-1"):
+    # CRITICAL: Create project first to satisfy foreign key constraint
+    _ensure_project(session, project_id)
+
     parent = Item(id="p1", project_id=project_id, title="Parent", status="in_progress")
     child_done = Item(id="c1", project_id=project_id, title="Done", status="complete", parent_id="p1")
     child_todo = Item(id="c2", project_id=project_id, title="Todo", status="todo", parent_id="p1")
@@ -27,6 +46,9 @@ def _seed_items(session, project_id="proj-1"):
 
 def test_calculate_completion_leaf():
     session = _session()
+    # CRITICAL: Create project first to satisfy foreign key constraint
+    _ensure_project(session, "proj")
+
     item = Item(id="i1", project_id="proj", title="Leaf", status="complete")
     session.add(item)
     session.commit()
@@ -45,9 +67,11 @@ def test_calculate_completion_parent_average():
 
 def test_get_blocked_items_returns_blockers():
     session = _session()
+    # CRITICAL: Create project first to satisfy foreign key constraint
+    _ensure_project(session, "proj")
+
     blocked = Item(id="b1", project_id="proj", title="Blocked", status="in_progress")
     blocker = Item(id="blk1", project_id="proj", title="Blocker", status="todo")
-    from tracertm.models.link import Link
 
     session.add_all([blocked, blocker, Link(id="l1", project_id="proj", source_item_id="blk1", target_item_id="b1", link_type="blocks")])
     session.commit()
@@ -60,6 +84,9 @@ def test_get_blocked_items_returns_blockers():
 
 def test_get_stalled_items_filters_by_threshold():
     session = _session()
+    # CRITICAL: Create project first to satisfy foreign key constraint
+    _ensure_project(session, "proj")
+
     old = Item(id="old", project_id="proj", title="Old", status="in_progress", updated_at=datetime.utcnow() - timedelta(days=10))
     fresh = Item(id="fresh", project_id="proj", title="Fresh", status="in_progress", updated_at=datetime.utcnow())
     session.add_all([old, fresh])
@@ -73,6 +100,9 @@ def test_get_stalled_items_filters_by_threshold():
 
 def test_calculate_velocity_counts_created_and_completed():
     session = _session()
+    # CRITICAL: Create project first to satisfy foreign key constraint
+    _ensure_project(session, "proj")
+
     now = datetime.utcnow()
     done = Item(id="done", project_id="proj", title="Done", status="complete", updated_at=now)
     created = Item(id="new", project_id="proj", title="New", status="todo", created_at=now)

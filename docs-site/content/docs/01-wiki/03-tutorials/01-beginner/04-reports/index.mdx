@@ -1,132 +1,748 @@
 ---
 title: "Generating Reports"
-description: "Documentation for Generating Reports"
+description: "Learn how to generate comprehensive reports for your TracerTM projects"
 ---
 
 # Generating Reports
 
+Master the art of generating insightful reports to track progress, analyze coverage, and communicate project status to stakeholders.
 
-## Overview
+## What You'll Learn
 
-Comprehensive guide for Generating Reports.
+By the end of this tutorial, you'll be able to:
+- Generate traceability matrix reports
+- Analyze test coverage and gaps
+- Track project progress metrics
+- Export reports in multiple formats
+- Customize reports for different audiences
+- Automate report generation
+- Share reports with stakeholders
 
-## Introduction
+## Prerequisites
 
-This guide covers everything you need to know about Generating Reports.
+Before starting this tutorial, make sure you have:
+- Completed the previous tutorials (First Requirement, Creating Tests, Linking Artifacts)
+- A TracerTM project with requirements, tests, and links
+- TracerTM CLI installed and configured
 
-## Getting Started
+## Overview of TracerTM Reporting
 
-### Prerequisites
+TracerTM provides comprehensive reporting capabilities to help you:
 
-- Basic understanding of TraceRTM
-- Access to a TraceRTM workspace
-- Required permissions
+- **Track Progress**: Monitor project completion and velocity
+- **Ensure Coverage**: Verify all requirements are tested
+- **Identify Gaps**: Find missing links or untested requirements
+- **Communicate Status**: Share updates with stakeholders
+- **Support Compliance**: Document traceability for audits
 
-### Initial Setup
+Reports in TracerTM are generated on-demand or scheduled, and can be exported in multiple formats for different audiences.
+
+## 1. Understanding Report Types
+
+TracerTM offers several report types, each serving a specific purpose:
+
+### Traceability Matrix Reports
+Show the relationships between requirements, code, and tests in a grid format.
+
+### Coverage Reports
+Analyze what percentage of requirements have tests, implementations, or other linked artifacts.
+
+### Gap Analysis Reports
+Identify missing links, untested requirements, or incomplete implementations.
+
+### Progress Reports
+Track item status changes, completion rates, and team velocity over time.
+
+### Analytics Reports
+Provide project metrics, team activity, and trend analysis.
+
+## 2. Generating Your First Report
+
+Let's start by generating a simple traceability matrix for the project we built in previous tutorials.
+
+### Using the CLI
 
 ```bash
-tracertm init
-tracertm config set generating.reports enabled
+# Navigate to your project directory
+cd ~/tracertm-tutorial
+
+# Generate a basic report showing all items
+rtm export --format json --output report.json
+
+# View the report
+cat report.json | jq .
 ```
 
-## Core Workflows
+### Expected Output
 
-### Workflow 1: Basic Usage
+```json
+{
+  "project": {
+    "id": "proj_abc123",
+    "name": "User Authentication System",
+    "description": "Tutorial project",
+    "created_at": "2024-12-01T10:00:00Z"
+  },
+  "items": [
+    {
+      "id": "item_001",
+      "title": "User Login Feature",
+      "view": "requirements",
+      "type": "feature",
+      "status": "done",
+      "description": "Users should be able to log in with email and password"
+    },
+    {
+      "id": "item_002",
+      "title": "Login API Tests",
+      "view": "tests",
+      "type": "test",
+      "status": "passed"
+    }
+  ],
+  "links": [
+    {
+      "source_id": "item_002",
+      "target_id": "item_001",
+      "type": "tests"
+    }
+  ]
+}
+```
+
+## 3. Traceability Matrix Reports
+
+A traceability matrix shows which requirements are linked to which tests, helping you visualize coverage.
+
+### Generating a Traceability Matrix
 
 ```bash
-# Step 1: Initialize
-tracertm generating-reports init
-
-# Step 2: Execute
-tracertm generating-reports run
-
-# Step 3: Verify
-tracertm generating-reports status
+# Using the API (requires running server)
+curl http://localhost:8000/api/v1/projects/proj_abc123/matrix \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_view": "requirements",
+    "target_view": "tests",
+    "link_types": ["tests", "verifies"]
+  }' | jq .
 ```
 
-### Workflow 2: Advanced Usage
+### Using the Python Client
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```python
+from tracertm.api.client import TraceRTMClient
 
-const tracertm = new TraceRTM()
-await tracertm.generatingreports({
-  mode: 'advanced',
-  options: {
-    verbose: true
-  }
+# Initialize client
+client = TraceRTMClient(project_id="proj_abc123")
+
+# Generate traceability matrix
+matrix = client.get_traceability_matrix(
+    source_view="requirements",
+    target_view="tests"
+)
+
+print(f"Coverage: {matrix['coverage']}%")
+print(f"Total Links: {matrix['total_links']}")
+
+# Display the matrix
+for row in matrix['rows']:
+    print(f"\n{row['title']}")
+    for i, cell in enumerate(matrix['matrix'][matrix['rows'].index(row)]):
+        if cell:
+            print(f"  -> {matrix['columns'][i]['title']} ({cell})")
+```
+
+### Example Matrix Output
+
+```
+User Login Feature
+  -> Login API Tests (tests)
+  -> Login UI Tests (tests)
+
+Password Reset Feature
+  -> [NO TESTS LINKED]
+
+Two-Factor Authentication
+  -> 2FA Unit Tests (tests)
+  -> 2FA Integration Tests (tests)
+
+Coverage: 66.7%
+Total Links: 4
+```
+
+## 4. Coverage Reports
+
+Coverage reports help you understand what percentage of your requirements are tested, implemented, or linked.
+
+### Generating a Coverage Report
+
+```bash
+# Get project analytics including coverage metrics
+curl http://localhost:8000/api/v1/projects/proj_abc123/analytics | jq .
+```
+
+### Using Python
+
+```python
+from tracertm.services.advanced_analytics_service import AdvancedAnalyticsService
+from tracertm.core.database import get_session
+
+async def generate_coverage_report():
+    async with get_session() as session:
+        analytics = AdvancedAnalyticsService(session)
+
+        # Get project metrics
+        metrics = await analytics.project_metrics("proj_abc123")
+
+        print(f"Project: {metrics['project_id']}")
+        print(f"Total Items: {metrics['total_items']}")
+        print(f"\nBy Status:")
+        for status, count in metrics['by_status'].items():
+            print(f"  {status}: {count}")
+        print(f"\nBy View:")
+        for view, count in metrics['by_view'].items():
+            print(f"  {view}: {count}")
+        print(f"\nCompletion Rate: {metrics['completion_rate']:.1f}%")
+```
+
+### Example Coverage Report
+
+```
+Project: proj_abc123
+Total Items: 12
+
+By Status:
+  draft: 2
+  in_progress: 3
+  done: 5
+  blocked: 2
+
+By View:
+  requirements: 5
+  tests: 4
+  code: 3
+
+Completion Rate: 41.7%
+```
+
+## 5. Gap Analysis Reports
+
+Gap analysis identifies missing coverage, untested requirements, and other issues.
+
+### Identifying Gaps
+
+```bash
+# Export to CSV for analysis
+rtm export --format csv --output gaps.csv
+
+# View in spreadsheet or use grep
+cat gaps.csv | grep -E "requirement.*,.*,.*,draft|requirement.*,.*,.*,in_progress"
+```
+
+### Programmatic Gap Detection
+
+```python
+async def find_gaps(project_id: str):
+    """Find requirements without test coverage."""
+    async with get_session() as session:
+        from tracertm.repositories.item_repository import ItemRepository
+        from tracertm.repositories.link_repository import LinkRepository
+
+        items_repo = ItemRepository(session)
+        links_repo = LinkRepository(session)
+
+        # Get all requirements
+        all_items = await items_repo.get_by_project(project_id)
+        requirements = [i for i in all_items if i.view == "requirements"]
+
+        gaps = []
+        for req in requirements:
+            # Check if requirement has test links
+            links = await links_repo.get_by_source(req.id)
+            test_links = [l for l in links if l.link_type in ["tests", "verifies"]]
+
+            if not test_links:
+                gaps.append({
+                    "id": req.id,
+                    "title": req.title,
+                    "status": req.status,
+                    "issue": "No test coverage"
+                })
+
+        return gaps
+
+# Run the gap analysis
+gaps = await find_gaps("proj_abc123")
+for gap in gaps:
+    print(f"GAP: {gap['title']} - {gap['issue']}")
+```
+
+### Example Gap Report
+
+```
+GAP ANALYSIS REPORT
+Project: User Authentication System
+Generated: 2024-12-07
+
+UNTESTED REQUIREMENTS (3):
+  - Password Reset Feature (in_progress)
+  - Session Timeout Feature (draft)
+  - Remember Me Feature (draft)
+
+UNIMPLEMENTED REQUIREMENTS (2):
+  - Biometric Login (draft)
+  - Social Login Integration (draft)
+
+BLOCKED ITEMS (2):
+  - OAuth Integration (blocked) - Waiting for external API
+  - SAML SSO (blocked) - Pending security review
+
+RECOMMENDATIONS:
+  1. Create tests for Password Reset Feature
+  2. Update status of draft requirements
+  3. Resolve blockers for OAuth and SAML
+```
+
+## 6. Progress Reports
+
+Track how your project evolves over time.
+
+### Generating Progress Metrics
+
+```python
+async def generate_progress_report(project_id: str, days: int = 30):
+    """Generate progress report over time."""
+    async with get_session() as session:
+        analytics = AdvancedAnalyticsService(session)
+
+        # Get trend analysis
+        trends = await analytics.trend_analysis(project_id, days)
+
+        print(f"PROGRESS REPORT - Last {days} Days")
+        print(f"Total Events: {trends['total_events']}")
+        print(f"Average Daily Events: {trends['average_daily_events']:.1f}")
+        print("\nDaily Activity:")
+        for date, count in sorted(trends['daily_events'].items()):
+            bar = "=" * min(count, 50)
+            print(f"  {date}: {bar} ({count})")
+
+        # Get team analytics
+        team = await analytics.team_analytics(project_id)
+        print(f"\nTeam Activity:")
+        print(f"Active Agents: {team['total_agents']}")
+        for agent, count in team['agent_activity'].items():
+            print(f"  {agent}: {count} events")
+
+# Generate report
+await generate_progress_report("proj_abc123", days=7)
+```
+
+### Example Progress Report
+
+```
+PROGRESS REPORT - Last 7 Days
+Total Events: 45
+Average Daily Events: 6.4
+
+Daily Activity:
+  2024-12-01: ========== (10)
+  2024-12-02: ====== (6)
+  2024-12-03: ======== (8)
+  2024-12-04: ===== (5)
+  2024-12-05: ============ (12)
+  2024-12-06: == (2)
+  2024-12-07: == (2)
+
+Team Activity:
+Active Agents: 3
+  alice@example.com: 25 events
+  bob@example.com: 15 events
+  charlie@example.com: 5 events
+```
+
+## 7. Export Formats
+
+TracerTM supports multiple export formats for different use cases.
+
+### JSON Export (Machine-Readable)
+
+```bash
+# Full project export
+rtm export --format json --output project.json
+
+# Use for:
+# - Integration with other tools
+# - Backup and restore
+# - API consumption
+```
+
+### CSV Export (Spreadsheet-Friendly)
+
+```bash
+# Export items to CSV
+rtm export --format csv --output items.csv
+
+# Open in Excel, Google Sheets, or process with scripts
+# Use for:
+# - Spreadsheet analysis
+# - Import to other systems
+# - Quick filtering and sorting
+```
+
+### Markdown Export (Human-Readable)
+
+```bash
+# Export to Markdown
+rtm export --format markdown --output report.md
+
+# Use for:
+# - Documentation
+# - README files
+# - Wiki pages
+# - Email reports
+```
+
+### YAML Export (Configuration)
+
+```bash
+# Export to YAML
+rtm export --format yaml --output project.yaml
+
+# Use for:
+# - Configuration files
+# - CI/CD pipelines
+# - Infrastructure as code
+```
+
+### Example: Converting Formats
+
+```bash
+# Export to JSON
+rtm export --format json > data.json
+
+# Convert to CSV using jq
+cat data.json | jq -r '.items[] | [.id, .title, .type, .status] | @csv' > items.csv
+
+# Generate HTML report
+cat data.json | jq -r '.items[] | "- \(.title) (\(.status))"' | \
+  pandoc -f markdown -t html -o report.html
+```
+
+## 8. Customizing Reports
+
+Tailor reports to your specific needs and audiences.
+
+### Custom Report Filters
+
+```python
+async def custom_report(project_id: str, filters: dict):
+    """Generate custom filtered report."""
+    async with get_session() as session:
+        from tracertm.repositories.item_repository import ItemRepository
+
+        items_repo = ItemRepository(session)
+        items = await items_repo.query(project_id, filters)
+
+        # Group by custom criteria
+        grouped = {}
+        for item in items:
+            key = item.get_custom_field("component", "Unassigned")
+            if key not in grouped:
+                grouped[key] = []
+            grouped[key].append(item)
+
+        # Generate report
+        print("CUSTOM REPORT BY COMPONENT\n")
+        for component, items_list in sorted(grouped.items()):
+            print(f"\n{component} ({len(items_list)} items):")
+            for item in items_list:
+                print(f"  - {item.title} [{item.status}]")
+
+# Generate report for high-priority items
+await custom_report("proj_abc123", {
+    "custom_fields.priority": "high",
+    "status": {"$ne": "done"}
 })
 ```
 
-## Best Practices
+### Executive Summary Report
 
-1. **Plan Ahead**: Design before implementation
-2. **Document**: Keep records up-to-date
-3. **Test**: Validate in test environment
-4. **Monitor**: Track performance and issues
-5. **Iterate**: Continuously improve
+```python
+def generate_executive_summary(project_id: str):
+    """Generate high-level executive summary."""
+    # Use sync client for simplicity
+    client = TraceRTMClient(project_id=project_id)
 
-## Common Tasks
+    # Get metrics
+    items = client.get_items()
 
-### Task 1: Configuration
+    total = len(items)
+    done = len([i for i in items if i.status == "done"])
+    in_progress = len([i for i in items if i.status == "in_progress"])
+    blocked = len([i for i in items if i.status == "blocked"])
 
-```yaml
-# tracertm.config.yml
-generating_reports:
-  enabled: true
-  mode: production
+    print("=" * 60)
+    print("EXECUTIVE SUMMARY")
+    print("=" * 60)
+    print(f"\nProject: User Authentication System")
+    print(f"Report Date: {datetime.now().strftime('%Y-%m-%d')}\n")
+    print(f"Overall Progress: {(done/total*100):.1f}% Complete")
+    print(f"\nStatus Breakdown:")
+    print(f"  Completed: {done} items")
+    print(f"  In Progress: {in_progress} items")
+    print(f"  Blocked: {blocked} items")
+    print(f"  Not Started: {total - done - in_progress - blocked} items")
+    print(f"\nKey Highlights:")
+    print(f"  - {done} features shipped")
+    print(f"  - {blocked} items need attention")
+    print(f"  - On track for Q1 delivery")
+    print("=" * 60)
 ```
 
-### Task 2: Automation
+## 9. Scheduling Automated Reports
+
+Automate report generation to save time and ensure regular updates.
+
+### Using Cron (Linux/Mac)
 
 ```bash
-# Automate with scripts
-tracertm generating-reports --auto
+# Edit crontab
+crontab -e
+
+# Add daily report at 9 AM
+0 9 * * * cd ~/tracertm-tutorial && rtm export --format markdown > daily-report.md
+
+# Add weekly summary every Monday at 8 AM
+0 8 * * 1 cd ~/tracertm-tutorial && rtm export --format csv > weekly-$(date +\%Y\%m\%d).csv
 ```
+
+### Using Python Script
+
+```python
+#!/usr/bin/env python3
+"""Automated daily report generator."""
+
+import asyncio
+from datetime import datetime
+from pathlib import Path
+from tracertm.services.export_import_service import ExportImportService
+from tracertm.core.database import get_session
+
+async def generate_daily_report(project_id: str, output_dir: str):
+    """Generate daily report."""
+    async with get_session() as session:
+        export_service = ExportImportService(session)
+
+        # Generate markdown report
+        markdown = await export_service.export_to_markdown(project_id)
+
+        # Save with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d")
+        output_path = Path(output_dir) / f"report-{timestamp}.md"
+        output_path.write_text(markdown)
+
+        print(f"Report generated: {output_path}")
+
+if __name__ == "__main__":
+    asyncio.run(generate_daily_report("proj_abc123", "/reports"))
+```
+
+### Using GitHub Actions
+
+```yaml
+# .github/workflows/daily-report.yml
+name: Generate Daily Report
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install TracerTM
+        run: pip install tracertm
+
+      - name: Generate Report
+        run: |
+          rtm export --format markdown > report.md
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: daily-report
+          path: report.md
+```
+
+## 10. Sharing Reports with Stakeholders
+
+Different stakeholders need different information.
+
+### For Developers (Technical Detail)
+
+```bash
+# Export with full technical details
+rtm export --format json --include-links --include-history > dev-report.json
+
+# Generate coverage metrics
+curl http://localhost:8000/api/v1/projects/proj_abc123/analytics > metrics.json
+```
+
+### For Managers (Progress Focus)
+
+```markdown
+# Weekly Status Report - User Authentication System
+
+## Executive Summary
+- 67% of features completed
+- 3 features in progress
+- 2 blockers requiring attention
+
+## This Week's Progress
+- Completed: Login Feature, Password Reset
+- In Progress: Two-Factor Auth, Session Management
+- Blocked: OAuth Integration (waiting for credentials)
+
+## Next Week's Plan
+- Complete Two-Factor Authentication
+- Begin Social Login integration
+- Resolve OAuth blocker
+
+## Risks & Issues
+- OAuth credentials delayed by 3 days
+- Need additional testing resources for SSO
+```
+
+### For Stakeholders (High-Level)
+
+```markdown
+# Q1 2024 Progress Report
+
+**Project:** User Authentication System
+**Status:** ON TRACK
+**Completion:** 67%
+
+### Key Achievements
+- Core login functionality delivered
+- Security audit passed
+- Performance targets met
+
+### Upcoming Milestones
+- Q1: Complete basic authentication (90% done)
+- Q2: Add advanced features (SSO, 2FA)
+- Q3: Mobile app integration
+
+### Budget & Resources
+- On budget
+- Team fully staffed
+- No major blockers
+```
+
+## Best Practices for Reporting
+
+### 1. Report Regularly
+- Daily: Quick status updates
+- Weekly: Progress summaries
+- Monthly: Trend analysis
+- Quarterly: Strategic reviews
+
+### 2. Choose the Right Format
+- JSON: For automation and integration
+- CSV: For spreadsheet analysis
+- Markdown: For documentation and wikis
+- HTML/PDF: For presentations
+
+### 3. Automate What You Can
+- Use scripts for routine reports
+- Set up scheduled jobs
+- Integrate with CI/CD pipelines
+
+### 4. Keep Reports Actionable
+- Highlight gaps and blockers
+- Include next steps
+- Assign owners to issues
+
+### 5. Tailor to Your Audience
+- Developers: Technical details, code coverage
+- Managers: Progress, blockers, timelines
+- Executives: High-level status, risks, budget
+
+### 6. Version Your Reports
+- Keep historical reports for trend analysis
+- Use timestamps in filenames
+- Store reports in version control
+
+### 7. Validate Data Quality
+- Check for missing links
+- Verify status accuracy
+- Update stale information
 
 ## Troubleshooting
 
-### Issue 1: Configuration Error
+### Empty Reports
 
-**Solution:**
 ```bash
-tracertm config validate
-tracertm config reset
+# Check if project has items
+rtm item list
+
+# Verify project ID is correct
+rtm project show
 ```
 
-### Issue 2: Performance
+### Export Fails
 
-**Solution:**
 ```bash
-tracertm optimize generating-reports
+# Check database connection
+rtm db status
+
+# Verify permissions
+ls -la ~/.tracertm/
 ```
 
-## Advanced Topics
+### Missing Links in Matrix
 
-### Custom Integration
+```bash
+# List all links
+rtm link list
 
-```typescript
-class CustomPlugin {
-  async execute() {
-    // Custom logic
-  }
-}
+# Verify link types are correct
+rtm link show <link_id>
 ```
 
-## Examples
+## Next Steps
 
-### Complete Example
+Now that you've mastered reporting in TracerTM:
 
-```typescript
-async function example() {
-  const tracertm = new TraceRTM()
-  const result = await tracertm.generatingreports()
-  console.log(result)
-}
-```
+1. Explore advanced analytics features
+2. Integrate reports into your CI/CD pipeline
+3. Build custom dashboards
+4. Set up stakeholder notifications
+5. Learn about real-time monitoring
 
-## Resources
+## Summary
 
-- [API Reference](/docs/api-reference)
-- [Examples Repository](https://github.com/tracertm/examples)
+In this tutorial, you learned how to:
+- Generate various types of reports (matrix, coverage, gaps, progress)
+- Export data in multiple formats (JSON, CSV, Markdown, YAML)
+- Customize reports for different audiences
+- Automate report generation with scripts and schedulers
+- Share reports effectively with stakeholders
+- Follow best practices for reporting
 
+Reports are essential for maintaining visibility, ensuring quality, and communicating progress. Use them regularly to keep your project on track!
+
+## Related Topics
+
+- [Advanced Analytics](/docs/wiki/guides/advanced-analytics)
+- [API Reference - Reports](/docs/api-reference/reports)
+- [Exporting Data](/docs/wiki/guides/data-export)
+- [Dashboard Setup](/docs/wiki/guides/dashboards)

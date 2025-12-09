@@ -6,7 +6,7 @@ import { Dialog } from '@tracertm/ui/components/Dialog'
 import { Input } from '@tracertm/ui/components/Input'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useItems } from '../hooks/useItems'
 import { useCreateProject, useDeleteProject, useProjects } from '../hooks/useProjects'
 
@@ -180,7 +180,8 @@ function CreateProjectDialog({
 }
 
 export function ProjectsListView() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const searchParams = useSearch({ strict: false }) as any
   const { data: projects, isLoading: projectsLoading, error: projectsError } = useProjects()
   const { data: items } = useItems()
   const deleteProject = useDeleteProject()
@@ -189,12 +190,16 @@ export function ProjectsListView() {
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'items'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  const showCreateDialog = searchParams.get('action') === 'create'
+  const showCreateDialog = searchParams?.action === 'create'
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      searchParams.delete('action')
-      setSearchParams(searchParams)
+      navigate({
+        search: (prev: any) => ({
+          ...prev,
+          action: undefined,
+        }),
+      })
     }
   }
 
@@ -273,7 +278,7 @@ export function ProjectsListView() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Projects</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">Manage your traceability projects</p>
         </div>
-        <Button onClick={() => setSearchParams({ action: 'create' })}>+ New Project</Button>
+        <Button onClick={() => navigate({ search: { action: 'create' } })}>+ New Project</Button>
       </div>
 
       {/* Filters and Search */}
@@ -361,7 +366,7 @@ export function ProjectsListView() {
                 : 'Get started by creating your first project'}
             </p>
             {!searchQuery && (
-              <Button onClick={() => setSearchParams({ action: 'create' })}>Create Project</Button>
+              <Button onClick={() => navigate({ search: { action: 'create' } })}>Create Project</Button>
             )}
           </div>
         </Card>

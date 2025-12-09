@@ -7,7 +7,27 @@ import type { RenderOptions } from '@testing-library/react'
 import { render } from '@testing-library/react'
 import type React from 'react'
 import type { ReactElement } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import { vi } from 'vitest'
+
+// Mock TanStack Router
+const mockNavigate = vi.fn()
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual('@tanstack/react-router')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useRouter: () => ({
+      navigate: mockNavigate
+    }),
+    useLocation: () => ({ pathname: '/' }),
+    useParams: () => ({}),
+    Link: ({ children, to, ...props }: any) => (
+      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
+        {children}
+      </a>
+    ),
+  }
+})
 
 // Create a new QueryClient for each test
 const createTestQueryClient = () =>
@@ -33,7 +53,7 @@ const AllProviders = ({ children }: AllProvidersProps) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      {children}
     </QueryClientProvider>
   )
 }
@@ -53,7 +73,7 @@ export const createWrapper = () => {
 
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      {children}
     </QueryClientProvider>
   )
 }

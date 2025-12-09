@@ -1,125 +1,347 @@
 ---
 title: "Types of Traceability"
-description: "Documentation for Types of Traceability"
+description: "Understanding forward, backward, horizontal, and vertical traceability"
 ---
 
 # Types of Traceability
 
+Traceability can be categorized by direction, scope, and granularity. Understanding these types helps you implement the right level of traceability for your project.
 
-## Overview
+## Directional Types
 
-Welcome to the Types of Traceability documentation.
+### Forward Traceability
 
-## Introduction
+Traces from source artifacts **forward** to derived artifacts:
 
-This page provides comprehensive information about Types of Traceability.
+```
+BUSINESS NEED → REQUIREMENT → DESIGN → CODE → TEST
+     ↓              ↓           ↓        ↓       ↓
+   Origin      Specification  Structure  Impl  Verification
+```
 
-## Key Features
+**Purpose**: Ensure everything that should be built, is built.
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+**Key Questions**:
+- Is this requirement implemented?
+- Is this requirement tested?
+- Is there a design for this requirement?
 
-## Getting Started
+**Example**:
+```
+FEAT-001: User Authentication
+    ├── → DESIGN-001: Auth Architecture (designed)
+    ├── → CODE-001: login_handler.py (implemented)
+    ├── → CODE-002: session_manager.py (implemented)
+    ├── → TEST-001: test_login_valid (verified)
+    └── → TEST-002: test_login_invalid (verified)
+
+Status: ✓ Designed, ✓ Implemented, ✓ Tested
+```
+
+### Backward Traceability
+
+Traces from derived artifacts **backward** to source artifacts:
+
+```
+TEST → CODE → DESIGN → REQUIREMENT → BUSINESS NEED
+  ↓      ↓       ↓          ↓              ↓
+Why?   Why?    Why?       Why?         Origin
+```
+
+**Purpose**: Ensure everything built has justification.
+
+**Key Questions**:
+- Why does this code exist?
+- What requirement does this test verify?
+- Is this work justified by a business need?
+
+**Example**:
+```
+TEST-042: test_password_complexity
+    └── ← CODE-015: password_validator.py (tests)
+            └── ← FEAT-008: Password Policy (implements)
+                    └── ← SEC-001: Security Requirements (derives from)
+                            └── ← BN-003: Compliance Need (justifies)
+
+Justification: ✓ Full chain to business need
+```
+
+### Bidirectional Traceability
+
+Combines forward and backward traceability:
+
+```
+REQUIREMENT ←→ CODE ←→ TEST
+```
+
+**Purpose**: Complete visibility in both directions.
+
+**Benefits**:
+- Coverage analysis (forward): "What's not implemented/tested?"
+- Justification analysis (backward): "Why does this exist?"
+- Impact analysis (both): "What's affected by a change?"
+
+**Industry Standard**: Required by DO-178C, ISO 26262, IEC 62304
+
+## Scope Types
+
+### Vertical Traceability
+
+Traces through abstraction levels (up/down):
+
+```
+LEVEL 1: Business Needs
+            ↕
+LEVEL 2: System Requirements
+            ↕
+LEVEL 3: Software Requirements
+            ↕
+LEVEL 4: Design Specifications
+            ↕
+LEVEL 5: Implementation (Code)
+            ↕
+LEVEL 6: Test Cases
+```
+
+**Purpose**: Connect high-level goals to low-level implementation.
+
+**Example**:
+```
+BN-001: "Enable customer self-service"
+    └── SYS-001: "System shall provide web portal"
+            └── SW-001: "User authentication required"
+                    └── DESIGN-001: "OAuth2 + JWT architecture"
+                            └── CODE-001: "auth_service.py"
+                                    └── TEST-001: "test_oauth_flow"
+```
+
+### Horizontal Traceability
+
+Traces between artifacts at the **same level**:
+
+```
+REQUIREMENT A ←→ REQUIREMENT B ←→ REQUIREMENT C
+(same level, different concerns)
+```
+
+**Purpose**: Track dependencies and relationships between peer artifacts.
+
+**Relationship Types**:
+- `depends_on`: A requires B to function
+- `conflicts_with`: A and B are mutually exclusive
+- `related_to`: A and B share context
+- `duplicates`: A is same as B (should be merged)
+
+**Example**:
+```
+FEAT-001: User Login
+    ├── depends_on → FEAT-005: Session Management
+    ├── depends_on → FEAT-008: Password Policy
+    └── related_to → FEAT-002: User Registration
+
+FEAT-005: Session Management
+    └── blocks → FEAT-010: Single Sign-On (must complete first)
+```
+
+## Granularity Types
+
+### Coarse-Grained Traceability
+
+Traces at high levels of abstraction:
+
+```
+EPIC → FEATURE → TEST SUITE
+```
+
+**Pros**:
+- Easy to maintain
+- Low overhead
+- Quick to implement
+
+**Cons**:
+- Less precise impact analysis
+- Can't pinpoint specific gaps
+- May miss fine-grained dependencies
+
+**Best For**: Small projects, early phases, rapid prototyping
+
+### Fine-Grained Traceability
+
+Traces at detailed levels:
+
+```
+USER STORY → ACCEPTANCE CRITERIA → TEST CASE → CODE FUNCTION
+```
+
+**Pros**:
+- Precise impact analysis
+- Detailed coverage metrics
+- Exact gap identification
+
+**Cons**:
+- Higher maintenance burden
+- More complex queries
+- Requires discipline to maintain
+
+**Best For**: Regulated industries, safety-critical systems, large projects
+
+### Recommended Granularity
+
+| Artifact Type | Recommended Level |
+|---------------|-------------------|
+| Business Needs | Epic/Theme level |
+| Requirements | User Story/Feature level |
+| Design | Component/Module level |
+| Code | Class/Module level (not function) |
+| Tests | Test Case level |
+
+## Specialized Types
+
+### Requirements-to-Test Traceability
+
+The most common form, linking requirements to their verification:
+
+```
+REQUIREMENT ─verified_by─→ TEST
+TEST ─tests─→ REQUIREMENT
+```
+
+**Metrics**:
+- Coverage: % of requirements with tests
+- Depth: Tests per requirement
+- Gaps: Requirements without tests
 
 ```bash
-tracertm init
-tracertm config set types enabled
+# Check requirement-test coverage
+tracertm coverage --from feature --to test
+
+# Output:
+# Coverage: 87% (52/60 features have tests)
+# Gaps: FEAT-015, FEAT-021, FEAT-033, ...
 ```
 
-## Usage
+### Requirements-to-Code Traceability
 
-### Basic Usage
+Links requirements to implementation:
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
-
-const tracertm = new TraceRTM()
-const result = await tracertm.types()
+```
+REQUIREMENT ─realized_by─→ CODE
+CODE ─implements─→ REQUIREMENT
 ```
 
-### Advanced Usage
+**Metrics**:
+- Implementation coverage
+- Gold plating detection (code without requirements)
+- Orphan code identification
 
-```typescript
-const config = {
-  types: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+### Test-to-Code Traceability
 
-const tracertm = new TraceRTM(config)
+Links tests to the code they verify:
+
+```
+TEST ─tests─→ CODE
+CODE ─verified_by─→ TEST
 ```
 
-## Configuration
+**Metrics**:
+- Code coverage (which code is tested)
+- Test effectiveness (tests per code unit)
+- Dead code detection
 
-```typescript
-export default {
-  types: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+### Change Traceability
+
+Tracks changes over time:
+
+```
+CHANGE REQUEST → AFFECTED ARTIFACTS → UPDATED ARTIFACTS
 ```
 
-## Examples
+**Includes**:
+- Who requested the change
+- What was affected
+- What was actually changed
+- When changes were made
 
-### Example 1
+## Implementing in TraceRTM
 
-```typescript
-const example = await tracertm.types({
-  option1: 'value1',
-  option2: 'value2'
-})
+### Configure Trace Types
+
+```yaml
+# .tracertm/config.yaml
+traceability:
+  directions:
+    forward: true
+    backward: true
+
+  required_traces:
+    # Vertical traces
+    - from: business_need
+      to: requirement
+      min_count: 1
+
+    - from: requirement
+      to: test
+      min_count: 1
+
+    # Horizontal traces
+    - from: requirement
+      to: requirement
+      type: depends_on
+      optional: true
 ```
 
-### Example 2
+### Query by Type
 
-```typescript
-const advanced = await tracertm.types({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Forward trace: What tests verify FEAT-001?
+tests = client.trace_forward("FEAT-001", target_type="test")
+
+# Backward trace: What requirement does TEST-042 verify?
+requirements = client.trace_backward("TEST-042", target_type="feature")
+
+# Horizontal trace: What does FEAT-001 depend on?
+dependencies = client.get_links("FEAT-001", link_type="depends_on")
+
+# Vertical trace: Full chain from business need to test
+chain = client.trace_vertical(
+    start="BN-001",
+    levels=["business_need", "requirement", "design", "code", "test"]
+)
 ```
 
-## Best Practices
+### Generate Type-Specific Reports
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue 1:**
 ```bash
-tracertm fix issue-1
+# Forward coverage report
+tracertm report coverage --direction forward
+
+# Backward justification report
+tracertm report coverage --direction backward
+
+# Horizontal dependency report
+tracertm report dependencies --type horizontal
+
+# Vertical trace report
+tracertm report trace --from BN-001 --full-chain
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
-```
+## Choosing the Right Types
 
-## API Reference
-
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+| Project Type | Recommended Traces |
+|--------------|-------------------|
+| **Startup MVP** | Forward (req→test), Coarse-grained |
+| **Enterprise** | Bidirectional, Medium granularity |
+| **Regulated** | Bidirectional, Fine-grained, Full vertical |
+| **Safety-Critical** | All types, Full granularity, Audit trails |
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [What is Traceability?](/docs/wiki/concepts/traceability/what-is) - Fundamentals
+- [Benefits](/docs/wiki/concepts/traceability/benefits) - ROI of traceability
+- [Industry Standards](/docs/wiki/concepts/traceability/standards) - Compliance requirements
+- [Link Types](/docs/wiki/concepts/relationships/types) - Relationship semantics
 

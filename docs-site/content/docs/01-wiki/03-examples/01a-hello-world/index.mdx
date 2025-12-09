@@ -1,32 +1,420 @@
 ---
 title: "Hello World"
-description: "Documentation for Hello World"
+description: "Your first 5 minutes with TracerTM - create a project, add items, and see traceability in action"
 ---
 
-# Hello World
+# Hello World: Your First TracerTM Project
 
-This page contains documentation for Hello World.
+Welcome! This guide will walk you through creating your first TracerTM project in just 5 minutes. You'll learn the absolute basics: creating a project, adding a requirement and test case, linking them together, and viewing the result.
 
-## Overview
+## What You'll Build
 
-This section covers the key aspects of Hello World in TraceRTM.
+By the end of this tutorial, you'll have:
+- ✅ A TracerTM project initialized in your local directory
+- ✅ One requirement (a user story)
+- ✅ One test case
+- ✅ A traceability link between them
+- ✅ Understanding of how TracerTM works
 
-## Getting Started
+## Prerequisites
 
-To get started with Hello World:
+You'll need Python 3.12+ installed. That's it!
 
-- Review the Hello World and fundamentals
-- Explore practical examples
-- Check out the API reference
+```bash
+# Check your Python version
+python3 --version
+# Should output: Python 3.12.0 or higher
+```
 
-## Key Concepts
+## Step 1: Install TracerTM (30 seconds)
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+Install TracerTM using pip:
 
-## Next Steps
+```bash
+# Install from source (development)
+cd /path/to/tracertm
+pip install -e .
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+# Or install from PyPI (when available)
+pip install tracertm
+```
+
+Verify the installation:
+
+```bash
+rtm --version
+```
+
+You should see the TracerTM version number. If you get a "command not found" error, ensure your Python bin directory is in your PATH.
+
+## Step 2: Create Your First Project (1 minute)
+
+Let's create a simple "Hello World" project. Create a new directory and initialize TracerTM:
+
+```bash
+# Create and enter your project directory
+mkdir hello-tracertm
+cd hello-tracertm
+
+# Initialize TracerTM in this directory
+rtm init "Hello World Project" --description "My first TracerTM project"
+```
+
+**What just happened?**
+
+TracerTM created a `.trace/` directory in your project with this structure:
+
+```
+hello-tracertm/
+└── .trace/
+    ├── project.yaml          # Project metadata and settings
+    ├── epics/                # For epic-level requirements
+    ├── stories/              # For user stories
+    ├── tests/                # For test cases
+    ├── tasks/                # For development tasks
+    ├── docs/                 # For documentation items
+    └── .meta/                # Internal metadata (links, sync info)
+        ├── links.yaml        # Traceability links between items
+        ├── agents.yaml       # Agent metadata (for multi-agent systems)
+        └── sync.yaml         # Sync status (gitignored)
+```
+
+This is an **offline-first** system - everything is stored locally in human-readable YAML/Markdown files. You can commit the `.trace/` directory to git (except `.meta/sync.yaml`).
+
+Let's verify the project was created:
+
+```bash
+# List project information
+rtm project list
+```
+
+You should see your "Hello World Project" listed.
+
+## Step 3: Add Your First Requirement (1 minute)
+
+Let's add a simple user story. In TracerTM, requirements are called "items" and they live in different "views" (like FEATURE, TEST, CODE, etc.).
+
+```bash
+# Create a user story in the FEATURE view
+rtm item create \
+  --view FEATURE \
+  --type story \
+  --title "User can see a greeting message" \
+  --description "As a user, I want to see 'Hello, World!' when I run the application" \
+  --priority high \
+  --status todo
+```
+
+**What just happened?**
+
+TracerTM created a new file: `.trace/stories/STORY-001.md`
+
+Let's look at it:
+
+```bash
+cat .trace/stories/STORY-001.md
+```
+
+You'll see a Markdown file with YAML frontmatter:
+
+```markdown
+---
+id: STORY-001
+type: story
+view: FEATURE
+title: User can see a greeting message
+status: todo
+priority: high
+created: 2025-12-07T10:30:00Z
+updated: 2025-12-07T10:30:00Z
+---
+
+# User can see a greeting message
+
+As a user, I want to see 'Hello, World!' when I run the application
+
+## Acceptance Criteria
+- [ ] Application displays "Hello, World!"
+- [ ] Message is visible on startup
+```
+
+This is a **human-readable** file that you can edit in any text editor. TracerTM will automatically detect changes.
+
+## Step 4: Add a Test Case (1 minute)
+
+Now let's add a test case to verify our requirement:
+
+```bash
+# Create a test case in the TEST view
+rtm item create \
+  --view TEST \
+  --type test_case \
+  --title "Test: Greeting message is displayed" \
+  --description "Verify that 'Hello, World!' is displayed when the application starts" \
+  --status todo
+```
+
+This creates `.trace/tests/TEST-001.md`:
+
+```bash
+cat .trace/tests/TEST-001.md
+```
+
+You'll see:
+
+```markdown
+---
+id: TEST-001
+type: test_case
+view: TEST
+title: "Test: Greeting message is displayed"
+status: todo
+created: 2025-12-07T10:31:00Z
+updated: 2025-12-07T10:31:00Z
+---
+
+# Test: Greeting message is displayed
+
+Verify that 'Hello, World!' is displayed when the application starts
+
+## Test Steps
+1. Start the application
+2. Observe the output
+
+## Expected Result
+- "Hello, World!" is displayed
+```
+
+## Step 5: Link Them Together (30 seconds)
+
+This is where the magic happens! Let's create a **traceability link** between the test and the requirement:
+
+```bash
+# Create a "tests" link from TEST-001 to STORY-001
+rtm link create TEST-001 STORY-001 --type tests
+```
+
+**What just happened?**
+
+TracerTM created a bidirectional link in `.trace/.meta/links.yaml`:
+
+```yaml
+links:
+  - source_id: TEST-001
+    target_id: STORY-001
+    type: tests
+    created: 2025-12-07T10:32:00Z
+```
+
+This means:
+- TEST-001 **tests** STORY-001
+- STORY-001 **is tested by** TEST-001
+
+TracerTM supports 60+ link types across 12 categories (implements, depends_on, blocks, verifies, etc.). For this tutorial, we're using the simple `tests` link.
+
+## Step 6: View the Result (1 minute)
+
+Now let's see the traceability in action! There are several ways to view your data:
+
+### Option 1: List Items with Links
+
+```bash
+# Show the story with its links
+rtm item get STORY-001
+```
+
+You'll see:
+
+```
+Story: User can see a greeting message
+ID: STORY-001
+Status: todo
+Priority: high
+
+Links:
+  Tested by:
+    - TEST-001: Test: Greeting message is displayed
+```
+
+### Option 2: View All Links
+
+```bash
+# List all traceability links
+rtm link list
+```
+
+Output:
+
+```
+Source         Target      Type    Created
+TEST-001       STORY-001   tests   2025-12-07 10:32:00
+```
+
+### Option 3: Launch the Interactive Dashboard
+
+For the best experience, launch the Terminal UI (TUI):
+
+```bash
+# Launch the interactive dashboard
+rtm dashboard
+```
+
+This opens a beautiful terminal interface where you can:
+- Browse items by view (FEATURE, TEST, CODE, etc.)
+- Navigate the traceability graph
+- Edit items
+- Create links visually
+- See real-time updates
+
+**Navigation:**
+- Arrow keys: Navigate
+- Tab: Switch panels
+- Enter: Select/open
+- `q`: Quit
+
+## Understanding What You Built
+
+Congratulations! You've just created your first traceability matrix. Here's what you have:
+
+```
+STORY-001 (Requirement) ←──[tests]── TEST-001 (Test Case)
+```
+
+This simple link answers critical questions:
+- **Coverage**: Is every requirement tested? ✅ Yes, STORY-001 is tested by TEST-001
+- **Impact**: If STORY-001 changes, what tests need updating? → TEST-001
+- **Verification**: Does TEST-001 have a purpose? ✅ Yes, it verifies STORY-001
+
+In a real project, you'd have hundreds or thousands of these links forming a complete traceability graph.
+
+## Next Steps: Expand Your Knowledge
+
+Now that you've mastered the basics, here are some ideas to explore:
+
+### 1. Add More Item Types
+
+```bash
+# Add a code implementation
+rtm item create \
+  --view CODE \
+  --type file \
+  --title "hello.py" \
+  --description "Python script that prints Hello, World!"
+
+# Link it to the story
+rtm link create CODE-001 STORY-001 --type implements
+```
+
+### 2. Create a Complete Workflow
+
+```bash
+# Epic → Story → Task → Code → Test
+rtm item create --view FEATURE --type epic --title "User Greeting System"
+rtm item create --view FEATURE --type task --title "Implement greeting function"
+rtm link create TASK-001 STORY-001 --type subtask_of
+rtm link create CODE-001 TASK-001 --type implements
+```
+
+### 3. Try Different Link Types
+
+TracerTM supports 60+ link types:
+
+```bash
+# Dependency links
+rtm link create STORY-002 STORY-001 --type depends_on
+
+# Hierarchical links
+rtm link create STORY-001 EPIC-001 --type child_of
+
+# Conflict detection
+rtm link create STORY-002 STORY-003 --type conflicts_with
+
+# Implementation tracking
+rtm link create CODE-001 STORY-001 --type implements
+rtm link create TEST-001 CODE-001 --type verifies
+```
+
+### 4. Query and Search
+
+```bash
+# Find all untested requirements
+rtm query --view FEATURE --status todo --without-links tests
+
+# Find all items in progress
+rtm item list --status in_progress
+
+# Search by keyword
+rtm search "greeting"
+```
+
+### 5. Export and Reports
+
+```bash
+# Export to JSON
+rtm export --format json --output project.json
+
+# Generate traceability matrix
+rtm report matrix --source FEATURE --target TEST
+
+# Generate coverage report
+rtm report coverage --view FEATURE
+```
+
+## Key Concepts Recap
+
+Before you move on, make sure you understand these core concepts:
+
+1. **Projects**: Initialized with `rtm init`, stored in `.trace/` directory
+2. **Items**: The "things" you track (requirements, tests, code, etc.)
+3. **Views**: Different perspectives on your items (FEATURE, TEST, CODE, API, etc.)
+4. **Types**: Specific categories within views (story, epic, test_case, file, etc.)
+5. **Links**: Connections between items that create traceability (tests, implements, depends_on)
+6. **Offline-First**: Everything is stored locally in human-readable files
+
+## Common Mistakes to Avoid
+
+As a beginner, watch out for these:
+
+1. **Forgetting to `rtm init`**: You must initialize a project before creating items
+2. **Wrong view/type combinations**: Each view has specific valid types (e.g., FEATURE view can have epic, story, task, but not test_case)
+3. **Linking to non-existent items**: TracerTM will error if you try to link TEST-001 to STORY-999 when STORY-999 doesn't exist
+4. **Not committing `.trace/`**: Remember to add `.trace/` to git (but add `.trace/.meta/sync.yaml` to `.gitignore`)
+
+## Troubleshooting
+
+**"Command 'rtm' not found"**
+- Make sure TracerTM is installed: `pip install -e .` (from the TracerTM source directory)
+- Check that your Python bin directory is in your PATH
+
+**"Not in a TracerTM project"**
+- Run `rtm init` in your project directory first
+- Or use `--project /path/to/project` to specify the project path
+
+**"Invalid view/type combination"**
+- Check the valid types for your view with `rtm item create --help`
+- Common valid combinations:
+  - FEATURE: epic, story, task, bug
+  - TEST: test_suite, test_case, test_step
+  - CODE: file, class, function, module
+
+## What's Next?
+
+You've completed the Hello World tutorial! Here's where to go next:
+
+1. **[Basic Workflow](../01-basic-workflow)** - Learn the complete development workflow
+2. **[Core Concepts](/docs/getting-started/core-concepts)** - Understand the architecture
+3. **[CLI Reference](/docs/api-reference/cli)** - Explore all available commands
+4. **[Advanced Examples](../02-advanced-queries)** - Complex queries and reporting
+
+## Summary
+
+In this tutorial, you:
+- ✅ Installed TracerTM CLI
+- ✅ Initialized a project with `rtm init`
+- ✅ Created a requirement (STORY-001) and test case (TEST-001)
+- ✅ Linked them with a traceability relationship
+- ✅ Viewed the results using `rtm item get` and `rtm dashboard`
+
+**Congratulations!** You now understand the fundamentals of requirements traceability with TracerTM. The same concepts you learned here scale to projects with thousands of items and complex multi-level traceability graphs.
+
+Happy tracing! 🎉

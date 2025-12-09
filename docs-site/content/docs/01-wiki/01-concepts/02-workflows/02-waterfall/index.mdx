@@ -1,125 +1,577 @@
 ---
 title: "Waterfall Workflows"
-description: "Documentation for Waterfall Workflows"
+description: "Sequential phase-gate workflows for regulated and traditional projects"
 ---
 
 # Waterfall Workflows
 
+Waterfall methodology follows a sequential, phase-based approach where each phase must complete before the next begins. This model is common in regulated industries (aerospace, medical devices, automotive) where phase gates and approvals are mandatory.
 
-## Overview
+## When to Use Waterfall
 
-Welcome to the Waterfall Workflows documentation.
+Waterfall is appropriate when:
 
-## Introduction
+| Scenario | Why Waterfall |
+|----------|---------------|
+| Regulatory requirements | DO-178C, ISO 26262, IEC 62304 require phase gates |
+| Fixed requirements | Scope is well-defined upfront |
+| Hardware dependencies | Can't iterate on physical components |
+| Contract deliverables | Milestone-based payments |
+| Safety-critical systems | Extensive verification required |
 
-This page provides comprehensive information about Waterfall Workflows.
+## Phase-Gate Model
 
-## Key Features
+### Standard Phases
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+```
+CONCEPT → REQUIREMENTS → DESIGN → IMPLEMENTATION → VERIFICATION → DEPLOYMENT
+    │          │           │            │              │             │
+    ▼          ▼           ▼            ▼              ▼             ▼
+  Gate 1    Gate 2      Gate 3       Gate 4         Gate 5        Gate 6
+```
 
-## Getting Started
+### Phase Definitions
+
+| Phase | Activities | Exit Criteria |
+|-------|-----------|---------------|
+| Concept | Business case, feasibility | Approved concept doc |
+| Requirements | Elicitation, analysis, specification | Baselined SRS |
+| Design | Architecture, detailed design | Approved design docs |
+| Implementation | Coding, unit testing | Code complete, reviewed |
+| Verification | Integration, system, acceptance testing | All tests pass |
+| Deployment | Release, training, support | Operational acceptance |
+
+## TraceRTM Configuration
+
+### Workflow Definition
+
+```yaml
+# .tracertm/workflows/waterfall.yaml
+name: waterfall_project
+phases:
+  - name: concept
+    order: 1
+    artifacts: [business_case, feasibility_study]
+    gate:
+      name: Concept Review
+      approvers: [product_owner, sponsor]
+
+  - name: requirements
+    order: 2
+    artifacts: [system_requirement, software_requirement]
+    gate:
+      name: Requirements Review
+      approvers: [technical_lead, qa_lead, customer]
+      requires:
+        - all_artifacts_approved: true
+        - baseline_created: true
+
+  - name: design
+    order: 3
+    artifacts: [architecture, detailed_design]
+    gate:
+      name: Design Review
+      approvers: [architect, technical_lead]
+      requires:
+        - all_requirements_traced: true
+        - design_review_complete: true
+
+  - name: implementation
+    order: 4
+    artifacts: [code, unit_test]
+    gate:
+      name: Code Complete Review
+      approvers: [technical_lead, qa_lead]
+      requires:
+        - all_designs_traced: true
+        - unit_tests_pass: true
+        - code_review_complete: true
+
+  - name: verification
+    order: 5
+    artifacts: [integration_test, system_test, acceptance_test]
+    gate:
+      name: Test Readiness Review
+      approvers: [qa_lead, technical_lead, customer]
+      requires:
+        - all_code_traced: true
+        - test_coverage: 100
+        - all_tests_pass: true
+
+  - name: deployment
+    order: 6
+    artifacts: [release_package, training_material]
+    gate:
+      name: Operational Acceptance
+      approvers: [customer, operations]
+```
+
+### Artifact Workflows
+
+Each artifact type has its own workflow within phases:
+
+```yaml
+# .tracertm/workflows/requirement.yaml
+name: requirement
+states:
+  - draft
+  - review
+  - approved
+  - baselined
+  - deprecated
+
+transitions:
+  - from: draft
+    to: review
+    requires:
+      - field: description
+        not_empty: true
+      - field: rationale
+        not_empty: true
+      - field: priority
+        not_null: true
+
+  - from: review
+    to: approved
+    requires:
+      - approval:
+          role: technical_lead
+      - approval:
+          role: customer
+
+  - from: approved
+    to: baselined
+    requires:
+      - all_children_approved: true  # Child requirements
+      - baseline_id:
+          not_null: true
+
+# Cannot modify baselined requirements
+locked_states: [baselined]
+```
+
+## Traceability in Waterfall
+
+### V-Model Traceability
+
+The V-Model shows how each development phase maps to a verification phase:
+
+```
+REQUIREMENTS ─────────────────────────────► ACCEPTANCE TESTING
+        \                                        /
+         DESIGN ────────────────────► SYSTEM TESTING
+              \                            /
+               DETAILED DESIGN ──► INTEGRATION TESTING
+                      \                /
+                       IMPLEMENTATION ◄───► UNIT TESTING
+```
+
+### Required Traces
+
+```yaml
+# .tracertm/config.yaml
+traceability:
+  # Requirements phase
+  required_links:
+    - from: software_requirement
+      to: system_requirement
+      link_type: derives_from
+      bidirectional: true
+
+    - from: system_requirement
+      to: business_need
+      link_type: traces_to
+
+  # Design phase
+    - from: architecture
+      to: software_requirement
+      link_type: realizes
+
+    - from: detailed_design
+      to: architecture
+      link_type: refines
+
+  # Implementation phase
+    - from: code
+      to: detailed_design
+      link_type: implements
+
+    - from: unit_test
+      to: code
+      link_type: tests
+
+  # Verification phase
+    - from: integration_test
+      to: detailed_design
+      link_type: verifies
+
+    - from: system_test
+      to: architecture
+      link_type: verifies
+
+    - from: acceptance_test
+      to: software_requirement
+      link_type: validates
+```
+
+### Coverage Requirements
+
+```yaml
+# Gate requirements include coverage
+gates:
+  design_review:
+    coverage:
+      - from: architecture
+        to: software_requirement
+        min: 100%
+        message: "All requirements must have design coverage"
+
+  code_complete:
+    coverage:
+      - from: code
+        to: detailed_design
+        min: 100%
+      - from: unit_test
+        to: code
+        min: 100%
+
+  test_readiness:
+    coverage:
+      - from: acceptance_test
+        to: software_requirement
+        min: 100%
+```
+
+## Phase Gate Management
+
+### Gate Checklist
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+def check_gate(project_id: str, gate_name: str) -> dict:
+    """Check if a gate can be passed."""
+
+    gate = client.get_gate(project_id, gate_name)
+    results = {
+        "gate": gate_name,
+        "ready": True,
+        "checklist": []
+    }
+
+    # Check coverage requirements
+    for coverage_req in gate.coverage_requirements:
+        actual = client.get_coverage(
+            source_type=coverage_req.source,
+            target_type=coverage_req.target,
+            project=project_id
+        )
+
+        passed = actual >= coverage_req.min
+        results["checklist"].append({
+            "requirement": f"{coverage_req.source} → {coverage_req.target}",
+            "required": f"{coverage_req.min}%",
+            "actual": f"{actual}%",
+            "passed": passed
+        })
+
+        if not passed:
+            results["ready"] = False
+
+    # Check approvals
+    for approval_req in gate.approvals:
+        approved = client.check_approval(
+            project_id,
+            gate_name,
+            approval_req.role
+        )
+        results["checklist"].append({
+            "requirement": f"Approval from {approval_req.role}",
+            "passed": approved
+        })
+
+        if not approved:
+            results["ready"] = False
+
+    return results
+```
+
+### CLI Gate Check
 
 ```bash
-tracertm init
-tracertm config set waterfall enabled
+# Check gate readiness
+tracertm gate check --project PROJ-001 --gate design_review
+
+# Output:
+# Design Review Gate Check
+# ════════════════════════
+#
+# Coverage Requirements:
+#   ✓ architecture → software_requirement: 100% (required: 100%)
+#   ✓ detailed_design → architecture: 100% (required: 100%)
+#
+# Approval Requirements:
+#   ✓ Architect approval: Approved by jane@company.com
+#   ✗ Technical Lead approval: Pending
+#
+# Status: NOT READY (1 pending approval)
+
+# Request approval
+tracertm gate request-approval --gate design_review --approver tech_lead
+
+# Pass gate (if all requirements met)
+tracertm gate pass --project PROJ-001 --gate design_review
 ```
 
-## Usage
+### Gate Reports
 
-### Basic Usage
+```bash
+# Generate gate review package
+tracertm report gate --project PROJ-001 --gate design_review --output gate-package/
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
-
-const tracertm = new TraceRTM()
-const result = await tracertm.waterfall()
+# Contents:
+# gate-package/
+#   ├── traceability-matrix.pdf
+#   ├── coverage-report.pdf
+#   ├── requirements-status.pdf
+#   ├── design-documents.pdf
+#   └── approval-signatures.pdf
 ```
 
-### Advanced Usage
+## Baseline Management
 
-```typescript
-const config = {
-  waterfall: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
-    }
-  }
-}
+### Creating Baselines
 
-const tracertm = new TraceRTM(config)
+```python
+# Baseline requirements at gate
+def baseline_phase(project_id: str, phase: str):
+    """Create a baseline for a phase."""
+
+    # Get all artifacts in phase
+    artifacts = client.list_items(
+        project=project_id,
+        phase=phase,
+        status="approved"
+    )
+
+    # Create baseline
+    baseline = client.create_baseline(
+        name=f"{phase}-baseline-v1.0",
+        project=project_id,
+        items=[a.id for a in artifacts],
+        locked=True  # Cannot modify baselined items
+    )
+
+    return baseline
+
+# Usage
+req_baseline = baseline_phase("PROJ-001", "requirements")
 ```
 
-## Configuration
+### Baseline Comparison
 
-```typescript
-export default {
-  waterfall: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+```bash
+# Compare baselines
+tracertm baseline compare --from req-v1.0 --to req-v1.1
+
+# Output:
+# Baseline Comparison: req-v1.0 → req-v1.1
+# ═══════════════════════════════════════
+#
+# Added (3):
+#   + REQ-042: Password complexity rules
+#   + REQ-043: Session timeout
+#   + REQ-044: Audit logging
+#
+# Modified (2):
+#   ~ REQ-015: Login (priority: medium → high)
+#   ~ REQ-022: User profile (description updated)
+#
+# Deleted (1):
+#   - REQ-008: Legacy import (deprecated)
+#
+# Impact Analysis:
+#   12 downstream artifacts affected
+#   Run: tracertm impact --baseline-diff req-v1.0 req-v1.1
 ```
 
-## Examples
+## Change Control
 
-### Example 1
+### Change Request Workflow
 
-```typescript
-const example = await tracertm.waterfall({
-  option1: 'value1',
-  option2: 'value2'
-})
+```yaml
+# .tracertm/workflows/change_request.yaml
+name: change_request
+states:
+  - submitted
+  - analysis
+  - review_board
+  - approved
+  - rejected
+  - implemented
+
+transitions:
+  - from: submitted
+    to: analysis
+    auto: true
+    actions:
+      - type: run_impact_analysis
+      - type: notify
+        roles: [change_analyst]
+
+  - from: analysis
+    to: review_board
+    requires:
+      - field: impact_analysis
+        not_null: true
+      - field: estimated_effort
+        not_null: true
+
+  - from: review_board
+    to: approved
+    requires:
+      - approval:
+          role: change_board
+          min_votes: 3
 ```
 
-### Example 2
+### Impact Analysis for Changes
 
-```typescript
-const advanced = await tracertm.waterfall({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+```bash
+# Analyze change impact
+tracertm change analyze --request CR-001
+
+# Output:
+# Change Request CR-001 Impact Analysis
+# ═════════════════════════════════════
+#
+# Proposed Change:
+#   Modify REQ-015: Add two-factor authentication
+#
+# Direct Impact:
+#   Design artifacts: 3
+#     - ARCH-008: Authentication Architecture
+#     - DES-015: Login Module Design
+#     - DES-018: Session Management Design
+#
+#   Code modules: 5
+#     - auth_handler.py
+#     - session_manager.py
+#     - user_service.py
+#     - login_view.py
+#     - settings.py
+#
+#   Test cases: 12
+#     - test_login_*.py (8 cases)
+#     - test_session_*.py (4 cases)
+#
+# Estimated Effort: 3-5 days
+# Risk: Medium (affects authentication flow)
+#
+# Recommendation: Approve with thorough regression testing
+```
+
+## Reporting
+
+### Phase Status Report
+
+```bash
+# Project phase status
+tracertm report phase-status --project PROJ-001
+
+# Output:
+# Project PROJ-001 Phase Status
+# ═════════════════════════════
+#
+# Phase         Status      Artifacts  Coverage  Gate
+# ─────────────────────────────────────────────────────
+# Concept       Complete    5/5        100%      ✓ Passed
+# Requirements  Complete    42/42      100%      ✓ Passed
+# Design        In Progress 28/35      80%       Pending
+# Implementation Pending    0/0        -         -
+# Verification   Pending    0/0        -         -
+# Deployment     Pending    0/0        -         -
+#
+# Current Phase: Design
+# Target Gate: Design Review (Feb 15, 2025)
+# Days Remaining: 12
+```
+
+### Traceability Matrix Report
+
+```bash
+# Full traceability matrix
+tracertm report matrix --project PROJ-001 --format pdf
+
+# Generates complete V-model traceability:
+# Requirements → Design → Code → Tests
+# with bidirectional coverage analysis
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Front-Load Requirements
 
-## Troubleshooting
+```
+✓ Good: Spend time getting requirements right
+  - Thorough elicitation
+  - Formal reviews
+  - Customer sign-off
+  - Baseline before design
 
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+✗ Bad: Rush through requirements
+  - "We'll figure it out later"
+  - Leads to costly changes
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+### 2. Enforce Phase Gates
+
+```yaml
+# Don't allow skipping phases
+workflow:
+  strict_sequence: true
+  allow_skip: false
+
+  # Require gate passage before next phase
+  gate_enforcement: mandatory
 ```
 
-## API Reference
+### 3. Maintain Baselines
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```bash
+# Always baseline at gates
+tracertm baseline create --phase requirements --name "SRS-v1.0"
+tracertm baseline lock --name "SRS-v1.0"
+
+# Track changes against baselines
+tracertm baseline diff --from "SRS-v1.0" --current
+```
+
+### 4. Document Everything
+
+In regulated environments, if it's not documented, it didn't happen:
+
+```python
+# Every action should be recorded
+client.create_item(
+    title="Design Decision",
+    item_type="decision_record",
+    metadata={
+        "decision": "Use JWT for authentication",
+        "rationale": "Stateless, scalable, industry standard",
+        "alternatives_considered": ["Sessions", "OAuth only"],
+        "decided_by": "Architecture Board",
+        "date": "2024-12-01"
+    }
+)
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Agile Workflows](/docs/wiki/concepts/workflows/agile) - Iterative approach
+- [Hybrid Workflows](/docs/wiki/concepts/workflows/hybrid) - Combining methodologies
+- [Industry Standards](/docs/wiki/concepts/traceability/standards) - DO-178C, ISO 26262
+- [Baseline Management](/docs/wiki/concepts/versioning/baselines) - Version control
 

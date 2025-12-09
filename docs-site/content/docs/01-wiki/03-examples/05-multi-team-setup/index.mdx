@@ -1,32 +1,904 @@
 ---
 title: "Multi-Team Setup"
-description: "Documentation for Multi-Team Setup"
+description: "Enterprise-scale traceability management across multiple development teams"
 ---
 
 # Multi-Team Setup
 
-This page contains documentation for Multi-Team Setup.
+Coordinate requirements, features, and testing across multiple teams in large-scale software projects with TraceRTM's multi-team capabilities.
 
 ## Overview
 
-This section covers the key aspects of Multi-Team Setup in TraceRTM.
+### Multi-Team Traceability Challenges
 
-## Getting Started
+Large organizations face unique challenges when managing traceability across multiple teams:
 
-To get started with Multi-Team Setup:
+**Communication Barriers**
+- Teams work in silos with different priorities and timelines
+- Requirements changes may not propagate across team boundaries
+- Inconsistent terminology and naming conventions
 
-- Review the Multi-Team Setup and fundamentals
-- Explore practical examples
-- Check out the API reference
+**Coordination Overhead**
+- Shared components create dependencies between teams
+- Integration points require synchronized planning
+- Cross-team testing needs coordination
 
-## Key Concepts
+**Visibility Issues**
+- Difficult to track impact of changes across teams
+- No single source of truth for requirements
+- Reporting gaps make enterprise-wide status unclear
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+**Access Control**
+- Teams need autonomy over their work items
+- Sensitive features require restricted visibility
+- Shared requirements need collaborative editing
+
+TraceRTM addresses these challenges through project structure, linking strategies, and access controls designed for enterprise scale.
+
+---
+
+## Project Structure for Multiple Teams
+
+### Recommended Architecture
+
+For a typical enterprise software project, we recommend a hierarchical project structure:
+
+```
+Enterprise Project
+├── Platform Team
+│   ├── Core Services
+│   ├── Authentication
+│   └── Data Layer
+├── Frontend Team
+│   ├── Web Application
+│   ├── Mobile iOS
+│   └── Mobile Android
+├── Backend Team
+│   ├── API Services
+│   ├── Business Logic
+│   └── Integration Layer
+└── QA Team
+    ├── Test Infrastructure
+    ├── Automation
+    └── Manual Testing
+```
+
+### Creating Team Projects
+
+Each team maintains their own project for autonomy:
+
+```bash
+# Platform team setup
+tracertm project create "Platform Services" \
+  --description "Core platform components and services" \
+  --team "platform" \
+  --access-level "team-restricted"
+
+# Frontend team setup
+tracertm project create "Frontend Applications" \
+  --description "Web and mobile user interfaces" \
+  --team "frontend" \
+  --access-level "team-restricted"
+
+# Backend team setup
+tracertm project create "Backend Services" \
+  --description "API and business logic services" \
+  --team "backend" \
+  --access-level "team-restricted"
+
+# QA team setup
+tracertm project create "QA & Testing" \
+  --description "Testing infrastructure and test cases" \
+  --team "qa" \
+  --access-level "cross-team"
+```
+
+### Shared Requirements Project
+
+Create a central project for enterprise-level requirements:
+
+```bash
+tracertm project create "Enterprise Requirements" \
+  --description "Company-wide requirements and features" \
+  --access-level "public" \
+  --owners "product-management,architecture"
+```
+
+---
+
+## Shared Requirements Management
+
+### Creating Shared Requirements
+
+Shared requirements are visible to all teams and serve as integration points:
+
+```markdown
+# Enterprise Requirements/SHARED-001-authentication.md
+---
+id: SHARED-001
+title: Single Sign-On Authentication
+type: requirement
+status: approved
+priority: high
+owners: [platform-team, security-team]
+stakeholders: [frontend-team, backend-team, qa-team]
+---
+
+## Overview
+Implement SSO authentication using OAuth 2.0 for all company applications.
+
+## Acceptance Criteria
+- [ ] Support SAML 2.0 and OpenID Connect
+- [ ] Session timeout after 30 minutes of inactivity
+- [ ] Multi-factor authentication for admin users
+- [ ] Integration with company Active Directory
+
+## Team Dependencies
+- **Platform**: Authentication service implementation
+- **Frontend**: Login UI and token management
+- **Backend**: API authorization middleware
+- **QA**: Security and integration testing
+```
+
+### Linking Team-Specific Items
+
+Teams create items that link to shared requirements:
+
+```bash
+# Platform team implements auth service
+cd platform-services
+tracertm item create --type feature \
+  --title "OAuth 2.0 Authentication Service" \
+  --links "implements:SHARED-001" \
+  --assignee "platform-dev-1"
+
+# Frontend team implements login UI
+cd frontend-applications
+tracertm item create --type feature \
+  --title "SSO Login Interface" \
+  --links "implements:SHARED-001" \
+  --assignee "frontend-dev-2"
+
+# QA team creates test cases
+cd qa-testing
+tracertm item create --type test-case \
+  --title "SSO Authentication Test Suite" \
+  --links "tests:SHARED-001" \
+  --assignee "qa-automation-1"
+```
+
+---
+
+## Team-Specific Views and Filters
+
+### Creating Custom Views
+
+Each team can create filtered views for their work:
+
+```bash
+# Platform team view: only their features
+tracertm view create "Platform Work Items" \
+  --filter "team=platform AND status!=done" \
+  --sort "priority:desc,created:asc" \
+  --columns "id,title,status,assignee,priority"
+
+# Frontend team view: UI work
+tracertm view create "Frontend Development" \
+  --filter "team=frontend AND type IN (feature,bug)" \
+  --group-by "status" \
+  --sort "priority:desc"
+
+# QA team view: cross-team testing
+tracertm view create "Integration Testing" \
+  --filter "type=test-case AND tags CONTAINS integration" \
+  --group-by "team" \
+  --show-links "all"
+```
+
+### Saved Filter Examples
+
+```json
+{
+  "name": "My Team's Current Sprint",
+  "filter": {
+    "team": "backend",
+    "sprint": "2025-Q1-S3",
+    "status": ["in-progress", "in-review", "blocked"]
+  },
+  "sort": [
+    {"field": "priority", "order": "desc"},
+    {"field": "updated", "order": "desc"}
+  ]
+}
+```
+
+### Cross-Team Dashboard
+
+Create a dashboard showing all team activities:
+
+```bash
+tracertm dashboard create "Enterprise Overview" \
+  --widgets "team-progress,blocked-items,integration-status" \
+  --teams "platform,frontend,backend,qa" \
+  --refresh-interval "5m"
+```
+
+---
+
+## Cross-Team Linking Strategies
+
+### Link Types and Relationships
+
+Define standard link types for cross-team coordination:
+
+**Dependency Links**
+- `depends-on`: Item cannot start until dependency completes
+- `blocks`: Item prevents another team's work
+- `relates-to`: Informational relationship
+
+**Implementation Links**
+- `implements`: Team-specific implementation of shared requirement
+- `contributes-to`: Partial implementation or support
+- `derived-from`: Refined from higher-level requirement
+
+**Testing Links**
+- `tests`: Test case validates requirement or feature
+- `tested-by`: Requirement verified by test case
+- `validates`: Integration test for cross-team feature
+
+### Example: Cross-Team Feature
+
+```markdown
+# Platform Team/PLAT-123-api-gateway.md
+---
+id: PLAT-123
+title: API Gateway Implementation
+type: feature
+team: platform
+links:
+  - type: implements
+    target: SHARED-002
+  - type: depends-on
+    target: PLAT-100  # Internal platform dependency
+---
+
+## Description
+Implement API gateway with routing, rate limiting, and authentication.
+
+## Dependencies
+- Authentication service (PLAT-100) must be deployed first
+- Requires coordination with Backend team for API contracts
+```
+
+```markdown
+# Backend Team/BACK-456-user-service.md
+---
+id: BACK-456
+title: User Management Service
+type: feature
+team: backend
+links:
+  - type: implements
+    target: SHARED-002
+  - type: depends-on
+    target: PLAT-123  # Cross-team dependency
+---
+
+## Description
+REST API for user management operations.
+
+## Dependencies
+- Requires API Gateway (PLAT-123) for routing and auth
+- Blocks Frontend team until API contract is finalized
+```
+
+### Tracking Integration Points
+
+```bash
+# Query all items implementing a shared requirement
+tracertm query "links.target=SHARED-002" \
+  --group-by team \
+  --show-links
+
+# Find all cross-team dependencies
+tracertm query "links.type=depends-on AND team!=links.target.team" \
+  --format table
+```
+
+---
+
+## Access Control and Permissions
+
+### Permission Levels
+
+TraceRTM supports granular access control:
+
+**Team-Restricted**
+- Only team members can view and edit
+- Suitable for internal implementation details
+- Links from other teams are visible but not item details
+
+**Cross-Team**
+- All authenticated users can view
+- Only team members can edit
+- Ideal for features with external dependencies
+
+**Public**
+- All authenticated users can view and comment
+- Team owners and project admins can edit
+- Used for shared requirements and integration specs
+
+### Configuring Team Access
+
+```bash
+# Set project permissions
+tracertm project permissions "Platform Services" \
+  --team-read "platform,qa,architecture" \
+  --team-write "platform" \
+  --admin "platform-leads,engineering-management"
+
+# Grant cross-team access for integration items
+tracertm item update PLAT-123 \
+  --access-level "cross-team" \
+  --read-teams "platform,backend,qa" \
+  --comment-teams "all"
+
+# Restrict sensitive features
+tracertm item update PLAT-200 \
+  --access-level "team-restricted" \
+  --read-teams "platform,security" \
+  --write-teams "platform"
+```
+
+### Role-Based Access
+
+Define roles with specific permissions:
+
+```yaml
+roles:
+  team_member:
+    - read_team_items
+    - create_items
+    - edit_own_items
+    - comment_all_items
+
+  team_lead:
+    - all_team_member_permissions
+    - edit_all_team_items
+    - manage_team_links
+    - approve_requirements
+
+  product_manager:
+    - read_all_items
+    - create_shared_requirements
+    - edit_shared_requirements
+    - view_cross_team_reports
+
+  architect:
+    - read_all_items
+    - comment_all_items
+    - create_technical_specs
+    - review_integration_points
+```
+
+---
+
+## Conflict Resolution Between Teams
+
+### Common Conflict Scenarios
+
+**Competing Priorities**
+- Multiple teams need same shared resource
+- Timeline conflicts for dependent features
+- Resource allocation disputes
+
+**Technical Disagreements**
+- API contract negotiations
+- Architecture decisions affecting multiple teams
+- Technology stack choices
+
+**Requirement Changes**
+- Shared requirement modified by one team
+- Impacts other teams' work in progress
+- Scope creep across team boundaries
+
+### Resolution Workflow
+
+```markdown
+# Create conflict resolution item
+tracertm item create --type conflict \
+  --title "API Contract Disagreement: User Service" \
+  --description "Backend and Frontend teams disagree on pagination approach" \
+  --stakeholders "backend-lead,frontend-lead,architect" \
+  --priority high \
+  --due-date "2025-01-15"
+
+# Link conflicting items
+tracertm link create CONFLICT-001 BACK-456 --type "conflicts-with"
+tracertm link create CONFLICT-001 FRONT-789 --type "conflicts-with"
+
+# Track resolution
+tracertm item update CONFLICT-001 \
+  --status "in-discussion" \
+  --assignee "architect-lead"
+```
+
+### Conflict Resolution Process
+
+1. **Identification**: Any team member can flag a conflict
+2. **Documentation**: Create conflict item with all stakeholders
+3. **Discussion**: Use comments for async collaboration
+4. **Escalation**: Assign to architect or engineering manager if needed
+5. **Decision**: Document final decision and rationale
+6. **Implementation**: Update affected items and notify teams
+7. **Verification**: QA validates resolution
+
+### Change Impact Analysis
+
+```bash
+# Analyze impact of changing shared requirement
+tracertm impact-analysis SHARED-001 \
+  --depth 3 \
+  --show-teams \
+  --include-tests
+
+# Output shows affected teams and items:
+# Platform: 5 features, 2 in-progress
+# Frontend: 3 features, 1 in-progress
+# Backend: 4 features, 2 in-progress
+# QA: 12 test cases, 8 automated
+```
+
+---
+
+## Integration Points (Shared Items)
+
+### Defining Integration Contracts
+
+```markdown
+# Shared/INTEGRATION-API-001.md
+---
+id: INTEGRATION-API-001
+title: User Service API Contract
+type: integration-spec
+status: approved
+version: 2.1.0
+owners: [backend-team]
+consumers: [frontend-team, mobile-team, partner-api-team]
+---
+
+## Endpoints
+
+### GET /api/v2/users/{id}
+Returns user details by ID.
+
+**Response Schema:**
+```json
+{
+  "id": "string (uuid)",
+  "username": "string",
+  "email": "string",
+  "created_at": "string (ISO8601)",
+  "roles": ["string"]
+}
+```
+
+**Consumers:**
+- Frontend Team: User profile page (FRONT-789)
+- Mobile Team: Profile screen (MOBILE-234)
+
+## Change Policy
+- Breaking changes require 2-sprint deprecation period
+- All consumers must approve changes
+- Backward compatibility required for minor versions
+```
+
+### Integration Testing Strategy
+
+```bash
+# QA team creates integration test suite
+tracertm item create --type test-suite \
+  --title "User Service Integration Tests" \
+  --links "tests:INTEGRATION-API-001" \
+  --links "validates:BACK-456,FRONT-789,MOBILE-234"
+
+# Run integration tests before merging
+tracertm test run INTEGRATION-API-001 \
+  --environment staging \
+  --notify-teams "backend,frontend,mobile,qa"
+```
+
+### Shared Component Registry
+
+Maintain a registry of reusable components:
+
+```bash
+# Platform team publishes shared library
+tracertm component register "auth-client-sdk" \
+  --version "2.0.0" \
+  --project "Platform Services" \
+  --consumers "frontend,backend,mobile" \
+  --docs "https://docs.internal/auth-client"
+
+# Track component usage
+tracertm component usage "auth-client-sdk" \
+  --show-versions \
+  --show-dependents
+```
+
+---
+
+## Reporting Across Teams
+
+### Executive Dashboard
+
+Create high-level reports for leadership:
+
+```bash
+# Generate executive summary
+tracertm report executive-summary \
+  --teams "platform,frontend,backend,qa" \
+  --period "2025-Q1" \
+  --metrics "velocity,quality,dependencies,risks" \
+  --output executive-q1-2025.pdf
+```
+
+**Key Metrics:**
+- Overall project health (Red/Yellow/Green)
+- Features completed vs. planned by team
+- Cross-team dependency status
+- Critical path analysis
+- Risk and blocker summary
+
+### Team Progress Reports
+
+```bash
+# Weekly progress report per team
+tracertm report team-progress \
+  --team "backend" \
+  --week "2025-W03" \
+  --include "completed,in-progress,blocked,planned" \
+  --compare-to "2025-W02"
+
+# Cross-team dependency report
+tracertm report dependencies \
+  --teams "all" \
+  --show-critical-path \
+  --highlight-blockers \
+  --format "markdown"
+```
+
+### Traceability Matrix
+
+Generate comprehensive traceability across teams:
+
+```bash
+# Full traceability from requirements to tests
+tracertm matrix generate \
+  --from "requirement" \
+  --to "test-case" \
+  --teams "all" \
+  --show-gaps \
+  --output traceability-matrix.html
+
+# Integration-focused matrix
+tracertm matrix generate \
+  --filter "type=integration-spec" \
+  --show-implementations \
+  --group-by team \
+  --include-status
+```
+
+### Custom Reports
+
+```python
+# Generate custom cross-team report
+from tracertm import Client
+
+client = Client()
+
+# Get all teams' current sprint items
+teams = ['platform', 'frontend', 'backend', 'qa']
+sprint = '2025-Q1-S3'
+
+report = {
+    'sprint': sprint,
+    'teams': {}
+}
+
+for team in teams:
+    items = client.query(f"team={team} AND sprint={sprint}")
+
+    report['teams'][team] = {
+        'total': len(items),
+        'completed': len([i for i in items if i.status == 'done']),
+        'in_progress': len([i for i in items if i.status == 'in-progress']),
+        'blocked': len([i for i in items if i.status == 'blocked']),
+        'at_risk': len([i for i in items if i.is_at_risk()])
+    }
+
+# Generate visualization
+client.visualize(report, output='sprint-overview.html')
+```
+
+---
+
+## Best Practices for Enterprise Scale
+
+### 1. Establish Clear Ownership
+
+**Do:**
+- Assign clear owners to shared requirements
+- Define escalation paths for conflicts
+- Document decision-making authority
+- Use RACI matrix for cross-team initiatives
+
+**Don't:**
+- Leave shared items without owners
+- Allow multiple teams to modify items without coordination
+- Skip stakeholder approval for breaking changes
+
+### 2. Implement Change Control
+
+```markdown
+# Change Control Process for Shared Requirements
+
+## Minor Changes (Clarifications)
+- Any stakeholder can propose
+- Owner approves
+- No team notification required
+
+## Major Changes (Scope/Criteria)
+- Requires impact analysis
+- All implementing teams must review
+- Architecture approval needed
+- 1-sprint notice before implementation
+
+## Breaking Changes (API/Contracts)
+- Requires RFC (Request for Comments)
+- All consumer teams must approve
+- 2-sprint deprecation period
+- Migration guide required
+```
+
+### 3. Maintain Consistent Naming
+
+```bash
+# Use team prefixes for item IDs
+PLAT-*    # Platform team
+FRONT-*   # Frontend team
+BACK-*    # Backend team
+QA-*      # QA team
+SHARED-*  # Cross-team requirements
+INTEG-*   # Integration specs
+
+# Use consistent terminology
+Feature → User-facing functionality
+Task → Internal development work
+Bug → Defect in existing functionality
+Spike → Research or investigation
+```
+
+### 4. Automate Cross-Team Notifications
+
+```yaml
+# notification-rules.yaml
+rules:
+  - name: "Shared Requirement Changed"
+    trigger: "item.updated"
+    condition: "item.type == 'requirement' AND item.access_level == 'public'"
+    notify: "item.stakeholders + item.implementing_teams"
+
+  - name: "Blocking Dependency"
+    trigger: "link.created"
+    condition: "link.type == 'blocks'"
+    notify: "link.target.assignee + link.target.team_leads"
+
+  - name: "Integration Test Failed"
+    trigger: "test.failed"
+    condition: "test.type == 'integration'"
+    notify: "test.related_teams + qa-leads"
+```
+
+### 5. Regular Synchronization
+
+**Daily Stand-ups**
+- Each team reports blockers affecting other teams
+- Integration point status updates
+- Dependency resolution
+
+**Weekly Integration Sync**
+- All team leads meet
+- Review cross-team dependencies
+- Discuss upcoming integration work
+- Update shared roadmap
+
+**Monthly Planning**
+- Review enterprise requirements
+- Align team roadmaps
+- Capacity planning for shared work
+- Architecture review
+
+### 6. Documentation Standards
+
+```markdown
+# Required sections for shared requirements:
+
+## Overview
+Clear description of the requirement
+
+## Acceptance Criteria
+Specific, testable criteria
+
+## Team Responsibilities
+What each team must deliver
+
+## Dependencies
+Prerequisites and integration points
+
+## Timeline
+Milestones and deadlines
+
+## Stakeholders
+Decision makers and reviewers
+
+## Change Log
+History of modifications
+```
+
+### 7. Metrics and Health Checks
+
+Track team health and collaboration:
+
+```bash
+# Monitor cross-team collaboration
+tracertm metrics collaboration \
+  --teams "all" \
+  --indicators "link-density,communication-frequency,blocker-resolution-time"
+
+# Health check
+tracertm health-check \
+  --check "orphaned-items,circular-dependencies,stale-blockers,missing-links" \
+  --teams "all" \
+  --threshold "warning"
+```
+
+### 8. Scale Considerations
+
+**For 5-10 Teams:**
+- Use project-per-team structure
+- Central shared requirements project
+- Weekly integration sync sufficient
+
+**For 10-50 Teams:**
+- Group teams into domains (Frontend, Backend, Platform, etc.)
+- Shared requirements per domain
+- Domain-level architecture review
+- Automated dependency tracking critical
+
+**For 50+ Teams:**
+- Multi-level hierarchy (Division → Department → Team)
+- Federated architecture ownership
+- Automated compliance checking
+- Dedicated integration team
+
+---
+
+## Example: Multi-Team E-Commerce Platform
+
+### Scenario
+
+A large e-commerce company with four development teams building a new platform:
+
+**Teams:**
+- Platform Team (8 developers)
+- Storefront Team (12 developers)
+- Order Management Team (10 developers)
+- DevOps Team (6 developers)
+
+### Setup
+
+```bash
+# Create team projects
+tracertm project create "Platform Core" --team platform
+tracertm project create "Storefront UI" --team storefront
+tracertm project create "Order Management" --team orders
+tracertm project create "Infrastructure" --team devops
+
+# Create shared requirements
+tracertm project create "E-Commerce Requirements" --access-level public
+```
+
+### Shared Requirement Example
+
+```markdown
+# E-Commerce Requirements/ECOM-001-checkout-flow.md
+---
+id: ECOM-001
+title: Streamlined Checkout Flow
+type: requirement
+priority: critical
+stakeholders: [product, storefront, orders, platform]
+---
+
+## Goal
+Reduce checkout abandonment by 20% through streamlined process.
+
+## User Story
+As a customer, I want to complete my purchase quickly without unnecessary steps.
+
+## Team Breakdown
+
+### Platform Team (PLAT-301, PLAT-302)
+- Payment gateway integration
+- Address validation service
+
+### Storefront Team (STORE-501, STORE-502, STORE-503)
+- Checkout UI components
+- Cart management
+- Guest checkout flow
+
+### Order Management Team (ORDER-401, ORDER-402)
+- Order creation service
+- Inventory reservation
+- Order confirmation email
+
+### DevOps Team (DEVOPS-601)
+- Performance monitoring
+- Checkout analytics pipeline
+```
+
+### Team Implementation
+
+Each team creates implementation items:
+
+```bash
+# Platform team
+tracertm item create --type feature --id PLAT-301 \
+  --title "Stripe Payment Integration" \
+  --links "implements:ECOM-001"
+
+# Storefront team
+tracertm item create --type feature --id STORE-501 \
+  --title "One-Page Checkout UI" \
+  --links "implements:ECOM-001" \
+  --links "depends-on:PLAT-301"
+
+# Order management team
+tracertm item create --type feature --id ORDER-401 \
+  --title "Order Creation API" \
+  --links "implements:ECOM-001" \
+  --links "depends-on:PLAT-301"
+```
+
+### Integration Testing
+
+```bash
+# DevOps team creates integration test
+tracertm item create --type test-suite --id DEVOPS-601 \
+  --title "End-to-End Checkout Test" \
+  --links "tests:ECOM-001" \
+  --links "validates:PLAT-301,STORE-501,ORDER-401"
+```
+
+### Monitoring Progress
+
+```bash
+# Check implementation status
+tracertm query "links.target=ECOM-001" --group-by team,status
+
+# Output:
+# Platform: 2 features (2 done, 0 in-progress)
+# Storefront: 3 features (1 done, 2 in-progress)
+# Orders: 2 features (1 done, 1 in-progress)
+# DevOps: 1 test suite (0 done, 1 in-progress)
+```
+
+---
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- Review [Access Control](/docs/wiki/guides/access-control) for detailed permission configuration
+- Learn about [Reporting](/docs/wiki/guides/reporting) for advanced analytics
+- Explore [API Integration](/docs/api) for automation
+- Check [Workflow Automation](/docs/wiki/guides/workflows) for team processes

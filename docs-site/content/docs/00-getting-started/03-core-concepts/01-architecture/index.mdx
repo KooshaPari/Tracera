@@ -1,0 +1,193 @@
+---
+title: "Architecture Overview"
+description: "Understanding TraceRTM's layered architecture, components, and data flow"
+---
+
+# Architecture Overview
+
+TraceRTM follows a clean, layered architecture designed for scalability, testability, and agent-native operations.
+
+## High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Client Layer                             │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐   │
+│  │   CLI   │  │   TUI   │  │   API   │  │  Agent SDK      │   │
+│  └────┬────┘  └────┬────┘  └────┬────┘  └────────┬────────┘   │
+└───────┼────────────┼────────────┼────────────────┼─────────────┘
+        │            │            │                │
+┌───────▼────────────▼────────────▼────────────────▼─────────────┐
+│                      Service Layer                              │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐    │
+│  │ Item Service│  │ Link Service │  │ Traceability Svc   │    │
+│  └─────────────┘  └──────────────┘  └────────────────────┘    │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐    │
+│  │Project Svc  │  │ Search Svc   │  │ Agent Coord Svc    │    │
+│  └─────────────┘  └──────────────┘  └────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+        │
+┌───────▼─────────────────────────────────────────────────────────┐
+│                    Repository Layer                              │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐     │
+│  │ItemRepo     │  │LinkRepo      │  │ProjectRepo         │     │
+│  └─────────────┘  └──────────────┘  └────────────────────┘     │
+└─────────────────────────────────────────────────────────────────┘
+        │
+┌───────▼─────────────────────────────────────────────────────────┐
+│                     Data Layer                                   │
+│  ┌─────────────────────┐  ┌────────────────────────────────┐   │
+│  │   PostgreSQL/SQLite │  │   Local Storage (Markdown)     │   │
+│  └─────────────────────┘  └────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Core Components
+
+### Client Layer
+
+The client layer provides multiple interfaces to interact with TraceRTM:
+
+| Component | Purpose | Use Case |
+|-----------|---------|----------|
+| **CLI** | Command-line interface | Automation, scripting, CI/CD |
+| **TUI** | Terminal user interface | Interactive terminal workflows |
+| **REST API** | HTTP endpoints | Web apps, integrations |
+| **Agent SDK** | Python SDK | AI agents, automation bots |
+
+### Service Layer
+
+Services encapsulate business logic and orchestrate operations:
+
+- **ItemService**: CRUD operations for artifacts (features, tests, code, etc.)
+- **LinkService**: Relationship management and integrity checks
+- **TraceabilityService**: Matrix generation and impact analysis
+- **ProjectService**: Project lifecycle management
+- **SearchService**: Full-text and semantic search
+- **AgentCoordinationService**: Multi-agent synchronization
+
+### Repository Layer
+
+Repositories abstract data access patterns:
+
+```python
+# Example: ItemRepository
+class ItemRepository:
+    async def get_by_id(self, item_id: str) -> Item | None
+    async def get_by_project(self, project_id: str) -> list[Item]
+    async def create(self, item: Item) -> Item
+    async def update(self, item: Item) -> Item
+    async def delete(self, item_id: str) -> bool
+```
+
+### Data Layer
+
+TraceRTM supports multiple storage backends:
+
+| Backend | Best For | Features |
+|---------|----------|----------|
+| **PostgreSQL** | Production | Full ACID, concurrent access, advanced queries |
+| **SQLite** | Development | Zero config, portable, fast setup |
+| **Local Storage** | Git-based | Markdown files, version control friendly |
+
+## Data Flow
+
+### Create Item Flow
+
+```
+User/Agent → CLI/API → ItemService → ItemRepository → Database
+                                   ↓
+                            EventService (audit log)
+                                   ↓
+                            SearchService (index update)
+```
+
+### Link Creation Flow
+
+```
+User/Agent → LinkService → Validation Engine → LinkRepository
+                              ↓
+                     Cycle Detection
+                              ↓
+                     Integrity Checks
+```
+
+## Key Design Principles
+
+### 1. Agent-Native
+
+TraceRTM is designed from the ground up for AI agent interaction:
+
+- **Idempotent Operations**: Safe to retry without side effects
+- **Conflict Resolution**: Automatic handling of concurrent updates
+- **Batch APIs**: Efficient bulk operations for agents
+- **Event Streaming**: Real-time updates via NATS/webhooks
+
+### 2. Separation of Concerns
+
+Each layer has a single responsibility:
+
+- **CLI/API**: Input validation, authentication
+- **Services**: Business logic, orchestration
+- **Repositories**: Data access, caching
+- **Models**: Data structure, validation
+
+### 3. Dependency Injection
+
+Services and repositories use dependency injection for testability:
+
+```python
+# Easy to mock in tests
+service = ItemService(
+    repository=MockItemRepository(),
+    event_service=MockEventService()
+)
+```
+
+### 4. Event Sourcing
+
+All changes are recorded as immutable events:
+
+```json
+{
+  "event_type": "item_created",
+  "entity_id": "FEAT-001",
+  "actor": "agent-123",
+  "timestamp": "2024-12-07T10:00:00Z",
+  "data": { "title": "User Login", "type": "feature" }
+}
+```
+
+## Scalability Patterns
+
+### Horizontal Scaling
+
+- Stateless services allow multiple instances
+- Database connection pooling
+- Distributed caching (Redis-compatible)
+
+### Vertical Scaling
+
+- Async I/O throughout the stack
+- Efficient batch processing
+- Memory-optimized data structures
+
+## Security Architecture
+
+### Authentication
+
+- JWT tokens for API access
+- API keys for service-to-service
+- Session-based for CLI/TUI
+
+### Authorization
+
+- Role-based access control (RBAC)
+- Project-level permissions
+- Agent-specific capabilities
+
+## Related Topics
+
+- [Data Model](/docs/getting-started/core-concepts/data-model) - Understanding artifacts and relationships
+- [Workflows](/docs/getting-started/core-concepts/workflows) - State machines and automation
+- [API Reference](/docs/api-reference) - Complete API documentation

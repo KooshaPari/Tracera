@@ -1,32 +1,497 @@
 ---
 title: "API Keys"
-description: "Documentation for API Keys"
+description: "Create, manage, and use API keys for authenticating with the TraceRTM API"
 ---
 
 # API Keys
 
-This page contains documentation for API Keys.
+API keys provide a simple, secure way to authenticate with the TraceRTM API. They're ideal for server-side applications, scripts, CI/CD pipelines, and CLI usage.
 
-## Overview
+## API Key Types
 
-This section covers the key aspects of API Keys in TraceRTM.
+| Type | Prefix | Environment | Use Case |
+|------|--------|-------------|----------|
+| **Live** | `rtm_live_` | Production | Production applications |
+| **Test** | `rtm_test_` | Sandbox | Development and testing |
+| **Agent** | `rtm_agent_` | Both | AI agent authentication |
 
-## Getting Started
+## Creating API Keys
 
-To get started with API Keys:
+### Via Web Dashboard
 
-- Review the API Keys and fundamentals
-- Explore practical examples
-- Check out the API reference
+1. Navigate to **Settings** → **API Keys**
+2. Click **Create New Key**
+3. Configure the key:
+   - **Name**: Descriptive name (e.g., "CI/CD Pipeline")
+   - **Environment**: Live or Test
+   - **Scopes**: Select permissions
+   - **Expiration**: Optional expiry date
+4. Click **Create**
+5. **Copy the key immediately** - it won't be shown again
 
-## Key Concepts
+### Via CLI
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```bash
+# Create a new API key
+rtm api-key create \
+  --name "CI Pipeline" \
+  --scopes "read:projects,write:items" \
+  --expires "2025-12-31"
 
-## Next Steps
+# Output:
+# ✓ API key created successfully
+# Key: rtm_live_abc123def456...
+# ⚠ Save this key - it won't be shown again!
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+### Via API
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_admin_key...")
+
+# Create a new API key
+new_key = await client.api_keys.create(
+    name="CI Pipeline",
+    scopes=["read:projects", "write:items", "read:links"],
+    expires_at="2025-12-31T23:59:59Z",
+    metadata={
+        "team": "platform",
+        "purpose": "automated testing"
+    }
+)
+
+print(f"Key ID: {new_key.id}")
+print(f"Key: {new_key.key}")  # Only available at creation
+print(f"Expires: {new_key.expires_at}")
+```
+
+## Using API Keys
+
+### HTTP Requests
+
+```bash
+# Bearer token (recommended)
+curl -H "Authorization: Bearer rtm_live_abc123..." \
+  https://api.tracertm.dev/v1/projects
+
+# X-API-Key header (alternative)
+curl -H "X-API-Key: rtm_live_abc123..." \
+  https://api.tracertm.dev/v1/projects
+
+# Query parameter (not recommended - logged in URLs)
+curl "https://api.tracertm.dev/v1/projects?api_key=rtm_live_abc123..."
+```
+
+### Python SDK
+
+```python
+from tracertm import TraceRTMClient
+import os
+
+# From environment variable (recommended)
+client = TraceRTMClient()  # Uses TRACERTM_API_KEY
+
+# Explicit API key
+client = TraceRTMClient(api_key="rtm_live_abc123...")
+
+# With custom configuration
+client = TraceRTMClient(
+    api_key=os.environ["TRACERTM_API_KEY"],
+    base_url="https://api.tracertm.dev",
+    timeout=30,
+    retry_count=3
+)
+
+# Make authenticated requests
+projects = await client.projects.list()
+for project in projects:
+    print(f"{project.id}: {project.name}")
+```
+
+### JavaScript/TypeScript SDK
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+// From environment variable
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY
+})
+
+// With configuration
+const client = new TraceRTMClient({
+  apiKey: 'rtm_live_abc123...',
+  baseUrl: 'https://api.tracertm.dev',
+  timeout: 30000,
+  retries: 3
+})
+
+// Make authenticated requests
+const projects = await client.projects.list()
+projects.forEach(project => {
+  console.log(`${project.id}: ${project.name}`)
+})
+```
+
+### Go SDK
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+
+    tracertm "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    // Create client with API key
+    client := tracertm.NewClient(
+        tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")),
+    )
+
+    // List projects
+    ctx := context.Background()
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        panic(err)
+    }
+
+    for _, project := range projects {
+        fmt.Printf("%s: %s\n", project.ID, project.Name)
+    }
+}
+```
+
+## API Key Scopes
+
+Control what operations an API key can perform:
+
+| Scope | Operations |
+|-------|------------|
+| `read:projects` | List, get projects |
+| `write:projects` | Create, update, delete projects |
+| `read:items` | List, get, search items |
+| `write:items` | Create, update, delete items |
+| `read:links` | List, get traceability links |
+| `write:links` | Create, update, delete links |
+| `read:agents` | View agent information |
+| `write:agents` | Register, update agents |
+| `read:events` | View audit events |
+| `admin:api_keys` | Manage API keys |
+| `admin:users` | Manage users (org admin) |
+
+### Scope Examples
+
+```python
+# Read-only key for dashboards
+readonly_key = await client.api_keys.create(
+    name="Dashboard Reader",
+    scopes=["read:projects", "read:items", "read:links"]
+)
+
+# CI/CD key for test automation
+cicd_key = await client.api_keys.create(
+    name="CI Pipeline",
+    scopes=[
+        "read:projects",
+        "read:items", "write:items",
+        "read:links", "write:links"
+    ]
+)
+
+# Full access key (use sparingly)
+admin_key = await client.api_keys.create(
+    name="Admin Key",
+    scopes=["admin:*"]
+)
+```
+
+## Key Management
+
+### Listing Keys
+
+```python
+# List all API keys
+keys = await client.api_keys.list()
+
+for key in keys:
+    print(f"{key.id}: {key.name}")
+    print(f"  Created: {key.created_at}")
+    print(f"  Last used: {key.last_used_at}")
+    print(f"  Scopes: {', '.join(key.scopes)}")
+```
+
+### Viewing Key Details
+
+```python
+# Get key details (doesn't reveal the actual key)
+key = await client.api_keys.get("key_abc123")
+
+print(f"Name: {key.name}")
+print(f"Prefix: {key.prefix}")  # e.g., "rtm_live_abc..."
+print(f"Scopes: {key.scopes}")
+print(f"Created: {key.created_at}")
+print(f"Expires: {key.expires_at}")
+print(f"Last used: {key.last_used_at}")
+print(f"Usage count: {key.usage_count}")
+```
+
+### Updating Keys
+
+```python
+# Update key name or metadata
+await client.api_keys.update(
+    "key_abc123",
+    name="Updated Name",
+    metadata={"team": "new-team"}
+)
+
+# Note: Scopes cannot be updated - create a new key instead
+```
+
+### Revoking Keys
+
+```python
+# Immediately revoke a key
+await client.api_keys.revoke("key_abc123")
+
+# Revoke with reason (for audit)
+await client.api_keys.revoke(
+    "key_abc123",
+    reason="Employee offboarding"
+)
+```
+
+### CLI Management
+
+```bash
+# List all keys
+rtm api-key list
+
+# Get key details
+rtm api-key get key_abc123
+
+# Revoke a key
+rtm api-key revoke key_abc123
+
+# Delete a key permanently
+rtm api-key delete key_abc123 --confirm
+```
+
+## Key Rotation
+
+Regular key rotation improves security:
+
+```python
+from tracertm.admin import APIKeyManager
+
+manager = APIKeyManager(client)
+
+# Rotate a key with grace period
+rotation = await manager.rotate_key(
+    old_key_id="key_old123",
+    grace_period_hours=24,  # Both keys work for 24 hours
+    new_name="Production API Key (Rotated)"
+)
+
+print(f"New key: {rotation.new_key}")
+print(f"Old key expires: {rotation.old_key_expires_at}")
+
+# After updating your applications, revoke the old key
+await manager.complete_rotation(rotation.rotation_id)
+```
+
+### Automated Rotation
+
+```python
+import asyncio
+from datetime import datetime, timedelta
+
+async def rotate_expiring_keys(client, days_before_expiry=7):
+    """Rotate keys that will expire soon."""
+    keys = await client.api_keys.list()
+    threshold = datetime.utcnow() + timedelta(days=days_before_expiry)
+
+    for key in keys:
+        if key.expires_at and key.expires_at < threshold:
+            print(f"Rotating key: {key.name}")
+
+            # Create replacement key
+            new_key = await client.api_keys.create(
+                name=f"{key.name} (rotated)",
+                scopes=key.scopes,
+                expires_at=(datetime.utcnow() + timedelta(days=90)).isoformat()
+            )
+
+            # Notify (implement your notification logic)
+            await notify_key_rotation(key.name, new_key.key)
+
+            # Revoke old key after grace period
+            await asyncio.sleep(86400)  # 24 hours
+            await client.api_keys.revoke(key.id)
+```
+
+## Security Best Practices
+
+### Environment Variables
+
+```bash
+# .env file (never commit to git!)
+TRACERTM_API_KEY=rtm_live_abc123...
+
+# .gitignore
+.env
+.env.local
+*.env
+```
+
+```python
+# Python - load from environment
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+client = TraceRTMClient(api_key=os.environ["TRACERTM_API_KEY"])
+```
+
+### Secret Managers
+
+```python
+# AWS Secrets Manager
+import boto3
+import json
+
+def get_api_key():
+    client = boto3.client('secretsmanager')
+    response = client.get_secret_value(SecretId='tracertm/api-key')
+    return json.loads(response['SecretString'])['api_key']
+
+tracertm_client = TraceRTMClient(api_key=get_api_key())
+```
+
+```python
+# HashiCorp Vault
+import hvac
+
+def get_api_key():
+    client = hvac.Client(url='https://vault.example.com')
+    secret = client.secrets.kv.read_secret_version(path='tracertm')
+    return secret['data']['data']['api_key']
+
+tracertm_client = TraceRTMClient(api_key=get_api_key())
+```
+
+### IP Restrictions
+
+```python
+# Create key with IP allowlist
+key = await client.api_keys.create(
+    name="Office Network Only",
+    scopes=["read:*", "write:*"],
+    allowed_ips=[
+        "203.0.113.0/24",  # Office network
+        "198.51.100.42"     # VPN server
+    ]
+)
+```
+
+### Minimum Privilege
+
+```python
+# BAD: Over-privileged key
+bad_key = await client.api_keys.create(
+    name="Script Key",
+    scopes=["admin:*"]  # Too many permissions!
+)
+
+# GOOD: Minimum required permissions
+good_key = await client.api_keys.create(
+    name="Script Key",
+    scopes=["read:projects", "read:items"]  # Only what's needed
+)
+```
+
+## Monitoring & Auditing
+
+### Usage Statistics
+
+```python
+# Get key usage statistics
+stats = await client.api_keys.get_stats("key_abc123")
+
+print(f"Total requests: {stats.total_requests}")
+print(f"Requests today: {stats.requests_today}")
+print(f"Last used: {stats.last_used_at}")
+print(f"Top endpoints: {stats.top_endpoints}")
+```
+
+### Audit Logs
+
+```python
+# View API key audit events
+events = await client.events.list(
+    entity_type="api_key",
+    entity_id="key_abc123",
+    limit=100
+)
+
+for event in events:
+    print(f"{event.timestamp}: {event.event_type}")
+    print(f"  IP: {event.metadata.get('ip_address')}")
+    print(f"  Endpoint: {event.metadata.get('endpoint')}")
+```
+
+## Troubleshooting
+
+### Invalid API Key
+
+```python
+# Test if your key is valid
+try:
+    client = TraceRTMClient(api_key="rtm_live_...")
+    await client.auth.verify()
+    print("API key is valid")
+except AuthenticationError as e:
+    print(f"Invalid API key: {e}")
+```
+
+### Expired Key
+
+```json
+{
+  "error": {
+    "code": "API_KEY_EXPIRED",
+    "message": "This API key has expired",
+    "details": {
+      "expired_at": "2024-01-01T00:00:00Z",
+      "hint": "Create a new API key in the dashboard"
+    }
+  }
+}
+```
+
+### Rate Limited
+
+```python
+from tracertm.exceptions import RateLimitError
+
+try:
+    # Make many requests
+    for i in range(1000):
+        await client.items.list(project_id="proj_123")
+except RateLimitError as e:
+    print(f"Rate limited. Retry after: {e.retry_after} seconds")
+    await asyncio.sleep(e.retry_after)
+```
+
+## Related Documentation
+
+- [API Key Management](/docs/api-reference/authentication/api-key-management) - Advanced key management
+- [OAuth 2.0](/docs/api-reference/authentication/oauth) - OAuth authentication
+- [Security Best Practices](/docs/wiki/guides/security) - Comprehensive security guide
+

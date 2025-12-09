@@ -1,32 +1,939 @@
 ---
-title: "Advanced Search"
-description: "Documentation for Advanced Search"
+title: Advanced Search
+description: Complex search queries, saved searches, search analytics, and AI-powered semantic search in TraceRTM
 ---
 
 # Advanced Search
 
-This page contains documentation for Advanced Search.
+Advanced search capabilities in TraceRTM enable complex queries, semantic search powered by AI, saved search configurations, and search analytics for understanding usage patterns.
 
-## Overview
+## Endpoints Overview
 
-This section covers the key aspects of Advanced Search in TraceRTM.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/projects/{project_id}/search/semantic` | AI-powered semantic search |
+| `POST` | `/projects/{project_id}/search/similar` | Find similar items |
+| `GET` | `/projects/{project_id}/search/saved` | List saved searches |
+| `POST` | `/projects/{project_id}/search/saved` | Create saved search |
+| `PUT` | `/projects/{project_id}/search/saved/{id}` | Update saved search |
+| `DELETE` | `/projects/{project_id}/search/saved/{id}` | Delete saved search |
+| `POST` | `/projects/{project_id}/search/saved/{id}/execute` | Execute saved search |
+| `GET` | `/projects/{project_id}/search/analytics` | Search analytics |
 
-## Getting Started
+---
 
-To get started with Advanced Search:
+## Semantic Search
 
-- Review the Advanced Search and fundamentals
-- Explore practical examples
-- Check out the API reference
+### `POST /projects/{project_id}/search/semantic`
 
-## Key Concepts
+AI-powered semantic search that understands meaning and context, not just keywords.
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+#### Request Body
 
-## Next Steps
+```json
+{
+  "query": "requirements for ensuring user data is protected during transmission",
+  "options": {
+    "model": "default",
+    "threshold": 0.7,
+    "max_results": 20,
+    "include_explanation": true,
+    "boost_recent": true,
+    "boost_linked": true
+  },
+  "filters": {
+    "type": ["requirement", "user_story"],
+    "status": ["approved", "in_progress"]
+  },
+  "context": {
+    "focus_areas": ["security", "compliance"],
+    "exclude_ids": ["item_abc123"]
+  }
+}
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+#### Semantic Search Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `model` | string | `default` | AI model: `default`, `precise`, `fast` |
+| `threshold` | number | `0.7` | Minimum similarity score (0.0-1.0) |
+| `max_results` | integer | `20` | Maximum results to return |
+| `include_explanation` | boolean | `false` | Include AI explanation of matches |
+| `boost_recent` | boolean | `true` | Boost recently updated items |
+| `boost_linked` | boolean | `true` | Boost well-connected items |
+| `rerank` | boolean | `true` | Use AI reranking for better results |
+
+#### Response
+
+```json
+{
+  "results": [
+    {
+      "id": "item_req_sec_001",
+      "type": "requirement",
+      "title": "Data Encryption in Transit",
+      "description": "All sensitive user data must be encrypted using TLS 1.3 or higher when transmitted over networks...",
+      "status": "approved",
+      "semantic_score": 0.94,
+      "keyword_score": 0.45,
+      "combined_score": 0.89,
+      "explanation": {
+        "summary": "Strong match for data protection during transmission",
+        "matched_concepts": [
+          "data protection",
+          "transmission security",
+          "encryption"
+        ],
+        "reasoning": "This requirement directly addresses the protection of user data during network transmission through encryption standards."
+      },
+      "highlights": {
+        "description": ["...sensitive <mark>user data</mark> must be encrypted...when <mark>transmitted</mark>..."]
+      }
+    },
+    {
+      "id": "item_req_sec_005",
+      "type": "requirement",
+      "title": "Secure API Communication",
+      "description": "API endpoints must use HTTPS and implement certificate pinning for mobile clients...",
+      "status": "approved",
+      "semantic_score": 0.87,
+      "keyword_score": 0.32,
+      "combined_score": 0.78,
+      "explanation": {
+        "summary": "Related to secure data transmission via APIs",
+        "matched_concepts": [
+          "secure communication",
+          "HTTPS",
+          "data protection"
+        ],
+        "reasoning": "API security requirements ensure data protection during client-server communication."
+      }
+    }
+  ],
+  "total": 15,
+  "query_understanding": {
+    "intent": "Find security requirements related to data protection during transmission",
+    "entities": [
+      { "type": "concept", "value": "user data protection" },
+      { "type": "concept", "value": "data transmission" },
+      { "type": "domain", "value": "security" }
+    ],
+    "expanded_terms": [
+      "encryption",
+      "TLS",
+      "HTTPS",
+      "secure communication",
+      "data in transit"
+    ]
+  },
+  "took_ms": 230
+}
+```
+
+---
+
+## Find Similar Items
+
+### `POST /projects/{project_id}/search/similar`
+
+Find items semantically similar to a given item or text.
+
+#### Request Body
+
+```json
+{
+  "source": {
+    "type": "item",
+    "id": "item_req_001"
+  },
+  "options": {
+    "threshold": 0.6,
+    "max_results": 10,
+    "same_type_only": false,
+    "exclude_linked": true,
+    "include_cross_project": false
+  },
+  "filters": {
+    "type": ["requirement", "test_case"],
+    "status": { "nin": ["deprecated", "cancelled"] }
+  }
+}
+```
+
+#### Source Types
+
+```json
+// By item ID
+{
+  "source": {
+    "type": "item",
+    "id": "item_req_001"
+  }
+}
+
+// By text
+{
+  "source": {
+    "type": "text",
+    "content": "The system shall validate user credentials against the identity provider and issue secure session tokens."
+  }
+}
+
+// By multiple items (find common similar)
+{
+  "source": {
+    "type": "items",
+    "ids": ["item_req_001", "item_req_002", "item_req_003"]
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "source": {
+    "id": "item_req_001",
+    "title": "User Authentication Requirements",
+    "type": "requirement"
+  },
+  "similar": [
+    {
+      "id": "item_req_042",
+      "type": "requirement",
+      "title": "Session Management Requirements",
+      "description": "The system shall implement secure session handling...",
+      "similarity_score": 0.89,
+      "shared_concepts": ["authentication", "session", "security"],
+      "relationship_suggestion": {
+        "type": "relates_to",
+        "confidence": 0.85,
+        "reason": "Both requirements address user session security"
+      }
+    },
+    {
+      "id": "item_tc_auth_015",
+      "type": "test_case",
+      "title": "TC-015: Verify Authentication Token Generation",
+      "description": "Test that valid credentials result in secure token...",
+      "similarity_score": 0.82,
+      "shared_concepts": ["authentication", "tokens", "credentials"],
+      "relationship_suggestion": {
+        "type": "verified_by",
+        "confidence": 0.92,
+        "reason": "Test case verifies authentication requirement behavior"
+      }
+    }
+  ],
+  "potential_duplicates": [
+    {
+      "id": "item_req_legacy_auth",
+      "type": "requirement",
+      "title": "Authentication System Requirements",
+      "similarity_score": 0.95,
+      "warning": "Potential duplicate - very high similarity",
+      "differences": [
+        "Different requirement IDs",
+        "Slightly different wording",
+        "Created by different users"
+      ]
+    }
+  ],
+  "took_ms": 180
+}
+```
+
+---
+
+## Saved Searches
+
+### List Saved Searches
+
+#### `GET /projects/{project_id}/search/saved`
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_abc123/search/saved" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+#### Response
+
+```json
+{
+  "saved_searches": [
+    {
+      "id": "ss_abc123",
+      "name": "Critical Security Requirements",
+      "description": "All high-priority security requirements needing review",
+      "query": {
+        "text": "security",
+        "filters": {
+          "type": ["requirement"],
+          "priority": { "in": ["critical", "high"] },
+          "tags": { "any": ["security", "compliance"] }
+        }
+      },
+      "visibility": "team",
+      "shared_with": ["team_security"],
+      "schedule": {
+        "enabled": true,
+        "frequency": "daily",
+        "time": "09:00",
+        "timezone": "America/New_York",
+        "notify": ["user_abc123", "team_security"]
+      },
+      "last_executed": "2024-01-20T09:00:00Z",
+      "last_result_count": 23,
+      "created_by": "user_abc123",
+      "created_at": "2024-01-01T10:00:00Z",
+      "updated_at": "2024-01-15T14:30:00Z"
+    },
+    {
+      "id": "ss_def456",
+      "name": "My Assigned Items",
+      "description": "Items assigned to me that need attention",
+      "query": {
+        "filters": {
+          "assignee": ["$current_user"],
+          "status": { "in": ["todo", "in_progress"] }
+        },
+        "sort": [{ "field": "priority", "order": "desc" }]
+      },
+      "visibility": "private",
+      "schedule": null,
+      "created_by": "user_abc123",
+      "created_at": "2024-01-05T11:00:00Z"
+    }
+  ],
+  "total": 2
+}
+```
+
+### Create Saved Search
+
+#### `POST /projects/{project_id}/search/saved`
+
+```json
+{
+  "name": "Untested Requirements",
+  "description": "Requirements without linked test cases",
+  "query": {
+    "text": "",
+    "filters": {
+      "type": ["requirement"],
+      "status": ["approved"],
+      "links": {
+        "verified_by": { "count": 0 }
+      }
+    },
+    "sort": [{ "field": "created_at", "order": "asc" }]
+  },
+  "visibility": "team",
+  "shared_with": ["team_qa"],
+  "schedule": {
+    "enabled": true,
+    "frequency": "weekly",
+    "day": "monday",
+    "time": "08:00",
+    "timezone": "UTC",
+    "notify": ["team_qa"],
+    "notify_on": "results_changed"
+  }
+}
+```
+
+#### Visibility Options
+
+| Value | Description |
+|-------|-------------|
+| `private` | Only visible to creator |
+| `team` | Visible to specified teams |
+| `project` | Visible to all project members |
+| `organization` | Visible to entire organization |
+
+#### Schedule Options
+
+```json
+{
+  "schedule": {
+    "enabled": true,
+    "frequency": "daily",      // daily, weekly, monthly
+    "day": "monday",           // For weekly (monday-sunday)
+    "date": 1,                 // For monthly (1-28)
+    "time": "09:00",           // 24-hour format
+    "timezone": "UTC",
+    "notify": ["user_abc123", "team_dev"],
+    "notify_on": "always",     // always, results_changed, threshold_exceeded
+    "threshold": {
+      "type": "count",
+      "operator": "gt",
+      "value": 10
+    }
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "ss_new123",
+  "name": "Untested Requirements",
+  "description": "Requirements without linked test cases",
+  "query": {
+    "text": "",
+    "filters": {
+      "type": ["requirement"],
+      "status": ["approved"],
+      "links": {
+        "verified_by": { "count": 0 }
+      }
+    }
+  },
+  "visibility": "team",
+  "shared_with": ["team_qa"],
+  "schedule": {
+    "enabled": true,
+    "frequency": "weekly",
+    "next_run": "2024-01-22T08:00:00Z"
+  },
+  "created_by": "user_abc123",
+  "created_at": "2024-01-20T15:00:00Z"
+}
+```
+
+### Execute Saved Search
+
+#### `POST /projects/{project_id}/search/saved/{id}/execute`
+
+```json
+{
+  "override_filters": {
+    "status": ["approved", "in_progress"]
+  },
+  "pagination": {
+    "limit": 50,
+    "offset": 0
+  },
+  "options": {
+    "include_facets": true,
+    "export_format": null
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "saved_search": {
+    "id": "ss_abc123",
+    "name": "Untested Requirements"
+  },
+  "results": [
+    {
+      "id": "item_req_015",
+      "type": "requirement",
+      "title": "Password Policy Requirements",
+      "status": "approved",
+      "links_count": {
+        "total": 2,
+        "verified_by": 0,
+        "traces_to": 2
+      }
+    }
+  ],
+  "total": 15,
+  "executed_at": "2024-01-20T15:30:00Z",
+  "changes_since_last": {
+    "new_matches": 3,
+    "removed_matches": 1,
+    "previous_total": 13
+  }
+}
+```
+
+---
+
+## Search Analytics
+
+### `GET /projects/{project_id}/search/analytics`
+
+Get search usage analytics and insights.
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `period` | string | Time period: `day`, `week`, `month`, `quarter` |
+| `start_date` | string | Start date (ISO 8601) |
+| `end_date` | string | End date (ISO 8601) |
+| `group_by` | string | Group by: `user`, `team`, `query`, `type` |
+
+#### Response
+
+```json
+{
+  "period": {
+    "start": "2024-01-01T00:00:00Z",
+    "end": "2024-01-31T23:59:59Z"
+  },
+  "summary": {
+    "total_searches": 4523,
+    "unique_users": 45,
+    "avg_searches_per_user": 100.5,
+    "avg_results_per_search": 23.4,
+    "avg_response_time_ms": 67,
+    "zero_result_rate": 0.08
+  },
+  "top_queries": [
+    {
+      "query": "authentication",
+      "count": 234,
+      "avg_results": 45,
+      "click_through_rate": 0.67
+    },
+    {
+      "query": "payment processing",
+      "count": 189,
+      "avg_results": 32,
+      "click_through_rate": 0.72
+    },
+    {
+      "query": "security requirements",
+      "count": 156,
+      "avg_results": 28,
+      "click_through_rate": 0.81
+    }
+  ],
+  "zero_result_queries": [
+    {
+      "query": "kubernetes deployment",
+      "count": 15,
+      "suggestion": "Consider adding related content or synonyms"
+    },
+    {
+      "query": "mobile app requirements",
+      "count": 12,
+      "suggestion": "Check for typos or alternative terms"
+    }
+  ],
+  "search_trends": [
+    {
+      "date": "2024-01-01",
+      "searches": 145,
+      "unique_users": 23
+    },
+    {
+      "date": "2024-01-02",
+      "searches": 167,
+      "unique_users": 28
+    }
+  ],
+  "by_type": {
+    "simple": { "count": 3200, "percentage": 0.71 },
+    "advanced": { "count": 1000, "percentage": 0.22 },
+    "semantic": { "count": 323, "percentage": 0.07 }
+  },
+  "by_result_action": {
+    "clicked": { "count": 3100, "percentage": 0.69 },
+    "exported": { "count": 450, "percentage": 0.10 },
+    "refined": { "count": 600, "percentage": 0.13 },
+    "abandoned": { "count": 373, "percentage": 0.08 }
+  }
+}
+```
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.search import SemanticSearchOptions, SavedSearchConfig
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Semantic search
+semantic_results = client.search_semantic(
+    project_id="proj_abc123",
+    query="requirements for protecting user data during transmission",
+    options=SemanticSearchOptions(
+        model="precise",
+        threshold=0.7,
+        max_results=20,
+        include_explanation=True
+    ),
+    filters={
+        "type": ["requirement"],
+        "status": ["approved"]
+    }
+)
+
+for result in semantic_results.results:
+    print(f"{result.title} (score: {result.semantic_score})")
+    if result.explanation:
+        print(f"  Reason: {result.explanation.summary}")
+        print(f"  Concepts: {', '.join(result.explanation.matched_concepts)}")
+
+# Find similar items
+similar = client.find_similar(
+    project_id="proj_abc123",
+    source={"type": "item", "id": "item_req_001"},
+    options={
+        "threshold": 0.6,
+        "max_results": 10,
+        "exclude_linked": True
+    }
+)
+
+print(f"\nItems similar to '{similar.source.title}':")
+for item in similar.similar:
+    print(f"  {item.title} ({item.similarity_score:.2f})")
+    if item.relationship_suggestion:
+        print(f"    Suggested link: {item.relationship_suggestion.type}")
+
+# Check for duplicates
+if similar.potential_duplicates:
+    print("\n⚠️ Potential duplicates found:")
+    for dup in similar.potential_duplicates:
+        print(f"  {dup.title} ({dup.similarity_score:.2f})")
+
+# Create saved search
+saved = client.create_saved_search(
+    project_id="proj_abc123",
+    config=SavedSearchConfig(
+        name="Untested Critical Requirements",
+        description="Critical requirements without test coverage",
+        query={
+            "filters": {
+                "type": ["requirement"],
+                "priority": {"in": ["critical", "high"]},
+                "links": {"verified_by": {"count": 0}}
+            }
+        },
+        visibility="team",
+        shared_with=["team_qa"],
+        schedule={
+            "enabled": True,
+            "frequency": "daily",
+            "time": "09:00",
+            "notify": ["team_qa"],
+            "notify_on": "results_changed"
+        }
+    )
+)
+
+print(f"Created saved search: {saved.id}")
+
+# Execute saved search
+results = client.execute_saved_search(
+    project_id="proj_abc123",
+    search_id="ss_abc123",
+    options={"include_facets": True}
+)
+
+print(f"Found {results.total} items")
+if results.changes_since_last:
+    print(f"  New: {results.changes_since_last.new_matches}")
+    print(f"  Removed: {results.changes_since_last.removed_matches}")
+
+# Get search analytics
+analytics = client.get_search_analytics(
+    project_id="proj_abc123",
+    period="month"
+)
+
+print(f"\nSearch Analytics (Last Month):")
+print(f"  Total searches: {analytics.summary.total_searches}")
+print(f"  Unique users: {analytics.summary.unique_users}")
+print(f"  Zero result rate: {analytics.summary.zero_result_rate:.1%}")
+
+print("\nTop queries:")
+for query in analytics.top_queries[:5]:
+    print(f"  '{query.query}': {query.count} searches")
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient, SemanticSearchOptions, SavedSearchConfig } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Semantic search
+const semanticResults = await client.searchSemantic({
+  projectId: 'proj_abc123',
+  query: 'requirements for protecting user data during transmission',
+  options: {
+    model: 'precise',
+    threshold: 0.7,
+    maxResults: 20,
+    includeExplanation: true
+  },
+  filters: {
+    type: ['requirement'],
+    status: ['approved']
+  }
+});
+
+semanticResults.results.forEach(result => {
+  console.log(`${result.title} (score: ${result.semanticScore})`);
+  if (result.explanation) {
+    console.log(`  Reason: ${result.explanation.summary}`);
+  }
+});
+
+// Query understanding
+console.log('\nQuery Understanding:');
+console.log(`  Intent: ${semanticResults.queryUnderstanding.intent}`);
+console.log(`  Expanded terms: ${semanticResults.queryUnderstanding.expandedTerms.join(', ')}`);
+
+// Find similar items
+const similar = await client.findSimilar({
+  projectId: 'proj_abc123',
+  source: { type: 'item', id: 'item_req_001' },
+  options: {
+    threshold: 0.6,
+    maxResults: 10,
+    excludeLinked: true
+  }
+});
+
+// Create saved search with schedule
+const savedSearch = await client.createSavedSearch({
+  projectId: 'proj_abc123',
+  config: {
+    name: 'Untested Critical Requirements',
+    description: 'Critical requirements without test coverage',
+    query: {
+      filters: {
+        type: ['requirement'],
+        priority: { in: ['critical', 'high'] },
+        links: { verifiedBy: { count: 0 } }
+      }
+    },
+    visibility: 'team',
+    sharedWith: ['team_qa'],
+    schedule: {
+      enabled: true,
+      frequency: 'daily',
+      time: '09:00',
+      timezone: 'UTC',
+      notify: ['team_qa'],
+      notifyOn: 'results_changed'
+    }
+  }
+});
+
+// List and execute saved searches
+const savedSearches = await client.listSavedSearches({
+  projectId: 'proj_abc123'
+});
+
+for (const search of savedSearches.savedSearches) {
+  const results = await client.executeSavedSearch({
+    projectId: 'proj_abc123',
+    searchId: search.id,
+    options: { includeFacets: true }
+  });
+
+  console.log(`${search.name}: ${results.total} results`);
+}
+
+// Search analytics
+const analytics = await client.getSearchAnalytics({
+  projectId: 'proj_abc123',
+  period: 'month'
+});
+
+console.log(`\nSearch Analytics:`);
+console.log(`  Total: ${analytics.summary.totalSearches}`);
+console.log(`  Avg response: ${analytics.summary.avgResponseTimeMs}ms`);
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+    ctx := context.Background()
+
+    // Semantic search
+    semanticResults, err := client.SearchSemantic(ctx, &tracertm.SemanticSearchRequest{
+        ProjectID: "proj_abc123",
+        Query:     "requirements for protecting user data during transmission",
+        Options: tracertm.SemanticSearchOptions{
+            Model:              "precise",
+            Threshold:          0.7,
+            MaxResults:         20,
+            IncludeExplanation: true,
+        },
+        Filters: tracertm.SearchFilters{
+            Type:   []string{"requirement"},
+            Status: []string{"approved"},
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    for _, result := range semanticResults.Results {
+        fmt.Printf("%s (score: %.2f)\n", result.Title, result.SemanticScore)
+        if result.Explanation != nil {
+            fmt.Printf("  Reason: %s\n", result.Explanation.Summary)
+        }
+    }
+
+    // Find similar items
+    similar, err := client.FindSimilar(ctx, &tracertm.FindSimilarRequest{
+        ProjectID: "proj_abc123",
+        Source: tracertm.SimilarSource{
+            Type: "item",
+            ID:   "item_req_001",
+        },
+        Options: tracertm.SimilarOptions{
+            Threshold:     0.6,
+            MaxResults:    10,
+            ExcludeLinked: true,
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("\nSimilar to '%s':\n", similar.Source.Title)
+    for _, item := range similar.Similar {
+        fmt.Printf("  %s (%.2f)\n", item.Title, item.SimilarityScore)
+    }
+
+    // Create saved search
+    savedSearch, err := client.CreateSavedSearch(ctx, &tracertm.CreateSavedSearchRequest{
+        ProjectID: "proj_abc123",
+        Config: tracertm.SavedSearchConfig{
+            Name:        "Untested Critical Requirements",
+            Description: "Critical requirements without test coverage",
+            Query: tracertm.SavedSearchQuery{
+                Filters: map[string]interface{}{
+                    "type":     []string{"requirement"},
+                    "priority": map[string]interface{}{"in": []string{"critical", "high"}},
+                },
+            },
+            Visibility: "team",
+            SharedWith: []string{"team_qa"},
+            Schedule: &tracertm.SearchSchedule{
+                Enabled:   true,
+                Frequency: "daily",
+                Time:      "09:00",
+                Notify:    []string{"team_qa"},
+            },
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("\nCreated saved search: %s\n", savedSearch.ID)
+
+    // Get analytics
+    analytics, err := client.GetSearchAnalytics(ctx, &tracertm.SearchAnalyticsRequest{
+        ProjectID: "proj_abc123",
+        Period:    "month",
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("\nSearch Analytics:\n")
+    fmt.Printf("  Total searches: %d\n", analytics.Summary.TotalSearches)
+    fmt.Printf("  Unique users: %d\n", analytics.Summary.UniqueUsers)
+    fmt.Printf("  Zero result rate: %.1f%%\n", analytics.Summary.ZeroResultRate*100)
+}
+```
+
+---
+
+## Natural Language Query Examples
+
+The semantic search understands natural language queries:
+
+| Natural Language Query | What It Finds |
+|----------------------|---------------|
+| "requirements for user login" | Authentication-related requirements |
+| "tests that verify payment processing" | Payment-related test cases |
+| "security issues with high priority" | High-priority security bugs/risks |
+| "what depends on the database module" | Items with database dependencies |
+| "recently changed requirements" | Requirements updated in last 30 days |
+| "items assigned to me that are overdue" | User's overdue assignments |
+
+---
+
+## Error Responses
+
+### Model Unavailable
+
+```json
+{
+  "error": {
+    "code": "MODEL_UNAVAILABLE",
+    "message": "Semantic search model is temporarily unavailable",
+    "details": {
+      "model": "precise",
+      "fallback_available": true,
+      "suggestion": "Try using 'default' model or retry later"
+    }
+  }
+}
+```
+
+### Saved Search Not Found
+
+```json
+{
+  "error": {
+    "code": "SAVED_SEARCH_NOT_FOUND",
+    "message": "Saved search not found",
+    "details": {
+      "search_id": "ss_invalid",
+      "suggestion": "Check the search ID or list available saved searches"
+    }
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### Semantic Search Tips
+
+1. **Use natural language**: Write queries as you would ask a colleague
+2. **Provide context**: Include domain context for better results
+3. **Set appropriate thresholds**: Start with 0.7, adjust based on results
+4. **Use explanations**: Enable for understanding why items matched
+
+### Saved Search Management
+
+1. **Meaningful names**: Use descriptive names for saved searches
+2. **Document purpose**: Add descriptions explaining the use case
+3. **Review schedules**: Ensure notification frequency is appropriate
+4. **Share wisely**: Use team visibility for collaborative searches
+
+---
+
+## Related Documentation
+
+- [Search API](/docs/api-reference/rest-api/search) - Basic search operations
+- [Items API](/docs/api-reference/rest-api/items) - Item management
+- [AI Features](/docs/wiki/concepts/ai-features) - AI capabilities overview

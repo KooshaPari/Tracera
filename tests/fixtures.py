@@ -7,7 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from tracertm.models.base import Base
+# Import ALL models to ensure they're registered with Base.metadata
+# This is critical - SQLAlchemy only creates tables for imported models
+from tracertm.models.agent import Agent
+from tracertm.models.agent_event import AgentEvent
+from tracertm.models.agent_lock import AgentLock
+from tracertm.models.event import Event
 from tracertm.models.item import Item
+from tracertm.models.link import Link
+from tracertm.models.project import Project
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 
@@ -49,13 +57,30 @@ async def db_session(test_db_engine):
 
 
 @pytest_asyncio.fixture
-async def sample_item(db_session: AsyncSession) -> Item:
-    """Create a sample item for testing."""
+async def sample_project(db_session: AsyncSession) -> Project:
+    """Create a sample project for testing."""
+    from tracertm.repositories.project_repository import ProjectRepository
+
+    repo = ProjectRepository(db_session)
+    project = await repo.create(
+        name="Test Project",
+        description="Test project for fixtures",
+    )
+    await db_session.commit()
+    return project
+
+
+@pytest_asyncio.fixture
+async def sample_item(db_session: AsyncSession, sample_project: Project) -> Item:
+    """Create a sample item for testing.
+
+    CRITICAL: Depends on sample_project to satisfy foreign key constraint.
+    """
     from tracertm.repositories.item_repository import ItemRepository
 
     repo = ItemRepository(db_session)
     item = await repo.create(
-        project_id="test-project",
+        project_id=sample_project.id,
         title="Sample Item",
         view="FEATURE",
         item_type="feature",

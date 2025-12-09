@@ -1,125 +1,577 @@
 ---
 title: "Team Collaboration"
-description: "Documentation for Team Collaboration"
+description: "Best practices for multi-team collaboration on requirements traceability with TraceRTM"
 ---
 
-# Team Collaboration
+# Team Collaboration Best Practices
 
+Effective team collaboration ensures consistent traceability practices, reduces conflicts, and enables parallel work across multiple teams.
 
-## Overview
+## Role-Based Access
 
-Welcome to the Team Collaboration documentation.
+### Define Clear Roles
 
-## Introduction
+Establish roles with appropriate permissions:
 
-This page provides comprehensive information about Team Collaboration.
+```python
+from tracertm import TraceRTMClient
 
-## Key Features
+client = TraceRTMClient()
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
-
-## Getting Started
-
-```bash
-tracertm init
-tracertm config set team.collaboration enabled
-```
-
-## Usage
-
-### Basic Usage
-
-```typescript
-import { TraceRTM } from '@tracertm/core'
-
-const tracertm = new TraceRTM()
-const result = await tracertm.teamcollaboration()
-```
-
-### Advanced Usage
-
-```typescript
-const config = {
-  team_collaboration: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
+# Define team roles
+ROLES = {
+    "product_owner": {
+        "permissions": ["create", "update", "delete", "approve"],
+        "artifact_types": ["feature", "epic", "story"],
+        "description": "Manages product requirements"
+    },
+    "developer": {
+        "permissions": ["create", "update", "link"],
+        "artifact_types": ["code", "design", "component"],
+        "description": "Implements requirements"
+    },
+    "qa_engineer": {
+        "permissions": ["create", "update", "link", "execute"],
+        "artifact_types": ["test", "testsuite"],
+        "description": "Tests requirements"
+    },
+    "viewer": {
+        "permissions": ["read"],
+        "artifact_types": ["*"],
+        "description": "Read-only access"
     }
-  }
 }
 
-const tracertm = new TraceRTM(config)
+# Assign role to user
+client.assign_role(
+    user_id="alice@example.com",
+    role="product_owner",
+    project_id="PROJ-001"
+)
 ```
 
-## Configuration
+### Team Structure
 
-```typescript
-export default {
-  team_collaboration: {
-    enabled: true,
-    settings: {
-      // Configuration here
+```yaml
+# .tracertm/teams.yaml
+teams:
+  product:
+    lead: "alice@example.com"
+    members:
+      - "bob@example.com"
+      - "carol@example.com"
+    default_role: product_owner
+    artifact_types: [feature, epic, story]
+
+  backend:
+    lead: "david@example.com"
+    members:
+      - "eve@example.com"
+      - "frank@example.com"
+    default_role: developer
+    artifact_types: [code, api, design]
+
+  qa:
+    lead: "grace@example.com"
+    members:
+      - "henry@example.com"
+    default_role: qa_engineer
+    artifact_types: [test, testsuite]
+```
+
+## Ownership and Assignment
+
+### Assign Ownership
+
+Every artifact should have a clear owner:
+
+```python
+# Create feature with ownership
+feature = client.create_item(
+    title="User Authentication",
+    item_type="feature",
+    metadata={
+        "owner": "alice@example.com",
+        "team": "product",
+        "stakeholders": ["security@example.com", "compliance@example.com"]
     }
-  }
-}
+)
+
+# Assign to developer
+client.update_item(
+    feature.id,
+    metadata={
+        "assignee": "david@example.com",
+        "assignment_date": datetime.now().isoformat(),
+        "due_date": "2024-12-31"
+    }
+)
 ```
 
-## Examples
+### Transfer Ownership
 
-### Example 1
+```python
+def transfer_ownership(client, item_id, new_owner, reason):
+    """Transfer artifact ownership with audit trail."""
+    item = client.get_item(item_id)
+    old_owner = item.metadata.get("owner")
 
-```typescript
-const example = await tracertm.teamcollaboration({
-  option1: 'value1',
-  option2: 'value2'
-})
+    client.update_item(
+        item_id,
+        metadata={
+            "owner": new_owner,
+            "previous_owner": old_owner,
+            "transfer_reason": reason,
+            "transfer_date": datetime.now().isoformat()
+        }
+    )
+
+    # Notify stakeholders
+    client.notify(
+        users=[old_owner, new_owner],
+        message=f"Ownership of {item_id} transferred from {old_owner} to {new_owner}"
+    )
+
+# Usage
+transfer_ownership(
+    client,
+    "FEAT-001",
+    "bob@example.com",
+    "Team restructuring"
+)
 ```
 
-### Example 2
+## Review Workflows
 
-```typescript
-const advanced = await tracertm.teamcollaboration({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+### Requirement Reviews
+
+Implement structured review processes:
+
+```python
+# Submit for review
+def submit_for_review(client, item_id, reviewers):
+    """Submit artifact for team review."""
+    client.update_item(
+        item_id,
+        status="review",
+        metadata={
+            "review_requested": datetime.now().isoformat(),
+            "reviewers": reviewers,
+            "review_status": {reviewer: "pending" for reviewer in reviewers}
+        }
+    )
+
+    # Notify reviewers
+    for reviewer in reviewers:
+        client.notify(
+            users=[reviewer],
+            message=f"Review requested for {item_id}",
+            action_url=f"/items/{item_id}"
+        )
+
+# Usage
+submit_for_review(
+    client,
+    "FEAT-001",
+    ["bob@example.com", "carol@example.com"]
+)
 ```
 
-## Best Practices
+### Approve or Reject
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+```python
+def review_artifact(client, item_id, reviewer, decision, comments=None):
+    """Record reviewer decision."""
+    item = client.get_item(item_id)
+    review_status = item.metadata.get("review_status", {})
 
-## Troubleshooting
+    # Record decision
+    review_status[reviewer] = {
+        "decision": decision,  # "approved" or "rejected"
+        "timestamp": datetime.now().isoformat(),
+        "comments": comments
+    }
 
-### Common Issues
+    # Check if all reviews complete
+    all_complete = all(
+        isinstance(v, dict) and v.get("decision")
+        for v in review_status.values()
+    )
 
-**Issue 1:**
+    all_approved = all(
+        v.get("decision") == "approved"
+        for v in review_status.values()
+        if isinstance(v, dict)
+    )
+
+    # Update status
+    if all_complete:
+        new_status = "approved" if all_approved else "draft"
+        client.update_item(
+            item_id,
+            status=new_status,
+            metadata={"review_status": review_status}
+        )
+    else:
+        client.update_item(
+            item_id,
+            metadata={"review_status": review_status}
+        )
+
+# Usage
+review_artifact(
+    client,
+    "FEAT-001",
+    "bob@example.com",
+    "approved",
+    "Looks good, clear acceptance criteria"
+)
+```
+
+## Change Management
+
+### Change Requests
+
+Track changes through formal requests:
+
+```python
+# Create change request
+def request_change(client, item_id, proposed_changes, rationale):
+    """Create formal change request."""
+    item = client.get_item(item_id)
+
+    change_request = client.create_item(
+        title=f"Change Request for {item_id}",
+        item_type="change_request",
+        description=f"""
+## Proposed Changes
+{proposed_changes}
+
+## Rationale
+{rationale}
+
+## Impact Assessment
+- Pending impact analysis
+        """,
+        metadata={
+            "target_item": item_id,
+            "requestor": client.current_user,
+            "status": "pending",
+            "created_at": datetime.now().isoformat()
+        }
+    )
+
+    # Link to target item
+    client.create_link(change_request.id, item_id, "modifies")
+
+    return change_request
+
+# Usage
+cr = request_change(
+    client,
+    "FEAT-001",
+    "Add OAuth2 support in addition to password auth",
+    "Enterprise customers require SSO integration"
+)
+```
+
+### Impact Analysis Before Changes
+
+```python
+def analyze_change_impact(client, item_id):
+    """Analyze impact of changing an item."""
+    impact = client.get_impact(item_id)
+
+    analysis = {
+        "direct_dependencies": [],
+        "tests_affected": [],
+        "code_affected": [],
+        "documents_affected": [],
+        "teams_to_notify": set()
+    }
+
+    for affected in impact.affected:
+        # Categorize by type
+        if affected.item_type == "test":
+            analysis["tests_affected"].append(affected)
+        elif affected.item_type == "code":
+            analysis["code_affected"].append(affected)
+        elif affected.item_type in ["design", "doc"]:
+            analysis["documents_affected"].append(affected)
+        else:
+            analysis["direct_dependencies"].append(affected)
+
+        # Track teams to notify
+        if affected.metadata.get("team"):
+            analysis["teams_to_notify"].add(affected.metadata["team"])
+
+    return analysis
+
+# Before making changes
+impact = analyze_change_impact(client, "FEAT-001")
+print(f"Tests to update: {len(impact['tests_affected'])}")
+print(f"Teams to notify: {impact['teams_to_notify']}")
+```
+
+## Communication
+
+### Notifications
+
+Configure team notifications:
+
+```yaml
+# .tracertm/notifications.yaml
+notifications:
+  channels:
+    slack:
+      webhook: ${SLACK_WEBHOOK_URL}
+      default_channel: "#traceability"
+
+    email:
+      smtp_server: smtp.example.com
+      from: tracertm@example.com
+
+  rules:
+    - event: item.created
+      conditions:
+        item_type: [feature, epic]
+      notify:
+        - channel: slack
+          destination: "#product-team"
+        - channel: email
+          destination: product@example.com
+
+    - event: status.changed
+      conditions:
+        to_status: [approved, rejected]
+      notify:
+        - channel: slack
+          destination: "@{item.owner}"
+
+    - event: review.requested
+      notify:
+        - channel: email
+          destination: "{reviewers}"
+```
+
+### Activity Feeds
+
+```python
+# Get team activity
+def get_team_activity(client, team, days=7):
+    """Get recent activity for a team."""
+    activity = client.get_activity(
+        since=datetime.now() - timedelta(days=days),
+        users=client.get_team_members(team)
+    )
+
+    summary = {
+        "items_created": 0,
+        "items_updated": 0,
+        "links_created": 0,
+        "reviews_completed": 0
+    }
+
+    for event in activity:
+        if event.type == "item.created":
+            summary["items_created"] += 1
+        elif event.type == "item.updated":
+            summary["items_updated"] += 1
+        elif event.type == "link.created":
+            summary["links_created"] += 1
+        elif event.type == "review.completed":
+            summary["reviews_completed"] += 1
+
+    return summary
+
+# Get backend team activity
+activity = get_team_activity(client, "backend")
+print(f"Items created this week: {activity['items_created']}")
+```
+
+## Conflict Resolution
+
+### Handling Concurrent Edits
+
+```python
+def safe_update(client, item_id, changes, expected_version):
+    """Update with optimistic locking."""
+    item = client.get_item(item_id)
+
+    if item.version != expected_version:
+        # Conflict detected
+        return {
+            "success": False,
+            "error": "conflict",
+            "current_version": item.version,
+            "current_data": item
+        }
+
+    try:
+        client.update_item(item_id, **changes)
+        return {"success": True}
+    except VersionConflictError as e:
+        return {
+            "success": False,
+            "error": "conflict",
+            "message": str(e)
+        }
+
+# Usage
+result = safe_update(
+    client,
+    "FEAT-001",
+    {"status": "approved"},
+    expected_version=5
+)
+
+if not result["success"]:
+    print(f"Conflict! Current version: {result['current_version']}")
+```
+
+### Merge Conflicts
+
+```python
+def resolve_merge_conflict(client, item_id, resolution):
+    """Resolve merge conflict with specified resolution."""
+    conflict = client.get_conflict(item_id)
+
+    if resolution == "use_mine":
+        client.apply_changes(item_id, conflict.local_changes)
+    elif resolution == "use_theirs":
+        client.apply_changes(item_id, conflict.remote_changes)
+    elif resolution == "merge":
+        merged = {**conflict.remote_changes, **conflict.local_changes}
+        client.apply_changes(item_id, merged)
+
+    client.resolve_conflict(item_id)
+```
+
+## Reporting and Dashboards
+
+### Team Metrics
+
+```python
+def generate_team_report(client, team, period="week"):
+    """Generate team performance report."""
+    members = client.get_team_members(team)
+
+    report = {
+        "period": period,
+        "team": team,
+        "metrics": {}
+    }
+
+    for member in members:
+        items = client.get_items(
+            owner=member,
+            modified_since=get_period_start(period)
+        )
+
+        report["metrics"][member] = {
+            "items_created": len([i for i in items if i.created_recently]),
+            "items_updated": len([i for i in items if i.updated_recently]),
+            "reviews_completed": count_reviews(client, member, period),
+            "coverage_contribution": calculate_coverage_contribution(client, member)
+        }
+
+    return report
+
+# Generate weekly report
+report = generate_team_report(client, "backend", "week")
+for member, metrics in report["metrics"].items():
+    print(f"{member}: {metrics['items_created']} created, {metrics['reviews_completed']} reviews")
+```
+
+### Coverage by Team
+
+```python
+def coverage_by_team(client, project_id):
+    """Calculate test coverage by responsible team."""
+    features = client.get_items(project_id=project_id, item_type="feature")
+
+    by_team = {}
+    for feature in features:
+        team = feature.metadata.get("team", "unassigned")
+
+        if team not in by_team:
+            by_team[team] = {"total": 0, "covered": 0}
+
+        by_team[team]["total"] += 1
+
+        coverage = client.get_coverage(feature.id)
+        if coverage.percentage > 0:
+            by_team[team]["covered"] += 1
+
+    # Calculate percentages
+    for team, stats in by_team.items():
+        stats["percentage"] = round(
+            stats["covered"] / stats["total"] * 100, 1
+        ) if stats["total"] > 0 else 0
+
+    return by_team
+
+# Get coverage by team
+coverage = coverage_by_team(client, "PROJ-001")
+for team, stats in sorted(coverage.items(), key=lambda x: x[1]["percentage"]):
+    print(f"{team}: {stats['percentage']}% ({stats['covered']}/{stats['total']})")
+```
+
+## Best Practices Summary
+
+### 1. Clear Ownership
+
+- Every artifact has an owner
+- Ownership transfers are documented
+- Teams have clear boundaries
+
+### 2. Structured Reviews
+
+- All changes go through review
+- Multiple reviewers for critical items
+- Comments are documented
+
+### 3. Communication
+
+- Automated notifications for key events
+- Regular team standups on traceability
+- Clear escalation paths
+
+### 4. Conflict Prevention
+
+- Use optimistic locking
+- Small, frequent updates
+- Clear merge policies
+
+### 5. Metrics and Visibility
+
+- Regular team reports
+- Coverage dashboards
+- Activity tracking
+
+## CLI Commands
+
 ```bash
-tracertm fix issue-1
+# List team members
+tracertm team list backend
+
+# Assign item to user
+tracertm assign FEAT-001 --to alice@example.com
+
+# Request review
+tracertm review request FEAT-001 --reviewers bob@example.com,carol@example.com
+
+# Get team activity
+tracertm activity --team backend --since "7 days ago"
+
+# Generate team report
+tracertm report team --team backend --period week --output report.html
 ```
-
-**Issue 2:**
-```bash
-tracertm fix issue-2
-```
-
-## API Reference
-
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Requirement Writing](/docs/wiki/best-practices/requirement-writing) - Clear requirements
+- [Traceability](/docs/wiki/best-practices/traceability) - Linking practices
+- [Workflows](/docs/wiki/concepts/workflows) - Process automation
+- [Integrations](/docs/wiki/concepts/integrations) - Team tool integration
 

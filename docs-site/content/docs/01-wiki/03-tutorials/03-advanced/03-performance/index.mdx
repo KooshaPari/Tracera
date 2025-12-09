@@ -1,132 +1,1093 @@
 ---
 title: "Performance Optimization"
-description: "Documentation for Performance Optimization"
+description: "Advanced guide to optimizing TracerTM performance for large-scale deployments"
 ---
 
 # Performance Optimization
 
-
 ## Overview
 
-Comprehensive guide for Performance Optimization.
+This comprehensive guide covers performance optimization strategies for TracerTM, from database tuning to concurrent operation management. Learn how to scale TracerTM from small projects to enterprise deployments handling thousands of requirements and test cases.
 
-## Introduction
+## Understanding TracerTM Performance
 
-This guide covers everything you need to know about Performance Optimization.
+TracerTM's performance characteristics are driven by several key components:
 
-## Getting Started
+### Architecture Overview
 
-### Prerequisites
+TracerTM uses a hybrid architecture:
+- **Async SQLAlchemy** for database operations (PostgreSQL/SQLite)
+- **Connection pooling** for efficient resource management
+- **Offline-first sync engine** with change detection
+- **In-memory caching** for frequently accessed data
+- **Optimistic locking** for concurrent operations
 
-- Basic understanding of TraceRTM
-- Access to a TraceRTM workspace
-- Required permissions
+### Performance Bottlenecks
 
-### Initial Setup
+Common bottlenecks include:
+1. **Database queries** - N+1 queries, missing indexes
+2. **Network I/O** - API calls, sync operations
+3. **Memory usage** - Large datasets, cache size
+4. **Disk I/O** - Markdown file operations
+5. **Concurrent operations** - Lock contention, retry storms
 
-```bash
-tracertm init
-tracertm config set performance.optimization enabled
-```
+## Benchmarking Your Setup
 
-## Core Workflows
+### Initial Baseline
 
-### Workflow 1: Basic Usage
-
-```bash
-# Step 1: Initialize
-tracertm performance-optimization init
-
-# Step 2: Execute
-tracertm performance-optimization run
-
-# Step 3: Verify
-tracertm performance-optimization status
-```
-
-### Workflow 2: Advanced Usage
-
-```typescript
-import { TraceRTM } from '@tracertm/core'
-
-const tracertm = new TraceRTM()
-await tracertm.performanceoptimization({
-  mode: 'advanced',
-  options: {
-    verbose: true
-  }
-})
-```
-
-## Best Practices
-
-1. **Plan Ahead**: Design before implementation
-2. **Document**: Keep records up-to-date
-3. **Test**: Validate in test environment
-4. **Monitor**: Track performance and issues
-5. **Iterate**: Continuously improve
-
-## Common Tasks
-
-### Task 1: Configuration
-
-```yaml
-# tracertm.config.yml
-performance_optimization:
-  enabled: true
-  mode: production
-```
-
-### Task 2: Automation
+Before optimizing, establish a performance baseline:
 
 ```bash
-# Automate with scripts
-tracertm performance-optimization --auto
+# Create a test project with sample data
+tracertm project create "perf-test"
+tracertm project use perf-test
+
+# Generate test data
+python -c "
+from tracertm.core.database import get_session, init_db
+from tracertm.repositories.item_repository import ItemRepository
+import asyncio
+
+async def generate_data():
+    await init_db()
+    async with get_session() as session:
+        repo = ItemRepository(session)
+        for i in range(1000):
+            await repo.create(
+                project_id='perf-test',
+                title=f'Test Item {i}',
+                view='FEATURE',
+                status='DRAFT'
+            )
+        await session.commit()
+
+asyncio.run(generate_data())
+"
 ```
 
-## Troubleshooting
+### Running Benchmarks
 
-### Issue 1: Configuration Error
+Create a benchmark script:
 
-**Solution:**
+```python
+# benchmark.py
+import asyncio
+import time
+from tracertm.core.database import get_session
+from tracertm.repositories.item_repository import ItemRepository
+
+async def benchmark_queries():
+    results = {}
+
+    async with get_session() as session:
+        repo = ItemRepository(session)
+
+        # Test 1: List all items
+        start = time.time()
+        items = await repo.get_all("perf-test")
+        results['list_all'] = time.time() - start
+
+        # Test 2: Filtered query
+        start = time.time()
+        filtered = await repo.get_by_status("perf-test", "DRAFT")
+        results['filtered'] = time.time() - start
+
+        # Test 3: Batch create
+        start = time.time()
+        for i in range(100):
+            await repo.create(
+                project_id='perf-test',
+                title=f'Batch {i}',
+                view='FEATURE'
+            )
+        await session.commit()
+        results['batch_create'] = time.time() - start
+
+    return results
+
+if __name__ == "__main__":
+    results = asyncio.run(benchmark_queries())
+    for test, duration in results.items():
+        print(f"{test}: {duration:.3f}s")
+```
+
+Run the benchmark:
+
 ```bash
-tracertm config validate
-tracertm config reset
+python benchmark.py
 ```
 
-### Issue 2: Performance
+## Database Optimization
 
-**Solution:**
+### Connection Pool Tuning
+
+Configure optimal pool settings in `.env`:
+
 ```bash
-tracertm optimize performance-optimization
+# For PostgreSQL with 100 concurrent users
+TRACERTM_DATABASE__POOL_SIZE=20
+TRACERTM_DATABASE__MAX_OVERFLOW=40
+
+# For SQLite (local development)
+TRACERTM_DATABASE__POOL_SIZE=5
+TRACERTM_DATABASE__MAX_OVERFLOW=10
 ```
 
-## Advanced Topics
+Or via environment-specific config:
 
-### Custom Integration
+```python
+# config/production.py
+from tracertm.config.settings import TraceSettings, DatabaseSettings
 
-```typescript
-class CustomPlugin {
-  async execute() {
-    // Custom logic
-  }
-}
+settings = TraceSettings(
+    database=DatabaseSettings(
+        pool_size=20,
+        max_overflow=40,
+        pool_recycle=3600,  # Recycle connections after 1 hour
+    )
+)
 ```
 
-## Examples
+### Connection Pool Monitoring
 
-### Complete Example
+Monitor pool usage:
 
-```typescript
-async function example() {
-  const tracertm = new TraceRTM()
-  const result = await tracertm.performanceoptimization()
-  console.log(result)
-}
+```python
+from tracertm.core.database import get_engine
+
+async def monitor_pool():
+    engine = get_engine()
+    pool = engine.pool
+
+    print(f"Pool size: {pool.size()}")
+    print(f"Checked out connections: {pool.checkedout()}")
+    print(f"Overflow: {pool.overflow()}")
+    print(f"Checked in: {pool.checkedin()}")
+```
+
+### Index Optimization
+
+Create indexes for frequently queried columns:
+
+```sql
+-- PostgreSQL indexes
+CREATE INDEX CONCURRENTLY idx_items_project_status
+ON items(project_id, status);
+
+CREATE INDEX CONCURRENTLY idx_items_project_view
+ON items(project_id, view);
+
+CREATE INDEX CONCURRENTLY idx_items_updated_at
+ON items(updated_at DESC);
+
+CREATE INDEX CONCURRENTLY idx_links_source
+ON links(source_item_id);
+
+CREATE INDEX CONCURRENTLY idx_links_target
+ON links(target_item_id);
+
+CREATE INDEX CONCURRENTLY idx_links_source_target
+ON links(source_item_id, target_item_id);
+
+-- Composite index for traceability queries
+CREATE INDEX CONCURRENTLY idx_items_project_view_status
+ON items(project_id, view, status);
+```
+
+Apply indexes via migration:
+
+```bash
+# Create migration
+alembic revision -m "add_performance_indexes"
+
+# Edit migration file
+# Add the CREATE INDEX statements above
+
+# Apply migration
+alembic upgrade head
+```
+
+### Query Analysis
+
+Analyze slow queries:
+
+```python
+# Enable query logging
+import logging
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
+# Analyze query plan (PostgreSQL)
+from tracertm.core.database import get_session
+
+async with get_session() as session:
+    result = await session.execute(text("""
+        EXPLAIN ANALYZE
+        SELECT * FROM items
+        WHERE project_id = :project_id
+        AND status = :status
+    """), {"project_id": "test", "status": "DRAFT"})
+
+    for row in result:
+        print(row)
+```
+
+## Query Optimization
+
+### Eager Loading vs. Lazy Loading
+
+Avoid N+1 queries with eager loading:
+
+```python
+from sqlalchemy.orm import selectinload
+from sqlalchemy import select
+
+# BAD: N+1 queries
+async def get_items_with_links_slow(session, project_id):
+    items = await session.execute(
+        select(Item).where(Item.project_id == project_id)
+    )
+    for item in items.scalars():
+        # This triggers a separate query for each item
+        links = item.outgoing_links
+
+# GOOD: Single query with eager loading
+async def get_items_with_links_fast(session, project_id):
+    items = await session.execute(
+        select(Item)
+        .where(Item.project_id == project_id)
+        .options(selectinload(Item.outgoing_links))
+    )
+    return items.scalars().all()
+```
+
+### Batch Operations
+
+Use bulk operations for better performance:
+
+```python
+from tracertm.repositories.item_repository import ItemRepository
+
+async def create_items_optimized(session, items_data):
+    repo = ItemRepository(session)
+
+    # GOOD: Batch insert
+    items = [
+        Item(
+            id=str(uuid4()),
+            project_id=data['project_id'],
+            title=data['title'],
+            view=data['view']
+        )
+        for data in items_data
+    ]
+
+    session.add_all(items)
+    await session.flush()
+    return items
+```
+
+### Pagination
+
+Implement cursor-based pagination for large result sets:
+
+```python
+async def get_items_paginated(
+    session,
+    project_id: str,
+    cursor: str | None = None,
+    limit: int = 100
+):
+    query = select(Item).where(Item.project_id == project_id)
+
+    if cursor:
+        query = query.where(Item.id > cursor)
+
+    query = query.order_by(Item.id).limit(limit)
+
+    result = await session.execute(query)
+    items = result.scalars().all()
+
+    next_cursor = items[-1].id if len(items) == limit else None
+
+    return {
+        "items": items,
+        "next_cursor": next_cursor,
+        "has_more": next_cursor is not None
+    }
+```
+
+### Query Result Caching
+
+Cache expensive queries:
+
+```python
+from functools import lru_cache
+from datetime import datetime, timedelta
+
+class QueryCache:
+    def __init__(self, ttl_seconds: int = 300):
+        self.cache = {}
+        self.ttl = timedelta(seconds=ttl_seconds)
+
+    def get(self, key: str):
+        if key in self.cache:
+            value, timestamp = self.cache[key]
+            if datetime.utcnow() - timestamp < self.ttl:
+                return value
+            del self.cache[key]
+        return None
+
+    def set(self, key: str, value):
+        self.cache[key] = (value, datetime.utcnow())
+
+    def invalidate(self, key: str):
+        if key in self.cache:
+            del self.cache[key]
+
+# Usage
+cache = QueryCache(ttl_seconds=300)
+
+async def get_project_stats(session, project_id: str):
+    cache_key = f"stats:{project_id}"
+
+    # Check cache
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    # Expensive query
+    result = await session.execute(text("""
+        SELECT
+            COUNT(*) as total_items,
+            COUNT(DISTINCT view) as view_types,
+            COUNT(DISTINCT status) as status_types
+        FROM items
+        WHERE project_id = :project_id
+    """), {"project_id": project_id})
+
+    stats = dict(result.fetchone())
+    cache.set(cache_key, stats)
+
+    return stats
+```
+
+## Caching Strategies
+
+### Application-Level Caching
+
+Configure caching in your environment:
+
+```bash
+# .env
+TRACERTM_ENABLE_CACHE=true
+TRACERTM_CACHE_TTL=300  # 5 minutes
+```
+
+### Multi-Level Caching
+
+Implement a caching hierarchy:
+
+```python
+from dataclasses import dataclass
+from typing import Any
+import hashlib
+import json
+
+@dataclass
+class CacheConfig:
+    l1_ttl: int = 60      # In-memory cache (1 min)
+    l2_ttl: int = 300     # Redis/shared cache (5 min)
+    enable_l1: bool = True
+    enable_l2: bool = False
+
+class MultiLevelCache:
+    def __init__(self, config: CacheConfig):
+        self.config = config
+        self.l1_cache = {}  # In-memory
+        # self.l2_cache = RedisClient()  # Optional
+
+    def _hash_key(self, key: str) -> str:
+        return hashlib.md5(key.encode()).hexdigest()
+
+    async def get(self, key: str) -> Any | None:
+        hashed = self._hash_key(key)
+
+        # L1: Memory
+        if self.config.enable_l1 and hashed in self.l1_cache:
+            return self.l1_cache[hashed]
+
+        # L2: Redis (if enabled)
+        # if self.config.enable_l2:
+        #     value = await self.l2_cache.get(hashed)
+        #     if value:
+        #         self.l1_cache[hashed] = value
+        #         return value
+
+        return None
+
+    async def set(self, key: str, value: Any):
+        hashed = self._hash_key(key)
+
+        if self.config.enable_l1:
+            self.l1_cache[hashed] = value
+
+        # if self.config.enable_l2:
+        #     await self.l2_cache.set(hashed, value, ttl=self.config.l2_ttl)
+```
+
+### Cache Invalidation
+
+Implement proper cache invalidation:
+
+```python
+class CachedRepository:
+    def __init__(self, session, cache):
+        self.session = session
+        self.cache = cache
+
+    async def get_item(self, item_id: str):
+        cache_key = f"item:{item_id}"
+
+        # Try cache
+        cached = await self.cache.get(cache_key)
+        if cached:
+            return cached
+
+        # Query database
+        item = await self.session.get(Item, item_id)
+
+        # Store in cache
+        if item:
+            await self.cache.set(cache_key, item)
+
+        return item
+
+    async def update_item(self, item_id: str, **updates):
+        # Update database
+        item = await self.session.get(Item, item_id)
+        for key, value in updates.items():
+            setattr(item, key, value)
+        await self.session.commit()
+
+        # Invalidate cache
+        await self.cache.invalidate(f"item:{item_id}")
+        await self.cache.invalidate(f"project:{item.project_id}:items")
+
+        return item
+```
+
+## Large Dataset Handling
+
+### Streaming Results
+
+Stream large result sets instead of loading everything into memory:
+
+```python
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def stream_items(session: AsyncSession, project_id: str):
+    """Stream items in batches to avoid memory issues."""
+    batch_size = 1000
+    offset = 0
+
+    while True:
+        query = (
+            select(Item)
+            .where(Item.project_id == project_id)
+            .order_by(Item.id)
+            .limit(batch_size)
+            .offset(offset)
+        )
+
+        result = await session.execute(query)
+        items = result.scalars().all()
+
+        if not items:
+            break
+
+        # Process batch
+        for item in items:
+            yield item
+
+        offset += batch_size
+
+# Usage
+async def process_large_dataset(session, project_id):
+    async for item in stream_items(session, project_id):
+        # Process one item at a time
+        process_item(item)
+```
+
+### Bulk Export
+
+Optimize bulk export operations:
+
+```python
+import json
+import asyncio
+from pathlib import Path
+
+async def export_project_optimized(session, project_id: str, output_path: Path):
+    """Export project with minimal memory footprint."""
+
+    with output_path.open('w') as f:
+        # Write header
+        f.write('{"items": [\n')
+
+        # Stream and write items
+        first = True
+        async for item in stream_items(session, project_id):
+            if not first:
+                f.write(',\n')
+            first = False
+
+            # Serialize item
+            item_dict = {
+                'id': item.id,
+                'title': item.title,
+                'view': item.view,
+                'status': item.status
+            }
+            f.write(json.dumps(item_dict))
+
+        f.write('\n]}')
+```
+
+### Memory-Efficient Graph Operations
+
+Handle large traceability graphs:
+
+```python
+async def analyze_dependencies_efficient(session, project_id: str):
+    """Analyze dependencies without loading entire graph."""
+
+    # Use database for graph traversal
+    query = text("""
+        WITH RECURSIVE dependency_tree AS (
+            -- Base case: root items
+            SELECT id, title, 0 as depth
+            FROM items
+            WHERE project_id = :project_id
+            AND view = 'FEATURE'
+
+            UNION ALL
+
+            -- Recursive case: follow links
+            SELECT i.id, i.title, dt.depth + 1
+            FROM items i
+            JOIN links l ON l.target_item_id = i.id
+            JOIN dependency_tree dt ON dt.id = l.source_item_id
+            WHERE dt.depth < 10  -- Prevent infinite loops
+        )
+        SELECT * FROM dependency_tree
+        ORDER BY depth, title
+    """)
+
+    result = await session.execute(query, {"project_id": project_id})
+    return result.fetchall()
+```
+
+## Concurrent Operation Tuning
+
+### Semaphore-Based Rate Limiting
+
+Limit concurrent operations:
+
+```python
+import asyncio
+from typing import List
+
+class ConcurrencyLimiter:
+    def __init__(self, max_concurrent: int = 10):
+        self.semaphore = asyncio.Semaphore(max_concurrent)
+
+    async def execute(self, coro):
+        async with self.semaphore:
+            return await coro
+
+# Usage
+limiter = ConcurrencyLimiter(max_concurrent=10)
+
+async def process_items_concurrent(items: List[Item]):
+    tasks = [
+        limiter.execute(process_item(item))
+        for item in items
+    ]
+    return await asyncio.gather(*tasks)
+```
+
+### Optimistic Locking Configuration
+
+Configure retry behavior:
+
+```python
+from tracertm.core.concurrency import update_with_retry, ConcurrencyError
+
+# Custom retry configuration
+async def update_item_safe(session, item_id: str, updates: dict):
+    async def update_fn():
+        item = await session.get(Item, item_id)
+        if not item:
+            raise ValueError("Item not found")
+
+        # Check version
+        if item.version != updates.get('expected_version'):
+            raise ConcurrencyError("Version mismatch")
+
+        # Apply updates
+        for key, value in updates.items():
+            if key != 'expected_version':
+                setattr(item, key, value)
+
+        item.version += 1
+        await session.commit()
+        return item
+
+    # Retry with exponential backoff
+    return await update_with_retry(
+        update_fn,
+        max_retries=5,
+        base_delay=0.1
+    )
+```
+
+### Batch Processing with Concurrency
+
+Combine batching with concurrency:
+
+```python
+async def process_items_batch_concurrent(
+    session,
+    items: List[Item],
+    batch_size: int = 100,
+    max_concurrent: int = 5
+):
+    """Process items in batches with concurrency control."""
+
+    limiter = ConcurrencyLimiter(max_concurrent)
+
+    # Split into batches
+    batches = [
+        items[i:i + batch_size]
+        for i in range(0, len(items), batch_size)
+    ]
+
+    async def process_batch(batch):
+        # Process batch in transaction
+        async with get_session() as batch_session:
+            for item in batch:
+                await process_item(batch_session, item)
+            await batch_session.commit()
+
+    # Process batches concurrently
+    tasks = [limiter.execute(process_batch(batch)) for batch in batches]
+    return await asyncio.gather(*tasks)
+```
+
+## Memory Management
+
+### Connection Pool Memory
+
+Monitor and limit connection pool memory:
+
+```python
+from tracertm.core.database import get_engine
+
+def calculate_pool_memory():
+    """Estimate connection pool memory usage."""
+    engine = get_engine()
+
+    # Each connection uses ~5-10MB
+    conn_memory_mb = 7.5
+    max_connections = engine.pool.size() + engine.pool.overflow()
+
+    estimated_mb = max_connections * conn_memory_mb
+
+    print(f"Estimated pool memory: {estimated_mb:.1f}MB")
+    print(f"Max connections: {max_connections}")
+```
+
+### Session Management
+
+Properly manage session lifecycle:
+
+```python
+from contextlib import asynccontextmanager
+from tracertm.core.database import get_session
+
+# GOOD: Use context manager
+async def good_session_usage():
+    async with get_session() as session:
+        items = await session.execute(select(Item))
+        # Session automatically closed
+        return items.scalars().all()
+
+# BAD: Session leak
+async def bad_session_usage():
+    factory = get_session_factory()
+    session = factory()
+    items = await session.execute(select(Item))
+    # Session never closed - MEMORY LEAK
+    return items.scalars().all()
+```
+
+### Large Object Handling
+
+Stream large objects instead of loading into memory:
+
+```python
+async def export_large_markdown(session, item_id: str, output_path: Path):
+    """Export large markdown content efficiently."""
+
+    # Stream content in chunks
+    item = await session.get(Item, item_id)
+
+    with output_path.open('w') as f:
+        # Write header
+        f.write(f"# {item.title}\n\n")
+
+        # Write content in chunks if large
+        if hasattr(item, 'content') and item.content:
+            chunk_size = 8192
+            for i in range(0, len(item.content), chunk_size):
+                f.write(item.content[i:i + chunk_size])
+```
+
+## Network Optimization
+
+### Sync Engine Configuration
+
+Optimize sync operations:
+
+```bash
+# .env
+TRACERTM_SYNC_BATCH_SIZE=50
+TRACERTM_SYNC_RETRY_DELAY=1.0
+TRACERTM_SYNC_MAX_RETRIES=3
+```
+
+### Compression
+
+Enable compression for API calls:
+
+```python
+import gzip
+import json
+from aiohttp import ClientSession
+
+async def sync_with_compression(data: dict):
+    """Sync data with gzip compression."""
+
+    # Compress payload
+    json_data = json.dumps(data).encode('utf-8')
+    compressed = gzip.compress(json_data)
+
+    async with ClientSession() as session:
+        async with session.post(
+            'https://api.tracertm.com/sync',
+            data=compressed,
+            headers={
+                'Content-Encoding': 'gzip',
+                'Content-Type': 'application/json'
+            }
+        ) as response:
+            return await response.json()
+```
+
+### Request Batching
+
+Batch API requests:
+
+```python
+async def batch_api_requests(items: List[dict]):
+    """Batch multiple items into single API call."""
+
+    batch_size = 50
+    batches = [items[i:i + batch_size] for i in range(0, len(items), batch_size)]
+
+    results = []
+    for batch in batches:
+        # Single API call for batch
+        result = await api_client.create_batch(batch)
+        results.extend(result)
+
+    return results
+```
+
+## Monitoring and Profiling
+
+### Query Performance Monitoring
+
+Track slow queries:
+
+```python
+import time
+import logging
+from functools import wraps
+
+logger = logging.getLogger(__name__)
+
+def monitor_query_time(threshold_seconds: float = 1.0):
+    """Decorator to monitor query execution time."""
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            start = time.time()
+            try:
+                result = await func(*args, **kwargs)
+                duration = time.time() - start
+
+                if duration > threshold_seconds:
+                    logger.warning(
+                        f"Slow query: {func.__name__} took {duration:.2f}s"
+                    )
+
+                return result
+            except Exception as e:
+                duration = time.time() - start
+                logger.error(
+                    f"Query failed: {func.__name__} after {duration:.2f}s: {e}"
+                )
+                raise
+
+        return wrapper
+    return decorator
+
+# Usage
+@monitor_query_time(threshold_seconds=0.5)
+async def get_items(session, project_id):
+    return await session.execute(
+        select(Item).where(Item.project_id == project_id)
+    )
+```
+
+### Memory Profiling
+
+Profile memory usage:
+
+```python
+import tracemalloc
+import asyncio
+
+async def profile_memory(func):
+    """Profile memory usage of async function."""
+
+    tracemalloc.start()
+
+    snapshot_before = tracemalloc.take_snapshot()
+
+    result = await func()
+
+    snapshot_after = tracemalloc.take_snapshot()
+
+    top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+
+    print("Top 10 memory allocations:")
+    for stat in top_stats[:10]:
+        print(stat)
+
+    tracemalloc.stop()
+
+    return result
+```
+
+### Performance Metrics
+
+Collect performance metrics:
+
+```python
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List
+
+@dataclass
+class PerformanceMetrics:
+    timestamp: datetime
+    query_count: int
+    avg_query_time: float
+    cache_hits: int
+    cache_misses: int
+    active_connections: int
+    memory_usage_mb: float
+
+class MetricsCollector:
+    def __init__(self):
+        self.metrics: List[PerformanceMetrics] = []
+
+    async def collect(self):
+        """Collect current metrics."""
+        engine = get_engine()
+        pool = engine.pool
+
+        metrics = PerformanceMetrics(
+            timestamp=datetime.utcnow(),
+            query_count=0,  # Track via middleware
+            avg_query_time=0.0,
+            cache_hits=0,
+            cache_misses=0,
+            active_connections=pool.checkedout(),
+            memory_usage_mb=0.0  # Calculate from tracemalloc
+        )
+
+        self.metrics.append(metrics)
+        return metrics
+
+    def get_summary(self) -> Dict:
+        """Get metrics summary."""
+        if not self.metrics:
+            return {}
+
+        return {
+            "total_samples": len(self.metrics),
+            "avg_connections": sum(m.active_connections for m in self.metrics) / len(self.metrics),
+            "peak_connections": max(m.active_connections for m in self.metrics),
+        }
+```
+
+## Best Practices for Scale
+
+### 1. Database
+
+- Use PostgreSQL for production (better performance than SQLite)
+- Create indexes on frequently queried columns
+- Use connection pooling (pool_size=20, max_overflow=40)
+- Enable query result caching for read-heavy workloads
+- Regularly analyze and vacuum tables
+
+### 2. Queries
+
+- Always use pagination for large result sets
+- Prefer eager loading over lazy loading
+- Use bulk operations for batch updates
+- Avoid N+1 queries with proper joins
+- Monitor and optimize slow queries
+
+### 3. Caching
+
+- Enable application-level caching
+- Use appropriate TTL values (5-15 minutes)
+- Implement proper cache invalidation
+- Consider Redis for distributed caching
+- Cache expensive computations and aggregations
+
+### 4. Concurrency
+
+- Limit concurrent operations (10-20 for I/O bound)
+- Use optimistic locking with retry logic
+- Implement rate limiting for API calls
+- Use semaphores to control resource usage
+- Monitor lock contention and deadlocks
+
+### 5. Memory
+
+- Stream large datasets instead of loading into memory
+- Use context managers for session management
+- Monitor connection pool memory usage
+- Implement pagination for all list operations
+- Profile memory usage in production
+
+### 6. Monitoring
+
+- Track query execution times
+- Monitor connection pool usage
+- Collect cache hit/miss ratios
+- Set up alerts for performance degradation
+- Profile production workloads regularly
+
+### 7. Architecture
+
+- Use async/await throughout
+- Implement proper error handling
+- Design for horizontal scalability
+- Separate read and write workloads
+- Use queue-based sync for offline operations
+
+## Production Configuration Example
+
+```bash
+# .env.production
+
+# Database - PostgreSQL with connection pooling
+TRACERTM_DATABASE__URL=postgresql://user:pass@localhost:5432/tracertm
+TRACERTM_DATABASE__POOL_SIZE=20
+TRACERTM_DATABASE__MAX_OVERFLOW=40
+TRACERTM_DATABASE__ECHO=false
+
+# Performance
+TRACERTM_MAX_AGENTS=1000
+TRACERTM_CACHE_TTL=300
+TRACERTM_BATCH_SIZE=100
+TRACERTM_ENABLE_CACHE=true
+TRACERTM_ENABLE_ASYNC=true
+
+# Logging
+TRACERTM_LOG_LEVEL=INFO
+
+# Sync
+TRACERTM_SYNC_BATCH_SIZE=50
+TRACERTM_SYNC_MAX_RETRIES=3
+```
+
+## Troubleshooting Performance Issues
+
+### Slow Queries
+
+```bash
+# Enable query logging
+export TRACERTM_DATABASE__ECHO=true
+
+# Run your operation
+tracertm items list
+
+# Analyze output for slow queries
+```
+
+### High Memory Usage
+
+```python
+# Monitor memory
+import tracemalloc
+tracemalloc.start()
+
+# Run your operation
+await your_operation()
+
+# Check memory
+current, peak = tracemalloc.get_traced_memory()
+print(f"Current: {current / 1024 / 1024:.1f}MB")
+print(f"Peak: {peak / 1024 / 1024:.1f}MB")
+```
+
+### Connection Pool Exhaustion
+
+```python
+from tracertm.core.database import get_engine
+
+engine = get_engine()
+pool = engine.pool
+
+print(f"Size: {pool.size()}")
+print(f"Checked out: {pool.checkedout()}")
+print(f"Overflow: {pool.overflow()}")
+
+# If checked out == size + overflow, you need more connections
+```
+
+### Cache Issues
+
+```bash
+# Clear cache
+tracertm cache clear
+
+# Disable cache temporarily
+export TRACERTM_ENABLE_CACHE=false
 ```
 
 ## Resources
 
-- [API Reference](/docs/api-reference)
-- [Examples Repository](https://github.com/tracertm/examples)
-
+- [SQLAlchemy Performance Guide](https://docs.sqlalchemy.org/en/20/faq/performance.html)
+- [Async Python Performance](https://docs.python.org/3/library/asyncio-task.html)
+- [PostgreSQL Performance Tuning](https://wiki.postgresql.org/wiki/Performance_Optimization)
+- [Database Indexing Best Practices](https://use-the-index-luke.com/)

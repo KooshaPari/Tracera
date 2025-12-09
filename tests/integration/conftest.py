@@ -13,6 +13,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from tracertm.models.base import Base
+# Import ALL models to ensure they're registered with Base.metadata
+# This is critical - SQLAlchemy only creates tables for imported models
+from tracertm.models.agent import Agent
+from tracertm.models.agent_event import AgentEvent
+from tracertm.models.agent_lock import AgentLock
+from tracertm.models.event import Event
+from tracertm.models.item import Item
+from tracertm.models.link import Link
+from tracertm.models.project import Project
 
 
 # Mark every test in this directory as integration to keep layering explicit.

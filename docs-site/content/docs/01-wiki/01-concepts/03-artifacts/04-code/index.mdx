@@ -1,125 +1,492 @@
 ---
 title: "Code Artifacts"
-description: "Documentation for Code Artifacts"
+description: "Tracking source code modules and components in TraceRTM"
 ---
 
 # Code Artifacts
 
+Code artifacts track the implementation of your system. They link source code modules to the requirements they implement and the tests that verify them, completing the traceability chain.
 
-## Overview
+## Code Artifact Types
 
-Welcome to the Code Artifacts documentation.
+| Type | Granularity | Example |
+|------|-------------|---------|
+| Module | File-level | `auth_handler.py` |
+| Component | Package-level | `src/auth/` |
+| Function | Symbol-level | `validate_password()` |
+| Class | Symbol-level | `AuthenticationService` |
 
-## Introduction
+## Creating Code Artifacts
 
-This page provides comprehensive information about Code Artifacts.
+### Module-Level Tracking
 
-## Key Features
+```python
+from tracertm import TraceRTMClient
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+client = TraceRTMClient()
 
-## Getting Started
+# Track a code module
+code = client.create_item(
+    title="Authentication Handler",
+    item_type="code",
+    description="""
+    Main authentication request handler.
+
+    ## Responsibilities
+    - Validate login credentials
+    - Generate authentication tokens
+    - Handle logout requests
+    - Manage session lifecycle
+
+    ## Key Functions
+    - `login()` - Process login requests
+    - `logout()` - Invalidate sessions
+    - `refresh()` - Refresh access tokens
+    """,
+    metadata={
+        "file_path": "src/auth/handler.py",
+        "language": "python",
+        "lines_of_code": 250,
+        "complexity": "medium",
+        "dependencies": ["token_service", "session_store", "user_repository"],
+        "exports": ["login", "logout", "refresh", "AuthHandler"]
+    }
+)
+
+# Link to design it implements
+client.create_link(code.id, design.id, "implements")
+
+# Link to requirements it realizes
+client.create_link(code.id, feature_auth.id, "realizes")
+```
+
+### Component-Level Tracking
+
+```python
+# Track a component (package/directory)
+component = client.create_item(
+    title="Authentication Module",
+    item_type="component",
+    description="""
+    Complete authentication subsystem.
+
+    ## Structure
+    ```
+    src/auth/
+    ├── __init__.py
+    ├── handler.py      # Request handling
+    ├── tokens.py       # JWT management
+    ├── sessions.py     # Session store
+    ├── middleware.py   # Auth middleware
+    └── models.py       # Data models
+    ```
+    """,
+    metadata={
+        "path": "src/auth/",
+        "language": "python",
+        "modules": ["handler", "tokens", "sessions", "middleware", "models"],
+        "public_api": ["login", "logout", "authenticate", "require_auth"]
+    }
+)
+```
+
+### Function-Level Tracking (When Needed)
+
+```python
+# Track specific function (for critical/complex functions)
+func = client.create_item(
+    title="validate_password()",
+    item_type="function",
+    description="""
+    Validates password against security policy.
+
+    ## Security Requirements
+    - Minimum 8 characters
+    - At least one uppercase
+    - At least one number
+    - At least one special character
+    - Not in common password list
+
+    ## Implements
+    - SEC-003: Password complexity
+    - REG-005: NIST password guidelines
+    """,
+    metadata={
+        "file_path": "src/auth/validation.py",
+        "line_start": 45,
+        "line_end": 78,
+        "parameters": ["password: str"],
+        "returns": "bool",
+        "complexity": "O(n)"
+    }
+)
+
+# Link to security requirement
+client.create_link(func.id, "SEC-003", "implements")
+```
+
+## CLI Usage
 
 ```bash
-tracertm init
-tracertm config set code enabled
+# Create code artifact
+tracertm create code "Authentication Handler" \
+  --metadata '{"file_path": "src/auth/handler.py", "language": "python"}'
+
+# Link code to design
+tracertm link CODE-001 DES-001 --type implements
+
+# Link code to requirement
+tracertm link CODE-001 FEAT-001 --type realizes
+
+# List code artifacts
+tracertm list --type code
+tracertm list --type code --metadata '{"language": "python"}'
+
+# Search code
+tracertm search "authentication" --type code
+
+# Get code with its links
+tracertm get CODE-001 --show-links
 ```
 
-## Usage
+## Auto-Scanning Code
 
-### Basic Usage
+### Scanner Configuration
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```yaml
+# .tracertm/scanner.yaml
+code_scanner:
+  # What to scan
+  include:
+    - src/**/*.py
+    - src/**/*.ts
+    - lib/**/*.go
 
-const tracertm = new TraceRTM()
-const result = await tracertm.code()
+  exclude:
+    - "**/test_*.py"
+    - "**/*.test.ts"
+    - "**/vendor/**"
+
+  # Granularity
+  granularity: module  # module | component | function
+
+  # Extract traceability from comments
+  markers:
+    implements: "Implements:\\s*([\\w-,\\s]+)"
+    realizes: "Realizes:\\s*([\\w-,\\s]+)"
+    part_of: "Part of:\\s*([\\w-]+)"
+
+  # Auto-link based on patterns
+  auto_link:
+    enabled: true
+    create_missing: false  # Don't create code artifacts, just link existing
 ```
 
-### Advanced Usage
+### Code Comment Markers
 
-```typescript
-const config = {
-  code: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
+```python
+# src/auth/handler.py
+"""
+Authentication request handler.
+
+Implements: DES-001 (Login Flow Design)
+Realizes: FEAT-001 (User Authentication)
+Part of: COMP-001 (Auth Module)
+"""
+
+def login(request: LoginRequest) -> TokenResponse:
+    """
+    Process login request.
+
+    Implements: DES-001-01 (Login sequence)
+    Realizes: FEAT-001-AC1 (Valid credentials return token)
+    """
+    # ... implementation
+```
+
+### Running Scanner
+
+```bash
+# Scan and create code artifacts
+tracertm scan src/ --type code
+
+# Scan and auto-link
+tracertm scan src/ --type code --auto-link
+
+# Output:
+# Scanning src/...
+# Found 45 modules
+# Created 45 code artifacts
+# Extracted 78 traceability markers
+# Created 78 links
+
+# Scan specific languages
+tracertm scan src/ --language python,typescript
+
+# Dry run (show what would be created)
+tracertm scan src/ --dry-run
+```
+
+## Traceability for Code
+
+### Implementation Coverage
+
+```python
+# Check if all designs have implementing code
+coverage = client.get_coverage(
+    source_type="design",
+    target_type="code",
+    link_type="implemented_by"
+)
+
+print(f"Design implementation coverage: {coverage.percentage}%")
+```
+
+### Requirement Realization
+
+```python
+# Check if all requirements have realizing code
+coverage = client.get_coverage(
+    source_type="feature",
+    target_type="code",
+    link_type="realized_by"
+)
+
+for gap in coverage.gaps:
+    print(f"Not implemented: {gap.id} - {gap.title}")
+```
+
+### Test Coverage for Code
+
+```python
+# Check if code has tests
+coverage = client.get_coverage(
+    source_type="code",
+    target_type="test",
+    link_type="tested_by"
+)
+
+print(f"Code test coverage: {coverage.percentage}%")
+```
+
+### Full Chain Query
+
+```bash
+# Trace from requirement to code to test
+tracertm trace FEAT-001 --to code --to test
+
+# Output:
+# FEAT-001: User Authentication
+#   └── realized_by: CODE-001 (auth/handler.py)
+#         └── tested_by: TEST-001 (test_login_valid)
+#         └── tested_by: TEST-002 (test_login_invalid)
+#   └── realized_by: CODE-002 (auth/tokens.py)
+#         └── tested_by: TEST-003 (test_token_generation)
+#         └── tested_by: TEST-004 (test_token_validation)
+```
+
+## Code Metrics
+
+### Tracking Complexity
+
+```python
+# Include metrics when creating code artifacts
+code = client.create_item(
+    title="Authentication Handler",
+    item_type="code",
+    metadata={
+        "file_path": "src/auth/handler.py",
+        "metrics": {
+            "lines_of_code": 250,
+            "cyclomatic_complexity": 12,
+            "maintainability_index": 68,
+            "test_coverage": 85.5,
+            "dependencies": 5
+        }
     }
-  }
-}
-
-const tracertm = new TraceRTM(config)
+)
 ```
 
-## Configuration
+### Importing Metrics
 
-```typescript
-export default {
-  code: {
-    enabled: true,
-    settings: {
-      // Configuration here
-    }
-  }
-}
+```bash
+# Import metrics from static analysis tools
+tracertm import metrics --file complexity.json --type radon
+tracertm import metrics --file coverage.xml --type cobertura
+tracertm import metrics --file sonar-report.json --type sonarqube
 ```
 
-## Examples
+### Quality Gates
 
-### Example 1
+```yaml
+# .tracertm/config.yaml
+quality_gates:
+  code:
+    max_complexity: 15
+    min_coverage: 80
+    max_lines: 500
 
-```typescript
-const example = await tracertm.code({
-  option1: 'value1',
-  option2: 'value2'
-})
+    on_violation:
+      - action: warn
+        message: "Code quality threshold exceeded"
+      - action: block_transition
+        from: in_progress
+        to: review
 ```
 
-### Example 2
+## Code Change Tracking
 
-```typescript
-const advanced = await tracertm.code({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+### Version History
+
+```python
+# Track code changes
+def on_code_commit(commit_info):
+    # Find affected code artifacts
+    for file_path in commit_info.changed_files:
+        code = client.find_item(
+            item_type="code",
+            metadata={"file_path": file_path}
+        )
+
+        if code:
+            # Record change
+            client.add_history(
+                item_id=code.id,
+                event="modified",
+                metadata={
+                    "commit": commit_info.sha,
+                    "author": commit_info.author,
+                    "message": commit_info.message,
+                    "lines_added": commit_info.additions,
+                    "lines_removed": commit_info.deletions
+                }
+            )
+```
+
+### Impact on Tests
+
+```bash
+# Find tests affected by code change
+tracertm impact CODE-001 --type test
+
+# Output:
+# Impact Analysis: CODE-001 (auth/handler.py)
+# ═══════════════════════════════════════════
+#
+# Direct test impact:
+#   TEST-001: test_login_valid
+#   TEST-002: test_login_invalid
+#   TEST-003: test_logout
+#
+# Indirect impact (via requirements):
+#   TEST-010: test_session_timeout (via FEAT-001)
+#   TEST-011: test_remember_me (via FEAT-001)
+#
+# Recommended: Run 5 tests
+```
+
+## Code Workflows
+
+### Code Review Workflow
+
+```yaml
+# .tracertm/workflows/code.yaml
+name: code
+states:
+  - draft       # Initial creation
+  - in_progress # Being developed
+  - review      # Under code review
+  - approved    # Review passed
+  - deprecated  # No longer used
+
+transitions:
+  - from: in_progress
+    to: review
+    requires:
+      - field: metadata.file_path
+        exists: true
+      - link_type: implements
+        min_count: 1
+        message: "Code must link to design or requirement"
+
+  - from: review
+    to: approved
+    requires:
+      - link_type: tested_by
+        target_type: test
+        min_count: 1
+        message: "Code must have at least one test"
+      - metadata.test_coverage:
+          gte: 80
+          message: "Test coverage must be at least 80%"
 ```
 
 ## Best Practices
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+### 1. Track at Module Level
 
-## Troubleshooting
+```
+✓ Track: src/auth/handler.py (module)
+✓ Track: src/auth/ (component)
 
-### Common Issues
-
-**Issue 1:**
-```bash
-tracertm fix issue-1
+✗ Avoid: Every function separately (too fine)
+✗ Avoid: Entire src/ as one artifact (too coarse)
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
+### 2. Include Meaningful Metadata
+
+```python
+# Good: Rich metadata
+code = client.create_item(
+    title="Auth Handler",
+    item_type="code",
+    metadata={
+        "file_path": "src/auth/handler.py",
+        "language": "python",
+        "dependencies": ["jwt", "redis"],
+        "exports": ["login", "logout"],
+        "complexity": "medium",
+        "security_relevant": True
+    }
+)
+
+# Bad: Minimal metadata
+code = client.create_item(
+    title="handler.py",
+    item_type="code"
+)
 ```
 
-## API Reference
+### 3. Link to Requirements
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+```python
+# Every code artifact should link to what it implements
+code = client.create_item(title="Auth Handler", item_type="code")
+client.create_link(code.id, design.id, "implements")
+client.create_link(code.id, feature.id, "realizes")
+```
+
+### 4. Keep Artifacts Updated
+
+```python
+# Update when code changes significantly
+def update_code_artifact(file_path: str, metrics: dict):
+    code = client.find_item(
+        item_type="code",
+        metadata={"file_path": file_path}
+    )
+
+    if code:
+        client.update_item(
+            code.id,
+            metadata={**code.metadata, "metrics": metrics}
+        )
+```
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Design](/docs/wiki/concepts/artifacts/design) - What code implements
+- [Test Cases](/docs/wiki/concepts/artifacts/test-cases) - What verifies code
+- [Requirements](/docs/wiki/concepts/artifacts/requirements) - What code realizes
+- [Impact Analysis](/docs/wiki/concepts/relationships/impact-analysis) - Change impact
 

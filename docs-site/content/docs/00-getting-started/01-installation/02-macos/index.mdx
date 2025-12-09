@@ -1,69 +1,608 @@
 ---
 title: "macOS Installation"
-description: "Documentation for macOS Installation"
+description: "Complete guide to installing TracerTM on macOS"
 ---
 
 # macOS Installation
 
+Complete guide to installing TracerTM on macOS systems, covering both Apple Silicon (M1/M2/M3/M4) and Intel-based Macs.
 
-## Overview
+## System Requirements
 
-Learn how to install macOS Installation for TraceRTM.
+### Supported macOS Versions
 
-## Prerequisites
+TracerTM officially supports the following macOS versions:
 
-Before proceeding with the installation:
+- **macOS 15 Sequoia** (recommended)
+- **macOS 14 Sonoma** (recommended)
+- **macOS 13 Ventura**
+- **macOS 12 Monterey** (minimum)
 
-- Ensure system requirements are met
-- Have administrative privileges
-- Network connectivity for package downloads
+Older versions may work but are not officially tested or supported.
 
-## Installation Steps
+### Hardware Requirements
 
-### Step 1: Download
+**Minimum:**
+- 4 GB RAM
+- 2 GB available disk space
+- macOS 12.0 or later
+
+**Recommended:**
+- 8 GB RAM or more
+- 5 GB available disk space (for development dependencies)
+- macOS 14.0 or later
+
+### Software Prerequisites
+
+- **Python 3.12 or later** (required)
+- **Homebrew** (recommended for installation)
+- **Xcode Command Line Tools** (installed automatically with Homebrew)
+
+**Note for Apple Silicon Users:** All installation methods support Apple Silicon natively. TracerTM runs natively on M1/M2/M3/M4 chips without Rosetta 2 emulation.
+
+## Installation Methods
+
+### Method 1: Homebrew (Recommended)
+
+Homebrew is the recommended installation method for macOS as it handles dependencies automatically and makes updates simple.
+
+#### Step 1: Install Homebrew (if not already installed)
 
 ```bash
-# Download the installation package
-curl -fsSL https://install.tracertm.com/macos | sh
+# Check if Homebrew is installed
+which brew
+
+# If not installed, install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-### Step 2: Verify Installation
+After installation, Homebrew may ask you to run additional commands to add it to your PATH:
 
 ```bash
+# For Apple Silicon Macs (M1/M2/M3/M4)
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# For Intel Macs
+echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zshrc
+eval "$(/usr/local/bin/brew shellenv)"
+```
+
+#### Step 2: Install Python 3.12+
+
+TracerTM requires Python 3.12 or later:
+
+```bash
+# Install Python 3.12 (or latest)
+brew install python@3.12
+
+# Verify installation
+python3.12 --version
+```
+
+#### Step 3: Install TracerTM via Homebrew (Future)
+
+**Note:** TracerTM is not yet available via Homebrew tap. Until the official tap is created, use pip/pipx installation below.
+
+```bash
+# Future command (not yet available)
+# brew tap tracertm/tracertm
+# brew install tracertm
+```
+
+### Method 2: pipx (Recommended for Python Tools)
+
+pipx installs Python applications in isolated environments, preventing dependency conflicts.
+
+#### Step 1: Install pipx
+
+```bash
+# Install pipx via Homebrew
+brew install pipx
+
+# Ensure pipx is in PATH
+pipx ensurepath
+
+# Restart your terminal or source your shell config
+source ~/.zshrc  # for zsh (default on macOS)
+```
+
+#### Step 2: Install TracerTM
+
+```bash
+# Install TracerTM in isolated environment
+pipx install tracertm
+
+# Verify installation
+tracertm --version
+rtm --version  # Both commands work
+```
+
+#### Updating via pipx
+
+```bash
+# Update to latest version
+pipx upgrade tracertm
+
+# Reinstall if needed
+pipx reinstall tracertm
+```
+
+#### Uninstalling via pipx
+
+```bash
+# Remove TracerTM
+pipx uninstall tracertm
+```
+
+### Method 3: pip (Traditional Method)
+
+Install TracerTM directly using pip. This method is simpler but may conflict with other Python packages.
+
+#### Using System Python
+
+```bash
+# Install TracerTM globally (may require sudo on older macOS)
+pip3 install tracertm
+
+# On some systems, you may need
+python3.12 -m pip install tracertm
+
+# Verify installation
 tracertm --version
 ```
 
-### Step 3: Configure
+#### Using Virtual Environment (Recommended for Development)
 
 ```bash
-tracertm config init
+# Create project directory
+mkdir ~/tracertm-workspace
+cd ~/tracertm-workspace
+
+# Create virtual environment
+python3.12 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Install TracerTM
+pip install tracertm
+
+# Verify installation
+tracertm --version
 ```
 
-## Post-Installation
+To use TracerTM after closing the terminal:
 
-After installation, you should:
-
-1. Verify the installation
-2. Configure your environment
-3. Run initial tests
-4. Review security settings
-
-## Troubleshooting
-
-### Common Issues
-
-**Installation fails with permission error:**
 ```bash
-sudo tracertm install
+# Navigate to workspace
+cd ~/tracertm-workspace
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Now tracertm commands work
+tracertm --version
 ```
 
-**Version mismatch:**
+### Method 4: Install from Source (Development)
+
+For contributors or users who want the latest development version.
+
+#### Step 1: Install Development Tools
+
 ```bash
-tracertm update --latest
+# Install Git (if not already installed)
+brew install git
+
+# Install Python 3.12
+brew install python@3.12
+
+# Install uv (modern Python package manager)
+brew install uv
+```
+
+#### Step 2: Clone Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+
+# Or use SSH
+git clone git@github.com:tracertm/tracertm.git
+cd tracertm
+```
+
+#### Step 3: Install in Development Mode
+
+```bash
+# Using uv (recommended)
+uv venv
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+
+# Or using traditional pip
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+#### Step 4: Verify Installation
+
+```bash
+# Run tests
+pytest
+
+# Check TracerTM version
+tracertm --version
+
+# Run TracerTM commands
+tracertm init
+```
+
+## Apple Silicon vs Intel Considerations
+
+### Apple Silicon (M1/M2/M3/M4) - arm64
+
+TracerTM and all dependencies support Apple Silicon natively. No special configuration needed.
+
+```bash
+# Check your architecture
+uname -m
+# Output: arm64 (Apple Silicon) or x86_64 (Intel)
+
+# Verify Python architecture
+python3.12 -c "import platform; print(platform.machine())"
+# Should output: arm64
+```
+
+**Known Issues on Apple Silicon:**
+- None currently. All dependencies support arm64 natively.
+
+### Intel Macs - x86_64
+
+Intel Macs work without any special configuration.
+
+```bash
+# Verify Python architecture
+python3.12 -c "import platform; print(platform.machine())"
+# Should output: x86_64
+```
+
+### Rosetta 2 Considerations
+
+**You should NOT need Rosetta 2** for TracerTM. If you're using Rosetta 2 by accident:
+
+```bash
+# Check if running under Rosetta
+sysctl sysctl.proc_translated
+# 0 = native, 1 = Rosetta 2
+
+# If accidentally using Rosetta, reinstall Python natively
+arch -arm64 brew reinstall python@3.12
+```
+
+## PATH Configuration
+
+### For zsh (Default on macOS Catalina and Later)
+
+Add TracerTM to your PATH by editing `~/.zshrc`:
+
+```bash
+# Edit zsh configuration
+nano ~/.zshrc
+
+# Add these lines (if using pipx or pip --user)
+export PATH="$HOME/.local/bin:$PATH"
+
+# For Homebrew Python on Apple Silicon
+export PATH="/opt/homebrew/opt/python@3.12/bin:$PATH"
+
+# For Homebrew Python on Intel
+export PATH="/usr/local/opt/python@3.12/bin:$PATH"
+
+# Save and reload
+source ~/.zshrc
+```
+
+### For bash
+
+If you're using bash instead of zsh, edit `~/.bash_profile` or `~/.bashrc`:
+
+```bash
+# Edit bash configuration
+nano ~/.bash_profile
+
+# Add the same PATH exports as above
+
+# Save and reload
+source ~/.bash_profile
+```
+
+## Shell Completion Setup
+
+TracerTM supports tab completion for commands in zsh and bash.
+
+### For zsh (Recommended)
+
+```bash
+# Install completion script
+tracertm --install-completion zsh
+
+# Or manually add to ~/.zshrc
+eval "$(_TRACERTM_COMPLETE=zsh_source tracertm)"
+
+# Reload shell configuration
+source ~/.zshrc
+```
+
+### For bash
+
+```bash
+# Install completion script
+tracertm --install-completion bash
+
+# Or manually add to ~/.bashrc
+eval "$(_TRACERTM_COMPLETE=bash_source tracertm)"
+
+# Reload shell configuration
+source ~/.bashrc
+```
+
+### Verify Completion
+
+```bash
+# Type this and press TAB
+tracertm <TAB>
+
+# Should show available commands:
+# init, project, item, link, sync, export, import, etc.
+```
+
+## Verifying Installation
+
+### Basic Verification
+
+```bash
+# Check version
+tracertm --version
+
+# Should output: TracerTM version 0.1.0 (or current version)
+
+# Check rtm alias
+rtm --version
+
+# Show help
+tracertm --help
+
+# Verify Python dependencies
+python3.12 -c "import tracertm; print(tracertm.__version__)"
+```
+
+### Health Check
+
+```bash
+# Run health check (future feature)
+tracertm health
+
+# Expected output:
+# ✓ Python: 3.12.x
+# ✓ Dependencies: OK
+# ✓ Database: Connected
+# ✓ Storage: OK
+```
+
+### Test Project Creation
+
+```bash
+# Create test project
+mkdir ~/tracertm-test
+cd ~/tracertm-test
+
+# Initialize new project
+tracertm init --name "Test Project"
+
+# Verify project structure
+ls -la
+# Should show: .tracertm/, tracertm.db, README.md
+```
+
+## macOS-Specific Issues and Solutions
+
+### Issue 1: Gatekeeper Security Warning
+
+**Problem:** macOS blocks execution with "cannot be opened because the developer cannot be verified"
+
+**Solution:**
+
+```bash
+# Option 1: Allow specific executable
+xattr -d com.apple.quarantine $(which tracertm)
+
+# Option 2: System-wide (not recommended)
+# Go to System Settings > Privacy & Security
+# Click "Allow Anyway" next to the blocked app
+```
+
+### Issue 2: Python Command Not Found
+
+**Problem:** `tracertm: command not found` after installation
+
+**Solution:**
+
+```bash
+# Check Python installation
+python3.12 --version
+
+# Check pip installation location
+python3.12 -m pip show tracertm | grep Location
+
+# Add to PATH (choose your shell)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### Issue 3: SSL Certificate Errors
+
+**Problem:** SSL certificate verification errors during installation
+
+**Solution:**
+
+```bash
+# Install certificates (Homebrew Python)
+/Applications/Python\ 3.12/Install\ Certificates.command
+
+# Or reinstall certifi
+pip install --upgrade certifi
+
+# Or use Homebrew's certificates
+export SSL_CERT_FILE=/opt/homebrew/etc/openssl@3/cert.pem  # Apple Silicon
+export SSL_CERT_FILE=/usr/local/etc/openssl@3/cert.pem     # Intel
+```
+
+### Issue 4: Permission Denied Errors
+
+**Problem:** Permission errors during installation
+
+**Solution:**
+
+```bash
+# Don't use sudo with pip (causes issues)
+# Instead, use --user flag
+pip3 install --user tracertm
+
+# Or use pipx (recommended)
+pipx install tracertm
+
+# Fix ownership if needed
+sudo chown -R $(whoami) ~/.local
+```
+
+### Issue 5: Database Lock Errors
+
+**Problem:** "database is locked" errors on network drives
+
+**Solution:**
+
+```bash
+# Don't store projects on network drives or cloud sync folders
+# Avoid: iCloud Drive, Dropbox, OneDrive, NFS mounts
+
+# Move to local disk
+mv ~/Library/Mobile\ Documents/com~apple~CloudDocs/project ~/Documents/project
+cd ~/Documents/project
+```
+
+### Issue 6: Slow Performance on Time Machine Drives
+
+**Problem:** TracerTM is slow when project is on Time Machine backup drive
+
+**Solution:**
+
+```bash
+# Exclude .tracertm directory from Time Machine
+tmutil addexclusion .tracertm
+
+# Or move project to non-backed-up location
+```
+
+## Updating TracerTM
+
+### Update via pipx
+
+```bash
+# Check current version
+tracertm --version
+
+# Update to latest
+pipx upgrade tracertm
+
+# Verify new version
+tracertm --version
+```
+
+### Update via pip
+
+```bash
+# Update to latest version
+pip install --upgrade tracertm
+
+# Update to specific version
+pip install tracertm==0.2.0
+
+# Force reinstall
+pip install --force-reinstall tracertm
+```
+
+### Update from Source
+
+```bash
+# Navigate to repository
+cd ~/tracertm
+
+# Pull latest changes
+git pull origin main
+
+# Reinstall
+pip install -e ".[dev]"
+```
+
+## Uninstalling TracerTM
+
+### Uninstall via pipx
+
+```bash
+# Remove TracerTM
+pipx uninstall tracertm
+```
+
+### Uninstall via pip
+
+```bash
+# Uninstall package
+pip uninstall tracertm
+
+# Remove configuration (optional)
+rm -rf ~/.config/tracertm
+rm -rf ~/.local/share/tracertm
+```
+
+### Complete Removal
+
+```bash
+# Remove TracerTM
+pipx uninstall tracertm  # or pip uninstall tracertm
+
+# Remove configuration files
+rm -rf ~/.config/tracertm
+rm -rf ~/.local/share/tracertm
+rm -rf ~/.cache/tracertm
+
+# Remove shell completion
+# Remove completion lines from ~/.zshrc or ~/.bashrc
 ```
 
 ## Next Steps
 
-- [Configuration Guide](/docs/getting-started/configuration)
-- [Quick Start](/docs/getting-started/quick-start)
+After successful installation:
 
+1. **[Configuration Guide](/docs/getting-started/configuration)** - Configure TracerTM for your needs
+2. **[Quick Start Tutorial](/docs/getting-started/quick-start)** - Create your first project
+3. **[CLI Reference](/docs/cli)** - Learn available commands
+4. **[Core Concepts](/docs/getting-started/core-concepts)** - Understand TracerTM fundamentals
+
+## Getting Help
+
+If you encounter issues:
+
+- Check [Troubleshooting Guide](/docs/troubleshooting)
+- Visit [GitHub Discussions](https://github.com/tracertm/tracertm/discussions)
+- Report bugs at [GitHub Issues](https://github.com/tracertm/tracertm/issues)
+- Join our [Discord Community](https://discord.gg/tracertm)
+
+## Additional Resources
+
+- **[Development Setup](/docs/development/setup)** - Set up development environment
+- **[Architecture Overview](/docs/architecture)** - Understanding TracerTM architecture
+- **[API Reference](/docs/api)** - REST API documentation

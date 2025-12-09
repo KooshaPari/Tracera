@@ -1,32 +1,573 @@
 ---
 title: "Basic Workflow"
-description: "Documentation for Basic Workflow"
+description: "Complete end-to-end workflow example for TraceRTM"
 ---
 
 # Basic Workflow
 
-This page contains documentation for Basic Workflow.
+This guide walks through a complete TraceRTM workflow using a realistic example: implementing a **User Login** feature. You'll learn how to create a project, add requirements, write test cases, establish traceability links, and generate reports.
 
 ## Overview
 
-This section covers the key aspects of Basic Workflow in TraceRTM.
+This tutorial demonstrates the complete lifecycle of requirements traceability management:
 
-## Getting Started
+1. **Project Setup** - Create and configure a new project
+2. **Requirements Management** - Add user stories and features
+3. **Test Case Creation** - Write comprehensive test cases
+4. **Traceability Links** - Connect requirements to tests
+5. **Matrix Visualization** - View traceability relationships
+6. **Coverage Analysis** - Verify complete test coverage
+7. **Impact Analysis** - Track changes and their effects
+8. **Report Generation** - Create documentation and metrics
 
-To get started with Basic Workflow:
+**Estimated Time**: 20-30 minutes
 
-- Review the Basic Workflow and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Prerequisites
 
-## Key Concepts
+Before starting, ensure you have:
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+- TraceRTM CLI installed (`pip install tracertm`)
+- Basic familiarity with command-line interfaces
+- A text editor for viewing generated reports
+
+## Step 1: Create a New Project
+
+First, create a new project for our authentication system:
+
+```bash
+# Create a new project
+tracertm project create \
+  --name "Authentication System" \
+  --description "User authentication and authorization features" \
+  --key "AUTH"
+
+# Expected output:
+# ✓ Project created successfully
+# Project ID: auth-20250101-abcd1234
+# Project Key: AUTH
+```
+
+The project key (`AUTH`) will be used as a prefix for all items in this project.
+
+### Verify Project Creation
+
+```bash
+# List all projects
+tracertm project list
+
+# View project details
+tracertm project show AUTH
+
+# Expected output:
+# Project: Authentication System (AUTH)
+# Description: User authentication and authorization features
+# Created: 2025-01-15 10:30:00
+# Status: Active
+# Items: 0
+```
+
+## Step 2: Add Requirements
+
+Now we'll add requirements for the User Login feature. We'll create a hierarchical structure: Epic → User Stories → Features.
+
+### Create the Epic
+
+```bash
+# Create the top-level epic
+tracertm item create \
+  --type epic \
+  --title "User Authentication" \
+  --description "Users should be able to securely authenticate to access the application" \
+  --project AUTH \
+  --status planned
+
+# Expected output:
+# ✓ Item created: AUTH-1 (epic)
+```
+
+### Add User Stories
+
+```bash
+# User Story 1: Basic Login
+tracertm item create \
+  --type story \
+  --title "As a user, I want to log in with email and password" \
+  --description "Users should authenticate using their email address and password to access their account" \
+  --project AUTH \
+  --status in-progress \
+  --priority high \
+  --parent AUTH-1
+
+# Expected output:
+# ✓ Item created: AUTH-2 (story)
+
+# User Story 2: Password Security
+tracertm item create \
+  --type story \
+  --title "As a user, I want my password to be stored securely" \
+  --description "Passwords must be hashed using industry-standard algorithms to protect user data" \
+  --project AUTH \
+  --status in-progress \
+  --priority critical \
+  --parent AUTH-1
+
+# Expected output:
+# ✓ Item created: AUTH-3 (story)
+
+# User Story 3: Login Error Handling
+tracertm item create \
+  --type story \
+  --title "As a user, I want clear feedback when login fails" \
+  --description "The system should provide helpful error messages without revealing security information" \
+  --project AUTH \
+  --status planned \
+  --priority medium \
+  --parent AUTH-1
+
+# Expected output:
+# ✓ Item created: AUTH-4 (story)
+```
+
+### Add Detailed Requirements
+
+```bash
+# Requirement 1: Email Validation
+tracertm item create \
+  --type requirement \
+  --title "REQ-001: Validate email format" \
+  --description "System must validate email addresses conform to RFC 5322 standard" \
+  --project AUTH \
+  --parent AUTH-2
+
+# Expected output:
+# ✓ Item created: AUTH-5 (requirement)
+
+# Requirement 2: Password Complexity
+tracertm item create \
+  --type requirement \
+  --title "REQ-002: Enforce password complexity" \
+  --description "Passwords must be at least 8 characters with uppercase, lowercase, and number" \
+  --project AUTH \
+  --parent AUTH-3
+
+# Expected output:
+# ✓ Item created: AUTH-6 (requirement)
+
+# Requirement 3: Rate Limiting
+tracertm item create \
+  --type requirement \
+  --title "REQ-003: Implement login rate limiting" \
+  --description "Limit login attempts to 5 per 15 minutes per IP address" \
+  --project AUTH \
+  --parent AUTH-4
+
+# Expected output:
+# ✓ Item created: AUTH-7 (requirement)
+
+# Requirement 4: Session Management
+tracertm item create \
+  --type requirement \
+  --title "REQ-004: Create secure sessions" \
+  --description "Generate cryptographically secure session tokens with 24-hour expiration" \
+  --project AUTH \
+  --parent AUTH-2
+
+# Expected output:
+# ✓ Item created: AUTH-8 (requirement)
+```
+
+## Step 3: Create Test Cases
+
+Now we'll create comprehensive test cases to verify our requirements.
+
+### Positive Test Cases
+
+```bash
+# Test 1: Successful Login
+tracertm item create \
+  --type test \
+  --title "TEST-001: Successful login with valid credentials" \
+  --description "Given a registered user with email 'user@example.com' and correct password, when they submit the login form, then they should be authenticated and redirected to dashboard" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-9 (test)
+
+# Test 2: Session Creation
+tracertm item create \
+  --type test \
+  --title "TEST-002: Session token is created on successful login" \
+  --description "Given successful authentication, when user logs in, then a valid session token should be generated and stored in cookies" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-10 (test)
+```
+
+### Negative Test Cases
+
+```bash
+# Test 3: Invalid Email Format
+tracertm item create \
+  --type test \
+  --title "TEST-003: Login fails with invalid email format" \
+  --description "Given an invalid email format (e.g., 'notanemail'), when submitted, then show 'Invalid email format' error" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-11 (test)
+
+# Test 4: Wrong Password
+tracertm item create \
+  --type test \
+  --title "TEST-004: Login fails with incorrect password" \
+  --description "Given valid email but wrong password, when submitted, then show 'Invalid credentials' error and increment failed attempt counter" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-12 (test)
+
+# Test 5: Rate Limiting
+tracertm item create \
+  --type test \
+  --title "TEST-005: Account locked after 5 failed attempts" \
+  --description "Given 5 consecutive failed login attempts, when 6th attempt is made, then show 'Account temporarily locked' message" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-13 (test)
+```
+
+### Security Test Cases
+
+```bash
+# Test 6: Password Hashing
+tracertm item create \
+  --type test \
+  --title "TEST-006: Passwords are never stored in plaintext" \
+  --description "Given a new user registration, when password is saved, then database should contain bcrypt hash, not plaintext" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-14 (test)
+
+# Test 7: SQL Injection Protection
+tracertm item create \
+  --type test \
+  --title "TEST-007: SQL injection attempts are blocked" \
+  --description "Given malicious input with SQL commands (e.g., ' OR '1'='1), when submitted, then input should be sanitized and login should fail safely" \
+  --project AUTH \
+  --status pending
+
+# Expected output:
+# ✓ Item created: AUTH-15 (test)
+```
+
+## Step 4: Establish Traceability Links
+
+Link test cases to requirements to establish traceability.
+
+```bash
+# Link TEST-001 to REQ-001 (Email validation) and REQ-004 (Session)
+tracertm link create AUTH-9 AUTH-5 --type "tests"
+tracertm link create AUTH-9 AUTH-8 --type "tests"
+
+# Link TEST-002 to REQ-004 (Session management)
+tracertm link create AUTH-10 AUTH-8 --type "tests"
+
+# Link TEST-003 to REQ-001 (Email validation)
+tracertm link create AUTH-11 AUTH-5 --type "tests"
+
+# Link TEST-004 to REQ-003 (Rate limiting)
+tracertm link create AUTH-12 AUTH-7 --type "tests"
+
+# Link TEST-005 to REQ-003 (Rate limiting)
+tracertm link create AUTH-13 AUTH-7 --type "tests"
+
+# Link TEST-006 to REQ-002 (Password complexity)
+tracertm link create AUTH-14 AUTH-6 --type "tests"
+
+# Link TEST-007 to REQ-001 (Email validation)
+tracertm link create AUTH-15 AUTH-5 --type "tests"
+
+# Expected output for each:
+# ✓ Link created successfully
+```
+
+You can also create dependency links between requirements:
+
+```bash
+# Session management depends on successful authentication
+tracertm link create AUTH-8 AUTH-5 --type "depends-on"
+
+# Rate limiting depends on session management
+tracertm link create AUTH-7 AUTH-8 --type "depends-on"
+```
+
+## Step 5: View the Traceability Matrix
+
+Generate a traceability matrix to visualize coverage:
+
+```bash
+# Generate matrix for the project
+tracertm matrix generate AUTH
+
+# Expected output:
+# Traceability Matrix - Authentication System
+# ============================================
+#
+# Requirement        | Test Cases           | Coverage
+# -------------------|---------------------|----------
+# AUTH-5 (REQ-001)   | AUTH-9, AUTH-11,    | 100%
+#                    | AUTH-15             |
+# AUTH-6 (REQ-002)   | AUTH-14             | 100%
+# AUTH-7 (REQ-003)   | AUTH-12, AUTH-13    | 100%
+# AUTH-8 (REQ-004)   | AUTH-9, AUTH-10     | 100%
+# -------------------|---------------------|----------
+# Overall Coverage: 100% (4/4 requirements)
+```
+
+### View Matrix in Browser
+
+```bash
+# Generate interactive HTML matrix
+tracertm matrix export AUTH --format html --output auth-matrix.html
+
+# Open in default browser
+open auth-matrix.html  # macOS
+xdg-open auth-matrix.html  # Linux
+start auth-matrix.html  # Windows
+```
+
+## Step 6: Check Coverage
+
+Analyze test coverage to identify gaps:
+
+```bash
+# Check overall project coverage
+tracertm coverage report AUTH
+
+# Expected output:
+# Coverage Report - Authentication System
+# ========================================
+#
+# Requirements Coverage:
+#   Total Requirements: 4
+#   Tested: 4
+#   Untested: 0
+#   Coverage: 100%
+#
+# Test Execution Status:
+#   Total Tests: 7
+#   Passed: 0
+#   Failed: 0
+#   Pending: 7
+#   Execution Rate: 0%
+#
+# Coverage by Type:
+#   Epic (AUTH-1): 100% (all children tested)
+#   Story (AUTH-2): 100%
+#   Story (AUTH-3): 100%
+#   Story (AUTH-4): 100%
+```
+
+### Identify Untested Requirements
+
+```bash
+# Find requirements without test coverage
+tracertm coverage gaps AUTH
+
+# Expected output:
+# No untested requirements found!
+# All 4 requirements have associated test cases.
+```
+
+## Step 7: Make Changes and See Impact
+
+Let's add a new requirement and see the impact on coverage:
+
+```bash
+# Add a new requirement for "Remember Me" functionality
+tracertm item create \
+  --type requirement \
+  --title "REQ-005: Implement 'Remember Me' functionality" \
+  --description "Users can opt to stay logged in for 30 days" \
+  --project AUTH \
+  --parent AUTH-2
+
+# Expected output:
+# ✓ Item created: AUTH-16 (requirement)
+
+# Check impact on coverage
+tracertm coverage report AUTH
+
+# Expected output shows coverage dropped:
+# Requirements Coverage:
+#   Total Requirements: 5
+#   Tested: 4
+#   Untested: 1
+#   Coverage: 80%
+```
+
+### View Impact Analysis
+
+```bash
+# See what's affected by the new requirement
+tracertm impact analyze AUTH-16
+
+# Expected output:
+# Impact Analysis - AUTH-16 (REQ-005)
+# ====================================
+#
+# Direct Impacts:
+#   - Parent: AUTH-2 (User Story)
+#   - Siblings: AUTH-5, AUTH-8 (related requirements)
+#
+# Coverage Impact:
+#   - Current coverage: 0% (no tests)
+#   - Project coverage: 80% (decreased from 100%)
+#
+# Recommendations:
+#   - Create test cases for this requirement
+#   - Review related requirements (AUTH-8 Session Management)
+```
+
+### Add Test for New Requirement
+
+```bash
+# Add test to restore coverage
+tracertm item create \
+  --type test \
+  --title "TEST-008: Remember me extends session duration" \
+  --description "Given 'Remember Me' is checked, when user logs in, then session token should have 30-day expiration" \
+  --project AUTH \
+  --status pending
+
+# Link test to requirement
+tracertm link create AUTH-17 AUTH-16 --type "tests"
+
+# Verify coverage restored
+tracertm coverage report AUTH
+# Coverage back to 100%
+```
+
+## Step 8: Generate Reports
+
+Create comprehensive documentation and metrics:
+
+### HTML Report
+
+```bash
+# Generate full HTML report with visualizations
+tracertm report generate AUTH \
+  --format html \
+  --output auth-report.html \
+  --include-graphs
+
+# Expected output:
+# ✓ Report generated: auth-report.html
+# Report includes:
+#   - Project summary
+#   - Requirements list
+#   - Test cases
+#   - Traceability matrix
+#   - Coverage metrics
+#   - Dependency graphs
+```
+
+### Markdown Report
+
+```bash
+# Generate markdown report for documentation
+tracertm report generate AUTH \
+  --format markdown \
+  --output AUTH-REPORT.md
+
+# Expected output:
+# ✓ Report generated: AUTH-REPORT.md
+```
+
+### Coverage Badge
+
+```bash
+# Generate coverage badge for README
+tracertm coverage badge AUTH --output coverage-badge.svg
+
+# Use in README.md:
+# ![Test Coverage](./coverage-badge.svg)
+```
+
+### Export Data
+
+```bash
+# Export project data for backup or analysis
+tracertm export AUTH --format json --output auth-backup.json
+
+# Export CSV for spreadsheet analysis
+tracertm export AUTH --format csv --output auth-data.csv
+```
+
+## Summary
+
+Congratulations! You've completed a full TraceRTM workflow. You've learned how to:
+
+- Create and configure projects
+- Add hierarchical requirements (Epic → Story → Requirement)
+- Write comprehensive test cases (positive, negative, security)
+- Establish traceability links between requirements and tests
+- Generate traceability matrices
+- Analyze test coverage and identify gaps
+- Perform impact analysis when requirements change
+- Generate reports in multiple formats
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+Now that you understand the basic workflow, explore these advanced topics:
+
+- **[Advanced Workflows](/docs/wiki/examples/advanced-workflows)** - Complex scenarios with multiple projects
+- **[CI/CD Integration](/docs/wiki/guides/ci-cd)** - Automate traceability in pipelines
+- **[API Usage](/docs/api)** - Integrate TraceRTM programmatically
+- **[Best Practices](/docs/wiki/guides/best-practices)** - Patterns for large-scale projects
+- **[Graph Visualization](/docs/wiki/features/graph-view)** - Visualize dependency graphs
+- **[Custom Reports](/docs/wiki/features/custom-reports)** - Create tailored reports
+
+## Quick Reference
+
+```bash
+# Core commands used in this tutorial
+tracertm project create --name "Project Name" --key PREFIX
+tracertm item create --type TYPE --title "Title" --project PREFIX
+tracertm link create SOURCE TARGET --type "tests"
+tracertm matrix generate PREFIX
+tracertm coverage report PREFIX
+tracertm impact analyze ITEM-ID
+tracertm report generate PREFIX --format html
+```
+
+## Troubleshooting
+
+**Q: My links aren't showing in the matrix**
+A: Ensure you've used the correct link type. Use `--type "tests"` for requirement-to-test links.
+
+**Q: Coverage is showing 0%**
+A: Coverage is based on links, not just items. Make sure you've created links using `tracertm link create`.
+
+**Q: Can't find my project**
+A: Use `tracertm project list` to see all projects. Check your project key matches exactly.
+
+**Q: Item IDs are different than examples**
+A: Item IDs are auto-generated sequentially. Your IDs may differ but the workflow remains the same.
+
+## Additional Resources
+
+- [CLI Command Reference](/docs/cli/commands)
+- [Item Types](/docs/wiki/concepts/item-types)
+- [Link Types](/docs/wiki/concepts/link-types)
+- [Example Projects](https://github.com/TracerRTM/examples)
+- [Video Tutorials](https://youtube.com/TracerRTM)

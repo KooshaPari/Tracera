@@ -1,0 +1,9 @@
+# Documentation Consolidation Scripts Requirements
+
+# Core dependencies
+python-frontmatter>=1.0.0
+rich>=13.0.0
+
+# Optional (for advanced features)
+# sentence-transformers>=2.0.0  # For semantic similarity
+# numpy>=1.24.0  # For similarity calculations

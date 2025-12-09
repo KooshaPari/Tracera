@@ -1,19 +1,748 @@
 ---
-title: "REST Search"
-description: "Search across artifacts."
+title: "Search API"
+description: "Complete guide to searching items, links, and content across TraceRTM projects"
 ---
 
-## Endpoints
-- GET /v1/search — Query with text and filters
+# Search API
 
-## Example
+TraceRTM provides powerful search capabilities including full-text search, structured queries, and AI-powered semantic search. This guide covers all search endpoints and query syntax.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects/{project_id}/search` | Simple search |
+| `POST` | `/v1/projects/{project_id}/search` | Advanced search |
+| `POST` | `/v1/projects/{project_id}/search/semantic` | Semantic search |
+| `GET` | `/v1/projects/{project_id}/search/suggestions` | Search suggestions |
+| `POST` | `/v1/search/global` | Cross-project search |
+
+---
+
+## Simple Search
+
+Quick full-text search across items.
+
 ```http
-GET /v1/search
-Authorization: Bearer <token>
-Content-Type: application/json
+GET /v1/projects/{project_id}/search
 ```
 
-## Guidance
-- Use pagination headers (`Link`) for large result sets.
-- Prefer filters over client-side slicing to reduce payload size.
-- Check 429 headers for rate-limit backoff instructions.
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | — | Search query (required) |
+| `type` | string | — | Filter by item type |
+| `status` | string | — | Filter by status |
+| `fields` | string | `title,description` | Fields to search |
+| `sort` | string | `_score` | Sort by: `_score`, `created_at`, `updated_at` |
+| `limit` | integer | 20 | Results per page (1-100) |
+| `offset` | integer | 0 | Results offset |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/search?q=authentication&type=requirement" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "authentication",
+    "total_results": 15,
+    "results": [
+      {
+        "id": "item_req_auth_001",
+        "type": "requirement",
+        "item_number": "VCS-REQ-042",
+        "title": "User Authentication System",
+        "description": "The system shall implement secure user authentication...",
+        "status": "approved",
+        "score": 12.5,
+        "highlights": {
+          "title": ["User <em>Authentication</em> System"],
+          "description": ["implement secure user <em>authentication</em>..."]
+        },
+        "created_at": "2024-03-15T10:00:00Z"
+      },
+      {
+        "id": "item_req_auth_002",
+        "type": "requirement",
+        "item_number": "VCS-REQ-043",
+        "title": "Multi-Factor Authentication",
+        "description": "Support MFA for enhanced authentication security...",
+        "status": "draft",
+        "score": 10.2,
+        "highlights": {
+          "title": ["Multi-Factor <em>Authentication</em>"],
+          "description": ["enhanced <em>authentication</em> security"]
+        },
+        "created_at": "2024-03-16T09:00:00Z"
+      }
+    ]
+  },
+  "pagination": {
+    "total": 15,
+    "limit": 20,
+    "offset": 0,
+    "has_next": false
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Simple search
+results = client.search.query(
+    project_id="proj_abc123",
+    q="authentication"
+)
+
+print(f"Found {results.total_results} results")
+for item in results.results:
+    print(f"[{item.score:.1f}] {item.item_number}: {item.title}")
+
+# Search with filters
+results = client.search.query(
+    project_id="proj_abc123",
+    q="sensor data",
+    type="requirement",
+    status="approved"
+)
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Simple search
+const results = await client.search.query({
+  projectId: 'proj_abc123',
+  q: 'authentication'
+});
+
+console.log(`Found ${results.totalResults} results`);
+results.results.forEach(item => {
+  console.log(`[${item.score}] ${item.itemNumber}: ${item.title}`);
+});
+```
+
+---
+
+## Advanced Search
+
+Complex queries with filters, facets, and aggregations.
+
+```http
+POST /v1/projects/{project_id}/search
+```
+
+### Request Body
+
+```json
+{
+  "query": {
+    "text": "sensor data processing",
+    "fields": ["title", "description", "custom_fields.notes"],
+    "operator": "and"
+  },
+  "filters": {
+    "type": {"in": ["requirement", "design"]},
+    "status": {"in": ["approved", "in_review"]},
+    "priority": {"eq": "high"},
+    "custom_fields.safety_level": {"in": ["ASIL-C", "ASIL-D"]},
+    "created_at": {"gte": "2024-01-01"},
+    "tags": {"contains": "safety"}
+  },
+  "facets": ["type", "status", "custom_fields.safety_level"],
+  "aggregations": {
+    "by_status": {"terms": {"field": "status"}},
+    "by_month": {"date_histogram": {"field": "created_at", "interval": "month"}}
+  },
+  "sort": [
+    {"field": "_score", "order": "desc"},
+    {"field": "priority", "order": "desc"}
+  ],
+  "highlight": {
+    "fields": ["title", "description"],
+    "pre_tag": "<mark>",
+    "post_tag": "</mark>"
+  },
+  "limit": 20,
+  "offset": 0
+}
+```
+
+### Query Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `and` | All terms must match | `"sensor and data"` |
+| `or` | Any term can match | `"sensor or data"` |
+| `not` | Exclude term | `"sensor not temperature"` |
+| `"..."` | Exact phrase | `"sensor data processing"` |
+| `*` | Wildcard | `"sens*"` matches sensor, sensitive |
+| `~` | Fuzzy match | `"senor~"` matches sensor |
+
+### Filter Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `eq` | Equals | `{"status": {"eq": "approved"}}` |
+| `ne` | Not equals | `{"status": {"ne": "draft"}}` |
+| `in` | In list | `{"type": {"in": ["req", "test"]}}` |
+| `nin` | Not in list | `{"type": {"nin": ["issue"]}}` |
+| `gt`, `gte` | Greater than | `{"priority": {"gte": 3}}` |
+| `lt`, `lte` | Less than | `{"created_at": {"lt": "2024-06-01"}}` |
+| `contains` | Array contains | `{"tags": {"contains": "safety"}}` |
+| `exists` | Field exists | `{"assignee": {"exists": true}}` |
+| `regex` | Pattern match | `{"title": {"regex": "^REQ-\\d+"}}` |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/search" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {
+      "text": "sensor timing",
+      "operator": "and"
+    },
+    "filters": {
+      "type": {"in": ["requirement"]},
+      "status": {"in": ["approved", "in_review"]},
+      "custom_fields.safety_level": {"in": ["ASIL-C", "ASIL-D"]}
+    },
+    "facets": ["status", "custom_fields.safety_level"],
+    "sort": [{"field": "_score", "order": "desc"}],
+    "limit": 20
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "sensor timing",
+    "total_results": 8,
+    "results": [
+      {
+        "id": "item_req_001",
+        "type": "requirement",
+        "item_number": "VCS-REQ-001",
+        "title": "Sensor Data Processing Timing",
+        "status": "approved",
+        "score": 15.8,
+        "highlights": {
+          "title": ["<mark>Sensor</mark> Data Processing <mark>Timing</mark>"]
+        }
+      }
+    ],
+    "facets": {
+      "status": [
+        {"value": "approved", "count": 6},
+        {"value": "in_review", "count": 2}
+      ],
+      "custom_fields.safety_level": [
+        {"value": "ASIL-D", "count": 5},
+        {"value": "ASIL-C", "count": 3}
+      ]
+    },
+    "aggregations": {
+      "by_status": {
+        "buckets": [
+          {"key": "approved", "doc_count": 6},
+          {"key": "in_review", "doc_count": 2}
+        ]
+      }
+    }
+  },
+  "pagination": {
+    "total": 8,
+    "limit": 20,
+    "offset": 0,
+    "has_next": false
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Advanced search
+results = client.search.advanced(
+    project_id="proj_abc123",
+    query={
+        "text": "sensor timing",
+        "operator": "and"
+    },
+    filters={
+        "type": {"in": ["requirement"]},
+        "status": {"in": ["approved", "in_review"]},
+        "custom_fields.safety_level": {"in": ["ASIL-C", "ASIL-D"]}
+    },
+    facets=["status", "custom_fields.safety_level"],
+    sort=[{"field": "_score", "order": "desc"}]
+)
+
+print(f"Found {results.total_results} results")
+
+# Print facets
+for facet_name, facet_values in results.facets.items():
+    print(f"\n{facet_name}:")
+    for fv in facet_values:
+        print(f"  {fv.value}: {fv.count}")
+```
+
+#### TypeScript
+
+```typescript
+// Advanced search with filters
+const results = await client.search.advanced({
+  projectId: 'proj_abc123',
+  query: {
+    text: 'sensor timing',
+    operator: 'and'
+  },
+  filters: {
+    type: { in: ['requirement'] },
+    status: { in: ['approved', 'in_review'] }
+  },
+  facets: ['status'],
+  sort: [{ field: '_score', order: 'desc' }]
+});
+
+// Access facets
+results.facets.status.forEach(facet => {
+  console.log(`${facet.value}: ${facet.count}`);
+});
+```
+
+---
+
+## Semantic Search
+
+AI-powered search that understands meaning and context.
+
+```http
+POST /v1/projects/{project_id}/search/semantic
+```
+
+### Request Body
+
+```json
+{
+  "query": "requirements for secure user login",
+  "context": "Looking for authentication and session management requirements",
+  "filters": {
+    "type": {"in": ["requirement"]}
+  },
+  "min_similarity": 0.7,
+  "limit": 10
+}
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/search/semantic" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "requirements for handling network failures gracefully",
+    "filters": {
+      "type": {"in": ["requirement"]}
+    },
+    "min_similarity": 0.6,
+    "limit": 10
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "requirements for handling network failures gracefully",
+    "total_results": 5,
+    "results": [
+      {
+        "id": "item_req_net_001",
+        "type": "requirement",
+        "item_number": "VCS-REQ-078",
+        "title": "Network Connection Resilience",
+        "description": "The system shall automatically retry failed network connections with exponential backoff...",
+        "status": "approved",
+        "similarity": 0.92,
+        "explanation": "Highly relevant: discusses network failure handling and retry mechanisms"
+      },
+      {
+        "id": "item_req_net_002",
+        "type": "requirement",
+        "item_number": "VCS-REQ-079",
+        "title": "Offline Operation Mode",
+        "description": "System shall continue operating in degraded mode when network connectivity is lost...",
+        "status": "approved",
+        "similarity": 0.85,
+        "explanation": "Related: covers graceful degradation during network unavailability"
+      },
+      {
+        "id": "item_req_err_001",
+        "type": "requirement",
+        "item_number": "VCS-REQ-102",
+        "title": "Error Recovery Procedures",
+        "description": "System shall implement automatic recovery from transient errors...",
+        "status": "in_review",
+        "similarity": 0.71,
+        "explanation": "Related: general error recovery includes network-related errors"
+      }
+    ]
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Semantic search
+results = client.search.semantic(
+    project_id="proj_abc123",
+    query="requirements for handling network failures gracefully",
+    filters={
+        "type": {"in": ["requirement"]}
+    },
+    min_similarity=0.6,
+    limit=10
+)
+
+print(f"Found {results.total_results} semantically similar items")
+for item in results.results:
+    print(f"[{item.similarity:.0%}] {item.item_number}: {item.title}")
+    print(f"    {item.explanation}")
+
+# Find similar items
+similar = client.search.similar(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    limit=5
+)
+```
+
+---
+
+## Search Suggestions
+
+Get search suggestions and autocomplete.
+
+```http
+GET /v1/projects/{project_id}/search/suggestions
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | — | Partial query |
+| `type` | string | `all` | Suggestion type: `all`, `items`, `tags`, `users` |
+| `limit` | integer | 10 | Maximum suggestions |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/search/suggestions?q=auth" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "auth",
+    "suggestions": [
+      {
+        "type": "item",
+        "text": "Authentication System",
+        "id": "item_req_auth_001",
+        "item_number": "VCS-REQ-042"
+      },
+      {
+        "type": "item",
+        "text": "Authorization Rules",
+        "id": "item_req_auth_005",
+        "item_number": "VCS-REQ-046"
+      },
+      {
+        "type": "tag",
+        "text": "authentication",
+        "count": 15
+      },
+      {
+        "type": "tag",
+        "text": "authorization",
+        "count": 12
+      },
+      {
+        "type": "recent",
+        "text": "authentication flow",
+        "timestamp": "2024-12-07T14:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Global Search
+
+Search across multiple projects.
+
+```http
+POST /v1/search/global
+```
+
+### Request Body
+
+```json
+{
+  "query": {
+    "text": "authentication"
+  },
+  "projects": ["proj_abc123", "proj_def456"],
+  "filters": {
+    "type": {"in": ["requirement"]}
+  },
+  "limit": 20
+}
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/search/global" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {"text": "authentication"},
+    "projects": ["proj_abc123", "proj_def456"],
+    "limit": 20
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "authentication",
+    "total_results": 25,
+    "results": [
+      {
+        "id": "item_req_001",
+        "project_id": "proj_abc123",
+        "project_name": "Vehicle Control System",
+        "type": "requirement",
+        "title": "User Authentication",
+        "score": 12.5
+      },
+      {
+        "id": "item_req_050",
+        "project_id": "proj_def456",
+        "project_name": "Medical Device Firmware",
+        "type": "requirement",
+        "title": "Operator Authentication",
+        "score": 11.8
+      }
+    ],
+    "by_project": {
+      "proj_abc123": 15,
+      "proj_def456": 10
+    }
+  }
+}
+```
+
+---
+
+## Search Query Syntax
+
+### Basic Queries
+
+```
+authentication           # Single term
+user authentication      # Multiple terms (OR by default)
+"user authentication"    # Exact phrase
+```
+
+### Boolean Operators
+
+```
+authentication AND login        # Both terms required
+authentication OR authorization # Either term
+authentication NOT password     # Exclude term
+(login OR signin) AND secure    # Grouping
+```
+
+### Field-Specific Search
+
+```
+title:authentication            # Search in title field
+description:secure              # Search in description
+custom_fields.component:auth    # Search in custom field
+tags:security                   # Search in tags
+```
+
+### Wildcards and Fuzzy
+
+```
+auth*           # Starts with "auth"
+*tion           # Ends with "tion"
+auth?rization   # Single character wildcard
+authn~          # Fuzzy match (typo tolerance)
+authn~2         # Fuzzy with edit distance 2
+```
+
+### Ranges
+
+```
+created_at:[2024-01-01 TO 2024-06-30]  # Date range
+priority:[high TO critical]            # Value range
+story_points:[5 TO 13]                 # Numeric range
+```
+
+---
+
+## Search Best Practices
+
+### 1. Use Specific Fields
+
+```python
+# More specific = better results
+results = client.search.query(
+    project_id="proj_abc123",
+    q="authentication",
+    fields=["title", "custom_fields.component"]  # Target specific fields
+)
+```
+
+### 2. Combine with Filters
+
+```python
+# Use filters for categorical data, search for text
+results = client.search.advanced(
+    project_id="proj_abc123",
+    query={"text": "login process"},
+    filters={
+        "type": {"eq": "requirement"},
+        "status": {"in": ["approved", "in_review"]},
+        "custom_fields.safety_level": {"in": ["ASIL-D"]}
+    }
+)
+```
+
+### 3. Use Facets for Exploration
+
+```python
+# Get facets to understand result distribution
+results = client.search.advanced(
+    project_id="proj_abc123",
+    query={"text": "sensor"},
+    facets=["type", "status", "custom_fields.component", "assignee"]
+)
+
+# Display facets for user filtering
+for facet_name, values in results.facets.items():
+    print(f"{facet_name}: {[v.value for v in values]}")
+```
+
+### 4. Semantic Search for Concepts
+
+```python
+# Use semantic search when exact terms aren't known
+results = client.search.semantic(
+    project_id="proj_abc123",
+    query="how does the system handle unexpected user input",
+    min_similarity=0.5
+)
+```
+
+---
+
+## Error Responses
+
+### Invalid Query Syntax
+
+```json
+{
+  "error": {
+    "code": "INVALID_QUERY_SYNTAX",
+    "message": "Query syntax error at position 15",
+    "status": 400,
+    "details": {
+      "position": 15,
+      "expected": "closing parenthesis",
+      "found": "end of query"
+    }
+  }
+}
+```
+
+### Invalid Filter
+
+```json
+{
+  "error": {
+    "code": "INVALID_FILTER",
+    "message": "Unknown filter field 'invalid_field'",
+    "status": 400,
+    "details": {
+      "field": "invalid_field",
+      "available_fields": ["type", "status", "priority", "created_at", "..."]
+    }
+  }
+}
+```
+
+### Search Timeout
+
+```json
+{
+  "error": {
+    "code": "SEARCH_TIMEOUT",
+    "message": "Search query timed out after 30 seconds",
+    "status": 504,
+    "details": {
+      "suggestion": "Try a more specific query or add filters"
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter syntax reference
+- [Sorting](/docs/api-reference/rest-api/sorting) - Sort search results
+- [Pagination](/docs/api-reference/rest-api/pagination) - Paginate results
+- [Items API](/docs/api-reference/rest-api/endpoints/requirements) - Item endpoints

@@ -6,7 +6,7 @@ import { Card } from '@tracertm/ui/components/Card'
 import { Input } from '@tracertm/ui/components/Input'
 import { Skeleton } from '@tracertm/ui/components/Skeleton'
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearch, useNavigate } from '@tanstack/react-router'
 import { useDeleteItem, useItems, useUpdateItem } from '../hooks/useItems'
 import { useProjects } from '../hooks/useProjects'
 
@@ -101,10 +101,11 @@ function BulkActionsBar({
 }
 
 export function ItemsTableView() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const projectFilter = searchParams.get('project') || undefined
-  const typeFilter = searchParams.get('type') || undefined
-  const statusFilter = searchParams.get('status') || undefined
+  const navigate = useNavigate()
+  const searchParams = useSearch({ strict: false }) as any
+  const projectFilter = searchParams?.project || undefined
+  const typeFilter = searchParams?.type || undefined
+  const statusFilter = searchParams?.status || undefined
 
   const { data: items, isLoading, error } = useItems({ projectId: projectFilter })
   const { data: projects } = useProjects()

@@ -1,125 +1,537 @@
 ---
 title: "Version Control"
-description: "Documentation for Version Control"
+description: "Best practices for managing artifact versions, baselines, and change history in TraceRTM"
 ---
 
-# Version Control
+# Version Control Best Practices
 
+Effective version control ensures you can track changes, compare versions, and maintain audit-ready history for all artifacts.
 
-## Overview
+## Versioning Strategies
 
-Welcome to the Version Control documentation.
+### Auto-Increment Versioning
 
-## Introduction
+Simple version increments for each change:
 
-This page provides comprehensive information about Version Control.
+```python
+from tracertm import TraceRTMClient
 
-## Key Features
+client = TraceRTMClient()
 
-- Comprehensive functionality
-- Easy to use interface
-- Powerful capabilities
-- Extensible architecture
+# TraceRTM auto-increments versions on each update
+feature = client.create_item(
+    title="User Login",
+    item_type="feature",
+    description="Initial version"
+)
+print(f"Created at version: {feature.version}")  # v1
 
-## Getting Started
-
-```bash
-tracertm init
-tracertm config set version.control enabled
+# Update increments version
+client.update_item(feature.id, description="Updated description")
+feature = client.get_item(feature.id)
+print(f"After update: {feature.version}")  # v2
 ```
 
-## Usage
+### Semantic Versioning
 
-### Basic Usage
+Use major.minor.patch for significant changes:
 
-```typescript
-import { TraceRTM } from '@tracertm/core'
+```python
+def update_with_semantic_version(client, item_id, changes, version_type="patch"):
+    """Update item with semantic versioning."""
+    item = client.get_item(item_id)
+    current = item.metadata.get("semantic_version", "1.0.0")
 
-const tracertm = new TraceRTM()
-const result = await tracertm.versioncontrol()
+    major, minor, patch = map(int, current.split("."))
+
+    if version_type == "major":
+        new_version = f"{major + 1}.0.0"
+    elif version_type == "minor":
+        new_version = f"{major}.{minor + 1}.0"
+    else:  # patch
+        new_version = f"{major}.{minor}.{patch + 1}"
+
+    client.update_item(
+        item_id,
+        **changes,
+        metadata={
+            "semantic_version": new_version,
+            "version_note": changes.get("version_note", ""),
+            "versioned_at": datetime.now().isoformat()
+        }
+    )
+
+    return new_version
+
+# Usage
+new_version = update_with_semantic_version(
+    client,
+    "FEAT-001",
+    {"description": "Breaking change to API"},
+    version_type="major"
+)
+print(f"New version: {new_version}")  # 2.0.0
 ```
 
-### Advanced Usage
+### Status-Based Versioning
 
-```typescript
-const config = {
-  version_control: {
-    enabled: true,
-    options: {
-      mode: 'advanced'
+Track versions through status changes:
+
+```yaml
+# .tracertm/config.yaml
+versioning:
+  strategy: status_based
+
+  status_transitions:
+    draft:
+      next: [review]
+      version_increment: false
+
+    review:
+      next: [approved, draft]
+      version_increment: false
+
+    approved:
+      next: [released]
+      version_increment: minor
+      requires_baseline: true
+
+    released:
+      next: [deprecated]
+      version_increment: false
+      locked: true
+```
+
+## Baselines
+
+### Creating Baselines
+
+Capture snapshots at key milestones:
+
+```python
+# Create release baseline
+baseline = client.create_baseline(
+    name="v1.0.0",
+    description="Initial production release",
+    include_types=["feature", "test", "design"],
+    filters={
+        "status": "approved"
     }
-  }
-}
+)
 
-const tracertm = new TraceRTM(config)
+print(f"Baseline created: {baseline.name}")
+print(f"Items included: {baseline.item_count}")
 ```
 
-## Configuration
+### Baseline Best Practices
 
-```typescript
-export default {
-  version_control: {
-    enabled: true,
-    settings: {
-      // Configuration here
+```python
+# Validate before creating baseline
+def create_validated_baseline(client, name, criteria):
+    """Create baseline only if validation passes."""
+    # Check coverage
+    coverage = client.get_coverage()
+    if coverage.percentage < criteria.get("min_coverage", 80):
+        raise ValueError(f"Coverage {coverage.percentage}% below minimum")
+
+    # Check for orphans
+    orphans = client.validate(check="orphans")
+    if orphans and criteria.get("no_orphans", True):
+        raise ValueError(f"Found {len(orphans)} orphan items")
+
+    # Check all items approved
+    pending = client.get_items(status=["draft", "review"])
+    if pending and criteria.get("all_approved", True):
+        raise ValueError(f"Found {len(pending)} unapproved items")
+
+    # Create baseline
+    baseline = client.create_baseline(
+        name=name,
+        description=f"Validated baseline - Coverage: {coverage.percentage}%",
+        include_types=["feature", "test", "design", "code"]
+    )
+
+    return baseline
+
+# Create validated baseline
+baseline = create_validated_baseline(
+    client,
+    "v1.0.0-rc1",
+    {"min_coverage": 90, "no_orphans": True, "all_approved": True}
+)
+```
+
+### Comparing Baselines
+
+```python
+# Compare two baselines
+diff = client.compare_baselines("v0.9.0", "v1.0.0")
+
+print(f"Items added: {len(diff.added)}")
+for item in diff.added:
+    print(f"  + {item.id}: {item.title}")
+
+print(f"\nItems modified: {len(diff.modified)}")
+for item in diff.modified:
+    print(f"  ~ {item.id}: {item.title}")
+    for change in item.changes:
+        print(f"    - {change.field}: {change.old} -> {change.new}")
+
+print(f"\nItems removed: {len(diff.removed)}")
+for item in diff.removed:
+    print(f"  - {item.id}: {item.title}")
+```
+
+## Change History
+
+### Tracking Changes
+
+Every change is automatically tracked:
+
+```python
+# Get item history
+history = client.get_history("FEAT-001")
+
+for entry in history:
+    print(f"v{entry.version} - {entry.timestamp}")
+    print(f"  User: {entry.user}")
+    print(f"  Action: {entry.action}")
+
+    for field, change in entry.changes.items():
+        print(f"  {field}: {change['old']} -> {change['new']}")
+```
+
+### Viewing Specific Versions
+
+```python
+# Get item at specific version
+item_v2 = client.get_item_at_version("FEAT-001", version=2)
+print(f"Title at v2: {item_v2.title}")
+print(f"Status at v2: {item_v2.status}")
+
+# Compare two versions
+diff = client.compare_versions("FEAT-001", from_version=2, to_version=5)
+for field, values in diff.items():
+    print(f"{field}:")
+    print(f"  Before (v2): {values['old']}")
+    print(f"  After (v5): {values['new']}")
+```
+
+### Audit Trail
+
+```python
+def generate_audit_trail(client, item_id, format="detailed"):
+    """Generate audit trail for compliance."""
+    history = client.get_history(item_id)
+
+    trail = {
+        "item_id": item_id,
+        "generated_at": datetime.now().isoformat(),
+        "total_versions": len(history),
+        "entries": []
     }
-  }
-}
+
+    for entry in history:
+        trail_entry = {
+            "version": entry.version,
+            "timestamp": entry.timestamp.isoformat(),
+            "user": entry.user,
+            "action": entry.action
+        }
+
+        if format == "detailed":
+            trail_entry["changes"] = entry.changes
+            trail_entry["metadata"] = entry.metadata
+
+        trail["entries"].append(trail_entry)
+
+    return trail
+
+# Generate audit trail
+audit = generate_audit_trail(client, "FEAT-001")
+print(f"Audit trail has {audit['total_versions']} entries")
 ```
 
-## Examples
+## Branching
 
-### Example 1
+### Feature Branches
 
-```typescript
-const example = await tracertm.versioncontrol({
-  option1: 'value1',
-  option2: 'value2'
-})
+Work on changes in isolation:
+
+```python
+# Create feature branch
+branch = client.create_branch(
+    name="feature/oauth-support",
+    from_baseline="v1.0.0",
+    description="Add OAuth2 authentication support"
+)
+
+# Make changes on branch
+client.checkout(branch.name)
+client.update_item("FEAT-001", description="Updated for OAuth")
+
+# Changes isolated to branch
+print(f"Working on branch: {client.current_branch}")
 ```
 
-### Example 2
+### Merging Changes
 
-```typescript
-const advanced = await tracertm.versioncontrol({
-  advanced: {
-    feature1: true,
-    feature2: false
-  }
-})
+```python
+# Merge feature branch to main
+merge_result = client.merge(
+    source_branch="feature/oauth-support",
+    target_branch="main",
+    strategy="three_way"
+)
+
+if merge_result.conflicts:
+    print(f"Conflicts detected: {len(merge_result.conflicts)}")
+    for conflict in merge_result.conflicts:
+        print(f"  {conflict.item_id}: {conflict.field}")
+else:
+    print(f"Merged successfully: {merge_result.items_merged} items")
 ```
 
-## Best Practices
+### Branch Protection
 
-1. Plan before implementing
-2. Write comprehensive tests
-3. Keep documentation updated
-4. Monitor performance
-5. Optimize regularly
+```yaml
+# .tracertm/config.yaml
+branches:
+  main:
+    protected: true
+    require_review: true
+    min_reviewers: 2
+    require_passing_validation: true
 
-## Troubleshooting
+  release/*:
+    protected: true
+    require_review: true
+    allowed_mergers: ["release-manager"]
 
-### Common Issues
+  feature/*:
+    protected: false
+    auto_delete_after_merge: true
+```
 
-**Issue 1:**
+## Rollback
+
+### Rolling Back Changes
+
+Revert to previous versions:
+
+```python
+# Rollback single item
+client.rollback(
+    item_id="FEAT-001",
+    to_version=3,
+    reason="Reverting problematic changes"
+)
+
+# Rollback to baseline
+client.rollback_to_baseline(
+    baseline="v1.0.0",
+    reason="Critical bug in v1.1.0"
+)
+```
+
+### Safe Rollback Practices
+
+```python
+def safe_rollback(client, item_id, to_version, dry_run=True):
+    """Perform rollback with safety checks."""
+    current = client.get_item(item_id)
+    target = client.get_item_at_version(item_id, to_version)
+
+    # Calculate impact
+    impact = client.get_impact(item_id)
+
+    print(f"Rolling back {item_id} from v{current.version} to v{to_version}")
+    print(f"Affected items: {len(impact.affected)}")
+
+    # Show what will change
+    diff = client.compare_versions(item_id, to_version, current.version)
+    print("\nChanges to be reverted:")
+    for field, values in diff.items():
+        print(f"  {field}: {values['new']} -> {values['old']}")
+
+    if dry_run:
+        print("\n[DRY RUN] No changes made")
+        return None
+
+    # Perform rollback
+    client.rollback(item_id, to_version, reason="Safe rollback")
+    return client.get_item(item_id)
+
+# Preview rollback
+safe_rollback(client, "FEAT-001", 3, dry_run=True)
+
+# Execute rollback
+safe_rollback(client, "FEAT-001", 3, dry_run=False)
+```
+
+## Change Management
+
+### Change Sets
+
+Group related changes:
+
+```python
+# Start a change set
+with client.change_set("Update authentication feature") as cs:
+    client.update_item("FEAT-001", description="Updated auth")
+    client.update_item("TEST-001", description="Updated test")
+    client.create_link("CODE-001", "FEAT-001", "implements")
+
+# All changes committed together
+print(f"Change set: {cs.id}")
+print(f"Items affected: {cs.item_count}")
+```
+
+### Require Change Justification
+
+```python
+def update_with_justification(client, item_id, changes, justification):
+    """Require justification for changes."""
+    if not justification or len(justification) < 20:
+        raise ValueError("Change justification required (min 20 chars)")
+
+    client.update_item(
+        item_id,
+        **changes,
+        metadata={
+            "last_change_justification": justification,
+            "last_change_by": client.current_user,
+            "last_change_at": datetime.now().isoformat()
+        }
+    )
+
+# Usage
+update_with_justification(
+    client,
+    "FEAT-001",
+    {"status": "approved"},
+    "All acceptance criteria verified in sprint review"
+)
+```
+
+## Version Locking
+
+### Lock Approved Items
+
+Prevent changes to approved artifacts:
+
+```yaml
+# .tracertm/config.yaml
+versioning:
+  locking:
+    enabled: true
+    lock_on_status:
+      - approved
+      - released
+
+    unlock_requires:
+      role: admin
+      justification: true
+```
+
+```python
+# Check if item is locked
+item = client.get_item("FEAT-001")
+if item.locked:
+    print(f"Item locked at v{item.version}")
+    print(f"Locked by: {item.locked_by}")
+    print(f"Locked at: {item.locked_at}")
+
+# Unlock with justification (admin only)
+client.unlock(
+    item_id="FEAT-001",
+    justification="Critical security fix required"
+)
+```
+
+### Baseline Locking
+
+```python
+# Lock baseline to prevent changes
+client.lock_baseline(
+    name="v1.0.0",
+    reason="Production release - no modifications allowed"
+)
+
+# Attempting to modify locked baseline items raises error
+try:
+    client.update_item("FEAT-001", description="Change")
+except LockedError as e:
+    print(f"Cannot modify: {e}")
+```
+
+## CLI Commands
+
 ```bash
-tracertm fix issue-1
+# View item history
+tracertm history FEAT-001
+
+# Compare versions
+tracertm diff FEAT-001 --from 2 --to 5
+
+# Get item at specific version
+tracertm get FEAT-001 --version 3
+
+# Create baseline
+tracertm baseline create v1.0.0 --description "Initial release"
+
+# Compare baselines
+tracertm baseline diff v0.9.0 v1.0.0
+
+# Rollback item
+tracertm rollback FEAT-001 --to 3 --reason "Bug fix"
+
+# Create branch
+tracertm branch create feature/new-feature --from v1.0.0
+
+# Merge branch
+tracertm merge feature/new-feature --into main
+
+# Lock item
+tracertm lock FEAT-001 --reason "Approved for release"
 ```
 
-**Issue 2:**
-```bash
-tracertm fix issue-2
-```
+## Best Practices Summary
 
-## API Reference
+### 1. Version Everything
 
-- [API Overview](/docs/api-reference)
-- [REST API](/docs/api-reference/rest-api)
-- [CLI Reference](/docs/api-reference/cli)
+- Enable auto-versioning for all artifacts
+- Use semantic versions for major releases
+- Document version changes
+
+### 2. Create Regular Baselines
+
+- Baseline before each release
+- Validate before creating baselines
+- Keep baselines immutable
+
+### 3. Use Branches for Changes
+
+- Feature branches for new work
+- Protect main branch
+- Review before merging
+
+### 4. Maintain Audit Trail
+
+- Document change justifications
+- Keep history accessible
+- Generate audit reports
+
+### 5. Lock When Appropriate
+
+- Lock approved items
+- Lock release baselines
+- Require justification for unlocking
 
 ## Related Topics
 
-- [Getting Started](/docs/getting-started)
-- [Core Concepts](/docs/getting-started/core-concepts)
-- [Guides](/docs/wiki/guides)
+- [Versioning Concepts](/docs/wiki/concepts/versioning) - Core versioning features
+- [Branching](/docs/wiki/concepts/versioning/branching) - Branch management
+- [History](/docs/wiki/concepts/versioning/history) - Change tracking
+- [Rollback](/docs/wiki/concepts/versioning/rollback) - Reverting changes
 

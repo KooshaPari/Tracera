@@ -1,7 +1,10 @@
 import { Badge } from '@tracertm/ui/components/Badge'
 import { Button } from '@tracertm/ui/components/Button'
 import { Card } from '@tracertm/ui/components/Card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tracertm/ui/components/Select'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { api } from '../api/endpoints'
 
 type ReportFormat = 'json' | 'csv' | 'pdf' | 'xlsx'
 
@@ -46,12 +49,51 @@ const reportTemplates: ReportTemplate[] = [
 
 export function ReportsView() {
   const [selectedFormat, setSelectedFormat] = useState<Record<string, ReportFormat>>({})
+  const [selectedProject, setSelectedProject] = useState<string>('')
+
+  const projectsQuery = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => api.projects.list(),
+  })
+
+  const generateReportMutation = useMutation({
+    mutationFn: async ({ templateId, format, projectId }: { templateId: string; format: ReportFormat; projectId?: string }) => {
+      // Use export API for JSON/CSV formats
+      if (format === 'json' || format === 'csv') {
+        if (!projectId) {
+          throw new Error('Project ID required for export')
+        }
+        const blob = await api.exportImport.export(projectId, format)
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${templateId}-report.${format === 'json' ? 'json' : 'csv'}`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        return { success: true }
+      }
+      // For PDF/XLSX, show alert (not implemented yet)
+      alert(`Generating ${templateId} report as ${format} (not yet implemented)`)
+      return { success: false }
+    },
+    onSuccess: () => {
+      // Report generation handled in mutationFn
+    },
+    onError: (error) => {
+      console.error('Report generation failed:', error)
+      alert('Report generation failed. Please try again.')
+    },
+  })
 
   const handleGenerate = (templateId: string) => {
     const format = selectedFormat[templateId] || 'pdf'
-    console.log(`Generating ${templateId} report as ${format}`)
-    // TODO: Implement actual report generation
-    alert(`Generating ${templateId} report as ${format}`)
+    if ((format === 'json' || format === 'csv') && !selectedProject) {
+      alert('Please select a project for JSON/CSV exports')
+      return
+    }
+    generateReportMutation.mutate({ templateId, format, projectId: selectedProject })
   }
 
   return (
@@ -60,6 +102,29 @@ export function ReportsView() {
         <h1 className="text-3xl font-bold">Reports</h1>
         <p className="text-gray-600">Generate and export reports</p>
       </div>
+
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="project-select" className="block text-sm font-medium mb-2">
+              Project (for JSON/CSV exports)
+            </label>
+            <Select value={selectedProject || 'all'} onValueChange={(v) => setSelectedProject(v === 'all' ? '' : v)}>
+              <SelectTrigger id="project-select" className="mt-2">
+                <SelectValue placeholder="Select a project (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projectsQuery.data?.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {reportTemplates.map((template) => (
@@ -88,8 +153,12 @@ export function ReportsView() {
                   ))}
                 </div>
 
-                <Button onClick={() => handleGenerate(template.id)} className="w-full">
-                  Generate Report
+                <Button
+                  onClick={() => handleGenerate(template.id)}
+                  className="w-full"
+                  disabled={generateReportMutation.isPending}
+                >
+                  {generateReportMutation.isPending ? 'Generating...' : 'Generate Report'}
                 </Button>
               </div>
             </div>

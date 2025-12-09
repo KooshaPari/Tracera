@@ -25,6 +25,15 @@ except ImportError:
 # Import models to register them with SQLAlchemy
 try:
     from tracertm.models.base import Base
+    # Import ALL models to ensure they're registered with Base.metadata
+    # This is critical - SQLAlchemy only creates tables for imported models
+    from tracertm.models.agent import Agent
+    from tracertm.models.agent_event import AgentEvent
+    from tracertm.models.agent_lock import AgentLock
+    from tracertm.models.event import Event
+    from tracertm.models.item import Item
+    from tracertm.models.link import Link
+    from tracertm.models.project import Project
 except ImportError:
     Base = None
 
@@ -57,7 +66,16 @@ async def test_db_engine():
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session(test_db_engine):
-    """Create a test database session for each test."""
+    """
+    Create a test database session for each test with proper transaction handling.
+
+    This fixture provides a clean session for each test. Tests can call commit()
+    or flush() as needed, and all changes will be automatically rolled back
+    after the test completes to ensure test isolation.
+
+    The fixture uses expire_on_commit=False to allow accessing objects after
+    commit within the same test.
+    """
     async_session_maker = async_sessionmaker(
         test_db_engine,
         class_=AsyncSession,
@@ -65,35 +83,57 @@ async def db_session(test_db_engine):
     )
 
     async with async_session_maker() as session:
-        yield session
-        await session.rollback()
+        try:
+            yield session
+        finally:
+            # Always rollback to ensure test isolation
+            await session.rollback()
+            await session.close()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def project_factory(db_session):
-    """Factory for creating test projects."""
-    async def create_project(name="Test Project", description="Test project"):
-        from tracertm.models.project import Project
-        project = Project(name=name, description=description)
-        db_session.add(project)
+    """
+    Factory for creating test projects using ProjectRepository.
+
+    This ensures projects are created using the same code path as production,
+    providing more realistic test coverage.
+    """
+    async def create_project(name="Test Project", description="Test project", metadata=None):
+        from tracertm.repositories.project_repository import ProjectRepository
+        repo = ProjectRepository(db_session)
+        project = await repo.create(name=name, description=description, metadata=metadata)
         await db_session.flush()
         return project
     return create_project
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def item_factory(db_session):
-    """Factory for creating test items."""
-    async def create_item(project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo"):
-        from tracertm.models.item import Item
-        item = Item(
+    """
+    Factory for creating test items using ItemRepository.
+
+    This ensures items are created using the same code path as production,
+    providing more realistic test coverage.
+    """
+    async def create_item(
+        project_id,
+        title="Test Item",
+        view="FEATURE",
+        item_type="feature",
+        status="todo",
+        **kwargs
+    ):
+        from tracertm.repositories.item_repository import ItemRepository
+        repo = ItemRepository(db_session)
+        item = await repo.create(
             project_id=project_id,
             title=title,
             view=view,
             item_type=item_type,
             status=status,
+            **kwargs
         )
-        db_session.add(item)
         await db_session.flush()
         return item
     return create_item

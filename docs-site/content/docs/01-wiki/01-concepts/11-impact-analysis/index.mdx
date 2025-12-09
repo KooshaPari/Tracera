@@ -1,0 +1,795 @@
+---
+title: "Impact Analysis"
+description: "Comprehensive guide to impact analysis in TracerTM - understanding how changes propagate through your traceability network"
+---
+
+# Impact Analysis
+
+## Overview
+
+Impact analysis is a critical feature in requirements traceability that helps you understand the ripple effects of changes before they happen. When you modify a requirement, design document, or any other artifact, impact analysis shows you exactly what other items will be affected, helping you make informed decisions about scope, effort, and risk.
+
+TracerTM's impact analysis uses efficient graph traversal algorithms to quickly analyze complex traceability networks, providing both forward and reverse impact views with detailed depth tracking and filtering capabilities.
+
+## What is Impact Analysis in Traceability?
+
+Impact analysis answers the fundamental question: **"What will be affected if I change this item?"**
+
+In a traceability system, artifacts are interconnected through various relationship types (implements, tests, depends_on, etc.). When you modify one artifact, the change can cascade through these relationships, potentially affecting:
+
+- **Downstream items**: Items that depend on or are derived from the changed item
+- **Upstream items**: Items that the changed item depends on or traces to
+- **Related documentation**: Design docs, test cases, code modules
+- **Compliance artifacts**: Verification matrices, audit trails
+
+### Why Impact Analysis Matters
+
+1. **Change Management**: Understand the full scope of changes before implementation
+2. **Risk Assessment**: Identify high-risk changes that affect many components
+3. **Effort Estimation**: Accurately estimate work required for changes
+4. **Regression Testing**: Determine which test cases need re-execution
+5. **Compliance**: Ensure all affected artifacts are updated for regulatory compliance
+6. **Communication**: Inform stakeholders about change implications
+
+## How TracerTM Performs Impact Analysis
+
+TracerTM's impact analysis service uses a **Breadth-First Search (BFS)** algorithm to traverse the traceability graph efficiently. This approach provides several advantages:
+
+### Architecture
+
+```
+┌─────────────┐
+│   Item A    │  ← Root item (changing this)
+└──────┬──────┘
+       │
+       ├─[implements]──┐
+       │               │
+       │          ┌────▼────┐
+       │          │ Item B  │  Depth 1
+       │          └────┬────┘
+       │               │
+       │          ┌────▼────┐
+       │          │ Item C  │  Depth 2
+       │          └─────────┘
+       │
+       └─[tests]──────┐
+                      │
+                 ┌────▼────┐
+                 │ Item D  │  Depth 1
+                 └────┬────┘
+                      │
+                 ┌────▼────┐
+                 │ Item E  │  Depth 2
+                 └─────────┘
+```
+
+### Data Structures
+
+TracerTM uses specialized data structures for impact analysis:
+
+**ImpactNode**:
+```python
+@dataclass
+class ImpactNode:
+    item: Item              # The affected item
+    depth: int              # Distance from root (1, 2, 3...)
+    path: list[str]         # Full path from root to this node
+    link_type: str | None   # Type of relationship
+```
+
+**ImpactAnalysisResult**:
+```python
+@dataclass
+class ImpactAnalysisResult:
+    root_item_id: str
+    root_item_title: str
+    total_affected: int
+    max_depth_reached: int
+    affected_by_depth: dict[int, int]      # {depth: count}
+    affected_by_view: dict[str, int]       # {view: count}
+    affected_items: list[dict]
+    critical_paths: list[list[str]]        # Paths to leaf nodes
+```
+
+## BFS Algorithm and Depth Tracking
+
+### How BFS Works for Impact Analysis
+
+TracerTM's BFS implementation provides optimal performance with `O(V + E)` complexity, where V is vertices (items) and E is edges (links).
+
+**Algorithm Steps**:
+
+1. **Initialize**: Start with root item at depth 0
+2. **Queue Processing**: Use a deque for efficient FIFO operations
+3. **Traverse**: Process each item level by level
+4. **Track Visited**: Prevent infinite loops in cyclic graphs
+5. **Collect Results**: Gather affected items with depth information
+
+**Pseudocode**:
+```python
+visited = set()
+queue = deque([(root_item, depth=0, path=[root])])
+
+while queue:
+    current, depth, path = queue.popleft()
+
+    if current in visited or depth > max_depth:
+        continue
+
+    visited.add(current)
+
+    # Get downstream links
+    for link in get_links(current):
+        if link.target not in visited:
+            queue.append((link.target, depth+1, path + [link.target]))
+```
+
+### Depth Tracking Benefits
+
+Depth information provides valuable insights:
+
+- **Depth 1**: Direct dependencies (immediate impact)
+- **Depth 2**: Secondary effects (one level removed)
+- **Depth 3+**: Tertiary and cascading effects
+
+Example depth distribution:
+```
+Depth 1:  5 items  ████████████████████
+Depth 2:  12 items ████████████████████████████████████████
+Depth 3:  8 items  ████████████████████████
+Depth 4:  3 items  ██████████
+```
+
+### Critical Paths
+
+TracerTM identifies **critical paths** - complete chains from the root item to leaf nodes (items with no further dependencies). These paths represent the longest impact chains and are crucial for:
+
+- Understanding maximum propagation depth
+- Identifying end-to-end dependencies
+- Planning comprehensive testing strategies
+
+## Using Impact Analysis via CLI
+
+### Basic Impact Analysis
+
+Analyze what would be affected if you change an item:
+
+```bash
+rtm link impact ITEM-001
+```
+
+Output:
+```
+Impact Analysis for: User Authentication System
+Item ID: ITEM-001
+
+Total Affected Items: 15
+Max Depth Reached: 4
+
+Affected by Depth:
+  Depth 1: 3 items
+  Depth 2: 7 items
+  Depth 3: 4 items
+  Depth 4: 1 items
+
+Affected by View:
+  DESIGN: 5 items
+  CODE: 6 items
+  TEST: 4 items
+
+Affected Items:
+┏━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━┓
+┃ Depth ┃ Item ID  ┃ Title         ┃ View   ┃ Type    ┃ Status   ┃
+┡━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━┩
+│   1   │ ITEM-002 │ Login Screen  │ DESIGN │ design  │ approved │
+│   1   │ ITEM-003 │ Auth Module   │ CODE   │ code    │ active   │
+│   1   │ ITEM-004 │ Auth Tests    │ TEST   │ test    │ active   │
+│   2   │ ITEM-005 │ Session Mgmt  │ DESIGN │ design  │ draft    │
+└───────┴──────────┴───────────────┴────────┴─────────┴──────────┘
+```
+
+### Limit Analysis Depth
+
+Control how far to traverse the graph:
+
+```bash
+# Only analyze immediate dependencies (depth 1)
+rtm link impact ITEM-001 --depth 1
+
+# Deep analysis (up to depth 10)
+rtm link impact ITEM-001 --depth 10
+```
+
+Depth recommendations:
+- **Depth 1-2**: Quick overview, immediate impacts
+- **Depth 3-5**: Standard analysis, most real-world scenarios
+- **Depth 6-10**: Deep analysis for complex systems
+
+### Filter by Link Type
+
+Analyze impact through specific relationship types:
+
+```bash
+# Only follow "depends_on" relationships
+rtm link impact ITEM-001 --type depends_on
+
+# Only follow "implements" relationships
+rtm link impact ITEM-001 --type implements
+
+# Only follow "tests" relationships
+rtm link impact ITEM-001 --type tests
+```
+
+Common link types:
+- `implements`: What implements this requirement
+- `tests`: What test cases cover this
+- `depends_on`: What depends on this item
+- `related_to`: Related artifacts
+- `decomposes_to`: Sub-requirements
+
+### Combined Filtering
+
+```bash
+# Analyze only direct dependencies that are test cases
+rtm link impact ITEM-001 --depth 1 --type tests
+
+# Deep dependency analysis
+rtm link impact ITEM-001 --depth 8 --type depends_on
+```
+
+## Using Impact Analysis via API
+
+### REST API Endpoint
+
+TracerTM exposes impact analysis through a RESTful API:
+
+**Endpoint**: `GET /api/v1/analysis/impact/{item_id}`
+
+**Parameters**:
+- `item_id` (path): Item to analyze
+- `project_id` (query): Project context
+- `max_depth` (query, optional): Maximum traversal depth (default: 10)
+- `link_types` (query, optional): Filter by link types (array)
+
+### API Examples
+
+#### Basic Request
+
+```bash
+curl -X GET "https://api.tracertm.com/api/v1/analysis/impact/ITEM-001?project_id=proj-123" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### With Depth Limit
+
+```bash
+curl -X GET "https://api.tracertm.com/api/v1/analysis/impact/ITEM-001?project_id=proj-123&max_depth=3" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### With Link Type Filter
+
+```bash
+curl -X GET "https://api.tracertm.com/api/v1/analysis/impact/ITEM-001?project_id=proj-123&link_types=implements&link_types=tests" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Response Format
+
+```json
+{
+  "root_item_id": "ITEM-001",
+  "root_item_title": "User Authentication System",
+  "total_affected": 15,
+  "max_depth": 4,
+  "affected_by_depth": {
+    "1": 3,
+    "2": 7,
+    "3": 4,
+    "4": 1
+  },
+  "affected_by_view": {
+    "DESIGN": 5,
+    "CODE": 6,
+    "TEST": 4
+  },
+  "affected_items": [
+    {
+      "id": "ITEM-002",
+      "title": "Login Screen Design",
+      "view": "DESIGN",
+      "item_type": "design",
+      "status": "approved",
+      "depth": 1,
+      "path": ["ITEM-001", "ITEM-002"],
+      "link_type": "implements"
+    }
+  ],
+  "critical_paths": [
+    ["ITEM-001", "ITEM-002", "ITEM-005", "ITEM-008"]
+  ]
+}
+```
+
+### Python SDK Usage
+
+```python
+from tracertm.api.client import TracerTMClient
+
+# Initialize client
+client = TracerTMClient(api_key="YOUR_API_KEY")
+
+# Basic impact analysis
+result = await client.analyze_impact(
+    item_id="ITEM-001",
+    project_id="proj-123"
+)
+
+print(f"Total affected: {result.total_affected}")
+print(f"Max depth: {result.max_depth}")
+
+# With filtering
+result = await client.analyze_impact(
+    item_id="ITEM-001",
+    project_id="proj-123",
+    max_depth=5,
+    link_types=["implements", "tests"]
+)
+
+# Process results
+for item in result.affected_items:
+    print(f"  [{item.depth}] {item.title} ({item.view})")
+```
+
+## Interpreting Results
+
+### Understanding the Output
+
+**Total Affected**: The count of unique items that would be impacted. This is your primary scope metric.
+
+**Max Depth Reached**: How far the impact propagates. Higher values indicate cascading effects.
+
+**Affected by Depth**: Distribution showing how many items are affected at each level:
+- Use this to understand the spread pattern
+- High depth-1 count = many direct dependencies
+- High depth-3+ counts = cascading effects
+
+**Affected by View**: Breakdown by artifact type:
+- `REQ`: Requirements affected
+- `DESIGN`: Design documents affected
+- `CODE`: Code modules affected
+- `TEST`: Test cases affected
+- `DOC`: Documentation affected
+
+### Critical Path Analysis
+
+Critical paths show the longest dependency chains. Example:
+
+```
+Critical Path 1: REQ-001 → DESIGN-002 → CODE-003 → TEST-004
+Critical Path 2: REQ-001 → DESIGN-005 → CODE-006 → TEST-007 → DOC-008
+```
+
+This indicates:
+- Path 2 is longer (depth 5 vs depth 4)
+- Path 2 reaches documentation layer
+- Both paths require end-to-end retesting
+
+### Risk Assessment
+
+Use the results to assess change risk:
+
+**Low Risk** (Green):
+- Total affected: 1-5 items
+- Max depth: 1-2
+- Single view affected
+
+**Medium Risk** (Yellow):
+- Total affected: 6-20 items
+- Max depth: 3-4
+- Multiple views affected
+
+**High Risk** (Red):
+- Total affected: 20+ items
+- Max depth: 5+
+- All views affected
+- Multiple critical paths
+
+## Filtering and Scoping Analysis
+
+### View-Based Filtering
+
+Target analysis to specific artifact types:
+
+```bash
+# What design documents are affected?
+rtm link impact ITEM-001 --view DESIGN
+
+# What code modules are affected?
+rtm link impact ITEM-001 --view CODE
+
+# What test cases need re-execution?
+rtm link impact ITEM-001 --view TEST
+```
+
+### Link Type Filtering
+
+Focus on specific relationship types:
+
+```bash
+# Implementation impact only
+rtm link impact ITEM-001 --type implements
+
+# Testing impact only
+rtm link impact ITEM-001 --type tests
+
+# Dependency impact only
+rtm link impact ITEM-001 --type depends_on
+```
+
+### Combining Filters
+
+```bash
+# What test cases directly test this requirement?
+rtm link impact ITEM-001 --depth 1 --type tests --view TEST
+
+# What code implements this, up to 3 levels deep?
+rtm link impact ITEM-001 --depth 3 --type implements --view CODE
+```
+
+### Reverse Impact Analysis
+
+Sometimes you need to know "what depends on this?" (reverse direction):
+
+```bash
+# What items depend on this component?
+rtm link impact ITEM-001 --reverse
+
+# What requirements trace to this design?
+rtm link impact DESIGN-001 --reverse --view REQ
+```
+
+## Integration with Change Management
+
+### Change Request Workflow
+
+1. **Change Proposed**: Developer proposes requirement change
+2. **Impact Analysis**: Run impact analysis automatically
+3. **Review**: Team reviews affected items
+4. **Approval**: Approve based on impact scope
+5. **Implementation**: Update all affected artifacts
+6. **Verification**: Confirm all items updated
+
+### Automated Change Impact Reports
+
+Generate reports for change review boards:
+
+```bash
+# Export impact analysis to JSON
+rtm link impact ITEM-001 --format json > impact-report.json
+
+# Generate visual diagram
+rtm link graph ITEM-001 --depth 5 > impact-graph.txt
+
+# Create traceability matrix
+rtm link matrix --type implements > traceability-matrix.csv
+```
+
+### Integration Points
+
+**Git Pre-Commit Hooks**:
+```bash
+#!/bin/bash
+# Check if requirements changed
+if git diff --name-only | grep -q "requirements/"; then
+    echo "Requirements changed - running impact analysis..."
+    rtm link impact $(extract_item_id) --depth 5
+fi
+```
+
+**CI/CD Pipeline**:
+```yaml
+# .github/workflows/impact-analysis.yml
+name: Impact Analysis
+on:
+  pull_request:
+    paths:
+      - 'requirements/**'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Impact Analysis
+        run: |
+          rtm link impact ${{ env.ITEM_ID }} --format json
+          rtm link impact ${{ env.ITEM_ID }} --type tests > tests-to-run.txt
+```
+
+**Issue Tracking Integration**:
+```python
+# Auto-comment on Jira issues with impact analysis
+def on_requirement_change(issue_id):
+    item_id = get_item_from_jira(issue_id)
+    result = analyze_impact(item_id)
+
+    comment = f"""
+    Impact Analysis Results:
+    - Total affected: {result.total_affected}
+    - Test cases to update: {len([i for i in result.affected_items if i.view == 'TEST'])}
+    - Code modules affected: {len([i for i in result.affected_items if i.view == 'CODE'])}
+    """
+
+    jira.add_comment(issue_id, comment)
+```
+
+## Best Practices
+
+### 1. Run Impact Analysis Early
+
+Always run impact analysis **before** making changes:
+
+```bash
+# GOOD: Analyze first
+rtm link impact ITEM-001
+# Review results
+# Make informed decision
+
+# BAD: Change first, analyze later
+rtm item update ITEM-001 --status modified
+rtm link impact ITEM-001  # Too late!
+```
+
+### 2. Use Appropriate Depth
+
+Choose depth based on your needs:
+
+```bash
+# Quick check: depth 1-2
+rtm link impact ITEM-001 --depth 2
+
+# Standard analysis: depth 3-5
+rtm link impact ITEM-001 --depth 4
+
+# Deep analysis: depth 6-10
+rtm link impact ITEM-001 --depth 8
+```
+
+### 3. Filter Strategically
+
+Target your analysis:
+
+```bash
+# For test planning
+rtm link impact ITEM-001 --type tests
+
+# For code review
+rtm link impact ITEM-001 --type implements --view CODE
+
+# For documentation updates
+rtm link impact ITEM-001 --view DOC
+```
+
+### 4. Document Impact in Change Requests
+
+Include impact analysis results in all change requests:
+
+```markdown
+# Change Request: Update Authentication Flow
+
+## Impact Analysis
+- **Total Affected**: 23 items
+- **Max Depth**: 5
+- **Critical Paths**: 3
+
+### Breakdown
+- Requirements: 2 items
+- Design: 5 items
+- Code: 10 items
+- Tests: 6 items
+
+### Testing Required
+All 6 test cases must be re-executed.
+```
+
+### 5. Monitor Critical Paths
+
+Pay special attention to items on critical paths:
+
+```bash
+# Identify critical path items
+rtm link impact ITEM-001 --format json | jq '.critical_paths'
+
+# These items need extra scrutiny during changes
+```
+
+### 6. Regular Traceability Audits
+
+Periodically check for orphaned items:
+
+```bash
+# Find items with no links
+rtm link detect-orphans
+
+# Find broken links
+rtm link detect-missing
+```
+
+### 7. Automate Where Possible
+
+Integrate into existing workflows:
+
+```bash
+# Pre-commit hook
+if [ requirements changed ]; then
+    rtm link impact $(get_changed_items)
+fi
+
+# CI/CD pipeline
+rtm link impact $ITEM_ID --type tests > tests.txt
+run_tests $(cat tests.txt)
+```
+
+## Real-World Examples
+
+### Example 1: Requirement Change in Safety-Critical System
+
+**Scenario**: Automotive ADAS system, changing braking distance requirement
+
+```bash
+rtm link impact REQ-BRAKE-001 --depth 10
+```
+
+**Results**:
+```
+Impact Analysis for: Emergency Braking Distance Requirement
+Total Affected: 47 items
+Max Depth: 7
+
+Affected by View:
+  REQ: 3 items      (Related requirements)
+  DESIGN: 12 items  (Control algorithms, sensor fusion)
+  CODE: 18 items    (Brake controller, ABS integration)
+  TEST: 11 items    (HIL tests, track tests)
+  DOC: 3 items      (Safety manual, compliance docs)
+
+Critical Paths:
+  Path 1: REQ → DESIGN → CODE → UNIT_TEST → INT_TEST → SYS_TEST → VALIDATION (depth 7)
+```
+
+**Decision**: High-risk change requiring full V-model verification
+
+### Example 2: API Endpoint Change in Web Application
+
+**Scenario**: Modifying user authentication API endpoint
+
+```bash
+rtm link impact API-AUTH-LOGIN --depth 5 --type implements
+```
+
+**Results**:
+```
+Impact Analysis for: Login API Endpoint
+Total Affected: 12 items
+Max Depth: 3
+
+Affected by View:
+  CODE: 6 items     (Frontend, backend, SDK)
+  TEST: 4 items     (API tests, integration tests)
+  DOC: 2 items      (API docs, SDK docs)
+
+Affected Items:
+  [1] Frontend Login Component
+  [1] Mobile App Auth Module
+  [1] Backend Auth Handler
+  [1] Session Manager
+  [2] Integration Test Suite
+  [2] E2E Test Suite
+```
+
+**Decision**: Medium-risk change, requires coordinated frontend/backend deployment
+
+### Example 3: Database Schema Change
+
+**Scenario**: Adding new column to users table
+
+```bash
+rtm link impact DB-USERS-SCHEMA --depth 6
+```
+
+**Results**:
+```
+Impact Analysis for: Users Table Schema
+Total Affected: 34 items
+Max Depth: 5
+
+Affected by View:
+  DESIGN: 4 items   (Data models)
+  CODE: 22 items    (ORM models, queries, migrations)
+  TEST: 6 items     (Unit tests, migration tests)
+  DOC: 2 items      (Schema docs)
+
+Critical Items (Depth 1):
+  - User ORM Model (CODE)
+  - User Repository (CODE)
+  - Migration Script (CODE)
+  - User API Endpoints (CODE)
+```
+
+**Decision**: Migration required, coordinate with all services using users table
+
+### Example 4: Security Patch Application
+
+**Scenario**: Applying security fix to crypto library
+
+```bash
+rtm link impact LIB-CRYPTO --depth 8 --type depends_on
+```
+
+**Results**:
+```
+Impact Analysis for: Crypto Library
+Total Affected: 89 items
+Max Depth: 6
+
+Affected by View:
+  CODE: 67 items    (All services using crypto)
+  TEST: 18 items    (Security tests, unit tests)
+  DOC: 4 items      (Security docs, release notes)
+
+Services Affected:
+  - Authentication Service
+  - Payment Service
+  - File Encryption Service
+  - API Gateway
+  - Admin Portal
+  - User Portal
+```
+
+**Decision**: Critical security update, requires coordinated deployment of all services
+
+### Example 5: UI Component Update
+
+**Scenario**: Redesigning button component in design system
+
+```bash
+rtm link impact DESIGN-BUTTON --type implements --depth 4
+```
+
+**Results**:
+```
+Impact Analysis for: Button Component
+Total Affected: 156 items
+Max Depth: 3
+
+Affected by View:
+  DESIGN: 12 items  (Component variants)
+  CODE: 132 items   (All screens using button)
+  TEST: 12 items    (Visual regression tests)
+
+Most Affected Screens:
+  - Dashboard (23 buttons)
+  - Settings (18 buttons)
+  - User Profile (15 buttons)
+```
+
+**Decision**: Large-scale UI change, requires phased rollout with feature flags
+
+## Related Topics
+
+- [Traceability Fundamentals](/docs/wiki/concepts/traceability)
+- [Relationship Types](/docs/wiki/concepts/relationships/types)
+- [Link Management CLI](/docs/wiki/guides/cli/link-commands)
+- [Graph Visualization](/docs/wiki/concepts/relationships/visualization)
+- [Change Management](/docs/wiki/guides/workflows/change-management)
+- [Cycle Detection](/docs/wiki/concepts/relationships/cycle-detection)
+
+## Next Steps
+
+1. Try basic impact analysis: `rtm link impact YOUR_ITEM_ID`
+2. Experiment with depth limits: `rtm link impact YOUR_ITEM_ID --depth 3`
+3. Filter by link type: `rtm link impact YOUR_ITEM_ID --type implements`
+4. Integrate into your change workflow
+5. Set up automated impact analysis in CI/CD
+
+For more information, see the [API Reference](/docs/api-reference) or [CLI Guide](/docs/wiki/guides/cli).

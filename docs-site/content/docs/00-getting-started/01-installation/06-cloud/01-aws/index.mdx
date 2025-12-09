@@ -1,69 +1,1292 @@
 ---
 title: "AWS Deployment"
-description: "Documentation for AWS Deployment"
+description: "Comprehensive guide for deploying TraceRTM on AWS infrastructure"
 ---
 
 # AWS Deployment
 
+Deploy TraceRTM on Amazon Web Services using EC2, ECS, EKS, or serverless architectures.
 
 ## Overview
 
-Learn how to install AWS Deployment for TraceRTM.
+This guide covers deploying TraceRTM on AWS with production-grade infrastructure including:
+- Compute: EC2, ECS/Fargate, or EKS
+- Database: RDS PostgreSQL with high availability
+- Caching: ElastiCache Redis
+- Storage: S3 for file storage
+- Networking: VPC, ALB, Route 53
+- Monitoring: CloudWatch and X-Ray
+- Security: IAM, Security Groups, Secrets Manager
 
 ## Prerequisites
 
-Before proceeding with the installation:
+### AWS Account Setup
 
-- Ensure system requirements are met
-- Have administrative privileges
-- Network connectivity for package downloads
+1. **AWS Account**: Active AWS account with billing enabled
+2. **AWS CLI**: Version 2.x or later
+3. **IAM Permissions**: Administrator or deployment-specific permissions
+4. **Domain**: Optional, for custom domain setup
 
-## Installation Steps
-
-### Step 1: Download
-
-```bash
-# Download the installation package
-curl -fsSL https://install.tracertm.com/aws | sh
-```
-
-### Step 2: Verify Installation
+### Install AWS CLI
 
 ```bash
-tracertm --version
+# macOS
+brew install awscli
+
+# Linux
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Verify installation
+aws --version
 ```
 
-### Step 3: Configure
+### Configure AWS Credentials
 
 ```bash
-tracertm config init
+# Configure AWS CLI
+aws configure
+
+# Alternatively, use environment variables
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_DEFAULT_REGION="us-east-1"
+
+# Or use AWS SSO
+aws configure sso
 ```
 
-## Post-Installation
+### Required IAM Permissions
 
-After installation, you should:
+Create an IAM policy for deployment:
 
-1. Verify the installation
-2. Configure your environment
-3. Run initial tests
-4. Review security settings
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "ecs:*",
+        "ecr:*",
+        "rds:*",
+        "elasticache:*",
+        "s3:*",
+        "elasticloadbalancing:*",
+        "route53:*",
+        "cloudwatch:*",
+        "logs:*",
+        "iam:*",
+        "secretsmanager:*",
+        "kms:*",
+        "vpc:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+## Architecture Options
+
+### Option 1: EC2 Deployment (Simple)
+
+Best for: Small to medium deployments, full control
+
+- Single or multiple EC2 instances
+- Manual or auto-scaling groups
+- Direct database connections
+
+### Option 2: ECS/Fargate (Recommended)
+
+Best for: Production deployments, managed containers
+
+- Fully managed container orchestration
+- Auto-scaling and load balancing
+- No server management
+
+### Option 3: EKS (Advanced)
+
+Best for: Large-scale, Kubernetes-native deployments
+
+- Full Kubernetes capabilities
+- Complex orchestration
+- Multi-service architectures
+
+## Deployment Method 1: EC2 Instances
+
+### Step 1: Launch EC2 Instance
+
+```bash
+# Create security group
+aws ec2 create-security-group \
+  --group-name tracertm-sg \
+  --description "TraceRTM security group" \
+  --vpc-id vpc-xxxxx
+
+# Allow HTTP/HTTPS traffic
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 80 \
+  --cidr 0.0.0.0/0
+
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 443 \
+  --cidr 0.0.0.0/0
+
+# Allow SSH (from your IP only)
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 22 \
+  --cidr YOUR_IP/32
+
+# Launch EC2 instance
+aws ec2 run-instances \
+  --image-id ami-0c55b159cbfafe1f0 \
+  --count 1 \
+  --instance-type t3.medium \
+  --key-name your-key-pair \
+  --security-group-ids sg-xxxxx \
+  --subnet-id subnet-xxxxx \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=tracertm-app}]'
+```
+
+### Step 2: Install TraceRTM on EC2
+
+```bash
+# SSH into instance
+ssh -i your-key.pem ec2-user@ec2-xx-xx-xx-xx.compute.amazonaws.com
+
+# Update system
+sudo yum update -y
+
+# Install Docker
+sudo yum install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -a -G docker ec2-user
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Create application directory
+mkdir -p /opt/tracertm
+cd /opt/tracertm
+
+# Create docker-compose.yml
+cat > docker-compose.yml << 'EOF'
+version: '3.8'
+
+services:
+  app:
+    image: tracertm/tracertm:latest
+    ports:
+      - "80:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@rds-endpoint:5432/tracertm
+      - REDIS_URL=redis://elasticache-endpoint:6379
+      - AWS_REGION=us-east-1
+      - S3_BUCKET=tracertm-storage
+    restart: unless-stopped
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: /ecs/tracertm
+        awslogs-region: us-east-1
+        awslogs-stream-prefix: app
+EOF
+
+# Start application
+docker-compose up -d
+```
+
+### Step 3: Create Auto Scaling Group (Optional)
+
+```bash
+# Create launch template
+aws ec2 create-launch-template \
+  --launch-template-name tracertm-template \
+  --version-description "TraceRTM v1" \
+  --launch-template-data '{
+    "ImageId": "ami-0c55b159cbfafe1f0",
+    "InstanceType": "t3.medium",
+    "KeyName": "your-key-pair",
+    "SecurityGroupIds": ["sg-xxxxx"],
+    "UserData": "'"$(base64 -w 0 user-data.sh)"'"
+  }'
+
+# Create Auto Scaling Group
+aws autoscaling create-auto-scaling-group \
+  --auto-scaling-group-name tracertm-asg \
+  --launch-template LaunchTemplateName=tracertm-template \
+  --min-size 2 \
+  --max-size 6 \
+  --desired-capacity 2 \
+  --vpc-zone-identifier "subnet-xxxxx,subnet-yyyyy" \
+  --target-group-arns arn:aws:elasticloadbalancing:region:account:targetgroup/tracertm-tg/xxxxx
+```
+
+## Deployment Method 2: ECS/Fargate (Recommended)
+
+### Step 1: Create ECR Repository
+
+```bash
+# Create ECR repository
+aws ecr create-repository \
+  --repository-name tracertm \
+  --region us-east-1
+
+# Authenticate Docker to ECR
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
+# Build and push image
+docker build -t tracertm .
+docker tag tracertm:latest ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/tracertm:latest
+docker push ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/tracertm:latest
+```
+
+### Step 2: Create ECS Cluster
+
+```bash
+# Create ECS cluster
+aws ecs create-cluster \
+  --cluster-name tracertm-cluster \
+  --capacity-providers FARGATE FARGATE_SPOT \
+  --default-capacity-provider-strategy \
+    capacityProvider=FARGATE,weight=1 \
+    capacityProvider=FARGATE_SPOT,weight=4
+```
+
+### Step 3: Create Task Definition
+
+Create `task-definition.json`:
+
+```json
+{
+  "family": "tracertm-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/tracertm-task-role",
+  "containerDefinitions": [
+    {
+      "name": "tracertm",
+      "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/tracertm:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {"name": "AWS_REGION", "value": "us-east-1"},
+        {"name": "S3_BUCKET", "value": "tracertm-storage"}
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:tracertm/db-url"
+        },
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:tracertm/redis-url"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/tracertm",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
+```
+
+Register the task definition:
+
+```bash
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+```
+
+### Step 4: Create ECS Service
+
+```bash
+aws ecs create-service \
+  --cluster tracertm-cluster \
+  --service-name tracertm-service \
+  --task-definition tracertm-task \
+  --desired-count 2 \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={
+    subnets=[subnet-xxxxx,subnet-yyyyy],
+    securityGroups=[sg-xxxxx],
+    assignPublicIp=ENABLED
+  }" \
+  --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:region:account:targetgroup/tracertm-tg/xxxxx,containerName=tracertm,containerPort=8000"
+```
+
+## Deployment Method 3: EKS
+
+### Step 1: Create EKS Cluster
+
+```bash
+# Install eksctl
+brew install eksctl  # macOS
+# or download from https://github.com/weaveworks/eksctl
+
+# Create cluster
+eksctl create cluster \
+  --name tracertm-cluster \
+  --region us-east-1 \
+  --nodegroup-name tracertm-nodes \
+  --node-type t3.medium \
+  --nodes 3 \
+  --nodes-min 2 \
+  --nodes-max 6 \
+  --managed
+
+# Update kubeconfig
+aws eks update-kubeconfig --name tracertm-cluster --region us-east-1
+```
+
+### Step 2: Deploy to EKS
+
+Create `k8s-deployment.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tracertm
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tracertm-secrets
+  namespace: tracertm
+type: Opaque
+stringData:
+  DATABASE_URL: postgresql://user:pass@rds-endpoint:5432/tracertm
+  REDIS_URL: redis://elasticache-endpoint:6379
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracertm
+  namespace: tracertm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tracertm
+  template:
+    metadata:
+      labels:
+        app: tracertm
+    spec:
+      serviceAccountName: tracertm
+      containers:
+      - name: tracertm
+        image: ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/tracertm:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - secretRef:
+            name: tracertm-secrets
+        env:
+        - name: AWS_REGION
+          value: us-east-1
+        - name: S3_BUCKET
+          value: tracertm-storage
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm
+  namespace: tracertm
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: tracertm
+```
+
+Deploy to EKS:
+
+```bash
+kubectl apply -f k8s-deployment.yaml
+```
+
+## RDS PostgreSQL Setup
+
+### Create RDS Instance
+
+```bash
+# Create DB subnet group
+aws rds create-db-subnet-group \
+  --db-subnet-group-name tracertm-db-subnet \
+  --db-subnet-group-description "TraceRTM DB subnet group" \
+  --subnet-ids subnet-xxxxx subnet-yyyyy
+
+# Create security group for RDS
+aws ec2 create-security-group \
+  --group-name tracertm-db-sg \
+  --description "TraceRTM RDS security group" \
+  --vpc-id vpc-xxxxx
+
+# Allow PostgreSQL access from app security group
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-db-xxxxx \
+  --protocol tcp \
+  --port 5432 \
+  --source-group sg-app-xxxxx
+
+# Create RDS instance
+aws rds create-db-instance \
+  --db-instance-identifier tracertm-db \
+  --db-instance-class db.t3.medium \
+  --engine postgres \
+  --engine-version 15.4 \
+  --master-username tracertm_admin \
+  --master-user-password "STRONG_PASSWORD_HERE" \
+  --allocated-storage 100 \
+  --storage-type gp3 \
+  --storage-encrypted \
+  --db-subnet-group-name tracertm-db-subnet \
+  --vpc-security-group-ids sg-db-xxxxx \
+  --backup-retention-period 7 \
+  --preferred-backup-window "03:00-04:00" \
+  --preferred-maintenance-window "sun:04:00-sun:05:00" \
+  --multi-az \
+  --publicly-accessible false \
+  --enable-performance-insights \
+  --performance-insights-retention-period 7
+```
+
+### Create Read Replica (Optional)
+
+```bash
+aws rds create-db-instance-read-replica \
+  --db-instance-identifier tracertm-db-replica \
+  --source-db-instance-identifier tracertm-db \
+  --db-instance-class db.t3.medium \
+  --publicly-accessible false
+```
+
+### CloudFormation Template for RDS
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  TraceRTMDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: tracertm-db
+      DBInstanceClass: db.t3.medium
+      Engine: postgres
+      EngineVersion: '15.4'
+      MasterUsername: tracertm_admin
+      MasterUserPassword: !Ref DBPassword
+      AllocatedStorage: 100
+      StorageType: gp3
+      StorageEncrypted: true
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '03:00-04:00'
+      MultiAZ: true
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+```
+
+## ElastiCache Redis Setup
+
+### Create Redis Cluster
+
+```bash
+# Create cache subnet group
+aws elasticache create-cache-subnet-group \
+  --cache-subnet-group-name tracertm-redis-subnet \
+  --cache-subnet-group-description "TraceRTM Redis subnet group" \
+  --subnet-ids subnet-xxxxx subnet-yyyyy
+
+# Create security group for Redis
+aws ec2 create-security-group \
+  --group-name tracertm-redis-sg \
+  --description "TraceRTM Redis security group" \
+  --vpc-id vpc-xxxxx
+
+# Allow Redis access from app security group
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-redis-xxxxx \
+  --protocol tcp \
+  --port 6379 \
+  --source-group sg-app-xxxxx
+
+# Create Redis replication group
+aws elasticache create-replication-group \
+  --replication-group-id tracertm-redis \
+  --replication-group-description "TraceRTM Redis cluster" \
+  --engine redis \
+  --engine-version 7.0 \
+  --cache-node-type cache.t3.medium \
+  --num-cache-clusters 2 \
+  --automatic-failover-enabled \
+  --cache-subnet-group-name tracertm-redis-subnet \
+  --security-group-ids sg-redis-xxxxx \
+  --at-rest-encryption-enabled \
+  --transit-encryption-enabled \
+  --snapshot-retention-limit 5 \
+  --snapshot-window "02:00-03:00"
+```
+
+## S3 Storage Setup
+
+### Create S3 Bucket
+
+```bash
+# Create bucket
+aws s3api create-bucket \
+  --bucket tracertm-storage-${ACCOUNT_ID} \
+  --region us-east-1
+
+# Enable versioning
+aws s3api put-bucket-versioning \
+  --bucket tracertm-storage-${ACCOUNT_ID} \
+  --versioning-configuration Status=Enabled
+
+# Enable encryption
+aws s3api put-bucket-encryption \
+  --bucket tracertm-storage-${ACCOUNT_ID} \
+  --server-side-encryption-configuration '{
+    "Rules": [{
+      "ApplyServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+      }
+    }]
+  }'
+
+# Configure lifecycle policy
+cat > lifecycle.json << 'EOF'
+{
+  "Rules": [
+    {
+      "Id": "DeleteOldVersions",
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 30
+      }
+    },
+    {
+      "Id": "TransitionToIA",
+      "Status": "Enabled",
+      "Transitions": [
+        {
+          "Days": 90,
+          "StorageClass": "STANDARD_IA"
+        }
+      ]
+    }
+  ]
+}
+EOF
+
+aws s3api put-bucket-lifecycle-configuration \
+  --bucket tracertm-storage-${ACCOUNT_ID} \
+  --lifecycle-configuration file://lifecycle.json
+
+# Configure CORS (if needed)
+cat > cors.json << 'EOF'
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://tracertm.example.com"],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
+EOF
+
+aws s3api put-bucket-cors \
+  --bucket tracertm-storage-${ACCOUNT_ID} \
+  --cors-configuration file://cors.json
+```
+
+## Application Load Balancer Setup
+
+### Create ALB
+
+```bash
+# Create ALB
+aws elbv2 create-load-balancer \
+  --name tracertm-alb \
+  --subnets subnet-xxxxx subnet-yyyyy \
+  --security-groups sg-alb-xxxxx \
+  --scheme internet-facing \
+  --type application \
+  --ip-address-type ipv4
+
+# Create target group
+aws elbv2 create-target-group \
+  --name tracertm-tg \
+  --protocol HTTP \
+  --port 8000 \
+  --vpc-id vpc-xxxxx \
+  --target-type ip \
+  --health-check-enabled \
+  --health-check-path /health \
+  --health-check-interval-seconds 30 \
+  --health-check-timeout-seconds 5 \
+  --healthy-threshold-count 2 \
+  --unhealthy-threshold-count 3
+
+# Create HTTPS listener (requires ACM certificate)
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:region:account:loadbalancer/app/tracertm-alb/xxxxx \
+  --protocol HTTPS \
+  --port 443 \
+  --certificates CertificateArn=arn:aws:acm:region:account:certificate/xxxxx \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:region:account:targetgroup/tracertm-tg/xxxxx
+
+# Create HTTP listener (redirect to HTTPS)
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:region:account:loadbalancer/app/tracertm-alb/xxxxx \
+  --protocol HTTP \
+  --port 80 \
+  --default-actions Type=redirect,RedirectConfig={Protocol=HTTPS,Port=443,StatusCode=HTTP_301}
+```
+
+## Route 53 DNS Configuration
+
+### Create Hosted Zone and Records
+
+```bash
+# Create hosted zone (if needed)
+aws route53 create-hosted-zone \
+  --name tracertm.example.com \
+  --caller-reference $(date +%s)
+
+# Get ALB DNS name
+ALB_DNS=$(aws elbv2 describe-load-balancers \
+  --names tracertm-alb \
+  --query 'LoadBalancers[0].DNSName' \
+  --output text)
+
+# Create A record alias
+cat > route53-record.json << EOF
+{
+  "Changes": [{
+    "Action": "CREATE",
+    "ResourceRecordSet": {
+      "Name": "app.tracertm.example.com",
+      "Type": "A",
+      "AliasTarget": {
+        "HostedZoneId": "Z35SXDOTRQ7X7K",
+        "DNSName": "${ALB_DNS}",
+        "EvaluateTargetHealth": true
+      }
+    }
+  }]
+}
+EOF
+
+aws route53 change-resource-record-sets \
+  --hosted-zone-id Z1234567890ABC \
+  --change-batch file://route53-record.json
+```
+
+## IAM Roles and Policies
+
+### ECS Task Execution Role
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
+
+### ECS Task Role (Application Permissions)
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::tracertm-storage-*",
+        "arn:aws:s3:::tracertm-storage-*/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue"
+      ],
+      "Resource": "arn:aws:secretsmanager:*:*:secret:tracertm/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt"
+      ],
+      "Resource": "arn:aws:kms:*:*:key/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:log-group:/ecs/tracertm:*"
+    }
+  ]
+}
+```
+
+### Create Roles with AWS CLI
+
+```bash
+# Create task execution role
+aws iam create-role \
+  --role-name ecsTaskExecutionRole \
+  --assume-role-policy-document file://ecs-trust-policy.json
+
+aws iam attach-role-policy \
+  --role-name ecsTaskExecutionRole \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+# Create task role
+aws iam create-role \
+  --role-name tracertm-task-role \
+  --assume-role-policy-document file://ecs-trust-policy.json
+
+aws iam put-role-policy \
+  --role-name tracertm-task-role \
+  --policy-name tracertm-task-policy \
+  --policy-document file://task-policy.json
+```
+
+## CloudWatch Monitoring
+
+### Create Log Groups
+
+```bash
+# Create log group
+aws logs create-log-group --log-group-name /ecs/tracertm
+
+# Set retention
+aws logs put-retention-policy \
+  --log-group-name /ecs/tracertm \
+  --retention-in-days 30
+```
+
+### Create CloudWatch Alarms
+
+```bash
+# CPU utilization alarm
+aws cloudwatch put-metric-alarm \
+  --alarm-name tracertm-high-cpu \
+  --alarm-description "Alert when CPU exceeds 80%" \
+  --metric-name CPUUtilization \
+  --namespace AWS/ECS \
+  --statistic Average \
+  --period 300 \
+  --threshold 80 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 2 \
+  --dimensions Name=ServiceName,Value=tracertm-service Name=ClusterName,Value=tracertm-cluster
+
+# Memory utilization alarm
+aws cloudwatch put-metric-alarm \
+  --alarm-name tracertm-high-memory \
+  --alarm-description "Alert when memory exceeds 80%" \
+  --metric-name MemoryUtilization \
+  --namespace AWS/ECS \
+  --statistic Average \
+  --period 300 \
+  --threshold 80 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 2 \
+  --dimensions Name=ServiceName,Value=tracertm-service Name=ClusterName,Value=tracertm-cluster
+
+# RDS CPU alarm
+aws cloudwatch put-metric-alarm \
+  --alarm-name tracertm-db-high-cpu \
+  --metric-name CPUUtilization \
+  --namespace AWS/RDS \
+  --statistic Average \
+  --period 300 \
+  --threshold 80 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 2 \
+  --dimensions Name=DBInstanceIdentifier,Value=tracertm-db
+```
+
+### CloudWatch Dashboard
+
+```bash
+cat > dashboard.json << 'EOF'
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ECS", "CPUUtilization", {"stat": "Average"}],
+          [".", "MemoryUtilization", {"stat": "Average"}]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "ECS Service Metrics"
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/RDS", "CPUUtilization", {"stat": "Average"}],
+          [".", "DatabaseConnections", {"stat": "Average"}]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "RDS Metrics"
+      }
+    }
+  ]
+}
+EOF
+
+aws cloudwatch put-dashboard \
+  --dashboard-name TraceRTM \
+  --dashboard-body file://dashboard.json
+```
+
+## Cost Optimization Tips
+
+### 1. Use Spot Instances
+
+```bash
+# ECS with Fargate Spot
+aws ecs create-service \
+  --capacity-provider-strategy \
+    capacityProvider=FARGATE,weight=1 \
+    capacityProvider=FARGATE_SPOT,weight=4
+```
+
+### 2. Auto Scaling Policies
+
+```bash
+# Create target tracking scaling policy
+aws application-autoscaling register-scalable-target \
+  --service-namespace ecs \
+  --scalable-dimension ecs:service:DesiredCount \
+  --resource-id service/tracertm-cluster/tracertm-service \
+  --min-capacity 2 \
+  --max-capacity 10
+
+aws application-autoscaling put-scaling-policy \
+  --service-namespace ecs \
+  --scalable-dimension ecs:service:DesiredCount \
+  --resource-id service/tracertm-cluster/tracertm-service \
+  --policy-name cpu-scaling-policy \
+  --policy-type TargetTrackingScaling \
+  --target-tracking-scaling-policy-configuration '{
+    "TargetValue": 70.0,
+    "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+    },
+    "ScaleInCooldown": 300,
+    "ScaleOutCooldown": 60
+  }'
+```
+
+### 3. RDS Reserved Instances
+
+Consider purchasing Reserved Instances for production databases (1 or 3-year terms).
+
+### 4. S3 Lifecycle Policies
+
+Automatically transition infrequently accessed data to cheaper storage classes.
+
+### 5. Use AWS Cost Explorer
+
+```bash
+# Enable Cost Explorer
+aws ce get-cost-and-usage \
+  --time-period Start=2025-01-01,End=2025-01-31 \
+  --granularity MONTHLY \
+  --metrics BlendedCost \
+  --group-by Type=SERVICE
+```
+
+### 6. Budget Alerts
+
+```bash
+aws budgets create-budget \
+  --account-id ACCOUNT_ID \
+  --budget '{
+    "BudgetName": "TracerTM-Monthly",
+    "BudgetLimit": {
+      "Amount": "500",
+      "Unit": "USD"
+    },
+    "TimeUnit": "MONTHLY",
+    "BudgetType": "COST"
+  }' \
+  --notifications-with-subscribers '{
+    "Notification": {
+      "NotificationType": "ACTUAL",
+      "ComparisonOperator": "GREATER_THAN",
+      "Threshold": 80
+    },
+    "Subscribers": [{
+      "SubscriptionType": "EMAIL",
+      "Address": "admin@example.com"
+    }]
+  }'
+```
+
+## Security Best Practices
+
+### 1. Use Secrets Manager
+
+```bash
+# Store database credentials
+aws secretsmanager create-secret \
+  --name tracertm/db-url \
+  --secret-string "postgresql://user:pass@endpoint:5432/tracertm"
+
+# Enable automatic rotation
+aws secretsmanager rotate-secret \
+  --secret-id tracertm/db-url \
+  --rotation-lambda-arn arn:aws:lambda:region:account:function:SecretsManagerRotation \
+  --rotation-rules AutomaticallyAfterDays=30
+```
+
+### 2. Enable VPC Flow Logs
+
+```bash
+aws ec2 create-flow-logs \
+  --resource-type VPC \
+  --resource-ids vpc-xxxxx \
+  --traffic-type ALL \
+  --log-destination-type cloud-watch-logs \
+  --log-group-name /aws/vpc/tracertm
+```
+
+### 3. Enable AWS WAF
+
+```bash
+# Create Web ACL
+aws wafv2 create-web-acl \
+  --name tracertm-waf \
+  --scope REGIONAL \
+  --default-action Allow={} \
+  --rules file://waf-rules.json \
+  --visibility-config SampledRequestsEnabled=true,CloudWatchMetricsEnabled=true,MetricName=tracertm-waf
+
+# Associate with ALB
+aws wafv2 associate-web-acl \
+  --web-acl-arn arn:aws:wafv2:region:account:regional/webacl/tracertm-waf/xxxxx \
+  --resource-arn arn:aws:elasticloadbalancing:region:account:loadbalancer/app/tracertm-alb/xxxxx
+```
+
+### 4. Enable GuardDuty
+
+```bash
+aws guardduty create-detector --enable
+```
+
+### 5. Use Security Groups Properly
+
+- Principle of least privilege
+- No 0.0.0.0/0 on SSH (port 22)
+- Use security group references instead of CIDR blocks
+- Regularly audit security group rules
+
+### 6. Enable Encryption
+
+- RDS: Enable encryption at rest
+- ElastiCache: Enable encryption in transit and at rest
+- S3: Enable default encryption
+- EBS: Enable encryption for volumes
+- Secrets Manager: Use KMS encryption
+
+### 7. Use AWS Systems Manager Session Manager
+
+Instead of SSH, use Session Manager for secure access:
+
+```bash
+aws ssm start-session --target i-xxxxx
+```
+
+## Complete Terraform Example
+
+Create `main.tf` for infrastructure as code:
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+# VPC
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "tracertm-vpc"
+  }
+}
+
+# Subnets
+resource "aws_subnet" "public" {
+  count             = 2
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.${count.index + 1}.0/24"
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "tracertm-public-${count.index + 1}"
+  }
+}
+
+resource "aws_subnet" "private" {
+  count             = 2
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.${count.index + 10}.0/24"
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "tracertm-private-${count.index + 1}"
+  }
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "main" {
+  name = "tracertm-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+# RDS Database
+resource "aws_db_instance" "main" {
+  identifier     = "tracertm-db"
+  engine         = "postgres"
+  engine_version = "15.4"
+  instance_class = "db.t3.medium"
+
+  allocated_storage     = 100
+  storage_encrypted     = true
+  storage_type          = "gp3"
+
+  db_name  = "tracertm"
+  username = "tracertm_admin"
+  password = random_password.db_password.result
+
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  backup_retention_period = 7
+  multi_az               = true
+  skip_final_snapshot    = false
+  final_snapshot_identifier = "tracertm-db-final-snapshot"
+
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+}
+
+# S3 Bucket
+resource "aws_s3_bucket" "storage" {
+  bucket = "tracertm-storage-${data.aws_caller_identity.current.account_id}"
+}
+
+resource "aws_s3_bucket_versioning" "storage" {
+  bucket = aws_s3_bucket.storage.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "storage" {
+  bucket = aws_s3_bucket.storage.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# Application Load Balancer
+resource "aws_lb" "main" {
+  name               = "tracertm-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = aws_subnet.public[*].id
+}
+
+resource "aws_lb_target_group" "main" {
+  name        = "tracertm-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    path                = "/health"
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 30
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = aws_acm_certificate.main.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+# Outputs
+output "alb_dns_name" {
+  value = aws_lb.main.dns_name
+}
+
+output "rds_endpoint" {
+  value = aws_db_instance.main.endpoint
+}
+```
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Installation fails with permission error:**
+**Service fails to start:**
 ```bash
-sudo tracertm install
+# Check ECS service events
+aws ecs describe-services \
+  --cluster tracertm-cluster \
+  --services tracertm-service
+
+# Check task logs
+aws logs tail /ecs/tracertm --follow
 ```
 
-**Version mismatch:**
+**Database connection errors:**
 ```bash
-tracertm update --latest
+# Test connectivity from ECS task
+aws ecs execute-command \
+  --cluster tracertm-cluster \
+  --task TASK_ID \
+  --container tracertm \
+  --interactive \
+  --command "/bin/bash"
+
+# Inside container
+nc -zv rds-endpoint 5432
+```
+
+**High costs:**
+```bash
+# Identify cost drivers
+aws ce get-cost-and-usage \
+  --time-period Start=2025-01-01,End=2025-01-31 \
+  --granularity DAILY \
+  --metrics BlendedCost \
+  --group-by Type=SERVICE Type=USAGE_TYPE
 ```
 
 ## Next Steps
 
-- [Configuration Guide](/docs/getting-started/configuration)
-- [Quick Start](/docs/getting-started/quick-start)
-
+- [Configure SSL/TLS certificates](/docs/getting-started/installation/cloud/ssl)
+- [Set up CI/CD pipeline](/docs/guides/ci-cd)
+- [Configure monitoring and alerts](/docs/guides/monitoring)
+- [Backup and disaster recovery](/docs/guides/backup-recovery)
