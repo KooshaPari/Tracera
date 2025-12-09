@@ -30,6 +30,7 @@ from tracertm.api.sync_client import (
     ApiError,
     AuthenticationError,
     Change,
+    Conflict,
     ConflictError,
     ConflictStrategy,
     NetworkError,
@@ -373,6 +374,7 @@ class TestExceptions:
 class TestApiClientInitialization:
     """Test ApiClient initialization."""
 
+    @pytest.mark.asyncio
     async def test_api_client_with_config(self, mock_config):
         """Test ApiClient initialization with config."""
         client = ApiClient(mock_config)
@@ -380,6 +382,7 @@ class TestApiClientInitialization:
         assert client._client is None
         await client.close()
 
+    @pytest.mark.asyncio
     async def test_api_client_without_config(self):
         """Test ApiClient initialization without config (creates default)."""
         with patch("tracertm.api.sync_client.ApiConfig.from_config_manager") as mock_create:
@@ -390,6 +393,7 @@ class TestApiClientInitialization:
             assert client.config is not None
             await client.close()
 
+    @pytest.mark.asyncio
     async def test_api_client_generate_client_id(self, mock_config):
         """Test that client generates unique ID."""
         client1 = ApiClient(mock_config)
@@ -398,6 +402,7 @@ class TestApiClientInitialization:
         await client1.close()
         await client2.close()
 
+    @pytest.mark.asyncio
     async def test_api_client_context_manager(self, mock_config):
         """Test ApiClient as async context manager."""
         async with ApiClient(mock_config) as client:
@@ -408,6 +413,8 @@ class TestApiClientInitialization:
 class TestApiClientHTTPClient:
     """Test ApiClient HTTP client property."""
 
+    @pytest.mark.asyncio
+
     async def test_client_property_lazy_init(self, mock_config):
         """Test that HTTP client is lazily initialized."""
         client = ApiClient(mock_config)
@@ -417,6 +424,8 @@ class TestApiClientHTTPClient:
         assert isinstance(http_client, httpx.AsyncClient)
         await client.close()
 
+    @pytest.mark.asyncio
+
     async def test_client_property_caching(self, mock_config):
         """Test that HTTP client is cached."""
         client = ApiClient(mock_config)
@@ -424,6 +433,8 @@ class TestApiClientHTTPClient:
         http_client2 = client.client
         assert http_client1 is http_client2
         await client.close()
+
+    @pytest.mark.asyncio
 
     async def test_client_includes_auth_header(self, mock_config):
         """Test that client includes Authorization header."""
@@ -433,6 +444,8 @@ class TestApiClientHTTPClient:
         assert http_client.headers["Authorization"] == "Bearer test-token-123"
         await client.close()
 
+    @pytest.mark.asyncio
+
     async def test_client_without_token(self):
         """Test that client works without token."""
         config = ApiConfig(base_url="https://api.test.com", token=None)
@@ -440,6 +453,8 @@ class TestApiClientHTTPClient:
         http_client = client.client
         assert "Authorization" not in http_client.headers
         await client.close()
+
+    @pytest.mark.asyncio
 
     async def test_client_headers_include_user_agent(self, mock_config):
         """Test that client includes User-Agent header."""
@@ -836,6 +851,8 @@ class TestApiClientRetryLogic:
 
 class TestApiClientTimeouts:
     """Test API client timeout handling."""
+
+    @pytest.mark.asyncio
 
     async def test_client_timeout_configuration(self, mock_config):
         """Test that client timeout is configured correctly."""
@@ -1452,6 +1469,8 @@ class TestTraceRTMClientConnectionManagement:
 class TestSyncClientBackwardCompat:
     """Test SyncClient backward compatibility alias."""
 
+    @pytest.mark.asyncio
+
     async def test_sync_client_alias(self, mock_config):
         """Test that SyncClient is an alias for ApiClient."""
         assert SyncClient == ApiClient
@@ -1712,6 +1731,8 @@ class TestApiClientPerformance:
 class TestApiFinal:
     """Final validation tests to ensure 100% coverage."""
 
+    @pytest.mark.asyncio
+
     async def test_api_config_all_params(self):
         """Test ApiConfig with all parameters specified."""
         config = ApiConfig(
@@ -1730,6 +1751,8 @@ class TestApiFinal:
         assert config.retry_backoff_base == 1.5
         assert config.retry_backoff_max == 120.0
         assert config.verify_ssl is False
+
+    @pytest.mark.asyncio
 
     async def test_api_client_generate_unique_ids(self, mock_config):
         """Test that multiple clients generate unique IDs."""
@@ -1974,6 +1997,8 @@ class TestApiVersioning:
 class TestRequestHeaders:
     """Test HTTP request header management."""
 
+    @pytest.mark.asyncio
+
     async def test_headers_include_content_type(self, mock_config):
         """Test Content-Type header is included."""
         client = ApiClient(mock_config)
@@ -1981,12 +2006,16 @@ class TestRequestHeaders:
         assert client.client.headers["Content-Type"] == "application/json"
         await client.close()
 
+    @pytest.mark.asyncio
+
     async def test_headers_include_user_agent(self, mock_config):
         """Test User-Agent header is included."""
         client = ApiClient(mock_config)
         assert "User-Agent" in client.client.headers
         assert "TraceRTM" in client.client.headers["User-Agent"]
         await client.close()
+
+    @pytest.mark.asyncio
 
     async def test_custom_headers(self, mock_config):
         """Test custom headers can be added."""
@@ -2032,6 +2061,8 @@ class TestSSLTLS:
             verify_ssl=False,
         )
         assert config.verify_ssl is False
+
+    @pytest.mark.asyncio
 
     async def test_ssl_configuration_passed_to_client(self):
         """Test SSL configuration is passed to HTTP client."""
@@ -2158,6 +2189,8 @@ class TestResponseStatusCodes:
 class TestClientIDManagement:
     """Test client ID generation and management."""
 
+    @pytest.mark.asyncio
+
     async def test_client_id_format(self, mock_config):
         """Test client ID format."""
         client = ApiClient(mock_config)
@@ -2165,6 +2198,8 @@ class TestClientIDManagement:
         assert len(client._client_id) == 16
         assert all(c in "0123456789abcdef" for c in client._client_id)
         await client.close()
+
+    @pytest.mark.asyncio
 
     async def test_client_id_uniqueness_across_instances(self, mock_config):
         """Test that different instances have unique client IDs."""
@@ -2174,6 +2209,8 @@ class TestClientIDManagement:
 
         for client in clients:
             await client.close()
+
+    @pytest.mark.asyncio
 
     async def test_client_id_persistence(self, mock_config):
         """Test that client ID persists across requests."""
@@ -2187,6 +2224,8 @@ class TestClientIDManagement:
         id2 = client._client_id
         assert id1 == id2
         await client.close()
+
+    @pytest.mark.asyncio
 
     async def test_client_id_included_in_requests(self, api_client):
         """Test that client ID is included in requests."""
