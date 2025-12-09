@@ -1,19 +1,854 @@
 ---
-title: "JavaScript SDK Examples"
-description: "Examples for the JS SDK."
+title: "Examples"
+description: "Comprehensive code examples for the TraceRTM JavaScript SDK"
 ---
 
-## JavaScript SDK — Examples
-- Recommended for applications already using JavaScript.
-- Handles auth, retries, and serialization for you.
+# Examples
 
-## Example
-```javascript
-await client.relationships.create({ fromId: 'code_1', toId: 'feat_1', type: 'implements' })
-const search = await client.search.query({ projectId: 'proj_123', text: 'telemetry' })
+This guide provides practical, real-world examples of using the TraceRTM JavaScript SDK for common traceability management tasks.
+
+## Quick Reference
+
+| Example | Description |
+|---------|-------------|
+| [Project Setup](#project-setup) | Create and configure a new project |
+| [Requirements Management](#requirements-management) | CRUD operations for requirements |
+| [Test Case Management](#test-case-management) | Manage test cases and results |
+| [Traceability Links](#traceability-links) | Create and query relationships |
+| [Bulk Operations](#bulk-operations) | Process multiple items efficiently |
+| [Search & Queries](#search--queries) | Find items with complex criteria |
+| [React Integration](#react-integration) | React hooks and components |
+| [Node.js Scripts](#nodejs-scripts) | Server-side automation |
+
+---
+
+## Project Setup
+
+### Create a Complete Project
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient();
+
+async function createProjectWithStructure() {
+  // Create project
+  const project = await client.projects.create({
+    name: 'Payment System',
+    key: 'PAY',
+    description: 'Payment processing system requirements'
+  });
+  console.log(`Created project: ${project.key}`);
+
+  // Configure item types
+  const itemTypes = [
+    { key: 'REQ', name: 'Requirement', icon: 'document' },
+    { key: 'TC', name: 'Test Case', icon: 'check' },
+    { key: 'BUG', name: 'Bug', icon: 'bug' },
+    { key: 'RISK', name: 'Risk', icon: 'warning' }
+  ];
+
+  for (const itemType of itemTypes) {
+    await client.projects.addItemType(project.id, itemType);
+  }
+
+  // Configure link types
+  const linkTypes = [
+    { key: 'verifies', name: 'Verifies', source: 'TC', target: 'REQ' },
+    { key: 'mitigates', name: 'Mitigates', source: 'REQ', target: 'RISK' },
+    { key: 'blocks', name: 'Blocks', source: 'BUG', target: 'REQ' }
+  ];
+
+  for (const linkType of linkTypes) {
+    await client.projects.addLinkType(project.id, linkType);
+  }
+
+  return project;
+}
 ```
 
-## Tips
-- Initialize the client once per process and reuse it.
-- Set timeouts and retries explicitly in production.
-- Capture request IDs from responses for support cases.
+### Clone Project Structure
+
+```typescript
+async function cloneProjectStructure(
+  sourceProjectId: string,
+  newName: string,
+  newKey: string
+) {
+  const source = await client.projects.get(sourceProjectId);
+
+  // Create new project
+  const newProject = await client.projects.create({
+    name: newName,
+    key: newKey,
+    description: `Cloned from ${source.name}`
+  });
+
+  // Copy workflows
+  const { data: workflows } = await client.workflows.list({
+    projectId: source.id
+  });
+
+  for (const wf of workflows) {
+    await client.workflows.copy(wf.id, {
+      targetProjectId: newProject.id
+    });
+  }
+
+  // Copy custom fields
+  const { data: fields } = await client.projects.listCustomFields(source.id);
+
+  for (const field of fields) {
+    await client.projects.addCustomField(newProject.id, {
+      name: field.name,
+      fieldType: field.fieldType,
+      options: field.options
+    });
+  }
+
+  return newProject;
+}
+```
+
+---
+
+## Requirements Management
+
+### Create Requirements Hierarchy
+
+```typescript
+async function createRequirementsHierarchy() {
+  // Create parent requirement
+  const parent = await client.items.create({
+    projectId: 'proj_abc123',
+    type: 'requirement',
+    title: 'User Authentication',
+    description: 'System shall provide secure user authentication',
+    priority: 'high'
+  });
+
+  // Create child requirements
+  const children = [
+    {
+      title: 'Email/Password Login',
+      description: 'Users can login with email and password'
+    },
+    {
+      title: 'OAuth 2.0 Support',
+      description: 'Support login via Google and GitHub'
+    },
+    {
+      title: 'Two-Factor Authentication',
+      description: 'Optional 2FA via TOTP or SMS'
+    }
+  ];
+
+  const childItems = [];
+  for (const child of children) {
+    const item = await client.items.create({
+      projectId: 'proj_abc123',
+      type: 'requirement',
+      parentId: parent.id,
+      priority: 'medium',
+      ...child
+    });
+    childItems.push(item);
+    console.log(`Created: ${item.key}`);
+  }
+
+  return { parent, childItems };
+}
+```
+
+### Import Requirements from CSV
+
+```typescript
+import { parse } from 'csv-parse/sync';
+import { readFileSync } from 'fs';
+
+async function importRequirementsFromCSV(
+  projectId: string,
+  csvPath: string
+) {
+  const content = readFileSync(csvPath, 'utf-8');
+  const records = parse(content, { columns: true });
+
+  const imported = [];
+  const errors = [];
+
+  for (const row of records) {
+    try {
+      const item = await client.items.create({
+        projectId,
+        type: 'requirement',
+        title: row.title,
+        description: row.description || '',
+        priority: row.priority || 'medium',
+        customFields: {
+          externalId: row.external_id,
+          source: row.source || 'CSV Import'
+        }
+      });
+      imported.push(item);
+      console.log(`Imported: ${item.key}`);
+    } catch (error) {
+      errors.push({ row, error: String(error) });
+    }
+  }
+
+  console.log(`\nImported ${imported.length} requirements`);
+  if (errors.length) {
+    console.log(`Errors: ${errors.length}`);
+  }
+
+  return { imported, errors };
+}
+```
+
+### Export Requirements to JSON
+
+```typescript
+import { writeFileSync } from 'fs';
+
+async function exportRequirementsToJSON(
+  projectId: string,
+  outputPath: string
+) {
+  const requirements = [];
+
+  for await (const item of client.items.iterate({
+    projectId,
+    type: 'requirement'
+  })) {
+    requirements.push({
+      id: item.id,
+      key: item.key,
+      title: item.title,
+      description: item.description,
+      status: item.status,
+      priority: item.priority,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      customFields: item.customFields
+    });
+  }
+
+  const output = {
+    exportedAt: new Date().toISOString(),
+    projectId,
+    count: requirements.length,
+    requirements
+  };
+
+  writeFileSync(outputPath, JSON.stringify(output, null, 2));
+  console.log(`Exported ${requirements.length} requirements to ${outputPath}`);
+
+  return requirements;
+}
+```
+
+---
+
+## Test Case Management
+
+### Create Test Cases with Steps
+
+```typescript
+async function createTestCaseWithSteps(requirementId: string) {
+  // Get the requirement
+  const requirement = await client.items.get(requirementId);
+
+  // Create test case
+  const testCase = await client.items.create({
+    projectId: requirement.projectId,
+    type: 'test_case',
+    title: `Verify: ${requirement.title}`,
+    description: `Test case for requirement ${requirement.key}`,
+    priority: requirement.priority,
+    customFields: {
+      preconditions: 'User is on login page',
+      testData: 'Valid credentials: test@example.com / Password123',
+      steps: [
+        {
+          step: 1,
+          action: 'Enter valid email address',
+          expected: 'Email field accepts input'
+        },
+        {
+          step: 2,
+          action: 'Enter valid password',
+          expected: 'Password field shows masked input'
+        },
+        {
+          step: 3,
+          action: 'Click Login button',
+          expected: 'User is redirected to dashboard'
+        }
+      ]
+    }
+  });
+
+  // Link test case to requirement
+  await client.links.create({
+    sourceId: requirement.id,
+    targetId: testCase.id,
+    linkType: 'verified_by'
+  });
+
+  console.log(`Created test case: ${testCase.key}`);
+  return testCase;
+}
+```
+
+### Generate Test Coverage Report
+
+```typescript
+async function getTestCoverage(projectId: string) {
+  // Get all requirements
+  const requirements = [];
+  for await (const item of client.items.iterate({
+    projectId,
+    type: 'requirement'
+  })) {
+    requirements.push(item);
+  }
+
+  const coverageData = [];
+
+  for (const req of requirements) {
+    // Get linked test cases
+    const { data: links } = await client.links.list({
+      sourceId: req.id,
+      linkType: 'verified_by'
+    });
+
+    const testCases = [];
+    for (const link of links) {
+      const tc = await client.items.get(link.targetId);
+      testCases.push({
+        key: tc.key,
+        title: tc.title,
+        status: tc.status
+      });
+    }
+
+    coverageData.push({
+      requirementKey: req.key,
+      requirementTitle: req.title,
+      priority: req.priority,
+      testCaseCount: testCases.length,
+      testCases,
+      covered: testCases.length > 0
+    });
+  }
+
+  // Calculate summary
+  const total = coverageData.length;
+  const covered = coverageData.filter(r => r.covered).length;
+  const coveragePercent = total > 0 ? (covered / total * 100) : 0;
+
+  return {
+    totalRequirements: total,
+    coveredRequirements: covered,
+    coveragePercent: Math.round(coveragePercent * 100) / 100,
+    details: coverageData
+  };
+}
+```
+
+---
+
+## Traceability Links
+
+### Build Complete Trace
+
+```typescript
+async function buildTraceChain(
+  itemId: string,
+  direction: 'both' | 'upstream' | 'downstream' = 'both'
+) {
+  const item = await client.items.get(itemId);
+
+  const trace = {
+    item: {
+      id: item.id,
+      key: item.key,
+      title: item.title,
+      type: item.type
+    },
+    upstream: [] as any[],
+    downstream: [] as any[]
+  };
+
+  if (direction === 'both' || direction === 'upstream') {
+    // Get items this item traces from
+    const { data: upstreamLinks } = await client.links.list({
+      targetId: item.id
+    });
+
+    for (const link of upstreamLinks) {
+      const source = await client.items.get(link.sourceId);
+      trace.upstream.push({
+        id: source.id,
+        key: source.key,
+        title: source.title,
+        type: source.type,
+        linkType: link.linkType
+      });
+    }
+  }
+
+  if (direction === 'both' || direction === 'downstream') {
+    // Get items this item traces to
+    const { data: downstreamLinks } = await client.links.list({
+      sourceId: item.id
+    });
+
+    for (const link of downstreamLinks) {
+      const target = await client.items.get(link.targetId);
+      trace.downstream.push({
+        id: target.id,
+        key: target.key,
+        title: target.title,
+        type: target.type,
+        linkType: link.linkType
+      });
+    }
+  }
+
+  return trace;
+}
+```
+
+### Find Orphan Items
+
+```typescript
+async function findOrphanRequirements(projectId: string) {
+  const orphans = [];
+
+  for await (const req of client.items.iterate({
+    projectId,
+    type: 'requirement'
+  })) {
+    const { data: links } = await client.links.list({
+      sourceId: req.id,
+      linkType: 'verified_by'
+    });
+
+    if (links.length === 0) {
+      orphans.push({
+        key: req.key,
+        title: req.title,
+        priority: req.priority,
+        status: req.status
+      });
+    }
+  }
+
+  // Sort by priority
+  const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  orphans.sort((a, b) =>
+    (priorityOrder[a.priority] ?? 4) - (priorityOrder[b.priority] ?? 4)
+  );
+
+  return orphans;
+}
+```
+
+### Impact Analysis
+
+```typescript
+async function analyzeImpact(itemId: string, maxDepth = 3) {
+  const visited = new Set<string>();
+  const impact: any[] = [];
+
+  async function traverse(currentId: string, depth: number, path: string[]) {
+    if (depth > maxDepth || visited.has(currentId)) {
+      return;
+    }
+
+    visited.add(currentId);
+    const item = await client.items.get(currentId);
+
+    impact.push({
+      id: item.id,
+      key: item.key,
+      title: item.title,
+      type: item.type,
+      depth,
+      path: [...path, item.key].join(' -> ')
+    });
+
+    // Get downstream items
+    const { data: links } = await client.links.list({ sourceId: currentId });
+    for (const link of links) {
+      await traverse(link.targetId, depth + 1, [...path, item.key]);
+    }
+  }
+
+  await traverse(itemId, 0, []);
+
+  return {
+    rootItem: itemId,
+    totalImpacted: impact.length - 1,  // Exclude root
+    maxDepthReached: Math.max(...impact.map(i => i.depth)),
+    impactedItems: impact.slice(1)  // Exclude root
+  };
+}
+```
+
+---
+
+## Bulk Operations
+
+### Batch Update Items
+
+```typescript
+async function batchUpdatePriority(
+  projectId: string,
+  itemIds: string[],
+  newPriority: string
+) {
+  const results = await client.items.bulkUpdate({
+    itemIds,
+    updates: { priority: newPriority }
+  });
+
+  console.log(`Updated ${results.successCount} items`);
+  if (results.failures.length) {
+    console.log(`Failed: ${results.failures.length}`);
+    for (const failure of results.failures) {
+      console.log(`  ${failure.itemId}: ${failure.error}`);
+    }
+  }
+
+  return results;
+}
+```
+
+### Process Items Concurrently
+
+```typescript
+async function processItemsConcurrently<T>(
+  projectId: string,
+  processorFn: (item: Item) => Promise<T>,
+  concurrency = 5
+): Promise<{ results: T[]; errors: any[] }> {
+  const items: Item[] = [];
+  for await (const item of client.items.iterate({ projectId })) {
+    items.push(item);
+  }
+
+  const results: T[] = [];
+  const errors: any[] = [];
+
+  // Process in batches
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const promises = batch.map(async (item) => {
+      try {
+        const result = await processorFn(item);
+        results.push(result);
+      } catch (error) {
+        errors.push({ item: item.key, error: String(error) });
+      }
+    });
+    await Promise.all(promises);
+  }
+
+  return { results, errors };
+}
+
+// Usage
+const { results, errors } = await processItemsConcurrently(
+  'proj_abc123',
+  async (item) => {
+    const { data: links } = await client.links.list({ sourceId: item.id });
+    return { key: item.key, linkCount: links.length };
+  }
+);
+```
+
+---
+
+## Search & Queries
+
+### Advanced Search
+
+```typescript
+async function searchItems(
+  projectId: string,
+  query: string,
+  filters?: {
+    type?: string;
+    status?: string;
+    priority?: string;
+    assignee?: string;
+    createdAfter?: Date;
+  }
+) {
+  const searchParams: any = {
+    projectId,
+    query,
+    limit: 50
+  };
+
+  if (filters) {
+    if (filters.type) searchParams.type = filters.type;
+    if (filters.status) searchParams.status = filters.status;
+    if (filters.priority) searchParams.priority = filters.priority;
+    if (filters.assignee) searchParams.assigneeId = filters.assignee;
+    if (filters.createdAfter) searchParams.createdAfter = filters.createdAfter;
+  }
+
+  const { data: results } = await client.search.items(searchParams);
+  return results;
+}
+
+// Usage
+const results = await searchItems(
+  'proj_abc123',
+  'authentication',
+  {
+    type: 'requirement',
+    priority: 'high',
+    status: 'approved'
+  }
+);
+```
+
+---
+
+## React Integration
+
+### Custom Hook for Items
+
+```tsx
+import { useState, useEffect, useCallback } from 'react';
+import { TraceRTMClient, Item } from '@tracertm/sdk';
+
+const client = new TraceRTMClient();
+
+interface UseItemsOptions {
+  projectId: string;
+  type?: string;
+  status?: string;
+}
+
+function useItems(options: UseItemsOptions) {
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchItems = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await client.items.list(options);
+      setItems(data);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [options.projectId, options.type, options.status]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  const createItem = async (input: Partial<Item>) => {
+    const item = await client.items.create({
+      projectId: options.projectId,
+      ...input
+    } as any);
+    setItems(prev => [...prev, item]);
+    return item;
+  };
+
+  const updateItem = async (id: string, updates: Partial<Item>) => {
+    const item = await client.items.update(id, updates);
+    setItems(prev => prev.map(i => i.id === id ? item : i));
+    return item;
+  };
+
+  const deleteItem = async (id: string) => {
+    await client.items.delete(id);
+    setItems(prev => prev.filter(i => i.id !== id));
+  };
+
+  return {
+    items,
+    loading,
+    error,
+    refetch: fetchItems,
+    createItem,
+    updateItem,
+    deleteItem
+  };
+}
+```
+
+### Requirements List Component
+
+```tsx
+import React from 'react';
+
+function RequirementsList({ projectId }: { projectId: string }) {
+  const { items, loading, error, createItem, deleteItem } = useItems({
+    projectId,
+    type: 'requirement'
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <h2>Requirements ({items.length})</h2>
+
+      <button onClick={() => createItem({
+        type: 'requirement',
+        title: 'New Requirement',
+        priority: 'medium'
+      })}>
+        Add Requirement
+      </button>
+
+      <ul>
+        {items.map(item => (
+          <li key={item.id}>
+            <strong>{item.key}</strong>: {item.title}
+            <span className={`badge badge-${item.priority}`}>
+              {item.priority}
+            </span>
+            <button onClick={() => deleteItem(item.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+---
+
+## Node.js Scripts
+
+### CI/CD Integration
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient();
+
+async function ciTraceabilityCheck(projectId: string) {
+  const issues: string[] = [];
+
+  // Check for orphan requirements
+  for await (const req of client.items.iterate({
+    projectId,
+    type: 'requirement'
+  })) {
+    if (['critical', 'high'].includes(req.priority)) {
+      const { data: links } = await client.links.list({
+        sourceId: req.id,
+        linkType: 'verified_by'
+      });
+
+      if (links.length === 0) {
+        issues.push(`HIGH: ${req.key} has no test coverage`);
+      }
+    }
+  }
+
+  // Check for failed test cases linked to approved requirements
+  for await (const tc of client.items.iterate({
+    projectId,
+    type: 'test_case'
+  })) {
+    if (tc.status === 'failed') {
+      const { data: links } = await client.links.list({
+        targetId: tc.id,
+        linkType: 'verified_by'
+      });
+
+      for (const link of links) {
+        const req = await client.items.get(link.sourceId);
+        if (req.status === 'approved') {
+          issues.push(`CRITICAL: ${tc.key} failed but ${req.key} is approved`);
+        }
+      }
+    }
+  }
+
+  // Report results
+  if (issues.length > 0) {
+    console.log('Traceability Check FAILED:');
+    issues.forEach(issue => console.log(`  - ${issue}`));
+    process.exit(1);
+  } else {
+    console.log('Traceability Check PASSED');
+    process.exit(0);
+  }
+}
+
+// Run
+ciTraceabilityCheck('proj_abc123');
+```
+
+### Express Webhook Handler
+
+```typescript
+import express from 'express';
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const app = express();
+const client = new TraceRTMClient();
+
+app.use(express.json());
+
+app.post('/webhook/item-updated', async (req, res) => {
+  const { item, changes } = req.body;
+
+  // If requirement status changed to approved
+  if (item.type === 'requirement') {
+    if (changes.status?.new === 'approved') {
+      // Create placeholder test case if none exists
+      const { data: links } = await client.links.list({
+        sourceId: item.id,
+        linkType: 'verified_by'
+      });
+
+      if (links.length === 0) {
+        const tc = await client.items.create({
+          projectId: item.projectId,
+          type: 'test_case',
+          title: `[TODO] Test: ${item.title}`,
+          description: 'Auto-generated test case placeholder',
+          priority: item.priority
+        });
+
+        await client.links.create({
+          sourceId: item.id,
+          targetId: tc.id,
+          linkType: 'verified_by'
+        });
+      }
+    }
+  }
+
+  res.json({ status: 'processed' });
+});
+
+app.listen(3000);
+```
+
+---
+
+## Related Documentation
+
+- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - Complete method reference
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Handle errors
+- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - TypeScript guide
+- [Authentication](/docs/api-reference/sdks/javascript/authentication) - Authentication

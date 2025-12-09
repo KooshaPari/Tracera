@@ -1,32 +1,568 @@
 ---
 title: "Unit Tests"
-description: "Documentation for Unit Tests"
+description: "Writing unit tests for applications using the TraceRTM Python SDK"
 ---
 
 # Unit Tests
 
-This page contains documentation for Unit Tests.
+Detailed guide to writing effective unit tests for code that uses the TraceRTM Python SDK.
 
-## Overview
+## Setup
 
-This section covers the key aspects of Unit Tests in TraceRTM.
+### Install Dependencies
 
-## Getting Started
+```bash
+pip install pytest pytest-asyncio pytest-mock
+```
 
-To get started with Unit Tests:
+### Configure pytest
 
-- Review the Unit Tests and fundamentals
-- Explore practical examples
-- Check out the API reference
+```ini
+# pytest.ini
+[pytest]
+testpaths = tests
+asyncio_mode = auto
+python_files = test_*.py
+python_functions = test_*
+addopts = -v --tb=short
+```
 
-## Key Concepts
+### pyproject.toml Alternative
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+```
 
-## Next Steps
+---
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+## Mocking the Client
+
+### Basic Mock Setup
+
+```python
+# tests/conftest.py
+import pytest
+from unittest.mock import MagicMock, AsyncMock, patch
+
+@pytest.fixture
+def mock_tracertm_client():
+    """Fixture providing a mocked TraceRTMClient."""
+    with patch("tracertm.TraceRTMClient") as MockClient:
+        client = MagicMock()
+        MockClient.return_value = client
+
+        # Setup default mock behaviors
+        client.projects = MagicMock()
+        client.items = MagicMock()
+        client.links = MagicMock()
+        client.reports = MagicMock()
+        client.search = MagicMock()
+
+        yield client
+
+@pytest.fixture
+def mock_async_tracertm_client():
+    """Fixture providing a mocked AsyncTraceRTMClient."""
+    with patch("tracertm.AsyncTraceRTMClient") as MockClient:
+        client = AsyncMock()
+        MockClient.return_value = client
+
+        # Setup async context manager
+        client.__aenter__ = AsyncMock(return_value=client)
+        client.__aexit__ = AsyncMock(return_value=None)
+
+        # Setup default mock behaviors
+        client.projects = AsyncMock()
+        client.items = AsyncMock()
+        client.links = AsyncMock()
+
+        yield client
+```
+
+### Detailed Mock Configuration
+
+```python
+# tests/conftest.py
+from datetime import datetime
+from unittest.mock import MagicMock
+
+def create_mock_project(
+    id: str = "proj_test",
+    name: str = "Test Project",
+    key: str = "TEST",
+    **kwargs
+):
+    """Create a mock Project object."""
+    project = MagicMock()
+    project.id = id
+    project.name = name
+    project.key = key
+    project.description = kwargs.get("description", "Test description")
+    project.owner_id = kwargs.get("owner_id", "user_owner")
+    project.created_at = kwargs.get("created_at", datetime.now())
+    project.updated_at = kwargs.get("updated_at", datetime.now())
+    return project
+
+def create_mock_item(
+    id: str = "item_test",
+    type: str = "requirement",
+    title: str = "Test Item",
+    **kwargs
+):
+    """Create a mock Item object."""
+    item = MagicMock()
+    item.id = id
+    item.type = type
+    item.title = title
+    item.project_id = kwargs.get("project_id", "proj_test")
+    item.description = kwargs.get("description", "")
+    item.status = kwargs.get("status", "draft")
+    item.status_category = kwargs.get("status_category", "initial")
+    item.priority = kwargs.get("priority", "medium")
+    item.assignee_id = kwargs.get("assignee_id", None)
+    item.tags = kwargs.get("tags", [])
+    item.fields = kwargs.get("fields", {})
+    item.links = kwargs.get("links", None)
+    item.created_at = kwargs.get("created_at", datetime.now())
+    item.updated_at = kwargs.get("updated_at", datetime.now())
+    item.is_complete = item.status_category == "done"
+    return item
+
+def create_mock_link(
+    id: str = "link_test",
+    source_id: str = "item_source",
+    target_id: str = "item_target",
+    type: str = "traces_to",
+    **kwargs
+):
+    """Create a mock Link object."""
+    link = MagicMock()
+    link.id = id
+    link.source_id = source_id
+    link.target_id = target_id
+    link.type = type
+    link.description = kwargs.get("description", None)
+    link.created_at = kwargs.get("created_at", datetime.now())
+    return link
+
+def create_mock_paginated_result(data: list, total: int = None):
+    """Create a mock PaginatedResult."""
+    result = MagicMock()
+    result.data = data
+    result.total = total if total is not None else len(data)
+    result.limit = 50
+    result.offset = 0
+    result.has_more = result.total > len(data)
+    result.__iter__ = lambda self: iter(data)
+    result.__len__ = lambda self: len(data)
+    return result
+```
+
+---
+
+## Testing Patterns
+
+### Testing Service Classes
+
+```python
+# src/my_app/services.py
+from tracertm import TraceRTMClient
+
+class RequirementService:
+    def __init__(self, client: TraceRTMClient):
+        self.client = client
+
+    def get_high_priority_requirements(self, project_id: str):
+        """Get all high priority requirements."""
+        result = self.client.items.list(
+            project_id=project_id,
+            type="requirement",
+            priority="high"
+        )
+        return result.data
+
+    def get_coverage_status(self, project_id: str) -> dict:
+        """Get requirement coverage status."""
+        coverage = self.client.reports.coverage(
+            project_id=project_id,
+            source_type="requirement",
+            target_type="test_case"
+        )
+        return {
+            "covered": coverage.covered_count,
+            "uncovered": coverage.uncovered_count,
+            "percent": coverage.coverage_percent,
+            "passing": coverage.coverage_percent >= 80.0
+        }
+```
+
+```python
+# tests/unit/test_requirement_service.py
+import pytest
+from unittest.mock import MagicMock
+from my_app.services import RequirementService
+from tests.conftest import create_mock_item, create_mock_paginated_result
+
+class TestRequirementService:
+    @pytest.fixture
+    def service(self, mock_tracertm_client):
+        return RequirementService(mock_tracertm_client)
+
+    def test_get_high_priority_requirements_returns_filtered_items(
+        self, service, mock_tracertm_client
+    ):
+        """Should return only high priority requirements."""
+        # Arrange
+        items = [
+            create_mock_item(id="item_1", priority="high", title="High Priority 1"),
+            create_mock_item(id="item_2", priority="high", title="High Priority 2")
+        ]
+        mock_tracertm_client.items.list.return_value = create_mock_paginated_result(items)
+
+        # Act
+        result = service.get_high_priority_requirements("proj_123")
+
+        # Assert
+        assert len(result) == 2
+        assert all(item.priority == "high" for item in result)
+        mock_tracertm_client.items.list.assert_called_once_with(
+            project_id="proj_123",
+            type="requirement",
+            priority="high"
+        )
+
+    def test_get_high_priority_requirements_returns_empty_when_none_exist(
+        self, service, mock_tracertm_client
+    ):
+        """Should return empty list when no high priority requirements exist."""
+        mock_tracertm_client.items.list.return_value = create_mock_paginated_result([])
+
+        result = service.get_high_priority_requirements("proj_123")
+
+        assert result == []
+
+    def test_get_coverage_status_returns_formatted_data(
+        self, service, mock_tracertm_client
+    ):
+        """Should return formatted coverage status."""
+        mock_coverage = MagicMock()
+        mock_coverage.covered_count = 8
+        mock_coverage.uncovered_count = 2
+        mock_coverage.coverage_percent = 80.0
+        mock_tracertm_client.reports.coverage.return_value = mock_coverage
+
+        result = service.get_coverage_status("proj_123")
+
+        assert result == {
+            "covered": 8,
+            "uncovered": 2,
+            "percent": 80.0,
+            "passing": True
+        }
+
+    def test_get_coverage_status_failing_when_below_threshold(
+        self, service, mock_tracertm_client
+    ):
+        """Should indicate failing when coverage below 80%."""
+        mock_coverage = MagicMock()
+        mock_coverage.covered_count = 5
+        mock_coverage.uncovered_count = 5
+        mock_coverage.coverage_percent = 50.0
+        mock_tracertm_client.reports.coverage.return_value = mock_coverage
+
+        result = service.get_coverage_status("proj_123")
+
+        assert result["passing"] is False
+```
+
+### Testing Error Handling
+
+```python
+# src/my_app/handlers.py
+from tracertm import TraceRTMClient
+from tracertm.exceptions import NotFoundError, ValidationError, RateLimitError
+import time
+
+class ItemHandler:
+    def __init__(self, client: TraceRTMClient):
+        self.client = client
+
+    def safe_get_item(self, item_id: str):
+        """Get item with error handling."""
+        try:
+            return self.client.items.get(item_id)
+        except NotFoundError:
+            return None
+
+    def create_with_retry(self, project_id: str, title: str, max_retries: int = 3):
+        """Create item with retry on rate limit."""
+        for attempt in range(max_retries):
+            try:
+                return self.client.items.create(
+                    project_id=project_id,
+                    type="requirement",
+                    title=title
+                )
+            except RateLimitError as e:
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(e.retry_after or 1)
+```
+
+```python
+# tests/unit/test_item_handler.py
+import pytest
+from unittest.mock import MagicMock, patch
+from tracertm.exceptions import NotFoundError, RateLimitError
+from my_app.handlers import ItemHandler
+from tests.conftest import create_mock_item
+
+class TestItemHandler:
+    @pytest.fixture
+    def handler(self, mock_tracertm_client):
+        return ItemHandler(mock_tracertm_client)
+
+    def test_safe_get_item_returns_item_when_exists(
+        self, handler, mock_tracertm_client
+    ):
+        """Should return item when it exists."""
+        expected_item = create_mock_item(id="item_123", title="Test")
+        mock_tracertm_client.items.get.return_value = expected_item
+
+        result = handler.safe_get_item("item_123")
+
+        assert result == expected_item
+        mock_tracertm_client.items.get.assert_called_once_with("item_123")
+
+    def test_safe_get_item_returns_none_when_not_found(
+        self, handler, mock_tracertm_client
+    ):
+        """Should return None when item not found."""
+        mock_tracertm_client.items.get.side_effect = NotFoundError("Item not found")
+
+        result = handler.safe_get_item("nonexistent")
+
+        assert result is None
+
+    @patch("time.sleep")
+    def test_create_with_retry_succeeds_after_rate_limit(
+        self, mock_sleep, handler, mock_tracertm_client
+    ):
+        """Should retry on rate limit and eventually succeed."""
+        rate_limit_error = RateLimitError("Rate limited")
+        rate_limit_error.retry_after = 1
+
+        created_item = create_mock_item(id="new_item", title="New Requirement")
+        mock_tracertm_client.items.create.side_effect = [
+            rate_limit_error,
+            rate_limit_error,
+            created_item
+        ]
+
+        result = handler.create_with_retry("proj_123", "New Requirement")
+
+        assert result == created_item
+        assert mock_tracertm_client.items.create.call_count == 3
+        assert mock_sleep.call_count == 2
+
+    @patch("time.sleep")
+    def test_create_with_retry_raises_after_max_retries(
+        self, mock_sleep, handler, mock_tracertm_client
+    ):
+        """Should raise after max retries exceeded."""
+        rate_limit_error = RateLimitError("Rate limited")
+        rate_limit_error.retry_after = 1
+        mock_tracertm_client.items.create.side_effect = rate_limit_error
+
+        with pytest.raises(RateLimitError):
+            handler.create_with_retry("proj_123", "Test", max_retries=3)
+
+        assert mock_tracertm_client.items.create.call_count == 3
+```
+
+### Testing Async Code
+
+```python
+# src/my_app/async_services.py
+from tracertm import AsyncTraceRTMClient
+import asyncio
+
+class AsyncProjectService:
+    def __init__(self, client: AsyncTraceRTMClient):
+        self.client = client
+
+    async def get_project_summary(self, project_id: str) -> dict:
+        """Get project with items and coverage concurrently."""
+        project, items, coverage = await asyncio.gather(
+            self.client.projects.get(project_id),
+            self.client.items.list(project_id=project_id, limit=10),
+            self.client.reports.coverage(project_id=project_id)
+        )
+
+        return {
+            "project": project,
+            "recent_items": items.data,
+            "coverage_percent": coverage.coverage_percent
+        }
+```
+
+```python
+# tests/unit/test_async_services.py
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+from my_app.async_services import AsyncProjectService
+from tests.conftest import create_mock_project, create_mock_item, create_mock_paginated_result
+
+@pytest.mark.asyncio
+class TestAsyncProjectService:
+    @pytest.fixture
+    def mock_client(self):
+        client = AsyncMock()
+        client.projects = AsyncMock()
+        client.items = AsyncMock()
+        client.reports = AsyncMock()
+        return client
+
+    @pytest.fixture
+    def service(self, mock_client):
+        return AsyncProjectService(mock_client)
+
+    async def test_get_project_summary_fetches_all_data_concurrently(
+        self, service, mock_client
+    ):
+        """Should fetch project, items, and coverage concurrently."""
+        # Arrange
+        mock_project = create_mock_project(name="Test Project")
+        mock_items = [create_mock_item(id=f"item_{i}") for i in range(5)]
+        mock_coverage = MagicMock(coverage_percent=85.0)
+
+        mock_client.projects.get = AsyncMock(return_value=mock_project)
+        mock_client.items.list = AsyncMock(
+            return_value=create_mock_paginated_result(mock_items)
+        )
+        mock_client.reports.coverage = AsyncMock(return_value=mock_coverage)
+
+        # Act
+        result = await service.get_project_summary("proj_123")
+
+        # Assert
+        assert result["project"].name == "Test Project"
+        assert len(result["recent_items"]) == 5
+        assert result["coverage_percent"] == 85.0
+
+        # Verify all calls were made
+        mock_client.projects.get.assert_called_once_with("proj_123")
+        mock_client.items.list.assert_called_once()
+        mock_client.reports.coverage.assert_called_once()
+```
+
+---
+
+## Testing Utilities
+
+### Custom Assertions
+
+```python
+# tests/utils/assertions.py
+def assert_item_matches(actual, expected_attrs: dict):
+    """Assert item has expected attributes."""
+    for key, value in expected_attrs.items():
+        actual_value = getattr(actual, key)
+        assert actual_value == value, \
+            f"Item.{key} expected {value}, got {actual_value}"
+
+def assert_items_ordered_by(items: list, field: str, reverse: bool = False):
+    """Assert items are ordered by field."""
+    values = [getattr(item, field) for item in items]
+    expected = sorted(values, reverse=reverse)
+    assert values == expected, f"Items not ordered by {field}"
+```
+
+### Test Data Builders
+
+```python
+# tests/utils/builders.py
+class ItemBuilder:
+    """Builder for creating test items."""
+
+    def __init__(self):
+        self._data = {
+            "id": "item_test",
+            "type": "requirement",
+            "title": "Test Item",
+            "status": "draft",
+            "priority": "medium"
+        }
+
+    def with_id(self, id: str):
+        self._data["id"] = id
+        return self
+
+    def with_title(self, title: str):
+        self._data["title"] = title
+        return self
+
+    def with_priority(self, priority: str):
+        self._data["priority"] = priority
+        return self
+
+    def with_status(self, status: str):
+        self._data["status"] = status
+        return self
+
+    def with_tags(self, tags: list[str]):
+        self._data["tags"] = tags
+        return self
+
+    def build(self):
+        from tests.conftest import create_mock_item
+        return create_mock_item(**self._data)
+
+# Usage
+def test_with_builder():
+    item = (ItemBuilder()
+        .with_id("item_custom")
+        .with_title("Custom Title")
+        .with_priority("high")
+        .with_tags(["security", "auth"])
+        .build())
+
+    assert item.priority == "high"
+```
+
+---
+
+## Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/unit/test_services.py
+
+# Run specific test class
+pytest tests/unit/test_services.py::TestRequirementService
+
+# Run specific test
+pytest tests/unit/test_services.py::TestRequirementService::test_get_high_priority_requirements
+
+# Run with coverage
+pytest --cov=my_app --cov-report=html
+
+# Run async tests only
+pytest -m asyncio
+```
+
+---
+
+## Related Documentation
+
+- [Testing Overview](/docs/api-reference/sdks/python/testing) - Testing strategies
+- [Mocking](/docs/api-reference/sdks/python/mocking) - Advanced mocking
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error types

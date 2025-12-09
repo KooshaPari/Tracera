@@ -1,32 +1,527 @@
 ---
 title: "API Reference"
-description: "Documentation for API Reference"
+description: "Complete API reference for the TraceRTM JavaScript SDK"
 ---
 
 # API Reference
 
-This page contains documentation for API Reference.
+Complete reference documentation for all TraceRTM JavaScript SDK methods and types.
 
-## Overview
+## Client Initialization
 
-This section covers the key aspects of API Reference in TraceRTM.
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
 
-## Getting Started
+const client = new TraceRTMClient(options);
+```
 
-To get started with API Reference:
+### Options
 
-- Review the API Reference and fundamentals
-- Explore practical examples
-- Check out the API reference
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `apiKey` | `string` | Required | Your TraceRTM API key |
+| `baseUrl` | `string` | `https://api.tracertm.dev/v1` | API base URL |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+| `maxRetries` | `number` | `3` | Max retry attempts |
+| `debug` | `boolean` | `false` | Enable debug logging |
 
-## Key Concepts
+---
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+## Projects
 
-## Next Steps
+### client.projects.list(options?)
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+List all projects.
+
+```typescript
+const projects = await client.projects.list({
+  limit: 50,
+  offset: 0,
+  sort: "created_at",
+  order: "desc",
+});
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `limit` | `number` | Max results (1-100, default 50) |
+| `offset` | `number` | Skip N results |
+| `sort` | `string` | Sort field |
+| `order` | `"asc" \| "desc"` | Sort order |
+
+**Returns:** `Promise<PaginatedResponse<Project>>`
+
+---
+
+### client.projects.get(id)
+
+Get a project by ID.
+
+```typescript
+const project = await client.projects.get("proj_abc123");
+```
+
+**Returns:** `Promise<Project>`
+
+---
+
+### client.projects.create(data)
+
+Create a new project.
+
+```typescript
+const project = await client.projects.create({
+  name: "My Project",
+  key: "MYPROJ",
+  description: "Project description",
+});
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | Yes | Project name |
+| `key` | `string` | Yes | Unique key (2-10 chars) |
+| `description` | `string` | No | Project description |
+
+**Returns:** `Promise<Project>`
+
+---
+
+### client.projects.update(id, data)
+
+Update a project.
+
+```typescript
+const project = await client.projects.update("proj_abc123", {
+  name: "Updated Name",
+  description: "New description",
+});
+```
+
+**Returns:** `Promise<Project>`
+
+---
+
+### client.projects.delete(id)
+
+Delete a project.
+
+```typescript
+await client.projects.delete("proj_abc123");
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+## Items
+
+### client.items.list(options)
+
+List items with filtering.
+
+```typescript
+const items = await client.items.list({
+  projectId: "proj_abc123",
+  type: "requirement",
+  status: "approved",
+  priority: "high",
+  tags: ["mvp", "security"],
+  assigneeId: "user_123",
+  search: "authentication",
+  limit: 50,
+  offset: 0,
+  sort: "updated_at",
+  order: "desc",
+  include: ["links"],
+});
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `projectId` | `string` | Filter by project (required) |
+| `type` | `ItemType` | Filter by type |
+| `status` | `string` | Filter by status |
+| `priority` | `Priority` | Filter by priority |
+| `tags` | `string[]` | Filter by tags (AND) |
+| `assigneeId` | `string` | Filter by assignee |
+| `search` | `string` | Full-text search |
+| `include` | `string[]` | Include related data |
+| `limit` | `number` | Max results |
+| `offset` | `number` | Skip N results |
+
+**Returns:** `Promise<PaginatedResponse<Item>>`
+
+---
+
+### client.items.get(id, options?)
+
+Get an item by ID.
+
+```typescript
+const item = await client.items.get("item_abc123", {
+  include: ["links", "history"],
+});
+```
+
+**Returns:** `Promise<Item>`
+
+---
+
+### client.items.create(data)
+
+Create a new item.
+
+```typescript
+const item = await client.items.create({
+  projectId: "proj_abc123",
+  type: "requirement",
+  title: "User Authentication",
+  description: "System shall support login",
+  priority: "high",
+  status: "draft",
+  tags: ["auth", "security"],
+  fields: {
+    customField: "value",
+  },
+});
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `projectId` | `string` | Yes | Parent project ID |
+| `type` | `ItemType` | Yes | Item type |
+| `title` | `string` | Yes | Item title |
+| `description` | `string` | No | Rich text description |
+| `priority` | `Priority` | No | Priority level |
+| `status` | `string` | No | Status (default: "draft") |
+| `tags` | `string[]` | No | Tags array |
+| `assigneeId` | `string` | No | Assignee user ID |
+| `fields` | `object` | No | Custom fields |
+
+**Returns:** `Promise<Item>`
+
+---
+
+### client.items.update(id, data)
+
+Update an item.
+
+```typescript
+const item = await client.items.update("item_abc123", {
+  title: "Updated Title",
+  status: "approved",
+  priority: "critical",
+  addTags: ["reviewed"],
+  removeTags: ["draft"],
+});
+```
+
+**Returns:** `Promise<Item>`
+
+---
+
+### client.items.delete(id)
+
+Delete an item.
+
+```typescript
+await client.items.delete("item_abc123");
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+### client.items.bulkCreate(items)
+
+Create multiple items.
+
+```typescript
+const items = await client.items.bulkCreate([
+  { projectId: "proj_123", type: "requirement", title: "Req 1" },
+  { projectId: "proj_123", type: "requirement", title: "Req 2" },
+]);
+```
+
+**Returns:** `Promise<Item[]>`
+
+---
+
+### client.items.bulkUpdate(updates)
+
+Update multiple items.
+
+```typescript
+const items = await client.items.bulkUpdate([
+  { id: "item_1", status: "approved" },
+  { id: "item_2", status: "approved" },
+]);
+```
+
+**Returns:** `Promise<Item[]>`
+
+---
+
+## Links
+
+### client.links.list(options)
+
+List links.
+
+```typescript
+const links = await client.links.list({
+  projectId: "proj_abc123",
+  sourceId: "item_123",
+  targetId: "item_456",
+  type: "verified_by",
+});
+```
+
+**Returns:** `Promise<PaginatedResponse<Link>>`
+
+---
+
+### client.links.get(id)
+
+Get a link by ID.
+
+```typescript
+const link = await client.links.get("link_abc123");
+```
+
+**Returns:** `Promise<Link>`
+
+---
+
+### client.links.create(data)
+
+Create a link between items.
+
+```typescript
+const link = await client.links.create({
+  sourceId: "item_requirement",
+  targetId: "item_testcase",
+  type: "verified_by",
+  description: "Test verifies requirement",
+});
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `sourceId` | `string` | Yes | Source item ID |
+| `targetId` | `string` | Yes | Target item ID |
+| `type` | `LinkType` | Yes | Link type |
+| `description` | `string` | No | Link description |
+
+**Returns:** `Promise<Link>`
+
+---
+
+### client.links.delete(id)
+
+Delete a link.
+
+```typescript
+await client.links.delete("link_abc123");
+```
+
+**Returns:** `Promise<void>`
+
+---
+
+## Reports
+
+### client.reports.coverage(options)
+
+Get coverage report.
+
+```typescript
+const coverage = await client.reports.coverage({
+  projectId: "proj_abc123",
+  sourceType: "requirement",
+  targetType: "test_case",
+  linkType: "verified_by",
+});
+```
+
+**Returns:**
+
+```typescript
+interface CoverageReport {
+  projectId: string;
+  sourceType: string;
+  targetType: string;
+  totalSources: number;
+  coveredCount: number;
+  uncoveredCount: number;
+  coveragePercent: number;
+  coveredItems: ItemSummary[];
+  uncoveredItems: ItemSummary[];
+}
+```
+
+---
+
+### client.reports.traceabilityMatrix(options)
+
+Get traceability matrix.
+
+```typescript
+const matrix = await client.reports.traceabilityMatrix({
+  projectId: "proj_abc123",
+  sourceTypes: ["requirement"],
+  targetTypes: ["test_case", "user_story"],
+});
+```
+
+---
+
+### client.reports.impactAnalysis(options)
+
+Analyze impact of changes.
+
+```typescript
+const impact = await client.reports.impactAnalysis({
+  itemId: "item_abc123",
+  depth: 3,
+  direction: "both",
+});
+```
+
+---
+
+## Search
+
+### client.search.items(options)
+
+Search items across projects.
+
+```typescript
+const results = await client.search.items({
+  query: "authentication login",
+  projectIds: ["proj_1", "proj_2"],
+  types: ["requirement", "test_case"],
+  limit: 20,
+});
+```
+
+**Returns:**
+
+```typescript
+interface SearchResults {
+  items: SearchHit[];
+  total: number;
+  took: number;
+}
+
+interface SearchHit {
+  item: Item;
+  score: number;
+  highlights: Record<string, string[]>;
+}
+```
+
+---
+
+## Types
+
+### ItemType
+
+```typescript
+type ItemType =
+  | "requirement"
+  | "test_case"
+  | "user_story"
+  | "bug"
+  | "task"
+  | "risk"
+  | "decision"
+  | "epic";
+```
+
+### LinkType
+
+```typescript
+type LinkType =
+  | "traces_to"
+  | "verified_by"
+  | "implements"
+  | "parent_of"
+  | "relates_to"
+  | "depends_on"
+  | "duplicates"
+  | "blocks";
+```
+
+### Priority
+
+```typescript
+type Priority = "critical" | "high" | "medium" | "low";
+```
+
+### Project
+
+```typescript
+interface Project {
+  id: string;
+  name: string;
+  key: string;
+  description?: string;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Item
+
+```typescript
+interface Item {
+  id: string;
+  projectId: string;
+  type: ItemType;
+  title: string;
+  description?: string;
+  status: string;
+  statusCategory: "initial" | "in_progress" | "done";
+  priority?: Priority;
+  tags: string[];
+  assigneeId?: string;
+  fields: Record<string, unknown>;
+  links?: Link[];
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Link
+
+```typescript
+interface Link {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  type: LinkType;
+  description?: string;
+  createdAt: string;
+}
+```
+
+---
+
+## Related Documentation
+
+- [Client Methods](/docs/api-reference/sdks/javascript/client-methods) - Detailed method reference
+- [Types](/docs/api-reference/sdks/javascript/types) - Complete type definitions
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error types

@@ -1,32 +1,402 @@
 ---
 title: "Basic Examples"
-description: "Documentation for Basic Examples"
+description: "Basic examples for getting started with the TraceRTM Python SDK"
 ---
 
 # Basic Examples
 
-This page contains documentation for Basic Examples.
+Foundational examples for common TraceRTM operations using the Python SDK.
 
-## Overview
+## Setup
 
-This section covers the key aspects of Basic Examples in TraceRTM.
+```python
+from tracertm import TraceRTMClient
 
-## Getting Started
+# Initialize client (reads TRACERTM_API_KEY from environment)
+client = TraceRTMClient()
+```
 
-To get started with Basic Examples:
+---
 
-- Review the Basic Examples and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Project Operations
 
-## Key Concepts
+### List All Projects
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```python
+# List projects
+projects = client.projects.list()
 
-## Next Steps
+for project in projects.data:
+    print(f"{project.name} ({project.key})")
+    print(f"  Created: {project.created_at}")
+    print(f"  Owner: {project.owner_id}")
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+### Create a Project
+
+```python
+project = client.projects.create(
+    name="Requirements Project",
+    key="REQ",
+    description="Project for managing requirements"
+)
+
+print(f"Created project: {project.id}")
+```
+
+### Get Project Details
+
+```python
+project = client.projects.get("proj_abc123")
+
+print(f"Name: {project.name}")
+print(f"Key: {project.key}")
+print(f"Description: {project.description}")
+```
+
+### Update a Project
+
+```python
+project = client.projects.update(
+    "proj_abc123",
+    name="Updated Project Name",
+    description="Updated description"
+)
+```
+
+### Delete a Project
+
+```python
+client.projects.delete("proj_abc123")
+print("Project deleted")
+```
+
+---
+
+## Item Operations
+
+### Create a Requirement
+
+```python
+requirement = client.items.create(
+    project_id="proj_abc123",
+    type="requirement",
+    title="User Authentication",
+    description="System shall support user authentication via email/password",
+    priority="high",
+    tags=["security", "authentication"]
+)
+
+print(f"Created: {requirement.id}")
+print(f"Status: {requirement.status}")
+```
+
+### Create a Test Case
+
+```python
+test_case = client.items.create(
+    project_id="proj_abc123",
+    type="test_case",
+    title="Verify Login with Valid Credentials",
+    description="Test successful login scenario",
+    fields={
+        "preconditions": "User account exists with known credentials",
+        "test_steps": [
+            {
+                "step": 1,
+                "action": "Navigate to login page",
+                "expected": "Login form is displayed"
+            },
+            {
+                "step": 2,
+                "action": "Enter valid email and password",
+                "expected": "Credentials accepted"
+            },
+            {
+                "step": 3,
+                "action": "Click Login button",
+                "expected": "User is redirected to dashboard"
+            }
+        ],
+        "expected_result": "User successfully logged in"
+    }
+)
+```
+
+### Create a Bug
+
+```python
+bug = client.items.create(
+    project_id="proj_abc123",
+    type="bug",
+    title="Login button unresponsive on mobile",
+    description="Login button does not respond to taps on iOS Safari",
+    priority="high",
+    fields={
+        "severity": "major",
+        "environment": "iOS 17, Safari",
+        "steps_to_reproduce": [
+            "Open app on iPhone",
+            "Navigate to login page",
+            "Tap login button"
+        ],
+        "actual_result": "Nothing happens",
+        "expected_result": "Login form should submit"
+    }
+)
+```
+
+### List Items with Filters
+
+```python
+# List all requirements
+requirements = client.items.list(
+    project_id="proj_abc123",
+    type="requirement"
+)
+
+print(f"Found {len(requirements.data)} requirements")
+
+# List approved requirements
+approved = client.items.list(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved"
+)
+
+# List items assigned to a user
+my_items = client.items.list(
+    project_id="proj_abc123",
+    assignee_id="user_123"
+)
+
+# List items with specific tags
+security_items = client.items.list(
+    project_id="proj_abc123",
+    tags=["security"]
+)
+
+# Full-text search
+results = client.items.list(
+    project_id="proj_abc123",
+    search="authentication"
+)
+```
+
+### Get Item with Related Data
+
+```python
+# Get item with links
+item = client.items.get("item_abc123", include=["links"])
+
+print(f"Title: {item.title}")
+print(f"Links: {len(item.links or [])}")
+
+# Get item with full history
+item = client.items.get("item_abc123", include=["history"])
+
+for entry in item.history or []:
+    print(f"{entry.timestamp}: {entry.action}")
+
+# Get item with artifacts
+item = client.items.get("item_abc123", include=["artifacts"])
+
+for artifact in item.artifacts or []:
+    print(f"File: {artifact.filename} ({artifact.size} bytes)")
+```
+
+### Update an Item
+
+```python
+# Update title and description
+item = client.items.update(
+    "item_abc123",
+    title="Updated Title",
+    description="Updated description"
+)
+
+# Update status
+item = client.items.update(
+    "item_abc123",
+    status="in_review"
+)
+
+# Update custom fields
+item = client.items.update(
+    "item_abc123",
+    fields={
+        "acceptance_criteria": "Updated criteria",
+        "business_value": 9
+    }
+)
+
+# Add tags
+item = client.items.update(
+    "item_abc123",
+    add_tags=["new-tag"]
+)
+
+# Assign to user
+item = client.items.update(
+    "item_abc123",
+    assignee_id="user_456"
+)
+```
+
+### Delete an Item
+
+```python
+client.items.delete("item_abc123")
+print("Item deleted")
+```
+
+---
+
+## Link Operations
+
+### Create a Link
+
+```python
+# Requirement verified by test case
+link = client.links.create(
+    source_id="item_req_001",
+    target_id="item_tc_001",
+    type="verified_by",
+    description="Test case verifies the requirement"
+)
+
+print(f"Created link: {link.id}")
+```
+
+### List Links
+
+```python
+# List all links in project
+links = client.links.list(project_id="proj_abc123")
+
+# List links from a source item
+links = client.links.list(source_id="item_req_001")
+
+# List links to a target item
+links = client.links.list(target_id="item_tc_001")
+
+# Filter by link type
+links = client.links.list(
+    project_id="proj_abc123",
+    type="verified_by"
+)
+
+for link in links.data:
+    print(f"{link.source_id} --[{link.type}]--> {link.target_id}")
+```
+
+### Delete a Link
+
+```python
+client.links.delete("link_abc123")
+print("Link deleted")
+```
+
+---
+
+## Pagination
+
+### Manual Pagination
+
+```python
+# First page
+page1 = client.items.list(
+    project_id="proj_abc123",
+    limit=20,
+    offset=0
+)
+
+print(f"Page 1: {len(page1.data)} items")
+print(f"Total: {page1.total}")
+print(f"Has more: {page1.has_more}")
+
+# Next page
+if page1.has_more:
+    page2 = client.items.list(
+        project_id="proj_abc123",
+        limit=20,
+        offset=20
+    )
+```
+
+### Automatic Iteration
+
+```python
+# Iterate through all items (handles pagination automatically)
+for item in client.items.iterate(project_id="proj_abc123"):
+    print(f"{item.title} ({item.status})")
+
+# Iterate with filters
+for item in client.items.iterate(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved"
+):
+    process_approved_requirement(item)
+```
+
+---
+
+## Sorting
+
+```python
+# Sort by created date (newest first)
+items = client.items.list(
+    project_id="proj_abc123",
+    sort="created_at",
+    order="desc"
+)
+
+# Sort by title (alphabetical)
+items = client.items.list(
+    project_id="proj_abc123",
+    sort="title",
+    order="asc"
+)
+
+# Sort by priority
+items = client.items.list(
+    project_id="proj_abc123",
+    sort="priority",
+    order="desc"
+)
+```
+
+---
+
+## Error Handling
+
+```python
+from tracertm.exceptions import NotFoundError, ValidationError
+
+# Handle not found
+try:
+    item = client.items.get("item_nonexistent")
+except NotFoundError:
+    print("Item not found")
+
+# Handle validation errors
+try:
+    item = client.items.create(
+        project_id="proj_abc123",
+        type="invalid_type",
+        title=""  # Empty title
+    )
+except ValidationError as e:
+    print("Validation failed:")
+    for error in e.errors:
+        print(f"  {error['field']}: {error['message']}")
+```
+
+---
+
+## Related Documentation
+
+- [Advanced Examples](/docs/api-reference/sdks/python/advanced-examples) - Complex patterns
+- [API Reference](/docs/api-reference/sdks/python/api-reference) - Full API documentation
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error handling guide

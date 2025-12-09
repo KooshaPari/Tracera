@@ -1,32 +1,795 @@
 ---
 title: "Mocking"
-description: "Documentation for Mocking"
+description: "Strategies and patterns for mocking the TraceRTM Python SDK in tests"
 ---
 
 # Mocking
 
-This page contains documentation for Mocking.
+This guide covers advanced mocking strategies for testing applications that use the TraceRTM Python SDK. Learn how to create effective mocks for both sync and async clients.
 
 ## Overview
 
-This section covers the key aspects of Mocking in TraceRTM.
+Mocking is essential for:
+- **Fast tests** - No network calls, instant results
+- **Isolated tests** - Test logic independent of API state
+- **Deterministic tests** - Predictable, repeatable outcomes
+- **Offline development** - Work without API access
 
-## Getting Started
+---
 
-To get started with Mocking:
+## Mocking Libraries
 
-- Review the Mocking and fundamentals
-- Explore practical examples
-- Check out the API reference
+### unittest.mock (Standard Library)
 
-## Key Concepts
+```python
+from unittest.mock import MagicMock, AsyncMock, patch
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### pytest-mock
 
-## Next Steps
+```bash
+pip install pytest-mock
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+```python
+def test_with_mocker(mocker):
+    mock_client = mocker.patch("tracertm.TraceRTMClient")
+    # ...
+```
+
+### respx (HTTP-level Mocking)
+
+```bash
+pip install respx
+```
+
+```python
+import respx
+from httpx import Response
+
+@respx.mock
+def test_with_respx():
+    respx.get("https://api.tracertm.dev/v1/projects").mock(
+        return_value=Response(200, json={"data": []})
+    )
+```
+
+---
+
+## Client-Level Mocking
+
+### Mock Sync Client
+
+```python
+# tests/conftest.py
+import pytest
+from unittest.mock import MagicMock, patch
+from datetime import datetime
+
+@pytest.fixture
+def mock_tracertm_client():
+    """Complete mock of TraceRTMClient."""
+    with patch("tracertm.TraceRTMClient") as MockClientClass:
+        client = MagicMock()
+        MockClientClass.return_value = client
+
+        # Projects API
+        client.projects = MagicMock()
+        client.projects.list = MagicMock()
+        client.projects.get = MagicMock()
+        client.projects.create = MagicMock()
+        client.projects.update = MagicMock()
+        client.projects.delete = MagicMock()
+
+        # Items API
+        client.items = MagicMock()
+        client.items.list = MagicMock()
+        client.items.get = MagicMock()
+        client.items.create = MagicMock()
+        client.items.update = MagicMock()
+        client.items.delete = MagicMock()
+        client.items.transition = MagicMock()
+        client.items.bulk_create = MagicMock()
+        client.items.bulk_update = MagicMock()
+
+        # Links API
+        client.links = MagicMock()
+        client.links.list = MagicMock()
+        client.links.get = MagicMock()
+        client.links.create = MagicMock()
+        client.links.delete = MagicMock()
+        client.links.bulk_create = MagicMock()
+
+        # Reports API
+        client.reports = MagicMock()
+        client.reports.coverage = MagicMock()
+        client.reports.traceability_matrix = MagicMock()
+
+        # Search API
+        client.search = MagicMock()
+        client.search.items = MagicMock()
+
+        yield client
+
+# Usage
+def test_list_projects(mock_tracertm_client):
+    mock_tracertm_client.projects.list.return_value = MagicMock(
+        data=[MagicMock(id="proj_1", name="Project 1")],
+        total=1
+    )
+
+    from my_app.services import ProjectService
+    service = ProjectService(mock_tracertm_client)
+    projects = service.get_all_projects()
+
+    assert len(projects) == 1
+    mock_tracertm_client.projects.list.assert_called_once()
+```
+
+### Mock Async Client
+
+```python
+import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
+
+@pytest.fixture
+def mock_async_tracertm_client():
+    """Complete mock of AsyncTraceRTMClient."""
+    with patch("tracertm.AsyncTraceRTMClient") as MockClientClass:
+        client = AsyncMock()
+        MockClientClass.return_value = client
+
+        # Async context manager
+        client.__aenter__ = AsyncMock(return_value=client)
+        client.__aexit__ = AsyncMock(return_value=None)
+
+        # Projects API
+        client.projects = AsyncMock()
+        client.projects.list = AsyncMock()
+        client.projects.get = AsyncMock()
+        client.projects.create = AsyncMock()
+
+        # Items API
+        client.items = AsyncMock()
+        client.items.list = AsyncMock()
+        client.items.get = AsyncMock()
+        client.items.create = AsyncMock()
+        client.items.iterate = AsyncMock()
+
+        # Links API
+        client.links = AsyncMock()
+        client.links.list = AsyncMock()
+        client.links.create = AsyncMock()
+
+        # Reports API
+        client.reports = AsyncMock()
+        client.reports.coverage = AsyncMock()
+
+        yield client
+
+# Usage
+@pytest.mark.asyncio
+async def test_async_list_projects(mock_async_tracertm_client):
+    mock_async_tracertm_client.projects.list.return_value = MagicMock(
+        data=[MagicMock(id="proj_1", name="Project 1")],
+        total=1
+    )
+
+    from my_app.async_services import AsyncProjectService
+    service = AsyncProjectService(mock_async_tracertm_client)
+    projects = await service.get_all_projects()
+
+    assert len(projects) == 1
+```
+
+---
+
+## Model Mocking
+
+### Mock Factory Functions
+
+```python
+# tests/factories.py
+from unittest.mock import MagicMock
+from datetime import datetime, date
+
+def create_mock_project(
+    id: str = "proj_test",
+    name: str = "Test Project",
+    key: str = "TEST",
+    **kwargs
+) -> MagicMock:
+    """Create a mock Project object."""
+    project = MagicMock()
+    project.id = id
+    project.name = name
+    project.key = key
+    project.description = kwargs.get("description", "Test description")
+    project.owner_id = kwargs.get("owner_id", "user_owner")
+    project.workflow_id = kwargs.get("workflow_id", "wf_default")
+    project.item_count = kwargs.get("item_count", 0)
+    project.created_at = kwargs.get("created_at", datetime.now())
+    project.updated_at = kwargs.get("updated_at", datetime.now())
+    project.settings = kwargs.get("settings", {})
+
+    # Add dict method for serialization
+    project.dict = MagicMock(return_value={
+        "id": project.id,
+        "name": project.name,
+        "key": project.key,
+        "description": project.description
+    })
+
+    return project
+
+def create_mock_item(
+    id: str = "item_test",
+    project_id: str = "proj_test",
+    type: str = "requirement",
+    title: str = "Test Item",
+    **kwargs
+) -> MagicMock:
+    """Create a mock Item object."""
+    item = MagicMock()
+    item.id = id
+    item.project_id = project_id
+    item.type = type
+    item.title = title
+    item.description = kwargs.get("description", "")
+    item.status = kwargs.get("status", "draft")
+    item.status_category = kwargs.get("status_category", "initial")
+    item.priority = kwargs.get("priority", "medium")
+    item.assignee_id = kwargs.get("assignee_id", None)
+    item.due_date = kwargs.get("due_date", None)
+    item.tags = kwargs.get("tags", [])
+    item.fields = kwargs.get("fields", {})
+    item.created_at = kwargs.get("created_at", datetime.now())
+    item.updated_at = kwargs.get("updated_at", datetime.now())
+    item.created_by = kwargs.get("created_by", "user_creator")
+    item.links = kwargs.get("links", None)
+    item.history = kwargs.get("history", None)
+
+    # Computed properties
+    item.is_complete = item.status_category == "done"
+    item.is_overdue = (
+        item.due_date is not None and
+        item.due_date < date.today() and
+        not item.is_complete
+    )
+
+    return item
+
+def create_mock_link(
+    id: str = "link_test",
+    source_id: str = "item_source",
+    target_id: str = "item_target",
+    type: str = "traces_to",
+    **kwargs
+) -> MagicMock:
+    """Create a mock Link object."""
+    link = MagicMock()
+    link.id = id
+    link.source_id = source_id
+    link.target_id = target_id
+    link.type = type
+    link.description = kwargs.get("description", None)
+    link.created_at = kwargs.get("created_at", datetime.now())
+    link.created_by = kwargs.get("created_by", "user_creator")
+    return link
+
+def create_mock_paginated_result(
+    data: list,
+    total: int = None,
+    limit: int = 50,
+    offset: int = 0
+) -> MagicMock:
+    """Create a mock PaginatedResult."""
+    result = MagicMock()
+    result.data = data
+    result.total = total if total is not None else len(data)
+    result.limit = limit
+    result.offset = offset
+    result.has_more = result.total > offset + len(data)
+
+    # Make it iterable
+    result.__iter__ = MagicMock(return_value=iter(data))
+    result.__len__ = MagicMock(return_value=len(data))
+
+    # Pagination methods
+    result.next_page = MagicMock(return_value=None)
+
+    return result
+
+def create_mock_coverage_report(
+    covered_count: int = 8,
+    uncovered_count: int = 2,
+    **kwargs
+) -> MagicMock:
+    """Create a mock CoverageReport."""
+    report = MagicMock()
+    report.covered_count = covered_count
+    report.uncovered_count = uncovered_count
+    report.total_count = covered_count + uncovered_count
+    report.coverage_percent = (covered_count / report.total_count * 100) if report.total_count > 0 else 0
+    report.covered_items = kwargs.get("covered_items", [])
+    report.uncovered_items = kwargs.get("uncovered_items", [])
+    return report
+```
+
+### Using Factories in Tests
+
+```python
+# tests/test_services.py
+from tests.factories import (
+    create_mock_project,
+    create_mock_item,
+    create_mock_paginated_result
+)
+
+def test_get_high_priority_items(mock_tracertm_client):
+    """Test filtering high priority items."""
+    items = [
+        create_mock_item(id="item_1", priority="high", title="High 1"),
+        create_mock_item(id="item_2", priority="high", title="High 2"),
+    ]
+    mock_tracertm_client.items.list.return_value = create_mock_paginated_result(items)
+
+    from my_app.services import ItemService
+    service = ItemService(mock_tracertm_client)
+    result = service.get_high_priority_items("proj_123")
+
+    assert len(result) == 2
+    mock_tracertm_client.items.list.assert_called_once_with(
+        project_id="proj_123",
+        priority="high"
+    )
+```
+
+---
+
+## HTTP-Level Mocking
+
+### Using respx
+
+```python
+import pytest
+import respx
+from httpx import Response
+from tracertm import TraceRTMClient
+
+@respx.mock
+def test_list_projects_http():
+    """Test with HTTP-level mocking."""
+    respx.get("https://api.tracertm.dev/v1/projects").mock(
+        return_value=Response(
+            200,
+            json={
+                "data": [
+                    {"id": "proj_1", "name": "Project 1", "key": "P1"}
+                ],
+                "total": 1,
+                "limit": 50,
+                "offset": 0,
+                "has_more": False
+            }
+        )
+    )
+
+    client = TraceRTMClient(api_key="test_key")
+    projects = client.projects.list()
+
+    assert len(projects.data) == 1
+    assert projects.data[0].name == "Project 1"
+
+@respx.mock
+def test_create_item_http():
+    """Test item creation with HTTP mocking."""
+    respx.post("https://api.tracertm.dev/v1/items").mock(
+        return_value=Response(
+            201,
+            json={
+                "id": "item_new",
+                "project_id": "proj_1",
+                "type": "requirement",
+                "title": "New Requirement",
+                "status": "draft",
+                "created_at": "2025-01-15T10:00:00Z"
+            }
+        )
+    )
+
+    client = TraceRTMClient(api_key="test_key")
+    item = client.items.create(
+        project_id="proj_1",
+        type="requirement",
+        title="New Requirement"
+    )
+
+    assert item.id == "item_new"
+    assert item.status == "draft"
+```
+
+### Using responses
+
+```python
+import responses
+from tracertm import TraceRTMClient
+
+@responses.activate
+def test_with_responses():
+    """Test with responses library."""
+    responses.add(
+        responses.GET,
+        "https://api.tracertm.dev/v1/projects/proj_123",
+        json={
+            "id": "proj_123",
+            "name": "Test Project",
+            "key": "TEST"
+        },
+        status=200
+    )
+
+    client = TraceRTMClient(api_key="test_key")
+    project = client.projects.get("proj_123")
+
+    assert project.id == "proj_123"
+```
+
+### Async HTTP Mocking with respx
+
+```python
+import pytest
+import respx
+from httpx import Response
+from tracertm import AsyncTraceRTMClient
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_async_list_projects():
+    """Test async client with HTTP mocking."""
+    respx.get("https://api.tracertm.dev/v1/projects").mock(
+        return_value=Response(
+            200,
+            json={
+                "data": [{"id": "proj_1", "name": "Project 1"}],
+                "total": 1,
+                "limit": 50,
+                "offset": 0,
+                "has_more": False
+            }
+        )
+    )
+
+    async with AsyncTraceRTMClient(api_key="test_key") as client:
+        projects = await client.projects.list()
+        assert len(projects.data) == 1
+```
+
+---
+
+## Mocking Errors
+
+### Mock API Errors
+
+```python
+from unittest.mock import MagicMock
+from tracertm.exceptions import NotFoundError, ValidationError, RateLimitError
+
+def test_not_found_error(mock_tracertm_client):
+    """Test handling of NotFoundError."""
+    mock_tracertm_client.items.get.side_effect = NotFoundError(
+        "Item not found",
+        resource_type="item",
+        resource_id="item_nonexistent"
+    )
+
+    from my_app.services import ItemService
+    service = ItemService(mock_tracertm_client)
+    result = service.safe_get_item("item_nonexistent")
+
+    assert result is None
+
+def test_validation_error(mock_tracertm_client):
+    """Test handling of ValidationError."""
+    error = ValidationError("Validation failed")
+    error.errors = [
+        {"field": "title", "message": "Title is required", "code": "required"},
+        {"field": "type", "message": "Invalid type", "code": "invalid"}
+    ]
+    mock_tracertm_client.items.create.side_effect = error
+
+    from my_app.services import ItemService
+    service = ItemService(mock_tracertm_client)
+
+    with pytest.raises(ValidationError) as exc_info:
+        service.create_item(project_id="proj_123", title="", type="invalid")
+
+    assert len(exc_info.value.errors) == 2
+
+def test_rate_limit_with_retry(mock_tracertm_client, mocker):
+    """Test rate limit error triggers retry."""
+    rate_limit_error = RateLimitError("Rate limited")
+    rate_limit_error.retry_after = 1
+
+    success_response = create_mock_item(id="item_1", title="Test")
+
+    mock_tracertm_client.items.get.side_effect = [
+        rate_limit_error,
+        success_response
+    ]
+
+    mock_sleep = mocker.patch("time.sleep")
+
+    from my_app.services import ItemService
+    service = ItemService(mock_tracertm_client)
+    result = service.get_item_with_retry("item_1")
+
+    assert result.id == "item_1"
+    mock_sleep.assert_called_once_with(1)
+    assert mock_tracertm_client.items.get.call_count == 2
+```
+
+### HTTP Error Mocking
+
+```python
+import respx
+from httpx import Response
+
+@respx.mock
+def test_server_error():
+    """Test server error handling."""
+    respx.get("https://api.tracertm.dev/v1/items/item_123").mock(
+        return_value=Response(
+            500,
+            json={
+                "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal server error"
+                }
+            }
+        )
+    )
+
+    from tracertm import TraceRTMClient
+    from tracertm.exceptions import ServerError
+
+    client = TraceRTMClient(api_key="test_key")
+
+    with pytest.raises(ServerError):
+        client.items.get("item_123")
+```
+
+---
+
+## Mocking Iteration
+
+### Mock Sync Iterator
+
+```python
+def test_iterate_all_items(mock_tracertm_client):
+    """Test iterating through all items."""
+    items = [
+        create_mock_item(id=f"item_{i}", title=f"Item {i}")
+        for i in range(5)
+    ]
+
+    # Mock iterate to return an iterator
+    mock_tracertm_client.items.iterate.return_value = iter(items)
+
+    from my_app.services import ItemService
+    service = ItemService(mock_tracertm_client)
+    all_items = list(service.process_all_items("proj_123"))
+
+    assert len(all_items) == 5
+    mock_tracertm_client.items.iterate.assert_called_once_with(project_id="proj_123")
+```
+
+### Mock Async Iterator
+
+```python
+import pytest
+from unittest.mock import AsyncMock
+
+@pytest.fixture
+def mock_async_iterator():
+    """Create a mock async iterator."""
+    async def async_gen(items):
+        for item in items:
+            yield item
+    return async_gen
+
+@pytest.mark.asyncio
+async def test_async_iterate(mock_async_tracertm_client, mock_async_iterator):
+    """Test async iteration."""
+    items = [
+        create_mock_item(id=f"item_{i}", title=f"Item {i}")
+        for i in range(3)
+    ]
+
+    mock_async_tracertm_client.items.iterate.return_value = mock_async_iterator(items)
+
+    from my_app.async_services import AsyncItemService
+    service = AsyncItemService(mock_async_tracertm_client)
+
+    processed = []
+    async for item in service.iterate_and_process("proj_123"):
+        processed.append(item)
+
+    assert len(processed) == 3
+```
+
+---
+
+## Advanced Mocking Patterns
+
+### Context-Dependent Mocking
+
+```python
+from unittest.mock import MagicMock
+
+def test_conditional_mock_behavior(mock_tracertm_client):
+    """Mock that behaves differently based on input."""
+    def get_item_side_effect(item_id, **kwargs):
+        if item_id == "item_exists":
+            return create_mock_item(id=item_id, title="Existing Item")
+        raise NotFoundError(f"Item {item_id} not found")
+
+    mock_tracertm_client.items.get.side_effect = get_item_side_effect
+
+    # This succeeds
+    item = mock_tracertm_client.items.get("item_exists")
+    assert item.title == "Existing Item"
+
+    # This raises
+    with pytest.raises(NotFoundError):
+        mock_tracertm_client.items.get("item_missing")
+```
+
+### Mock with Call Tracking
+
+```python
+from unittest.mock import MagicMock, call
+
+def test_call_order(mock_tracertm_client):
+    """Verify calls are made in correct order."""
+    mock_tracertm_client.items.create.return_value = create_mock_item()
+    mock_tracertm_client.links.create.return_value = create_mock_link()
+
+    from my_app.services import WorkflowService
+    service = WorkflowService(mock_tracertm_client)
+    service.create_requirement_with_test("proj_123", "New Req")
+
+    # Verify call order
+    assert mock_tracertm_client.items.create.call_count == 2  # req + test
+    assert mock_tracertm_client.links.create.call_count == 1
+
+    # Verify specific calls
+    mock_tracertm_client.items.create.assert_any_call(
+        project_id="proj_123",
+        type="requirement",
+        title="New Req"
+    )
+```
+
+### Spy Pattern
+
+```python
+from unittest.mock import MagicMock, patch
+
+def test_spy_on_method(mock_tracertm_client):
+    """Spy on method to track calls while using real implementation."""
+    original_list = mock_tracertm_client.items.list
+
+    call_log = []
+    def spy_list(*args, **kwargs):
+        call_log.append({"args": args, "kwargs": kwargs})
+        return original_list(*args, **kwargs)
+
+    mock_tracertm_client.items.list = spy_list
+
+    # Use the client
+    mock_tracertm_client.items.list(project_id="proj_123")
+
+    # Check the spy
+    assert len(call_log) == 1
+    assert call_log[0]["kwargs"]["project_id"] == "proj_123"
+```
+
+---
+
+## Fixture Composition
+
+### Composable Test Fixtures
+
+```python
+# tests/conftest.py
+import pytest
+
+@pytest.fixture
+def mock_project():
+    """Single mock project."""
+    return create_mock_project(id="proj_test", name="Test Project")
+
+@pytest.fixture
+def mock_items():
+    """List of mock items."""
+    return [
+        create_mock_item(id=f"item_{i}", title=f"Item {i}")
+        for i in range(5)
+    ]
+
+@pytest.fixture
+def configured_mock_client(mock_tracertm_client, mock_project, mock_items):
+    """Client pre-configured with common data."""
+    mock_tracertm_client.projects.get.return_value = mock_project
+    mock_tracertm_client.items.list.return_value = create_mock_paginated_result(mock_items)
+    return mock_tracertm_client
+
+# Usage
+def test_with_configured_client(configured_mock_client):
+    """Test with pre-configured mock."""
+    project = configured_mock_client.projects.get("proj_test")
+    items = configured_mock_client.items.list(project_id="proj_test")
+
+    assert project.name == "Test Project"
+    assert len(items.data) == 5
+```
+
+---
+
+## Best Practices
+
+### 1. Mock at the Right Level
+
+```python
+# Good - Mock the client interface
+def test_service(mock_tracertm_client):
+    mock_tracertm_client.items.list.return_value = ...
+
+# Avoid - Mock internal implementation details
+def test_service():
+    with patch("tracertm.client._http_client.get"):
+        ...
+```
+
+### 2. Use Factories for Test Data
+
+```python
+# Good - Use factory functions
+item = create_mock_item(id="test", priority="high")
+
+# Avoid - Manual MagicMock construction everywhere
+item = MagicMock()
+item.id = "test"
+item.priority = "high"
+# ... repeat for every property
+```
+
+### 3. Reset Mocks Between Tests
+
+```python
+@pytest.fixture(autouse=True)
+def reset_mocks(mock_tracertm_client):
+    yield
+    mock_tracertm_client.reset_mock()
+```
+
+### 4. Test Both Success and Failure Paths
+
+```python
+def test_create_item_success(mock_tracertm_client):
+    mock_tracertm_client.items.create.return_value = create_mock_item()
+    # Test success path
+
+def test_create_item_validation_error(mock_tracertm_client):
+    mock_tracertm_client.items.create.side_effect = ValidationError("Invalid")
+    # Test error path
+```
+
+---
+
+## Related Documentation
+
+- [Testing Overview](/docs/api-reference/sdks/python/testing) - Testing strategies
+- [Unit Tests](/docs/api-reference/sdks/python/unit-tests) - Unit testing guide
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error types

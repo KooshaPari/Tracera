@@ -1,21 +1,859 @@
 ---
-title: "Python SDK Examples"
-description: "Usage patterns for the Python SDK."
+title: "Examples"
+description: "Comprehensive code examples for the TraceRTM Python SDK"
 ---
 
-## Python SDK — Examples
-- Recommended for applications already using Python.
-- Handles auth, retries, and serialization for you.
+# Examples
 
-## Example
+This guide provides practical, real-world examples of using the TraceRTM Python SDK for common traceability management tasks.
+
+## Quick Reference
+
+| Example | Description |
+|---------|-------------|
+| [Project Setup](#project-setup) | Create and configure a new project |
+| [Requirements Management](#requirements-management) | CRUD operations for requirements |
+| [Test Case Management](#test-case-management) | Manage test cases and results |
+| [Traceability Links](#traceability-links) | Create and query relationships |
+| [Bulk Operations](#bulk-operations) | Process multiple items efficiently |
+| [Search & Queries](#search--queries) | Find items with complex criteria |
+| [Reports](#reports) | Generate traceability reports |
+| [Automation](#automation) | CI/CD integration examples |
+
+---
+
+## Project Setup
+
+### Create a Complete Project
+
 ```python
-# link code to feature
-client.relationships.create(from_id="code_1", to_id="feat_1", type="implements")
-# search artifacts
-client.search.query(project_id="proj_123", text="payment")
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+def create_project_with_structure():
+    """Create a project with item types and workflows."""
+
+    # Create project
+    project = client.projects.create(
+        name="Payment System",
+        key="PAY",
+        description="Payment processing system requirements"
+    )
+    print(f"Created project: {project.key}")
+
+    # Configure item types
+    item_types = [
+        {"key": "REQ", "name": "Requirement", "icon": "document"},
+        {"key": "TC", "name": "Test Case", "icon": "check"},
+        {"key": "BUG", "name": "Bug", "icon": "bug"},
+        {"key": "RISK", "name": "Risk", "icon": "warning"}
+    ]
+
+    for item_type in item_types:
+        client.projects.add_item_type(project.id, **item_type)
+
+    # Configure link types
+    link_types = [
+        {"key": "verifies", "name": "Verifies", "source": "TC", "target": "REQ"},
+        {"key": "mitigates", "name": "Mitigates", "source": "REQ", "target": "RISK"},
+        {"key": "blocks", "name": "Blocks", "source": "BUG", "target": "REQ"}
+    ]
+
+    for link_type in link_types:
+        client.projects.add_link_type(project.id, **link_type)
+
+    return project
+
+project = create_project_with_structure()
 ```
 
-## Tips
-- Initialize the client once per process and reuse it.
-- Set timeouts and retries explicitly in production.
-- Capture request IDs from responses for support cases.
+### Clone Project Structure
+
+```python
+def clone_project_structure(source_project_id: str, new_name: str, new_key: str):
+    """Clone a project's structure without items."""
+
+    source = client.projects.get(source_project_id)
+
+    # Create new project
+    new_project = client.projects.create(
+        name=new_name,
+        key=new_key,
+        description=f"Cloned from {source.name}"
+    )
+
+    # Copy workflows
+    workflows = client.workflows.list(project_id=source.id)
+    for wf in workflows.data:
+        client.workflows.copy(
+            workflow_id=wf.id,
+            target_project_id=new_project.id
+        )
+
+    # Copy custom fields
+    fields = client.projects.list_custom_fields(source.id)
+    for field in fields.data:
+        client.projects.add_custom_field(
+            project_id=new_project.id,
+            name=field.name,
+            field_type=field.field_type,
+            options=field.options
+        )
+
+    return new_project
+```
+
+---
+
+## Requirements Management
+
+### Create Requirements Hierarchy
+
+```python
+def create_requirements_hierarchy():
+    """Create a hierarchical requirements structure."""
+
+    # Create parent requirement
+    parent = client.items.create(
+        project_id="proj_abc123",
+        type="requirement",
+        title="User Authentication",
+        description="System shall provide secure user authentication",
+        priority="high"
+    )
+
+    # Create child requirements
+    children = [
+        {
+            "title": "Email/Password Login",
+            "description": "Users can login with email and password"
+        },
+        {
+            "title": "OAuth 2.0 Support",
+            "description": "Support login via Google and GitHub"
+        },
+        {
+            "title": "Two-Factor Authentication",
+            "description": "Optional 2FA via TOTP or SMS"
+        }
+    ]
+
+    child_items = []
+    for child in children:
+        item = client.items.create(
+            project_id="proj_abc123",
+            type="requirement",
+            parent_id=parent.id,
+            priority="medium",
+            **child
+        )
+        child_items.append(item)
+        print(f"Created: {item.key}")
+
+    return parent, child_items
+
+parent_req, child_reqs = create_requirements_hierarchy()
+```
+
+### Import Requirements from CSV
+
+```python
+import csv
+from pathlib import Path
+
+def import_requirements_from_csv(project_id: str, csv_path: Path):
+    """Import requirements from a CSV file."""
+
+    imported = []
+    errors = []
+
+    with open(csv_path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            try:
+                item = client.items.create(
+                    project_id=project_id,
+                    type="requirement",
+                    title=row['title'],
+                    description=row.get('description', ''),
+                    priority=row.get('priority', 'medium'),
+                    custom_fields={
+                        'external_id': row.get('external_id'),
+                        'source': row.get('source', 'CSV Import')
+                    }
+                )
+                imported.append(item)
+                print(f"Imported: {item.key}")
+            except Exception as e:
+                errors.append({'row': row, 'error': str(e)})
+
+    print(f"\nImported {len(imported)} requirements")
+    if errors:
+        print(f"Errors: {len(errors)}")
+
+    return imported, errors
+
+# Usage
+imported, errors = import_requirements_from_csv(
+    "proj_abc123",
+    Path("./requirements.csv")
+)
+```
+
+### Export Requirements to JSON
+
+```python
+import json
+from datetime import datetime
+
+def export_requirements_to_json(project_id: str, output_path: Path):
+    """Export all requirements to JSON."""
+
+    requirements = []
+
+    for item in client.items.iterate(project_id=project_id, type="requirement"):
+        requirements.append({
+            'id': item.id,
+            'key': item.key,
+            'title': item.title,
+            'description': item.description,
+            'status': item.status,
+            'priority': item.priority,
+            'created_at': item.created_at.isoformat(),
+            'updated_at': item.updated_at.isoformat(),
+            'custom_fields': item.custom_fields
+        })
+
+    output = {
+        'exported_at': datetime.now().isoformat(),
+        'project_id': project_id,
+        'count': len(requirements),
+        'requirements': requirements
+    }
+
+    with open(output_path, 'w') as f:
+        json.dump(output, f, indent=2)
+
+    print(f"Exported {len(requirements)} requirements to {output_path}")
+    return requirements
+```
+
+---
+
+## Test Case Management
+
+### Create Test Cases with Steps
+
+```python
+def create_test_case_with_steps(requirement_id: str):
+    """Create a detailed test case with steps."""
+
+    # Get the requirement
+    requirement = client.items.get(requirement_id)
+
+    # Create test case
+    test_case = client.items.create(
+        project_id=requirement.project_id,
+        type="test_case",
+        title=f"Verify: {requirement.title}",
+        description=f"Test case for requirement {requirement.key}",
+        priority=requirement.priority,
+        custom_fields={
+            'preconditions': "User is on login page",
+            'test_data': "Valid credentials: test@example.com / Password123",
+            'steps': [
+                {
+                    'step': 1,
+                    'action': "Enter valid email address",
+                    'expected': "Email field accepts input"
+                },
+                {
+                    'step': 2,
+                    'action': "Enter valid password",
+                    'expected': "Password field shows masked input"
+                },
+                {
+                    'step': 3,
+                    'action': "Click Login button",
+                    'expected': "User is redirected to dashboard"
+                }
+            ]
+        }
+    )
+
+    # Link test case to requirement
+    client.links.create(
+        source_id=requirement.id,
+        target_id=test_case.id,
+        link_type="verified_by"
+    )
+
+    print(f"Created test case: {test_case.key}")
+    return test_case
+```
+
+### Record Test Execution
+
+```python
+from datetime import datetime
+
+def record_test_execution(test_case_id: str, result: str, notes: str = None):
+    """Record a test execution result."""
+
+    # Create test run if needed
+    test_run = client.test_runs.create(
+        project_id="proj_abc123",
+        name=f"Test Run {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        test_case_ids=[test_case_id]
+    )
+
+    # Record result
+    execution = client.test_executions.create(
+        test_run_id=test_run.id,
+        test_case_id=test_case_id,
+        result=result,  # 'passed', 'failed', 'blocked', 'skipped'
+        executed_at=datetime.now(),
+        executed_by="current_user",
+        notes=notes,
+        duration_seconds=120
+    )
+
+    # If failed, update test case status
+    if result == 'failed':
+        client.items.transition(
+            item_id=test_case_id,
+            transition="fail",
+            comment=f"Test failed: {notes}"
+        )
+
+    return execution
+
+# Usage
+execution = record_test_execution(
+    "item_tc_001",
+    result="passed",
+    notes="All steps completed successfully"
+)
+```
+
+### Generate Test Coverage Report
+
+```python
+def get_test_coverage(project_id: str):
+    """Calculate test coverage for requirements."""
+
+    # Get all requirements
+    requirements = list(client.items.iterate(
+        project_id=project_id,
+        type="requirement"
+    ))
+
+    coverage_data = []
+
+    for req in requirements:
+        # Get linked test cases
+        links = client.links.list(
+            source_id=req.id,
+            link_type="verified_by"
+        )
+
+        test_cases = []
+        for link in links.data:
+            tc = client.items.get(link.target_id)
+            test_cases.append({
+                'key': tc.key,
+                'title': tc.title,
+                'status': tc.status
+            })
+
+        coverage_data.append({
+            'requirement_key': req.key,
+            'requirement_title': req.title,
+            'priority': req.priority,
+            'test_case_count': len(test_cases),
+            'test_cases': test_cases,
+            'covered': len(test_cases) > 0
+        })
+
+    # Calculate summary
+    total = len(coverage_data)
+    covered = sum(1 for r in coverage_data if r['covered'])
+    coverage_percent = (covered / total * 100) if total > 0 else 0
+
+    return {
+        'total_requirements': total,
+        'covered_requirements': covered,
+        'coverage_percent': round(coverage_percent, 2),
+        'details': coverage_data
+    }
+
+# Usage
+coverage = get_test_coverage("proj_abc123")
+print(f"Test Coverage: {coverage['coverage_percent']}%")
+```
+
+---
+
+## Traceability Links
+
+### Build Complete Trace
+
+```python
+def build_trace_chain(item_id: str, direction: str = "both"):
+    """Build a complete trace chain for an item."""
+
+    item = client.items.get(item_id)
+
+    trace = {
+        'item': {
+            'id': item.id,
+            'key': item.key,
+            'title': item.title,
+            'type': item.type
+        },
+        'upstream': [],   # Items this traces from
+        'downstream': []  # Items this traces to
+    }
+
+    if direction in ("both", "upstream"):
+        # Get items this item traces from
+        upstream_links = client.links.list(target_id=item.id)
+        for link in upstream_links.data:
+            source = client.items.get(link.source_id)
+            trace['upstream'].append({
+                'id': source.id,
+                'key': source.key,
+                'title': source.title,
+                'type': source.type,
+                'link_type': link.link_type
+            })
+
+    if direction in ("both", "downstream"):
+        # Get items this item traces to
+        downstream_links = client.links.list(source_id=item.id)
+        for link in downstream_links.data:
+            target = client.items.get(link.target_id)
+            trace['downstream'].append({
+                'id': target.id,
+                'key': target.key,
+                'title': target.title,
+                'type': target.type,
+                'link_type': link.link_type
+            })
+
+    return trace
+
+# Usage
+trace = build_trace_chain("item_req_001")
+print(f"Item: {trace['item']['key']}")
+print(f"Upstream: {len(trace['upstream'])} items")
+print(f"Downstream: {len(trace['downstream'])} items")
+```
+
+### Find Orphan Items
+
+```python
+def find_orphan_requirements(project_id: str):
+    """Find requirements with no linked test cases."""
+
+    orphans = []
+
+    for req in client.items.iterate(project_id=project_id, type="requirement"):
+        links = client.links.list(
+            source_id=req.id,
+            link_type="verified_by"
+        )
+
+        if len(links.data) == 0:
+            orphans.append({
+                'key': req.key,
+                'title': req.title,
+                'priority': req.priority,
+                'status': req.status
+            })
+
+    # Sort by priority
+    priority_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
+    orphans.sort(key=lambda x: priority_order.get(x['priority'], 4))
+
+    return orphans
+
+# Usage
+orphans = find_orphan_requirements("proj_abc123")
+print(f"Found {len(orphans)} orphan requirements:")
+for orphan in orphans:
+    print(f"  [{orphan['priority']}] {orphan['key']}: {orphan['title']}")
+```
+
+### Impact Analysis
+
+```python
+def analyze_impact(item_id: str, max_depth: int = 3):
+    """Analyze the impact of changing an item."""
+
+    visited = set()
+    impact = []
+
+    def traverse(current_id: str, depth: int, path: list):
+        if depth > max_depth or current_id in visited:
+            return
+
+        visited.add(current_id)
+        item = client.items.get(current_id)
+
+        impact.append({
+            'id': item.id,
+            'key': item.key,
+            'title': item.title,
+            'type': item.type,
+            'depth': depth,
+            'path': ' -> '.join(path + [item.key])
+        })
+
+        # Get downstream items
+        links = client.links.list(source_id=current_id)
+        for link in links.data:
+            traverse(link.target_id, depth + 1, path + [item.key])
+
+    traverse(item_id, 0, [])
+
+    return {
+        'root_item': item_id,
+        'total_impacted': len(impact) - 1,  # Exclude root
+        'max_depth_reached': max(i['depth'] for i in impact),
+        'impacted_items': impact[1:]  # Exclude root
+    }
+
+# Usage
+impact = analyze_impact("item_req_001")
+print(f"Impact Analysis: {impact['total_impacted']} items affected")
+```
+
+---
+
+## Bulk Operations
+
+### Batch Update Items
+
+```python
+def batch_update_priority(project_id: str, item_ids: list[str], new_priority: str):
+    """Update priority for multiple items."""
+
+    results = client.items.bulk_update(
+        item_ids=item_ids,
+        updates={'priority': new_priority}
+    )
+
+    print(f"Updated {results.success_count} items")
+    if results.failures:
+        print(f"Failed: {len(results.failures)}")
+        for failure in results.failures:
+            print(f"  {failure.item_id}: {failure.error}")
+
+    return results
+```
+
+### Process Items in Parallel
+
+```python
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def process_items_parallel(project_id: str, processor_func, max_workers: int = 5):
+    """Process items in parallel using thread pool."""
+
+    items = list(client.items.iterate(project_id=project_id))
+    results = []
+    errors = []
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_item = {
+            executor.submit(processor_func, item): item
+            for item in items
+        }
+
+        for future in as_completed(future_to_item):
+            item = future_to_item[future]
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as e:
+                errors.append({'item': item.key, 'error': str(e)})
+
+    return results, errors
+
+# Usage
+def enrich_item(item):
+    """Add computed fields to item."""
+    links = client.links.list(source_id=item.id)
+    return {
+        'key': item.key,
+        'link_count': len(links.data)
+    }
+
+results, errors = process_items_parallel("proj_abc123", enrich_item)
+```
+
+---
+
+## Search & Queries
+
+### Advanced Search
+
+```python
+def search_items(project_id: str, query: str, filters: dict = None):
+    """Search items with filters."""
+
+    search_params = {
+        'project_id': project_id,
+        'query': query,
+        'limit': 50
+    }
+
+    if filters:
+        if 'type' in filters:
+            search_params['type'] = filters['type']
+        if 'status' in filters:
+            search_params['status'] = filters['status']
+        if 'priority' in filters:
+            search_params['priority'] = filters['priority']
+        if 'assignee' in filters:
+            search_params['assignee_id'] = filters['assignee']
+        if 'created_after' in filters:
+            search_params['created_after'] = filters['created_after']
+
+    results = client.search.items(**search_params)
+
+    return results.data
+
+# Usage
+results = search_items(
+    "proj_abc123",
+    query="authentication",
+    filters={
+        'type': 'requirement',
+        'priority': 'high',
+        'status': 'approved'
+    }
+)
+```
+
+### Find Items by Custom Field
+
+```python
+def find_by_custom_field(project_id: str, field_name: str, field_value):
+    """Find items by custom field value."""
+
+    matching = []
+
+    for item in client.items.iterate(project_id=project_id):
+        if item.custom_fields.get(field_name) == field_value:
+            matching.append(item)
+
+    return matching
+
+# Usage
+sprint_items = find_by_custom_field("proj_abc123", "sprint", "Sprint 5")
+```
+
+---
+
+## Reports
+
+### Generate Traceability Matrix
+
+```python
+def generate_traceability_matrix(project_id: str):
+    """Generate a requirements-to-tests traceability matrix."""
+
+    requirements = list(client.items.iterate(
+        project_id=project_id,
+        type="requirement"
+    ))
+
+    test_cases = list(client.items.iterate(
+        project_id=project_id,
+        type="test_case"
+    ))
+
+    # Build matrix
+    matrix = []
+
+    for req in requirements:
+        row = {
+            'requirement_key': req.key,
+            'requirement_title': req.title,
+            'test_cases': []
+        }
+
+        links = client.links.list(source_id=req.id, link_type="verified_by")
+        linked_tc_ids = {link.target_id for link in links.data}
+
+        for tc in test_cases:
+            row['test_cases'].append({
+                'key': tc.key,
+                'linked': tc.id in linked_tc_ids
+            })
+
+        matrix.append(row)
+
+    return {
+        'requirements': [r.key for r in requirements],
+        'test_cases': [t.key for t in test_cases],
+        'matrix': matrix
+    }
+```
+
+### Export to HTML Report
+
+```python
+def export_html_report(project_id: str, output_path: Path):
+    """Export project status as HTML report."""
+
+    project = client.projects.get(project_id)
+
+    # Gather statistics
+    requirements = list(client.items.iterate(project_id=project_id, type="requirement"))
+    test_cases = list(client.items.iterate(project_id=project_id, type="test_case"))
+
+    status_counts = {}
+    for req in requirements:
+        status_counts[req.status] = status_counts.get(req.status, 0) + 1
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{project.name} - Status Report</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            h1 {{ color: #333; }}
+            table {{ border-collapse: collapse; width: 100%; }}
+            th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            th {{ background-color: #4CAF50; color: white; }}
+        </style>
+    </head>
+    <body>
+        <h1>{project.name}</h1>
+        <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+
+        <h2>Summary</h2>
+        <ul>
+            <li>Requirements: {len(requirements)}</li>
+            <li>Test Cases: {len(test_cases)}</li>
+        </ul>
+
+        <h2>Requirements by Status</h2>
+        <table>
+            <tr><th>Status</th><th>Count</th></tr>
+            {''.join(f'<tr><td>{s}</td><td>{c}</td></tr>' for s, c in status_counts.items())}
+        </table>
+
+        <h2>Requirements List</h2>
+        <table>
+            <tr><th>Key</th><th>Title</th><th>Status</th><th>Priority</th></tr>
+            {''.join(f'<tr><td>{r.key}</td><td>{r.title}</td><td>{r.status}</td><td>{r.priority}</td></tr>' for r in requirements)}
+        </table>
+    </body>
+    </html>
+    """
+
+    with open(output_path, 'w') as f:
+        f.write(html)
+
+    print(f"Report exported to {output_path}")
+```
+
+---
+
+## Automation
+
+### CI/CD Integration
+
+```python
+import sys
+
+def ci_traceability_check(project_id: str):
+    """CI pipeline check for traceability compliance."""
+
+    issues = []
+
+    # Check for orphan requirements
+    for req in client.items.iterate(project_id=project_id, type="requirement"):
+        if req.priority in ('critical', 'high'):
+            links = client.links.list(source_id=req.id, link_type="verified_by")
+            if len(links.data) == 0:
+                issues.append(f"HIGH: {req.key} has no test coverage")
+
+    # Check for failed test cases linked to approved requirements
+    for tc in client.items.iterate(project_id=project_id, type="test_case"):
+        if tc.status == 'failed':
+            links = client.links.list(target_id=tc.id, link_type="verified_by")
+            for link in links.data:
+                req = client.items.get(link.source_id)
+                if req.status == 'approved':
+                    issues.append(f"CRITICAL: {tc.key} failed but {req.key} is approved")
+
+    # Report results
+    if issues:
+        print("Traceability Check FAILED:")
+        for issue in issues:
+            print(f"  - {issue}")
+        sys.exit(1)
+    else:
+        print("Traceability Check PASSED")
+        sys.exit(0)
+
+# Run in CI
+if __name__ == "__main__":
+    ci_traceability_check("proj_abc123")
+```
+
+### Webhook Handler
+
+```python
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+client = TraceRTMClient()
+
+@app.route('/webhook/item-updated', methods=['POST'])
+def handle_item_updated():
+    """Handle item update webhook."""
+
+    payload = request.json
+    item_id = payload['item']['id']
+    changes = payload['changes']
+
+    # If requirement status changed to approved
+    if payload['item']['type'] == 'requirement':
+        if 'status' in changes and changes['status']['new'] == 'approved':
+            # Create placeholder test case if none exists
+            links = client.links.list(source_id=item_id, link_type="verified_by")
+            if len(links.data) == 0:
+                item = client.items.get(item_id)
+                tc = client.items.create(
+                    project_id=item.project_id,
+                    type="test_case",
+                    title=f"[TODO] Test: {item.title}",
+                    description="Auto-generated test case placeholder",
+                    priority=item.priority
+                )
+                client.links.create(
+                    source_id=item_id,
+                    target_id=tc.id,
+                    link_type="verified_by"
+                )
+
+    return jsonify({'status': 'processed'})
+```
+
+---
+
+## Related Documentation
+
+- [API Reference](/docs/api-reference/sdks/python/api-reference) - Complete method reference
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Handle errors
+- [Async Usage](/docs/api-reference/sdks/python/async) - Async patterns
+- [Testing](/docs/api-reference/sdks/python/testing) - Testing your code

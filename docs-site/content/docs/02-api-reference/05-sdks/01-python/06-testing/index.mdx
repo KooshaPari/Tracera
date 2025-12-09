@@ -1,32 +1,521 @@
 ---
-title: "Testing"
-description: "Documentation for Testing"
+title: "Testing Overview"
+description: "Overview of testing strategies with the TraceRTM Python SDK"
 ---
 
-# Testing
+# Testing Overview
 
-This page contains documentation for Testing.
+Comprehensive guide to testing applications that use the TraceRTM Python SDK.
 
-## Overview
+## Testing Strategies
 
-This section covers the key aspects of Testing in TraceRTM.
+### Testing Pyramid
 
-## Getting Started
+```
+        /\
+       /  \      E2E Tests
+      /----\     (Real API)
+     /      \
+    /--------\   Integration Tests
+   /          \  (Mocked API)
+  /------------\
+ /              \ Unit Tests
+/________________\ (Mocked Client)
+```
 
-To get started with Testing:
+| Level | Speed | Confidence | When to Use |
+|-------|-------|------------|-------------|
+| Unit | Fast | Low | Business logic |
+| Integration | Medium | Medium | API interaction patterns |
+| E2E | Slow | High | Critical workflows |
 
-- Review the Testing and fundamentals
-- Explore practical examples
-- Check out the API reference
+---
 
-## Key Concepts
+## Quick Start
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Install Test Dependencies
 
-## Next Steps
+```bash
+pip install tracertm[test]
+# or
+pip install pytest pytest-asyncio pytest-mock responses aioresponses
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+### Project Structure
+
+```
+my_project/
+├── src/
+│   └── my_app/
+│       ├── __init__.py
+│       ├── services.py
+│       └── handlers.py
+├── tests/
+│   ├── conftest.py
+│   ├── unit/
+│   │   ├── test_services.py
+│   │   └── test_handlers.py
+│   ├── integration/
+│   │   └── test_api_integration.py
+│   └── e2e/
+│       └── test_workflows.py
+├── pytest.ini
+└── pyproject.toml
+```
+
+### pytest.ini
+
+```ini
+[pytest]
+testpaths = tests
+asyncio_mode = auto
+markers =
+    unit: Unit tests
+    integration: Integration tests
+    e2e: End-to-end tests
+    slow: Slow tests
+```
+
+---
+
+## Unit Testing
+
+### Mock the Client
+
+```python
+# tests/conftest.py
+import pytest
+from unittest.mock import MagicMock, AsyncMock
+from tracertm import TraceRTMClient, AsyncTraceRTMClient
+
+@pytest.fixture
+def mock_client():
+    """Create a mock sync client."""
+    client = MagicMock(spec=TraceRTMClient)
+
+    # Mock projects API
+    client.projects = MagicMock()
+    client.projects.list.return_value = MagicMock(
+        data=[
+            MagicMock(id="proj_1", name="Project 1", key="P1"),
+            MagicMock(id="proj_2", name="Project 2", key="P2")
+        ],
+        total=2,
+        has_more=False
+    )
+
+    # Mock items API
+    client.items = MagicMock()
+
+    return client
+
+@pytest.fixture
+def mock_async_client():
+    """Create a mock async client."""
+    client = AsyncMock(spec=AsyncTraceRTMClient)
+
+    # Mock projects API
+    client.projects = AsyncMock()
+    client.projects.list = AsyncMock(return_value=MagicMock(
+        data=[MagicMock(id="proj_1", name="Project 1")],
+        total=1
+    ))
+
+    # Mock items API
+    client.items = AsyncMock()
+
+    return client
+```
+
+### Test Business Logic
+
+```python
+# tests/unit/test_services.py
+import pytest
+from unittest.mock import MagicMock
+from my_app.services import RequirementService
+
+class TestRequirementService:
+    def test_get_uncovered_requirements(self, mock_client):
+        """Test finding requirements without test coverage."""
+        # Arrange
+        mock_client.reports.coverage.return_value = MagicMock(
+            uncovered_items=[
+                MagicMock(id="item_1", title="Req 1"),
+                MagicMock(id="item_2", title="Req 2")
+            ],
+            coverage_percent=75.0
+        )
+
+        service = RequirementService(mock_client)
+
+        # Act
+        result = service.get_uncovered_requirements("proj_123")
+
+        # Assert
+        assert len(result) == 2
+        assert result[0].title == "Req 1"
+        mock_client.reports.coverage.assert_called_once_with(
+            project_id="proj_123",
+            source_type="requirement",
+            target_type="test_case"
+        )
+
+    def test_auto_assign_requirements(self, mock_client):
+        """Test automatic requirement assignment."""
+        # Arrange
+        unassigned = MagicMock(id="item_1", assignee_id=None, priority="high")
+        mock_client.items.list.return_value = MagicMock(data=[unassigned])
+        mock_client.items.update.return_value = MagicMock(
+            id="item_1",
+            assignee_id="user_123"
+        )
+
+        service = RequirementService(mock_client)
+
+        # Act
+        result = service.auto_assign("proj_123", "user_123")
+
+        # Assert
+        assert len(result) == 1
+        mock_client.items.update.assert_called_with(
+            "item_1",
+            assignee_id="user_123"
+        )
+```
+
+### Test Async Code
+
+```python
+# tests/unit/test_async_services.py
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+
+@pytest.mark.asyncio
+async def test_fetch_project_data(mock_async_client):
+    """Test async data fetching."""
+    # Arrange
+    mock_async_client.projects.get = AsyncMock(
+        return_value=MagicMock(id="proj_1", name="Test Project")
+    )
+    mock_async_client.items.list = AsyncMock(
+        return_value=MagicMock(data=[], total=0)
+    )
+
+    from my_app.services import AsyncProjectService
+    service = AsyncProjectService(mock_async_client)
+
+    # Act
+    result = await service.get_project_summary("proj_1")
+
+    # Assert
+    assert result["project"].name == "Test Project"
+    assert result["item_count"] == 0
+```
+
+---
+
+## Integration Testing
+
+### Mock HTTP Responses
+
+```python
+# tests/integration/test_api_integration.py
+import pytest
+import responses
+from tracertm import TraceRTMClient
+
+@pytest.fixture
+def api_mock():
+    """Setup responses mock for HTTP requests."""
+    with responses.RequestsMock() as rsps:
+        yield rsps
+
+class TestAPIIntegration:
+    @responses.activate
+    def test_list_projects(self):
+        """Test project listing with mocked API."""
+        responses.add(
+            responses.GET,
+            "https://api.tracertm.dev/v1/projects",
+            json={
+                "data": [
+                    {"id": "proj_1", "name": "Project 1", "key": "P1"}
+                ],
+                "total": 1,
+                "limit": 50,
+                "offset": 0,
+                "has_more": False
+            },
+            status=200
+        )
+
+        client = TraceRTMClient(api_key="test_key")
+        projects = client.projects.list()
+
+        assert len(projects.data) == 1
+        assert projects.data[0].name == "Project 1"
+
+    @responses.activate
+    def test_create_item(self):
+        """Test item creation with mocked API."""
+        responses.add(
+            responses.POST,
+            "https://api.tracertm.dev/v1/items",
+            json={
+                "id": "item_new",
+                "project_id": "proj_1",
+                "type": "requirement",
+                "title": "New Requirement",
+                "status": "draft"
+            },
+            status=201
+        )
+
+        client = TraceRTMClient(api_key="test_key")
+        item = client.items.create(
+            project_id="proj_1",
+            type="requirement",
+            title="New Requirement"
+        )
+
+        assert item.id == "item_new"
+        assert item.status == "draft"
+
+    @responses.activate
+    def test_error_handling(self):
+        """Test error handling with mocked API."""
+        responses.add(
+            responses.GET,
+            "https://api.tracertm.dev/v1/items/nonexistent",
+            json={
+                "error": {
+                    "code": "not_found",
+                    "message": "Item not found"
+                }
+            },
+            status=404
+        )
+
+        client = TraceRTMClient(api_key="test_key")
+
+        from tracertm.exceptions import NotFoundError
+        with pytest.raises(NotFoundError) as exc_info:
+            client.items.get("nonexistent")
+
+        assert "not found" in str(exc_info.value).lower()
+```
+
+### Mock Async HTTP Responses
+
+```python
+# tests/integration/test_async_api.py
+import pytest
+from aioresponses import aioresponses
+from tracertm import AsyncTraceRTMClient
+
+@pytest.fixture
+def async_api_mock():
+    with aioresponses() as m:
+        yield m
+
+@pytest.mark.asyncio
+async def test_async_list_projects(async_api_mock):
+    """Test async project listing."""
+    async_api_mock.get(
+        "https://api.tracertm.dev/v1/projects",
+        payload={
+            "data": [{"id": "proj_1", "name": "Project 1"}],
+            "total": 1,
+            "limit": 50,
+            "offset": 0,
+            "has_more": False
+        }
+    )
+
+    async with AsyncTraceRTMClient(api_key="test_key") as client:
+        projects = await client.projects.list()
+        assert len(projects.data) == 1
+
+@pytest.mark.asyncio
+async def test_concurrent_requests(async_api_mock):
+    """Test concurrent request handling."""
+    import asyncio
+
+    for i in range(5):
+        async_api_mock.get(
+            f"https://api.tracertm.dev/v1/items/item_{i}",
+            payload={"id": f"item_{i}", "title": f"Item {i}"}
+        )
+
+    async with AsyncTraceRTMClient(api_key="test_key") as client:
+        tasks = [
+            client.items.get(f"item_{i}")
+            for i in range(5)
+        ]
+        results = await asyncio.gather(*tasks)
+
+        assert len(results) == 5
+        assert all(r.title.startswith("Item") for r in results)
+```
+
+---
+
+## Test Fixtures
+
+### Factory Fixtures
+
+```python
+# tests/conftest.py
+import pytest
+from datetime import datetime
+from unittest.mock import MagicMock
+
+@pytest.fixture
+def project_factory():
+    """Factory for creating mock projects."""
+    def _create_project(**kwargs):
+        defaults = {
+            "id": "proj_test",
+            "name": "Test Project",
+            "key": "TEST",
+            "description": "Test description",
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }
+        defaults.update(kwargs)
+        return MagicMock(**defaults)
+    return _create_project
+
+@pytest.fixture
+def item_factory():
+    """Factory for creating mock items."""
+    def _create_item(**kwargs):
+        defaults = {
+            "id": "item_test",
+            "project_id": "proj_test",
+            "type": "requirement",
+            "title": "Test Requirement",
+            "description": "Test description",
+            "status": "draft",
+            "priority": "medium",
+            "tags": [],
+            "fields": {},
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }
+        defaults.update(kwargs)
+        return MagicMock(**defaults)
+    return _create_item
+
+@pytest.fixture
+def link_factory():
+    """Factory for creating mock links."""
+    def _create_link(**kwargs):
+        defaults = {
+            "id": "link_test",
+            "source_id": "item_source",
+            "target_id": "item_target",
+            "type": "traces_to",
+            "created_at": datetime.now()
+        }
+        defaults.update(kwargs)
+        return MagicMock(**defaults)
+    return _create_link
+```
+
+### Using Factories
+
+```python
+def test_with_factories(mock_client, project_factory, item_factory):
+    """Test using factory fixtures."""
+    project = project_factory(name="Custom Project", key="CUSTOM")
+    items = [
+        item_factory(id="item_1", title="Req 1", priority="high"),
+        item_factory(id="item_2", title="Req 2", priority="low")
+    ]
+
+    mock_client.projects.get.return_value = project
+    mock_client.items.list.return_value = MagicMock(data=items, total=2)
+
+    # Test logic using mocked data
+    from my_app.services import ProjectService
+    service = ProjectService(mock_client)
+
+    summary = service.get_summary("proj_test")
+    assert summary["project_name"] == "Custom Project"
+    assert summary["item_count"] == 2
+```
+
+---
+
+## Testing Best Practices
+
+### 1. Isolate Tests
+
+```python
+# Good: Each test is independent
+def test_create_item(mock_client):
+    mock_client.items.create.return_value = MagicMock(id="new_item")
+    # ...
+
+def test_update_item(mock_client):
+    mock_client.items.update.return_value = MagicMock(id="updated_item")
+    # ...
+
+# Bad: Tests depend on each other
+created_item = None
+
+def test_create_item(mock_client):
+    global created_item
+    created_item = mock_client.items.create(...)
+
+def test_update_item(mock_client):
+    mock_client.items.update(created_item.id, ...)  # Depends on previous test
+```
+
+### 2. Test Edge Cases
+
+```python
+def test_empty_project(mock_client):
+    """Test handling of project with no items."""
+    mock_client.items.list.return_value = MagicMock(data=[], total=0)
+    # ...
+
+def test_rate_limit_handling(mock_client):
+    """Test rate limit error handling."""
+    from tracertm.exceptions import RateLimitError
+    mock_client.items.list.side_effect = RateLimitError(retry_after=5)
+    # ...
+
+def test_large_result_set(mock_client, item_factory):
+    """Test pagination handling."""
+    items = [item_factory(id=f"item_{i}") for i in range(1000)]
+    # ...
+```
+
+### 3. Use Descriptive Names
+
+```python
+# Good
+def test_get_uncovered_requirements_returns_items_without_test_links():
+    pass
+
+def test_auto_assign_skips_already_assigned_items():
+    pass
+
+# Bad
+def test_get_reqs():
+    pass
+
+def test_assign():
+    pass
+```
+
+---
+
+## Related Documentation
+
+- [Unit Tests](/docs/api-reference/sdks/python/unit-tests) - Detailed unit testing guide
+- [Mocking](/docs/api-reference/sdks/python/mocking) - Mocking strategies
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error handling
