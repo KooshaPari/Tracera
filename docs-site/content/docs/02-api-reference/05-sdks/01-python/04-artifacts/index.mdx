@@ -1,19 +1,514 @@
 ---
-title: "Python SDK Artifacts"
-description: "Manage artifacts with Python."
+title: "Artifacts"
+description: "Upload, download, and manage file artifacts with the TraceRTM Python SDK"
 ---
 
-## Python SDK — Artifacts
-- Recommended for applications already using Python.
-- Handles auth, retries, and serialization for you.
+# Artifacts
 
-## Example
+The TraceRTM Python SDK provides comprehensive support for managing file artifacts such as documents, images, test results, and other files associated with your traceability items.
+
+## Overview
+
+Artifacts are files attached to items or projects in TraceRTM. Common use cases include:
+
+- Attaching specification documents to requirements
+- Uploading test reports to test cases
+- Storing design mockups with user stories
+- Associating code snippets or logs with bugs
+
+---
+
+## Uploading Artifacts
+
+### Single File Upload
+
 ```python
-items = client.artifacts.list(project_id="proj_123", type="feature")
-created = client.artifacts.create(project_id="proj_123", name="Checkout", type="code")
+from tracertm import TraceRTMClient
+from pathlib import Path
+
+client = TraceRTMClient()
+
+# Upload a file to an item
+artifact = client.artifacts.upload(
+    item_id="item_req_001",
+    file_path=Path("./specs/requirements.pdf"),
+    description="Requirements specification document"
+)
+
+print(f"Uploaded: {artifact.filename}")
+print(f"Size: {artifact.size} bytes")
+print(f"URL: {artifact.download_url}")
 ```
 
-## Tips
-- Initialize the client once per process and reuse it.
-- Set timeouts and retries explicitly in production.
-- Capture request IDs from responses for support cases.
+### Upload from Bytes
+
+```python
+# Upload from bytes (e.g., generated content)
+report_content = generate_test_report()
+
+artifact = client.artifacts.upload_bytes(
+    item_id="item_tc_001",
+    content=report_content,
+    filename="test-report.html",
+    content_type="text/html",
+    description="Automated test report"
+)
+```
+
+### Upload from File Object
+
+```python
+# Upload from file-like object
+with open("./results/coverage.json", "rb") as f:
+    artifact = client.artifacts.upload_file(
+        item_id="item_tc_001",
+        file=f,
+        filename="coverage.json",
+        content_type="application/json"
+    )
+```
+
+### Upload to Project
+
+```python
+# Upload artifact at project level (not attached to specific item)
+artifact = client.artifacts.upload(
+    project_id="proj_abc123",
+    file_path=Path("./docs/architecture.png"),
+    description="System architecture diagram"
+)
+```
+
+---
+
+## Downloading Artifacts
+
+### Download to File
+
+```python
+# Download artifact to local file
+client.artifacts.download(
+    artifact_id="art_abc123",
+    destination=Path("./downloads/requirements.pdf")
+)
+```
+
+### Download to Bytes
+
+```python
+# Get artifact content as bytes
+content = client.artifacts.download_bytes(artifact_id="art_abc123")
+
+# Process the content
+process_report(content)
+```
+
+### Stream Large Files
+
+```python
+# Stream large files to avoid memory issues
+with client.artifacts.stream(artifact_id="art_abc123") as stream:
+    with open("./large-file.zip", "wb") as f:
+        for chunk in stream.iter_bytes(chunk_size=8192):
+            f.write(chunk)
+```
+
+### Get Download URL
+
+```python
+# Get a pre-signed download URL
+url = client.artifacts.get_download_url(
+    artifact_id="art_abc123",
+    expires_in=3600  # URL valid for 1 hour
+)
+
+print(f"Download URL: {url}")
+```
+
+---
+
+## Listing Artifacts
+
+### List Item Artifacts
+
+```python
+# List all artifacts for an item
+artifacts = client.artifacts.list(item_id="item_req_001")
+
+for artifact in artifacts.data:
+    print(f"{artifact.filename} ({artifact.size} bytes)")
+    print(f"  Uploaded: {artifact.created_at}")
+    print(f"  Type: {artifact.content_type}")
+```
+
+### List Project Artifacts
+
+```python
+# List all artifacts in a project
+artifacts = client.artifacts.list(project_id="proj_abc123")
+
+# With pagination
+artifacts = client.artifacts.list(
+    project_id="proj_abc123",
+    limit=50,
+    offset=0
+)
+```
+
+### Filter Artifacts
+
+```python
+# Filter by content type
+artifacts = client.artifacts.list(
+    project_id="proj_abc123",
+    content_type="application/pdf"
+)
+
+# Filter by filename pattern
+artifacts = client.artifacts.list(
+    project_id="proj_abc123",
+    filename_contains="report"
+)
+
+# Filter by date range
+from datetime import datetime, timedelta
+
+artifacts = client.artifacts.list(
+    project_id="proj_abc123",
+    created_after=datetime.now() - timedelta(days=7)
+)
+```
+
+### Iterate All Artifacts
+
+```python
+# Iterate through all artifacts (handles pagination)
+for artifact in client.artifacts.iterate(project_id="proj_abc123"):
+    print(f"{artifact.filename}: {artifact.size} bytes")
+```
+
+---
+
+## Managing Artifacts
+
+### Get Artifact Details
+
+```python
+artifact = client.artifacts.get("art_abc123")
+
+print(f"ID: {artifact.id}")
+print(f"Filename: {artifact.filename}")
+print(f"Size: {artifact.size}")
+print(f"Content-Type: {artifact.content_type}")
+print(f"Description: {artifact.description}")
+print(f"Checksum: {artifact.checksum}")
+print(f"Created: {artifact.created_at}")
+print(f"Created By: {artifact.created_by}")
+```
+
+### Update Artifact Metadata
+
+```python
+artifact = client.artifacts.update(
+    artifact_id="art_abc123",
+    description="Updated description",
+    metadata={
+        "version": "2.0",
+        "reviewed": True
+    }
+)
+```
+
+### Delete Artifact
+
+```python
+# Delete single artifact
+client.artifacts.delete("art_abc123")
+
+# Delete multiple artifacts
+client.artifacts.bulk_delete([
+    "art_abc123",
+    "art_def456",
+    "art_ghi789"
+])
+```
+
+### Move Artifact
+
+```python
+# Move artifact to different item
+artifact = client.artifacts.move(
+    artifact_id="art_abc123",
+    target_item_id="item_req_002"
+)
+```
+
+### Copy Artifact
+
+```python
+# Copy artifact to another item
+new_artifact = client.artifacts.copy(
+    artifact_id="art_abc123",
+    target_item_id="item_req_002"
+)
+```
+
+---
+
+## Artifact Versions
+
+### Enable Versioning
+
+```python
+# Upload new version of existing artifact
+artifact = client.artifacts.upload_version(
+    artifact_id="art_abc123",
+    file_path=Path("./specs/requirements-v2.pdf"),
+    version_comment="Updated with new requirements"
+)
+
+print(f"Version: {artifact.version}")
+```
+
+### List Versions
+
+```python
+# Get all versions of an artifact
+versions = client.artifacts.list_versions("art_abc123")
+
+for version in versions.data:
+    print(f"v{version.version}: {version.created_at}")
+    print(f"  Comment: {version.version_comment}")
+    print(f"  Size: {version.size} bytes")
+```
+
+### Download Specific Version
+
+```python
+# Download a specific version
+content = client.artifacts.download_bytes(
+    artifact_id="art_abc123",
+    version=2
+)
+```
+
+### Restore Version
+
+```python
+# Restore a previous version as current
+artifact = client.artifacts.restore_version(
+    artifact_id="art_abc123",
+    version=1
+)
+```
+
+---
+
+## Bulk Operations
+
+### Bulk Upload
+
+```python
+from pathlib import Path
+
+# Upload multiple files at once
+files = [
+    Path("./docs/spec1.pdf"),
+    Path("./docs/spec2.pdf"),
+    Path("./docs/spec3.pdf")
+]
+
+artifacts = client.artifacts.bulk_upload(
+    item_id="item_req_001",
+    file_paths=files,
+    description="Specification documents"
+)
+
+for artifact in artifacts:
+    print(f"Uploaded: {artifact.filename}")
+```
+
+### Bulk Download
+
+```python
+# Download all artifacts for an item
+client.artifacts.bulk_download(
+    item_id="item_req_001",
+    destination=Path("./downloads/")
+)
+
+# Download as ZIP archive
+client.artifacts.download_zip(
+    item_id="item_req_001",
+    destination=Path("./downloads/artifacts.zip")
+)
+```
+
+---
+
+## Content Type Handling
+
+### Supported Content Types
+
+```python
+from tracertm import ContentType
+
+# Common content types
+artifact = client.artifacts.upload(
+    item_id="item_req_001",
+    file_path=Path("./doc.pdf"),
+    content_type=ContentType.PDF
+)
+
+# Available content types
+ContentType.PDF          # application/pdf
+ContentType.DOCX         # application/vnd.openxmlformats-officedocument.wordprocessingml.document
+ContentType.XLSX         # application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+ContentType.PNG          # image/png
+ContentType.JPEG         # image/jpeg
+ContentType.JSON         # application/json
+ContentType.XML          # application/xml
+ContentType.HTML         # text/html
+ContentType.TEXT         # text/plain
+ContentType.ZIP          # application/zip
+```
+
+### Auto-Detection
+
+```python
+# Content type is auto-detected from file extension
+artifact = client.artifacts.upload(
+    item_id="item_req_001",
+    file_path=Path("./image.png")  # Auto-detects image/png
+)
+```
+
+---
+
+## Error Handling
+
+```python
+from tracertm.exceptions import (
+    NotFoundError,
+    ValidationError,
+    FileTooLargeError,
+    UnsupportedContentTypeError,
+    QuotaExceededError
+)
+
+try:
+    artifact = client.artifacts.upload(
+        item_id="item_req_001",
+        file_path=Path("./large-file.zip")
+    )
+except FileTooLargeError as e:
+    print(f"File too large: {e.size} bytes (max: {e.max_size})")
+except UnsupportedContentTypeError as e:
+    print(f"Unsupported type: {e.content_type}")
+except QuotaExceededError as e:
+    print(f"Storage quota exceeded: {e.used}/{e.limit} bytes")
+except NotFoundError:
+    print("Item not found")
+except ValidationError as e:
+    for error in e.errors:
+        print(f"  {error['field']}: {error['message']}")
+```
+
+---
+
+## Async Support
+
+```python
+from tracertm import AsyncTraceRTMClient
+import asyncio
+
+async def upload_artifacts():
+    client = AsyncTraceRTMClient()
+
+    # Async upload
+    artifact = await client.artifacts.upload(
+        item_id="item_req_001",
+        file_path=Path("./spec.pdf")
+    )
+
+    # Async download
+    content = await client.artifacts.download_bytes("art_abc123")
+
+    # Async iteration
+    async for artifact in client.artifacts.iterate(project_id="proj_abc123"):
+        print(artifact.filename)
+
+asyncio.run(upload_artifacts())
+```
+
+### Concurrent Uploads
+
+```python
+import asyncio
+from pathlib import Path
+
+async def upload_all(client, item_id: str, files: list[Path]):
+    tasks = [
+        client.artifacts.upload(item_id=item_id, file_path=f)
+        for f in files
+    ]
+    return await asyncio.gather(*tasks)
+
+# Upload multiple files concurrently
+files = list(Path("./docs").glob("*.pdf"))
+artifacts = asyncio.run(upload_all(client, "item_req_001", files))
+```
+
+---
+
+## Best Practices
+
+### 1. Use Streaming for Large Files
+
+```python
+# Bad - loads entire file into memory
+with open("large-file.zip", "rb") as f:
+    content = f.read()
+    client.artifacts.upload_bytes(item_id=item_id, content=content, ...)
+
+# Good - streams the file
+client.artifacts.upload(item_id=item_id, file_path=Path("large-file.zip"))
+```
+
+### 2. Validate Before Upload
+
+```python
+import os
+from pathlib import Path
+
+def safe_upload(client, item_id: str, file_path: Path):
+    # Check file exists
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    # Check file size
+    max_size = 100 * 1024 * 1024  # 100 MB
+    if file_path.stat().st_size > max_size:
+        raise ValueError(f"File too large: {file_path}")
+
+    return client.artifacts.upload(item_id=item_id, file_path=file_path)
+```
+
+### 3. Use Meaningful Descriptions
+
+```python
+# Good - descriptive
+artifact = client.artifacts.upload(
+    item_id="item_req_001",
+    file_path=Path("./specs/auth-requirements-v2.pdf"),
+    description="Authentication requirements specification v2.0 - includes OAuth 2.0 and SAML"
+)
+```
+
+---
+
+## Related Documentation
+
+- [Items](/docs/api-reference/sdks/python/api-reference) - Item operations
+- [Projects](/docs/api-reference/rest-api/endpoints/projects) - Project operations
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error handling

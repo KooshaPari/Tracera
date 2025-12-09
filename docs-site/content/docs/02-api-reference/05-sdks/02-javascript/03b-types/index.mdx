@@ -1,32 +1,501 @@
 ---
 title: "Types"
-description: "Documentation for Types"
+description: "Complete TypeScript type definitions for the TraceRTM JavaScript SDK"
 ---
 
 # Types
 
-This page contains documentation for Types.
+Complete TypeScript type definitions for the TraceRTM JavaScript SDK.
 
-## Overview
+## Core Types
 
-This section covers the key aspects of Types in TraceRTM.
+### Project
 
-## Getting Started
+```typescript
+interface Project {
+  id: string;
+  name: string;
+  key: string;
+  description?: string;
+  ownerId: string;
+  settings: ProjectSettings;
+  createdAt: string;
+  updatedAt: string;
+}
 
-To get started with Types:
+interface ProjectSettings {
+  defaultItemType?: ItemType;
+  allowedItemTypes?: ItemType[];
+  requireApproval?: boolean;
+  customStatuses?: StatusConfig[];
+  customFields?: FieldConfig[];
+}
+```
 
-- Review the Types and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Item
 
-## Key Concepts
+```typescript
+interface Item {
+  id: string;
+  projectId: string;
+  type: ItemType;
+  title: string;
+  description?: string;
+  status: string;
+  statusCategory: StatusCategory;
+  priority?: Priority;
+  tags: string[];
+  assigneeId?: string;
+  createdBy: string;
+  dueDate?: string;
+  fields: Record<string, unknown>;
+  parentId?: string;
+  links?: Link[];
+  createdAt: string;
+  updatedAt: string;
+}
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Link
 
-## Next Steps
+```typescript
+interface Link {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  type: LinkType;
+  description?: string;
+  createdBy: string;
+  createdAt: string;
+}
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+### User
+
+```typescript
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+type UserRole = "admin" | "member" | "viewer";
+```
+
+---
+
+## Enums and Literals
+
+### ItemType
+
+```typescript
+type ItemType =
+  | "requirement"
+  | "test_case"
+  | "user_story"
+  | "bug"
+  | "task"
+  | "risk"
+  | "decision"
+  | "epic"
+  | "feature";
+```
+
+### LinkType
+
+```typescript
+type LinkType =
+  | "traces_to"
+  | "verified_by"
+  | "implements"
+  | "parent_of"
+  | "relates_to"
+  | "depends_on"
+  | "duplicates"
+  | "blocks"
+  | "derived_from"
+  | "satisfies";
+```
+
+### Priority
+
+```typescript
+type Priority = "critical" | "high" | "medium" | "low";
+```
+
+### StatusCategory
+
+```typescript
+type StatusCategory = "initial" | "in_progress" | "done";
+```
+
+---
+
+## Input Types
+
+### CreateProjectInput
+
+```typescript
+interface CreateProjectInput {
+  name: string;
+  key: string;
+  description?: string;
+  settings?: Partial<ProjectSettings>;
+}
+```
+
+### UpdateProjectInput
+
+```typescript
+interface UpdateProjectInput {
+  name?: string;
+  description?: string;
+  settings?: Partial<ProjectSettings>;
+}
+```
+
+### CreateItemInput
+
+```typescript
+interface CreateItemInput {
+  projectId: string;
+  type: ItemType;
+  title: string;
+  description?: string;
+  priority?: Priority;
+  status?: string;
+  tags?: string[];
+  assigneeId?: string;
+  dueDate?: string;
+  fields?: Record<string, unknown>;
+  parentId?: string;
+}
+```
+
+### UpdateItemInput
+
+```typescript
+interface UpdateItemInput {
+  title?: string;
+  description?: string;
+  priority?: Priority;
+  status?: string;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+  fields?: Record<string, unknown>;
+  tags?: string[];
+  addTags?: string[];
+  removeTags?: string[];
+}
+```
+
+### CreateLinkInput
+
+```typescript
+interface CreateLinkInput {
+  sourceId: string;
+  targetId: string;
+  type: LinkType;
+  description?: string;
+}
+```
+
+---
+
+## Response Types
+
+### PaginatedResponse
+
+```typescript
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+```
+
+### SearchResults
+
+```typescript
+interface SearchResults {
+  items: SearchHit[];
+  total: number;
+  took: number; // milliseconds
+}
+
+interface SearchHit {
+  item: Item;
+  score: number;
+  highlights: Record<string, string[]>;
+}
+```
+
+### CoverageReport
+
+```typescript
+interface CoverageReport {
+  projectId: string;
+  sourceType: ItemType;
+  targetType: ItemType;
+  linkType?: LinkType;
+  totalSources: number;
+  coveredCount: number;
+  uncoveredCount: number;
+  coveragePercent: number;
+  coveredItems: ItemSummary[];
+  uncoveredItems: ItemSummary[];
+  generatedAt: string;
+}
+
+interface ItemSummary {
+  id: string;
+  title: string;
+  type: ItemType;
+  status: string;
+  linkCount?: number;
+}
+```
+
+### TraceabilityMatrix
+
+```typescript
+interface TraceabilityMatrix {
+  projectId: string;
+  sourceTypes: ItemType[];
+  targetTypes: ItemType[];
+  rows: MatrixRow[];
+  summary: MatrixSummary;
+}
+
+interface MatrixRow {
+  source: ItemSummary;
+  targets: MatrixCell[];
+}
+
+interface MatrixCell {
+  target: ItemSummary;
+  links: Link[];
+  linked: boolean;
+}
+
+interface MatrixSummary {
+  totalSources: number;
+  totalTargets: number;
+  totalLinks: number;
+  coveragePercent: number;
+}
+```
+
+### ImpactAnalysis
+
+```typescript
+interface ImpactAnalysis {
+  rootItem: Item;
+  direction: "upstream" | "downstream" | "both";
+  depth: number;
+  impactedItems: ImpactedItem[];
+  totalImpacted: number;
+}
+
+interface ImpactedItem {
+  item: Item;
+  distance: number;
+  path: Link[];
+  direction: "upstream" | "downstream";
+}
+```
+
+---
+
+## Configuration Types
+
+### ClientOptions
+
+```typescript
+interface ClientOptions {
+  apiKey: string;
+  baseUrl?: string;
+  timeout?: number;
+  maxRetries?: number;
+  retryDelay?: number;
+  debug?: boolean;
+  headers?: Record<string, string>;
+}
+```
+
+### ListOptions
+
+```typescript
+interface ListOptions {
+  limit?: number;
+  offset?: number;
+  sort?: string;
+  order?: "asc" | "desc";
+}
+```
+
+### ItemListOptions
+
+```typescript
+interface ItemListOptions extends ListOptions {
+  projectId: string;
+  type?: ItemType | ItemType[];
+  status?: string | string[];
+  statusCategory?: StatusCategory;
+  priority?: Priority | Priority[];
+  tags?: string[];
+  tagsAny?: string[];
+  assigneeId?: string;
+  createdBy?: string;
+  createdAfter?: string;
+  createdBefore?: string;
+  updatedAfter?: string;
+  updatedBefore?: string;
+  search?: string;
+  include?: ("links" | "history" | "comments")[];
+}
+```
+
+---
+
+## Event Types
+
+### WebhookEvent
+
+```typescript
+type WebhookEvent =
+  | "item.created"
+  | "item.updated"
+  | "item.deleted"
+  | "item.status_changed"
+  | "link.created"
+  | "link.deleted"
+  | "project.created"
+  | "project.updated"
+  | "project.deleted";
+```
+
+### Webhook
+
+```typescript
+interface Webhook {
+  id: string;
+  url: string;
+  events: WebhookEvent[];
+  secret?: string;
+  active: boolean;
+  createdAt: string;
+  lastTriggered?: string;
+  lastStatus?: number;
+}
+```
+
+### WebhookPayload
+
+```typescript
+interface WebhookPayload<T = unknown> {
+  id: string;
+  event: WebhookEvent;
+  timestamp: string;
+  data: T;
+}
+```
+
+---
+
+## History Types
+
+### HistoryEntry
+
+```typescript
+interface HistoryEntry {
+  id: string;
+  itemId: string;
+  action: HistoryAction;
+  changes: FieldChange[];
+  userId: string;
+  timestamp: string;
+}
+
+type HistoryAction = "created" | "updated" | "deleted" | "status_changed";
+
+interface FieldChange {
+  field: string;
+  oldValue: unknown;
+  newValue: unknown;
+}
+```
+
+---
+
+## Error Types
+
+```typescript
+interface TraceRTMErrorData {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+  requestId?: string;
+}
+
+interface ValidationErrorDetail {
+  field: string;
+  message: string;
+  code: string;
+}
+```
+
+---
+
+## Type Guards
+
+```typescript
+import {
+  isProject,
+  isItem,
+  isLink,
+  isItemType,
+  isLinkType,
+  isPriority,
+} from "@tracertm/sdk";
+
+// Usage
+if (isItem(data)) {
+  console.log(data.title); // TypeScript knows data is Item
+}
+
+if (isItemType(value)) {
+  // value is ItemType
+}
+```
+
+---
+
+## Generic Types
+
+```typescript
+// For custom fields
+type CustomFields = Record<string, unknown>;
+
+// For API responses
+type ApiResponse<T> = Promise<T>;
+
+// For bulk operations
+type BulkResult<T> = {
+  succeeded: T[];
+  failed: Array<{ input: unknown; error: TraceRTMError }>;
+};
+```
+
+---
+
+## Related Documentation
+
+- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - API overview
+- [Client Methods](/docs/api-reference/sdks/javascript/client-methods) - All methods
+- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - TypeScript setup

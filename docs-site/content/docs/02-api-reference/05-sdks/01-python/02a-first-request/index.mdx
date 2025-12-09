@@ -1,32 +1,266 @@
 ---
 title: "First Request"
-description: "Documentation for First Request"
+description: "Make your first API request with the TraceRTM Python SDK"
 ---
 
 # First Request
 
-This page contains documentation for First Request.
+Learn how to make your first API request with the TraceRTM Python SDK.
 
-## Overview
+## Prerequisites
 
-This section covers the key aspects of First Request in TraceRTM.
+Before you begin, ensure you have:
 
-## Getting Started
+1. **Installed the SDK**: `pip install tracertm`
+2. **API Key**: Get yours from the [TraceRTM Dashboard](https://app.tracertm.dev/settings/api-keys)
 
-To get started with First Request:
+---
 
-- Review the First Request and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Configure Your API Key
 
-## Key Concepts
+### Environment Variable (Recommended)
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_your_api_key_here"
+```
 
-## Next Steps
+The SDK automatically reads from this environment variable.
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+### Direct Configuration
+
+```python
+from tracertm import TraceRTMClient
+
+# Explicit API key
+client = TraceRTMClient(api_key="rtm_live_sk_your_api_key_here")
+```
+
+---
+
+## Your First Request
+
+### List Projects
+
+```python
+from tracertm import TraceRTMClient
+
+# Initialize client (reads TRACERTM_API_KEY from environment)
+client = TraceRTMClient()
+
+# List all projects
+projects = client.projects.list()
+
+for project in projects.data:
+    print(f"{project.name} ({project.key})")
+```
+
+**Expected Output:**
+
+```
+My First Project (PROJ)
+Testing Project (TEST)
+```
+
+---
+
+## Create a Requirement
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create a new requirement
+requirement = client.items.create(
+    project_id="proj_abc123",
+    type="requirement",
+    title="User Authentication",
+    description="Users must be able to log in with email and password",
+    priority="high"
+)
+
+print(f"Created: {requirement.id}")
+print(f"Title: {requirement.title}")
+print(f"Status: {requirement.status}")
+```
+
+**Expected Output:**
+
+```
+Created: item_req_001
+Title: User Authentication
+Status: draft
+```
+
+---
+
+## Fetch an Item
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import NotFoundError
+
+client = TraceRTMClient()
+
+try:
+    item = client.items.get("item_req_001")
+    print(f"Title: {item.title}")
+    print(f"Type: {item.type}")
+    print(f"Status: {item.status}")
+    print(f"Created: {item.created_at}")
+except NotFoundError:
+    print("Item not found")
+```
+
+---
+
+## Create a Test Case
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create a test case
+test_case = client.items.create(
+    project_id="proj_abc123",
+    type="test_case",
+    title="Verify Login Success",
+    description="Test successful login with valid credentials",
+    fields={
+        "preconditions": "User account exists with valid credentials",
+        "steps": [
+            "Navigate to login page",
+            "Enter valid email",
+            "Enter valid password",
+            "Click login button"
+        ],
+        "expected_result": "User is redirected to dashboard"
+    }
+)
+
+print(f"Created test case: {test_case.id}")
+```
+
+---
+
+## Link Items Together
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create a traceability link between requirement and test case
+link = client.links.create(
+    source_id="item_req_001",
+    target_id="item_tc_001",
+    type="verified_by"
+)
+
+print(f"Created link: {link.id}")
+print(f"Type: {link.type}")
+```
+
+---
+
+## List Items with Filtering
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# List all requirements in a project
+requirements = client.items.list(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved",
+    limit=10
+)
+
+print(f"Found {len(requirements.data)} approved requirements:")
+for req in requirements.data:
+    print(f"  - {req.title}")
+```
+
+---
+
+## Complete Example
+
+Here's a complete example that demonstrates the basic workflow:
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import TraceRTMError
+
+def main():
+    # Initialize client
+    client = TraceRTMClient()
+
+    try:
+        # 1. List projects
+        print("Available projects:")
+        projects = client.projects.list()
+        for project in projects.data:
+            print(f"  - {project.name} ({project.key})")
+
+        if not projects.data:
+            print("No projects found. Create one first!")
+            return
+
+        project_id = projects.data[0].id
+
+        # 2. Create a requirement
+        print("\nCreating requirement...")
+        requirement = client.items.create(
+            project_id=project_id,
+            type="requirement",
+            title="Password Reset",
+            description="Users must be able to reset their password via email"
+        )
+        print(f"Created: {requirement.title} ({requirement.id})")
+
+        # 3. Create a test case
+        print("\nCreating test case...")
+        test_case = client.items.create(
+            project_id=project_id,
+            type="test_case",
+            title="Verify Password Reset Email",
+            description="Test that password reset email is sent"
+        )
+        print(f"Created: {test_case.title} ({test_case.id})")
+
+        # 4. Link requirement to test case
+        print("\nCreating traceability link...")
+        link = client.links.create(
+            source_id=requirement.id,
+            target_id=test_case.id,
+            type="verified_by"
+        )
+        print(f"Linked: {requirement.title} -> {test_case.title}")
+
+        # 5. Verify the link
+        print("\nVerifying traceability...")
+        item_with_links = client.items.get(requirement.id, include=["links"])
+        print(f"Requirement has {len(item_with_links.links)} linked item(s)")
+
+        print("\nSuccess! Your first TraceRTM integration is working.")
+
+    except TraceRTMError as e:
+        print(f"Error: {e.code} - {e.message}")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## What's Next?
+
+Now that you've made your first request:
+
+1. **[Authentication](/docs/api-reference/sdks/python/authentication)** - Learn about API keys and OAuth
+2. **[API Reference](/docs/api-reference/sdks/python/api-reference)** - Explore all available methods
+3. **[Examples](/docs/api-reference/sdks/python/examples)** - See real-world use cases
+4. **[Error Handling](/docs/api-reference/sdks/python/error-handling)** - Handle errors gracefully

@@ -1,21 +1,627 @@
 ---
-title: "Go SDK Authentication"
-description: "Authenticate using the Go SDK."
+title: "Authentication"
+description: "Configure authentication for the TraceRTM Go SDK"
 ---
 
-## Go SDK — Authentication
-- Recommended for applications already using Go.
-- Handles auth, retries, and serialization for you.
+# Authentication
 
-## Example
+The TraceRTM Go SDK supports multiple authentication methods with idiomatic Go patterns. This guide covers all available options and best practices.
+
+## Authentication Methods
+
+### API Keys
+
+API keys are the most common authentication method:
+
 ```go
-import tracertm "github.com/tracertm/sdk-go"
-client := tracertm.NewClient(tracertm.Config{APIKey: os.Getenv("TRACE_API_KEY")})
-_, err := client.Health.Check(ctx)
-if err != nil { log.Fatal(err) }
+package main
+
+import (
+    "os"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+    // Or with explicit key
+    client := tracertm.NewClient("rtm_live_sk_...")
+}
 ```
 
-## Tips
-- Initialize the client once per process and reuse it.
-- Set timeouts and retries explicitly in production.
-- Capture request IDs from responses for support cases.
+### Environment Variables
+
+The recommended approach for production:
+
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+```go
+package main
+
+import "github.com/tracertm/tracertm-go"
+
+func main() {
+    // Automatically reads from TRACERTM_API_KEY
+    client, err := tracertm.NewClientFromEnv()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### OAuth 2.0 Tokens
+
+For user-authenticated requests:
+
+```go
+package main
+
+import "github.com/tracertm/tracertm-go"
+
+func main() {
+    client := tracertm.NewClientWithToken("eyJhbGciOi...")
+}
+```
+
+### Custom Authentication
+
+For advanced scenarios with custom token providers:
+
+```go
+package main
+
+import "github.com/tracertm/tracertm-go"
+
+func main() {
+    client := tracertm.NewClient(
+        "",
+        tracertm.WithTokenProvider(func() (string, error) {
+            // Your token retrieval logic
+            return getTokenFromVault()
+        }),
+    )
+}
+```
+
+---
+
+## API Key Types
+
+### Production Keys
+
+```go
+// Production key (prefix: rtm_live_sk_)
+client := tracertm.NewClient("rtm_live_sk_abc123...")
+```
+
+Use for:
+- Production applications
+- Live data access
+- Customer-facing features
+
+### Test Keys
+
+```go
+// Test key (prefix: rtm_test_sk_)
+client := tracertm.NewClient("rtm_test_sk_xyz789...")
+```
+
+Use for:
+- Development and testing
+- CI/CD pipelines
+- Sandbox environment
+
+Test keys:
+- Access sandbox data only
+- Have separate rate limits
+- Cannot affect production data
+
+---
+
+## Scoped Keys
+
+Create keys with limited permissions:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    // Key with read-only access
+    client := tracertm.NewClient("rtm_live_sk_readonly...")
+
+    ctx := context.Background()
+
+    // Reading works
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Writing fails with ForbiddenError
+    _, err = client.Items.Create(ctx, "proj_abc123", &tracertm.CreateItemInput{
+        Type:  "requirement",
+        Title: "Test",
+    })
+
+    var forbiddenErr *tracertm.ForbiddenError
+    if errors.As(err, &forbiddenErr) {
+        fmt.Printf("Insufficient permissions: %s\n", forbiddenErr.RequiredScope)
+    }
+}
+```
+
+### Available Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:projects` | Read project data |
+| `write:projects` | Create/update projects |
+| `delete:projects` | Delete projects |
+| `read:items` | Read items |
+| `write:items` | Create/update items |
+| `delete:items` | Delete items |
+| `read:links` | Read links |
+| `write:links` | Create/delete links |
+| `admin` | Full access |
+
+---
+
+## Token Refresh
+
+### Automatic Refresh (OAuth)
+
+```go
+package main
+
+import (
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClientWithOAuth(&tracertm.OAuthConfig{
+        AccessToken:  "eyJhbGciOi...",
+        RefreshToken: "refresh_token_xyz",
+        ClientID:     "your_client_id",
+        ClientSecret: "your_client_secret",
+        TokenURL:     "https://auth.tracertm.dev/oauth/token",
+        AutoRefresh:  true,
+        OnTokenRefresh: func(newToken string) {
+            // Store new token
+            saveToken(newToken)
+        },
+    })
+}
+```
+
+### Manual Refresh
+
+```go
+package main
+
+import "github.com/tracertm/tracertm-go"
+
+func main() {
+    client := tracertm.NewClientWithToken("initial_token")
+
+    // Update token when needed
+    client.SetAccessToken("new_token")
+}
+```
+
+### Custom Token Provider
+
+```go
+package main
+
+import (
+    "sync"
+    "time"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+type CachingTokenProvider struct {
+    mu        sync.RWMutex
+    token     string
+    expiresAt time.Time
+}
+
+func (p *CachingTokenProvider) GetToken() (string, error) {
+    p.mu.RLock()
+    if time.Now().Before(p.expiresAt) {
+        defer p.mu.RUnlock()
+        return p.token, nil
+    }
+    p.mu.RUnlock()
+
+    // Fetch new token
+    p.mu.Lock()
+    defer p.mu.Unlock()
+
+    token, expiresIn, err := fetchNewToken()
+    if err != nil {
+        return "", err
+    }
+
+    p.token = token
+    p.expiresAt = time.Now().Add(expiresIn)
+    return p.token, nil
+}
+
+func main() {
+    provider := &CachingTokenProvider{}
+
+    client := tracertm.NewClient(
+        "",
+        tracertm.WithTokenProvider(provider.GetToken),
+    )
+}
+```
+
+---
+
+## Secure Storage Options
+
+### Environment Variables
+
+```bash
+# .env file (don't commit to git)
+TRACERTM_API_KEY=rtm_live_sk_...
+```
+
+```go
+import (
+    "os"
+    "github.com/joho/godotenv"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    // Load .env file
+    godotenv.Load()
+
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+}
+```
+
+### AWS Secrets Manager
+
+```go
+package main
+
+import (
+    "context"
+
+    "github.com/aws/aws-sdk-go-v2/config"
+    "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+    "github.com/tracertm/tracertm-go"
+)
+
+func getAPIKey(ctx context.Context) (string, error) {
+    cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
+    if err != nil {
+        return "", err
+    }
+
+    client := secretsmanager.NewFromConfig(cfg)
+
+    result, err := client.GetSecretValue(ctx, &secretsmanager.GetSecretValueInput{
+        SecretId: aws.String("tracertm/api-key"),
+    })
+    if err != nil {
+        return "", err
+    }
+
+    return *result.SecretString, nil
+}
+
+func main() {
+    ctx := context.Background()
+
+    apiKey, err := getAPIKey(ctx)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    client := tracertm.NewClient(apiKey)
+}
+```
+
+### HashiCorp Vault
+
+```go
+package main
+
+import (
+    "github.com/hashicorp/vault/api"
+    "github.com/tracertm/tracertm-go"
+)
+
+func getAPIKey() (string, error) {
+    config := api.DefaultConfig()
+    config.Address = "https://vault.example.com"
+
+    client, err := api.NewClient(config)
+    if err != nil {
+        return "", err
+    }
+
+    secret, err := client.Logical().Read("secret/data/tracertm")
+    if err != nil {
+        return "", err
+    }
+
+    data := secret.Data["data"].(map[string]interface{})
+    return data["api_key"].(string), nil
+}
+
+func main() {
+    apiKey, err := getAPIKey()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    client := tracertm.NewClient(apiKey)
+}
+```
+
+### Google Cloud Secret Manager
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+
+    secretmanager "cloud.google.com/go/secretmanager/apiv1"
+    "cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+    "github.com/tracertm/tracertm-go"
+)
+
+func getAPIKey(ctx context.Context) (string, error) {
+    client, err := secretmanager.NewClient(ctx)
+    if err != nil {
+        return "", err
+    }
+    defer client.Close()
+
+    name := "projects/my-project/secrets/tracertm-api-key/versions/latest"
+
+    result, err := client.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{
+        Name: name,
+    })
+    if err != nil {
+        return "", err
+    }
+
+    return string(result.Payload.Data), nil
+}
+
+func main() {
+    ctx := context.Background()
+
+    apiKey, err := getAPIKey(ctx)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    client := tracertm.NewClient(apiKey)
+}
+```
+
+---
+
+## Multi-Tenant Authentication
+
+For applications serving multiple organizations:
+
+```go
+package main
+
+import (
+    "context"
+    "sync"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+type TenantClientManager struct {
+    mu      sync.RWMutex
+    clients map[string]*tracertm.Client
+}
+
+func NewTenantClientManager() *TenantClientManager {
+    return &TenantClientManager{
+        clients: make(map[string]*tracertm.Client),
+    }
+}
+
+func (m *TenantClientManager) GetClient(ctx context.Context, tenantID string) (*tracertm.Client, error) {
+    m.mu.RLock()
+    if client, ok := m.clients[tenantID]; ok {
+        m.mu.RUnlock()
+        return client, nil
+    }
+    m.mu.RUnlock()
+
+    m.mu.Lock()
+    defer m.mu.Unlock()
+
+    // Double-check after acquiring write lock
+    if client, ok := m.clients[tenantID]; ok {
+        return client, nil
+    }
+
+    apiKey, err := getTenantAPIKey(ctx, tenantID)
+    if err != nil {
+        return nil, err
+    }
+
+    client := tracertm.NewClient(apiKey)
+    m.clients[tenantID] = client
+
+    return client, nil
+}
+
+func main() {
+    manager := NewTenantClientManager()
+
+    ctx := context.Background()
+    client, err := manager.GetClient(ctx, "tenant_a")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    projects, _ := client.Projects.List(ctx, nil)
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Never Hardcode Keys
+
+```go
+// Bad - hardcoded key
+client := tracertm.NewClient("rtm_live_sk_abc123...")
+
+// Good - environment variable
+client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+// Better - automatic environment reading
+client, err := tracertm.NewClientFromEnv()
+```
+
+### 2. Use Scoped Keys
+
+```go
+// Bad - using admin key for read operations
+client := tracertm.NewClient(os.Getenv("TRACERTM_ADMIN_KEY"))
+
+// Good - using read-only key
+client := tracertm.NewClient(os.Getenv("TRACERTM_READONLY_KEY"))
+```
+
+### 3. Handle Authentication Errors
+
+```go
+package main
+
+import (
+    "context"
+    "errors"
+    "log"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        var authErr *tracertm.AuthenticationError
+        var forbiddenErr *tracertm.ForbiddenError
+
+        switch {
+        case errors.As(err, &authErr):
+            log.Printf("Authentication failed: %s", authErr.Message)
+            // Re-authenticate or check API key
+
+        case errors.As(err, &forbiddenErr):
+            log.Printf("Insufficient permissions: %s", forbiddenErr.RequiredScope)
+            // Use a key with appropriate scopes
+
+        default:
+            log.Printf("Error: %v", err)
+        }
+        return
+    }
+
+    // Process projects...
+}
+```
+
+### 4. Use Context for Request Scoping
+
+```go
+func processRequest(ctx context.Context, userID string) error {
+    // Create context with user info for audit logging
+    ctx = tracertm.WithUserID(ctx, userID)
+
+    item, err := client.Items.Create(ctx, projectID, input)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+```
+
+---
+
+## Troubleshooting
+
+### Invalid API Key
+
+```go
+var authErr *tracertm.AuthenticationError
+
+if errors.As(err, &authErr) {
+    fmt.Printf("Error: %s\n", authErr.Message)
+    if hint, ok := authErr.Details["hint"]; ok {
+        fmt.Printf("Hint: %s\n", hint)
+    }
+}
+```
+
+**Solution**: Verify your API key in the dashboard.
+
+### Expired Token
+
+```go
+var authErr *tracertm.AuthenticationError
+
+if errors.As(err, &authErr) && authErr.Code == "TOKEN_EXPIRED" {
+    // Refresh the token
+    newToken, err := refreshOAuthToken()
+    if err != nil {
+        return err
+    }
+    client.SetAccessToken(newToken)
+    // Retry the request
+}
+```
+
+### Missing API Key
+
+```go
+client, err := tracertm.NewClientFromEnv()
+if err != nil {
+    var configErr *tracertm.ConfigurationError
+    if errors.As(err, &configErr) {
+        fmt.Println("Set TRACERTM_API_KEY environment variable")
+    }
+}
+```
+
+---
+
+## Related Documentation
+
+- [API Keys](/docs/api-reference/authentication/api-keys) - Managing API keys
+- [OAuth 2.0](/docs/api-reference/authentication/oauth) - OAuth authentication
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Handle auth errors

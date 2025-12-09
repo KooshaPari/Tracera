@@ -1,19 +1,533 @@
 ---
-title: "JavaScript SDK Workflows"
-description: "Run workflows with JS."
+title: "Workflows"
+description: "Manage item workflows and status transitions with the TraceRTM JavaScript SDK"
 ---
 
-## JavaScript SDK — Workflows
-- Recommended for applications already using JavaScript.
-- Handles auth, retries, and serialization for you.
+# Workflows
 
-## Example
-```javascript
-const run = await client.workflows.trigger({ workflow: 'nightly-sync', projectId: 'proj_123', payload: { env: 'prod' } })
-const status = await client.workflows.status(run.id)
+The TraceRTM JavaScript SDK provides comprehensive workflow management capabilities, allowing you to define, configure, and execute status transitions for your traceability items.
+
+## Overview
+
+Workflows in TraceRTM define:
+
+- **States**: The possible statuses an item can have (e.g., Draft, In Review, Approved)
+- **Transitions**: The allowed movements between states (e.g., Submit for Review, Approve, Reject)
+- **Rules**: Conditions that must be met for transitions (e.g., required fields, approvals)
+- **Actions**: Automated actions triggered by transitions (e.g., notifications, field updates)
+
+---
+
+## Listing Workflows
+
+### Get Project Workflows
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient();
+
+// List all workflows in a project
+const { data: workflows } = await client.workflows.list({
+  projectId: 'proj_abc123'
+});
+
+for (const workflow of workflows) {
+  console.log(`${workflow.name} (${workflow.id})`);
+  console.log(`  Item types: ${workflow.itemTypes.join(', ')}`);
+  console.log(`  States: ${workflow.states.length}`);
+  console.log(`  Transitions: ${workflow.transitions.length}`);
+}
 ```
 
-## Tips
-- Initialize the client once per process and reuse it.
-- Set timeouts and retries explicitly in production.
-- Capture request IDs from responses for support cases.
+### Get Workflow Details
+
+```typescript
+// Get a specific workflow with full details
+const workflow = await client.workflows.get('wf_abc123');
+
+console.log(`Workflow: ${workflow.name}`);
+console.log(`Description: ${workflow.description}`);
+console.log(`Default: ${workflow.isDefault}`);
+
+// List states
+console.log('\nStates:');
+for (const state of workflow.states) {
+  console.log(`  - ${state.name} (${state.id})`);
+  console.log(`    Category: ${state.category}`);  // initial, in_progress, done
+  console.log(`    Color: ${state.color}`);
+}
+
+// List transitions
+console.log('\nTransitions:');
+for (const transition of workflow.transitions) {
+  console.log(`  - ${transition.name}`);
+  console.log(`    From: ${transition.fromState} -> To: ${transition.toState}`);
+}
+```
+
+---
+
+## Working with States
+
+### Get Current State
+
+```typescript
+// Get an item's current workflow state
+const item = await client.items.get('item_req_001');
+
+console.log(`Current status: ${item.status}`);
+console.log(`Status category: ${item.statusCategory}`);
+```
+
+### List Available States
+
+```typescript
+// Get all possible states for an item type
+const states = await client.workflows.listStates({
+  projectId: 'proj_abc123',
+  itemType: 'requirement'
+});
+
+for (const state of states) {
+  console.log(`${state.name}: ${state.description}`);
+}
+```
+
+---
+
+## Transitions
+
+### Get Available Transitions
+
+```typescript
+// Get transitions available for a specific item
+const transitions = await client.items.availableTransitions('item_req_001');
+
+console.log('Available transitions:');
+for (const t of transitions) {
+  console.log(`  - ${t.name} (${t.id})`);
+  console.log(`    To: ${t.toState}`);
+  if (t.requiredFields?.length) {
+    console.log(`    Required: ${t.requiredFields.join(', ')}`);
+  }
+  if (t.requiredPermissions?.length) {
+    console.log(`    Permissions: ${t.requiredPermissions.join(', ')}`);
+  }
+}
+```
+
+### Execute Transition
+
+```typescript
+// Transition an item to a new state
+const item = await client.items.transition('item_req_001', {
+  transition: 'submit_for_review',
+  comment: 'Ready for technical review'
+});
+
+console.log(`New status: ${item.status}`);
+```
+
+### Transition with Fields
+
+```typescript
+// Some transitions require additional fields
+const item = await client.items.transition('item_req_001', {
+  transition: 'approve',
+  comment: 'Approved after technical review',
+  fields: {
+    approvedBy: 'user_123',
+    approvalDate: '2025-01-15',
+    approvalNotes: 'All acceptance criteria met'
+  }
+});
+```
+
+### Transition with Assignee Change
+
+```typescript
+// Transition and reassign in one operation
+const item = await client.items.transition('item_req_001', {
+  transition: 'assign_to_development',
+  assigneeId: 'user_dev_001',
+  comment: 'Assigned to development team'
+});
+```
+
+---
+
+## Bulk Transitions
+
+### Transition Multiple Items
+
+```typescript
+// Transition multiple items at once
+const results = await client.items.bulkTransition({
+  itemIds: ['item_req_001', 'item_req_002', 'item_req_003'],
+  transition: 'approve',
+  comment: 'Bulk approval after sprint review'
+});
+
+for (const result of results) {
+  if (result.success) {
+    console.log(`${result.itemId}: Transitioned to ${result.newStatus}`);
+  } else {
+    console.log(`${result.itemId}: Failed - ${result.error}`);
+  }
+}
+```
+
+### Conditional Bulk Transition
+
+```typescript
+// Transition items matching criteria
+const results = await client.items.bulkTransitionByFilter({
+  projectId: 'proj_abc123',
+  filter: {
+    type: 'requirement',
+    status: 'in_review',
+    assigneeId: 'user_123'
+  },
+  transition: 'approve',
+  comment: 'Approved all reviewed requirements'
+});
+
+console.log(`Transitioned ${results.successCount} items`);
+console.log(`Failed: ${results.failureCount}`);
+```
+
+---
+
+## Workflow Configuration
+
+### Create Workflow
+
+```typescript
+// Create a new workflow
+const workflow = await client.workflows.create({
+  projectId: 'proj_abc123',
+  name: 'Agile Requirement Workflow',
+  description: 'Workflow for agile requirement management',
+  itemTypes: ['requirement', 'user_story'],
+  states: [
+    { name: 'Backlog', category: 'initial', color: '#gray' },
+    { name: 'In Analysis', category: 'in_progress', color: '#blue' },
+    { name: 'Ready for Dev', category: 'in_progress', color: '#yellow' },
+    { name: 'Done', category: 'done', color: '#green' }
+  ],
+  transitions: [
+    { name: 'Start Analysis', fromState: 'Backlog', toState: 'In Analysis' },
+    { name: 'Analysis Complete', fromState: 'In Analysis', toState: 'Ready for Dev' },
+    { name: 'Mark Done', fromState: 'Ready for Dev', toState: 'Done' },
+    { name: 'Reopen', fromState: 'Done', toState: 'Backlog' }
+  ]
+});
+
+console.log(`Created workflow: ${workflow.id}`);
+```
+
+### Update Workflow
+
+```typescript
+// Update workflow configuration
+const workflow = await client.workflows.update('wf_abc123', {
+  name: 'Updated Workflow Name',
+  description: 'Updated description'
+});
+```
+
+### Add State to Workflow
+
+```typescript
+// Add a new state
+const state = await client.workflows.addState('wf_abc123', {
+  name: 'On Hold',
+  category: 'in_progress',
+  color: '#orange',
+  description: 'Item is temporarily on hold'
+});
+```
+
+### Add Transition
+
+```typescript
+// Add a new transition
+const transition = await client.workflows.addTransition('wf_abc123', {
+  name: 'Put On Hold',
+  fromState: 'In Analysis',
+  toState: 'On Hold',
+  requiredFields: ['holdReason'],
+  screenId: 'screen_hold_form'  // Optional: custom form
+});
+```
+
+---
+
+## Transition Rules
+
+### Define Validation Rules
+
+```typescript
+// Add validation rule to transition
+await client.workflows.addTransitionRule('wf_abc123', 'trans_approve', {
+  ruleType: 'field_required',
+  config: {
+    fields: ['acceptanceCriteria', 'priority']
+  }
+});
+
+// Add permission rule
+await client.workflows.addTransitionRule('wf_abc123', 'trans_approve', {
+  ruleType: 'permission_required',
+  config: {
+    permissions: ['approve_requirements']
+  }
+});
+
+// Add condition rule
+await client.workflows.addTransitionRule('wf_abc123', 'trans_approve', {
+  ruleType: 'condition',
+  config: {
+    expression: 'item.linkedTestCases > 0',
+    errorMessage: 'Item must have at least one linked test case'
+  }
+});
+```
+
+### Check Transition Validity
+
+```typescript
+// Check if a transition is valid for an item
+const validity = await client.items.checkTransition('item_req_001', 'approve');
+
+if (validity.valid) {
+  console.log('Transition is allowed');
+} else {
+  console.log('Transition blocked:');
+  for (const reason of validity.blockingReasons) {
+    console.log(`  - ${reason}`);
+  }
+}
+```
+
+---
+
+## Workflow Actions
+
+### Configure Post-Transition Actions
+
+```typescript
+// Add notification action
+await client.workflows.addTransitionAction('wf_abc123', 'trans_approve', {
+  actionType: 'notify',
+  config: {
+    recipients: ['item.createdBy', 'item.assignee'],
+    template: 'item_approved'
+  }
+});
+
+// Add field update action
+await client.workflows.addTransitionAction('wf_abc123', 'trans_approve', {
+  actionType: 'update_field',
+  config: {
+    field: 'approvedDate',
+    value: '{{now}}'
+  }
+});
+
+// Add webhook action
+await client.workflows.addTransitionAction('wf_abc123', 'trans_approve', {
+  actionType: 'webhook',
+  config: {
+    url: 'https://api.example.com/webhooks/approval',
+    method: 'POST'
+  }
+});
+```
+
+---
+
+## Workflow History
+
+### Get Transition History
+
+```typescript
+// Get transition history for an item
+const { data: history } = await client.items.transitionHistory('item_req_001');
+
+for (const entry of history) {
+  console.log(`${entry.timestamp}: ${entry.fromStatus} -> ${entry.toStatus}`);
+  console.log(`  Transition: ${entry.transitionName}`);
+  console.log(`  By: ${entry.userName}`);
+  if (entry.comment) {
+    console.log(`  Comment: ${entry.comment}`);
+  }
+}
+```
+
+### Get Workflow Metrics
+
+```typescript
+// Get workflow performance metrics
+const metrics = await client.workflows.getMetrics('wf_abc123', {
+  startDate: '2025-01-01',
+  endDate: '2025-01-31'
+});
+
+console.log(`Items processed: ${metrics.totalItems}`);
+console.log('Avg time in each state:');
+for (const [state, duration] of Object.entries(metrics.avgTimeInState)) {
+  console.log(`  ${state}: ${duration} hours`);
+}
+
+console.log('\nTransition counts:');
+for (const [transition, count] of Object.entries(metrics.transitionCounts)) {
+  console.log(`  ${transition}: ${count}`);
+}
+```
+
+---
+
+## Workflow Templates
+
+### Use Built-in Templates
+
+```typescript
+// List available workflow templates
+const templates = await client.workflows.listTemplates();
+
+for (const template of templates) {
+  console.log(`${template.name}: ${template.description}`);
+}
+
+// Create workflow from template
+const workflow = await client.workflows.createFromTemplate({
+  projectId: 'proj_abc123',
+  templateId: 'template_agile_requirements',
+  name: 'My Requirements Workflow'
+});
+```
+
+### Export Workflow as Template
+
+```typescript
+// Export existing workflow as template
+const template = await client.workflows.exportTemplate('wf_abc123', {
+  name: 'My Custom Template',
+  description: 'Custom workflow for our process'
+});
+```
+
+### Import Workflow
+
+```typescript
+// Import workflow from JSON definition
+const workflowDef = {
+  name: 'Imported Workflow',
+  states: [...],
+  transitions: [...]
+};
+
+const workflow = await client.workflows.importDefinition({
+  projectId: 'proj_abc123',
+  definition: workflowDef
+});
+```
+
+---
+
+## Error Handling
+
+```typescript
+import {
+  TransitionNotAllowedError,
+  WorkflowValidationError,
+  RequiredFieldMissingError
+} from '@tracertm/sdk/errors';
+
+try {
+  const item = await client.items.transition('item_req_001', {
+    transition: 'approve'
+  });
+} catch (error) {
+  if (error instanceof TransitionNotAllowedError) {
+    console.log(`Transition not allowed: ${error.message}`);
+    console.log(`Current status: ${error.currentStatus}`);
+    console.log(`Blocking reasons: ${error.blockingReasons.join(', ')}`);
+  } else if (error instanceof RequiredFieldMissingError) {
+    console.log(`Missing required fields: ${error.missingFields.join(', ')}`);
+  } else if (error instanceof WorkflowValidationError) {
+    console.log(`Workflow validation failed: ${error.message}`);
+  }
+}
+```
+
+---
+
+## React Integration
+
+### Transition Button Component
+
+```tsx
+import { useState } from 'react';
+import { TraceRTMClient, Item, Transition } from '@tracertm/sdk';
+
+interface TransitionButtonProps {
+  item: Item;
+  onTransition: (item: Item) => void;
+}
+
+function TransitionButton({ item, onTransition }: TransitionButtonProps) {
+  const [transitions, setTransitions] = useState<Transition[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  useEffect(() => {
+    client.items.availableTransitions(item.id)
+      .then(setTransitions);
+  }, [item.id]);
+
+  const handleTransition = async (transition: string) => {
+    setLoading(true);
+    try {
+      const updated = await client.items.transition(item.id, { transition });
+      onTransition(updated);
+      setShowMenu(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (transitions.length === 0) {
+    return <span>No transitions available</span>;
+  }
+
+  return (
+    <div className="relative">
+      <button onClick={() => setShowMenu(!showMenu)} disabled={loading}>
+        Change Status
+      </button>
+      {showMenu && (
+        <ul className="absolute mt-1 bg-white border rounded shadow">
+          {transitions.map(t => (
+            <li key={t.id}>
+              <button onClick={() => handleTransition(t.name)}>
+                {t.name} → {t.toState}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Related Documentation
+
+- [Items](/docs/api-reference/sdks/javascript/api-reference) - Item operations
+- [REST API - Workflows](/docs/api-reference/rest-api/endpoints/workflows) - Workflow endpoints
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error handling

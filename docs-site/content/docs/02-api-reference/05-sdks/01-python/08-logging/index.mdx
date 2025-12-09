@@ -1,32 +1,610 @@
 ---
 title: "Logging"
-description: "Documentation for Logging"
+description: "Configure logging and debugging for the TraceRTM Python SDK"
 ---
 
 # Logging
 
-This page contains documentation for Logging.
+The TraceRTM Python SDK provides comprehensive logging capabilities to help you debug issues, monitor API interactions, and understand client behavior.
 
-## Overview
+## Quick Start
 
-This section covers the key aspects of Logging in TraceRTM.
+### Enable Debug Logging
 
-## Getting Started
+```python
+from tracertm import TraceRTMClient
+import logging
 
-To get started with Logging:
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
 
-- Review the Logging and fundamentals
-- Explore practical examples
-- Check out the API reference
+# Or configure just the TraceRTM logger
+logging.getLogger("tracertm").setLevel(logging.DEBUG)
 
-## Key Concepts
+client = TraceRTMClient()
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Client Debug Mode
 
-## Next Steps
+```python
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    debug=True  # Enables verbose logging
+)
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+---
+
+## Logging Configuration
+
+### Basic Configuration
+
+```python
+import logging
+
+# Configure basic logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+# Get the TraceRTM logger
+logger = logging.getLogger("tracertm")
+logger.setLevel(logging.DEBUG)
+```
+
+### Log to File
+
+```python
+import logging
+
+# Create handler for file output
+file_handler = logging.FileHandler("tracertm.log")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+))
+
+# Add handler to TraceRTM logger
+logger = logging.getLogger("tracertm")
+logger.addHandler(file_handler)
+```
+
+### Multiple Handlers
+
+```python
+import logging
+import sys
+
+# TraceRTM logger
+logger = logging.getLogger("tracertm")
+logger.setLevel(logging.DEBUG)
+
+# Console handler (INFO and above)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(
+    "%(levelname)s: %(message)s"
+))
+
+# File handler (all levels)
+file_handler = logging.FileHandler("tracertm_debug.log")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+))
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+```
+
+---
+
+## Log Levels
+
+### Available Levels
+
+| Level | Value | Description |
+|-------|-------|-------------|
+| `DEBUG` | 10 | Detailed information for debugging |
+| `INFO` | 20 | General operational information |
+| `WARNING` | 30 | Potential issues that don't stop execution |
+| `ERROR` | 40 | Errors that affect specific operations |
+| `CRITICAL` | 50 | Severe errors affecting the application |
+
+### What Each Level Logs
+
+**DEBUG:**
+- HTTP request/response details
+- Request headers and body
+- Response headers and body
+- Retry attempts
+- Connection pool status
+
+**INFO:**
+- API calls made
+- Authentication events
+- Rate limit warnings
+- Operation summaries
+
+**WARNING:**
+- Rate limit approaching
+- Retry attempts
+- Deprecated feature usage
+- Configuration issues
+
+**ERROR:**
+- API errors
+- Authentication failures
+- Network errors
+- Validation errors
+
+**CRITICAL:**
+- Configuration errors preventing operation
+- Unrecoverable errors
+
+---
+
+## Logger Hierarchy
+
+The SDK uses a hierarchical logger structure:
+
+```
+tracertm
+├── tracertm.client      # Client operations
+├── tracertm.http        # HTTP requests/responses
+├── tracertm.auth        # Authentication
+├── tracertm.retry       # Retry logic
+└── tracertm.resources   # Resource operations
+    ├── tracertm.resources.projects
+    ├── tracertm.resources.items
+    └── tracertm.resources.links
+```
+
+### Configure Specific Loggers
+
+```python
+import logging
+
+# Only log HTTP details
+logging.getLogger("tracertm.http").setLevel(logging.DEBUG)
+
+# Suppress retry logging
+logging.getLogger("tracertm.retry").setLevel(logging.WARNING)
+
+# Log all item operations
+logging.getLogger("tracertm.resources.items").setLevel(logging.DEBUG)
+```
+
+---
+
+## Request/Response Logging
+
+### Enable HTTP Logging
+
+```python
+import logging
+
+# Enable HTTP-level logging
+logging.getLogger("tracertm.http").setLevel(logging.DEBUG)
+
+client = TraceRTMClient()
+
+# Logs will show:
+# DEBUG:tracertm.http:POST https://api.tracertm.dev/v1/items
+# DEBUG:tracertm.http:Request headers: {...}
+# DEBUG:tracertm.http:Request body: {...}
+# DEBUG:tracertm.http:Response status: 201
+# DEBUG:tracertm.http:Response body: {...}
+```
+
+### Custom Request Logger
+
+```python
+from tracertm import TraceRTMClient
+import logging
+
+class RequestLogger(logging.Handler):
+    """Custom handler to log API requests."""
+
+    def __init__(self):
+        super().__init__()
+        self.requests = []
+
+    def emit(self, record):
+        if record.name == "tracertm.http":
+            self.requests.append({
+                "time": record.created,
+                "message": record.getMessage(),
+                "level": record.levelname
+            })
+
+# Attach custom handler
+request_logger = RequestLogger()
+logging.getLogger("tracertm.http").addHandler(request_logger)
+
+client = TraceRTMClient()
+client.projects.list()
+
+# Access logged requests
+for req in request_logger.requests:
+    print(req)
+```
+
+### Redact Sensitive Data
+
+```python
+import logging
+import re
+
+class RedactingFilter(logging.Filter):
+    """Filter to redact sensitive data from logs."""
+
+    PATTERNS = [
+        (r'api_key["\']?\s*[:=]\s*["\']?[\w-]+', 'api_key=***REDACTED***'),
+        (r'Authorization:\s*Bearer\s+[\w.-]+', 'Authorization: Bearer ***REDACTED***'),
+        (r'rtm_(live|test)_sk_\w+', '***API_KEY_REDACTED***'),
+    ]
+
+    def filter(self, record):
+        message = record.getMessage()
+        for pattern, replacement in self.PATTERNS:
+            message = re.sub(pattern, replacement, message, flags=re.IGNORECASE)
+        record.msg = message
+        record.args = ()
+        return True
+
+# Apply filter
+logger = logging.getLogger("tracertm")
+logger.addFilter(RedactingFilter())
+```
+
+---
+
+## Structured Logging
+
+### Using structlog
+
+```python
+import structlog
+from tracertm import TraceRTMClient
+
+# Configure structlog
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer()
+    ],
+    wrapper_class=structlog.stdlib.BoundLogger,
+    context_class=dict,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+)
+
+# Create structured logger
+logger = structlog.get_logger("tracertm")
+
+# Log with context
+def process_items(project_id: str):
+    log = logger.bind(project_id=project_id)
+
+    client = TraceRTMClient()
+    items = client.items.list(project_id=project_id)
+
+    log.info("items_listed", count=len(items.data))
+
+    for item in items.data:
+        log.debug("processing_item", item_id=item.id, title=item.title)
+```
+
+### JSON Logging
+
+```python
+import logging
+import json
+from datetime import datetime
+
+class JSONFormatter(logging.Formatter):
+    """Format logs as JSON."""
+
+    def format(self, record):
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+
+        # Add exception info if present
+        if record.exc_info:
+            log_entry["exception"] = self.formatException(record.exc_info)
+
+        # Add extra fields
+        for key, value in record.__dict__.items():
+            if key not in ["msg", "args", "exc_info", "levelname", "name",
+                          "pathname", "lineno", "funcName", "created",
+                          "msecs", "relativeCreated", "thread", "threadName",
+                          "processName", "process", "message", "stack_info"]:
+                log_entry[key] = value
+
+        return json.dumps(log_entry)
+
+# Apply JSON formatter
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+
+logger = logging.getLogger("tracertm")
+logger.addHandler(handler)
+```
+
+---
+
+## Integration with Logging Services
+
+### DataDog
+
+```python
+import logging
+from ddtrace import patch_all, tracer
+
+# Patch all supported libraries
+patch_all()
+
+# Configure logging for DataDog
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] '
+           '[dd.trace_id=%(dd.trace_id)s dd.span_id=%(dd.span_id)s] '
+           '- %(message)s'
+)
+
+from tracertm import TraceRTMClient
+
+@tracer.wrap()
+def get_project_data(project_id: str):
+    client = TraceRTMClient()
+    return client.projects.get(project_id)
+```
+
+### Sentry
+
+```python
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+# Configure Sentry
+sentry_logging = LoggingIntegration(
+    level=logging.INFO,        # Capture INFO and above as breadcrumbs
+    event_level=logging.ERROR  # Send errors as events
+)
+
+sentry_sdk.init(
+    dsn="your-sentry-dsn",
+    integrations=[sentry_logging],
+    traces_sample_rate=1.0
+)
+
+from tracertm import TraceRTMClient
+from tracertm.exceptions import TraceRTMError
+
+client = TraceRTMClient()
+
+try:
+    item = client.items.get("item_nonexistent")
+except TraceRTMError as e:
+    # Automatically captured by Sentry
+    sentry_sdk.capture_exception(e)
+```
+
+### AWS CloudWatch
+
+```python
+import logging
+import watchtower
+
+# Configure CloudWatch handler
+cloudwatch_handler = watchtower.CloudWatchLogHandler(
+    log_group="tracertm-logs",
+    stream_name="api-client"
+)
+
+logger = logging.getLogger("tracertm")
+logger.addHandler(cloudwatch_handler)
+```
+
+---
+
+## Debugging Tips
+
+### Enable Full Debug Output
+
+```python
+import logging
+import sys
+
+# Configure root logger for maximum verbosity
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s",
+    stream=sys.stdout
+)
+
+# Enable all TraceRTM loggers
+for logger_name in ["tracertm", "tracertm.http", "tracertm.auth", "tracertm.retry"]:
+    logging.getLogger(logger_name).setLevel(logging.DEBUG)
+
+# Also enable httpx logging if using async client
+logging.getLogger("httpx").setLevel(logging.DEBUG)
+```
+
+### Debug Specific Issues
+
+**Authentication Issues:**
+```python
+logging.getLogger("tracertm.auth").setLevel(logging.DEBUG)
+```
+
+**Rate Limiting:**
+```python
+logging.getLogger("tracertm.retry").setLevel(logging.DEBUG)
+```
+
+**Network Issues:**
+```python
+logging.getLogger("tracertm.http").setLevel(logging.DEBUG)
+logging.getLogger("httpx").setLevel(logging.DEBUG)
+```
+
+### Request/Response Inspection
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(debug=True)
+
+# Make request
+try:
+    item = client.items.get("item_123")
+except Exception as e:
+    # Access last request/response for debugging
+    print(f"Last request: {client.last_request}")
+    print(f"Last response: {client.last_response}")
+    raise
+```
+
+---
+
+## Performance Logging
+
+### Log Request Timing
+
+```python
+import logging
+import time
+from functools import wraps
+
+def log_timing(func):
+    """Decorator to log function execution time."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = logging.getLogger("tracertm.timing")
+        start = time.perf_counter()
+        try:
+            result = func(*args, **kwargs)
+            elapsed = time.perf_counter() - start
+            logger.info(f"{func.__name__} completed in {elapsed:.3f}s")
+            return result
+        except Exception as e:
+            elapsed = time.perf_counter() - start
+            logger.error(f"{func.__name__} failed after {elapsed:.3f}s: {e}")
+            raise
+    return wrapper
+
+# Usage
+@log_timing
+def fetch_project_data(project_id: str):
+    client = TraceRTMClient()
+    return client.projects.get(project_id)
+```
+
+### Aggregate Metrics
+
+```python
+import logging
+from collections import defaultdict
+import statistics
+
+class MetricsHandler(logging.Handler):
+    """Collect timing metrics from logs."""
+
+    def __init__(self):
+        super().__init__()
+        self.timings = defaultdict(list)
+
+    def emit(self, record):
+        if hasattr(record, "duration"):
+            self.timings[record.operation].append(record.duration)
+
+    def get_stats(self):
+        stats = {}
+        for op, times in self.timings.items():
+            stats[op] = {
+                "count": len(times),
+                "mean": statistics.mean(times),
+                "median": statistics.median(times),
+                "min": min(times),
+                "max": max(times)
+            }
+        return stats
+
+# Setup metrics collection
+metrics_handler = MetricsHandler()
+logging.getLogger("tracertm.timing").addHandler(metrics_handler)
+
+# After running operations
+print(metrics_handler.get_stats())
+```
+
+---
+
+## Best Practices
+
+### 1. Use Appropriate Log Levels
+
+```python
+# DEBUG - Detailed diagnostic information
+logger.debug(f"Processing item {item.id}")
+
+# INFO - General operational messages
+logger.info(f"Created {len(items)} items")
+
+# WARNING - Potential issues
+logger.warning(f"Rate limit at 80%, slowing down")
+
+# ERROR - Errors that affect operations
+logger.error(f"Failed to create item: {e}")
+
+# CRITICAL - Application-breaking errors
+logger.critical(f"Cannot connect to API: {e}")
+```
+
+### 2. Include Context in Logs
+
+```python
+logger.info(
+    "Item created",
+    extra={
+        "item_id": item.id,
+        "project_id": project_id,
+        "request_id": response.headers.get("X-Request-ID")
+    }
+)
+```
+
+### 3. Don't Log Sensitive Data
+
+```python
+# Bad - logs API key
+logger.debug(f"Connecting with key: {api_key}")
+
+# Good - redact sensitive data
+logger.debug(f"Connecting with key: {api_key[:10]}...")
+```
+
+### 4. Use Logger Hierarchy
+
+```python
+# Configure parent logger, affects all children
+logging.getLogger("tracertm").setLevel(logging.INFO)
+
+# Override specific loggers as needed
+logging.getLogger("tracertm.http").setLevel(logging.DEBUG)
+```
+
+---
+
+## Related Documentation
+
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Handle and log errors
+- [Testing](/docs/api-reference/sdks/python/testing) - Test logging behavior
+- [Async Overview](/docs/api-reference/sdks/python/async) - Async client logging
