@@ -224,15 +224,16 @@ def db_with_sample_data(sync_db_session):
 # ============================================================
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def async_test_db_engine():
-    """Create async test database engine with SQLite."""
+    """Create async test database engine with SQLite - function scoped for isolation."""
     db_url = "sqlite+aiosqlite:///:memory:"
 
     engine = create_async_engine(
         db_url,
         echo=False,
         future=True,
+        connect_args={"check_same_thread": False},
     )
 
     # Create all tables
@@ -253,6 +254,7 @@ async def db_session(async_test_db_engine):
     Create an async test database session for async tests.
 
     This fixture provides a clean async session for each test.
+    Scope is function-level to ensure complete isolation between tests.
     """
     async_session_maker = async_sessionmaker(
         async_test_db_engine,

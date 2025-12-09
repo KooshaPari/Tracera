@@ -199,6 +199,7 @@ class TestGraphAppDataLoading:
         # Setup query side effect to return different queries
         mock_session.query.side_effect = [mock_item_query, mock_link_query]
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = GraphApp()
         app.db = mock_db
@@ -251,6 +252,7 @@ class TestGraphAppDataLoading:
 
         mock_session.query.side_effect = [mock_item_query, mock_link_query]
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = GraphApp()
         app.db = mock_db
@@ -330,6 +332,7 @@ class TestGraphAppRendering:
         mock_query.filter.return_value.first.side_effect = [mock_item1, mock_item2, mock_link]
         mock_session.query.return_value = mock_query
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app.render_graph()
 

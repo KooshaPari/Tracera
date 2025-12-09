@@ -173,6 +173,7 @@ class TestBrowserAppTreeNavigation:
         mock_query.filter.return_value.order_by.return_value.all.return_value = [mock_item1, mock_item2]
         mock_session.query.return_value = mock_query
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         mock_tree = MagicMock()
         mock_root = MagicMock()
@@ -304,6 +305,7 @@ class TestBrowserAppItemSelection:
         mock_query.filter.return_value.first.return_value = mock_item
         mock_session.query.return_value = mock_query
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         mock_detail_widget = MagicMock()
 
@@ -337,6 +339,7 @@ class TestBrowserAppItemSelection:
         mock_query.filter.return_value.first.return_value = None
         mock_session.query.return_value = mock_query
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = BrowserApp()
         app.db = mock_db
