@@ -1,20 +1,370 @@
 ---
-title: "Python SDK Authentication"
-description: "Authenticate with the Python SDK."
+title: "Authentication"
+description: "Configure authentication for the TraceRTM Python SDK"
 ---
 
-## Python SDK — Authentication
-- Recommended for applications already using Python.
-- Handles auth, retries, and serialization for you.
+# Authentication
 
-## Example
+The TraceRTM Python SDK supports multiple authentication methods. This guide covers all available options and best practices for secure authentication.
+
+## Authentication Methods
+
+### API Keys
+
+API keys are the most common authentication method:
+
 ```python
-from tracertm import Client
-client = Client(api_key="${TRACE_API_KEY}")
-client.health.check()
+from tracertm import TraceRTMClient
+
+# Direct API key
+client = TraceRTMClient(api_key="rtm_live_sk_...")
 ```
 
-## Tips
-- Initialize the client once per process and reuse it.
-- Set timeouts and retries explicitly in production.
-- Capture request IDs from responses for support cases.
+### Environment Variables
+
+The recommended approach for production:
+
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+```python
+from tracertm import TraceRTMClient
+
+# Automatically reads from TRACERTM_API_KEY
+client = TraceRTMClient()
+```
+
+### OAuth 2.0 Tokens
+
+For user-authenticated requests:
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(access_token="eyJhbGciOi...")
+```
+
+### Custom Authentication
+
+For advanced scenarios:
+
+```python
+from tracertm import TraceRTMClient
+
+def get_token():
+    # Your token retrieval logic
+    return "dynamic_token"
+
+client = TraceRTMClient(token_provider=get_token)
+```
+
+---
+
+## API Key Types
+
+### Production Keys
+
+```python
+# Production key (prefix: rtm_live_sk_)
+client = TraceRTMClient(api_key="rtm_live_sk_abc123...")
+```
+
+Use for:
+- Production applications
+- Live data access
+- Customer-facing features
+
+### Test Keys
+
+```python
+# Test key (prefix: rtm_test_sk_)
+client = TraceRTMClient(api_key="rtm_test_sk_xyz789...")
+```
+
+Use for:
+- Development and testing
+- CI/CD pipelines
+- Sandbox environment
+
+Test keys:
+- Access sandbox data only
+- Have separate rate limits
+- Cannot affect production data
+
+---
+
+## Scoped Keys
+
+Create keys with limited permissions:
+
+```python
+# Key with read-only access
+client = TraceRTMClient(api_key="rtm_live_sk_readonly...")
+
+# Will raise ForbiddenError
+try:
+    client.items.create(...)
+except ForbiddenError as e:
+    print(f"Insufficient permissions: {e.required_scope}")
+```
+
+### Available Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:projects` | Read project data |
+| `write:projects` | Create/update projects |
+| `delete:projects` | Delete projects |
+| `read:items` | Read items |
+| `write:items` | Create/update items |
+| `delete:items` | Delete items |
+| `read:links` | Read links |
+| `write:links` | Create/delete links |
+| `admin` | Full access |
+
+---
+
+## Token Refresh
+
+### Automatic Refresh (OAuth)
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(
+    access_token="eyJhbGciOi...",
+    refresh_token="refresh_token_xyz",
+    token_endpoint="https://auth.tracertm.dev/oauth/token",
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    auto_refresh=True
+)
+
+# Tokens are automatically refreshed when expired
+```
+
+### Manual Refresh
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(access_token="initial_token")
+
+# Update token when needed
+client.set_access_token("new_token")
+```
+
+### Refresh Callback
+
+```python
+from tracertm import TraceRTMClient
+
+def on_token_refresh(new_token: str):
+    # Store new token in your database/cache
+    save_token(new_token)
+
+client = TraceRTMClient(
+    access_token="eyJhbGciOi...",
+    refresh_token="refresh_token_xyz",
+    on_token_refresh=on_token_refresh
+)
+```
+
+---
+
+## Multi-Tenant Authentication
+
+For applications serving multiple organizations:
+
+```python
+from tracertm import TraceRTMClient
+
+class TenantClient:
+    def __init__(self, tenant_id: str):
+        self.tenant_id = tenant_id
+        self._client = None
+
+    def get_client(self) -> TraceRTMClient:
+        if self._client is None:
+            api_key = self._get_tenant_api_key(self.tenant_id)
+            self._client = TraceRTMClient(api_key=api_key)
+        return self._client
+
+    def _get_tenant_api_key(self, tenant_id: str) -> str:
+        # Retrieve from secure storage
+        return get_key_from_vault(tenant_id)
+
+# Usage
+tenant_a = TenantClient("tenant_a")
+projects = tenant_a.get_client().projects.list()
+```
+
+---
+
+## Best Practices
+
+### 1. Never Hardcode Keys
+
+```python
+# Bad - hardcoded key
+client = TraceRTMClient(api_key="rtm_live_sk_abc123...")
+
+# Good - environment variable
+import os
+client = TraceRTMClient(api_key=os.environ["TRACERTM_API_KEY"])
+
+# Better - automatic environment reading
+client = TraceRTMClient()
+```
+
+### 2. Use Scoped Keys
+
+```python
+# Bad - using admin key for read operations
+client = TraceRTMClient(api_key="rtm_live_sk_admin...")
+
+# Good - using read-only key
+client = TraceRTMClient(api_key="rtm_live_sk_readonly...")
+```
+
+### 3. Rotate Keys Regularly
+
+```python
+from tracertm import TraceRTMClient
+from datetime import datetime
+
+def get_current_api_key():
+    # Retrieve from secrets manager with automatic rotation
+    return secrets_manager.get_secret("tracertm_api_key")
+
+client = TraceRTMClient(api_key=get_current_api_key())
+```
+
+### 4. Handle Authentication Errors
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import AuthenticationError, ForbiddenError
+
+try:
+    client = TraceRTMClient()
+    projects = client.projects.list()
+except AuthenticationError as e:
+    print(f"Authentication failed: {e.message}")
+    # Re-authenticate or refresh token
+except ForbiddenError as e:
+    print(f"Insufficient permissions: {e.required_scope}")
+    # Use a key with appropriate scopes
+```
+
+---
+
+## Secure Storage Options
+
+### Environment Variables
+
+```bash
+# .env file (don't commit to git)
+TRACERTM_API_KEY=rtm_live_sk_...
+```
+
+### AWS Secrets Manager
+
+```python
+import boto3
+from tracertm import TraceRTMClient
+
+def get_api_key():
+    client = boto3.client('secretsmanager')
+    response = client.get_secret_value(SecretId='tracertm/api-key')
+    return response['SecretString']
+
+client = TraceRTMClient(api_key=get_api_key())
+```
+
+### HashiCorp Vault
+
+```python
+import hvac
+from tracertm import TraceRTMClient
+
+def get_api_key():
+    vault = hvac.Client(url='https://vault.example.com')
+    secret = vault.secrets.kv.v2.read_secret_version(path='tracertm')
+    return secret['data']['data']['api_key']
+
+client = TraceRTMClient(api_key=get_api_key())
+```
+
+### Azure Key Vault
+
+```python
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+from tracertm import TraceRTMClient
+
+def get_api_key():
+    credential = DefaultAzureCredential()
+    vault = SecretClient(
+        vault_url="https://your-vault.vault.azure.net",
+        credential=credential
+    )
+    return vault.get_secret("tracertm-api-key").value
+
+client = TraceRTMClient(api_key=get_api_key())
+```
+
+---
+
+## Troubleshooting
+
+### Invalid API Key
+
+```python
+from tracertm.exceptions import AuthenticationError
+
+try:
+    client = TraceRTMClient(api_key="invalid_key")
+    client.projects.list()
+except AuthenticationError as e:
+    print(f"Error: {e.message}")
+    print(f"Hint: {e.details.get('hint')}")
+```
+
+**Solution**: Verify your API key in the dashboard.
+
+### Expired Token
+
+```python
+from tracertm.exceptions import AuthenticationError
+
+try:
+    client = TraceRTMClient(access_token="expired_token")
+    client.projects.list()
+except AuthenticationError as e:
+    if e.code == "TOKEN_EXPIRED":
+        # Refresh the token
+        new_token = refresh_oauth_token()
+        client.set_access_token(new_token)
+```
+
+### Missing API Key
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import ConfigurationError
+
+try:
+    client = TraceRTMClient()  # No key in env
+except ConfigurationError as e:
+    print("Set TRACERTM_API_KEY environment variable")
+```
+
+---
+
+## Related Documentation
+
+- [API Keys](/docs/api-reference/authentication/api-keys) - Managing API keys
+- [OAuth 2.0](/docs/api-reference/authentication/oauth) - OAuth authentication
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Handle auth errors

@@ -1,46 +1,431 @@
 ---
-title: "JavaScript SDK"
-description: "Use the JavaScript/TypeScript SDK to manage TraceRTM from Node or browser apps"
+title: "JavaScript/TypeScript SDK"
+description: "Official JavaScript SDK for TraceRTM - full TypeScript support for Node.js and browsers"
 ---
 
-# JavaScript SDK
+# JavaScript/TypeScript SDK
 
-The JavaScript SDK provides typed access to TraceRTM, handling auth, retries, and request shaping for Node and browser environments.
+The official JavaScript SDK for TraceRTM provides full TypeScript support, works in Node.js and browsers, and includes automatic retry logic, pagination handling, and comprehensive error types.
 
-## Overview
-
-- Install via npm/yarn/pnpm.
-- Works in Node; for browsers, use scoped public tokens.
-- Supports artifacts, relationships, workflows, search, and webhooks.
-
-## Getting Started
+## Installation
 
 ```bash
-npm install @tracertm/js
+npm install @tracertm/sdk
 ```
 
-```ts
-import { createClient } from '@tracertm/js'
+Or with other package managers:
 
-const client = createClient({ apiKey: process.env.TRACE_API_KEY })
+```bash
+yarn add @tracertm/sdk
+pnpm add @tracertm/sdk
+```
 
-async function demo() {
-  const features = await client.artifacts.list({ projectId: 'proj_123', type: 'feature' })
-  const code = await client.artifacts.create({ projectId: 'proj_123', type: 'code', name: 'checkout-api' })
-  await client.relationships.create({ fromId: code.id, toId: features[0].id, type: 'implements' })
+## Quick Start
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+// Initialize the client
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY
+});
+
+// List all projects
+const projects = await client.projects.list();
+projects.data.forEach(project => {
+  console.log(`${project.key}: ${project.name}`);
+});
+
+// Create an item
+const item = await client.items.create({
+  projectId: 'proj_abc123',
+  type: 'requirement',
+  title: 'User Authentication',
+  description: 'Implement secure user authentication',
+  priority: 'high'
+});
+console.log(`Created: ${item.key}`);
+```
+
+---
+
+## Features
+
+### Full TypeScript Support
+
+Complete type definitions with IntelliSense support:
+
+```typescript
+import { TraceRTMClient, Item, CreateItemInput, ItemType } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: '...' });
+
+// Type-safe input
+const input: CreateItemInput = {
+  projectId: 'proj_abc123',
+  type: ItemType.Requirement,  // Enum support
+  title: 'User Authentication',
+  priority: 'high'
+};
+
+// Type-safe response
+const item: Item = await client.items.create(input);
+
+// IDE autocomplete works
+console.log(item.id);
+console.log(item.title);
+console.log(item.status);
+```
+
+### Node.js and Browser Support
+
+```typescript
+// Node.js
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY
+});
+
+// Browser (use scoped public token)
+const client = new TraceRTMClient({
+  apiKey: 'rtm_pub_pk_...',  // Public key for browsers
+  baseUrl: 'https://api.tracertm.dev/v1'
+});
+```
+
+### Automatic Pagination
+
+```typescript
+// Async iteration through all items
+for await (const item of client.items.iterate({ projectId: 'proj_abc123' })) {
+  console.log(item.title);
+}
+
+// Or fetch pages manually
+let page = await client.items.list({ projectId: 'proj_abc123', limit: 50 });
+while (page.hasNext) {
+  page.data.forEach(item => process(item));
+  page = await page.nextPage();
 }
 ```
 
-## Common tasks
+### Built-in Retry Logic
 
-- List/create/update artifacts with filters.
-- Create relationships (`implements`, `tests`, `deploys_to`, etc.).
-- Trigger workflows and check run status.
-- Search across artifacts with text and filters.
+```typescript
+const client = new TraceRTMClient({
+  apiKey: '...',
+  maxRetries: 3,
+  retryDelay: 1000,  // ms
+  retryOn: [429, 500, 502, 503, 504]
+});
+```
 
-## Next Steps
+---
 
-- [Installation](/docs/api-reference/sdks/javascript/01-installation/)
-- [Quickstart](/docs/api-reference/sdks/javascript/02-quickstart/)
-- [API Reference](/docs/api-reference/sdks/javascript/03-api-reference/)
-- [Examples](/docs/api-reference/sdks/javascript/04-examples/)
+## Configuration
+
+### Client Options
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({
+  // Authentication
+  apiKey: 'rtm_live_sk_...',
+
+  // Base URL (default: production)
+  baseUrl: 'https://api.tracertm.dev/v1',
+
+  // Timeouts (milliseconds)
+  timeout: 30000,
+
+  // Retry configuration
+  maxRetries: 3,
+  retryDelay: 1000,
+
+  // Rate limit handling
+  rateLimitStrategy: 'retry',  // 'retry' | 'throw' | 'queue'
+
+  // Debug mode
+  debug: false
+});
+```
+
+### Environment Variables
+
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+```typescript
+// Reads from environment automatically
+const client = new TraceRTMClient();
+```
+
+---
+
+## Resources
+
+### Projects
+
+```typescript
+// List projects
+const projects = await client.projects.list();
+
+// Create project
+const project = await client.projects.create({
+  name: 'My Project',
+  key: 'PROJ',
+  description: 'Project description'
+});
+
+// Get project
+const project = await client.projects.get('proj_abc123');
+
+// Update project
+const updated = await client.projects.update('proj_abc123', {
+  name: 'Updated Name'
+});
+
+// Delete project
+await client.projects.delete('proj_abc123');
+```
+
+### Items
+
+```typescript
+// List items with filters
+const items = await client.items.list({
+  projectId: 'proj_abc123',
+  type: 'requirement',
+  status: 'approved',
+  limit: 50
+});
+
+// Create item
+const item = await client.items.create({
+  projectId: 'proj_abc123',
+  type: 'requirement',
+  title: 'User Authentication',
+  description: 'Implement secure login',
+  priority: 'high',
+  customFields: { storyPoints: 5 }
+});
+
+// Get item
+const item = await client.items.get('item_req_001');
+
+// Update item
+const updated = await client.items.update('item_req_001', {
+  title: 'Updated Title',
+  priority: 'critical'
+});
+
+// Transition item status
+const transitioned = await client.items.transition('item_req_001', {
+  transition: 'approve',
+  comment: 'Approved by tech lead'
+});
+
+// Delete item
+await client.items.delete('item_req_001');
+```
+
+### Links
+
+```typescript
+// List links
+const links = await client.links.list({ projectId: 'proj_abc123' });
+
+// Create link
+const link = await client.links.create({
+  sourceId: 'item_req_001',
+  targetId: 'item_tc_001',
+  linkType: 'verified_by'
+});
+
+// Bulk create links
+const links = await client.links.bulkCreate([
+  { sourceId: 'item_req_001', targetId: 'item_tc_001', linkType: 'verified_by' },
+  { sourceId: 'item_req_001', targetId: 'item_tc_002', linkType: 'verified_by' }
+]);
+
+// Delete link
+await client.links.delete('link_abc123');
+```
+
+### Workflows
+
+```typescript
+// List workflows
+const workflows = await client.workflows.list({ projectId: 'proj_abc123' });
+
+// Get workflow with states and transitions
+const workflow = await client.workflows.get('wf_abc123');
+
+// Get available transitions for an item
+const transitions = await client.items.availableTransitions('item_req_001');
+```
+
+---
+
+## Error Handling
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+import {
+  TraceRTMError,
+  AuthenticationError,
+  NotFoundError,
+  ValidationError,
+  RateLimitError,
+  ConflictError,
+  ServerError
+} from '@tracertm/sdk/errors';
+
+const client = new TraceRTMClient({ apiKey: '...' });
+
+try {
+  const item = await client.items.get('item_nonexistent');
+} catch (error) {
+  if (error instanceof NotFoundError) {
+    console.log(`Item not found: ${error.resourceId}`);
+    console.log(`Request ID: ${error.requestId}`);
+
+  } else if (error instanceof ValidationError) {
+    console.log('Validation failed:');
+    error.errors.forEach(err => {
+      console.log(`  - ${err.field}: ${err.message}`);
+    });
+
+  } else if (error instanceof RateLimitError) {
+    console.log(`Rate limited. Retry after ${error.retryAfter}s`);
+
+  } else if (error instanceof AuthenticationError) {
+    console.log(`Authentication failed: ${error.message}`);
+
+  } else if (error instanceof ServerError) {
+    console.log(`Server error: ${error.message}`);
+    console.log(`Request ID for support: ${error.requestId}`);
+
+  } else if (error instanceof TraceRTMError) {
+    console.log(`API error: ${error.code} - ${error.message}`);
+  }
+}
+```
+
+---
+
+## Async Patterns
+
+### Promise.all for Concurrent Requests
+
+```typescript
+// Fetch multiple items concurrently
+const [item1, item2, item3] = await Promise.all([
+  client.items.get('item_1'),
+  client.items.get('item_2'),
+  client.items.get('item_3')
+]);
+```
+
+### Async Iteration
+
+```typescript
+// Process all items with for-await-of
+for await (const item of client.items.iterate({ projectId: 'proj_abc123' })) {
+  await processItem(item);
+}
+```
+
+### Batch Processing
+
+```typescript
+// Process items in batches
+async function processBatch(projectId: string, batchSize = 100) {
+  const batch: Item[] = [];
+
+  for await (const item of client.items.iterate({ projectId })) {
+    batch.push(item);
+
+    if (batch.length >= batchSize) {
+      await processBatchItems(batch);
+      batch.length = 0;
+    }
+  }
+
+  // Process remaining items
+  if (batch.length > 0) {
+    await processBatchItems(batch);
+  }
+}
+```
+
+---
+
+## Browser Usage
+
+### Setup
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+// Use public key for browser clients
+const client = new TraceRTMClient({
+  apiKey: 'rtm_pub_pk_...'  // Public key (read-only)
+});
+```
+
+### CORS Considerations
+
+The TraceRTM API supports CORS for browser requests. Public keys have limited scopes suitable for browser use.
+
+### React Example
+
+```tsx
+import { useEffect, useState } from 'react';
+import { TraceRTMClient, Item } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({
+  apiKey: process.env.NEXT_PUBLIC_TRACERTM_KEY
+});
+
+function ItemList({ projectId }: { projectId: string }) {
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    client.items.list({ projectId })
+      .then(response => setItems(response.data))
+      .finally(() => setLoading(false));
+  }, [projectId]);
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={item.id}>{item.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## Requirements
+
+- **Node.js**: 18+
+- **Browsers**: Modern browsers (ES2020+)
+- **TypeScript**: 4.7+ (optional)
+
+---
+
+## Related Documentation
+
+- [Installation](/docs/api-reference/sdks/javascript/installation) - Detailed installation
+- [Quick Start](/docs/api-reference/sdks/javascript/quickstart) - Get started quickly
+- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - TypeScript guide
+- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - Method reference
+- [Examples](/docs/api-reference/sdks/javascript/examples) - Code examples
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error handling

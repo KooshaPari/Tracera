@@ -189,7 +189,7 @@ All test counts are present and specific. No ambiguity.
 3. **Example provided:**
    ```bash
    # From AGENT_QUICK_START.md:
-   pytest tests/integration-full/test_*.py -v
+   pytest tests/integration/test_*.py -v
    pytest --cov=src/tracertm/services/X --cov-report=term-with-missing
    ```
 
@@ -209,9 +209,9 @@ All test counts are present and specific. No ambiguity.
 - Status: BLOCKING (agents can't start tests without fixtures)
 
 **Issue 2: Missing Test Template Details**
-- References `tests/integration-full/TEMPLATE.py` frequently
+- References `tests/integration/TEMPLATE.py` frequently
 - Template file existence not verified in review
-- References `tests/integration-full/conftest.py` but not shown
+- References `tests/integration/conftest.py` but not shown
 - Status: POTENTIALLY BLOCKING
 
 **Issue 3: Agent Onboarding Path Unclear**
@@ -222,8 +222,8 @@ All test counts are present and specific. No ambiguity.
 **Verification Needed:**
 ```bash
 # These need to exist:
-ls tests/integration-full/TEMPLATE.py
-ls tests/integration-full/conftest.py
+ls tests/integration/TEMPLATE.py
+ls tests/integration/conftest.py
 ```
 
 ### Success Criteria Clarity: EXCELLENT ✅
@@ -334,7 +334,7 @@ Clear, verifiable, actionable.
 ### High-Priority Issues (May Block Execution)
 
 **Issue #4: Test Template/Fixtures Not Included - SEVERITY: HIGH**
-- **Problem:** Documents reference `tests/integration-full/TEMPLATE.py` and `conftest.py` 60+ times but files not provided in review
+- **Problem:** Documents reference `tests/integration/TEMPLATE.py` and `conftest.py` 60+ times but files not provided in review
 - **Impact:** Agents cannot start tests on Day 1 without these templates
 - **Status:** BLOCKING if files don't exist
 - **Fix:** Verify files exist or create them immediately
@@ -432,8 +432,8 @@ Clear, verifiable, actionable.
 ### Before Agents Start (CRITICAL)
 
 1. **Fix WP Count:** Update all headers from "32 work packages" to "25 work packages"
-2. **Verify Test Template:** Confirm `tests/integration-full/TEMPLATE.py` exists and is correct
-3. **Verify Fixtures:** Confirm `tests/integration-full/conftest.py` exists with necessary SQLite setup
+2. **Verify Test Template:** Confirm `tests/integration/TEMPLATE.py` exists and is correct
+3. **Verify Fixtures:** Confirm `tests/integration/conftest.py` exists with necessary SQLite setup
 4. **Timeline Clarity:** Choose 8 weeks OR 10 weeks and remove ambiguity
 5. **Hours Clarification:** Justify 800 hours vs 618 hours, or correct to 618 hours
 
@@ -506,8 +506,8 @@ Effort: 618 hours development + ~200 hours meetings/overhead = ~800 hours total
 Before distributing to agents, lead should verify:
 
 - [ ] All 10 core documents are accessible at `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/`
-- [ ] Test template file exists: `tests/integration-full/TEMPLATE.py`
-- [ ] Fixtures file exists: `tests/integration-full/conftest.py`
+- [ ] Test template file exists: `tests/integration/TEMPLATE.py`
+- [ ] Fixtures file exists: `tests/integration/conftest.py`
 - [ ] Database can be initialized (SQLite)
 - [ ] Pytest can run: `pytest --version` returns 9.0.0+
 - [ ] Coverage tool works: `coverage --version` returns 7.11.3+

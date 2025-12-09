@@ -36,7 +36,7 @@ Status: [X] Not Started [ ] In Progress [ ] Complete
 Implement comprehensive integration tests for `query_service.py` with real database (no mocks) achieving >80% coverage.
 
 ### Scope
-**Create:** `tests/integration-full/test_query_service.py`
+**Create:** `tests/integration/test_query_service.py`
 
 **Coverage Target:** 80+ tests covering:
 - Basic CRUD operations (10 tests)
@@ -47,9 +47,9 @@ Implement comprehensive integration tests for `query_service.py` with real datab
 - Performance edge cases (10 tests)
 
 ### Acceptance Criteria
-- [ ] File created: `tests/integration-full/test_query_service.py`
+- [ ] File created: `tests/integration/test_query_service.py`
 - [ ] 80+ test functions (test_* methods)
-- [ ] All tests passing: `pytest tests/integration-full/test_query_service.py -v`
+- [ ] All tests passing: `pytest tests/integration/test_query_service.py -v`
 - [ ] Coverage >80%: Query service module fully covered
 - [ ] No mocks for service layer (real database)
 - [ ] Database cleanup/teardown working
@@ -57,7 +57,7 @@ Implement comprehensive integration tests for `query_service.py` with real datab
 - [ ] PR created with description
 
 ### Prerequisites
-- [ ] Agent understands fixture setup (see `tests/integration-full/conftest.py`)
+- [ ] Agent understands fixture setup (see `tests/integration/conftest.py`)
 - [ ] Agent can run pytest locally
 - [ ] Agent familiar with query_service.py API
 - [ ] Database SQLite available
@@ -66,8 +66,8 @@ Implement comprehensive integration tests for `query_service.py` with real datab
 ```
 - src/tracertm/services/query_service.py (TARGET)
 - src/tracertm/schemas/item.py (Data schemas)
-- tests/integration-full/conftest.py (Fixtures)
-- tests/integration-full/TEMPLATE.py (Example structure)
+- tests/integration/conftest.py (Fixtures)
+- tests/integration/TEMPLATE.py (Example structure)
 ```
 
 ### Test Structure
@@ -201,31 +201,31 @@ def test_query_timeout(self): ...
 ### Running Tests During Development
 ```bash
 # Run all tests in file
-pytest tests/integration-full/test_query_service.py -v
+pytest tests/integration/test_query_service.py -v
 
 # Run specific test class
-pytest tests/integration-full/test_query_service.py::TestQueryServiceBasicOperations -v
+pytest tests/integration/test_query_service.py::TestQueryServiceBasicOperations -v
 
 # Run with coverage
-pytest tests/integration-full/test_query_service.py -v --cov=src/tracertm/services/query_service
+pytest tests/integration/test_query_service.py -v --cov=src/tracertm/services/query_service
 
 # Run with output
-pytest tests/integration-full/test_query_service.py -v -s
+pytest tests/integration/test_query_service.py -v -s
 
 # Run with timeout (catch hangs)
-pytest tests/integration-full/test_query_service.py -v --timeout=10
+pytest tests/integration/test_query_service.py -v --timeout=10
 ```
 
 ### Coverage Report
 ```bash
 # Generate HTML report
-pytest tests/integration-full/test_query_service.py --cov=src/tracertm/services/query_service --cov-report=html
+pytest tests/integration/test_query_service.py --cov=src/tracertm/services/query_service --cov-report=html
 
 # View report
 open htmlcov/index.html
 
 # Check missing lines
-pytest tests/integration-full/test_query_service.py --cov=src/tracertm/services/query_service --cov-report=term-with-missing
+pytest tests/integration/test_query_service.py --cov=src/tracertm/services/query_service --cov-report=term-with-missing
 ```
 
 ### What NOT to Do
@@ -271,14 +271,14 @@ def setup(self):
 **Issue: Coverage not increasing**
 ```bash
 # Debug: See what lines NOT covered
-pytest tests/integration-full/test_query_service.py \
+pytest tests/integration/test_query_service.py \
     --cov=src/tracertm/services/query_service \
     --cov-report=term-with-missing
 # Look for lines with "0" coverage count
 ```
 
 ### Deliverables Checklist
-- [ ] File: `tests/integration-full/test_query_service.py` created
+- [ ] File: `tests/integration/test_query_service.py` created
 - [ ] 80+ test methods implemented
 - [ ] All tests passing locally
 - [ ] Coverage report shows >80%
@@ -320,7 +320,7 @@ pytest tests/integration-full/test_query_service.py \
 
 **Testing Instructions:**
 ```bash
-pytest tests/integration-full/test_query_service.py -v
+pytest tests/integration/test_query_service.py -v
 ```
 
 **Screenshots:**
@@ -328,8 +328,8 @@ pytest tests/integration-full/test_query_service.py -v
 ```
 
 ### Questions?
-- Check: `tests/integration-full/TEMPLATE.py` for example
-- Review: `tests/integration-full/conftest.py` for fixtures
+- Check: `tests/integration/TEMPLATE.py` for example
+- Review: `tests/integration/conftest.py` for fixtures
 - Ask: Agent leads in daily standup
 
 ### Sign-Off

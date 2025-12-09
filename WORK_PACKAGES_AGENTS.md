@@ -196,7 +196,7 @@ pytest tests/_disabled_tests/ -v
 **Priority:** P0
 
 **Deliverables:**
-1. Create `tests/integration-full/` directory structure
+1. Create `tests/integration/` directory structure
 2. Setup shared fixtures for real database (SQLite)
 3. Create service test helpers/utilities
 4. Implement database seeding utilities
@@ -212,13 +212,13 @@ pytest tests/_disabled_tests/ -v
 - [ ] conftest.py complete
 
 **File References:**
-- Create: `tests/integration-full/conftest.py`
-- Create: `tests/integration-full/fixtures/`
-- Create: `tests/integration-full/helpers/`
+- Create: `tests/integration/conftest.py`
+- Create: `tests/integration/fixtures/`
+- Create: `tests/integration/helpers/`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/ --collect-only
+pytest tests/integration/ --collect-only
 # Expected: Infrastructure ready for tests
 ```
 
@@ -246,13 +246,13 @@ pytest tests/integration-full/ --collect-only
 - [ ] Team can copy and modify
 
 **File References:**
-- Create: `tests/integration-full/TEMPLATE.py`
-- Create: `tests/integration-full/README.md`
+- Create: `tests/integration/TEMPLATE.py`
+- Create: `tests/integration/README.md`
 
 **Acceptance Test:**
 ```bash
 # Template is clear, runnable, and helps agents
-pytest tests/integration-full/TEMPLATE.py -v
+pytest tests/integration/TEMPLATE.py -v
 ```
 
 ---
@@ -282,7 +282,7 @@ pytest tests/integration-full/TEMPLATE.py -v
 **Test Target:** 80+ → **70 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_query_service.py`
+1. Create `tests/integration/test_query_service.py`
 2. Real database CRUD operations (no mocks)
 3. Complex query patterns
 4. Pagination and filtering
@@ -305,12 +305,12 @@ pytest tests/integration-full/TEMPLATE.py -v
 - [ ] Database coverage >80%
 
 **File References:**
-- Create: `tests/integration-full/test_query_service.py`
+- Create: `tests/integration/test_query_service.py`
 - Test target: `src/tracertm/services/query_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_query_service.py -v --cov=src/tracertm/services/query_service
+pytest tests/integration/test_query_service.py -v --cov=src/tracertm/services/query_service
 # Expected: 70+ tests, >85% coverage
 ```
 
@@ -325,7 +325,7 @@ pytest tests/integration-full/test_query_service.py -v --cov=src/tracertm/servic
 **Note:** 40-hour effort preserved for deep algorithm testing; reduce quantity but maintain quality
 
 **Deliverables:**
-1. Create `tests/integration-full/test_graph_service.py`
+1. Create `tests/integration/test_graph_service.py`
 2. Cycle detection algorithm tests (28+ tests)
 3. Shortest path algorithm tests (28+ tests)
 4. Impact analysis tests (18+ tests)
@@ -349,12 +349,12 @@ pytest tests/integration-full/test_query_service.py -v --cov=src/tracertm/servic
 - [ ] Performance acceptable (<1s per test)
 
 **File References:**
-- Create: `tests/integration-full/test_graph_service.py`
+- Create: `tests/integration/test_graph_service.py`
 - Test targets: `src/tracertm/services/graph_service.py`, `src/tracertm/services/cycle_detection_service.py`, `src/tracertm/services/shortest_path_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_graph_service.py -v --benchmark-disable
+pytest tests/integration/test_graph_service.py -v --benchmark-disable
 # Expected: 110+ tests, >85% coverage
 ```
 
@@ -369,7 +369,7 @@ pytest tests/integration-full/test_graph_service.py -v --benchmark-disable
 **Note:** 35-hour effort preserved for deep conflict logic; reduce quantity but maintain quality
 
 **Deliverables:**
-1. Create `tests/integration-full/test_conflict_resolution.py`
+1. Create `tests/integration/test_conflict_resolution.py`
 2. Conflict detection tests (18+ tests)
 3. Resolution strategies (27+ tests)
 4. Merge scenarios (22+ tests)
@@ -392,12 +392,12 @@ pytest tests/integration-full/test_graph_service.py -v --benchmark-disable
 - [ ] Data integrity maintained
 
 **File References:**
-- Create: `tests/integration-full/test_conflict_resolution.py`
+- Create: `tests/integration/test_conflict_resolution.py`
 - Test targets: `src/tracertm/storage/conflict_resolver.py`, `src/tracertm/services/conflict_resolution_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_conflict_resolution.py -v
+pytest tests/integration/test_conflict_resolution.py -v
 # Expected: 90+ tests, >85% coverage
 ```
 
@@ -411,7 +411,7 @@ pytest tests/integration-full/test_conflict_resolution.py -v
 **Test Target:** 80+ → **70 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_sync_service.py`
+1. Create `tests/integration/test_sync_service.py`
 2. Bidirectional sync tests (22+ tests)
 3. Delta detection (13+ tests)
 4. Queue management (13+ tests)
@@ -434,12 +434,12 @@ pytest tests/integration-full/test_conflict_resolution.py -v
 - [ ] Recovery verified
 
 **File References:**
-- Create: `tests/integration-full/test_sync_service.py`
+- Create: `tests/integration/test_sync_service.py`
 - Test targets: `src/tracertm/storage/sync_engine.py`, `src/tracertm/services/sync_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_sync_service.py -v
+pytest tests/integration/test_sync_service.py -v
 # Expected: 70+ tests, >80% coverage
 ```
 
@@ -453,7 +453,7 @@ pytest tests/integration-full/test_sync_service.py -v
 **Test Target:** 60+ → **50 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_export_import.py`
+1. Create `tests/integration/test_export_import.py`
 2. Export to JSON/YAML (13+ tests)
 3. Import from JSON/YAML (13+ tests)
 4. Format validation (8+ tests)
@@ -468,12 +468,12 @@ pytest tests/integration-full/test_sync_service.py -v
 - [ ] Data integrity verified
 
 **File References:**
-- Create: `tests/integration-full/test_export_import.py`
+- Create: `tests/integration/test_export_import.py`
 - Test targets: `src/tracertm/services/export_service.py`, `src/tracertm/services/import_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_export_import.py -v
+pytest tests/integration/test_export_import.py -v
 # Expected: 50+ tests, >85% coverage
 ```
 
@@ -498,13 +498,13 @@ Create integration tests for:
 - [ ] All core paths tested
 
 **File References:**
-- Create: `tests/integration-full/test_search_service.py`
-- Create: `tests/integration-full/test_progress_service.py`
-- Create: `tests/integration-full/test_item_service.py`
+- Create: `tests/integration/test_search_service.py`
+- Create: `tests/integration/test_progress_service.py`
+- Create: `tests/integration/test_item_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_{search,progress,item}_service.py -v
+pytest tests/integration/test_{search,progress,item}_service.py -v
 # Expected: 30+ tests, >70% coverage each
 ```
 
@@ -601,7 +601,7 @@ pytest tests/integration-cli/test_cli_help.py -v
 **Test Target:** 75+ → **65 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_storage_edge_cases.py`
+1. Create `tests/integration/test_storage_edge_cases.py`
 2. File I/O edge cases (18+ tests)
 3. Concurrent file access (13+ tests)
 4. Corruption scenarios (13+ tests)
@@ -616,12 +616,12 @@ pytest tests/integration-cli/test_cli_help.py -v
 - [ ] Recovery verified
 
 **File References:**
-- Create: `tests/integration-full/test_storage_edge_cases.py`
+- Create: `tests/integration/test_storage_edge_cases.py`
 - Test targets: `src/tracertm/storage/local_storage.py`, `src/tracertm/storage/file_watcher.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_storage_edge_cases.py -v
+pytest tests/integration/test_storage_edge_cases.py -v
 # Expected: 65+ tests, >85% coverage
 ```
 
@@ -702,7 +702,7 @@ pytest tests/integration-api/test_api_errors.py -v
 **Test Target:** 80+ → **70 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_repository_queries.py`
+1. Create `tests/integration/test_repository_queries.py`
 2. Complex query patterns (27+ tests)
 3. Transaction handling (18+ tests)
 4. Query optimization (13+ tests)
@@ -716,12 +716,12 @@ pytest tests/integration-api/test_api_errors.py -v
 - [ ] Performance acceptable
 
 **File References:**
-- Create: `tests/integration-full/test_repository_queries.py`
+- Create: `tests/integration/test_repository_queries.py`
 - Test targets: `src/tracertm/repositories/`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_repository_queries.py -v
+pytest tests/integration/test_repository_queries.py -v
 # Expected: 70+ tests, >80% coverage
 ```
 
@@ -801,11 +801,11 @@ pytest tests/property-based/test_properties.py -v --hypothesis-seed=0
 - [ ] Maintenance easier
 
 **File References:**
-- Modify: `tests/integration-full/test_*.py` files
+- Modify: `tests/integration/test_*.py` files
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/ -v -k "parametrize"
+pytest tests/integration/ -v -k "parametrize"
 # Expected: 60+ parametrized tests
 ```
 
@@ -854,7 +854,7 @@ pytest tests/integration-tui/test_tui_widgets_advanced.py -v
 **Test Target:** 55+ → **50 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_performance_services.py`
+1. Create `tests/integration/test_performance_services.py`
 2. Query optimization (13+ tests)
 3. Caching strategies (13+ tests)
 4. Index usage (10+ tests)
@@ -868,12 +868,12 @@ pytest tests/integration-tui/test_tui_widgets_advanced.py -v
 - [ ] Benchmarks established
 
 **File References:**
-- Create: `tests/integration-full/test_performance_services.py`
+- Create: `tests/integration/test_performance_services.py`
 - Test targets: Performance-related services
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_performance_services.py -v --benchmark-disable
+pytest tests/integration/test_performance_services.py -v --benchmark-disable
 # Expected: 50+ tests, performance acceptable
 ```
 
@@ -887,7 +887,7 @@ pytest tests/integration-full/test_performance_services.py -v --benchmark-disabl
 **Test Target:** 45+ → **40 tests (adjusted)**
 
 **Deliverables:**
-1. Create `tests/integration-full/test_plugin_system.py`
+1. Create `tests/integration/test_plugin_system.py`
 2. Plugin discovery (8+ tests)
 3. Plugin loading (8+ tests)
 4. Plugin execution (13+ tests)
@@ -900,12 +900,12 @@ pytest tests/integration-full/test_performance_services.py -v --benchmark-disabl
 - [ ] Extensibility verified
 
 **File References:**
-- Create: `tests/integration-full/test_plugin_system.py`
+- Create: `tests/integration/test_plugin_system.py`
 - Test targets: `src/tracertm/services/plugin_service.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_plugin_system.py -v
+pytest tests/integration/test_plugin_system.py -v
 # Expected: 40+ tests, >85% coverage
 ```
 
@@ -935,11 +935,11 @@ Create tests for remaining 15+ services:
 - [ ] All integration paths tested
 
 **File References:**
-- Create: `tests/integration-full/test_advanced_services.py`
+- Create: `tests/integration/test_advanced_services.py`
 
 **Acceptance Test:**
 ```bash
-pytest tests/integration-full/test_advanced_services.py -v
+pytest tests/integration/test_advanced_services.py -v
 # Expected: 80+ tests, >75% coverage
 ```
 

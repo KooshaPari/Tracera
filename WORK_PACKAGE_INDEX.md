@@ -305,8 +305,8 @@ Agent 1:
 
 ### For Execution
 - **WORK_PACKAGES_AGENTS.md** - All 32 WPs with details
-- **tests/integration-full/TEMPLATE.py** - Test template
-- **tests/integration-full/conftest.py** - Test fixtures
+- **tests/integration/TEMPLATE.py** - Test template
+- **tests/integration/conftest.py** - Test fixtures
 
 ### For Tracking
 - **COVERAGE_PROGRESS_DASHBOARD.md** - Track daily progress
@@ -337,7 +337,7 @@ Agent 1:
 - Read AGENT_QUICK_START.md
 
 **How do I know if my tests are good?**
-- Run: `pytest tests/integration-full/test_YOUR_SERVICE.py -v`
+- Run: `pytest tests/integration/test_YOUR_SERVICE.py -v`
 - Check: `pytest --cov=src/tracertm/services/YOUR_SERVICE --cov-report=term-with-missing`
 - Look for: >80% coverage, all tests passing
 

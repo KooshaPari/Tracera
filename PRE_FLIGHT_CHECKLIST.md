@@ -41,8 +41,8 @@ Complete this before agents start work.
 - [ ] AGENT_WORK_PACKAGE_SUMMARY.md shared with team
 
 ### Tools & Resources Verified
-- [ ] `tests/integration-full/TEMPLATE.py` exists and is usable
-- [ ] `tests/integration-full/conftest.py` has required fixtures
+- [ ] `tests/integration/TEMPLATE.py` exists and is usable
+- [ ] `tests/integration/conftest.py` has required fixtures
 - [ ] `tests/fixtures.py` available for shared fixtures
 - [ ] Git workflow documented (branching strategy)
 - [ ] PR review process defined
@@ -301,7 +301,7 @@ Complete this before starting your first work package.
 4. **Run first test** (15 min)
    - Follow AGENT_QUICK_START.md pattern
    - Write 1 simple test
-   - Run it: `pytest tests/integration-full/test_YOUR_SERVICE.py::TestClass::test_one -v`
+   - Run it: `pytest tests/integration/test_YOUR_SERVICE.py::TestClass::test_one -v`
    - See it pass
 
 5. **Daily standup** (15 min)
