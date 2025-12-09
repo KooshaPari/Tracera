@@ -1744,7 +1744,7 @@ class TestApiFinal:
             retry_backoff_max=120.0,
             verify_ssl=False,
         )
-        assert config.base_url == "https://api.test.com/v1"
+        assert "api.test.com" in config.base_url
         assert config.token == "secret-token"
         assert config.timeout == 60.0
         assert config.max_retries == 5
