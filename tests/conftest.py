@@ -352,3 +352,90 @@ def mounted_widget():
         return widget
 
     return _mount_widget
+
+
+# ============================================================
+# Context Manager Testing Infrastructure
+# ============================================================
+
+@pytest.fixture
+def verify_context_cleanup():
+    """
+    Fixture to verify that context managers properly call __exit__.
+
+    This helps catch resource leaks where __exit__ isn't being called.
+
+    Usage:
+        def test_context_manager(verify_context_cleanup):
+            mock_context = MagicMock()
+            mock_context.__enter__ = MagicMock(return_value=None)
+            mock_context.__exit__ = MagicMock(return_value=None)
+
+            with mock_context:
+                pass
+
+            # Verify __exit__ was called
+            verify_context_cleanup(mock_context)
+
+    Args:
+        Callable that returns verification function
+    """
+    def _verify(mock_context):
+        """
+        Verify that __exit__ was called on a context manager mock.
+
+        Args:
+            mock_context: MagicMock object with __exit__ attribute
+
+        Raises:
+            AssertionError: If __exit__ was not called
+        """
+        if hasattr(mock_context, '__exit__'):
+            # Verify __exit__ was called
+            if hasattr(mock_context.__exit__, 'assert_called'):
+                mock_context.__exit__.assert_called()
+            elif hasattr(mock_context.__exit__, 'call_count'):
+                assert mock_context.__exit__.call_count > 0, \
+                    "Context manager __exit__ was never called - resource leak detected!"
+
+    return _verify
+
+
+@pytest.fixture
+def verify_async_context_cleanup():
+    """
+    Fixture to verify that async context managers properly call __aexit__.
+
+    This helps catch resource leaks where __aexit__ isn't being called.
+
+    Usage:
+        async def test_async_context_manager(verify_async_context_cleanup):
+            mock_context = AsyncMock()
+            mock_context.__aenter__ = AsyncMock(return_value=None)
+            mock_context.__aexit__ = AsyncMock(return_value=None)
+
+            async with mock_context:
+                pass
+
+            # Verify __aexit__ was called
+            verify_async_context_cleanup(mock_context)
+    """
+    def _verify(mock_context):
+        """
+        Verify that __aexit__ was called on an async context manager mock.
+
+        Args:
+            mock_context: AsyncMock object with __aexit__ attribute
+
+        Raises:
+            AssertionError: If __aexit__ was not called
+        """
+        if hasattr(mock_context, '__aexit__'):
+            # Verify __aexit__ was called
+            if hasattr(mock_context.__aexit__, 'assert_called'):
+                mock_context.__aexit__.assert_called()
+            elif hasattr(mock_context.__aexit__, 'call_count'):
+                assert mock_context.__aexit__.call_count > 0, \
+                    "Async context manager __aexit__ was never called - resource leak detected!"
+
+    return _verify

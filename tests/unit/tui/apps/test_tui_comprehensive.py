@@ -226,6 +226,7 @@ class TestBrowserAppComprehensive:
         mock_query.order_by.return_value = mock_query
         mock_query.all.return_value = [item1, item2]
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         # Setup app
         app = BrowserApp()
@@ -336,6 +337,7 @@ class TestBrowserAppComprehensive:
         mock_query.filter.return_value = mock_query
         mock_query.first.return_value = item
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         # Setup app
         app = BrowserApp()
@@ -401,6 +403,7 @@ class TestBrowserAppComprehensive:
         mock_query.filter.return_value = mock_query
         mock_query.first.return_value = None
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = BrowserApp()
         app.db = MagicMock()
@@ -580,6 +583,7 @@ class TestDashboardAppComprehensive:
         mock_query.join.return_value = mock_query
         mock_query.count.return_value = 5
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = DashboardApp()
         app.db = MagicMock()
@@ -644,6 +648,7 @@ class TestDashboardAppComprehensive:
         mock_query.limit.return_value = mock_query
         mock_query.all.return_value = [item1]
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = DashboardApp()
         app.db = MagicMock()
@@ -860,6 +865,7 @@ class TestGraphAppComprehensive:
 
         mock_query.all = mock_all
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = GraphApp()
         app.db = MagicMock()
@@ -924,6 +930,7 @@ class TestGraphAppComprehensive:
 
         mock_query.first = mock_first
         mock_session_class.return_value.__enter__.return_value = mock_session
+        mock_session_class.return_value.__exit__.return_value = None
 
         app = GraphApp()
         app.db = MagicMock()

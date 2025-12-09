@@ -36,9 +36,9 @@ def _seed_items(session, project_id="proj-1"):
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, project_id)
 
-    parent = Item(id="p1", project_id=project_id, title="Parent", status="in_progress")
-    child_done = Item(id="c1", project_id=project_id, title="Done", status="complete", parent_id="p1")
-    child_todo = Item(id="c2", project_id=project_id, title="Todo", status="todo", parent_id="p1")
+    parent = Item(id="p1", project_id=project_id, title="Parent", view="FEATURE", item_type="epic", status="in_progress")
+    child_done = Item(id="c1", project_id=project_id, title="Done", view="FEATURE", item_type="story", status="complete", parent_id="p1")
+    child_todo = Item(id="c2", project_id=project_id, title="Todo", view="FEATURE", item_type="story", status="todo", parent_id="p1")
     session.add_all([parent, child_done, child_todo])
     session.commit()
     return parent, child_done, child_todo
@@ -49,7 +49,7 @@ def test_calculate_completion_leaf():
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
 
-    item = Item(id="i1", project_id="proj", title="Leaf", status="complete")
+    item = Item(id="i1", project_id="proj", title="Leaf", view="FEATURE", item_type="story", status="complete")
     session.add(item)
     session.commit()
 
@@ -70,8 +70,8 @@ def test_get_blocked_items_returns_blockers():
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
 
-    blocked = Item(id="b1", project_id="proj", title="Blocked", status="in_progress")
-    blocker = Item(id="blk1", project_id="proj", title="Blocker", status="todo")
+    blocked = Item(id="b1", project_id="proj", title="Blocked", view="FEATURE", item_type="story", status="in_progress")
+    blocker = Item(id="blk1", project_id="proj", title="Blocker", view="FEATURE", item_type="story", status="todo")
 
     session.add_all([blocked, blocker, Link(id="l1", project_id="proj", source_item_id="blk1", target_item_id="b1", link_type="blocks")])
     session.commit()
@@ -87,8 +87,8 @@ def test_get_stalled_items_filters_by_threshold():
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
 
-    old = Item(id="old", project_id="proj", title="Old", status="in_progress", updated_at=datetime.utcnow() - timedelta(days=10))
-    fresh = Item(id="fresh", project_id="proj", title="Fresh", status="in_progress", updated_at=datetime.utcnow())
+    old = Item(id="old", project_id="proj", title="Old", view="FEATURE", item_type="story", status="in_progress", updated_at=datetime.utcnow() - timedelta(days=10))
+    fresh = Item(id="fresh", project_id="proj", title="Fresh", view="FEATURE", item_type="story", status="in_progress", updated_at=datetime.utcnow())
     session.add_all([old, fresh])
     session.commit()
 
@@ -104,12 +104,16 @@ def test_calculate_velocity_counts_created_and_completed():
     _ensure_project(session, "proj")
 
     now = datetime.utcnow()
-    done = Item(id="done", project_id="proj", title="Done", status="complete", updated_at=now)
-    created = Item(id="new", project_id="proj", title="New", status="todo", created_at=now)
-    session.add_all([done, created])
+    old = datetime.utcnow() - timedelta(days=30)  # created outside the 7-day window
+    # Both done and created items will have created_at set to now by default
+    # They will both be counted in items_created since they're in the 7-day window
+    done = Item(id="done", project_id="proj", title="Done", view="FEATURE", item_type="story", status="complete", updated_at=now)
+    created = Item(id="new", project_id="proj", title="New", view="FEATURE", item_type="story", status="todo")
+    old_created = Item(id="old_new", project_id="proj", title="Old New", view="FEATURE", item_type="story", status="todo", created_at=old)
+    session.add_all([done, created, old_created])
     session.commit()
 
     svc = ProgressService(session)
     v = svc.calculate_velocity("proj", days=7)
     assert v["items_completed"] == 1
-    assert v["items_created"] == 1
+    assert v["items_created"] == 2  # Both done and created are in the 7-day window
