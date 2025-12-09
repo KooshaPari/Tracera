@@ -71,7 +71,7 @@ async def api_client(mock_config):
 @pytest_asyncio.fixture
 async def tracertm_client(db_session):
     """Create TraceRTM Python client."""
-    with patch("tracertm.config.manager.ConfigManager") as mock_config_manager:
+    with patch("tracertm.api.client.ConfigManager") as mock_config_manager:
         mock_config = MagicMock()
         mock_config.get.side_effect = lambda key: {
             "database_url": "sqlite:///:memory:",
