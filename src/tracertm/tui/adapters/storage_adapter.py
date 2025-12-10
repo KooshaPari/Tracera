@@ -4,9 +4,9 @@ Storage adapter for TUI integration.
 Provides a reactive interface between LocalStorageManager and Textual TUI components.
 """
 
-from datetime import datetime
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from tracertm.models import Item, Link, Project
 from tracertm.storage.conflict_resolver import Conflict

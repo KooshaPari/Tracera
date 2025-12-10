@@ -172,7 +172,7 @@ class ExportService:
             import yaml
         except ImportError:
             # Fallback if yaml not installed
-            return "project:\n  id: {}\n  name: stub\nitems: []\nlinks: []\n".format(project_id)
+            return f"project:\n  id: {project_id}\n  name: stub\nitems: []\nlinks: []\n"
 
         project = await self.projects.get_by_id(project_id)
         items = await self.items.query(project_id, {})

@@ -1,24 +1,24 @@
 """FastAPI application for TraceRTM."""
 
-from collections import defaultdict
-from collections.abc import AsyncGenerator
 import inspect
 import logging
-from unittest.mock import MagicMock, AsyncMock
+from collections import defaultdict
+from collections.abc import AsyncGenerator
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.config.manager import ConfigManager
-from tracertm.database.connection import DatabaseConnection
 import tracertm.repositories.item_repository as item_repository
 import tracertm.repositories.link_repository as link_repository
 import tracertm.repositories.project_repository as project_repository
 import tracertm.services.cycle_detection_service as cycle_detection_service
 import tracertm.services.impact_analysis_service as impact_analysis_service
 import tracertm.services.shortest_path_service as shortest_path_service
+from tracertm.config.manager import ConfigManager
+from tracertm.database.connection import DatabaseConnection
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -177,6 +177,7 @@ def is_whitelisted(*args, **kwargs):
     return False
 
 # ---------------------------------------------------------------------------
+
 
 CycleDetectionService = cycle_detection_service.CycleDetectionService
 ImpactAnalysisService = impact_analysis_service.ImpactAnalysisService
@@ -717,9 +718,9 @@ async def delete_project(
 ):
     """Delete a project."""
     from sqlalchemy import delete
-    from tracertm.models.project import Project
+
     from tracertm.models.item import Item
-    from tracertm.models.link import Link
+    from tracertm.models.project import Project
 
     repo = project_repository.ProjectRepository(db)
     project = await _maybe_await(repo.get_by_id(project_id))
@@ -730,18 +731,18 @@ async def delete_project(
     # Delete all items and links for this project (cascade delete)
     link_repo = link_repository.LinkRepository(db)
     item_repo = item_repository.ItemRepository(db)
-    
+
     # Get all links and items for the project
     links = await _maybe_await(link_repo.get_by_project(project_id))
-    items = await _maybe_await(item_repo.list_all(project_id))
-    
+    await _maybe_await(item_repo.list_all(project_id))
+
     # Delete links
     for link in links:
         await _maybe_await(link_repo.delete(str(link.id)))
-    
+
     # Delete items (this should cascade delete their links too)
     await _maybe_await(db.execute(delete(Item).where(Item.project_id == project_id)))
-    
+
     # Delete project
     await _maybe_await(db.execute(delete(Project).where(Project.id == project_id)))
     await _maybe_await(db.commit())
@@ -821,7 +822,7 @@ async def get_sync_status(
     """Get sync status for a project."""
     from tracertm.services.sync_service import SyncService
 
-    service = SyncService(db)
+    SyncService(db)
     # In a real implementation, this would check actual sync status
     # For now, return a mock status
     return {

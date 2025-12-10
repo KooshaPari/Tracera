@@ -24,22 +24,22 @@ from tracertm.api.sync_client import (
 )
 
 __all__ = [
-    # Local client
-    "TraceRTMClient",
     # HTTP sync client
     "ApiClient",
     "ApiConfig",
-    # Data models
-    "Change",
-    "Conflict",
-    "SyncOperation",
-    "SyncStatus",
-    "UploadResult",
-    "ConflictStrategy",
     # Exceptions
     "ApiError",
     "AuthenticationError",
+    # Data models
+    "Change",
+    "Conflict",
+    "ConflictError",
+    "ConflictStrategy",
     "NetworkError",
     "RateLimitError",
-    "ConflictError",
+    "SyncOperation",
+    "SyncStatus",
+    # Local client
+    "TraceRTMClient",
+    "UploadResult",
 ]

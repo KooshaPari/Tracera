@@ -8,8 +8,8 @@ Prevents circular dependencies in depends_on relationships.
 import asyncio
 from types import SimpleNamespace
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from tracertm.models.item import Item

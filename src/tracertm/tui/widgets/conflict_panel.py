@@ -104,7 +104,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        def __init__(self, conflicts: list = None, *args, **kwargs):
+        def __init__(self, conflicts: list | None = None, *args, **kwargs):
             """
             Initialize conflict panel.
 

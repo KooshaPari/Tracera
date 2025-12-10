@@ -4,7 +4,7 @@ Minimal search service placeholder for unit tests.
 
 from __future__ import annotations
 
-from typing import Any, Iterable
+from typing import Any
 
 
 class SearchService:

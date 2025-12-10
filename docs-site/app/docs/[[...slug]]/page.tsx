@@ -11,6 +11,7 @@ import { applyMdxPreset } from 'fumadocs-mdx/config'
 import yaml from 'js-yaml'
 import type { MDXComponents } from 'mdx/types'
 import type { FC } from 'react'
+import { useMDXComponents } from '@/mdx-components'
 
 type MDXContent = FC<{ components?: MDXComponents }>
 
@@ -75,7 +76,12 @@ export async function generateStaticParams() {
   return params
 }
 
+// Get the full MDX components from mdx-components.tsx
+const baseMdxComponents = useMDXComponents({})
+
+// Extend with Mermaid support
 const mdxComponents: MDXComponents = {
+  ...baseMdxComponents,
   code: ({ className, children, ...props }) => {
     const language = className?.replace('language-', '')
     if (language === 'mermaid') {
@@ -85,7 +91,8 @@ const mdxComponents: MDXComponents = {
         </div>
       )
     }
-    return (
+    // Use the base code component for non-mermaid code
+    return baseMdxComponents.code ? baseMdxComponents.code({ className, children, ...props } as any) : (
       <code className={className} {...props}>
         {children}
       </code>
@@ -98,16 +105,36 @@ async function getDocContent(slug?: string[]) {
 
   try {
     const docPath = getDocPath(slug)
-    if (!docPath) return null
+    if (!docPath) {
+      console.warn(`No doc path found for slug: ${slug.join('/')}`)
+      return null
+    }
 
     const filePath = join(process.cwd(), 'content/docs', docPath, 'index.mdx')
-    await access(filePath)
+    
+    // Check if file exists
+    try {
+      await access(filePath)
+    } catch (accessError) {
+      console.warn(`File not found: ${filePath}`, accessError)
+      return null
+    }
 
     const raw = await readFile(filePath, 'utf-8')
     const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
-    if (!match) return null
+    if (!match) {
+      console.warn(`Invalid frontmatter format in: ${filePath}`)
+      return null
+    }
 
-    const frontmatter = (yaml.load(match[1]) as Record<string, string | undefined>) ?? {}
+    let frontmatter: Record<string, string | undefined> = {}
+    try {
+      frontmatter = (yaml.load(match[1]) as Record<string, string | undefined>) ?? {}
+    } catch (yamlError) {
+      console.warn(`Failed to parse YAML frontmatter in: ${filePath}`, yamlError)
+      // Continue with empty frontmatter
+    }
+
     const body = match[2]
 
     const mdxOptions = applyMdxPreset({
@@ -115,17 +142,30 @@ async function getDocContent(slug?: string[]) {
       rehypePlugins: (defaults) => [rehypeHighlight, ...defaults],
     })
 
-    const compiled = await compile(body, {
-      outputFormat: 'function-body',
-      ...mdxOptions,
-      development: false,
-    })
+    let compiled
+    try {
+      compiled = await compile(body, {
+        outputFormat: 'function-body',
+        ...mdxOptions,
+        development: false,
+      })
+    } catch (compileError) {
+      console.error(`MDX compilation failed for: ${filePath}`, compileError)
+      throw new Error(`Failed to compile MDX: ${compileError instanceof Error ? compileError.message : String(compileError)}`)
+    }
 
-    const { default: Content } = await run(compiled, {
-      ...runtime,
-      useMDXComponents: () => mdxComponents,
-      baseUrl: import.meta.url,
-    })
+    let Content: MDXContent
+    try {
+      const result = await run(compiled, {
+        ...runtime,
+        useMDXComponents: () => mdxComponents,
+        baseUrl: import.meta.url,
+      })
+      Content = result.default as MDXContent
+    } catch (runError) {
+      console.error(`MDX execution failed for: ${filePath}`, runError)
+      throw new Error(`Failed to execute MDX: ${runError instanceof Error ? runError.message : String(runError)}`)
+    }
 
     return {
       title: (frontmatter.title as string) ?? 'Untitled',
@@ -133,8 +173,13 @@ async function getDocContent(slug?: string[]) {
       Content: Content as MDXContent,
     }
   } catch (error) {
-    console.error(`Failed to load doc: ${slug?.join('/')}`, error)
-    return null
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(`Failed to load doc: ${slug?.join('/')}`, {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    })
+    // Re-throw the error so Next.js error boundary can handle it
+    throw new Error(`Failed to load documentation page "${slug?.join('/') || 'home'}": ${errorMessage}`)
   }
 }
 
@@ -157,18 +202,48 @@ function getFallbackContent(slug?: string[]) {
 
 export default async function DocsPage({ params }: { params: Promise<{ slug?: string[] }> }) {
   const resolvedParams = await params
-  const docContent = await getDocContent(resolvedParams.slug) || getFallbackContent(resolvedParams.slug)
+  
+  // For empty slug, show fallback content
+  if (!resolvedParams.slug || resolvedParams.slug.length === 0) {
+    const fallbackContent = getFallbackContent()
+    return (
+      <DocsPageClient
+        slug={resolvedParams.slug}
+        heading={{ title: fallbackContent.title, description: fallbackContent.description }}
+      >
+        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-zinc-950 prose-pre:text-zinc-50">
+          <fallbackContent.Content components={mdxComponents} />
+        </div>
+      </DocsPageClient>
+    )
+  }
+
+  // Try to load the actual content
+  const docContent = await getDocContent(resolvedParams.slug)
+  
+  // If content loading failed, show fallback with warning
+  if (!docContent) {
+    const fallbackContent = getFallbackContent(resolvedParams.slug)
+    return (
+      <DocsPageClient
+        slug={resolvedParams.slug}
+        heading={{ title: fallbackContent.title, description: fallbackContent.description }}
+      >
+        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-zinc-950 prose-pre:text-zinc-50">
+          <fallbackContent.Content components={mdxComponents} />
+        </div>
+      </DocsPageClient>
+    )
+  }
 
   return (
     <DocsPageClient
       slug={resolvedParams.slug}
-      heading={docContent ? { title: docContent.title, description: docContent.description } : undefined}
+      heading={{ title: docContent.title, description: docContent.description }}
     >
-      {docContent?.Content ? (
-        <div className="prose prose-sm max-w-none dark:prose-invert">
-          <docContent.Content components={mdxComponents} />
-        </div>
-      ) : null}
+      <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-zinc-950 prose-pre:text-zinc-50">
+        <docContent.Content components={mdxComponents} />
+      </div>
     </DocsPageClient>
   )
 }

@@ -26,7 +26,7 @@ def get_engine() -> AsyncEngine:
             "pool_pre_ping": True,
             "echo": False,
         }
-        
+
         # Only add pool parameters for non-SQLite databases
         if "sqlite" not in url.lower():
             engine_kwargs.update({

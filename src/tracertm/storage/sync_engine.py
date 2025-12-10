@@ -17,12 +17,13 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import text
+
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 
 logger = logging.getLogger(__name__)
@@ -60,10 +61,10 @@ class SyncStatus(Enum):
 @dataclass
 class SyncState:
     """Tracks sync metadata and state."""
-    last_sync: Optional[datetime] = None
+    last_sync: datetime | None = None
     pending_changes: int = 0
     status: SyncStatus = SyncStatus.IDLE
-    last_error: Optional[str] = None
+    last_error: str | None = None
     conflicts_count: int = 0
     synced_entities: int = 0
 
@@ -78,7 +79,7 @@ class QueuedChange:
     payload: dict[str, Any]
     created_at: datetime
     retry_count: int = 0
-    last_error: Optional[str] = None
+    last_error: str | None = None
 
 
 @dataclass
@@ -113,7 +114,7 @@ class ChangeDetector:
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
     @staticmethod
-    def has_changed(current_content: str, stored_hash: Optional[str]) -> bool:
+    def has_changed(current_content: str, stored_hash: str | None) -> bool:
         """
         Check if content has changed by comparing hashes.
 
@@ -415,7 +416,7 @@ class SyncStateManager:
                 last_error=last_error
             )
 
-    def update_last_sync(self, timestamp: Optional[datetime] = None) -> None:
+    def update_last_sync(self, timestamp: datetime | None = None) -> None:
         """
         Update last sync timestamp.
 
@@ -460,7 +461,7 @@ class SyncStateManager:
             )
             conn.commit()
 
-    def update_error(self, error: Optional[str]) -> None:
+    def update_error(self, error: str | None) -> None:
         """
         Update last error.
 
@@ -685,7 +686,7 @@ class SyncEngine:
 
         return result
 
-    async def pull_changes(self, since: Optional[datetime] = None) -> SyncResult:
+    async def pull_changes(self, since: datetime | None = None) -> SyncResult:
         """
         Pull changes from remote API (download phase).
 
@@ -746,7 +747,6 @@ class SyncEngine:
         """
         try:
             # Build API request based on operation
-            endpoint = f"/api/sync/{change.entity_type.value}s"
 
             if change.operation == OperationType.CREATE:
                 # POST request
