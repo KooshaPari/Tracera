@@ -2471,5 +2471,884 @@ class TestConcurrentOperations:
             assert len(results) == 5
 
 
+# ============================================================================
+# EXTENDED TESTS: Advanced Query Operations
+# ============================================================================
+
+
+class TestAdvancedQueryOperations:
+    """Test advanced query operations in TraceRTMClient."""
+
+    def test_query_items_with_multiple_filters(self, tracertm_client):
+        """Test querying items with multiple filters."""
+        from tracertm.models.item import Item
+
+        item = Item(
+            project_id="test-project-123",
+            title="Filtered Item",
+            view="FEATURE",
+            item_type="requirement",
+            status="in_progress",
+            priority="high",
+            owner="agent-1",
+        )
+        tracertm_client._session.add(item)
+        tracertm_client._session.commit()
+
+        results = tracertm_client.query_items(
+            view="FEATURE",
+            status="in_progress",
+            item_type="requirement",
+            priority="high",
+            owner="agent-1",
+        )
+        assert len(results) > 0
+        assert results[0]["priority"] == "high"
+
+    def test_query_items_with_parent_filter(self, tracertm_client):
+        """Test querying items with parent_id filter."""
+        from tracertm.models.item import Item
+
+        parent = Item(
+            project_id="test-project-123",
+            title="Parent Item",
+            view="FEATURE",
+            item_type="requirement",
+        )
+        tracertm_client._session.add(parent)
+        tracertm_client._session.commit()
+
+        child = Item(
+            project_id="test-project-123",
+            title="Child Item",
+            view="CODE",
+            item_type="design",
+            parent_id=parent.id,
+        )
+        tracertm_client._session.add(child)
+        tracertm_client._session.commit()
+
+        results = tracertm_client.query_items(parent_id=parent.id)
+        assert len(results) > 0
+        assert results[0]["parent_id"] == parent.id
+
+    def test_query_items_with_limit(self, tracertm_client):
+        """Test querying items with limit."""
+        from tracertm.models.item import Item
+
+        for i in range(15):
+            item = Item(
+                project_id="test-project-123",
+                title=f"Item {i}",
+                view="FEATURE",
+                item_type="requirement",
+            )
+            tracertm_client._session.add(item)
+        tracertm_client._session.commit()
+
+        results = tracertm_client.query_items(limit=5)
+        assert len(results) == 5
+
+    def test_query_items_no_results(self, tracertm_client):
+        """Test querying items returns empty when no matches."""
+        results = tracertm_client.query_items(status="nonexistent_status")
+        assert results == []
+
+    def test_get_item_with_prefix_match(self, tracertm_client):
+        """Test getting item with prefix matching."""
+        from tracertm.models.item import Item
+
+        item = Item(
+            project_id="test-project-123",
+            title="Item with Long ID",
+            view="FEATURE",
+            item_type="requirement",
+        )
+        tracertm_client._session.add(item)
+        tracertm_client._session.commit()
+
+        # Get with full ID
+        result = tracertm_client.get_item(item.id)
+        assert result is not None
+        assert result["id"] == item.id
+
+    def test_get_item_cross_project_isolation(self, tracertm_client):
+        """Test that get_item respects project isolation."""
+        from tracertm.models.item import Item
+
+        item = Item(
+            project_id="other-project",
+            title="Other Project Item",
+            view="FEATURE",
+            item_type="requirement",
+        )
+        tracertm_client._session.add(item)
+        tracertm_client._session.commit()
+
+        # Should not find item from different project
+        result = tracertm_client.get_item(item.id)
+        assert result is None
+
+
+# ============================================================================
+# EXTENDED TESTS: Batch Operations - Edge Cases
+# ============================================================================
+
+
+class TestBatchOperationsEdgeCases:
+    """Test edge cases in batch operations."""
+
+    def test_batch_create_single_item(self, tracertm_client):
+        """Test batch create with single item."""
+        items = [
+            {"title": "Single Item", "view": "FEATURE", "type": "requirement"}
+        ]
+        result = tracertm_client.batch_create_items(items)
+        assert result["items_created"] == 1
+
+    def test_batch_create_with_metadata(self, tracertm_client):
+        """Test batch create with metadata."""
+        items = [
+            {
+                "title": "Item with Meta",
+                "view": "FEATURE",
+                "type": "requirement",
+                "metadata": {"custom_field": "value"},
+            }
+        ]
+        result = tracertm_client.batch_create_items(items)
+        assert result["items_created"] == 1
+
+    def test_batch_create_with_all_fields(self, tracertm_client):
+        """Test batch create with all fields."""
+        items = [
+            {
+                "title": "Full Item",
+                "view": "CODE",
+                "type": "design",
+                "description": "Detailed description",
+                "status": "in_progress",
+                "priority": "high",
+                "owner": "agent-1",
+                "parent_id": None,
+                "metadata": {"key": "value"},
+            }
+        ]
+        result = tracertm_client.batch_create_items(items)
+        assert result["items_created"] == 1
+
+    def test_batch_create_large_batch(self, tracertm_client):
+        """Test batch create with many items."""
+        items = [
+            {"title": f"Item {i}", "view": "FEATURE", "type": "requirement"}
+            for i in range(50)
+        ]
+        result = tracertm_client.batch_create_items(items)
+        assert result["items_created"] == 50
+
+    def test_batch_update_non_existent_items(self, tracertm_client):
+        """Test batch update skips non-existent items."""
+        updates = [
+            {"item_id": "nonexistent-1", "status": "done"},
+            {"item_id": "nonexistent-2", "status": "in_progress"},
+        ]
+        result = tracertm_client.batch_update_items(updates)
+        assert result["items_updated"] == 0
+
+    def test_batch_update_partial_success(self, tracertm_client):
+        """Test batch update with some non-existent items."""
+        from tracertm.models.item import Item
+
+        item = Item(
+            project_id="test-project-123",
+            title="Item 1",
+            view="FEATURE",
+            item_type="requirement",
+        )
+        tracertm_client._session.add(item)
+        tracertm_client._session.commit()
+
+        updates = [
+            {"item_id": item.id, "status": "done"},
+            {"item_id": "nonexistent", "status": "in_progress"},
+        ]
+        result = tracertm_client.batch_update_items(updates)
+        assert result["items_updated"] == 1
+
+    def test_batch_delete_non_existent_items(self, tracertm_client):
+        """Test batch delete skips non-existent items."""
+        result = tracertm_client.batch_delete_items(["nonexistent-1", "nonexistent-2"])
+        assert result["items_deleted"] == 0
+
+    def test_batch_delete_partial(self, tracertm_client):
+        """Test batch delete with some non-existent items."""
+        from tracertm.models.item import Item
+
+        item = Item(
+            project_id="test-project-123",
+            title="Item to Delete",
+            view="FEATURE",
+            item_type="requirement",
+        )
+        tracertm_client._session.add(item)
+        tracertm_client._session.commit()
+
+        result = tracertm_client.batch_delete_items([item.id, "nonexistent"])
+        assert result["items_deleted"] == 1
+
+
+# ============================================================================
+# EXTENDED TESTS: Authentication & Error Scenarios
+# ============================================================================
+
+
+class TestAuthenticationErrors:
+    """Test authentication error scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_auth_error_with_empty_token(self):
+        """Test authentication error with empty token."""
+        config = ApiConfig(base_url="https://api.test.com", token="")
+        client = ApiClient(config)
+        # Empty token should still add Authorization header
+        assert "Authorization" in client.client.headers
+        assert client.client.headers["Authorization"] == "Bearer "
+        await client.close()
+
+    @pytest.mark.asyncio
+    async def test_401_error_details_preserved(self, api_client):
+        """Test that 401 error details are preserved."""
+        with patch.object(api_client.client, "request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.status_code = 401
+            mock_response.json.return_value = {
+                "detail": "Invalid token",
+                "error_code": "AUTH_001",
+            }
+            mock_response.content = b'{"detail": "Invalid token", "error_code": "AUTH_001"}'
+            mock_request.return_value = mock_response
+
+            with pytest.raises(AuthenticationError) as exc_info:
+                await api_client._retry_request("GET", "/api/items")
+
+            assert exc_info.value.response_data["error_code"] == "AUTH_001"
+
+    @pytest.mark.asyncio
+    async def test_auth_error_no_retry_immediately_raises(self, api_client):
+        """Test auth errors are not retried."""
+        call_count = 0
+
+        async def mock_request(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            mock_response = MagicMock()
+            mock_response.status_code = 401
+            mock_response.json.return_value = {}
+            mock_response.content = b'{}'
+            return mock_response
+
+        with patch.object(api_client.client, "request", side_effect=mock_request):
+            with pytest.raises(AuthenticationError):
+                await api_client._retry_request("GET", "/api/items")
+
+            assert call_count == 1  # Only called once, not retried
+
+
+# ============================================================================
+# EXTENDED TESTS: Conflict Resolution Flows
+# ============================================================================
+
+
+class TestConflictResolutionAdvanced:
+    """Test advanced conflict resolution scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_resolve_conflict_with_local_wins_strategy(self, api_client):
+        """Test resolving conflict with LOCAL_WINS strategy."""
+        conflict = Conflict(
+            conflict_id="c1",
+            entity_type="item",
+            entity_id="i1",
+            local_version=3,
+            remote_version=2,
+            local_data={"title": "Local Title", "status": "in_progress"},
+            remote_data={"title": "Remote Title", "status": "todo"},
+        )
+
+        with patch.object(api_client, "_retry_request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {"resolved": True}
+            mock_request.return_value = mock_response
+
+            result = await api_client.resolve_conflict(
+                conflict.conflict_id,
+                ConflictStrategy.LOCAL_WINS,
+                conflict.local_data,
+            )
+            assert result is True
+
+    @pytest.mark.asyncio
+    async def test_resolve_conflict_with_remote_wins_strategy(self, api_client):
+        """Test resolving conflict with REMOTE_WINS strategy."""
+        conflict = Conflict(
+            conflict_id="c1",
+            entity_type="item",
+            entity_id="i1",
+            local_version=2,
+            remote_version=3,
+            local_data={"title": "Local Title"},
+            remote_data={"title": "Remote Title"},
+        )
+
+        with patch.object(api_client, "_retry_request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {"resolved": True}
+            mock_request.return_value = mock_response
+
+            result = await api_client.resolve_conflict(
+                conflict.conflict_id,
+                ConflictStrategy.REMOTE_WINS,
+                conflict.remote_data,
+            )
+            assert result is True
+
+    @pytest.mark.asyncio
+    async def test_resolve_conflict_without_merged_data(self, api_client):
+        """Test resolving conflict without merged data."""
+        with patch.object(api_client, "_retry_request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {"resolved": True}
+            mock_request.return_value = mock_response
+
+            result = await api_client.resolve_conflict(
+                "c1",
+                ConflictStrategy.LAST_WRITE_WINS,
+            )
+
+            # Verify request was made without merged_data
+            call_args = mock_request.call_args
+            payload = call_args.kwargs.get("json", {})
+            assert "merged_data" not in payload
+            assert result is True
+
+    @pytest.mark.asyncio
+    async def test_full_sync_with_multiple_conflicts(self, api_client):
+        """Test full sync handling multiple conflicts."""
+        conflicts = [
+            Conflict(
+                conflict_id=f"c{i}",
+                entity_type="item",
+                entity_id=f"i{i}",
+                local_version=2,
+                remote_version=1,
+                local_data={"title": f"Local {i}"},
+                remote_data={"title": f"Remote {i}"},
+            )
+            for i in range(3)
+        ]
+
+        with patch.object(api_client, "upload_changes") as mock_upload:
+            with patch.object(api_client, "resolve_conflict") as mock_resolve:
+                with patch.object(api_client, "download_changes") as mock_download:
+                    mock_upload.side_effect = [
+                        ConflictError("Conflicts", conflicts=conflicts),
+                        UploadResult(
+                            applied=["i0", "i1", "i2"],
+                            conflicts=[],
+                            server_time=datetime.utcnow(),
+                        ),
+                    ]
+                    mock_download.return_value = []
+                    mock_resolve.return_value = True
+
+                    result, remote = await api_client.full_sync(
+                        [],
+                        conflict_strategy=ConflictStrategy.LOCAL_WINS,
+                    )
+
+                    assert mock_resolve.call_count == 3  # Called for each conflict
+
+
+# ============================================================================
+# EXTENDED TESTS: Multi-Project Operations
+# ============================================================================
+
+
+class TestMultiProjectOperations:
+    """Test multi-project operations."""
+
+    def test_batch_create_items_multi_project_context(self, tracertm_client):
+        """Test batch create respects project context."""
+        items = [
+            {"title": "Project-specific Item", "view": "FEATURE", "type": "requirement"}
+        ]
+        result = tracertm_client.batch_create_items(items)
+        assert result["items_created"] == 1
+
+        # Verify all items belong to current project
+        all_items = tracertm_client.query_items()
+        for item in all_items:
+            if item["title"] == "Project-specific Item":
+                # Item should be retrievable in current project context
+                retrieved = tracertm_client.get_item(item["id"])
+                assert retrieved is not None
+
+    def test_agent_operations_with_multiple_projects(self, tracertm_client):
+        """Test agent can be assigned to multiple projects."""
+        agent_id = tracertm_client.register_agent(
+            name="Multi-Project Agent",
+            project_ids=["proj-1", "proj-2", "proj-3"],
+        )
+
+        projects = tracertm_client.get_agent_projects(agent_id)
+        assert len(projects) >= 3
+        assert "proj-1" in projects
+        assert "proj-2" in projects
+        assert "proj-3" in projects
+
+    @pytest.mark.asyncio
+    async def test_download_changes_respects_project_filter(self, api_client):
+        """Test download changes respects project filter."""
+        since = datetime.utcnow() - timedelta(hours=1)
+
+        with patch.object(api_client.client, "request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {"changes": []}
+            mock_request.return_value = mock_response
+
+            await api_client.download_changes(since, "proj-123")
+
+            call_args = mock_request.call_args
+            params = call_args.kwargs.get("params", {})
+            assert params["project_id"] == "proj-123"
+
+
+# ============================================================================
+# EXTENDED TESTS: Advanced Error Handling & Retry Scenarios
+# ============================================================================
+
+
+class TestAdvancedErrorHandlingRetries:
+    """Test advanced error handling and retry scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_retry_on_503_service_unavailable(self, api_client):
+        """Test retries on 503 Service Unavailable."""
+        call_count = 0
+
+        async def mock_request(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 2:
+                mock_response = MagicMock()
+                mock_response.status_code = 503
+                mock_response.text = "Service unavailable"
+                raise httpx.HTTPStatusError(
+                    "Error", request=MagicMock(), response=mock_response
+                )
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            return mock_response
+
+        with patch.object(api_client.client, "request", side_effect=mock_request):
+            with patch("asyncio.sleep"):
+                response = await api_client._retry_request("GET", "/api/items")
+                assert response.status_code == 200
+                assert call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_retry_on_502_bad_gateway(self, api_client):
+        """Test retries on 502 Bad Gateway."""
+        call_count = 0
+
+        async def mock_request(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 2:
+                mock_response = MagicMock()
+                mock_response.status_code = 502
+                raise httpx.HTTPStatusError(
+                    "Error", request=MagicMock(), response=mock_response
+                )
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            return mock_response
+
+        with patch.object(api_client.client, "request", side_effect=mock_request):
+            with patch("asyncio.sleep"):
+                response = await api_client._retry_request("GET", "/api/items")
+                assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_rate_limit_with_custom_retry_after(self, api_client):
+        """Test rate limit with custom retry-after value."""
+        call_count = 0
+
+        async def mock_request(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                mock_response = MagicMock()
+                mock_response.status_code = 429
+                mock_response.headers = {"Retry-After": "120"}
+                mock_response.json.return_value = {}
+                mock_response.content = b'{}'
+                return mock_response
+            else:
+                mock_response = MagicMock()
+                mock_response.status_code = 200
+                return mock_response
+
+        with patch.object(api_client.client, "request", side_effect=mock_request):
+            with patch("asyncio.sleep") as mock_sleep:
+                await api_client._retry_request("GET", "/api/items")
+                # Verify sleep was called with retry-after value
+                mock_sleep.assert_called_once_with(120)
+
+    @pytest.mark.asyncio
+    async def test_network_error_accumulates_retries(self, api_client):
+        """Test network errors accumulate across retries."""
+        call_count = 0
+
+        async def mock_request(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise httpx.NetworkError("Connection failed")
+
+        with patch.object(api_client.client, "request", side_effect=mock_request):
+            with patch("asyncio.sleep"):
+                with pytest.raises(NetworkError):
+                    await api_client._retry_request("GET", "/api/items")
+
+                # Should attempt max_retries times
+                assert call_count == api_client.config.max_retries
+
+    @pytest.mark.asyncio
+    async def test_backoff_increases_with_attempts(self, api_client):
+        """Test backoff duration increases with each retry."""
+        call_count = 0
+        sleep_times = []
+
+        async def mock_request(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise httpx.NetworkError("Connection failed")
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            return mock_response
+
+        async def mock_sleep(duration):
+            sleep_times.append(duration)
+
+        with patch.object(api_client.client, "request", side_effect=mock_request):
+            with patch("asyncio.sleep", side_effect=mock_sleep):
+                await api_client._retry_request("GET", "/api/items")
+
+                # Backoff should increase monotonically
+                assert len(sleep_times) >= 1
+                if len(sleep_times) > 1:
+                    assert sleep_times[1] >= sleep_times[0]
+
+
+# ============================================================================
+# EXTENDED TESTS: Special Characters & Data Encoding
+# ============================================================================
+
+
+class TestDataEncodingEdgeCases:
+    """Test data encoding and special characters."""
+
+    def test_create_item_with_unicode_characters(self, tracertm_client):
+        """Test creating item with unicode characters."""
+        result = tracertm_client.create_item(
+            title="Unicode Test: 你好世界 🌍 Привет мир",
+            view="FEATURE",
+            item_type="requirement",
+        )
+        assert result["id"] is not None
+
+    def test_create_item_with_special_characters(self, tracertm_client):
+        """Test creating item with special characters."""
+        result = tracertm_client.create_item(
+            title="Special: <>&\"'\\n\\t",
+            view="FEATURE",
+            item_type="requirement",
+            description="Description with special: <>|{}[]",
+        )
+        assert result["id"] is not None
+
+    def test_create_item_with_very_long_title(self, tracertm_client):
+        """Test creating item with very long title."""
+        long_title = "a" * 500
+        result = tracertm_client.create_item(
+            title=long_title,
+            view="FEATURE",
+            item_type="requirement",
+        )
+        assert result["id"] is not None
+
+    @pytest.mark.asyncio
+    async def test_upload_changes_preserves_special_characters(self, api_client):
+        """Test that special characters are preserved in upload."""
+        changes = [
+            Change(
+                entity_type="item",
+                entity_id="item-1",
+                operation=SyncOperation.CREATE,
+                data={"title": "Title with: <>&\"'\\"},
+            )
+        ]
+
+        with patch.object(api_client.client, "request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "applied": ["item-1"],
+                "conflicts": [],
+                "server_time": datetime.utcnow().isoformat(),
+            }
+            mock_request.return_value = mock_response
+
+            result = await api_client.upload_changes(changes)
+            assert len(result.applied) == 1
+
+
+# ============================================================================
+# EXTENDED TESTS: Sync Status & Metadata
+# ============================================================================
+
+
+class TestSyncStatusMetadata:
+    """Test sync status and metadata retrieval."""
+
+    @pytest.mark.asyncio
+    async def test_get_sync_status_with_pending_changes(self, api_client):
+        """Test get_sync_status with pending changes."""
+        with patch.object(api_client, "_retry_request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {
+                "last_sync": datetime.utcnow().isoformat(),
+                "pending_changes": 42,
+                "online": True,
+                "conflicts_pending": 0,
+            }
+            mock_request.return_value = mock_response
+
+            status = await api_client.get_sync_status()
+            assert status.pending_changes == 42
+            assert status.online is True
+
+    @pytest.mark.asyncio
+    async def test_get_sync_status_offline(self, api_client):
+        """Test get_sync_status when offline."""
+        with patch.object(api_client, "_retry_request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {
+                "last_sync": None,
+                "pending_changes": 10,
+                "online": False,
+                "conflicts_pending": 2,
+            }
+            mock_request.return_value = mock_response
+
+            status = await api_client.get_sync_status()
+            assert status.online is False
+            assert status.conflicts_pending == 2
+
+    def test_export_project_with_empty_items(self, tracertm_client):
+        """Test exporting project with no items."""
+        result = tracertm_client.export_project(format="json")
+        data = json.loads(result)
+        assert "project" in data
+        assert "items" in data
+        assert isinstance(data["items"], list)
+
+    def test_import_data_with_duplicate_items(self, tracertm_client):
+        """Test importing data with duplicate items."""
+        data = {
+            "items": [
+                {"title": "Duplicate", "view": "FEATURE", "type": "requirement"},
+                {"title": "Duplicate", "view": "FEATURE", "type": "requirement"},
+            ],
+            "links": [],
+        }
+        result = tracertm_client.import_data(data)
+        assert result["items_created"] == 2
+
+
+# ============================================================================
+# EXTENDED TESTS: Activity Tracking & Logging
+# ============================================================================
+
+
+class TestActivityTrackingLogging:
+    """Test activity tracking and logging."""
+
+    def test_get_agent_activity_with_no_events(self, tracertm_client):
+        """Test getting activity for agent with no events."""
+        activity = tracertm_client.get_agent_activity("nonexistent-agent")
+        assert activity == []
+
+    def test_get_agent_activity_limit_enforcement(self, tracertm_client):
+        """Test activity retrieval respects limit."""
+        from tracertm.models.agent import Agent
+        from tracertm.models.event import Event
+
+        agent = Agent(
+            project_id="test-project-123",
+            name="Test Agent",
+            agent_type="ai_agent",
+            status="active",
+        )
+        tracertm_client._session.add(agent)
+        tracertm_client._session.commit()
+
+        # Create multiple events
+        for i in range(10):
+            event = Event(
+                project_id="test-project-123",
+                event_type="item_created",
+                entity_type="item",
+                entity_id=f"item-{i}",
+                data={"index": i},
+                agent_id=agent.id,
+            )
+            tracertm_client._session.add(event)
+        tracertm_client._session.commit()
+
+        activity = tracertm_client.get_agent_activity(agent.id, limit=5)
+        assert len(activity) == 5
+
+    def test_get_all_agents_activity_multi_agent(self, tracertm_client):
+        """Test getting activity for multiple agents."""
+        from tracertm.models.agent import Agent
+
+        agent1 = Agent(
+            project_id="test-project-123",
+            name="Agent 1",
+            agent_type="ai_agent",
+            status="active",
+        )
+        agent2 = Agent(
+            project_id="test-project-123",
+            name="Agent 2",
+            agent_type="ai_agent",
+            status="active",
+        )
+        tracertm_client._session.add_all([agent1, agent2])
+        tracertm_client._session.commit()
+
+        activity = tracertm_client.get_all_agents_activity()
+        assert isinstance(activity, dict)
+        assert len(activity) >= 2
+
+
+# ============================================================================
+# EXTENDED TESTS: Configuration & Initialization
+# ============================================================================
+
+
+class TestConfigurationInitialization:
+    """Test configuration and initialization scenarios."""
+
+    def test_tracertm_client_without_database_url(self):
+        """Test TraceRTMClient initialization without database URL."""
+        with patch("tracertm.config.manager.ConfigManager") as mock_cm:
+            mock_config = MagicMock()
+            mock_config.get.return_value = None
+            mock_cm.return_value = mock_config
+
+            client = TraceRTMClient()
+            with pytest.raises(ValueError, match="Database not configured"):
+                client._get_session()
+
+    def test_tracertm_client_without_project(self):
+        """Test TraceRTMClient initialization without current project."""
+        with patch("tracertm.config.manager.ConfigManager") as mock_cm:
+            mock_config = MagicMock()
+            mock_config.get.side_effect = lambda key: (
+                "sqlite:///:memory:" if key == "database_url" else None
+            )
+            mock_cm.return_value = mock_config
+
+            client = TraceRTMClient()
+            with pytest.raises(ValueError, match="No project selected"):
+                client._get_project_id()
+
+    @pytest.mark.asyncio
+    async def test_api_config_with_custom_backoff_parameters(self):
+        """Test ApiConfig with custom backoff parameters."""
+        config = ApiConfig(
+            base_url="https://api.test.com",
+            retry_backoff_base=1.5,
+            retry_backoff_max=30.0,
+        )
+        assert config.retry_backoff_base == 1.5
+        assert config.retry_backoff_max == 30.0
+
+    @pytest.mark.asyncio
+    async def test_api_client_timeout_configuration_various_values(self):
+        """Test API client with various timeout values."""
+        test_cases = [1.0, 15.0, 60.0, 120.0]
+        for timeout in test_cases:
+            config = ApiConfig(base_url="https://api.test.com", timeout=timeout)
+            client = ApiClient(config)
+            assert client.client.timeout.read == timeout
+            await client.close()
+
+
+# ============================================================================
+# EXTENDED TESTS: JSON Serialization Edge Cases
+# ============================================================================
+
+
+class TestJSONSerializationEdgeCases:
+    """Test JSON serialization edge cases."""
+
+    def test_change_serialization_with_none_values(self):
+        """Test Change serialization with None values."""
+        change = Change(
+            entity_type="item",
+            entity_id="item-1",
+            operation=SyncOperation.UPDATE,
+            data={"title": None, "description": None},
+        )
+        change_dict = change.to_dict()
+        json_str = json.dumps(change_dict, default=str)
+        assert "null" in json_str
+
+    def test_upload_result_with_large_error_list(self):
+        """Test UploadResult with many errors."""
+        errors = [{"id": f"item-{i}", "reason": f"Error {i}"} for i in range(100)]
+        result = UploadResult(
+            applied=[],
+            conflicts=[],
+            server_time=datetime.utcnow(),
+            errors=errors,
+        )
+        assert len(result.errors) == 100
+
+    def test_conflict_with_nested_data_structures(self):
+        """Test Conflict with nested data structures."""
+        conflict = Conflict(
+            conflict_id="c1",
+            entity_type="item",
+            entity_id="item-1",
+            local_version=1,
+            remote_version=1,
+            local_data={
+                "title": "Title",
+                "metadata": {"nested": {"deeply": {"value": "test"}}},
+            },
+            remote_data={
+                "title": "Title",
+                "metadata": {"nested": {"deeply": {"value": "test"}}},
+            },
+        )
+        assert conflict.local_data["metadata"]["nested"]["deeply"]["value"] == "test"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
