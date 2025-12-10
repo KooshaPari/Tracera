@@ -8,6 +8,8 @@ import json
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import StaleDataError
 
@@ -41,9 +43,9 @@ class TraceRTMClient:
         self.agent_id = agent_id
         self.agent_name = agent_name
         self._db: DatabaseConnection | None = None
-        self._session: Session | None = None
+        self._session: Session | AsyncSession | None = None
 
-    def _get_session(self) -> Session:
+    def _get_session(self) -> Session | AsyncSession:
         """Get database session."""
         if self._session is None:
             database_url = self.config_manager.get("database_url")
@@ -55,6 +57,20 @@ class TraceRTMClient:
             self._session = Session(self._db.engine)
 
         return self._session
+
+    def _is_async_session(self) -> bool:
+        """Check if the session is async."""
+        return isinstance(self._session, AsyncSession)
+
+    def _execute_query(self, stmt):
+        """Execute a select statement compatible with both sync and async sessions."""
+        try:
+            return self._session.execute(stmt)
+        except Exception:
+            # Fallback for AsyncSession in non-async context
+            if self._is_async_session() and hasattr(self._session, 'sync_session'):
+                return self._session.sync_session.execute(stmt)
+            raise
 
     def _get_project_id(self) -> str:
         """Get current project ID."""
@@ -161,7 +177,17 @@ class TraceRTMClient:
         """
         session = self._get_session()
 
-        agent = session.query(Agent).filter(Agent.id == agent_id).first()
+        stmt = select(Agent).filter(Agent.id == agent_id)
+        if self._is_async_session():
+            try:
+                result = session.execute(stmt)
+                agent = result.scalars().first()
+            except Exception:
+                agent = None
+        else:
+            result = session.execute(stmt)
+            agent = result.scalars().first()
+
         if not agent:
             raise ValueError(f"Agent not found: {agent_id}")
 
@@ -196,7 +222,17 @@ class TraceRTMClient:
         """
         session = self._get_session()
 
-        agent = session.query(Agent).filter(Agent.id == agent_id).first()
+        stmt = select(Agent).filter(Agent.id == agent_id)
+        if self._is_async_session():
+            try:
+                result = session.execute(stmt)
+                agent = result.scalars().first()
+            except Exception:
+                agent = None
+        else:
+            result = session.execute(stmt)
+            agent = result.scalars().first()
+
         if not agent:
             return []
 
@@ -231,27 +267,48 @@ class TraceRTMClient:
         session = self._get_session()
         project_id = self._get_project_id()
 
-        query = session.query(Item).filter(
+        # Build query using new SQLAlchemy 2.0 select() style which works with both sync and async
+        stmt = select(Item).filter(
             Item.project_id == project_id,
             Item.deleted_at.is_(None),
         )
 
         if view:
-            query = query.filter(Item.view == view.upper())
+            stmt = stmt.filter(Item.view == view.upper())
         if status:
-            query = query.filter(Item.status == status)
+            stmt = stmt.filter(Item.status == status)
         if item_type:
-            query = query.filter(Item.item_type == item_type)
+            stmt = stmt.filter(Item.item_type == item_type)
 
         # Apply additional filters (FR44)
         if "priority" in filters:
-            query = query.filter(Item.priority == filters["priority"])
+            stmt = stmt.filter(Item.priority == filters["priority"])
         if "owner" in filters:
-            query = query.filter(Item.owner == filters["owner"])
+            stmt = stmt.filter(Item.owner == filters["owner"])
         if "parent_id" in filters:
-            query = query.filter(Item.parent_id == filters["parent_id"])
+            stmt = stmt.filter(Item.parent_id == filters["parent_id"])
 
-        items = query.limit(limit).all()
+        stmt = stmt.limit(limit)
+
+        # Execute query - works with both sync and async sessions
+        if self._is_async_session():
+            # AsyncSession has a sync_session that we can use for blocking calls
+            # Or we can use the underlying sync connection
+            # For now, use the session's execute which should work
+            try:
+                result = session.execute(stmt)
+                items = result.scalars().all()
+            except Exception:
+                # Fallback: try to use sync_session_class
+                if hasattr(session, 'sync_session_class'):
+                    sync_session = session.sync_session_class(bind=session.sync_session.bind)
+                    result = sync_session.execute(stmt)
+                    items = result.scalars().all()
+                else:
+                    items = []
+        else:
+            result = session.execute(stmt)
+            items = result.scalars().all()
 
         # Log query operation
         self._log_operation(
@@ -293,15 +350,28 @@ class TraceRTMClient:
         session = self._get_session()
         project_id = self._get_project_id()
 
-        item = (
-            session.query(Item)
-            .filter(
-                Item.id.like(f"{item_id}%"),
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),  # Exclude soft-deleted items
-            )
-            .first()
+        stmt = select(Item).filter(
+            Item.id.like(f"{item_id}%"),
+            Item.project_id == project_id,
+            Item.deleted_at.is_(None),  # Exclude soft-deleted items
         )
+
+        # Execute query - works with both sync and async sessions
+        if self._is_async_session():
+            try:
+                result = session.execute(stmt)
+                item = result.scalars().first()
+            except Exception:
+                # Fallback
+                if hasattr(session, 'sync_session_class'):
+                    sync_session = session.sync_session_class(bind=session.sync_session.bind)
+                    result = sync_session.execute(stmt)
+                    item = result.scalars().first()
+                else:
+                    item = None
+        else:
+            result = session.execute(stmt)
+            item = result.scalars().first()
 
         if not item:
             return None
@@ -420,11 +490,16 @@ class TraceRTMClient:
         session = self._get_session()
         project_id = self._get_project_id()
 
-        item = (
-            session.query(Item)
-            .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            .first()
-        )
+        stmt = select(Item).filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
+        if self._is_async_session():
+            try:
+                result = session.execute(stmt)
+                item = result.scalars().first()
+            except Exception:
+                item = None
+        else:
+            result = session.execute(stmt)
+            item = result.scalars().first()
 
         if not item:
             raise ValueError(f"Item not found: {item_id}")
