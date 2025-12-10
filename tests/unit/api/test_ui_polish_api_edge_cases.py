@@ -412,18 +412,18 @@ class TestApiAuthenticationErrorEdgeCases:
 class TestApiConflictErrorEdgeCases:
     """Test API conflict error handling."""
 
-    def test_conflict_error_with_message(self):
-        """Test conflict error creation with message."""
+    def test_conflict_error_with_empty_list(self):
+        """Test conflict error with empty conflicts list."""
         from tracertm.api.sync_client import ConflictError
 
-        error = ConflictError(message="Conflicts detected")
+        error = ConflictError(conflicts=[], message="Conflicts detected")
         assert error.status_code == 409
 
-    def test_conflict_error_multiple_messages(self):
-        """Test conflict error with multiple items."""
+    def test_conflict_error_with_conflicts(self):
+        """Test conflict error with conflict items."""
         from tracertm.api.sync_client import ConflictError
 
-        error = ConflictError(message="Multiple conflicts between items")
+        error = ConflictError(conflicts=[], message="Multiple conflicts between items")
         assert error.status_code == 409
 
 
