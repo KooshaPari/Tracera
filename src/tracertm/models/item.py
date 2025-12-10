@@ -82,5 +82,29 @@ class Item(Base, TimestampMixin):
         "version_id_col": version,  # Enable optimistic locking
     }
 
+    def __init__(self, **kwargs):
+        # Map test-friendly aliases to internal column names
+        if "type" in kwargs and "item_type" not in kwargs:
+            kwargs["item_type"] = kwargs.pop("type")
+        if "metadata" in kwargs and "item_metadata" not in kwargs:
+            kwargs["item_metadata"] = kwargs.pop("metadata")
+        super().__init__(**kwargs)
+
+    @property
+    def type(self):
+        return self.item_type
+
+    @type.setter
+    def type(self, value):
+        self.item_type = value
+
+    @property
+    def metadata(self):
+        return self.item_metadata
+
+    @metadata.setter
+    def metadata(self, value):
+        self.item_metadata = value
+
     def __repr__(self) -> str:
         return f"<Item(id={self.id!r}, title={self.title!r}, view={self.view!r})>"

@@ -135,7 +135,12 @@ async function getDocContent(slug?: string[]) {
       // Continue with empty frontmatter
     }
 
-    const body = match[2]
+    let body = match[2].trim()
+    
+    // If body is empty or just placeholder text, provide a better default
+    if (!body || body.length < 10 || body.toLowerCase().includes('coming soon') || body.toLowerCase().includes('under development')) {
+      body = `# ${frontmatter.title || 'Documentation'}\n\n${frontmatter.description || 'This page is currently being developed. Please check back soon.'}\n\n## Overview\n\nContent for this section is coming soon.`
+    }
 
     const mdxOptions = applyMdxPreset({
       remarkPlugins: (defaults) => [remarkGfm, ...defaults],
@@ -211,9 +216,20 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
         slug={resolvedParams.slug}
         heading={{ title: fallbackContent.title, description: fallbackContent.description }}
       >
-        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-zinc-950 prose-pre:text-zinc-50">
+        <article className="prose prose-sm max-w-none dark:prose-invert 
+          prose-headings:font-bold prose-headings:text-foreground 
+          prose-p:text-foreground prose-p:leading-7
+          prose-strong:text-foreground prose-strong:font-semibold
+          prose-code:text-foreground prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+          prose-pre:bg-zinc-950 prose-pre:text-zinc-50 prose-pre:border prose-pre:border-border
+          prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+          prose-ul:list-disc prose-ol:list-decimal
+          prose-li:text-foreground prose-li:my-1
+          prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic
+          prose-table:border prose-th:border prose-td:border prose-th:bg-muted/50
+          prose-img:rounded-lg prose-img:border prose-img:shadow-sm">
           <fallbackContent.Content components={mdxComponents} />
-        </div>
+        </article>
       </DocsPageClient>
     )
   }
@@ -229,9 +245,20 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
         slug={resolvedParams.slug}
         heading={{ title: fallbackContent.title, description: fallbackContent.description }}
       >
-        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-zinc-950 prose-pre:text-zinc-50">
+        <article className="prose prose-sm max-w-none dark:prose-invert 
+          prose-headings:font-bold prose-headings:text-foreground 
+          prose-p:text-foreground prose-p:leading-7
+          prose-strong:text-foreground prose-strong:font-semibold
+          prose-code:text-foreground prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+          prose-pre:bg-zinc-950 prose-pre:text-zinc-50 prose-pre:border prose-pre:border-border
+          prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+          prose-ul:list-disc prose-ol:list-decimal
+          prose-li:text-foreground prose-li:my-1
+          prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic
+          prose-table:border prose-th:border prose-td:border prose-th:bg-muted/50
+          prose-img:rounded-lg prose-img:border prose-img:shadow-sm">
           <fallbackContent.Content components={mdxComponents} />
-        </div>
+        </article>
       </DocsPageClient>
     )
   }
@@ -241,9 +268,20 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
       slug={resolvedParams.slug}
       heading={{ title: docContent.title, description: docContent.description }}
     >
-      <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-zinc-950 prose-pre:text-zinc-50">
+      <article className="prose prose-sm max-w-none dark:prose-invert 
+        prose-headings:font-bold prose-headings:text-foreground 
+        prose-p:text-foreground prose-p:leading-7
+        prose-strong:text-foreground prose-strong:font-semibold
+        prose-code:text-foreground prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+        prose-pre:bg-zinc-950 prose-pre:text-zinc-50 prose-pre:border prose-pre:border-border
+        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+        prose-ul:list-disc prose-ol:list-decimal
+        prose-li:text-foreground prose-li:my-1
+        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic
+        prose-table:border prose-th:border prose-td:border prose-th:bg-muted/50
+        prose-img:rounded-lg prose-img:border prose-img:shadow-sm">
         <docContent.Content components={mdxComponents} />
-      </div>
+      </article>
     </DocsPageClient>
   )
 }

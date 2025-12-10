@@ -57,5 +57,28 @@ class Link(Base, TimestampMixin):
     link_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     link_metadata: Mapped[dict] = mapped_column(JSONType, nullable=False, default=dict)
 
+    def __init__(self, **kwargs):
+        if "type" in kwargs and "link_type" not in kwargs:
+            kwargs["link_type"] = kwargs.pop("type")
+        if "metadata" in kwargs and "link_metadata" not in kwargs:
+            kwargs["link_metadata"] = kwargs.pop("metadata")
+        super().__init__(**kwargs)
+
+    @property
+    def type(self):
+        return self.link_type
+
+    @type.setter
+    def type(self, value):
+        self.link_type = value
+
+    @property
+    def metadata(self):
+        return self.link_metadata
+
+    @metadata.setter
+    def metadata(self, value):
+        self.link_metadata = value
+
     def __repr__(self) -> str:
         return f"<Link(id={self.id!r}, type={self.link_type!r})>"

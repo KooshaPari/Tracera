@@ -158,42 +158,96 @@ class ExportService:
         """
         Export project to YAML format.
 
-        STUB: Returns minimal YAML structure. TODO: Implement full YAML export.
-
         Args:
             project_id: Project ID to export
 
         Returns:
             YAML string with project data
         """
-        # STUB: Minimal implementation to unblock tests
-        # Real implementation should mirror export_to_json but in YAML format
         try:
             import yaml
         except ImportError:
-            # Fallback if yaml not installed
-            return f"project:\n  id: {project_id}\n  name: stub\nitems: []\nlinks: []\n"
+            # Fallback if yaml not installed - return manual YAML format
+            return await self._export_yaml_fallback(project_id)
 
         project = await self.projects.get_by_id(project_id)
         items = await self.items.query(project_id, {})
+
+        # Build items list
+        items_list = []
+        for item in items:
+            item_data = {
+                "id": item.id,
+                "title": item.title,
+                "view": item.view,
+                "type": item.item_type,
+                "status": item.status,
+                "description": item.description or "",
+            }
+            if hasattr(item, "version"):
+                item_data["version"] = item.version
+            items_list.append(item_data)
+
+        # Build links list
+        links_list = []
+        for item in items:
+            links = await self.links.get_by_source(item.id)
+            for link in links:
+                links_list.append({
+                    "source_id": link.source_item_id,
+                    "target_id": link.target_item_id,
+                    "type": link.link_type,
+                })
 
         data = {
             "project": {
                 "id": project.id if project else project_id,
                 "name": project.name if project else "Unknown",
                 "description": project.description if project else "",
+                "export_date": datetime.utcnow().isoformat(),
             },
-            "items": [
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "view": item.view,
-                    "type": item.item_type,
-                    "status": item.status,
-                }
-                for item in items
-            ],
-            "links": [],
+            "items": items_list,
+            "links": links_list,
         }
 
-        return yaml.dump(data, default_flow_style=False)
+        return yaml.dump(data, default_flow_style=False, sort_keys=False)
+
+    async def _export_yaml_fallback(self, project_id: str) -> str:
+        """
+        Fallback YAML export when yaml library is not available.
+
+        Args:
+            project_id: Project ID to export
+
+        Returns:
+            Manual YAML format string
+        """
+        project = await self.projects.get_by_id(project_id)
+        items = await self.items.query(project_id, {})
+
+        yaml_lines = []
+        yaml_lines.append("project:")
+        yaml_lines.append(f"  id: {project.id if project else project_id}")
+        yaml_lines.append(f"  name: {project.name if project else 'Unknown'}")
+        yaml_lines.append(f"  description: {project.description if project else ''}")
+        yaml_lines.append(f"  export_date: {datetime.utcnow().isoformat()}")
+        yaml_lines.append("items:")
+
+        for item in items:
+            yaml_lines.append("  - id: " + str(item.id))
+            yaml_lines.append("    title: " + str(item.title))
+            yaml_lines.append("    view: " + str(item.view))
+            yaml_lines.append("    type: " + str(item.item_type))
+            yaml_lines.append("    status: " + str(item.status))
+            if item.description:
+                yaml_lines.append("    description: " + str(item.description))
+
+        yaml_lines.append("links:")
+        for item in items:
+            links = await self.links.get_by_source(item.id)
+            for link in links:
+                yaml_lines.append("  - source_id: " + str(link.source_item_id))
+                yaml_lines.append("    target_id: " + str(link.target_item_id))
+                yaml_lines.append("    type: " + str(link.link_type))
+
+        return "\n".join(yaml_lines)

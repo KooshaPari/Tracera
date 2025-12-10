@@ -616,10 +616,39 @@ class SyncEngine:
         """
         changes_queued = 0
 
-        # This will be implemented with LocalStorageManager
-        # For now, return placeholder
-        # TODO: Implement actual change detection
-        logger.info("Change detection placeholder - integrate with LocalStorageManager")
+        try:
+            # Get all local items from database
+            with self.db.engine.connect() as conn:
+                # Get all items
+                result = conn.execute(
+                    text("SELECT id, content, updated_at FROM item")
+                )
+                local_items = {row[0]: {"content": row[1], "updated_at": row[2]} for row in result}
+
+            # Check for new or modified items
+            if hasattr(self.storage, 'get_item_hashes'):
+                stored_hashes = self.storage.get_item_hashes()
+
+                for item_id, item_data in local_items.items():
+                    content = str(item_data.get("content", ""))
+                    current_hash = self.change_detector.compute_hash(content)
+                    stored_hash = stored_hashes.get(item_id)
+
+                    if self.change_detector.has_changed(content, stored_hash):
+                        # Queue as UPDATE operation
+                        self.queue_change(
+                            EntityType.ITEM,
+                            item_id,
+                            OperationType.UPDATE,
+                            {"content": content, "updated_at": item_data.get("updated_at")}
+                        )
+                        changes_queued += 1
+                        logger.debug(f"Queued change for item {item_id}")
+
+            logger.info(f"Change detection complete: {changes_queued} changes queued")
+
+        except Exception as e:
+            logger.error(f"Error detecting changes: {e}", exc_info=True)
 
         return changes_queued
 
@@ -699,14 +728,23 @@ class SyncEngine:
         result = SyncResult(success=True)
 
         try:
-            # Call API to get changes
-            # This will be implemented with actual API client
-            # TODO: Implement actual pull logic
             logger.info(f"Pulling changes since {since}")
 
-            # Placeholder
+            # Try to fetch remote changes via API client
             remote_changes = []
+            if hasattr(self.api, 'get_changes'):
+                try:
+                    # Call API to get changes since last sync
+                    params = {"since": since.isoformat()} if since else {}
+                    remote_changes = await self.api.get_changes(**params)
+                except Exception as e:
+                    logger.warning(f"Failed to fetch remote changes: {e}")
+                    # Continue with empty list - not a hard failure
+                    remote_changes = []
 
+            logger.debug(f"Retrieved {len(remote_changes)} remote changes")
+
+            # Apply each remote change
             for change in remote_changes:
                 try:
                     await self._apply_remote_change(change)
@@ -714,6 +752,9 @@ class SyncEngine:
                 except Exception as e:
                     logger.error(f"Error applying remote change: {e}", exc_info=True)
                     result.errors.append(str(e))
+
+            if remote_changes:
+                logger.info(f"Applied {result.entities_synced} remote changes")
 
         except Exception as e:
             logger.error(f"Failed to pull changes: {e}", exc_info=True)
@@ -775,11 +816,74 @@ class SyncEngine:
         Apply a remote change to local storage.
 
         Args:
-            change: Remote change data
+            change: Remote change data (must contain entity_type, entity_id, operation, payload)
         """
-        # This will integrate with LocalStorageManager
-        # TODO: Implement actual application logic
-        logger.debug(f"Applying remote change: {change}")
+        try:
+            entity_type_str = change.get("entity_type")
+            entity_id = change.get("entity_id")
+            operation_str = change.get("operation")
+            payload = change.get("payload", {})
+
+            # Validate required fields
+            if not all([entity_type_str, entity_id, operation_str]):
+                logger.warning(f"Incomplete remote change data: {change}")
+                return
+
+            # Convert strings to enums
+            try:
+                entity_type = EntityType(entity_type_str)
+                operation = OperationType(operation_str)
+            except ValueError as e:
+                logger.error(f"Invalid entity or operation type in remote change: {e}")
+                return
+
+            logger.debug(f"Applying remote change: {entity_type.value} {entity_id} {operation.value}")
+
+            with self.db.engine.begin() as conn:
+                if operation == OperationType.CREATE:
+                    # Insert new entity
+                    conn.execute(
+                        text(f"""
+                            INSERT OR IGNORE INTO {entity_type.value}
+                            (id, content, updated_at, synced_at)
+                            VALUES (:id, :content, :updated_at, :synced_at)
+                        """),
+                        {
+                            "id": entity_id,
+                            "content": json.dumps(payload),
+                            "updated_at": datetime.utcnow().isoformat(),
+                            "synced_at": datetime.utcnow().isoformat()
+                        }
+                    )
+
+                elif operation == OperationType.UPDATE:
+                    # Update existing entity
+                    conn.execute(
+                        text(f"""
+                            UPDATE {entity_type.value}
+                            SET content = :content, updated_at = :updated_at, synced_at = :synced_at
+                            WHERE id = :id
+                        """),
+                        {
+                            "id": entity_id,
+                            "content": json.dumps(payload),
+                            "updated_at": datetime.utcnow().isoformat(),
+                            "synced_at": datetime.utcnow().isoformat()
+                        }
+                    )
+
+                elif operation == OperationType.DELETE:
+                    # Delete entity
+                    conn.execute(
+                        text(f"DELETE FROM {entity_type.value} WHERE id = :id"),
+                        {"id": entity_id}
+                    )
+
+            logger.debug(f"Successfully applied remote change for {entity_type.value} {entity_id}")
+
+        except Exception as e:
+            logger.error(f"Error applying remote change: {e}", exc_info=True)
+            raise
 
     def _resolve_conflict(
         self,
@@ -810,8 +914,11 @@ class SyncEngine:
 
         elif self.conflict_strategy == ConflictStrategy.MANUAL:
             # Create conflict file for manual resolution
-            # TODO: Implement conflict file creation
-            logger.warning("Manual conflict resolution required")
+            try:
+                conflict_file = self._create_conflict_file(local_data, remote_data)
+                logger.warning(f"Manual conflict resolution required, created {conflict_file}")
+            except Exception as e:
+                logger.error(f"Failed to create conflict file: {e}", exc_info=True)
             return local_data
 
         return local_data
@@ -843,6 +950,53 @@ class SyncEngine:
     # ========================================================================
     # Utility Methods
     # ========================================================================
+
+    def _create_conflict_file(
+        self,
+        local_data: dict[str, Any],
+        remote_data: dict[str, Any]
+    ) -> str:
+        """
+        Create a conflict file for manual resolution.
+
+        Args:
+            local_data: Local version
+            remote_data: Remote version
+
+        Returns:
+            Path to created conflict file
+        """
+        timestamp = datetime.utcnow().isoformat().replace(":", "-")
+        conflict_content = f"""# SYNC CONFLICT
+Date: {timestamp}
+Strategy: MANUAL RESOLUTION REQUIRED
+
+## Local Version
+```json
+{json.dumps(local_data, indent=2)}
+```
+
+## Remote Version
+```json
+{json.dumps(remote_data, indent=2)}
+```
+
+## Instructions
+1. Review both versions above
+2. Choose which version to keep or manually merge
+3. Delete this conflict file when resolved
+4. Run sync again to continue
+"""
+
+        if hasattr(self.storage, 'trace_path'):
+            conflicts_dir = self.storage.trace_path / ".conflicts"
+            conflicts_dir.mkdir(exist_ok=True)
+            conflict_file = conflicts_dir / f"conflict_{timestamp}.md"
+            conflict_file.write_text(conflict_content)
+            return str(conflict_file)
+        else:
+            logger.warning("Storage manager does not have trace_path attribute")
+            return f"conflict_{timestamp}.md"
 
     async def clear_queue(self) -> None:
         """Clear all pending changes from the sync queue."""

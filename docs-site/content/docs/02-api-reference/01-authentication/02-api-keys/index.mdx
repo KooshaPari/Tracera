@@ -1,18 +1,311 @@
 ---
 title: "API Keys"
-description: "Create and rotate API keys."
+description: "Generate and manage API keys for server-to-server authentication with TraceRTM"
+keywords: [api keys, authentication, server-to-server, automation]
 ---
 
-## Overview
-Use server-side keys for automation; keep lifetimes short.
+# API Keys
 
-## Request shape
-```http
-POST /v1/auth/api-keys
-Authorization: Bearer <token>
+API keys provide a simple, permanent authentication method for server-to-server communication, automated scripts, and CI/CD pipelines.
+
+## Overview
+
+API keys are:
+- **Permanent**: Don't expire unless revoked
+- **Simple**: Single header for authentication
+- **Scoped**: Can be restricted to specific projects or permissions
+- **Rotatable**: Easy to regenerate and update
+
+## Getting Your API Key
+
+### From the Dashboard
+
+1. Log in to your TraceRTM dashboard
+2. Navigate to **Settings** → **API Keys**
+3. Click **Create API Key**
+4. Copy the key immediately (it won't be shown again)
+
+### From the CLI
+
+```bash
+# Generate a new API key
+trace api-key create --name "Production Server"
+
+# List your API keys
+trace api-key list
+
+# View key details
+trace api-key show <key-id>
 ```
 
-## Tips
-- Rotate credentials regularly and record rotation in audit logs.
-- Scope tokens to the minimum set of permissions needed.
-- Enforce MFA for human accounts; restrict service tokens by IP when possible.
+## Using API Keys
+
+### HTTP Header
+
+Include your API key in the `X-API-Key` header:
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects" \
+  -H "X-API-Key: rtm_live_abc123..." \
+  -H "Content-Type: application/json"
+```
+
+### Python SDK
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+projects = client.projects.list()
+```
+
+### JavaScript SDK
+
+```javascript
+import { TraceRTM } from '@tracertm/sdk';
+
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
+});
+
+const projects = await client.projects.list();
+```
+
+## API Key Format
+
+API keys follow this format:
+
+```
+rtm_{environment}_{random_string}
+```
+
+Examples:
+- `rtm_live_abc123def456ghi789` - Production key
+- `rtm_test_xyz789uvw456rst123` - Test key
+
+## Key Types
+
+### Live Keys
+- Production environment
+- Full access to your account
+- Use for production applications
+
+### Test Keys
+- Test/sandbox environment
+- Limited to test projects
+- Safe for development
+
+## Scopes and Permissions
+
+API keys can be scoped to specific permissions:
+
+### Project-Level Keys
+Restricted to specific projects:
+
+```bash
+# Create project-scoped key
+trace api-key create \
+  --name "Project A Key" \
+  --project-id "proj_123" \
+  --permissions "read,write"
+```
+
+### Global Keys
+Access to all projects:
+
+```bash
+# Create global key
+trace api-key create \
+  --name "Admin Key" \
+  --permissions "read,write,admin"
+```
+
+### Permission Levels
+
+| Permission | Description |
+|------------|-------------|
+| `read` | Read-only access |
+| `write` | Create and update resources |
+| `admin` | Full administrative access |
+| `delete` | Delete resources |
+
+## Security Best Practices
+
+### 1. Store Securely
+Never commit API keys to version control:
+
+```bash
+# ✅ Good: Environment variables
+export TRACERTM_API_KEY="rtm_live_..."
+
+# ❌ Bad: Hardcoded in code
+api_key = "rtm_live_abc123..."
+```
+
+### 2. Use Different Keys
+Use separate keys for different environments:
+
+- Development: `rtm_test_...`
+- Staging: `rtm_test_...`
+- Production: `rtm_live_...`
+
+### 3. Rotate Regularly
+Rotate keys periodically:
+
+```bash
+# Create new key
+trace api-key create --name "New Production Key"
+
+# Update applications to use new key
+
+# Revoke old key
+trace api-key revoke <old-key-id>
+```
+
+### 4. Monitor Usage
+Review API key usage regularly:
+
+```bash
+# View key usage
+trace api-key usage <key-id>
+
+# Check recent requests
+trace api-key logs <key-id>
+```
+
+## Key Management
+
+### List Keys
+
+```bash
+trace api-key list
+```
+
+Output:
+```
+ID          Name              Created        Last Used
+key_123     Production       2025-01-15     2025-01-20
+key_456     CI/CD Pipeline   2025-01-10     2025-01-20
+```
+
+### View Key Details
+
+```bash
+trace api-key show key_123
+```
+
+### Revoke a Key
+
+```bash
+# Revoke immediately
+trace api-key revoke key_123
+
+# Revoke with confirmation
+trace api-key revoke key_123 --confirm
+```
+
+### Update Key Metadata
+
+```bash
+# Update key name
+trace api-key update key_123 --name "Updated Name"
+
+# Update permissions
+trace api-key update key_123 --permissions "read,write"
+```
+
+## Error Handling
+
+### Invalid API Key
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "Invalid API key"
+  }
+}
+```
+
+**Solution**: Verify the key is correct and hasn't been revoked.
+
+### Expired Key
+
+API keys don't expire, but can be revoked. If you receive an authentication error, check if the key was revoked.
+
+### Insufficient Permissions
+
+```json
+{
+  "error": {
+    "code": "insufficient_permissions",
+    "message": "API key does not have required permissions"
+  }
+}
+```
+
+**Solution**: Update the key's permissions or use a key with appropriate access.
+
+## Rate Limiting
+
+API keys are subject to rate limiting based on your plan:
+
+| Plan | Requests/minute |
+|------|----------------|
+| Free | 60 |
+| Pro | 300 |
+| Enterprise | 1,000 |
+
+Rate limit headers:
+```http
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1704067200
+```
+
+## Examples
+
+### Basic Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects" \
+  -H "X-API-Key: rtm_live_abc123..."
+```
+
+### Create Item
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/items" \
+  -H "X-API-Key: rtm_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "New Requirement",
+    "view": "requirements",
+    "project_id": "proj_123"
+  }'
+```
+
+### Python Example
+
+```python
+import os
+from tracertm import TraceRTM
+
+# Get API key from environment
+api_key = os.getenv("TRACERTM_API_KEY")
+
+# Initialize client
+client = TraceRTM(api_key=api_key)
+
+# List projects
+projects = client.projects.list()
+for project in projects:
+    print(f"{project.id}: {project.name}")
+```
+
+## Next Steps
+
+- [OAuth 2.0](./03-oauth2) - For user-facing applications
+- [JWT Tokens](./04-jwt) - For stateless authentication
+- [Scopes](./05-scopes) - Understand permission scopes
+- [Rate Limiting](./06-rate-limiting) - Learn about rate limits

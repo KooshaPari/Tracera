@@ -519,8 +519,6 @@ class ItemService:
         """
         Query items by relationship to a given item.
 
-        STUB: Returns empty list. TODO: Implement relationship querying logic.
-
         Args:
             project_id: Project ID
             item_id: Item ID to find related items for
@@ -530,10 +528,43 @@ class ItemService:
         Returns:
             List of items related to the given item
         """
-        # STUB: Minimal implementation to unblock tests
-        # Real implementation would:
-        # 1. Get links involving item_id based on direction
-        # 2. Filter by link_type if provided
-        # 3. Get the related items
-        # 4. Return the items
-        return []
+        related_items = []
+
+        try:
+            # Get outgoing links (item_id is source)
+            if direction in ("outgoing", "both"):
+                outgoing_links = await self.link_repo.get_by_source(item_id)
+                for link in outgoing_links:
+                    # Filter by link type if provided
+                    if link_type and link.link_type != link_type:
+                        continue
+                    # Get the target item
+                    target = await self.item_repo.get_by_id(link.target_item_id)
+                    if target and target.project_id == project_id:
+                        related_items.append(target)
+
+            # Get incoming links (item_id is target)
+            if direction in ("incoming", "both"):
+                incoming_links = await self.link_repo.get_by_target(item_id)
+                for link in incoming_links:
+                    # Filter by link type if provided
+                    if link_type and link.link_type != link_type:
+                        continue
+                    # Get the source item
+                    source = await self.item_repo.get_by_id(link.source_item_id)
+                    if source and source.project_id == project_id:
+                        related_items.append(source)
+
+            # Remove duplicates (if direction="both" and item has circular references)
+            seen_ids = set()
+            unique_items = []
+            for item in related_items:
+                if item.id not in seen_ids:
+                    seen_ids.add(item.id)
+                    unique_items.append(item)
+
+            return unique_items
+
+        except Exception as e:
+            logger.error(f"Error getting related items for {item_id}: {e}", exc_info=True)
+            return []
