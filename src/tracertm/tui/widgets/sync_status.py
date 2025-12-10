@@ -257,7 +257,6 @@ if TEXTUAL_AVAILABLE:
             """
             self.last_error = error
 
-
     class CompactSyncStatus(Static):
         """
         Compact single-line sync status widget for headers/footers.

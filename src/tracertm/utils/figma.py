@@ -154,10 +154,7 @@ def build_figma_url(
     """
     base = "https://www.figma.com/file"
 
-    if file_name:
-        url = f"{base}/{file_key}/{file_name}"
-    else:
-        url = f"{base}/{file_key}"
+    url = f"{base}/{file_key}/{file_name}" if file_name else f"{base}/{file_key}"
 
     if node_id:
         url = f"{url}?node-id={node_id}"

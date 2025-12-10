@@ -9,13 +9,11 @@ Two-tier storage model:
 
 import hashlib
 import json
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import yaml
-from sqlalchemy import Text, create_engine, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from tracertm.models import Base, Item, Link, Project
@@ -536,10 +534,7 @@ class LocalStorageManager:
                 # Get text until next ## heading or end
                 desc_text = desc_parts[1].strip()
                 next_heading = desc_text.find("##")
-                if next_heading > 0:
-                    description = desc_text[:next_heading].strip()
-                else:
-                    description = desc_text
+                description = desc_text[:next_heading].strip() if next_heading > 0 else desc_text
 
         # Create or update item in database
         session = self.get_session()

@@ -8,11 +8,11 @@ from tracertm.tui.widgets.sync_status import CompactSyncStatus, SyncStatusWidget
 from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
 
 __all__ = [
+    "CompactSyncStatus",
     "ConflictPanel",
     "GraphViewWidget",
     "ItemListWidget",
     "StateDisplayWidget",
     "SyncStatusWidget",
-    "CompactSyncStatus",
     "ViewSwitcherWidget",
 ]

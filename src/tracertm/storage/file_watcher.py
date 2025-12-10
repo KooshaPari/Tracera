@@ -8,9 +8,7 @@ debouncing rapid changes and optional remote sync queuing.
 
 from __future__ import annotations
 
-import hashlib
 import logging
-import time
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -22,7 +20,6 @@ from watchdog.observers import Observer
 
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.markdown_parser import (
-    ItemData,
     parse_config_yaml,
     parse_item_markdown,
     parse_links_yaml,
@@ -451,7 +448,4 @@ class _TraceEventHandler(FileSystemEventHandler):
             return False
 
         # Skip sync.yaml (local-only)
-        if path.name == "sync.yaml":
-            return False
-
-        return True
+        return path.name != "sync.yaml"

@@ -8,7 +8,6 @@ Provides interactive dashboard with:
 - Offline-first operation
 """
 
-import asyncio
 
 try:
     from textual.app import App, ComposeResult
@@ -55,7 +54,7 @@ from tracertm.config.manager import ConfigManager
 from tracertm.storage.sync_engine import SyncStatus
 from tracertm.tui.adapters.storage_adapter import StorageAdapter
 from tracertm.tui.widgets.conflict_panel import ConflictPanel
-from tracertm.tui.widgets.sync_status import CompactSyncStatus, SyncStatusWidget
+from tracertm.tui.widgets.sync_status import SyncStatusWidget
 
 if TEXTUAL_AVAILABLE:
 

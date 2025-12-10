@@ -66,17 +66,11 @@ class ApiConfig:
 
         # Handle timeout - could be string or numeric
         timeout_value = config_manager.get("api_timeout")
-        if timeout_value is not None:
-            timeout = float(timeout_value)
-        else:
-            timeout = 30.0
+        timeout = float(timeout_value) if timeout_value is not None else 30.0
 
         # Handle max_retries - could be string or numeric
         retries_value = config_manager.get("api_max_retries")
-        if retries_value is not None:
-            max_retries = int(retries_value)
-        else:
-            max_retries = 3
+        max_retries = int(retries_value) if retries_value is not None else 3
 
         return cls(
             base_url=api_url.rstrip("/"),
@@ -300,7 +294,6 @@ class ApiClient:
         """Async context manager exit."""
         await self.close()
 
-
     async def _retry_request(
         self,
         method: str,
@@ -412,7 +405,6 @@ class ApiClient:
         else:
             raise ApiError(f"Request failed after {self.config.max_retries} retries: {last_error}")
 
-
     async def health_check(self) -> bool:
         """
         Check API health.
@@ -425,7 +417,7 @@ class ApiClient:
             data = response.json()
             return data.get("status") == "healthy"
         except (ApiError, AuthenticationError, NetworkError, RateLimitError):
-            logger.error(f"Health check failed: API error")
+            logger.error("Health check failed: API error")
             return False
 
     async def upload_changes(

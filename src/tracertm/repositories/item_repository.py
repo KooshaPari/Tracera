@@ -1,6 +1,6 @@
 """Item repository for TraceRTM."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -134,14 +134,14 @@ class ItemRepository:
             item = await self.get_by_id(item_id)
             if not item:
                 return False
-            item.deleted_at = datetime.now(timezone.utc)
+            item.deleted_at = datetime.now(UTC)
 
             # Cascade soft delete to children
             query = select(Item).where(Item.parent_id == item_id, Item.deleted_at.is_(None))
             result = await self.session.execute(query)
             children = result.scalars().all()
             for child in children:
-                child.deleted_at = datetime.now(timezone.utc)
+                child.deleted_at = datetime.now(UTC)
 
             await self.session.flush()
             return True
@@ -322,4 +322,4 @@ class ItemRepository:
         result = await self.session.execute(query)
         rows = result.all()
 
-        return {status: count for status, count in rows}
+        return dict(rows)
