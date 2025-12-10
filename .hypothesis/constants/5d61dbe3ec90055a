@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/commit_linking_service.py
+# hypothesis_version: 6.148.7
+
+['#(\\d+)', '([A-Z]+-\\d+)', 'GH-(\\d+)', 'GL-(\\d+)', '\\[([A-Z]+-\\d+)\\]', 'author', 'commit_hash', 'commit_linked', 'commit_message', 'config', 'custom', 'errors', 'found', 'github', 'gitlab', 'hash', 'hook_type', 'implements', 'item_id', 'item_title', 'jira', 'link', 'linked', 'metadata', 'pattern', 'project_id', 'reference', 'registered', 'status', 'system']

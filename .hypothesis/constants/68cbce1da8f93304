@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/aliases.py
+# hypothesis_version: 6.148.7
+
+['a', 'agent', 'agents', 'c', 'cfg', 'config', 'database', 'db', 'e', 'exp', 'export', 'find', 'h', 'hist', 'history', 'i', 'item', 'items', 'l', 'link', 'links', 'model_dump', 'p', 'prog', 'progress', 'proj', 'project', 'q', 'query', 's', 'search', 'st', 'state', 'status', 'v', 'view', 'views', 'w']

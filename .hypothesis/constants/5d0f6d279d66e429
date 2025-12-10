@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/traceability_service.py
+# hypothesis_version: 6.148.7
+
+[100, 'id', 'link_type', 'source_id', 'source_title', 'target_id', 'target_title', 'title']

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/advanced_traceability_enhancements_service.py
+# hypothesis_version: 6.148.7
+
+[100, 'Item not found', 'Unknown', 'coverage_percent', 'covered_items', 'cycle_count', 'error', 'has_cycles', 'id', 'impact_levels', 'incoming', 'incoming_links', 'item_id', 'items_in_cycles', 'link_type', 'matrix', 'max_depth_reached', 'outgoing', 'outgoing_links', 'project_id', 'source_id', 'source_title', 'source_view', 'target_id', 'target_item_id', 'target_view', 'targets', 'title', 'total_columns', 'total_connections', 'total_impacted', 'total_rows', 'total_source_items', 'uncovered_item_ids', 'uncovered_items', 'unknown', 'view']

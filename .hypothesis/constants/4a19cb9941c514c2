@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/backup.py
+# hypothesis_version: 6.148.7
+
+[1024, '%Y%m%d_%H%M%S', '--force', '--output', '--project-id', '-f', '-o', '.gz', '.json', '.json.gz', '1.0', 'Creating backup...', 'Loading backup...', 'Restoring data...', 'alembic', 'backup', 'current_project_id', 'database_url', 'project_id', 'restore', 'rt', 'tables', 'timestamp', 'utf-8', 'version', 'w', 'wt']

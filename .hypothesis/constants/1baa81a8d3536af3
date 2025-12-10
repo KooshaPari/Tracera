@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/benchmark_service.py
+# hypothesis_version: 6.148.7
+
+[100, 1000, 1024, 5000, 'agent_interface', 'avg_query_time_ms', 'coverage_analysis', 'dependency_graph', 'duration_ms', 'full', 'impact_analysis', 'incremental', 'limit', 'meets_target', 'name', 'query_time_ms', 'refresh_full', 'refresh_incremental', 'refresh_operations', 'row_count', 'search_index', 'size_mb', 'status_dashboard', 'success', 'summary', 'target_ms', 'timeline_view', 'timestamp', 'total_views', 'traceability_matrix', 'view_name', 'views', 'views_meeting_target']

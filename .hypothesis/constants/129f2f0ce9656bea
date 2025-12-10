@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/agent_performance_service.py
+# hypothesis_version: 6.148.7
+
+[100, 'Agent not found', 'Excellent', 'Fair', 'Good', 'Heavy', 'Idle', 'Light', 'Moderate', 'No agents available', 'Poor', 'Unknown', 'agent_id', 'agent_name', 'agents', 'created_at', 'current_workload', 'efficiency_score', 'error', 'event_type', 'event_type_diversity', 'event_types', 'events_per_hour', 'inf', 'medium', 'name', 'project_id', 'rating', 'reason', 'recommended_agent_id', 'task_complexity', 'time_window_hours', 'total_agents', 'total_events', 'total_events_24h', 'unknown', 'workload']
