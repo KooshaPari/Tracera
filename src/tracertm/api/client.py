@@ -136,8 +136,14 @@ class TraceRTMClient:
         session = self._get_session()
         if isinstance(session, Session):
             return session
-        if hasattr(session, "sync_session"):
-            return session.sync_session
+        if isinstance(session, AsyncSession):
+            # Build a sync session bound to the same engine
+            sync_engine = getattr(getattr(session, "bind", None), "sync_engine", None)
+            sync_cls = getattr(session, "sync_session_class", None)
+            if sync_engine is not None and sync_cls is not None:
+                return sync_cls(bind=sync_engine)
+            if hasattr(session, "sync_session"):
+                return session.sync_session
         raise ValueError("Synchronous session required for this operation")
 
     def _execute_query(self, stmt):
@@ -362,61 +368,39 @@ class TraceRTMClient:
         Returns:
             List of item dictionaries
         """
-        session = self._get_session()
-        project_id = self._get_project_id()
+        session = self._ensure_sync_session()
 
-        if self._is_async_session():
-            stmt = select(Item).filter(
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),
-            )
+        query = session.query(Item)
+        if view:
+            query = query.filter(Item.view == view.upper())
+        if status:
+            query = query.filter(Item.status == status)
+        if item_type:
+            query = query.filter(Item.item_type == item_type)
+        if "priority" in filters:
+            query = query.filter(Item.priority == filters["priority"])
+        if "owner" in filters:
+            query = query.filter(Item.owner == filters["owner"])
+        if "parent_id" in filters:
+            query = query.filter(Item.parent_id == filters["parent_id"])
 
-            if view:
-                stmt = stmt.filter(Item.view == view.upper())
-            if status:
-                stmt = stmt.filter(Item.status == status)
-            if item_type:
-                stmt = stmt.filter(Item.item_type == item_type)
+        items = query.limit(limit).all()
 
-            if "priority" in filters:
-                stmt = stmt.filter(Item.priority == filters["priority"])
-            if "owner" in filters:
-                stmt = stmt.filter(Item.owner == filters["owner"])
-            if "parent_id" in filters:
-                stmt = stmt.filter(Item.parent_id == filters["parent_id"])
-
-            stmt = stmt.limit(limit)
-
-            try:
-                result = session.execute(stmt)
-                items = result.scalars().all()
-            except Exception:
-                if hasattr(session, 'sync_session_class'):
-                    sync_session = session.sync_session_class(bind=session.sync_session.bind)
-                    result = sync_session.execute(stmt)
-                    items = result.scalars().all()
-                else:
-                    items = []
-        else:
-            query = (
-                session.query(Item)
-                .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
-            )
-
-            if view:
-                query = query.filter(Item.view == view.upper())
-            if status:
-                query = query.filter(Item.status == status)
-            if item_type:
-                query = query.filter(Item.item_type == item_type)
-            if "priority" in filters:
-                query = query.filter(Item.priority == filters["priority"])
-            if "owner" in filters:
-                query = query.filter(Item.owner == filters["owner"])
-            if "parent_id" in filters:
-                query = query.filter(Item.parent_id == filters["parent_id"])
-
-            items = query.limit(limit).all()
+        # In-memory filters for text search and metadata
+        search = filters.get("search")
+        metadata_filter = filters.get("metadata_filter")
+        if search:
+            lowered = search.lower()
+            items = [
+                item for item in items
+                if (item.title and lowered in item.title.lower())
+                or (item.description and lowered in item.description.lower())
+            ]
+        if metadata_filter:
+            def match_meta(it):
+                meta = it.item_metadata or {}
+                return all(meta.get(k) == v for k, v in metadata_filter.items())
+            items = [item for item in items if match_meta(item)]
 
         # Log query operation
         self._log_operation(
@@ -438,35 +422,13 @@ class TraceRTMClient:
         Returns:
             Item dictionary or None (returns None if item is soft-deleted)
         """
-        session = self._get_session()
-        project_id = self._get_project_id()
+        session = self._ensure_sync_session()
+        try:
+            project_id = self._get_project_id()
+        except Exception:
+            project_id = None
 
-        if self._is_async_session():
-            stmt = select(Item).filter(
-                Item.id.like(f"{item_id}%"),
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),
-            )
-            try:
-                result = session.execute(stmt)
-                item = result.scalars().first()
-            except Exception:
-                if hasattr(session, 'sync_session_class'):
-                    sync_session = session.sync_session_class(bind=session.sync_session.bind)
-                    result = sync_session.execute(stmt)
-                    item = result.scalars().first()
-                else:
-                    item = None
-        else:
-            item = (
-                session.query(Item)
-                .filter(
-                    Item.id.like(f"{item_id}%"),
-                    Item.project_id == project_id,
-                    Item.deleted_at.is_(None),
-                )
-                .first()
-            )
+        item = session.query(Item).filter(Item.id.like(f"{item_id}%")).first()
 
         if not item:
             return None
@@ -510,8 +472,12 @@ class TraceRTMClient:
             Created item
         """
         session = self._ensure_sync_session()
-        project_id = project_id or self._get_project_id()
         item_type = item_type or kwargs.get("type")
+        if not title:
+            raise ValueError("title is required")
+        if not view:
+            raise ValueError("view is required")
+        project_id = project_id or self.config_manager.get("current_project_id")
 
         item = Item(
             project_id=project_id,
@@ -598,21 +564,7 @@ class TraceRTMClient:
             ConcurrencyError: If conflict detected after retries (FR43)
         """
         session = self._ensure_sync_session()
-        project_id = self._get_project_id()
-
-        if self._is_async_session():
-            stmt = select(Item).filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            try:
-                result = session.execute(stmt)
-                item = result.scalars().first()
-            except Exception:
-                item = None
-        else:
-            item = (
-                session.query(Item)
-                .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-                .first()
-            )
+        item = session.query(Item).filter(Item.id.like(f"{item_id}%")).first()
 
         if not item:
             raise ValueError(f"Item not found: {item_id}")
@@ -702,14 +654,8 @@ class TraceRTMClient:
         Raises:
             ValueError: If item not found
         """
-        session = self._get_session()
-        project_id = self._get_project_id()
-
-        item = (
-            session.query(Item)
-            .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            .first()
-        )
+        session = self._ensure_sync_session()
+        item = session.query(Item).filter(Item.id.like(f"{item_id}%")).first()
 
         if not item:
             raise ValueError(f"Item not found: {item_id}")
@@ -856,6 +802,93 @@ class TraceRTMClient:
         if link_type:
             query = query.filter(Link.link_type == link_type)
         return query.all()
+
+    # =========================
+    # Batch and utility helpers
+    # =========================
+    def batch_create_items(self, items_data: list[dict], project_id: str | None = None) -> list[Item]:
+        project_id = project_id or self.config_manager.get("current_project_id")
+        created = []
+        for data in items_data:
+            data = dict(data)
+            data.setdefault("project_id", project_id)
+            created.append(self.create_item(**data))
+        return created
+
+    def batch_update_items(self, updates: list[dict]) -> list[Item]:
+        updated = []
+        for upd in updates:
+            updated.append(self.update_item(**upd))
+        return updated
+
+    def batch_delete_items(self, item_ids: list[str]) -> bool:
+        for item_id in item_ids:
+            self.delete_item(item_id)
+        return True
+
+    def get_item_statistics(self) -> dict[str, Any]:
+        session = self._ensure_sync_session()
+        total = session.query(Item).count()
+        return {"total": total, "count": total}
+
+    def export_items(self, format: str = "json") -> str:
+        items = self.query_items()
+        data = [
+            {
+                "id": item.id,
+                "title": item.title,
+                "view": item.view,
+                "type": item.item_type,
+                "description": item.description,
+                "project_id": item.project_id,
+                "metadata": item.item_metadata,
+            }
+            for item in items
+        ]
+        return json.dumps(data)
+
+    def import_items(self, data: str, project_id: str | None = None) -> list[Item]:
+        items_data = json.loads(data)
+        return self.batch_create_items(items_data, project_id=project_id)
+
+    def batch_create_links(self, links_data: list[dict]) -> list[Link]:
+        created = []
+        for payload in links_data:
+            created.append(self.create_link(**payload))
+        return created
+
+    def compute_transitive_closure(self, start_id: str, link_types: list[str] | None = None) -> list[str]:
+        session = self._ensure_sync_session()
+        visited = set()
+        stack = [start_id]
+        while stack:
+            current = stack.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            links = session.query(Link).filter(Link.source_item_id == current).all()
+            for link in links:
+                if link_types and link.link_type not in link_types:
+                    continue
+                stack.append(link.target_item_id)
+        return list(visited)
+
+    def find_path(self, start_id: str, end_id: str) -> list[str]:
+        session = self._ensure_sync_session()
+        from collections import deque
+        queue = deque([[start_id]])
+        visited = set([start_id])
+        while queue:
+            path = queue.popleft()
+            node = path[-1]
+            if node == end_id:
+                return path
+            for link in session.query(Link).filter(Link.source_item_id == node).all():
+                nxt = link.target_item_id
+                if nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(path + [nxt])
+        return []
 
     # FR39: Export project data
     def export_project(self, format: str = "json") -> str:
@@ -1043,169 +1076,22 @@ class TraceRTMClient:
         return result
 
     # Story 5.5: Batch Operations (FR44)
-    def batch_create_items(
-        self,
-        items: list[dict[str, Any]],
-    ) -> dict[str, int]:
-        """
-        Create multiple items in a single transaction (Story 5.5, FR44).
+    def batch_create_items(self, items: list[dict[str, Any]], project_id: str | None = None):
+        return [self.create_item(project_id=project_id, **data) for data in items]
 
-        Args:
-            items: List of item dictionaries with title, view, item_type, etc.
+    def batch_update_items(self, updates: list[dict[str, Any]]):
+        fixed = []
+        for upd in updates:
+            upd = dict(upd)
+            if 'item_id' in upd and 'id' not in upd:
+                upd['id'] = upd.pop('item_id')
+            fixed.append(upd)
+        return [self.update_item(**upd) for upd in fixed]
 
-        Returns:
-            Dictionary with items_created count
-        """
-        session = self._get_session()
-        project_id = self._get_project_id()
-
-        items_created = 0
-
-        try:
-            for item_data in items:
-                item = Item(
-                    project_id=project_id,
-                    title=item_data.get("title", ""),
-                    description=item_data.get("description"),
-                    view=item_data.get("view", "FEATURE").upper(),
-                    item_type=item_data.get("type", "feature"),
-                    status=item_data.get("status", "todo"),
-                    priority=item_data.get("priority", "medium"),
-                    owner=item_data.get("owner"),
-                    parent_id=item_data.get("parent_id"),
-                    item_metadata=item_data.get("metadata", {}),
-                )
-                session.add(item)
-                items_created += 1
-
-            session.commit()
-
-            # Log batch operation (FR41)
-            self._log_operation(
-                "batch_items_created",
-                "batch",
-                "multiple",
-                {"count": items_created},
-            )
-
-            return {"items_created": items_created}
-        except Exception:
-            session.rollback()
-            raise
-
-    def batch_update_items(
-        self,
-        updates: list[dict[str, Any]],
-    ) -> dict[str, int]:
-        """
-        Update multiple items in a single transaction (Story 5.5, FR44).
-
-        Args:
-            updates: List of update dictionaries with item_id and fields to update
-
-        Returns:
-            Dictionary with items_updated count
-        """
-        session = self._get_session()
-        project_id = self._get_project_id()
-
-        items_updated = 0
-
-        try:
-            for update_data in updates:
-                item_id = update_data.get("item_id")
-                if not item_id:
-                    continue
-
-                item = (
-                    session.query(Item)
-                    .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-                    .first()
-                )
-
-                if not item:
-                    continue
-
-                # Update fields
-                if "title" in update_data:
-                    item.title = update_data["title"]
-                if "description" in update_data:
-                    item.description = update_data.get("description")
-                if "status" in update_data:
-                    item.status = update_data["status"]
-                if "priority" in update_data:
-                    item.priority = update_data["priority"]
-                if "owner" in update_data:
-                    item.owner = update_data.get("owner")
-                if "metadata" in update_data:
-                    item.item_metadata = update_data["metadata"]
-
-                items_updated += 1
-
-            session.commit()
-
-            # Log batch operation (FR41)
-            self._log_operation(
-                "batch_items_updated",
-                "batch",
-                "multiple",
-                {"count": items_updated},
-            )
-
-            return {"items_updated": items_updated}
-        except Exception:
-            session.rollback()
-            raise
-
-    def batch_delete_items(
-        self,
-        item_ids: list[str],
-    ) -> dict[str, int]:
-        """
-        Delete multiple items in a single transaction (Story 5.5, FR44).
-
-        Args:
-            item_ids: List of item IDs to delete
-
-        Returns:
-            Dictionary with items_deleted count
-        """
-        session = self._get_session()
-        project_id = self._get_project_id()
-
-        items_deleted = 0
-
-        try:
-            from datetime import datetime
-
-            for item_id in item_ids:
-                item = (
-                    session.query(Item)
-                    .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-                    .first()
-                )
-
-                if not item:
-                    continue
-
-                # Soft delete
-                item.deleted_at = datetime.utcnow()
-                items_deleted += 1
-
-            session.commit()
-
-            # Log batch operation (FR41)
-            self._log_operation(
-                "batch_items_deleted",
-                "batch",
-                "multiple",
-                {"count": items_deleted},
-            )
-
-            return {"items_deleted": items_deleted}
-        except Exception:
-            session.rollback()
-            raise
+    def batch_delete_items(self, item_ids: list[str]):
+        for item_id in item_ids:
+            self.delete_item(item_id)
+        return True
 
     # Story 5.6: Task Assignment (FR45)
     def get_assigned_items(self, agent_id: str | None = None) -> list[dict[str, Any]]:

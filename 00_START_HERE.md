@@ -51,6 +51,12 @@ trace/
 │   ├── OLD_DOCS/ - Historical implementation notes
 │   └── README.md - Archive navigation guide
 │
+├── 🐳 DOCKER/ - Container configs (DEPRECATED - see README for migration plan)
+│   ├── docker-compose.yml
+│   ├── docker-compose.*.yml
+│   ├── Dockerfile
+│   └── README.md - Deprecation notice & migration plan
+│
 └── 🛠️ Configuration
     ├── pyproject.toml
     ├── pytest.ini

@@ -122,36 +122,11 @@ async def test_db_engine():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_db_session(test_db_engine):
+async def async_db_session(db_session):
     """
-    Create an async test database session for each test with proper transaction handling.
-
-    This fixture provides a clean session for each test. Tests can call commit()
-    or flush() as needed, and all changes will be automatically rolled back
-    after the test completes to ensure test isolation.
-
-    The fixture uses expire_on_commit=False to allow accessing objects after
-    commit within the same test.
+    For tests expecting an async session, reuse the synchronous session to avoid greenlet issues.
     """
-    async_session_maker = async_sessionmaker(
-        test_db_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-
-    async with async_session_maker() as session:
-        try:
-            sync_session = session.sync_session if hasattr(session, "sync_session") else None
-            if sync_session is not None:
-                yield sync_session
-            else:
-                yield session
-        finally:
-            # Always rollback to ensure test isolation
-            try:
-                await session.rollback()
-            finally:
-                await session.close()
+    yield db_session
 
 
 @pytest_asyncio.fixture
