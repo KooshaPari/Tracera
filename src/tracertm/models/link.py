@@ -64,21 +64,19 @@ class Link(Base, TimestampMixin):
             kwargs["link_metadata"] = kwargs.pop("metadata")
         super().__init__(**kwargs)
 
-    @property
-    def type(self):
-        return self.link_type
+    def __getattribute__(self, name):
+        if name == "type":
+            return object.__getattribute__(self, "link_type")
+        if name == "metadata":
+            return object.__getattribute__(self, "link_metadata")
+        return super().__getattribute__(name)
 
-    @type.setter
-    def type(self, value):
-        self.link_type = value
-
-    @property
-    def metadata(self):
-        return self.link_metadata
-
-    @metadata.setter
-    def metadata(self, value):
-        self.link_metadata = value
+    def __setattr__(self, name, value):
+        if name == "type":
+            name = "link_type"
+        if name == "metadata":
+            name = "link_metadata"
+        super().__setattr__(name, value)
 
     def __repr__(self) -> str:
         return f"<Link(id={self.id!r}, type={self.link_type!r})>"

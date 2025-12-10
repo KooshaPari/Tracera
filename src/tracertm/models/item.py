@@ -90,21 +90,19 @@ class Item(Base, TimestampMixin):
             kwargs["item_metadata"] = kwargs.pop("metadata")
         super().__init__(**kwargs)
 
-    @property
-    def type(self):
-        return self.item_type
+    def __getattribute__(self, name):
+        if name == "type":
+            return object.__getattribute__(self, "item_type")
+        if name == "metadata":
+            return object.__getattribute__(self, "item_metadata")
+        return super().__getattribute__(name)
 
-    @type.setter
-    def type(self, value):
-        self.item_type = value
-
-    @property
-    def metadata(self):
-        return self.item_metadata
-
-    @metadata.setter
-    def metadata(self, value):
-        self.item_metadata = value
+    def __setattr__(self, name, value):
+        if name == "type":
+            name = "item_type"
+        if name == "metadata":
+            name = "item_metadata"
+        super().__setattr__(name, value)
 
     def __repr__(self) -> str:
         return f"<Item(id={self.id!r}, title={self.title!r}, view={self.view!r})>"
