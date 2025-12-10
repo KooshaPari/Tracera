@@ -1,18 +1,290 @@
 ---
 title: "Scopes"
-description: "Scope-based authorization."
+description: "Understand permission scopes for fine-grained access control in TraceRTM"
+keywords: [scopes, permissions, access control, authorization, oauth]
 ---
 
-## Overview
-Assign least-privilege scopes per client.
+# Scopes
 
-## Request shape
-```http
-POST /v1/auth/scopes
-Authorization: Bearer <token>
+Scopes define the specific permissions granted to an application or API key. They provide fine-grained access control for TraceRTM resources.
+
+## Overview
+
+Scopes allow you to:
+- **Limit access**: Grant only necessary permissions
+- **Follow least privilege**: Minimize security risk
+- **Control resources**: Restrict access to specific projects or items
+- **Audit permissions**: Track what each credential can access
+
+## Scope Types
+
+### Read Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read` | Read access to all resources |
+| `projects:read` | Read project information |
+| `items:read` | Read items (requirements, tests, etc.) |
+| `links:read` | Read traceability links |
+| `workflows:read` | Read workflow definitions |
+
+### Write Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `write` | Create and update all resources |
+| `projects:write` | Create and update projects |
+| `items:write` | Create and update items |
+| `links:write` | Create and update links |
+| `workflows:write` | Create and update workflows |
+
+### Delete Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `delete` | Delete any resource |
+| `items:delete` | Delete items |
+| `links:delete` | Delete links |
+| `projects:delete` | Delete projects |
+
+### Administrative Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `admin` | Full administrative access |
+| `users:manage` | Manage users and permissions |
+| `settings:manage` | Modify system settings |
+
+## Requesting Scopes
+
+### OAuth 2.0
+
+Include scopes in the authorization request:
+
+```
+https://api.tracertm.dev/oauth/authorize?
+  client_id=client_abc123...
+  &redirect_uri=https://yourapp.com/callback
+  &response_type=code
+  &scope=read write items:read items:write
 ```
 
-## Tips
-- Rotate credentials regularly and record rotation in audit logs.
-- Scope tokens to the minimum set of permissions needed.
-- Enforce MFA for human accounts; restrict service tokens by IP when possible.
+### API Keys
+
+Specify scopes when creating the key:
+
+```bash
+trace api-key create \
+  --name "Read-Only Key" \
+  --scopes "read items:read projects:read"
+```
+
+## Scope Combinations
+
+### Read-Only Access
+
+```bash
+scope=read
+# or more specific:
+scope=items:read projects:read links:read
+```
+
+### Read-Write Access
+
+```bash
+scope=read write
+# or more specific:
+scope=items:read items:write projects:read
+```
+
+### Project-Scoped Access
+
+```bash
+scope=projects:read items:read items:write
+# Combined with project_id restriction
+```
+
+## Scope Validation
+
+The API validates scopes on every request:
+
+```python
+# Request requires 'items:write' scope
+POST /api/v1/items
+Authorization: Bearer token_with_items:read_scope
+
+# Response: 403 Forbidden
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "Token missing required scope: items:write"
+  }
+}
+```
+
+## Checking Scopes
+
+### From JWT Token
+
+Decode the token to see granted scopes:
+
+```python
+import jwt
+
+decoded = jwt.decode(token, options={"verify_signature": False})
+scopes = decoded.get('scope', '').split()
+print(scopes)  # ['read', 'write', 'items:read']
+```
+
+### From API Response
+
+Some endpoints return scope information:
+
+```json
+{
+  "data": {...},
+  "meta": {
+    "scopes": ["read", "write", "items:read"]
+  }
+}
+```
+
+## Scope Hierarchy
+
+Some scopes imply others:
+
+- `admin` → All scopes
+- `write` → `read`
+- `delete` → `read`
+- `items:write` → `items:read`
+
+## Examples
+
+### Read-Only Application
+
+```python
+# Request scopes
+scopes = "read items:read projects:read"
+
+# Can do:
+GET /api/v1/projects ✅
+GET /api/v1/items ✅
+GET /api/v1/links ✅
+
+# Cannot do:
+POST /api/v1/items ❌
+PUT /api/v1/items/{id} ❌
+DELETE /api/v1/items/{id} ❌
+```
+
+### Write-Enabled Application
+
+```python
+# Request scopes
+scopes = "read write items:read items:write"
+
+# Can do:
+GET /api/v1/projects ✅
+GET /api/v1/items ✅
+POST /api/v1/items ✅
+PUT /api/v1/items/{id} ✅
+
+# Cannot do:
+DELETE /api/v1/projects/{id} ❌ (needs projects:delete)
+```
+
+### Administrative Application
+
+```python
+# Request scopes
+scopes = "admin"
+
+# Can do:
+Everything ✅
+```
+
+## Best Practices
+
+### 1. Request Minimum Scopes
+
+Only request scopes you actually need:
+
+```python
+# ✅ Good: Specific scopes
+scopes = "items:read items:write"
+
+# ❌ Bad: Overly broad
+scopes = "admin"
+```
+
+### 2. Use Specific Scopes
+
+Prefer specific scopes over general ones:
+
+```python
+# ✅ Good: Specific
+scopes = "items:read items:write projects:read"
+
+# ❌ Bad: Too general
+scopes = "read write"
+```
+
+### 3. Review Regularly
+
+Periodically review granted scopes:
+
+```bash
+# List API keys and their scopes
+trace api-key list --show-scopes
+
+# Review OAuth app scopes
+trace oauth-app show <app-id>
+```
+
+### 4. Document Scope Usage
+
+Document which scopes your application uses:
+
+```markdown
+## Required Scopes
+
+- `items:read` - To display items
+- `items:write` - To create/update items
+- `projects:read` - To list projects
+```
+
+## Scope Errors
+
+### Insufficient Scope
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "Token missing required scope: items:write",
+    "required_scope": "items:write",
+    "granted_scopes": ["read", "items:read"]
+  }
+}
+```
+
+**Solution**: Request the required scope or use a credential with appropriate permissions.
+
+### Invalid Scope
+
+```json
+{
+  "error": {
+    "code": "invalid_scope",
+    "message": "Invalid scope requested: invalid:scope"
+  }
+}
+```
+
+**Solution**: Check scope name spelling and availability.
+
+## Next Steps
+
+- [Rate Limiting](./06-rate-limiting) - API rate limits
+- [Best Practices](./07-best-practices) - Security guidelines
+- [OAuth 2.0](./03-oauth2) - OAuth implementation

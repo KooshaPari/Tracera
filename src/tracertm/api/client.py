@@ -63,13 +63,18 @@ class TraceRTMClient:
     def _get_session(self) -> Session | AsyncSession:
         """Get database session."""
         if self._session is None:
-            database_url = self.config_manager.get("database_url")
-            if not database_url:
-                raise ValueError("Database not configured. Run 'rtm config init' first.")
+            try:
+                import asyncio
 
-            self._db = DatabaseConnection(database_url)
-            self._db.connect()
-            self._session = Session(self._db.engine)
+                asyncio.get_running_loop()
+                use_async = True
+            except RuntimeError:
+                use_async = False
+
+            if use_async:
+                self._session = get_async_session()
+            else:
+                self._session = get_session()
 
         return self._session
 
