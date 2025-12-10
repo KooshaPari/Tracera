@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/config.py
+# hypothesis_version: 6.148.7
+
+['--database-url', '-d', '@', 'Configuration value', 'Key', 'Value', 'cyan', 'database_url', 'green', 'init', 'set', 'show']

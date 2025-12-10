@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/completion.py
+# hypothesis_version: 6.148.7
+
+['.bash_completion.d', '.config', '.zsh', '_rtm', 'bash', 'completions', 'fish', 'rtm', 'rtm.fish', 'zsh']

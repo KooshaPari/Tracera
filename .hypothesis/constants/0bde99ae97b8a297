@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/sync.py
+# hypothesis_version: 6.148.7
+
+[3600, 86400, '\n[red]Errors:[/red]', '%Y-%m-%d %H:%M', '--data', '--dry-run', '--force', '--limit', '--since', '--strategy', '--type', '-f', '-l', '-s', '-t', '...', 'Conflicts:', 'Created', 'Detected', 'Duration:', 'Entities synced:', 'Entity', 'Errors:', 'ID', 'Last error:', 'Last sync:', 'Local Ver', 'Online:', 'Operation', 'Pending changes:', 'Pulling changes...', 'Pushing changes...', 'Remote Ver', 'Retries', 'Skip confirmation', 'Status', 'Status:', 'Sync Queue', 'Syncing...', 'Type', 'Unresolved Conflicts', '[dim]Cancelled[/dim]', '[dim]Never[/dim]', '[green]Ready[/green]', '[red]Error[/red]', 'bold cyan', 'bold yellow', 'clear-queue', 'conflicts', 'cyan', 'database_url', 'last_write_wins', 'pull', 'push', 'queue', 'resolve', 'status', 'sync']

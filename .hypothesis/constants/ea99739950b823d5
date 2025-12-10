@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/progress_service.py
+# hypothesis_version: 6.148.7
+
+[0.0, 50.0, 100.0, 100, 'blocked', 'blocked_items', 'blockers', 'blocks', 'by_status', 'by_view', 'cancelled', 'complete', 'completed', 'completion_rate', 'days', 'days_stalled', 'end', 'id', 'in_progress', 'item_id', 'items_completed', 'items_created', 'last_updated', 'net_change', 'period', 'period_days', 'stalled', 'stalled_items', 'start', 'status', 'summary', 'title', 'todo', 'total_items', 'velocity']

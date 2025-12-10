@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/ingest.py
+# hypothesis_version: 6.148.7
+
+['--dry-run', '--project', '--view', '-p', '-v', '.md', '.mdx', '.yaml', '.yml', 'FEATURE', 'Path to MDX file', 'Path to YAML file', 'Project ID', 'Target view', 'bmad', 'current_project_id', 'dry_run', 'file', 'format', 'markdown', 'mdx', 'openapi', 'yaml']
