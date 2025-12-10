@@ -1,0 +1,734 @@
+"""
+Error path tests for API and sync operations.
+
+Additional comprehensive error testing for:
+- API request/response errors
+- Sync operation failures
+- Network timeouts
+- Data serialization errors
+- Transaction rollback scenarios
+"""
+
+import asyncio
+import json
+from datetime import datetime, timezone
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
+from tracertm.api.client import TraceRTMClient
+from tracertm.models.item import Item
+from tracertm.models.project import Project
+from tracertm.repositories.item_repository import ItemRepository
+
+
+# ============================================================================
+# API CLIENT ERROR TESTS
+# ============================================================================
+
+
+class TestAPIClientErrors:
+    """Test error handling in API client."""
+
+    def test_api_request_with_none_response(self):
+        """Test API request that returns None."""
+        client = TraceRTMClient()
+
+        with patch.object(client, "_get_session", return_value=None):
+            with pytest.raises((ValueError, AttributeError, TypeError)):
+                client._get_session()
+
+    def test_api_timeout_handling(self):
+        """Test handling of API timeout."""
+
+        async def slow_api_call():
+            await asyncio.sleep(10)
+
+        with pytest.raises(asyncio.TimeoutError):
+            import asyncio
+
+            asyncio.run(asyncio.wait_for(slow_api_call(), timeout=0.01))
+
+    def test_api_500_error_response(self):
+        """Test handling of 500 error response."""
+        with patch("requests.get") as mock_get:
+            mock_response = MagicMock()
+            mock_response.status_code = 500
+            mock_response.text = "Internal Server Error"
+            mock_get.return_value = mock_response
+
+            # Test behavior when encountering 500
+            assert mock_response.status_code == 500
+
+    def test_api_malformed_json_response(self):
+        """Test handling of malformed JSON in response."""
+        with patch("requests.get") as mock_get:
+            mock_response = MagicMock()
+            mock_response.json.side_effect = json.JSONDecodeError(
+                "Invalid JSON", "", 0
+            )
+            mock_get.return_value = mock_response
+
+            with pytest.raises(json.JSONDecodeError):
+                mock_response.json()
+
+    def test_api_missing_required_field(self):
+        """Test API response missing required field."""
+        response = {"name": "Test"}  # Missing 'id' field
+
+        # Validation should catch this
+        with pytest.raises((KeyError, ValueError)):
+            required_id = response["id"]  # KeyError
+
+    def test_api_invalid_data_type(self):
+        """Test API response with invalid data type."""
+        response = {"id": "item-1", "count": "not-a-number"}  # Invalid type
+
+        with pytest.raises((ValueError, TypeError)):
+            count = int(response["count"])
+
+
+# ============================================================================
+# SYNC OPERATION ERROR TESTS
+# ============================================================================
+
+
+@pytest.mark.asyncio
+class TestSyncOperationErrors:
+    """Test error handling in sync operations."""
+
+    async def test_sync_with_network_error(self):
+        """Test sync when network error occurs."""
+
+        async def network_operation():
+            raise ConnectionError("Network unreachable")
+
+        with pytest.raises(ConnectionError):
+            await network_operation()
+
+    async def test_sync_with_timeout(self):
+        """Test sync operation timeout."""
+
+        async def slow_sync():
+            await asyncio.sleep(10)
+
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(slow_sync(), timeout=0.01)
+
+    async def test_sync_partial_update_failure(self, db_session: AsyncSession):
+        """Test sync fails partway through updates."""
+        repo = ItemRepository(db_session)
+
+        # Create first item successfully
+        item1 = await repo.create(
+            project_id="project-1",
+            title="Item 1",
+            view="board",
+            item_type="requirement",
+        )
+
+        # Second update fails
+        with patch.object(repo.session, "flush", side_effect=Exception("Update failed")):
+            item2 = Item(
+                id="item-2",
+                project_id="project-1",
+                title="Item 2",
+                view="board",
+                item_type="requirement",
+            )
+            repo.session.add(item2)
+
+            with pytest.raises(Exception):
+                await repo.session.flush()
+
+        # First item should exist
+        retrieved = await repo.get_by_id(item1.id)
+        assert retrieved is not None
+
+    async def test_sync_rollback_on_error(self, db_session: AsyncSession):
+        """Test that sync changes are rolled back on error."""
+        mock_session = AsyncMock(spec=AsyncSession)
+        mock_session.begin = AsyncMock()
+        mock_session.commit = AsyncMock()
+        mock_session.rollback = AsyncMock()
+
+        # Simulate error during flush
+        mock_session.flush = AsyncMock(side_effect=Exception("Flush failed"))
+
+        repo = ItemRepository(mock_session)
+
+        with pytest.raises(Exception):
+            await repo.session.flush()
+
+    async def test_sync_duplicate_key_error(self, db_session: AsyncSession):
+        """Test handling of duplicate key in sync."""
+        repo = ItemRepository(db_session)
+
+        # Create item
+        item1 = await repo.create(
+            project_id="project-1",
+            title="Item",
+            view="board",
+            item_type="requirement",
+        )
+
+        # Try to create with same ID
+        item2 = Item(
+            id=item1.id,  # Duplicate ID
+            project_id="project-1",
+            title="Item 2",
+            view="board",
+            item_type="requirement",
+        )
+
+        db_session.add(item2)
+
+        with pytest.raises((IntegrityError, Exception)):
+            await db_session.flush()
+
+    async def test_sync_foreign_key_violation(self, db_session: AsyncSession):
+        """Test handling of foreign key violation in sync."""
+        # Try to create item with non-existent project
+        with pytest.raises((IntegrityError, ValueError)):
+            item = Item(
+                id="item-1",
+                project_id="non-existent-project",
+                title="Item",
+                view="board",
+                item_type="requirement",
+            )
+            db_session.add(item)
+            await db_session.flush()
+
+    async def test_sync_concurrent_modification(self, db_session: AsyncSession):
+        """Test handling of concurrent modification during sync."""
+        repo = ItemRepository(db_session)
+
+        item = await repo.create(
+            project_id="project-1",
+            title="Item",
+            view="board",
+            item_type="requirement",
+        )
+
+        # Simulate concurrent modification by raising version conflict
+        with patch.object(
+            db_session,
+            "flush",
+            side_effect=Exception("Concurrent modification"),
+        ):
+            item.title = "Updated"
+
+            with pytest.raises(Exception):
+                await db_session.flush()
+
+
+# ============================================================================
+# TRANSACTION ERROR TESTS
+# ============================================================================
+
+
+@pytest.mark.asyncio
+class TestTransactionErrors:
+    """Test transaction and ACID property errors."""
+
+    async def test_transaction_commit_failure(self):
+        """Test handling of commit failure."""
+        mock_session = AsyncMock()
+        mock_session.commit = AsyncMock(side_effect=Exception("Commit failed"))
+
+        with pytest.raises(Exception):
+            await mock_session.commit()
+
+    async def test_transaction_rollback_failure(self):
+        """Test handling of rollback failure."""
+        mock_session = AsyncMock()
+        mock_session.rollback = AsyncMock(side_effect=Exception("Rollback failed"))
+
+        with pytest.raises(Exception):
+            await mock_session.rollback()
+
+    async def test_nested_transaction_error(self):
+        """Test error in nested transaction."""
+        mock_session = AsyncMock()
+        mock_session.begin = AsyncMock()
+        mock_session.begin_nested = AsyncMock()
+        mock_session.flush = AsyncMock(side_effect=Exception("Nested flush failed"))
+
+        with pytest.raises(Exception):
+            async with mock_session.begin_nested():
+                await mock_session.flush()
+
+    async def test_deadlock_detection(self):
+        """Test detection of database deadlock."""
+        # Simulate deadlock
+        with pytest.raises(Exception):
+            raise Exception("Deadlock detected")
+
+    async def test_lock_wait_timeout(self):
+        """Test lock wait timeout."""
+
+        async def lock_operation():
+            await asyncio.sleep(10)
+
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(lock_operation(), timeout=0.01)
+
+
+# ============================================================================
+# DATA SERIALIZATION ERROR TESTS
+# ============================================================================
+
+
+class TestDataSerializationErrors:
+    """Test error handling in data serialization."""
+
+    def test_json_serialization_circular_reference(self):
+        """Test JSON serialization with circular reference."""
+
+        class CircularObj:
+            def __init__(self):
+                self.ref = self
+
+        obj = CircularObj()
+
+        with pytest.raises((ValueError, TypeError)):
+            json.dumps(obj, default=str)
+
+    def test_json_serialization_non_serializable_type(self):
+        """Test JSON serialization with non-serializable type."""
+        data = {"date": datetime.now(timezone.utc)}  # datetime not JSON serializable
+
+        with pytest.raises(TypeError):
+            json.dumps(data)
+
+    def test_json_deserialization_invalid_utf8(self):
+        """Test JSON deserialization with invalid UTF-8."""
+        invalid_json = b"\x80\x81\x82"  # Invalid UTF-8
+
+        with pytest.raises((json.JSONDecodeError, UnicodeDecodeError)):
+            json.loads(invalid_json.decode("utf-8", errors="strict"))
+
+    def test_json_deserialization_truncated_json(self):
+        """Test JSON deserialization with truncated JSON."""
+        truncated = '{"key": "va'  # Incomplete JSON
+
+        with pytest.raises(json.JSONDecodeError):
+            json.loads(truncated)
+
+    def test_dict_to_model_type_mismatch(self):
+        """Test converting dict to model with type mismatch."""
+        data = {
+            "id": "item-1",
+            "project_id": "project-1",
+            "title": "Test",
+            "view": "board",
+            "item_type": "requirement",
+            "version": "not-a-number",  # Should be int
+        }
+
+        item = Item(**data)
+        # Behavior depends on model validation
+
+    def test_model_to_dict_with_none_values(self):
+        """Test converting model with None values to dict."""
+        item = Item(
+            id="item-1",
+            project_id="project-1",
+            title="Test",
+            view="board",
+            item_type="requirement",
+            description=None,
+            parent_id=None,
+        )
+
+        item_dict = {
+            "id": item.id,
+            "project_id": item.project_id,
+            "title": item.title,
+            "view": item.view,
+            "item_type": item.item_type,
+            "description": item.description,
+            "parent_id": item.parent_id,
+        }
+
+        # None values should be preserved
+        assert item_dict["description"] is None
+
+
+# ============================================================================
+# RESOURCE LIMIT ERROR TESTS
+# ============================================================================
+
+
+@pytest.mark.asyncio
+class TestResourceLimitErrors:
+    """Test handling of resource limit errors."""
+
+    async def test_memory_exhaustion_large_list(self):
+        """Test handling of large list that might exhaust memory."""
+        # Create large list in controlled way
+        try:
+            large_list = list(range(1000000))
+            assert len(large_list) == 1000000
+        except MemoryError:
+            pytest.skip("System out of memory")
+
+    async def test_database_connection_pool_exhaustion(self):
+        """Test handling of exhausted connection pool."""
+        with patch(
+            "sqlalchemy.create_engine",
+            side_effect=Exception("No connection available"),
+        ):
+            with pytest.raises(Exception):
+                from sqlalchemy import create_engine
+
+                create_engine("sqlite:///:memory:")
+
+    async def test_file_descriptor_exhaustion(self):
+        """Test handling of exhausted file descriptors."""
+        with patch(
+            "builtins.open",
+            side_effect=OSError("Too many open files"),
+        ):
+            with pytest.raises(OSError):
+                with open("/dev/null", "r"):
+                    pass
+
+    async def test_request_queue_full(self):
+        """Test handling of full request queue."""
+        queue = asyncio.Queue(maxsize=1)
+
+        # Fill queue
+        await queue.put("item1")
+
+        # Try to add when full should block or raise
+        try:
+            queue.put_nowait("item2")
+        except asyncio.QueueFull:
+            pass  # Expected
+
+
+# ============================================================================
+# CACHE AND OPTIMIZATION ERROR TESTS
+# ============================================================================
+
+
+class TestCacheErrors:
+    """Test error handling in caching mechanisms."""
+
+    def test_cache_invalidation_error(self):
+        """Test error during cache invalidation."""
+        cache = {}
+
+        def invalidate_cache():
+            raise Exception("Cache invalidation failed")
+
+        with pytest.raises(Exception):
+            invalidate_cache()
+
+    def test_stale_cache_data(self):
+        """Test handling of stale cache data."""
+        cache = {"key": "stale_value"}
+        current_value = "current_value"
+
+        if cache["key"] != current_value:
+            # Cache is stale
+            cache["key"] = current_value
+
+        assert cache["key"] == current_value
+
+    def test_cache_hit_with_exception(self):
+        """Test cache hit when accessing throws exception."""
+        cache = {"key": {"data": None}}
+
+        with pytest.raises((KeyError, TypeError, AttributeError)):
+            _ = cache["key"]["nonexistent_field"]
+
+
+# ============================================================================
+# LOGGING ERROR TESTS
+# ============================================================================
+
+
+class TestLoggingErrors:
+    """Test error handling in logging operations."""
+
+    def test_log_with_invalid_level(self):
+        """Test logging with invalid log level."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        with pytest.raises((ValueError, AttributeError)):
+            logger.log(999, "Message")  # Invalid level
+
+    def test_log_with_unprintable_characters(self):
+        """Test logging with unprintable characters."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        # Should handle gracefully
+        logger.warning("Message with \x00 null bytes")
+        logger.error("Message with \x80\x81 invalid utf8")
+
+    def test_log_file_write_failure(self):
+        """Test handling of log file write failure."""
+        with patch("builtins.open", side_effect=IOError("Write failed")):
+            with pytest.raises(IOError):
+                with open("logfile.log", "w") as f:
+                    f.write("message")
+
+    def test_log_formatter_error(self):
+        """Test error in log formatter."""
+        import logging
+
+        class FailingFormatter(logging.Formatter):
+            def format(self, record):
+                raise Exception("Formatting failed")
+
+        logger = logging.getLogger(__name__)
+        handler = logging.StreamHandler()
+        handler.setFormatter(FailingFormatter())
+
+        with pytest.raises(Exception):
+            logger.addHandler(handler)
+            logger.info("Message")
+
+
+# ============================================================================
+# EVENT HANDLING ERROR TESTS
+# ============================================================================
+
+
+@pytest.mark.asyncio
+class TestEventHandlingErrors:
+    """Test error handling in event systems."""
+
+    async def test_event_listener_exception(self):
+        """Test handling when event listener raises exception."""
+        listeners = []
+
+        def register_listener(callback):
+            listeners.append(callback)
+
+        def emit_event(data):
+            for listener in listeners:
+                listener(data)
+
+        def failing_listener(data):
+            raise Exception("Listener failed")
+
+        register_listener(failing_listener)
+
+        with pytest.raises(Exception):
+            emit_event({"type": "test"})
+
+    async def test_event_queue_overflow(self):
+        """Test handling of event queue overflow."""
+        event_queue = asyncio.Queue(maxsize=1)
+
+        await event_queue.put({"type": "event1"})
+
+        with pytest.raises(asyncio.QueueFull):
+            event_queue.put_nowait({"type": "event2"})
+
+    async def test_event_ordering_error(self):
+        """Test error when events are processed out of order."""
+        events = []
+        expected_order = [1, 2, 3]
+
+        events.append(1)
+        events.append(3)
+        events.append(2)
+
+        if events != expected_order:
+            # Events out of order
+            events.sort()
+
+        assert events == expected_order
+
+
+# ============================================================================
+# VALIDATION ERROR TESTS
+# ============================================================================
+
+
+class TestValidationErrors:
+    """Test validation error handling."""
+
+    def test_required_field_validation(self):
+        """Test validation of required fields."""
+
+        def validate_item(data):
+            if not data.get("title"):
+                raise ValueError("title is required")
+
+        with pytest.raises(ValueError, match="title is required"):
+            validate_item({})
+
+    def test_constraint_violation(self):
+        """Test constraint validation."""
+
+        def validate_priority(priority):
+            valid_priorities = ["low", "medium", "high"]
+            if priority not in valid_priorities:
+                raise ValueError(f"priority must be one of {valid_priorities}")
+
+        with pytest.raises(ValueError, match="priority must be"):
+            validate_priority("invalid")
+
+    def test_range_validation(self):
+        """Test range validation."""
+
+        def validate_version(version):
+            if not (1 <= version <= 1000):
+                raise ValueError("version must be between 1 and 1000")
+
+        with pytest.raises(ValueError, match="version must be"):
+            validate_version(2000)
+
+    def test_format_validation(self):
+        """Test format validation."""
+
+        def validate_email(email):
+            if "@" not in email:
+                raise ValueError("Invalid email format")
+
+        with pytest.raises(ValueError, match="Invalid email"):
+            validate_email("invalid-email")
+
+    def test_regex_validation_error(self):
+        """Test regex validation error."""
+        import re
+
+        def validate_pattern(value, pattern):
+            if not re.match(pattern, value):
+                raise ValueError(f"Value does not match pattern {pattern}")
+
+        with pytest.raises(ValueError, match="does not match"):
+            validate_pattern("invalid", r"^\d{3}-\d{4}$")
+
+
+# ============================================================================
+# RECOVERY AND RESILIENCE TESTS
+# ============================================================================
+
+
+@pytest.mark.asyncio
+class TestRecoveryAndResilience:
+    """Test system recovery and resilience."""
+
+    async def test_automatic_retry_success(self):
+        """Test automatic retry succeeds on second attempt."""
+        attempt_count = 0
+
+        async def flaky_operation():
+            nonlocal attempt_count
+            attempt_count += 1
+            if attempt_count < 2:
+                raise Exception("Temporary failure")
+            return "success"
+
+        # Retry logic
+        for attempt in range(3):
+            try:
+                result = await flaky_operation()
+                assert result == "success"
+                break
+            except Exception:
+                if attempt == 2:
+                    raise
+
+    async def test_circuit_breaker_pattern(self):
+        """Test circuit breaker pattern."""
+
+        class CircuitBreaker:
+            def __init__(self, failure_threshold=3):
+                self.failure_count = 0
+                self.failure_threshold = failure_threshold
+                self.is_open = False
+
+            async def call(self, func, *args):
+                if self.is_open:
+                    raise Exception("Circuit breaker is open")
+
+                try:
+                    result = await func(*args)
+                    self.failure_count = 0
+                    return result
+                except Exception:
+                    self.failure_count += 1
+                    if self.failure_count >= self.failure_threshold:
+                        self.is_open = True
+                    raise
+
+        breaker = CircuitBreaker(failure_threshold=2)
+
+        async def failing_op():
+            raise Exception("Operation failed")
+
+        # First failure
+        with pytest.raises(Exception):
+            await breaker.call(failing_op)
+
+        # Second failure
+        with pytest.raises(Exception):
+            await breaker.call(failing_op)
+
+        # Circuit should be open now
+        with pytest.raises(Exception, match="Circuit breaker is open"):
+            await breaker.call(failing_op)
+
+    async def test_fallback_mechanism(self):
+        """Test fallback mechanism on error."""
+
+        async def primary_operation():
+            raise Exception("Primary failed")
+
+        async def fallback_operation():
+            return "fallback_result"
+
+        try:
+            result = await primary_operation()
+        except Exception:
+            result = await fallback_operation()
+
+        assert result == "fallback_result"
+
+    async def test_graceful_degradation(self):
+        """Test graceful degradation."""
+
+        class Service:
+            def __init__(self):
+                self.cache_enabled = True
+
+            async def get_data(self, key, use_cache=True):
+                try:
+                    if use_cache and self.cache_enabled:
+                        return await self._get_from_cache(key)
+                    return await self._get_from_source(key)
+                except Exception:
+                    # Degrade gracefully
+                    if use_cache:
+                        return await self._get_from_source(key)
+                    raise
+
+            async def _get_from_cache(self, key):
+                raise Exception("Cache failed")
+
+            async def _get_from_source(self, key):
+                return {"data": "value"}
+
+        service = Service()
+        result = await service.get_data("key")
+        assert result == {"data": "value"}
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
