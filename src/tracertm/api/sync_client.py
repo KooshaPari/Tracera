@@ -453,9 +453,20 @@ class ApiClient:
             "last_sync": last_sync.isoformat() if last_sync else None,
         }
 
-        response = await self._retry_request("POST", "/api/sync/upload", json=payload)
-        data = response.json()
-        return UploadResult.from_dict(data)
+        try:
+            response = await self._retry_request("POST", "/api/sync/upload", json=payload)
+            data = response.json()
+            return UploadResult.from_dict(data)
+        except httpx.HTTPStatusError as exc:
+            if exc.response is not None and exc.response.status_code == 409:
+                payload = exc.response.json()
+                conflicts_raw = payload.get("conflicts", [])
+                conflicts = [
+                    Conflict.from_dict(c) if isinstance(c, dict) else c
+                    for c in conflicts_raw
+                ]
+                raise ConflictError("Sync conflicts detected", conflicts=conflicts)
+            raise
 
     async def download_changes(
         self,

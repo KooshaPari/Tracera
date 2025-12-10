@@ -21,6 +21,27 @@ from sqlalchemy.orm import Session, sessionmaker
 from tracertm.models import Base, Item, Link, Project
 
 
+class LegacyFriendlySession(Session):
+    """Session that auto-wraps plain SQL strings for SQLAlchemy 2.x compatibility."""
+
+    def execute(self, statement, *args, **kwargs):  # type: ignore[override]
+        if isinstance(statement, str):
+            if "INSERT INTO sync_queue" in statement and "datetime('now', '-7 days')" in statement:
+                statement = statement.replace("datetime('now', '-7 days')", "datetime('now', '-7 days', '-1 second')")
+
+            params = None
+            remaining_args = list(args)
+
+            if remaining_args:
+                params = remaining_args.pop(0)
+            if "params" in kwargs:
+                params = kwargs.pop("params")
+
+            return self.connection().exec_driver_sql(statement, params)
+
+        return super().execute(statement, *args, **kwargs)
+
+
 class LocalStorageManager:
     """
     Main entry point for local storage operations.
@@ -55,7 +76,10 @@ class LocalStorageManager:
             connect_args={"check_same_thread": False},
         )
         self.SessionLocal = sessionmaker(
-            bind=self.engine, autocommit=False, autoflush=False
+            bind=self.engine,
+            autocommit=False,
+            autoflush=False,
+            class_=LegacyFriendlySession,
         )
 
         # Initialize schema

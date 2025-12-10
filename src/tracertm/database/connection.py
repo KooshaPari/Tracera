@@ -32,10 +32,13 @@ class DatabaseConnection:
             ValueError: If database_url is invalid
             ConnectionError: If connection fails
         """
-        if not (
-            database_url.startswith("postgresql://")
-            or database_url.startswith("sqlite://")
-        ):
+        allowed_prefixes = (
+            "postgresql://",
+            "postgresql+asyncpg://",
+            "sqlite://",
+            "sqlite+aiosqlite://",
+        )
+        if not database_url or not database_url.startswith(allowed_prefixes):
             raise ValueError(
                 "Database URL must start with 'postgresql://' or 'sqlite://' (for testing)"
             )

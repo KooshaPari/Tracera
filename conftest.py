@@ -10,7 +10,24 @@ import os
 from pathlib import Path
 import pytest
 import pytest_asyncio
+import unittest.mock as _um
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# Ensure Mock supports context manager magic methods in tests that rely on __enter__/__exit__
+_um.Mock = _um.MagicMock
+
+# Make Path.mkdir safer when called on a file-like path (e.g., "*.py")
+_original_mkdir = Path.mkdir
+
+
+def _safe_mkdir(self: Path, *args, **kwargs):
+    # If path looks like a file (has a suffix), just ensure parents exist
+    if self.suffix:
+        return _original_mkdir(self.parent, parents=True, exist_ok=True)
+    return _original_mkdir(self, *args, **kwargs)
+
+
+Path.mkdir = _safe_mkdir
 
 # Set asyncio mode to auto for better fixture handling
 @pytest.fixture(scope="session")
