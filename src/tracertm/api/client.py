@@ -23,6 +23,21 @@ from tracertm.services.concurrent_operations_service import (
     retry_with_backoff,
 )
 
+# Helper factory functions (patched in tests)
+def get_session(database_url: str | None = None) -> Session:
+    db = DatabaseConnection(database_url or ConfigManager().get("database_url"))
+    db.connect()
+    return Session(db.engine)
+
+
+def get_async_session(database_url: str | None = None) -> AsyncSession:
+    db = DatabaseConnection(database_url or ConfigManager().get("database_url"))
+    db.connect()
+    if hasattr(db, "async_session"):
+        return db.async_session
+    # Fallback: wrap sync engine
+    return AsyncSession(db.engine)
+
 
 class TraceRTMClient:
     """

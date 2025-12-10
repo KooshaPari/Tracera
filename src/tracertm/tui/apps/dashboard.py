@@ -240,8 +240,81 @@ if TEXTUAL_AVAILABLE:
 
         def action_search(self) -> None:
             """Open search dialog."""
-            # TODO: Implement search dialog
-            self.notify("Search not yet implemented", severity="warning")
+            try:
+                from textual.widgets import Input, Static, Button
+                from textual.containers import Container, Horizontal
+
+                class SearchDialog(Container):
+                    """Search dialog for items."""
+
+                    def __init__(self, dashboard):
+                        super().__init__()
+                        self.dashboard = dashboard
+                        self.border_title = "Search Items"
+
+                    def compose(self):
+                        with Horizontal():
+                            yield Input(
+                                placeholder="Enter search query (name, type, status)...",
+                                id="search_input"
+                            )
+                            yield Button("Search", id="search_btn")
+                            yield Button("Cancel", id="cancel_btn")
+
+                    def on_button_pressed(self, event: Button.Pressed) -> None:
+                        if event.button.id == "search_btn":
+                            search_input = self.query_one("#search_input", Input)
+                            query = search_input.value
+                            if query:
+                                self.dashboard.perform_search(query)
+                            self.remove()
+                        elif event.button.id == "cancel_btn":
+                            self.remove()
+
+                # Create and show search dialog
+                search_dialog = SearchDialog(self)
+                self.mount(search_dialog)
+
+                # Focus on input field
+                self.query_one("#search_input", Input).focus()
+
+                self.notify("Search dialog opened. Press Ctrl+C to close.", timeout=2)
+
+            except ImportError:
+                self.notify("Search UI not available (Textual components missing)", severity="warning")
+
+        def perform_search(self, query: str) -> None:
+            """
+            Perform search on items.
+
+            Args:
+                query: Search query string (searches name, type, status)
+            """
+            try:
+                if not self.items_data:
+                    self.notify("No items to search", severity="warning")
+                    return
+
+                query_lower = query.lower()
+                matched_items = [
+                    item for item in self.items_data
+                    if query_lower in item.get("title", "").lower()
+                    or query_lower in item.get("type", "").lower()
+                    or query_lower in item.get("status", "").lower()
+                ]
+
+                if matched_items:
+                    items_widget = self.query_one("#items", Static)
+                    search_result = "Search Results:\n\n"
+                    for item in matched_items:
+                        search_result += f"[{item.get('type', 'unknown')}] {item.get('title', 'untitled')} ({item.get('status', 'unknown')})\n"
+                    items_widget.update(search_result)
+                    self.notify(f"Found {len(matched_items)} matching items", timeout=2)
+                else:
+                    self.notify("No items match the search query", severity="warning")
+
+            except Exception as e:
+                self.notify(f"Search error: {str(e)}", severity="error")
 
         def action_help(self) -> None:
             """Show help."""
