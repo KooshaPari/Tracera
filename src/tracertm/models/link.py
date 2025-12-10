@@ -62,6 +62,10 @@ class Link(Base, TimestampMixin):
             kwargs["link_type"] = kwargs.pop("type")
         if "metadata" in kwargs and "link_metadata" not in kwargs:
             kwargs["link_metadata"] = kwargs.pop("metadata")
+        if "source_id" in kwargs and "source_item_id" not in kwargs:
+            kwargs["source_item_id"] = kwargs.pop("source_id")
+        if "target_id" in kwargs and "target_item_id" not in kwargs:
+            kwargs["target_item_id"] = kwargs.pop("target_id")
         super().__init__(**kwargs)
 
     def __getattribute__(self, name):
@@ -69,6 +73,10 @@ class Link(Base, TimestampMixin):
             return object.__getattribute__(self, "link_type")
         if name == "metadata":
             return object.__getattribute__(self, "link_metadata")
+        if name == "source_id":
+            return object.__getattribute__(self, "source_item_id")
+        if name == "target_id":
+            return object.__getattribute__(self, "target_item_id")
         return super().__getattribute__(name)
 
     def __setattr__(self, name, value):
@@ -76,6 +84,10 @@ class Link(Base, TimestampMixin):
             name = "link_type"
         if name == "metadata":
             name = "link_metadata"
+        if name == "source_id":
+            name = "source_item_id"
+        if name == "target_id":
+            name = "target_item_id"
         super().__setattr__(name, value)
 
     def __repr__(self) -> str:

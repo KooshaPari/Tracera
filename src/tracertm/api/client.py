@@ -473,6 +473,10 @@ class TraceRTMClient:
 
         return item
 
+    async def get_item_async(self, item_id: str) -> Item | None:
+        """Async wrapper for get_item."""
+        return self.get_item(item_id)
+
     # FR38: Create/update/delete items
     def create_item(
         self,
@@ -533,6 +537,35 @@ class TraceRTMClient:
         )
 
         return item
+
+    async def create_item_async(
+        self,
+        title: str,
+        view: str,
+        item_type: str | None = None,
+        description: str | None = None,
+        status: str = "todo",
+        priority: str = "medium",
+        owner: str | None = None,
+        parent_id: str | None = None,
+        metadata: dict | None = None,
+        project_id: str | None = None,
+        **kwargs,
+    ) -> Item:
+        """Async wrapper for item creation used in tests."""
+        return self.create_item(
+            title=title,
+            view=view,
+            item_type=item_type,
+            description=description,
+            status=status,
+            priority=priority,
+            owner=owner,
+            parent_id=parent_id,
+            metadata=metadata,
+            project_id=project_id,
+            **kwargs,
+        )
 
     @retry_with_backoff(max_retries=3, initial_delay=0.1)
     def update_item(
@@ -638,6 +671,27 @@ class TraceRTMClient:
             # Re-raise for retry decorator
             raise
 
+    async def update_item_async(
+        self,
+        item_id: str,
+        title: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+        priority: str | None = None,
+        owner: str | None = None,
+        metadata: dict | None = None,
+    ) -> Item:
+        """Async wrapper for update_item."""
+        return self.update_item(
+            item_id=item_id,
+            title=title,
+            description=description,
+            status=status,
+            priority=priority,
+            owner=owner,
+            metadata=metadata,
+        )
+
     def delete_item(self, item_id: str) -> bool:
         """
         Delete an item (soft delete) (FR38).
@@ -673,6 +727,135 @@ class TraceRTMClient:
             {"title": item.title},
         )
         return True
+
+    async def delete_item_async(self, item_id: str) -> bool:
+        """Async wrapper for delete_item."""
+        return self.delete_item(item_id)
+
+    # =========================
+    # Link operations
+    # =========================
+    def create_link(
+        self,
+        source_id: str,
+        target_id: str,
+        link_type: str,
+        metadata: dict | None = None,
+        project_id: str | None = None,
+    ) -> Link:
+        session = self._ensure_sync_session()
+        project_id = project_id or self._get_project_id()
+        link = Link(
+            project_id=project_id,
+            source_item_id=source_id,
+            target_item_id=target_id,
+            link_type=link_type,
+            link_metadata=metadata or {},
+        )
+        session.add(link)
+        session.commit()
+        return link
+
+    async def create_link_async(
+        self,
+        source_id: str,
+        target_id: str,
+        link_type: str,
+        metadata: dict | None = None,
+        project_id: str | None = None,
+    ) -> Link:
+        return self.create_link(
+            source_id=source_id,
+            target_id=target_id,
+            link_type=link_type,
+            metadata=metadata,
+            project_id=project_id,
+        )
+
+    def create_bidirectional_link(
+        self,
+        source_id: str,
+        target_id: str,
+        forward_type: str,
+        reverse_type: str,
+        metadata: dict | None = None,
+        project_id: str | None = None,
+    ) -> list[Link]:
+        forward = self.create_link(
+            source_id=source_id,
+            target_id=target_id,
+            link_type=forward_type,
+            metadata=metadata,
+            project_id=project_id,
+        )
+        reverse = self.create_link(
+            source_id=target_id,
+            target_id=source_id,
+            link_type=reverse_type,
+            metadata=metadata,
+            project_id=project_id,
+        )
+        return [forward, reverse]
+
+    def get_link(self, link_id: str) -> Link | None:
+        session = self._ensure_sync_session()
+        project_id = self._get_project_id()
+        link = (
+            session.query(Link)
+            .filter(
+                Link.id.like(f"{link_id}%"),
+                Link.project_id == project_id,
+            )
+            .first()
+        )
+        return link
+
+    async def get_link_async(self, link_id: str) -> Link | None:
+        return self.get_link(link_id)
+
+    def update_link(
+        self,
+        link_id: str,
+        link_type: str | None = None,
+        metadata: dict | None = None,
+    ) -> Link:
+        session = self._ensure_sync_session()
+        link = session.query(Link).filter(Link.id.like(f"{link_id}%")).first()
+        if not link:
+            raise ValueError(f"Link not found: {link_id}")
+        if link_type is not None:
+            link.link_type = link_type
+        if metadata is not None:
+            link.link_metadata = metadata
+        session.commit()
+        return link
+
+    def delete_link(self, link_id: str) -> bool:
+        session = self._ensure_sync_session()
+        link = session.query(Link).filter(Link.id.like(f"{link_id}%")).first()
+        if not link:
+            return False
+        session.delete(link)
+        session.commit()
+        return True
+
+    def query_links(
+        self,
+        source_id: str | None = None,
+        target_id: str | None = None,
+        link_type: str | None = None,
+        project_id: str | None = None,
+    ) -> list[Link]:
+        session = self._ensure_sync_session()
+        project_id = project_id or self._get_project_id()
+        query = session.query(Link).filter(Link.project_id == project_id)
+        if source_id:
+            query = query.filter(Link.source_item_id == source_id)
+        if target_id:
+            query = query.filter(Link.target_item_id == target_id)
+        if link_type:
+            query = query.filter(Link.link_type == link_type)
+        return query.all()
 
     # FR39: Export project data
     def export_project(self, format: str = "json") -> str:
