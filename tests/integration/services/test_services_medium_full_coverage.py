@@ -1759,7 +1759,6 @@ class TestProjectBackupService:
         """Test backup with history included."""
         # Create an event
         event = Event(
-            id="event-1",
             project_id=sync_project.id,
             event_type="item_created",
             entity_type="item",

@@ -522,6 +522,7 @@ def test_e2e_workflow_sync_event_creation(db_session: Session):
         entity_type="item",
         entity_id=item.id,
         agent_id="test-agent",
+        data={},
     )
     db_session.add(event)
     db_session.commit()
