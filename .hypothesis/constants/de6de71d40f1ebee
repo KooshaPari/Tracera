@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/config/manager.py
+# hypothesis_version: 6.148.7
+
+['.config', 'FEATURE', 'INFO', 'TRACERTM_LOG_LEVEL', 'TRACERTM_MAX_AGENTS', 'config.yaml', 'current_project_id', 'database_url', 'default_view', 'log_level', 'max_agents', 'output_format', 'projects', 'table', 'tracertm', 'w']

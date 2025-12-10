@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/core/database.py
+# hypothesis_version: 6.148.7
+
+[3600, 'echo', 'max_overflow', 'pool_pre_ping', 'pool_recycle', 'pool_size', 'postgresql://', 'sqlite']

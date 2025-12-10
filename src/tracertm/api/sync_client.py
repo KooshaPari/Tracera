@@ -274,7 +274,7 @@ class ApiClient:
                 "User-Agent": f"TraceRTM-Client/{self._client_id}",
             }
 
-            if self.config.token:
+            if self.config.token is not None:
                 headers["Authorization"] = f"Bearer {self.config.token}"
 
             self._client = httpx.AsyncClient(

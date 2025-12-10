@@ -68,9 +68,9 @@ async def api_client(mock_config):
     await client.close()
 
 
-@pytest_asyncio.fixture
-async def tracertm_client(db_session):
-    """Create TraceRTM Python client."""
+@pytest.fixture
+def tracertm_client(sync_db_session):
+    """Create TraceRTM Python client with sync session."""
     with patch("tracertm.api.client.ConfigManager") as mock_config_manager:
         mock_config = MagicMock()
         mock_config.get.side_effect = lambda key: {
@@ -80,7 +80,7 @@ async def tracertm_client(db_session):
         mock_config_manager.return_value = mock_config
 
         client = TraceRTMClient(agent_id="test-agent-123", agent_name="Test Agent")
-        client._session = db_session
+        client._session = sync_db_session
         yield client
 
 
@@ -3255,7 +3255,7 @@ class TestConfigurationInitialization:
 
     def test_tracertm_client_without_database_url(self):
         """Test TraceRTMClient initialization without database URL."""
-        with patch("tracertm.config.manager.ConfigManager") as mock_cm:
+        with patch("tracertm.api.client.ConfigManager") as mock_cm:
             mock_config = MagicMock()
             mock_config.get.return_value = None
             mock_cm.return_value = mock_config
@@ -3266,7 +3266,7 @@ class TestConfigurationInitialization:
 
     def test_tracertm_client_without_project(self):
         """Test TraceRTMClient initialization without current project."""
-        with patch("tracertm.config.manager.ConfigManager") as mock_cm:
+        with patch("tracertm.api.client.ConfigManager") as mock_cm:
             mock_config = MagicMock()
             mock_config.get.side_effect = lambda key: (
                 "sqlite:///:memory:" if key == "database_url" else None

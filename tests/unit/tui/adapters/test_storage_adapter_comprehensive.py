@@ -683,3 +683,490 @@ class TestStorageAdapterReactiveCallbacks:
         adapter._notify_item_change(item_id)
 
         callback.assert_called_once_with(item_id)
+
+
+# =============================================================================
+# Additional Error Handling Tests
+# =============================================================================
+
+class TestStorageAdapterErrorHandling:
+    """Test error handling in StorageAdapter."""
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_notify_sync_status_multiple_callbacks_with_errors(self, mock_storage_class):
+        """Test multiple callbacks where some fail."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        adapter = StorageAdapter()
+        callback1 = MagicMock(side_effect=Exception("First callback failed"))
+        callback2 = MagicMock()
+        callback3 = MagicMock(side_effect=Exception("Third callback failed"))
+        callback4 = MagicMock()
+
+        adapter.on_sync_status_change(callback1)
+        adapter.on_sync_status_change(callback2)
+        adapter.on_sync_status_change(callback3)
+        adapter.on_sync_status_change(callback4)
+
+        state = SyncState(status=SyncStatus.SUCCESS, pending_changes=0)
+        adapter._notify_sync_status(state)
+
+        # All callbacks should be called despite failures
+        callback1.assert_called_once()
+        callback2.assert_called_once()
+        callback3.assert_called_once()
+        callback4.assert_called_once()
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_notify_conflict_handles_errors(self, mock_storage_class):
+        """Test _notify_conflict handles callback errors gracefully."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        adapter = StorageAdapter()
+        failing_callback = MagicMock(side_effect=Exception("Callback error"))
+        working_callback = MagicMock()
+        adapter.on_conflict_detected(failing_callback)
+        adapter.on_conflict_detected(working_callback)
+
+        conflict = MagicMock()
+        adapter._notify_conflict(conflict)
+
+        failing_callback.assert_called_once()
+        working_callback.assert_called_once()
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_notify_item_change_handles_errors(self, mock_storage_class):
+        """Test _notify_item_change handles callback errors gracefully."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        adapter = StorageAdapter()
+        failing_callback = MagicMock(side_effect=ValueError("Invalid item"))
+        working_callback = MagicMock()
+        adapter.on_item_change(failing_callback)
+        adapter.on_item_change(working_callback)
+
+        item_id = str(uuid4())
+        adapter._notify_item_change(item_id)
+
+        failing_callback.assert_called_once()
+        working_callback.assert_called_once()
+
+
+# =============================================================================
+# Additional Item Operations Tests
+# =============================================================================
+
+class TestStorageAdapterItemOperationsExtended:
+    """Extended tests for item operations."""
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_list_items_with_all_filters(self, mock_storage_class):
+        """Test list_items with all filter parameters."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        mock_item = Item(id=str(uuid4()), title="Filtered Item", item_type="story")
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.list_items.return_value = [mock_item]
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        parent_id = str(uuid4())
+        results = adapter.list_items(
+            project,
+            item_type="story",
+            status="in_progress",
+            parent_id=parent_id
+        )
+
+        assert len(results) == 1
+        mock_item_storage.list_items.assert_called_once_with(
+            item_type="story", status="in_progress", parent_id=parent_id
+        )
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_get_item_not_found(self, mock_storage_class):
+        """Test get_item returns None when item not found."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        item_id = str(uuid4())
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.get_item.return_value = None
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        result = adapter.get_item(project, item_id)
+
+        assert result is None
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_create_item_with_all_parameters(self, mock_storage_class):
+        """Test create_item with all optional parameters."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        item_id = str(uuid4())
+        mock_item = Item(
+            id=item_id,
+            title="Complete Item",
+            item_type="epic",
+            external_id="EPIC-001",
+            description="Full description",
+            status="in_progress",
+            priority="critical",
+            owner="user@example.com",
+            parent_id=str(uuid4()),
+            item_metadata={"key": "value"}
+        )
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.create_item.return_value = mock_item
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        result = adapter.create_item(
+            project,
+            title="Complete Item",
+            item_type="epic",
+            external_id="EPIC-001",
+            description="Full description",
+            status="in_progress",
+            priority="critical",
+            owner="user@example.com",
+            parent_id=mock_item.parent_id,
+            metadata={"key": "value"}
+        )
+
+        assert result == mock_item
+        assert mock_item_storage.create_item.called
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_update_item_partial_update(self, mock_storage_class):
+        """Test update_item with only some fields."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        item_id = str(uuid4())
+        mock_item = Item(id=item_id, title="Original", status="done")
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.update_item.return_value = mock_item
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        result = adapter.update_item(project, item_id, status="done")
+
+        assert result == mock_item
+        mock_item_storage.update_item.assert_called_once()
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_create_item_multiple_listeners(self, mock_storage_class):
+        """Test create_item notifies multiple listeners."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        item_id = str(uuid4())
+        mock_item = Item(id=item_id, title="New Item", item_type="task")
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.create_item.return_value = mock_item
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        callback1 = MagicMock()
+        callback2 = MagicMock()
+        callback3 = MagicMock()
+        adapter.on_item_change(callback1)
+        adapter.on_item_change(callback2)
+        adapter.on_item_change(callback3)
+
+        adapter.create_item(project, title="New Item", item_type="task")
+
+        callback1.assert_called_once_with(item_id)
+        callback2.assert_called_once_with(item_id)
+        callback3.assert_called_once_with(item_id)
+
+
+# =============================================================================
+# Additional Link Operations Tests
+# =============================================================================
+
+class TestStorageAdapterLinkOperationsExtended:
+    """Extended tests for link operations."""
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_list_links_with_source_filter(self, mock_storage_class):
+        """Test list_links with source_id filter."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        source_id = str(uuid4())
+        mock_link = Link(id=str(uuid4()), source_item_id=source_id, target_item_id=str(uuid4()))
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.list_links.return_value = [mock_link]
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        results = adapter.list_links(project, source_id=source_id)
+
+        assert len(results) == 1
+        mock_item_storage.list_links.assert_called_once_with(
+            source_id=source_id, target_id=None, link_type=None
+        )
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_list_links_with_target_filter(self, mock_storage_class):
+        """Test list_links with target_id filter."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        target_id = str(uuid4())
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.list_links.return_value = []
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        results = adapter.list_links(project, target_id=target_id)
+
+        mock_item_storage.list_links.assert_called_once_with(
+            source_id=None, target_id=target_id, link_type=None
+        )
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_create_link_without_metadata(self, mock_storage_class):
+        """Test create_link without metadata."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+        source_id = str(uuid4())
+        target_id = str(uuid4())
+        mock_link = Link(
+            id=str(uuid4()),
+            source_item_id=source_id,
+            target_item_id=target_id,
+            link_type="implements"
+        )
+
+        mock_project_storage = MagicMock()
+        mock_item_storage = MagicMock()
+        mock_item_storage.create_link.return_value = mock_link
+        mock_project_storage.get_item_storage.return_value = mock_item_storage
+        mock_storage.get_project_storage.return_value = mock_project_storage
+
+        adapter = StorageAdapter()
+        result = adapter.create_link(project, source_id, target_id, "implements")
+
+        assert result == mock_link
+
+
+# =============================================================================
+# Additional Sync Operations Tests
+# =============================================================================
+
+class TestStorageAdapterSyncOperationsExtended:
+    """Extended tests for sync operations."""
+
+    @pytest.mark.asyncio
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    async def test_trigger_sync_with_conflicts(self, mock_storage_class):
+        """Test trigger_sync handles conflicts in result."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        mock_sync_engine = MagicMock()
+        mock_conflict1 = MagicMock()
+        mock_conflict2 = MagicMock()
+        mock_result = MagicMock(
+            success=True,
+            entities_synced=5,
+            conflicts=[mock_conflict1, mock_conflict2],
+            errors=[],
+            duration_seconds=1.5
+        )
+        mock_sync_engine.sync = AsyncMock(return_value=mock_result)
+        mock_sync_engine.get_status.return_value = SyncState(
+            status=SyncStatus.SUCCESS,
+            pending_changes=0
+        )
+
+        adapter = StorageAdapter(sync_engine=mock_sync_engine)
+        result = await adapter.trigger_sync()
+
+        assert result["success"] is True
+        assert result["conflicts"] == 2
+
+    @pytest.mark.asyncio
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    async def test_trigger_sync_with_errors_in_result(self, mock_storage_class):
+        """Test trigger_sync includes errors from result."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        mock_sync_engine = MagicMock()
+        mock_result = MagicMock(
+            success=True,
+            entities_synced=8,
+            conflicts=[],
+            errors=["Error 1", "Error 2"],
+            duration_seconds=2.0
+        )
+        mock_sync_engine.sync = AsyncMock(return_value=mock_result)
+        mock_sync_engine.get_status.return_value = SyncState(
+            status=SyncStatus.SUCCESS,
+            pending_changes=0
+        )
+
+        adapter = StorageAdapter(sync_engine=mock_sync_engine)
+        result = await adapter.trigger_sync()
+
+        assert result["success"] is True
+        assert result["errors"] == ["Error 1", "Error 2"]
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_get_pending_changes_count_empty(self, mock_storage_class):
+        """Test get_pending_changes_count with empty queue."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+        mock_storage.get_sync_queue.return_value = []
+
+        adapter = StorageAdapter()
+        result = adapter.get_pending_changes_count()
+
+        assert result == 0
+
+
+# =============================================================================
+# Additional Statistics Tests
+# =============================================================================
+
+class TestStorageAdapterStatisticsExtended:
+    """Extended tests for statistics operations."""
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_get_project_stats_empty_project(self, mock_storage_class):
+        """Test get_project_stats for project with no items."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Empty Project")
+
+        mock_session = MagicMock()
+        mock_storage.get_session.return_value = mock_session
+
+        mock_query = MagicMock()
+        # All counts return 0
+        mock_query.filter.return_value.count.return_value = 0
+        mock_session.query.return_value = mock_query
+
+        adapter = StorageAdapter()
+        stats = adapter.get_project_stats(project)
+
+        assert stats["total_items"] == 0
+        assert stats["total_links"] == 0
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_get_project_stats_session_cleanup(self, mock_storage_class):
+        """Test get_project_stats properly closes session."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        project = Project(id=str(uuid4()), name="Test Project")
+
+        mock_session = MagicMock()
+        mock_storage.get_session.return_value = mock_session
+
+        mock_query = MagicMock()
+        mock_query.filter.return_value.count.return_value = 0
+        mock_session.query.return_value = mock_query
+
+        adapter = StorageAdapter()
+        adapter.get_project_stats(project)
+
+        mock_session.close.assert_called_once()
+
+
+# =============================================================================
+# Callback Unregister Tests
+# =============================================================================
+
+class TestStorageAdapterCallbackUnregister:
+    """Test callback unregister functionality."""
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_multiple_callback_unregister(self, mock_storage_class):
+        """Test unregistering multiple callbacks."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        adapter = StorageAdapter()
+        callback1 = MagicMock()
+        callback2 = MagicMock()
+        callback3 = MagicMock()
+
+        unregister1 = adapter.on_sync_status_change(callback1)
+        unregister2 = adapter.on_sync_status_change(callback2)
+        unregister3 = adapter.on_sync_status_change(callback3)
+
+        assert len(adapter._sync_status_callbacks) == 3
+
+        unregister2()
+        assert len(adapter._sync_status_callbacks) == 2
+        assert callback2 not in adapter._sync_status_callbacks
+
+        unregister1()
+        unregister3()
+        assert len(adapter._sync_status_callbacks) == 0
+
+    @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
+    def test_callback_unregister_different_types(self, mock_storage_class):
+        """Test unregistering callbacks of different types."""
+        mock_storage = MagicMock()
+        mock_storage_class.return_value = mock_storage
+
+        adapter = StorageAdapter()
+        sync_callback = MagicMock()
+        conflict_callback = MagicMock()
+        item_callback = MagicMock()
+
+        unregister_sync = adapter.on_sync_status_change(sync_callback)
+        unregister_conflict = adapter.on_conflict_detected(conflict_callback)
+        unregister_item = adapter.on_item_change(item_callback)
+
+        assert len(adapter._sync_status_callbacks) == 1
+        assert len(adapter._conflict_callbacks) == 1
+        assert len(adapter._item_change_callbacks) == 1
+
+        unregister_sync()
+        assert len(adapter._sync_status_callbacks) == 0
+        assert len(adapter._conflict_callbacks) == 1
+        assert len(adapter._item_change_callbacks) == 1

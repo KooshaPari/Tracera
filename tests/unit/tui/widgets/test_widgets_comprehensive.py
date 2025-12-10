@@ -982,3 +982,339 @@ def test_view_switcher_widget_placeholder():
         from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
         # Should be an empty placeholder class
         assert ViewSwitcherWidget is not None
+
+
+# =============================================================================
+# Additional Widget Lifecycle Tests
+# =============================================================================
+
+@pytest.mark.skipif(not TEXTUAL_AVAILABLE or not ITEM_LIST_AVAILABLE, reason="Textual not available")
+class TestItemListWidgetLifecycle:
+    """Tests for ItemListWidget lifecycle and edge cases."""
+
+    @patch.object(ItemListWidget, 'add_columns')
+    def test_item_list_on_mount_adds_columns_once(self, mock_add_columns):
+        """Test on_mount only adds columns once."""
+        widget = ItemListWidget()
+        widget._columns_added = False
+
+        widget.on_mount()
+
+        mock_add_columns.assert_called_once_with("ID", "Title", "Type", "Status")
+        assert widget._columns_added is True
+
+    @patch.object(ItemListWidget, 'add_columns')
+    def test_item_list_on_mount_skips_if_already_added(self, mock_add_columns):
+        """Test on_mount skips column setup if already done."""
+        widget = ItemListWidget()
+        widget._columns_added = True
+
+        widget.on_mount()
+
+        mock_add_columns.assert_not_called()
+
+    def test_item_list_initial_state(self):
+        """Test ItemListWidget initializes with correct state."""
+        widget = ItemListWidget()
+
+        assert widget._columns_added is False
+
+
+@pytest.mark.skipif(not TEXTUAL_AVAILABLE or not STATE_DISPLAY_AVAILABLE, reason="Textual not available")
+class TestStateDisplayWidgetLifecycle:
+    """Tests for StateDisplayWidget lifecycle and edge cases."""
+
+    @patch.object(StateDisplayWidget, 'add_columns')
+    def test_state_display_on_mount_adds_columns_once(self, mock_add_columns):
+        """Test on_mount only adds columns once."""
+        widget = StateDisplayWidget()
+        widget._columns_added = False
+
+        widget.on_mount()
+
+        mock_add_columns.assert_called_once_with("View", "Items", "Links")
+        assert widget._columns_added is True
+
+    @patch.object(StateDisplayWidget, 'add_columns')
+    def test_state_display_on_mount_skips_if_already_added(self, mock_add_columns):
+        """Test on_mount skips column setup if already done."""
+        widget = StateDisplayWidget()
+        widget._columns_added = True
+
+        widget.on_mount()
+
+        mock_add_columns.assert_not_called()
+
+    def test_state_display_initial_state(self):
+        """Test StateDisplayWidget initializes with correct state."""
+        widget = StateDisplayWidget()
+
+        assert widget._columns_added is False
+
+
+@pytest.mark.skipif(not TEXTUAL_AVAILABLE or not VIEW_SWITCHER_AVAILABLE, reason="Textual not available")
+class TestViewSwitcherWidgetLifecycle:
+    """Tests for ViewSwitcherWidget lifecycle and setup."""
+
+    @patch.object(ViewSwitcherWidget, 'setup_views')
+    def test_view_switcher_on_mount_calls_setup(self, mock_setup):
+        """Test on_mount calls setup_views."""
+        widget = ViewSwitcherWidget()
+
+        widget.on_mount()
+
+        mock_setup.assert_called_once()
+
+    def test_view_switcher_setup_views_adds_all(self):
+        """Test setup_views adds all expected views."""
+        widget = ViewSwitcherWidget()
+        widget.root = MagicMock()
+
+        widget.setup_views()
+
+        assert widget.root.add.call_count == 8
+        view_names = [call[0][0] for call in widget.root.add.call_args_list]
+        assert "FEATURE" in view_names
+        assert "CODE" in view_names
+        assert "WIREFRAME" in view_names
+        assert "API" in view_names
+        assert "TEST" in view_names
+        assert "DATABASE" in view_names
+        assert "ROADMAP" in view_names
+        assert "PROGRESS" in view_names
+
+
+# =============================================================================
+# SyncStatusWidget Edge Cases
+# =============================================================================
+
+@pytest.mark.skipif(not TEXTUAL_AVAILABLE or not SYNC_STATUS_AVAILABLE, reason="Textual not available")
+class TestSyncStatusWidgetEdgeCases:
+    """Edge case tests for SyncStatusWidget."""
+
+    def test_sync_status_update_display_not_mounted(self):
+        """Test update_display handles unmounted widget gracefully."""
+        widget = SyncStatusWidget()
+        # Mock is_mounted property
+        with patch.object(type(widget), 'is_mounted', new_callable=PropertyMock) as mock_mounted:
+            mock_mounted.return_value = False
+
+            # Should not raise error
+            widget.update_display()
+
+    def test_sync_status_update_display_widget_not_composed(self):
+        """Test update_display handles widget not yet composed."""
+        widget = SyncStatusWidget()
+        with patch.object(type(widget), 'is_mounted', new_callable=PropertyMock) as mock_mounted:
+            mock_mounted.return_value = True
+            widget.query_one = MagicMock(side_effect=Exception("Widget not found"))
+
+            # Should not raise error
+            widget.update_display()
+
+    def test_sync_status_format_time_ago_edge_case_59_seconds(self):
+        """Test time formatting at 59 seconds boundary."""
+        widget = SyncStatusWidget()
+        dt = datetime.now() - timedelta(seconds=59)
+
+        result = widget._format_time_ago(dt)
+
+        assert result == "just now"
+
+    def test_sync_status_format_time_ago_edge_case_60_seconds(self):
+        """Test time formatting at 60 seconds boundary."""
+        widget = SyncStatusWidget()
+        dt = datetime.now() - timedelta(seconds=60)
+
+        result = widget._format_time_ago(dt)
+
+        assert "1 minute" in result
+
+    def test_sync_status_format_time_ago_edge_case_one_hour(self):
+        """Test time formatting at one hour boundary."""
+        widget = SyncStatusWidget()
+        dt = datetime.now() - timedelta(hours=1)
+
+        result = widget._format_time_ago(dt)
+
+        assert "1 hour" in result
+        assert "hours" not in result
+
+    def test_sync_status_update_display_one_pending_change(self):
+        """Test display with exactly one pending change (singular)."""
+        widget = SyncStatusWidget()
+        widget.pending_changes = 1
+
+        mock_connection_status = MagicMock()
+        mock_sync_info = MagicMock()
+        mock_conflict_info = MagicMock()
+
+        def mock_query_one(selector, widget_class):
+            if 'connection-status' in selector:
+                return mock_connection_status
+            elif 'sync-info' in selector:
+                return mock_sync_info
+            elif 'conflict-info' in selector:
+                return mock_conflict_info
+            return MagicMock()
+
+        widget.query_one = mock_query_one
+
+        widget.update_display()
+
+        mock_sync_info.update.assert_called()
+        call_text = mock_sync_info.update.call_args[0][0]
+        assert '1' in call_text
+        assert 'pending change' in call_text
+        assert 'changes' not in call_text
+
+    def test_sync_status_update_display_one_conflict(self):
+        """Test display with exactly one conflict (singular)."""
+        widget = SyncStatusWidget()
+        widget.conflicts_count = 1
+
+        mock_connection_status = MagicMock()
+        mock_sync_info = MagicMock()
+        mock_conflict_info = MagicMock()
+
+        def mock_query_one(selector, widget_class):
+            if 'connection-status' in selector:
+                return mock_connection_status
+            elif 'sync-info' in selector:
+                return mock_sync_info
+            elif 'conflict-info' in selector:
+                return mock_conflict_info
+            return MagicMock()
+
+        widget.query_one = mock_query_one
+
+        widget.update_display()
+
+        mock_conflict_info.update.assert_called()
+        call_text = mock_conflict_info.update.call_args[0][0]
+        assert '1' in call_text
+        assert 'conflict' in call_text
+
+    def test_sync_status_update_display_never_synced(self):
+        """Test display when never synced."""
+        widget = SyncStatusWidget()
+        widget.last_sync = None
+        widget.pending_changes = 0
+
+        mock_connection_status = MagicMock()
+        mock_sync_info = MagicMock()
+        mock_conflict_info = MagicMock()
+
+        def mock_query_one(selector, widget_class):
+            if 'connection-status' in selector:
+                return mock_connection_status
+            elif 'sync-info' in selector:
+                return mock_sync_info
+            elif 'conflict-info' in selector:
+                return mock_conflict_info
+            return MagicMock()
+
+        widget.query_one = mock_query_one
+
+        widget.update_display()
+
+        mock_sync_info.update.assert_called()
+        call_text = mock_sync_info.update.call_args[0][0]
+        assert 'Never synced' in call_text
+
+
+# =============================================================================
+# ConflictPanel Edge Cases and Event Handling
+# =============================================================================
+
+@pytest.mark.skipif(not TEXTUAL_AVAILABLE or not CONFLICT_AVAILABLE, reason="Textual not available")
+class TestConflictPanelEdgeCases:
+    """Edge case tests for ConflictPanel."""
+
+    @patch.object(ConflictPanel, '__init__', lambda x, **kwargs: None)
+    def test_conflict_panel_init_with_empty_conflicts(self):
+        """Test ConflictPanel initialization with empty conflict list."""
+        panel = ConflictPanel()
+        panel.conflicts = []
+        panel.selected_conflict = None
+
+        assert len(panel.conflicts) == 0
+        assert panel.selected_conflict is None
+
+    @patch.object(ConflictPanel, 'query_one')
+    @patch.object(ConflictPanel, '__init__', lambda x, **kwargs: None)
+    def test_conflict_panel_refresh_with_long_entity_id(self, mock_query_one):
+        """Test conflict list display truncates long entity IDs."""
+        conflict = MagicMock()
+        conflict.entity_type = "item"
+        conflict.entity_id = "a" * 50  # Very long ID
+        conflict.local_version.vector_clock.version = 1
+        conflict.remote_version.vector_clock.version = 2
+        conflict.detected_at = datetime(2024, 1, 1, 12, 0)
+
+        panel = ConflictPanel()
+        panel.conflicts = [conflict]
+
+        mock_table = MagicMock()
+        mock_query_one.return_value = mock_table
+
+        panel.refresh_conflict_list()
+
+        # Check that ID was truncated to 12 chars + "..."
+        call_args = mock_table.add_row.call_args[0]
+        assert len(call_args[1]) == 15  # 12 chars + "..."
+        assert call_args[1].endswith("...")
+
+    @patch('tracertm.tui.widgets.conflict_panel.compare_versions')
+    @patch.object(ConflictPanel, 'query_one')
+    @patch.object(ConflictPanel, '__init__', lambda x, **kwargs: None)
+    def test_conflict_panel_show_conflict_detail_only_modified(self, mock_query_one, mock_compare):
+        """Test showing conflict with only modified fields."""
+        local_version = MagicMock()
+        local_version.vector_clock.version = 1
+        local_version.vector_clock.timestamp = datetime(2024, 1, 1, 12, 0, 0)
+        local_version.vector_clock.client_id = "client1"
+
+        remote_version = MagicMock()
+        remote_version.vector_clock.version = 2
+        remote_version.vector_clock.timestamp = datetime(2024, 1, 1, 13, 0, 0)
+        remote_version.vector_clock.client_id = "client2"
+
+        conflict = MagicMock()
+        conflict.entity_type = "item"
+        conflict.entity_id = "abc123"
+        conflict.local_version = local_version
+        conflict.remote_version = remote_version
+
+        mock_compare.return_value = {
+            'modified': ['title'],
+            'added': [],
+            'removed': []
+        }
+
+        panel = ConflictPanel()
+        mock_detail = MagicMock()
+        mock_query_one.return_value = mock_detail
+
+        panel.show_conflict_detail(conflict)
+
+        mock_detail.update.assert_called_once()
+        update_text = mock_detail.update.call_args[0][0]
+        assert 'title' in update_text
+        assert 'Modified fields' in update_text
+
+    @patch.object(ConflictPanel, '__init__', lambda x, **kwargs: None)
+    def test_conflict_panel_messages_exist(self):
+        """Test ConflictPanel custom message classes exist."""
+        panel = ConflictPanel()
+
+        assert hasattr(panel, 'ConflictResolved')
+        assert hasattr(panel, 'ConflictPanelClosed')
+
+    @patch.object(ConflictPanel, '__init__', lambda x, **kwargs: None)
+    def test_conflict_panel_compose_method_exists(self):
+        """Test ConflictPanel has compose method."""
+        panel = ConflictPanel()
+
+        assert hasattr(panel, 'compose')
+        assert callable(panel.compose)

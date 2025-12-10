@@ -20,8 +20,6 @@ from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.services.item_service import ItemService
-from tracertm.services.link_service import LinkService
-from tracertm.services.project_service import ProjectService
 from tracertm.services.sync_service import SyncService
 from tracertm.services.cycle_detection_service import CycleDetectionService
 

@@ -2,9 +2,12 @@
 
 import os
 
+import pytest
 import pytest_asyncio
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import NullPool, StaticPool
 
 from tracertm.models.base import Base
 # Import ALL models to ensure they're registered with Base.metadata
@@ -18,6 +21,7 @@ from tracertm.models.link import Link
 from tracertm.models.project import Project
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+SYNC_TEST_DATABASE_URL = os.getenv("SYNC_TEST_DATABASE_URL", "sqlite:///:memory:")
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -89,3 +93,37 @@ async def sample_item(db_session: AsyncSession, sample_project: Project) -> Item
     )
     await db_session.commit()
     return item
+
+
+# Sync fixtures for tests that don't use async/await
+@pytest.fixture(scope="function")
+def sync_test_db_engine():
+    """Create a sync test database engine for each test."""
+    engine = create_engine(
+        SYNC_TEST_DATABASE_URL,
+        connect_args={"check_same_thread": False} if "sqlite" in SYNC_TEST_DATABASE_URL else {},
+        poolclass=StaticPool if "sqlite" in SYNC_TEST_DATABASE_URL else NullPool,
+        echo=False,
+    )
+
+    # Create all tables
+    Base.metadata.create_all(engine)
+
+    yield engine
+
+    # Drop all tables and cleanup
+    Base.metadata.drop_all(engine)
+    engine.dispose()
+
+
+@pytest.fixture
+def sync_db_session(sync_test_db_engine):
+    """Create a new synchronous database session for each test function."""
+    SessionLocal = sessionmaker(
+        bind=sync_test_db_engine,
+        class_=Session,
+    )
+
+    session = SessionLocal()
+    yield session
+    session.close()
