@@ -1315,3 +1315,492 @@ class TestAdditionalCoverage:
 
         assert result.total_affected >= 1
         assert target.id == result.root_item_id
+
+
+# ============================================================================
+# EXTENDED TESTS FOR ADDITIONAL COVERAGE
+# ============================================================================
+
+
+class TestBiDirectionalAnalysis:
+    """Test bidirectional impact analysis."""
+
+    @pytest.mark.asyncio
+    async def test_compare_forward_and_reverse_impact(self, service):
+        """Test comparing forward and reverse impact on same item."""
+        central = create_mock_item("central")
+        upstream = create_mock_item("upstream")
+        downstream = create_mock_item("downstream")
+
+        items = {"upstream": upstream, "central": central, "downstream": downstream}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+
+        # For analyze_impact: central -> downstream
+        service.links.get_by_source = AsyncMock(
+            side_effect=lambda id: [create_mock_link("central", "downstream")] if id == "central" else []
+        )
+
+        # For analyze_reverse_impact: upstream -> central
+        service.links.get_by_target = AsyncMock(
+            side_effect=lambda id: [create_mock_link("upstream", "central")] if id == "central" else []
+        )
+
+        forward = await service.analyze_impact("central")
+        reverse = await service.analyze_reverse_impact("central")
+
+        assert forward.total_affected == 1
+        assert reverse.total_affected == 1
+        assert forward.affected_items[0]["id"] == "downstream"
+        assert reverse.affected_items[0]["id"] == "upstream"
+
+
+class TestStatusTransitionImpact:
+    """Test impact analysis on status transitions."""
+
+    @pytest.mark.asyncio
+    async def test_status_change_propagation(self, service):
+        """Test tracking impact of status changes."""
+        active = create_mock_item("active", status="active")
+        blocked = create_mock_item("blocked", status="blocked")
+        done = create_mock_item("done", status="done")
+
+        links = {
+            "active": [
+                create_mock_link("active", "blocked"),
+                create_mock_link("active", "done"),
+            ],
+        }
+
+        items = {"active": active, "blocked": blocked, "done": done}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("active")
+
+        affected_statuses = {item["status"] for item in result.affected_items}
+        assert "blocked" in affected_statuses
+        assert "done" in affected_statuses
+
+
+class TestItemTypeVariety:
+    """Test impact analysis with various item types."""
+
+    @pytest.mark.asyncio
+    async def test_mixed_item_types_analysis(self, service):
+        """Test analyzing impact across different item types."""
+        req = create_mock_item("req", item_type="requirement")
+        design = create_mock_item("design", item_type="design")
+        impl = create_mock_item("impl", item_type="implementation")
+        test = create_mock_item("test", item_type="test")
+
+        links = {
+            "req": [create_mock_link("req", "design")],
+            "design": [create_mock_link("design", "impl")],
+            "impl": [create_mock_link("impl", "test")],
+        }
+
+        items = {"req": req, "design": design, "impl": impl, "test": test}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("req")
+
+        item_types = {item["item_type"] for item in result.affected_items}
+        assert "design" in item_types
+        assert "implementation" in item_types
+        assert "test" in item_types
+
+
+class TestDepthAnalysis:
+    """Test depth-based analysis capabilities."""
+
+    @pytest.mark.asyncio
+    async def test_depth_distribution_tracking(self, service):
+        """Test accurate depth distribution."""
+        root = create_mock_item("root")
+        l1_items = [create_mock_item(f"l1_{i}") for i in range(3)]
+        l2_items = [create_mock_item(f"l2_{i}") for i in range(2)]
+        l3_items = [create_mock_item(f"l3_{i}") for i in range(1)]
+
+        items = {"root": root}
+        items.update({item.id: item for item in l1_items + l2_items + l3_items})
+
+        links = {
+            "root": [create_mock_link("root", item.id) for item in l1_items],
+        }
+        for i, l1_item in enumerate(l1_items):
+            if i < 2:
+                links[l1_item.id] = [create_mock_link(l1_item.id, item.id) for item in l2_items]
+            else:
+                links[l1_item.id] = []
+
+        for l2_item in l2_items:
+            links[l2_item.id] = [create_mock_link(l2_item.id, l3_items[0].id)]
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("root")
+
+        assert result.affected_by_depth[1] == 3
+        assert result.affected_by_depth[2] >= 2
+
+    @pytest.mark.asyncio
+    async def test_max_depth_boundary(self, service):
+        """Test max_depth boundary condition."""
+        items = {str(i): create_mock_item(str(i)) for i in range(6)}
+        links = {str(i): [create_mock_link(str(i), str(i + 1))] for i in range(5)}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        # Test boundary at different depths
+        result2 = await service.analyze_impact("0", max_depth=2)
+        result5 = await service.analyze_impact("0", max_depth=5)
+
+        assert result2.total_affected == 2
+        assert result5.total_affected == 5
+
+
+class TestViewSpecificAnalysis:
+    """Test view-specific analysis patterns."""
+
+    @pytest.mark.asyncio
+    async def test_cross_view_traceability(self, service):
+        """Test traceability across views."""
+        req = create_mock_item("req", view="REQ")
+        design1 = create_mock_item("design1", view="DESIGN")
+        design2 = create_mock_item("design2", view="DESIGN")
+        code = create_mock_item("code", view="CODE")
+
+        links = {
+            "req": [
+                create_mock_link("req", "design1"),
+                create_mock_link("req", "design2"),
+            ],
+            "design1": [create_mock_link("design1", "code")],
+        }
+
+        items = {
+            "req": req,
+            "design1": design1,
+            "design2": design2,
+            "code": code,
+        }
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("req")
+
+        view_count = result.affected_by_view
+        assert view_count["DESIGN"] == 2
+        assert view_count["CODE"] == 1
+
+    @pytest.mark.asyncio
+    async def test_single_view_analysis(self, service):
+        """Test analyzing within single view."""
+        items = {str(i): create_mock_item(str(i), view="REQ") for i in range(4)}
+        links = {
+            "0": [create_mock_link("0", "1"), create_mock_link("0", "2")],
+            "1": [create_mock_link("1", "3")],
+        }
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("0")
+
+        assert len(result.affected_by_view) == 1
+        assert result.affected_by_view["REQ"] == 3
+
+
+class TestPathTrackingAccuracy:
+    """Test accuracy of path tracking."""
+
+    @pytest.mark.asyncio
+    async def test_path_uniqueness_in_dags(self, service):
+        """Test path tracking in DAG (directed acyclic graph)."""
+        root = create_mock_item("root")
+        a = create_mock_item("a")
+        b = create_mock_item("b")
+        c = create_mock_item("c")
+
+        # Diamond: root -> a,b -> c
+        links = {
+            "root": [create_mock_link("root", "a"), create_mock_link("root", "b")],
+            "a": [create_mock_link("a", "c")],
+            "b": [create_mock_link("b", "c")],
+        }
+
+        items = {"root": root, "a": a, "b": b, "c": c}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("root")
+
+        # c should appear once, earliest path recorded
+        c_items = [item for item in result.affected_items if item["id"] == "c"]
+        assert len(c_items) == 1
+
+    @pytest.mark.asyncio
+    async def test_path_contains_all_ancestors(self, service):
+        """Test path contains complete ancestry."""
+        items = {str(i): create_mock_item(str(i)) for i in range(5)}
+        links = {str(i): [create_mock_link(str(i), str(i + 1))] for i in range(4)}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("0")
+
+        deepest = max(result.affected_items, key=lambda x: x["depth"])
+        expected_path = ["0", "1", "2", "3", "4"]
+        assert deepest["path"] == expected_path
+
+
+class TestLinkTypeVariations:
+    """Test various link type scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_many_link_types_mixed(self, service):
+        """Test handling many link types simultaneously."""
+        root = create_mock_item("root")
+        children = [create_mock_item(f"child{i}") for i in range(5)]
+
+        link_types = [
+            "traces_to",
+            "implements",
+            "depends_on",
+            "relates_to",
+            "verifies",
+        ]
+
+        links = [
+            create_mock_link("root", children[i].id, link_types[i])
+            for i in range(5)
+        ]
+
+        items = {"root": root}
+        items.update({child.id: child for child in children})
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links if id == "root" else [])
+
+        result = await service.analyze_impact("root")
+
+        found_types = {item["link_type"] for item in result.affected_items}
+        assert len(found_types) == 5
+
+    @pytest.mark.asyncio
+    async def test_selective_link_type_filtering(self, service):
+        """Test selective filtering of specific link types."""
+        root = create_mock_item("root")
+        traces_child = create_mock_item("traces_child")
+        impl_child = create_mock_item("impl_child")
+        other_child = create_mock_item("other_child")
+
+        links = [
+            create_mock_link("root", "traces_child", "traces_to"),
+            create_mock_link("root", "impl_child", "implements"),
+            create_mock_link("root", "other_child", "depends_on"),
+        ]
+
+        items = {
+            "root": root,
+            "traces_child": traces_child,
+            "impl_child": impl_child,
+            "other_child": other_child,
+        }
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links if id == "root" else [])
+
+        result = await service.analyze_impact(
+            "root",
+            link_types=["traces_to", "implements"],
+        )
+
+        affected_ids = {item["id"] for item in result.affected_items}
+        assert "traces_child" in affected_ids
+        assert "impl_child" in affected_ids
+        assert "other_child" not in affected_ids
+
+
+class TestPerformanceCharacteristics:
+    """Test performance on large graphs."""
+
+    @pytest.mark.asyncio
+    async def test_wide_graph_processing(self, service):
+        """Test processing item with many children."""
+        root = create_mock_item("root")
+        num_children = 50
+        children = [create_mock_item(f"child{i}") for i in range(num_children)]
+
+        links = [create_mock_link("root", f"child{i}") for i in range(num_children)]
+
+        items = {"root": root}
+        items.update({child.id: child for child in children})
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links if id == "root" else [])
+
+        result = await service.analyze_impact("root")
+
+        assert result.total_affected == num_children
+
+    @pytest.mark.asyncio
+    async def test_deep_graph_processing(self, service):
+        """Test processing deeply nested graph."""
+        num_levels = 30
+        items = {str(i): create_mock_item(str(i)) for i in range(num_levels)}
+        links = {
+            str(i): [create_mock_link(str(i), str(i + 1))]
+            for i in range(num_levels - 1)
+        }
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+
+        result = await service.analyze_impact("0", max_depth=50)
+
+        assert result.total_affected == num_levels - 1
+
+
+class TestErrorRecovery:
+    """Test error handling and recovery."""
+
+    @pytest.mark.asyncio
+    async def test_handles_item_repository_failure(self, service):
+        """Test handling when item repository fails."""
+        service.items.get_by_id = AsyncMock(side_effect=Exception("DB error"))
+
+        with pytest.raises(Exception):
+            await service.analyze_impact("item")
+
+    @pytest.mark.asyncio
+    async def test_handles_link_repository_failure(self, service):
+        """Test handling when link repository fails."""
+        item = create_mock_item("item")
+        service.items.get_by_id = AsyncMock(return_value=item)
+        service.links.get_by_source = AsyncMock(side_effect=Exception("DB error"))
+
+        with pytest.raises(Exception):
+            await service.analyze_impact("item")
+
+    @pytest.mark.asyncio
+    async def test_skips_missing_intermediate_items(self, service):
+        """Test graceful handling of missing intermediate items."""
+        root = create_mock_item("root")
+        leaf = create_mock_item("leaf")
+
+        link1 = create_mock_link("root", "missing")
+        link2 = create_mock_link("missing", "leaf")
+
+        def get_item(id):
+            if id == "root":
+                return root
+            if id == "leaf":
+                return leaf
+            return None
+
+        service.items.get_by_id = AsyncMock(side_effect=get_item)
+        service.links.get_by_source = AsyncMock(
+            side_effect=lambda id: [link1] if id == "root" else [link2] if id == "missing" else []
+        )
+
+        result = await service.analyze_impact("root")
+
+        # Root has link to missing, missing is skipped, leaf unreachable
+        assert result.total_affected == 0
+
+
+class TestResultConsistency:
+    """Test consistency of results across multiple calls."""
+
+    @pytest.mark.asyncio
+    async def test_result_idempotency(self, service):
+        """Test same input produces same output."""
+        root = create_mock_item("root")
+        child = create_mock_item("child")
+        link = create_mock_link("root", "child")
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: root if id == "root" else child)
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: [link] if id == "root" else [])
+
+        result1 = await service.analyze_impact("root")
+        result2 = await service.analyze_impact("root")
+
+        assert result1.total_affected == result2.total_affected
+        assert result1.max_depth_reached == result2.max_depth_reached
+
+    @pytest.mark.asyncio
+    async def test_forward_reverse_consistency(self, service):
+        """Test relationship between forward and reverse analysis."""
+        a = create_mock_item("a")
+        b = create_mock_item("b")
+
+        links = {"a": [create_mock_link("a", "b")]}
+
+        items = {"a": a, "b": b}
+
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
+        service.links.get_by_target = AsyncMock(side_effect=lambda id: [create_mock_link("a", "b")] if id == "b" else [])
+
+        forward = await service.analyze_impact("a")
+        reverse = await service.analyze_reverse_impact("b")
+
+        # Forward from a should find b
+        # Reverse from b should find a
+        assert any(item["id"] == "b" for item in forward.affected_items)
+        assert any(item["id"] == "a" for item in reverse.affected_items)
+
+
+class TestSpecialCases:
+    """Test special and corner cases."""
+
+    @pytest.mark.asyncio
+    async def test_item_with_metadata(self, service):
+        """Test items with metadata are handled correctly."""
+        item = Mock()
+        item.id = "item"
+        item.title = "Item"
+        item.view = "REQ"
+        item.item_type = "requirement"
+        item.status = "active"
+        item.item_metadata = {"custom": "value"}
+
+        service.items.get_by_id = AsyncMock(return_value=item)
+        service.links.get_by_source = AsyncMock(return_value=[])
+
+        result = await service.analyze_impact("item")
+
+        assert result.root_item_id == "item"
+
+    @pytest.mark.asyncio
+    async def test_unicode_in_titles(self, service):
+        """Test handling unicode characters in item titles."""
+        item = create_mock_item("item", title="项目 🚀 Test")
+        service.items.get_by_id = AsyncMock(return_value=item)
+        service.links.get_by_source = AsyncMock(return_value=[])
+
+        result = await service.analyze_impact("item")
+
+        assert result.root_item_title == "项目 🚀 Test"
+
+    @pytest.mark.asyncio
+    async def test_very_large_title(self, service):
+        """Test handling very long item titles."""
+        long_title = "A" * 1000
+        item = create_mock_item("item", title=long_title)
+        service.items.get_by_id = AsyncMock(return_value=item)
+        service.links.get_by_source = AsyncMock(return_value=[])
+
+        result = await service.analyze_impact("item")
+
+        assert result.root_item_title == long_title

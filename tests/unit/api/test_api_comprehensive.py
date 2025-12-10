@@ -1614,6 +1614,7 @@ class TestApiClientUploadChanges:
 
         mock_response = MagicMock()
         mock_response.status_code = 409
+        mock_response.content = b'{"conflicts": [...]}'
         mock_response.json.return_value = {
             "conflicts": [
                 {
@@ -1630,7 +1631,7 @@ class TestApiClientUploadChanges:
 
         error = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=mock_response)
 
-        with patch.object(api_client, "_retry_request", AsyncMock(side_effect=error)):
+        with patch.object(api_client.client, "request", AsyncMock(side_effect=error)):
             with pytest.raises(ConflictError) as exc_info:
                 await api_client.upload_changes(changes)
 
@@ -1851,10 +1852,16 @@ class TestApiClientFullSync:
         download_response = MagicMock()
         download_response.json.return_value = {"changes": []}
 
+        # Add status codes to responses
+        conflict_response.content = b'{"conflicts": [...]}'
+        success_response.status_code = 200
+        resolve_response.status_code = 200
+        download_response.status_code = 200
+
         # Create sequence of responses
         error = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=conflict_response)
 
-        with patch.object(api_client, "_retry_request", new_callable=AsyncMock) as mock_req:
+        with patch.object(api_client.client, "request", new_callable=AsyncMock) as mock_req:
             # First upload raises error, then resolve succeeds, then retry upload succeeds, then download
             mock_req.side_effect = [
                 error,  # Initial upload fails
@@ -1880,6 +1887,7 @@ class TestApiClientFullSync:
 
         conflict_response = MagicMock()
         conflict_response.status_code = 409
+        conflict_response.content = b'{"conflicts": [...]}'
         conflict_response.json.return_value = {
             "conflicts": [
                 {
@@ -1896,7 +1904,7 @@ class TestApiClientFullSync:
 
         error = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=conflict_response)
 
-        with patch.object(api_client, "_retry_request", AsyncMock(side_effect=error)):
+        with patch.object(api_client.client, "request", AsyncMock(side_effect=error)):
             with pytest.raises(ConflictError):
                 await api_client.full_sync(
                     local_changes,
