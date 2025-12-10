@@ -2,14 +2,14 @@ name: trace
 description: TraceRTM - Requirements traceability management system
 version: 1.0.0
 counters:
-  epic: 113
+  epic: 117
   story: 76
   test: 15
   task: 139
   wireframe: 1
-  feature: 2759
-  file: 354
-  test_suite: 90
+  feature: 2762
+  file: 377
+  test_suite: 91
   test_case: 39
   table: 89
 settings:
