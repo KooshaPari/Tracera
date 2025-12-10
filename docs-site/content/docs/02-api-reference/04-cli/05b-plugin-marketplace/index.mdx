@@ -1,32 +1,65 @@
 ---
 title: "Plugin Marketplace"
-description: "Documentation for Plugin Marketplace"
+description: "Browse and install plugins from the TraceRTM plugin marketplace"
+keywords: [cli, plugins, marketplace, extensions]
 ---
 
 # Plugin Marketplace
 
-This page contains documentation for Plugin Marketplace.
+Browse and install community-contributed CLI plugins.
 
-## Overview
+## Browse Plugins
 
-This section covers the key aspects of Plugin Marketplace in TraceRTM.
+```bash
+# List available plugins
+trace plugin search
 
-## Getting Started
+# Search by keyword
+trace plugin search "export"
 
-To get started with Plugin Marketplace:
+# Show plugin details
+trace plugin show <plugin-name>
+```
 
-- Review the Plugin Marketplace and fundamentals
-- Explore practical examples
-- Check out the API reference
+## Popular Plugins
 
-## Key Concepts
+### Export Plugins
+- **excel-export**: Export to Excel format
+- **confluence-export**: Export to Confluence
+- **jira-export**: Export to Jira
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Integration Plugins
+- **github-sync**: Sync with GitHub
+- **slack-notify**: Slack notifications
+- **email-reports**: Email reports
 
-## Next Steps
+## Install Plugin
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+```bash
+trace plugin install <plugin-name>
+```
+
+## Update Plugin
+
+```bash
+trace plugin update <plugin-name>
+```
+
+## Remove Plugin
+
+```bash
+trace plugin remove <plugin-name>
+```
+
+## Submit Plugin
+
+To submit your plugin:
+
+1. Package your plugin
+2. Publish to PyPI or GitHub
+3. Submit to marketplace registry
+
+## Related Documentation
+
+- [Plugins](./05-plugins) - Plugin overview
+- [Plugin Development](./05a-plugin-development) - Create plugins

@@ -49,43 +49,71 @@ except ImportError:
     Base = None
 
 
+@pytest.fixture(scope="session")
+def sync_engine():
+    """Shared synchronous SQLite engine."""
+    import tempfile
+    db_url = os.getenv("TEST_SYNC_DATABASE_URL")
+    if db_url is None:
+        temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        db_path = temp_db.name
+        temp_db.close()
+        db_url = f"sqlite:///{db_path}"
+
+    from sqlalchemy import create_engine
+    engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    if Base is not None:
+        Base.metadata.create_all(engine)
+    yield engine
+    try:
+        if Base is not None:
+            Base.metadata.drop_all(engine)
+        engine.dispose()
+    finally:
+        if not os.getenv("TEST_SYNC_DATABASE_URL"):
+            try:
+                Path(db_url.replace("sqlite:///", "")).unlink()
+            except Exception:
+                pass
+
+
+@pytest.fixture
+def db_session(sync_engine):
+    """Synchronous SQLAlchemy session."""
+    from sqlalchemy.orm import sessionmaker
+
+    SessionLocal = sessionmaker(bind=sync_engine)
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.rollback()
+        session.close()
+
+
 @pytest_asyncio.fixture(scope="session")
-async def test_db_engine():
-    """Create test database engine with SQLite (file-based for sync/async compatibility)."""
+async def async_db_engine():
+    """Async engine for async-specific tests."""
     import tempfile
 
-    # Use file-based SQLite for both async and sync access
-    # In-memory databases can't be reliably shared between async and sync engines
     db_url = os.getenv("TEST_DATABASE_URL")
-
     if db_url is None:
-        # Create a temporary file-based database
         temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         db_path = temp_db.name
         temp_db.close()
         db_url = f"sqlite+aiosqlite:///{db_path}"
 
-    engine = create_async_engine(
-        db_url,
-        echo=False,
-        future=True,
-    )
-
-    # Create all tables
+    engine = create_async_engine(db_url, echo=False, future=True)
     if Base is not None:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-
     yield engine
-
-    # Cleanup
     try:
         async with engine.begin() as conn:
             if Base is not None:
                 await conn.run_sync(Base.metadata.drop_all)
         await engine.dispose()
     finally:
-        # Clean up temp file if it was created
         if not os.getenv("TEST_DATABASE_URL"):
             try:
                 Path(db_url.replace("sqlite+aiosqlite:///", "")).unlink()
@@ -94,14 +122,11 @@ async def test_db_engine():
 
 
 @pytest_asyncio.fixture
-async def db_session(test_db_engine):
-    """Create a test database session for each test."""
+async def async_db_session(async_db_engine):
+    """Async SQLAlchemy session."""
     async_session_maker = async_sessionmaker(
-        test_db_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
+        async_db_engine, class_=AsyncSession, expire_on_commit=False
     )
-
     async with async_session_maker() as session:
         yield session
         await session.rollback()

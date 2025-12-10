@@ -1,18 +1,12 @@
 ---
-title: "Quick Start"
-description: "Get started with the TraceRTM Go SDK in 5 minutes"
+title: "Go SDK Quickstart"
+description: "Get started with the TraceRTM Go SDK in minutes"
+keywords: [go, golang, sdk, quickstart, tutorial]
 ---
 
-# Quick Start
+# Go SDK Quickstart
 
-Get up and running with the TraceRTM Go SDK in minutes.
-
-## Prerequisites
-
-- Go 1.21 or higher
-- A TraceRTM API key ([get one here](/docs/api-reference/authentication/api-keys))
-
----
+Get started with the TraceRTM Go SDK in 5 minutes.
 
 ## Installation
 
@@ -20,212 +14,66 @@ Get up and running with the TraceRTM Go SDK in minutes.
 go get github.com/tracertm/tracertm-go
 ```
 
----
-
-## Basic Setup
-
-### 1. Set Your API Key
-
-```bash
-export TRACERTM_API_KEY="rtm_live_sk_..."
-```
-
-### 2. Create Your First Program
+## Initialize Client
 
 ```go
 package main
 
 import (
-    "context"
-    "fmt"
-    "log"
-    "os"
-
     "github.com/tracertm/tracertm-go"
 )
 
 func main() {
-    // Initialize client
-    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
-
-    ctx := context.Background()
-
-    // List projects
-    projects, err := client.Projects.List(ctx, nil)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    fmt.Printf("Found %d projects\n", len(projects.Data))
-    for _, p := range projects.Data {
-        fmt.Printf("  - %s: %s\n", p.Key, p.Name)
-    }
+    client := tracertm.NewClient(
+        tracertm.WithAPIKey("rtm_live_abc123..."),
+    )
 }
 ```
 
-### 3. Run
+## Basic Operations
 
-```bash
-go run main.go
-```
-
----
-
-## Core Operations
-
-### Create a Project
+### List Projects
 
 ```go
-project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
+projects, err := client.Projects.List()
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, project := range projects {
+    fmt.Printf("%s: %s\n", project.ID, project.Name)
+}
+```
+
+### Create Project
+
+```go
+project, err := client.Projects.Create(tracertm.CreateProjectRequest{
     Name:        "My Project",
-    Key:         "MYPROJ",
-    Description: "A sample project",
+    Description: "Project description",
 })
 if err != nil {
     log.Fatal(err)
 }
+
 fmt.Printf("Created project: %s\n", project.ID)
 ```
 
-### Create an Item
+### Create Item
 
 ```go
-item, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
-    Type:        "requirement",
-    Title:       "User Authentication",
-    Description: "Users must be able to log in securely",
-    Priority:    "high",
-})
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Printf("Created item: %s\n", item.Key)
-```
-
-### Create a Link
-
-```go
-// First, create a test case
-testCase, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
-    Type:        "test_case",
-    Title:       "Test: User can login",
-    Description: "Verify user login functionality",
+item, err := client.Items.Create(tracertm.CreateItemRequest{
+    Title:     "New Requirement",
+    View:      "requirements",
+    Status:    "draft",
+    ProjectID: "proj_123",
 })
 if err != nil {
     log.Fatal(err)
 }
 
-// Link the requirement to the test case
-link, err := client.Links.Create(ctx, &tracertm.CreateLinkInput{
-    SourceID: item.ID,
-    TargetID: testCase.ID,
-    LinkType: "verified_by",
-})
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Printf("Created link: %s\n", link.ID)
+fmt.Printf("Created item: %s\n", item.ID)
 ```
-
-### List Items
-
-```go
-items, err := client.Items.List(ctx, project.ID, &tracertm.ListItemsOptions{
-    Type:   "requirement",
-    Status: "draft",
-    Limit:  10,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for _, item := range items.Data {
-    fmt.Printf("%s: %s (%s)\n", item.Key, item.Title, item.Status)
-}
-```
-
----
-
-## Using Iterators
-
-For pagination, use iterators:
-
-```go
-iter := client.Items.Iterate(ctx, project.ID, &tracertm.ListItemsOptions{
-    Type: "requirement",
-})
-
-for iter.Next() {
-    item := iter.Item()
-    fmt.Printf("%s: %s\n", item.Key, item.Title)
-}
-
-if err := iter.Err(); err != nil {
-    log.Fatal(err)
-}
-```
-
----
-
-## Error Handling
-
-```go
-import "errors"
-
-item, err := client.Items.Get(ctx, "item_nonexistent")
-if err != nil {
-    var notFoundErr *tracertm.NotFoundError
-    var authErr *tracertm.AuthenticationError
-    var rateLimitErr *tracertm.RateLimitError
-
-    switch {
-    case errors.As(err, &notFoundErr):
-        fmt.Println("Item not found")
-
-    case errors.As(err, &authErr):
-        fmt.Println("Authentication failed - check your API key")
-
-    case errors.As(err, &rateLimitErr):
-        fmt.Printf("Rate limited. Retry after %d seconds\n", rateLimitErr.RetryAfter)
-
-    default:
-        fmt.Printf("Error: %v\n", err)
-    }
-}
-```
-
----
-
-## Context Support
-
-### With Timeout
-
-```go
-ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-defer cancel()
-
-items, err := client.Items.List(ctx, projectID, nil)
-```
-
-### With Cancellation
-
-```go
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
-
-// Cancel if needed
-go func() {
-    <-signalChan
-    cancel()
-}()
-
-iter := client.Items.Iterate(ctx, projectID, nil)
-for iter.Next() {
-    // Process items
-}
-```
-
----
 
 ## Complete Example
 
@@ -233,126 +81,63 @@ for iter.Next() {
 package main
 
 import (
-    "context"
-    "errors"
     "fmt"
     "log"
-    "os"
-    "time"
-
     "github.com/tracertm/tracertm-go"
 )
 
 func main() {
-    // Initialize with options
     client := tracertm.NewClient(
-        os.Getenv("TRACERTM_API_KEY"),
-        tracertm.WithTimeout(30*time.Second),
-        tracertm.WithMaxRetries(3),
+        tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")),
     )
 
-    ctx := context.Background()
-
-    // Create or get existing project
-    project, err := getOrCreateProject(ctx, client, "Quick Start Demo", "QSD")
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    // Create a requirement
-    req, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
-        Type:        "requirement",
-        Title:       "Payment Processing",
-        Description: "System shall process payments securely",
-        Priority:    "high",
-        Tags:        []string{"payment", "security"},
+    // Create project
+    project, err := client.Projects.Create(tracertm.CreateProjectRequest{
+        Name:        "Example Project",
+        Description: "Example project",
     })
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("Created requirement: %s\n", req.Key)
 
-    // Create a test case
-    tc, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
-        Type:        "test_case",
-        Title:       "Verify: Payment Processing",
-        Description: "Test secure payment processing",
-        Priority:    "high",
+    // Create requirement
+    req, err := client.Items.Create(tracertm.CreateItemRequest{
+        Title:     "User Authentication",
+        View:      "requirements",
+        Status:    "draft",
+        ProjectID: project.ID,
     })
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("Created test case: %s\n", tc.Key)
 
-    // Link them
-    _, err = client.Links.Create(ctx, &tracertm.CreateLinkInput{
+    // Create test case
+    test, err := client.Items.Create(tracertm.CreateItemRequest{
+        Title:     "Login Test",
+        View:      "test-cases",
+        Status:    "draft",
+        ProjectID: project.ID,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Create link
+    link, err := client.Links.Create(tracertm.CreateLinkRequest{
         SourceID: req.ID,
-        TargetID: tc.ID,
+        TargetID: test.ID,
         LinkType: "verified_by",
     })
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Println("Linked requirement to test case")
 
-    // Get coverage report
-    coverage, err := client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
-        ProjectID:  project.ID,
-        SourceType: "requirement",
-        TargetType: "test_case",
-    })
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Printf("\nCoverage: %.1f%% (%d/%d requirements covered)\n",
-        coverage.CoveragePercent, coverage.CoveredCount, coverage.TotalSources)
-}
-
-func getOrCreateProject(ctx context.Context, client *tracertm.Client, name, key string) (*tracertm.Project, error) {
-    // Try to find existing project
-    projects, err := client.Projects.List(ctx, &tracertm.ListProjectsOptions{
-        Key: key,
-    })
-    if err != nil {
-        return nil, err
-    }
-
-    for _, p := range projects.Data {
-        if p.Key == key {
-            return p, nil
-        }
-    }
-
-    // Create new project
-    return client.Projects.Create(ctx, &tracertm.CreateProjectInput{
-        Name:        name,
-        Key:         key,
-        Description: "Created by Quick Start example",
-    })
+    fmt.Printf("Created: %s --[verified_by]--> %s\n", req.Title, test.Title)
 }
 ```
-
-Run:
-
-```bash
-go run main.go
-```
-
-Output:
-```
-Created requirement: QSD-1
-Created test case: QSD-2
-Linked requirement to test case
-
-Coverage: 100.0% (1/1 requirements covered)
-```
-
----
 
 ## Next Steps
 
-- [API Reference](/docs/api-reference/sdks/go/api-reference) - Full method reference
-- [Examples](/docs/api-reference/sdks/go/examples) - More code examples
-- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Handle errors properly
-- [Concurrency](/docs/api-reference/sdks/go/concurrency) - Concurrent operations
-- [Authentication](/docs/api-reference/sdks/go/authentication) - Authentication options
+- [Authentication](./03-authentication) - Authentication options
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - More examples

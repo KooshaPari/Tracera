@@ -1,19 +1,318 @@
 ---
-title: "REST Pagination"
-description: "Paginate large collections."
+title: "Pagination"
+description: "Paginate through large result sets using offset-based or cursor-based pagination"
+keywords: [pagination, paging, offset, cursor, limit, skip]
 ---
 
-## Endpoints
-- GET /v1/artifacts?page=2&per_page=50 — Cursor or offset pagination
+# Pagination
 
-## Example
-```http
-GET /v1/artifacts?page=2&per_page=50
-Authorization: Bearer <token>
-Content-Type: application/json
+TraceRTM API supports pagination to efficiently handle large result sets. Use pagination to retrieve data in manageable chunks.
+
+## Offset-Based Pagination
+
+Offset-based pagination uses `skip` and `limit` parameters.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `skip` | integer | No | Number of items to skip (default: 0) |
+| `limit` | integer | No | Maximum items to return (default: 100, max: 1000) |
+
+### Request Example
+
+```bash
+# First page (items 0-49)
+curl -X GET "https://api.tracertm.dev/v1/items?project_id=proj_123&skip=0&limit=50" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Second page (items 50-99)
+curl -X GET "https://api.tracertm.dev/v1/items?project_id=proj_123&skip=50&limit=50" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-## Guidance
-- Use pagination headers (`Link`) for large result sets.
-- Prefer filters over client-side slicing to reduce payload size.
-- Check 429 headers for rate-limit backoff instructions.
+### Response
+
+```json
+{
+  "total": 150,
+  "items": [
+    {"id": "item_001", "title": "Item 1"},
+    {"id": "item_002", "title": "Item 2"}
+    // ... 48 more items
+  ],
+  "has_more": true
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Paginate through all items
+all_items = []
+skip = 0
+limit = 50
+
+while True:
+    response = client.items.list(
+        project_id="proj_123",
+        skip=skip,
+        limit=limit
+    )
+    
+    all_items.extend(response.items)
+    
+    if not response.has_more:
+        break
+    
+    skip += limit
+
+print(f"Retrieved {len(all_items)} items")
+```
+
+## Cursor-Based Pagination
+
+Cursor-based pagination uses a cursor token for more reliable pagination.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `cursor` | string | No | Cursor token from previous response |
+| `limit` | integer | No | Maximum items to return (default: 50, max: 100) |
+
+### Request Example
+
+```bash
+# First page
+curl -X GET "https://api.tracertm.dev/v1/items?project_id=proj_123&limit=50" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Next page (using cursor from response)
+curl -X GET "https://api.tracertm.dev/v1/items?project_id=proj_123&cursor=eyJpZCI6MTAwfQ&limit=50" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {"id": "item_001", "title": "Item 1"}
+  ],
+  "pagination": {
+    "has_more": true,
+    "next_cursor": "eyJpZCI6MTAwfQ",
+    "prev_cursor": null
+  }
+}
+```
+
+### Python Example
+
+```python
+# Cursor-based pagination
+all_items = []
+cursor = None
+
+while True:
+    response = client.items.list(
+        project_id="proj_123",
+        cursor=cursor,
+        limit=50
+    )
+    
+    all_items.extend(response.data)
+    
+    if not response.pagination.has_more:
+        break
+    
+    cursor = response.pagination.next_cursor
+```
+
+## Pagination Response Fields
+
+### Offset-Based Response
+
+```json
+{
+  "total": 150,
+  "items": [...],
+  "has_more": true,
+  "skip": 0,
+  "limit": 50
+}
+```
+
+### Cursor-Based Response
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "has_more": true,
+    "next_cursor": "eyJpZCI6MTAwfQ",
+    "prev_cursor": "eyJpZCI6NTB9"
+  }
+}
+```
+
+## Choosing Pagination Method
+
+### Use Offset-Based When:
+- You need to jump to specific pages
+- Total count is important
+- Simple sequential access
+
+### Use Cursor-Based When:
+- Large datasets (better performance)
+- Real-time data (avoids duplicates)
+- Consistent ordering required
+
+## Best Practices
+
+### 1. Use Appropriate Page Size
+
+```python
+# ✅ Good: Reasonable page size
+limit = 50  # or 100
+
+# ❌ Bad: Too large
+limit = 10000  # May timeout or be slow
+
+# ❌ Bad: Too small
+limit = 5  # Too many requests
+```
+
+### 2. Handle Empty Results
+
+```python
+response = client.items.list(project_id="proj_123", skip=0, limit=50)
+
+if response.total == 0:
+    print("No items found")
+    return
+
+# Process items
+for item in response.items:
+    process_item(item)
+```
+
+### 3. Implement Retry Logic
+
+```python
+import time
+
+def paginate_with_retry(client, project_id, max_retries=3):
+    all_items = []
+    skip = 0
+    limit = 50
+    
+    while True:
+        for attempt in range(max_retries):
+            try:
+                response = client.items.list(
+                    project_id=project_id,
+                    skip=skip,
+                    limit=limit
+                )
+                break
+            except RateLimitError:
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                else:
+                    raise
+        
+        all_items.extend(response.items)
+        
+        if not response.has_more:
+            break
+        
+        skip += limit
+    
+    return all_items
+```
+
+### 4. Cache Paginated Results
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=10)
+def get_cached_page(project_id, skip, limit):
+    return client.items.list(
+        project_id=project_id,
+        skip=skip,
+        limit=limit
+    )
+```
+
+## Pagination with Filters
+
+Pagination works with filters:
+
+```python
+# Paginated filtered results
+items = []
+skip = 0
+limit = 50
+
+while True:
+    response = client.items.list(
+        project_id="proj_123",
+        status="active",
+        view="requirements",
+        skip=skip,
+        limit=limit
+    )
+    
+    items.extend(response.items)
+    
+    if not response.has_more:
+        break
+    
+    skip += limit
+```
+
+## Performance Considerations
+
+### Offset-Based Limitations
+
+- Performance degrades with large offsets
+- Not suitable for datasets > 10,000 items
+- May return duplicates if data changes
+
+### Cursor-Based Advantages
+
+- Consistent performance regardless of position
+- No duplicates even if data changes
+- Better for real-time data
+
+## Error Responses
+
+### Invalid Pagination Parameters
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid pagination parameters",
+    "details": [
+      {
+        "field": "limit",
+        "message": "Limit must be between 1 and 1000"
+      }
+    ]
+  }
+}
+```
+
+## Related Documentation
+
+- [Filtering API](./07-filtering) - Filter paginated results
+- [Search API](./06-search) - Paginated search results
+- [Items API](./02-artifacts) - Item pagination examples

@@ -1,32 +1,75 @@
 ---
-title: "Install on Linux"
-description: "Documentation for Install on Linux"
+title: "CLI Installation - Linux"
+description: "Install the TraceRTM CLI on Linux distributions"
+keywords: [cli, installation, linux, ubuntu, debian, fedora]
 ---
 
-# Install on Linux
+# CLI Installation - Linux
 
-This page contains documentation for Install on Linux.
+Install the TraceRTM CLI on Linux using your distribution's package manager or pip.
 
-## Overview
+## Ubuntu/Debian
 
-This section covers the key aspects of Install on Linux in TraceRTM.
+### Using apt (if available)
 
-## Getting Started
+```bash
+curl -fsSL https://tracertm.io/install.sh | sudo bash
+sudo apt-get update
+sudo apt-get install tracertm-cli
+```
 
-To get started with Install on Linux:
+### Using pip
 
-- Review the Install on Linux and fundamentals
-- Explore practical examples
-- Check out the API reference
+```bash
+# Install Python 3.12+ if needed
+sudo apt-get update
+sudo apt-get install python3.12 python3-pip
 
-## Key Concepts
+# Install CLI
+pip3 install tracertm-cli
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+# Add to PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Fedora/RHEL
+
+### Using dnf
+
+```bash
+sudo dnf install python3.12 python3-pip
+pip3 install tracertm-cli
+```
+
+## Arch Linux
+
+### Using pacman
+
+```bash
+sudo pacman -S python python-pip
+pip install tracertm-cli
+```
+
+## Verify Installation
+
+```bash
+trace --version
+```
+
+## Troubleshooting
+
+### Command Not Found
+
+```bash
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# Or use python -m
+python3 -m tracertm --version
+```
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- [Configuration](../02-configuration) - Configure CLI
+- [Commands](../03-commands) - Learn commands

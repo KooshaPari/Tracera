@@ -1,115 +1,632 @@
 ---
-title: "Mutations"
-description: "Documentation for Mutations"
+title: "GraphQL Mutations"
+description: "Complete reference for GraphQL mutations in TraceRTM - create, update, delete, and workflow operations"
+keywords: [graphql, mutations, create, update, delete, workflow]
 ---
 
-# Mutations
+# GraphQL Mutations
 
+Mutations modify data in TraceRTM. All mutations are atomic and return the modified resource or operation result.
 
-## Overview
+## Mutation Structure
 
-Complete API reference for Mutations.
+All mutations follow this pattern:
 
-## Authentication
-
-All API requests require authentication:
-
-```typescript
-const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
-  'Content-Type': 'application/json'
-}
-```
-
-## Endpoints
-
-### List All Mutations
-
-```http
-GET /api/v1/mutations
-```
-
-**Response:**
-```json
-{
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+```graphql
+mutation MutationName($input: InputType!) {
+  mutationName(input: $input) {
+    # Return fields
   }
 }
 ```
 
-### Get Mutations by ID
+---
 
-```http
-GET /api/v1/mutations/:id
-```
+## Project Mutations
 
-### Create Mutations
+### Create Project
 
-```http
-POST /api/v1/mutations
-```
-
-**Request Body:**
-```json
-{
-  "name": "Example Mutations",
-  "description": "Description here"
+```graphql
+mutation CreateProject($input: CreateProjectInput!) {
+  createProject(input: $input) {
+    id
+    name
+    key
+    description
+    status
+    createdAt
+  }
 }
 ```
 
-### Update Mutations
-
-```http
-PUT /api/v1/mutations/:id
+**Input:**
+```json
+{
+  "input": {
+    "name": "Medical Device Firmware",
+    "key": "MDF",
+    "description": "FDA-compliant medical device requirements",
+    "visibility": "TEAM",
+    "teamId": "team_medical"
+  }
+}
 ```
 
-### Delete Mutations
+### Update Project
 
-```http
-DELETE /api/v1/mutations/:id
+```graphql
+mutation UpdateProject($id: ID!, $input: UpdateProjectInput!) {
+  updateProject(id: $id, input: $input) {
+    id
+    name
+    description
+    updatedAt
+  }
+}
 ```
 
-## Query Parameters
+### Delete Project
 
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
+```graphql
+mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id) {
+    success
+    deletedAt
+  }
+}
+```
 
-## Error Responses
+### Archive Project
 
-### 400 Bad Request
-Invalid request parameters
+```graphql
+mutation ArchiveProject($id: ID!) {
+  archiveProject(id: $id) {
+    id
+    status
+    archivedAt
+  }
+}
+```
 
-### 401 Unauthorized
-Missing or invalid authentication token
+---
 
-### 404 Not Found
-Resource not found
+## Item Mutations
 
-### 500 Internal Server Error
-Server error
+### Create Item
 
-## SDK Examples
+```graphql
+mutation CreateItem($input: CreateItemInput!) {
+  createItem(input: $input) {
+    id
+    itemNumber
+    title
+    description
+    type
+    status
+    priority
+    createdAt
+  }
+}
+```
 
-### TypeScript
+**Input:**
+```json
+{
+  "input": {
+    "projectId": "proj_abc123",
+    "type": "REQUIREMENT",
+    "title": "System shall process sensor data within 10ms",
+    "description": "The vehicle control system must process...",
+    "priority": "CRITICAL",
+    "assigneeId": "user_engineer123",
+    "tags": ["safety-critical", "real-time"],
+    "customFields": {
+      "safety_level": "ASIL-D",
+      "verification_method": "test"
+    }
+  }
+}
+```
+
+### Update Item
+
+```graphql
+mutation UpdateItem($id: ID!, $input: UpdateItemInput!) {
+  updateItem(id: $id, input: $input) {
+    id
+    title
+    status
+    version
+    updatedAt
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "id": "item_req_001",
+  "input": {
+    "title": "System shall process sensor data within 5ms",
+    "priority": "CRITICAL",
+    "customFields": {
+      "safety_level": "ASIL-D"
+    },
+    "changeReason": "Tightened timing requirement per safety analysis"
+  }
+}
+```
+
+### Delete Item
+
+```graphql
+mutation DeleteItem($id: ID!, $cascade: Boolean) {
+  deleteItem(id: $id, cascade: $cascade) {
+    success
+    deletedAt
+    itemsDeleted
+  }
+}
+```
+
+### Batch Create Items
+
+```graphql
+mutation BatchCreateItems($inputs: [CreateItemInput!]!) {
+  batchCreateItems(inputs: $inputs) {
+    results {
+      success
+      item {
+        id
+        itemNumber
+        title
+      }
+      error {
+        code
+        message
+      }
+    }
+    summary {
+      total
+      succeeded
+      failed
+    }
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "inputs": [
+    {
+      "projectId": "proj_abc123",
+      "type": "REQUIREMENT",
+      "title": "Requirement 1"
+    },
+    {
+      "projectId": "proj_abc123",
+      "type": "REQUIREMENT",
+      "title": "Requirement 2"
+    }
+  ]
+}
+```
+
+---
+
+## Link Mutations
+
+### Create Link
+
+```graphql
+mutation CreateLink($input: CreateLinkInput!) {
+  createLink(input: $input) {
+    id
+    type
+    source {
+      id
+      title
+    }
+    target {
+      id
+      title
+    }
+    status
+    createdAt
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "input": {
+    "projectId": "proj_abc123",
+    "sourceId": "item_req_001",
+    "targetId": "item_tc_001",
+    "type": "VERIFIED_BY",
+    "description": "Test case verifies timing requirement"
+  }
+}
+```
+
+### Delete Link
+
+```graphql
+mutation DeleteLink($id: ID!) {
+  deleteLink(id: $id) {
+    success
+    deletedAt
+  }
+}
+```
+
+### Batch Create Links
+
+```graphql
+mutation BatchCreateLinks($inputs: [CreateLinkInput!]!) {
+  batchCreateLinks(inputs: $inputs) {
+    results {
+      success
+      link {
+        id
+        type
+      }
+      error {
+        code
+        message
+      }
+    }
+    summary {
+      total
+      succeeded
+      failed
+    }
+  }
+}
+```
+
+---
+
+## Workflow Mutations
+
+### Transition Item
+
+```graphql
+mutation TransitionItem($id: ID!, $transition: String!, $comment: String) {
+  transitionItem(id: $id, transition: $transition, comment: $comment) {
+    id
+    status
+    previousStatus
+    transitionedAt
+    transitionedBy {
+      id
+      name
+    }
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "id": "item_req_001",
+  "transition": "submit_for_review",
+  "comment": "Ready for technical review"
+}
+```
+
+### Approve Item
+
+```graphql
+mutation ApproveItem($id: ID!, $comment: String) {
+  approveItem(id: $id, comment: $comment) {
+    id
+    status
+    approvedAt
+    approvedBy {
+      id
+      name
+    }
+  }
+}
+```
+
+### Reject Item
+
+```graphql
+mutation RejectItem($id: ID!, $comment: String!) {
+  rejectItem(id: $id, comment: $comment) {
+    id
+    status
+    rejectedAt
+    rejectedBy {
+      id
+      name
+    }
+  }
+}
+```
+
+---
+
+## Multiple Mutations
+
+Execute multiple mutations in a single request:
+
+```graphql
+mutation CreateProjectAndItems($projectInput: CreateProjectInput!, $itemInputs: [CreateItemInput!]!) {
+  project: createProject(input: $projectInput) {
+    id
+    name
+  }
+  items: batchCreateItems(inputs: $itemInputs) {
+    results {
+      item {
+        id
+        title
+      }
+    }
+  }
+}
+```
+
+**Note:** Mutations execute sequentially, not in parallel.
+
+---
+
+## Mutation Responses
+
+### Success Response
+
+```json
+{
+  "data": {
+    "createItem": {
+      "id": "item_req_045xyz",
+      "itemNumber": "VCS-REQ-045",
+      "title": "System shall log all critical events",
+      "status": "DRAFT",
+      "createdAt": "2024-12-08T10:00:00Z"
+    }
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "data": {
+    "createItem": null
+  },
+  "errors": [
+    {
+      "message": "Validation failed",
+      "path": ["createItem"],
+      "extensions": {
+        "code": "VALIDATION_ERROR",
+        "errors": [
+          {
+            "field": "title",
+            "message": "Title is required"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+### Partial Success (Batch)
+
+```json
+{
+  "data": {
+    "batchCreateItems": {
+      "results": [
+        {
+          "success": true,
+          "item": {
+            "id": "item_req_001",
+            "title": "Requirement 1"
+          }
+        },
+        {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_ERROR",
+            "message": "Title is required"
+          }
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "succeeded": 1,
+        "failed": 1
+      }
+    }
+  }
+}
+```
+
+---
+
+## Input Validation
+
+Mutations validate inputs before execution:
+
+### Required Fields
+
+```graphql
+# ✅ Valid
+mutation {
+  createItem(input: {
+    projectId: "proj_123"
+    type: REQUIREMENT
+    title: "My Requirement"
+  }) { id }
+}
+
+# ❌ Invalid - missing required fields
+mutation {
+  createItem(input: {
+    projectId: "proj_123"
+    # Missing type and title
+  }) { id }
+}
+```
+
+### Type Validation
+
+```graphql
+# ✅ Valid
+mutation {
+  createItem(input: {
+    projectId: "proj_123"
+    type: REQUIREMENT
+    priority: HIGH
+    title: "My Requirement"
+  }) { id }
+}
+
+# ❌ Invalid - wrong enum value
+mutation {
+  createItem(input: {
+    projectId: "proj_123"
+    type: REQUIREMENT
+    priority: URGENT  # Not a valid Priority enum value
+    title: "My Requirement"
+  }) { id }
+}
+```
+
+---
+
+## Optimistic Updates
+
+For better UX, update UI optimistically:
+
 ```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
+// Optimistic update
+const optimisticItem = {
+  id: 'temp_123',
+  title: input.title,
+  status: 'DRAFT'
+};
 
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.mutations.list()
+// Update UI immediately
+setItems([...items, optimisticItem]);
+
+// Execute mutation
+const result = await client.request(mutation, { input });
+
+// Replace optimistic item with real result
+setItems(items.map(i => 
+  i.id === 'temp_123' ? result.createItem : i
+));
 ```
 
-### Python
-```python
-from tracertm import Client
+---
 
-client = Client(api_key='YOUR_KEY')
-items = client.mutations.list()
+## Error Handling
+
+### Handling Validation Errors
+
+```typescript
+const { data, errors } = await client.request(mutation, { input });
+
+if (errors) {
+  errors.forEach(error => {
+    if (error.extensions?.code === 'VALIDATION_ERROR') {
+      const fieldErrors = error.extensions.errors;
+      fieldErrors.forEach(fieldError => {
+        console.error(`${fieldError.field}: ${fieldError.message}`);
+      });
+    }
+  });
+}
 ```
+
+### Handling Permission Errors
+
+```typescript
+try {
+  const result = await client.request(mutation, { input });
+} catch (error) {
+  if (error.extensions?.code === 'FORBIDDEN') {
+    console.error('Permission denied');
+    // Show user-friendly message
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Return Updated Data
+
+Always request the fields you need after mutation:
+
+```graphql
+# ✅ Good: Get updated fields
+mutation {
+  updateItem(id: $id, input: $input) {
+    id
+    title
+    status
+    version
+    updatedAt
+  }
+}
+
+# ❌ Bad: Only get ID
+mutation {
+  updateItem(id: $id, input: $input) {
+    id
+  }
+}
+```
+
+### 2. Use Transactions for Related Operations
+
+```graphql
+# Multiple related mutations in one request
+mutation {
+  item: createItem(input: $itemInput) {
+    id
+  }
+  link: createLink(input: {
+    sourceId: $item.id
+    targetId: $targetId
+    type: VERIFIED_BY
+  }) {
+    id
+  }
+}
+```
+
+### 3. Handle Partial Failures
+
+```typescript
+const result = await client.request(batchMutation, { inputs });
+
+result.batchCreateItems.results.forEach((r, index) => {
+  if (!r.success) {
+    console.error(`Item ${index} failed:`, r.error.message);
+    // Handle individual failure
+  }
+});
+```
+
+---
+
+## Related Documentation
+
+- [GraphQL Overview](/docs/api-reference/graphql-api/overview) - Introduction
+- [Schema Reference](/docs/api-reference/graphql-api/schema) - Complete schema
+- [Queries](/docs/api-reference/graphql-api/queries) - Query examples
+- [Subscriptions](/docs/api-reference/graphql-api/subscriptions) - Real-time updates
 

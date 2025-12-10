@@ -1,126 +1,145 @@
 ---
-title: Batch Operations
-description: Execute multiple API operations atomically with batch requests in TraceRTM
+title: "Export & Import API"
+description: "Export project data to various formats and import data into projects"
+keywords: [export, import, batch, data migration, json, csv, markdown]
 ---
 
-# Batch Operations
+# Export & Import API
 
-Batch operations allow you to execute multiple API requests in a single HTTP call. This reduces network overhead, enables atomic transactions, and improves performance for bulk data operations.
+The Export & Import API allows you to export project data to various formats and import data into projects for backup, migration, or integration purposes.
 
-## Quick Reference
+## Export Project
 
-```bash
-# Single batch request
-POST /v1/batch
+Export project data to JSON, CSV, or Markdown format.
 
-# Project-scoped batch
-POST /v1/projects/{project_id}/batch
+### Endpoint
+
+```
+GET /api/v1/projects/{project_id}/export
 ```
 
----
+### Path Parameters
 
-## Batch Request Format
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID to export |
 
-### Request Structure
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `format` | string | No | Export format: `json`, `csv`, or `markdown` (default: `json`) |
+
+### Request Example
+
+```bash
+# Export as JSON
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_123/export?format=json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -o project_export.json
+
+# Export as CSV
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_123/export?format=csv" \
+  -H "Authorization: Bearer $TOKEN" \
+  -o project_export.csv
+
+# Export as Markdown
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_123/export?format=markdown" \
+  -H "Authorization: Bearer $TOKEN" \
+  -o project_export.md
+```
+
+### Response (JSON Format)
 
 ```json
 {
-  "atomic": true,
-  "operations": [
+  "project": {
+    "id": "proj_123",
+    "name": "Authentication System",
+    "description": "OAuth 2.0 implementation"
+  },
+  "items": [
     {
-      "id": "op1",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {
-        "type": "requirement",
-        "title": "First requirement"
-      }
-    },
-    {
-      "id": "op2",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {
-        "type": "requirement",
-        "title": "Second requirement"
-      },
-      "depends_on": ["op1"]
+      "id": "item_001",
+      "title": "Requirement 1",
+      "view": "requirements",
+      "status": "active"
     }
-  ]
+  ],
+  "links": [
+    {
+      "id": "link_001",
+      "source_id": "item_001",
+      "target_id": "item_002",
+      "type": "verified_by"
+    }
+  ],
+  "exported_at": "2025-01-20T10:30:00Z"
 }
 ```
 
-### Operation Fields
+### Python Example
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | Yes | Unique operation identifier |
-| `method` | string | Yes | HTTP method: `GET`, `POST`, `PATCH`, `DELETE` |
-| `path` | string | Yes | API endpoint path |
-| `body` | object | Conditional | Request body (for POST/PATCH) |
-| `headers` | object | No | Additional headers for this operation |
-| `depends_on` | array | No | Operation IDs this depends on |
+```python
+from tracertm import TraceRTM
 
-### Batch Options
+client = TraceRTM(api_key="rtm_live_abc123...")
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `atomic` | boolean | false | Roll back all on any failure |
-| `stop_on_error` | boolean | false | Stop processing on first error |
-| `continue_on_error` | boolean | true | Process all regardless of errors |
-| `parallel` | boolean | false | Execute independent ops in parallel |
+# Export as JSON
+export_data = client.projects.export(
+    project_id="proj_123",
+    format="json"
+)
 
----
+# Save to file
+import json
+with open("project_export.json", "w") as f:
+    json.dump(export_data, f, indent=2)
 
-## Execute Batch
+# Export as CSV
+csv_data = client.projects.export(
+    project_id="proj_123",
+    format="csv"
+)
 
-```http
-POST /v1/batch
+with open("project_export.csv", "w") as f:
+    f.write(csv_data)
 ```
 
-### Request
+## Import Project
+
+Import project data from JSON or CSV format.
+
+### Endpoint
+
+```
+POST /api/v1/projects/{project_id}/import
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID to import into |
+
+### Request Body
+
+```json
+{
+  "format": "json",
+  "data": "{...exported JSON data...}"
+}
+```
+
+### Request Example
 
 ```bash
-curl -X POST "https://api.tracertm.dev/v1/batch" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_123/import" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "atomic": true,
-    "operations": [
-      {
-        "id": "create_req_1",
-        "method": "POST",
-        "path": "/v1/projects/proj_abc123/items",
-        "body": {
-          "type": "requirement",
-          "title": "User Authentication",
-          "description": "System shall authenticate users via OAuth 2.0",
-          "priority": "critical"
-        }
-      },
-      {
-        "id": "create_req_2",
-        "method": "POST",
-        "path": "/v1/projects/proj_abc123/items",
-        "body": {
-          "type": "requirement",
-          "title": "Session Management",
-          "description": "System shall manage user sessions",
-          "priority": "high"
-        }
-      },
-      {
-        "id": "create_link",
-        "method": "POST",
-        "path": "/v1/links",
-        "body": {
-          "source_id": "${create_req_1.data.id}",
-          "target_id": "${create_req_2.data.id}",
-          "type": "depends_on"
-        },
-        "depends_on": ["create_req_1", "create_req_2"]
-      }
-    ]
+    "format": "json",
+    "data": "{\"items\":[...],\"links\":[...]}"
   }'
 ```
 
@@ -128,776 +147,216 @@ curl -X POST "https://api.tracertm.dev/v1/batch" \
 
 ```json
 {
-  "data": {
-    "batch_id": "batch_abc123xyz",
-    "status": "completed",
-    "atomic": true,
-    "total_operations": 3,
-    "successful": 3,
-    "failed": 0,
-    "results": [
-      {
-        "id": "create_req_1",
-        "status": 201,
-        "success": true,
-        "data": {
-          "id": "item_req_001",
-          "item_number": "PROJ-REQ-001",
-          "title": "User Authentication",
-          "type": "requirement"
-        }
-      },
-      {
-        "id": "create_req_2",
-        "status": 201,
-        "success": true,
-        "data": {
-          "id": "item_req_002",
-          "item_number": "PROJ-REQ-002",
-          "title": "Session Management",
-          "type": "requirement"
-        }
-      },
-      {
-        "id": "create_link",
-        "status": 201,
-        "success": true,
-        "data": {
-          "id": "link_abc123",
-          "source_id": "item_req_001",
-          "target_id": "item_req_002",
-          "type": "depends_on"
-        }
-      }
-    ],
-    "executed_at": "2024-12-08T10:00:00Z",
-    "duration_ms": 245
-  }
+  "imported": {
+    "items": 50,
+    "links": 75
+  },
+  "errors": [],
+  "imported_at": "2025-01-20T10:35:00Z"
 }
 ```
 
----
-
-## Variable References
-
-Use results from previous operations in dependent operations:
-
-### Syntax
-
-```
-${operation_id.path.to.value}
-```
-
-### Examples
-
-```json
-{
-  "operations": [
-    {
-      "id": "create_parent",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {"type": "requirement", "title": "Parent"}
-    },
-    {
-      "id": "create_child",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {
-        "type": "requirement",
-        "title": "Child",
-        "parent_id": "${create_parent.data.id}"
-      },
-      "depends_on": ["create_parent"]
-    },
-    {
-      "id": "update_parent",
-      "method": "PATCH",
-      "path": "/v1/items/${create_parent.data.id}",
-      "body": {
-        "metadata": {
-          "child_count": 1,
-          "first_child": "${create_child.data.item_number}"
-        }
-      },
-      "depends_on": ["create_child"]
-    }
-  ]
-}
-```
-
----
-
-## Project-Scoped Batch
-
-Execute batch operations within a specific project context:
-
-```http
-POST /v1/projects/{project_id}/batch
-```
-
-### Request
-
-```bash
-curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/batch" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "atomic": true,
-    "operations": [
-      {
-        "id": "item1",
-        "method": "POST",
-        "path": "/items",
-        "body": {"type": "requirement", "title": "Req 1"}
-      },
-      {
-        "id": "item2",
-        "method": "POST",
-        "path": "/items",
-        "body": {"type": "test_case", "title": "Test 1"}
-      },
-      {
-        "id": "link1",
-        "method": "POST",
-        "path": "/links",
-        "body": {
-          "source_id": "${item1.data.id}",
-          "target_id": "${item2.data.id}",
-          "type": "verified_by"
-        },
-        "depends_on": ["item1", "item2"]
-      }
-    ]
-  }'
-```
-
----
-
-## Bulk Item Operations
-
-### Bulk Create Items
-
-```json
-{
-  "operations": [
-    {
-      "id": "req_1",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {
-        "type": "requirement",
-        "title": "REQ-001: Data Encryption",
-        "priority": "critical",
-        "status": "draft"
-      }
-    },
-    {
-      "id": "req_2",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {
-        "type": "requirement",
-        "title": "REQ-002: Access Control",
-        "priority": "critical",
-        "status": "draft"
-      }
-    },
-    {
-      "id": "req_3",
-      "method": "POST",
-      "path": "/v1/projects/proj_abc123/items",
-      "body": {
-        "type": "requirement",
-        "title": "REQ-003: Audit Logging",
-        "priority": "high",
-        "status": "draft"
-      }
-    }
-  ]
-}
-```
-
-### Bulk Update Items
-
-```json
-{
-  "operations": [
-    {
-      "id": "update_1",
-      "method": "PATCH",
-      "path": "/v1/items/item_req_001",
-      "body": {"status": "approved", "priority": "critical"}
-    },
-    {
-      "id": "update_2",
-      "method": "PATCH",
-      "path": "/v1/items/item_req_002",
-      "body": {"status": "approved", "priority": "critical"}
-    },
-    {
-      "id": "update_3",
-      "method": "PATCH",
-      "path": "/v1/items/item_req_003",
-      "body": {"status": "approved", "priority": "high"}
-    }
-  ]
-}
-```
-
-### Bulk Delete Items
-
-```json
-{
-  "atomic": true,
-  "operations": [
-    {"id": "del_1", "method": "DELETE", "path": "/v1/items/item_old_001"},
-    {"id": "del_2", "method": "DELETE", "path": "/v1/items/item_old_002"},
-    {"id": "del_3", "method": "DELETE", "path": "/v1/items/item_old_003"}
-  ]
-}
-```
-
----
-
-## Bulk Link Operations
-
-### Create Multiple Links
-
-```json
-{
-  "atomic": true,
-  "operations": [
-    {
-      "id": "link_1",
-      "method": "POST",
-      "path": "/v1/links",
-      "body": {
-        "source_id": "item_req_001",
-        "target_id": "item_tc_001",
-        "type": "verified_by"
-      }
-    },
-    {
-      "id": "link_2",
-      "method": "POST",
-      "path": "/v1/links",
-      "body": {
-        "source_id": "item_req_001",
-        "target_id": "item_tc_002",
-        "type": "verified_by"
-      }
-    },
-    {
-      "id": "link_3",
-      "method": "POST",
-      "path": "/v1/links",
-      "body": {
-        "source_id": "item_req_002",
-        "target_id": "item_tc_003",
-        "type": "verified_by"
-      }
-    }
-  ]
-}
-```
-
----
-
-## SDK Examples
-
-### Python
+### Python Example
 
 ```python
-from tracertm import TraceRTMClient
+# Read exported data
+with open("project_export.json", "r") as f:
+    export_data = json.load(f)
 
-client = TraceRTMClient(api_key="rtm_live_sk_...")
-
-# Simple batch
-result = client.batch.execute([
-    {
-        "id": "req1",
-        "method": "POST",
-        "path": "/v1/projects/proj_abc123/items",
-        "body": {"type": "requirement", "title": "Requirement 1"}
-    },
-    {
-        "id": "req2",
-        "method": "POST",
-        "path": "/v1/projects/proj_abc123/items",
-        "body": {"type": "requirement", "title": "Requirement 2"}
-    }
-], atomic=True)
-
-print(f"Created {result.successful} items")
-
-# With dependencies
-result = client.batch.execute([
-    {
-        "id": "parent",
-        "method": "POST",
-        "path": "/v1/projects/proj_abc123/items",
-        "body": {"type": "requirement", "title": "Parent Requirement"}
-    },
-    {
-        "id": "child",
-        "method": "POST",
-        "path": "/v1/projects/proj_abc123/items",
-        "body": {
-            "type": "requirement",
-            "title": "Child Requirement",
-            "parent_id": "${parent.data.id}"
-        },
-        "depends_on": ["parent"]
-    },
-    {
-        "id": "link",
-        "method": "POST",
-        "path": "/v1/links",
-        "body": {
-            "source_id": "${parent.data.id}",
-            "target_id": "${child.data.id}",
-            "type": "derives_from"
-        },
-        "depends_on": ["parent", "child"]
-    }
-], atomic=True)
-
-# Access results
-for op_result in result.results:
-    if op_result.success:
-        print(f"{op_result.id}: Created {op_result.data.get('id')}")
-    else:
-        print(f"{op_result.id}: Failed - {op_result.error}")
-
-# Batch helper for bulk creates
-items = client.items.bulk_create(
-    project_id="proj_abc123",
-    items=[
-        {"type": "requirement", "title": "Req 1"},
-        {"type": "requirement", "title": "Req 2"},
-        {"type": "requirement", "title": "Req 3"}
-    ]
+# Import into project
+result = client.projects.import_data(
+    project_id="proj_123",
+    format="json",
+    data=json.dumps(export_data)
 )
 
-print(f"Created {len(items)} items")
+print(f"Imported {result.imported.items} items")
+print(f"Imported {result.imported.links} links")
 
-# Batch helper for bulk updates
-client.items.bulk_update([
-    {"id": "item_001", "status": "approved"},
-    {"id": "item_002", "status": "approved"},
-    {"id": "item_003", "status": "approved"}
-])
-
-# Batch helper for bulk links
-client.links.bulk_create([
-    {"source_id": "item_req_001", "target_id": "item_tc_001", "type": "verified_by"},
-    {"source_id": "item_req_002", "target_id": "item_tc_002", "type": "verified_by"},
-    {"source_id": "item_req_003", "target_id": "item_tc_003", "type": "verified_by"}
-])
+if result.errors:
+    print(f"Errors: {result.errors}")
 ```
 
-### TypeScript
+## Export Formats
 
-```typescript
-import { TraceRTMClient, BatchOperation } from '@tracertm/sdk';
+### JSON Format
 
-const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+Structured JSON with all project data:
 
-// Simple batch
-const result = await client.batch.execute({
-  atomic: true,
-  operations: [
+```json
+{
+  "project": {...},
+  "items": [...],
+  "links": [...],
+  "workflows": [...],
+  "metadata": {...}
+}
+```
+
+**Use cases**: Backup, migration, programmatic processing
+
+### CSV Format
+
+Tabular format for spreadsheet applications:
+
+```csv
+id,title,view,status,created_at
+item_001,Requirement 1,requirements,active,2025-01-15
+item_002,Test Case 1,test-cases,draft,2025-01-16
+```
+
+**Use cases**: Spreadsheet analysis, reporting, Excel import
+
+### Markdown Format
+
+Human-readable Markdown documentation:
+
+```markdown
+# Authentication System
+
+## Items
+
+### Requirement 1
+- ID: item_001
+- Status: active
+- View: requirements
+
+## Links
+
+- item_001 --[verified_by]--> item_002
+```
+
+**Use cases**: Documentation, reports, sharing
+
+## Import Validation
+
+The import process validates data:
+
+- **Item validation**: Required fields, valid statuses
+- **Link validation**: Valid source/target items, link types
+- **Reference integrity**: Items referenced by links must exist
+
+### Import Errors
+
+```json
+{
+  "imported": {
+    "items": 45,
+    "links": 70
+  },
+  "errors": [
     {
-      id: 'req1',
-      method: 'POST',
-      path: '/v1/projects/proj_abc123/items',
-      body: { type: 'requirement', title: 'Requirement 1' }
+      "type": "validation_error",
+      "item_id": "item_001",
+      "message": "Invalid status: invalid_status"
     },
     {
-      id: 'req2',
-      method: 'POST',
-      path: '/v1/projects/proj_abc123/items',
-      body: { type: 'requirement', title: 'Requirement 2' }
+      "type": "reference_error",
+      "link_id": "link_001",
+      "message": "Source item not found: item_missing"
     }
   ]
-});
-
-console.log(`Created ${result.successful} items`);
-
-// With dependencies
-const complexResult = await client.batch.execute({
-  atomic: true,
-  operations: [
-    {
-      id: 'parent',
-      method: 'POST',
-      path: '/v1/projects/proj_abc123/items',
-      body: { type: 'requirement', title: 'Parent' }
-    },
-    {
-      id: 'child',
-      method: 'POST',
-      path: '/v1/projects/proj_abc123/items',
-      body: {
-        type: 'requirement',
-        title: 'Child',
-        parentId: '${parent.data.id}'
-      },
-      dependsOn: ['parent']
-    },
-    {
-      id: 'link',
-      method: 'POST',
-      path: '/v1/links',
-      body: {
-        sourceId: '${parent.data.id}',
-        targetId: '${child.data.id}',
-        type: 'derives_from'
-      },
-      dependsOn: ['parent', 'child']
-    }
-  ]
-});
-
-// Helper methods
-const items = await client.items.bulkCreate({
-  projectId: 'proj_abc123',
-  items: [
-    { type: 'requirement', title: 'Req 1' },
-    { type: 'requirement', title: 'Req 2' },
-    { type: 'requirement', title: 'Req 3' }
-  ]
-});
-
-await client.items.bulkUpdate([
-  { id: 'item_001', status: 'approved' },
-  { id: 'item_002', status: 'approved' }
-]);
-
-await client.links.bulkCreate([
-  { sourceId: 'item_req_001', targetId: 'item_tc_001', type: 'verified_by' },
-  { sourceId: 'item_req_002', targetId: 'item_tc_002', type: 'verified_by' }
-]);
-```
-
-### Go
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "github.com/tracertm/tracertm-go"
-)
-
-func main() {
-    client := tracertm.NewClient("rtm_live_sk_...")
-
-    // Execute batch
-    result, _ := client.Batch.Execute(ctx, &tracertm.BatchRequest{
-        Atomic: true,
-        Operations: []tracertm.BatchOperation{
-            {
-                ID:     "req1",
-                Method: "POST",
-                Path:   "/v1/projects/proj_abc123/items",
-                Body: map[string]interface{}{
-                    "type":  "requirement",
-                    "title": "Requirement 1",
-                },
-            },
-            {
-                ID:     "req2",
-                Method: "POST",
-                Path:   "/v1/projects/proj_abc123/items",
-                Body: map[string]interface{}{
-                    "type":  "requirement",
-                    "title": "Requirement 2",
-                },
-            },
-        },
-    })
-
-    fmt.Printf("Created %d items\n", result.Successful)
-
-    // With dependencies
-    result, _ = client.Batch.Execute(ctx, &tracertm.BatchRequest{
-        Atomic: true,
-        Operations: []tracertm.BatchOperation{
-            {
-                ID:     "parent",
-                Method: "POST",
-                Path:   "/v1/projects/proj_abc123/items",
-                Body: map[string]interface{}{
-                    "type":  "requirement",
-                    "title": "Parent",
-                },
-            },
-            {
-                ID:     "child",
-                Method: "POST",
-                Path:   "/v1/projects/proj_abc123/items",
-                Body: map[string]interface{}{
-                    "type":      "requirement",
-                    "title":     "Child",
-                    "parent_id": "${parent.data.id}",
-                },
-                DependsOn: []string{"parent"},
-            },
-        },
-    })
-
-    // Bulk helpers
-    items, _ := client.Items.BulkCreate(ctx, "proj_abc123", []tracertm.CreateItemInput{
-        {Type: "requirement", Title: "Req 1"},
-        {Type: "requirement", Title: "Req 2"},
-    })
-
-    fmt.Printf("Created %d items\n", len(items))
 }
 ```
 
----
+## Best Practices
 
-## Limits and Constraints
+### 1. Regular Backups
 
-| Limit | Value | Description |
-|-------|-------|-------------|
-| Max operations per batch | 100 | Maximum operations in single batch |
-| Max request size | 10 MB | Total request body size |
-| Max dependency depth | 10 | Maximum chain of depends_on |
-| Batch timeout | 60s | Maximum batch execution time |
-| Parallel operations | 20 | Max concurrent when parallel=true |
+Export projects regularly:
 
----
+```python
+import schedule
+import time
 
-## Atomicity Behavior
+def backup_project(project_id):
+    export_data = client.projects.export(project_id, format="json")
+    filename = f"backup_{project_id}_{datetime.now().isoformat()}.json"
+    with open(filename, "w") as f:
+        json.dump(export_data, f)
+    print(f"Backed up to {filename}")
 
-### `atomic: true`
-
-All operations succeed or all are rolled back:
-
-```json
-{
-  "atomic": true,
-  "operations": [
-    {"id": "op1", "method": "POST", "path": "...", "body": {...}},
-    {"id": "op2", "method": "POST", "path": "...", "body": {...}},
-    {"id": "op3", "method": "POST", "path": "...", "body": {...}}
-  ]
-}
+# Schedule daily backups
+schedule.every().day.at("02:00").do(backup_project, "proj_123")
 ```
 
-If `op2` fails:
-- `op1` changes are rolled back
-- `op3` is not executed
-- All data remains unchanged
+### 2. Validate Before Import
 
-### `atomic: false` (default)
+Validate export data before importing:
 
-Each operation is independent:
+```python
+def validate_export_data(data):
+    errors = []
+    
+    # Check required fields
+    if "items" not in data:
+        errors.append("Missing items array")
+    
+    # Validate items
+    for item in data.get("items", []):
+        if "id" not in item:
+            errors.append(f"Item missing ID: {item}")
+    
+    return errors
 
-```json
-{
-  "atomic": false,
-  "operations": [
-    {"id": "op1", "method": "POST", "path": "...", "body": {...}},
-    {"id": "op2", "method": "POST", "path": "...", "body": {...}},
-    {"id": "op3", "method": "POST", "path": "...", "body": {...}}
-  ]
-}
+# Validate before import
+errors = validate_export_data(export_data)
+if errors:
+    print(f"Validation errors: {errors}")
+else:
+    client.projects.import_data("proj_123", "json", json.dumps(export_data))
 ```
 
-If `op2` fails:
-- `op1` changes persist
-- `op3` still executes
-- Results show individual success/failure
+### 3. Handle Import Errors
 
----
+Process import results carefully:
 
-## Error Handling
+```python
+result = client.projects.import_data("proj_123", "json", data)
 
-### Partial Failure Response
-
-```json
-{
-  "data": {
-    "batch_id": "batch_xyz789",
-    "status": "partial",
-    "atomic": false,
-    "total_operations": 3,
-    "successful": 2,
-    "failed": 1,
-    "results": [
-      {
-        "id": "op1",
-        "status": 201,
-        "success": true,
-        "data": {"id": "item_001"}
-      },
-      {
-        "id": "op2",
-        "status": 422,
-        "success": false,
-        "error": {
-          "code": "VALIDATION_ERROR",
-          "message": "Title is required",
-          "details": {"field": "title"}
-        }
-      },
-      {
-        "id": "op3",
-        "status": 201,
-        "success": true,
-        "data": {"id": "item_003"}
-      }
-    ]
-  }
-}
+if result.errors:
+    print(f"Import completed with {len(result.errors)} errors:")
+    for error in result.errors:
+        print(f"  - {error.type}: {error.message}")
+    
+    # Retry failed items
+    retry_failed_items(result.errors)
+else:
+    print("Import completed successfully")
 ```
 
-### Atomic Failure Response
+## Error Responses
 
-```json
-{
-  "data": {
-    "batch_id": "batch_xyz789",
-    "status": "rolled_back",
-    "atomic": true,
-    "total_operations": 3,
-    "successful": 0,
-    "failed": 1,
-    "rollback_reason": "Operation 'op2' failed",
-    "results": [
-      {
-        "id": "op1",
-        "status": 201,
-        "success": true,
-        "rolled_back": true,
-        "data": {"id": "item_001"}
-      },
-      {
-        "id": "op2",
-        "status": 422,
-        "success": false,
-        "error": {
-          "code": "VALIDATION_ERROR",
-          "message": "Title is required"
-        }
-      },
-      {
-        "id": "op3",
-        "status": null,
-        "success": false,
-        "skipped": true,
-        "skip_reason": "Previous operation failed"
-      }
-    ]
-  }
-}
-```
-
----
-
-## Error Codes
-
-### Batch Errors
-
-| Code | Description |
-|------|-------------|
-| `BATCH_TOO_LARGE` | Too many operations in batch |
-| `BATCH_TIMEOUT` | Batch exceeded timeout |
-| `BATCH_ROLLBACK_FAILED` | Atomic rollback failed |
-| `CIRCULAR_DEPENDENCY` | Circular depends_on reference |
-| `INVALID_OPERATION_REFERENCE` | Invalid variable reference |
-| `DEPENDENCY_FAILED` | Dependent operation failed |
-
-### Example Error
+### Unsupported Format
 
 ```json
 {
   "error": {
-    "code": "BATCH_TOO_LARGE",
-    "message": "Batch contains 150 operations, maximum is 100",
-    "status": 400,
-    "details": {
-      "operation_count": 150,
-      "max_operations": 100
-    }
+    "code": "validation_error",
+    "message": "Unsupported format: xml. Supported formats: json, csv, markdown"
   }
 }
 ```
 
----
+### Import Validation Error
 
-## Best Practices
-
-### 1. Use Atomic for Related Changes
-
-```python
-# Good: Related changes are atomic
-result = client.batch.execute([
-    {"id": "parent", "method": "POST", ...},
-    {"id": "child", "method": "POST", ..., "depends_on": ["parent"]},
-    {"id": "link", "method": "POST", ..., "depends_on": ["parent", "child"]}
-], atomic=True)
-
-# Bad: Related changes may be partially applied
-result = client.batch.execute([...], atomic=False)
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid import data",
+    "details": [
+      {
+        "field": "items[0].status",
+        "message": "Invalid status value"
+      }
+    ]
+  }
+}
 ```
-
-### 2. Batch Similar Operations
-
-```python
-# Good: Batch creates together
-client.batch.execute([
-    {"method": "POST", "path": "/items", "body": {...}},
-    {"method": "POST", "path": "/items", "body": {...}},
-    {"method": "POST", "path": "/items", "body": {...}}
-])
-
-# Bad: Individual requests
-for item in items:
-    client.items.create(**item)  # Multiple network calls
-```
-
-### 3. Handle Partial Failures
-
-```python
-result = client.batch.execute(operations, atomic=False)
-
-if result.status == "partial":
-    for op_result in result.results:
-        if not op_result.success:
-            logger.error(f"Operation {op_result.id} failed: {op_result.error}")
-            # Handle or retry failed operation
-```
-
-### 4. Use Dependencies for Order
-
-```python
-# Good: Explicit dependencies
-operations = [
-    {"id": "req", "method": "POST", "path": "/items", ...},
-    {"id": "test", "method": "POST", "path": "/items", ..., "depends_on": ["req"]},
-    {"id": "link", "method": "POST", "path": "/links", ..., "depends_on": ["req", "test"]}
-]
-
-# Bad: Assuming order without dependencies
-operations = [
-    {"id": "req", "method": "POST", ...},
-    {"id": "test", "method": "POST", ...},  # May execute before req
-    {"id": "link", "method": "POST", ...}   # May fail if req/test not done
-]
-```
-
----
 
 ## Related Documentation
 
-- [Items API](/docs/api-reference/rest-api/endpoints/requirements) - Item operations
-- [Links API](/docs/api-reference/rest-api/endpoints/relationships) - Link operations
-- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Batch rate limits
-- [Error Handling](/docs/api-reference/rest-api/errors) - Error responses
+- [Projects API](./01-projects) - Project management
+- [Items API](./02-artifacts) - Item management
+- [Links API](./04-relationships) - Link management

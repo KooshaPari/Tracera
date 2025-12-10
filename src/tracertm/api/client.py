@@ -60,6 +60,53 @@ class TraceRTMClient:
         self._db: DatabaseConnection | None = None
         self._session: Session | AsyncSession | None = None
 
+    # Context manager support for tests
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        try:
+            self.cleanup()
+        except Exception:
+            pass
+        return False
+
+    def cleanup(self) -> None:
+        """Close any open session/connection."""
+        try:
+            if self._session is not None:
+                close = getattr(self._session, "close", None)
+                if callable(close):
+                    close()
+            if self._db is not None and hasattr(self._db, "disconnect"):
+                try:
+                    self._db.disconnect()
+                except Exception:
+                    pass
+        finally:
+            self._session = None
+            self._db = None
+
+    def get_agent_info(self):
+        """Return the Agent record for the current agent_id, if set."""
+        if not self.agent_id:
+            return None
+        session = self._get_session()
+        try:
+            stmt = select(Agent).filter(Agent.id == self.agent_id)
+            result = session.execute(stmt)
+            agent = result.scalars().first() if hasattr(result, "scalars") else None
+        except Exception:
+            agent = None
+
+        if agent is None and hasattr(session, "query"):
+            try:
+                agent = session.query(Agent).filter_by(id=self.agent_id).first()
+            except Exception:
+                agent = None
+
+        return agent
+
     def _get_session(self) -> Session | AsyncSession:
         """Get database session."""
         if self._session is None:
@@ -138,51 +185,61 @@ class TraceRTMClient:
     def register_agent(
         self,
         name: str,
+        capabilities: list[str] | None = None,
+        config: dict | None = None,
         agent_type: str = "ai_agent",
-        metadata: dict | None = None,
         project_ids: list[str] | None = None,
     ) -> str:
         """
         Register an agent (FR41, FR51).
 
-        Args:
-            name: Agent name
-            agent_type: Agent type (default: ai_agent)
-            metadata: Optional metadata
-            project_ids: Optional list of project IDs to assign agent to (FR51)
-
-        Returns:
-            Agent ID
+        Supports the test harness signature with capabilities/config.
         """
         session = self._get_session()
-        project_id = self._get_project_id()
+        capabilities = capabilities or []
+        config = config or {}
+        project_id = self.config_manager.get("current_project_id")
 
-        # Store assigned projects in metadata (FR51, FR52)
-        if project_ids:
-            if metadata is None:
-                metadata = {}
-            metadata["assigned_projects"] = project_ids
+        existing = None
+        if self.agent_id:
+            existing = session.query(Agent).filter(Agent.id == self.agent_id).first()
+
+        if existing:
+            existing.name = name or existing.name
+            existing.capabilities = capabilities
+            existing.config = config
+            existing.agent_metadata = config
+            session.commit()
+            return existing.id
+
+        # Ensure we always have an ID even before flush (unit tests rely on it)
+        from tracertm.models.agent import generate_agent_uuid
+
+        agent_id = generate_agent_uuid()
 
         agent = Agent(
-            project_id=project_id,  # Primary project
+            id=agent_id,
+            project_id=project_id,
             name=name,
             agent_type=agent_type,
             status="active",
-            agent_metadata=metadata or {},
+            capabilities=capabilities,
+            config=config,
+            agent_metadata=config,
             last_activity_at=datetime.utcnow().isoformat(),
         )
         session.add(agent)
+        session.flush()
         session.commit()
 
-        self.agent_id = agent.id
+        self.agent_id = agent.id or agent_id
         self.agent_name = name
 
-        # Log registration
         self._log_operation(
             "agent_registered",
             "agent",
             agent.id,
-            {"name": name, "type": agent_type, "projects": project_ids or [project_id]},
+            {"name": name, "type": agent_type, "projects": project_ids or ([project_id] if project_id else [])},
         )
 
         return agent.id

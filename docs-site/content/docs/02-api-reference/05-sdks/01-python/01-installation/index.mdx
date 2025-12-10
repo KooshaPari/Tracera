@@ -1,20 +1,14 @@
 ---
-title: "Installation"
-description: "Install the TraceRTM Python SDK using pip, Poetry, or other package managers"
+title: "Python SDK Installation"
+description: "Install and set up the TraceRTM Python SDK"
+keywords: [python, sdk, installation, pip, package]
 ---
 
-# Installation
+# Python SDK Installation
 
-The TraceRTM Python SDK can be installed using pip, Poetry, or other Python package managers. This guide covers all installation methods and configuration options.
+The TraceRTM Python SDK provides a Pythonic interface to the TraceRTM API.
 
-## Requirements
-
-- **Python**: 3.9 or higher
-- **Dependencies**: Automatically installed
-  - `httpx` - HTTP client
-  - `pydantic` - Data validation
-
-## Quick Install
+## Installation
 
 ### Using pip
 
@@ -22,315 +16,47 @@ The TraceRTM Python SDK can be installed using pip, Poetry, or other Python pack
 pip install tracertm
 ```
 
-### Using Poetry
-
-```bash
-poetry add tracertm
-```
-
-### Using pipenv
-
-```bash
-pipenv install tracertm
-```
-
-### Using uv
-
-```bash
-uv add tracertm
-```
-
----
-
-## Version Selection
-
-### Install Specific Version
+### Using pip with specific version
 
 ```bash
 pip install tracertm==2.4.0
 ```
 
-### Install Latest Pre-release
+### From source
 
 ```bash
-pip install tracertm --pre
+git clone https://github.com/tracertm/tracertm-python.git
+cd tracertm-python
+pip install -e .
 ```
 
-### Install from Git
+## Requirements
 
-```bash
-pip install git+https://github.com/tracertm/tracertm-python.git@main
-```
-
----
-
-## Optional Dependencies
-
-### Async Support
-
-The SDK includes async support by default, but you can install with extra async utilities:
-
-```bash
-pip install tracertm[async]
-```
-
-### Development Dependencies
-
-For testing and development:
-
-```bash
-pip install tracertm[dev]
-```
-
-This includes:
-- `pytest` - Testing framework
-- `pytest-asyncio` - Async test support
-- `respx` - HTTP mocking
-- `mypy` - Type checking
-
-### All Extras
-
-```bash
-pip install tracertm[all]
-```
-
----
-
-## Virtual Environment Setup
-
-### Using venv
-
-```bash
-# Create virtual environment
-python -m venv .venv
-
-# Activate (Linux/macOS)
-source .venv/bin/activate
-
-# Activate (Windows)
-.venv\Scripts\activate
-
-# Install SDK
-pip install tracertm
-```
-
-### Using Poetry
-
-```bash
-# Create new project with Poetry
-poetry new my-tracertm-project
-cd my-tracertm-project
-
-# Add SDK
-poetry add tracertm
-
-# Activate shell
-poetry shell
-```
-
-### Using pipenv
-
-```bash
-# Create Pipfile and install
-pipenv install tracertm
-
-# Activate shell
-pipenv shell
-```
-
----
+- Python 3.12 or higher
+- pip 23.0 or higher
 
 ## Verify Installation
 
 ```python
 import tracertm
-
-# Check version
-print(tracertm.__version__)  # 2.4.0
-
-# Test import
-from tracertm import TraceRTMClient
-print("SDK installed successfully!")
+print(tracertm.__version__)
 ```
 
-### Command Line Verification
-
-```bash
-python -c "import tracertm; print(f'TraceRTM SDK v{tracertm.__version__}')"
-```
-
----
-
-## Configuration
-
-### Environment Variables
-
-Set your API key as an environment variable:
-
-```bash
-# Linux/macOS
-export TRACERTM_API_KEY="rtm_live_sk_..."
-
-# Windows (PowerShell)
-$env:TRACERTM_API_KEY = "rtm_live_sk_..."
-
-# Windows (CMD)
-set TRACERTM_API_KEY=rtm_live_sk_...
-```
-
-### Configuration File
-
-Create a `.env` file in your project root:
-
-```bash
-TRACERTM_API_KEY=rtm_live_sk_...
-TRACERTM_BASE_URL=https://api.tracertm.dev/v1
-TRACERTM_TIMEOUT=30
-```
-
-Use with `python-dotenv`:
+## Quick Start
 
 ```python
-from dotenv import load_dotenv
-from tracertm import TraceRTMClient
+from tracertm import TraceRTM
 
-load_dotenv()
-client = TraceRTMClient()  # Reads from environment
+# Initialize client
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# List projects
+projects = client.projects.list()
+for project in projects:
+    print(f"{project.id}: {project.name}")
 ```
-
----
-
-## Proxy Configuration
-
-### Environment Variables
-
-```bash
-export HTTP_PROXY="http://proxy.example.com:8080"
-export HTTPS_PROXY="http://proxy.example.com:8080"
-```
-
-### Client Configuration
-
-```python
-from tracertm import TraceRTMClient
-
-client = TraceRTMClient(
-    api_key="rtm_live_sk_...",
-    proxies={
-        "http://": "http://proxy.example.com:8080",
-        "https://": "http://proxy.example.com:8080"
-    }
-)
-```
-
----
-
-## SSL/TLS Configuration
-
-### Custom CA Bundle
-
-```python
-from tracertm import TraceRTMClient
-
-client = TraceRTMClient(
-    api_key="rtm_live_sk_...",
-    verify="/path/to/ca-bundle.crt"
-)
-```
-
-### Disable SSL Verification (Not Recommended)
-
-```python
-# Only for development/testing
-client = TraceRTMClient(
-    api_key="rtm_live_sk_...",
-    verify=False
-)
-```
-
----
-
-## Troubleshooting
-
-### Import Error
-
-```
-ModuleNotFoundError: No module named 'tracertm'
-```
-
-**Solution**: Ensure you've activated your virtual environment and installed the package:
-
-```bash
-pip install tracertm
-```
-
-### SSL Certificate Error
-
-```
-ssl.SSLCertVerificationError: certificate verify failed
-```
-
-**Solution**: Update certificates:
-
-```bash
-pip install --upgrade certifi
-```
-
-Or specify a CA bundle:
-
-```python
-client = TraceRTMClient(
-    api_key="rtm_live_sk_...",
-    verify="/path/to/ca-bundle.crt"
-)
-```
-
-### Version Conflict
-
-```
-ERROR: tracertm requires httpx>=0.24.0, but you have httpx 0.23.0
-```
-
-**Solution**: Upgrade dependencies:
-
-```bash
-pip install --upgrade tracertm httpx
-```
-
----
-
-## Upgrading
-
-### Upgrade to Latest
-
-```bash
-pip install --upgrade tracertm
-```
-
-### Upgrade to Specific Version
-
-```bash
-pip install tracertm==2.5.0
-```
-
-### Check for Updates
-
-```bash
-pip index versions tracertm
-```
-
----
-
-## Uninstalling
-
-```bash
-pip uninstall tracertm
-```
-
----
 
 ## Next Steps
 
-- [Quick Start](/docs/api-reference/sdks/python/quickstart) - Get started with your first requests
-- [Authentication](/docs/api-reference/sdks/python/authentication) - Configure authentication
-- [API Reference](/docs/api-reference/sdks/python/api-reference) - Explore all methods
+- [Quickstart](./02-quickstart) - Get started quickly
+- [Authentication](./03-authentication) - Set up authentication

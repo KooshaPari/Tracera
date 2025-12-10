@@ -1,19 +1,184 @@
 ---
-title: "REST Sorting"
-description: "Sort results."
+title: "Sorting"
+description: "Sort API results by various fields and criteria"
+keywords: [sorting, sort, order, ascending, descending]
 ---
 
-## Endpoints
-- GET /v1/artifacts?sort=-updated_at — Sort by field
+# Sorting
 
-## Example
-```http
-GET /v1/artifacts?sort=-updated_at
-Authorization: Bearer <token>
-Content-Type: application/json
+Sort API results by various fields using the `sort` parameter.
+
+## Sort Syntax
+
+```
+GET /api/v1/items?sort=field_name
+GET /api/v1/items?sort=-field_name  # Descending
+GET /api/v1/items?sort=field1,-field2  # Multiple fields
 ```
 
-## Guidance
-- Use pagination headers (`Link`) for large result sets.
-- Prefer filters over client-side slicing to reduce payload size.
-- Check 429 headers for rate-limit backoff instructions.
+## Sortable Fields
+
+### Items
+
+| Field | Description |
+|-------|-------------|
+| `created_at` | Creation date |
+| `updated_at` | Last update date |
+| `title` | Item title (alphabetical) |
+| `status` | Status value |
+
+### Projects
+
+| Field | Description |
+|-------|-------------|
+| `name` | Project name |
+| `created_at` | Creation date |
+| `updated_at` | Last update date |
+
+## Sort Direction
+
+### Ascending (Default)
+
+```bash
+# Sort by creation date (oldest first)
+GET /api/v1/items?sort=created_at
+```
+
+### Descending
+
+Prefix field with `-`:
+
+```bash
+# Sort by creation date (newest first)
+GET /api/v1/items?sort=-created_at
+```
+
+## Multiple Field Sorting
+
+Sort by multiple fields:
+
+```bash
+# Sort by status, then by creation date
+GET /api/v1/items?sort=status,-created_at
+```
+
+This sorts by status first (ascending), then by creation date (descending) for items with the same status.
+
+## Examples
+
+### Sort by Date
+
+```bash
+# Newest first
+GET /api/v1/items?sort=-created_at
+
+# Oldest first
+GET /api/v1/items?sort=created_at
+```
+
+### Sort by Title
+
+```bash
+# Alphabetical (A-Z)
+GET /api/v1/items?sort=title
+
+# Reverse alphabetical (Z-A)
+GET /api/v1/items?sort=-title
+```
+
+### Sort by Status and Date
+
+```bash
+# Sort by status, then newest first
+GET /api/v1/items?sort=status,-created_at
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Sort by creation date (newest first)
+items = client.items.list(
+    project_id="proj_123",
+    sort="-created_at"
+)
+
+# Sort by multiple fields
+items = client.items.list(
+    project_id="proj_123",
+    sort="status,-created_at"
+)
+```
+
+## Combining with Filters
+
+Sorting works with filters:
+
+```bash
+# Filter and sort
+GET /api/v1/items?status=active&sort=-updated_at
+```
+
+### Python Example
+
+```python
+# Filter active items, sort by update date
+items = client.items.list(
+    project_id="proj_123",
+    status="active",
+    sort="-updated_at"
+)
+```
+
+## Best Practices
+
+### 1. Use Appropriate Sort Fields
+
+```python
+# ✅ Good: Sort by date for recent items
+items = client.items.list(sort="-created_at")
+
+# ✅ Good: Sort by title for alphabetical listing
+items = client.items.list(sort="title")
+
+# ❌ Bad: Sorting by non-indexed fields may be slow
+items = client.items.list(sort="metadata.custom_field")
+```
+
+### 2. Combine with Pagination
+
+Always use pagination with sorting:
+
+```python
+items = client.items.list(
+    project_id="proj_123",
+    sort="-created_at",
+    skip=0,
+    limit=50
+)
+```
+
+### 3. Cache Sorted Results
+
+Cache frequently used sorted queries:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=50)
+def get_recent_items(project_id, limit=50):
+    return client.items.list(
+        project_id=project_id,
+        sort="-created_at",
+        limit=limit
+    )
+```
+
+## Related Documentation
+
+- [Filtering API](./07-filtering) - Filter results
+- [Pagination API](./08-pagination) - Paginate sorted results
+- [Items API](./02-artifacts) - Item sorting examples

@@ -1,235 +1,67 @@
 ---
-title: Webhooks
-description: Real-time event notifications via webhooks in TraceRTM
+title: "Webhooks"
+description: "Subscribe to TraceRTM events and receive real-time notifications"
+keywords: [webhooks, events, notifications, real-time, subscriptions]
 ---
 
 # Webhooks
 
-Webhooks deliver real-time HTTP notifications when events occur in TraceRTM. Use webhooks to integrate with external systems, trigger automation workflows, and build custom notifications.
+Webhooks allow you to receive real-time notifications when events occur in your TraceRTM projects. Configure webhook endpoints to be notified of item changes, link creations, status transitions, and more.
 
-## Quick Reference
+## Overview
 
-```bash
-# List webhooks
-GET /v1/webhooks
+Webhooks provide:
+- **Real-time notifications**: Instant event delivery
+- **Event filtering**: Subscribe to specific event types
+- **Secure delivery**: Signed payloads for verification
+- **Retry logic**: Automatic retry on delivery failure
 
-# Create webhook
-POST /v1/webhooks
+## Event Types
 
-# Manage webhook
-GET/PATCH/DELETE /v1/webhooks/{webhook_id}
+Available webhook events:
 
-# Test and deliveries
-POST /v1/webhooks/{webhook_id}/test
-GET /v1/webhooks/{webhook_id}/deliveries
-```
-
----
-
-## How Webhooks Work
-
-```
-1. Event occurs in TraceRTM (e.g., item approved)
-          ↓
-2. TraceRTM checks for matching webhook subscriptions
-          ↓
-3. Payload is constructed with event data
-          ↓
-4. HTTP POST sent to your endpoint
-          ↓
-5. Your server responds (2xx = success)
-          ↓
-6. On failure, automatic retry with exponential backoff
-```
-
----
-
-## Webhook Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/v1/webhooks` | List all webhooks |
-| `POST` | `/v1/webhooks` | Create webhook |
-| `GET` | `/v1/webhooks/{webhook_id}` | Get webhook |
-| `PATCH` | `/v1/webhooks/{webhook_id}` | Update webhook |
-| `DELETE` | `/v1/webhooks/{webhook_id}` | Delete webhook |
-| `POST` | `/v1/webhooks/{webhook_id}/test` | Send test event |
-| `GET` | `/v1/webhooks/{webhook_id}/deliveries` | List deliveries |
-| `POST` | `/v1/webhooks/{webhook_id}/deliveries/{id}/retry` | Retry delivery |
-
----
-
-## The Webhook Object
-
-```json
-{
-  "id": "wh_abc123xyz",
-  "name": "CI/CD Pipeline Trigger",
-  "description": "Trigger builds on requirement approval",
-  "url": "https://ci.company.com/webhooks/tracertm",
-  "secret": "whsec_abc123...",
-  "status": "active",
-  "events": [
-    "item.approved",
-    "item.rejected",
-    "test_run.completed"
-  ],
-  "filters": {
-    "project_ids": ["proj_abc123", "proj_def456"],
-    "item_types": ["requirement"],
-    "statuses": ["approved"]
-  },
-  "headers": {
-    "X-Pipeline-Token": "token123",
-    "X-Source": "tracertm"
-  },
-  "retry_policy": {
-    "max_attempts": 5,
-    "initial_delay_seconds": 60,
-    "max_delay_seconds": 3600,
-    "backoff_multiplier": 2.0
-  },
-  "statistics": {
-    "total_deliveries": 1250,
-    "successful_deliveries": 1245,
-    "failed_deliveries": 5,
-    "success_rate": 99.6,
-    "avg_response_time_ms": 145
-  },
-  "last_triggered_at": "2024-12-08T09:45:00Z",
-  "last_success_at": "2024-12-08T09:45:00Z",
-  "last_failure_at": "2024-12-07T15:30:00Z",
-  "created_by": "user_admin123",
-  "created_at": "2024-01-15T10:00:00Z",
-  "updated_at": "2024-11-20T14:00:00Z"
-}
-```
-
-### Webhook Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier (prefix: `wh_`) |
-| `name` | string | Webhook name |
-| `description` | string | Description |
-| `url` | string | Destination URL (HTTPS required) |
-| `secret` | string | Signing secret |
-| `status` | string | `active`, `paused`, `disabled` |
-| `events` | array | Subscribed event types |
-| `filters` | object | Event filters |
-| `headers` | object | Custom HTTP headers |
-| `retry_policy` | object | Retry configuration |
-| `statistics` | object | Delivery statistics |
-
----
-
-## Available Events
-
-### Item Events
-
-| Event | Triggered When |
-|-------|----------------|
-| `item.created` | New item created |
-| `item.updated` | Item properties changed |
-| `item.deleted` | Item deleted |
-| `item.approved` | Item approved |
-| `item.rejected` | Item rejected |
-| `item.status_changed` | Status transition |
-| `item.assigned` | Assignee changed |
-| `item.commented` | Comment added |
-| `item.attachment_added` | Attachment uploaded |
-
-### Link Events
-
-| Event | Triggered When |
-|-------|----------------|
-| `link.created` | New link created |
-| `link.deleted` | Link removed |
-| `link.suspect` | Link marked suspect |
-| `link.validated` | Link validated |
-
-### Project Events
-
-| Event | Triggered When |
-|-------|----------------|
-| `project.created` | New project created |
-| `project.updated` | Project settings changed |
-| `project.archived` | Project archived |
-| `project.member_added` | User added to project |
-| `project.member_removed` | User removed from project |
-
-### Test Events
-
-| Event | Triggered When |
-|-------|----------------|
-| `test_run.started` | Test run initiated |
-| `test_run.completed` | Test run finished |
-| `test_result.submitted` | Individual test result recorded |
-| `test_result.failed` | Test execution failed |
-
-### Report Events
-
-| Event | Triggered When |
-|-------|----------------|
-| `report.requested` | Report generation started |
-| `report.completed` | Report ready for download |
-| `report.failed` | Report generation failed |
-
-### System Events
-
-| Event | Triggered When |
-|-------|----------------|
-| `import.completed` | Data import finished |
-| `export.completed` | Data export ready |
-| `api.deprecation.announced` | API deprecation notice |
-
----
+| Event Type | Description | Triggered When |
+|------------|-------------|----------------|
+| `item.created` | Item created | New item is created |
+| `item.updated` | Item updated | Item is modified |
+| `item.deleted` | Item deleted | Item is removed |
+| `item.status_changed` | Status changed | Item status transitions |
+| `link.created` | Link created | New link is created |
+| `link.updated` | Link updated | Link is modified |
+| `link.deleted` | Link deleted | Link is removed |
+| `project.updated` | Project updated | Project is modified |
 
 ## Create Webhook
 
-```http
-POST /v1/webhooks
+Create a new webhook subscription.
+
+### Endpoint
+
+```
+POST /api/v1/webhooks
 ```
 
 ### Request Body
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | Yes | Webhook name |
-| `url` | string | Yes | HTTPS endpoint URL |
-| `events` | array | Yes | Events to subscribe |
-| `description` | string | No | Description |
-| `filters` | object | No | Event filters |
-| `headers` | object | No | Custom headers |
-| `retry_policy` | object | No | Retry configuration |
-| `secret` | string | No | Custom secret (auto-generated if omitted) |
+```json
+{
+  "url": "https://yourapp.com/webhooks/tracertm",
+  "events": ["item.created", "item.updated", "link.created"],
+  "project_id": "proj_123",
+  "secret": "your_webhook_secret"
+}
+```
 
-### Request
+### Request Example
 
 ```bash
 curl -X POST "https://api.tracertm.dev/v1/webhooks" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Jira Integration",
-    "description": "Sync approved requirements to Jira",
-    "url": "https://automation.company.com/tracertm-webhook",
-    "events": [
-      "item.approved",
-      "item.rejected",
-      "item.status_changed"
-    ],
-    "filters": {
-      "project_ids": ["proj_abc123"],
-      "item_types": ["requirement", "design"]
-    },
-    "headers": {
-      "X-API-Key": "jira-api-key-123"
-    },
-    "retry_policy": {
-      "max_attempts": 5,
-      "initial_delay_seconds": 60
-    }
+    "url": "https://yourapp.com/webhooks/tracertm",
+    "events": ["item.created", "item.updated"],
+    "project_id": "proj_123"
   }'
 ```
 
@@ -237,619 +69,299 @@ curl -X POST "https://api.tracertm.dev/v1/webhooks" \
 
 ```json
 {
-  "data": {
-    "id": "wh_new123xyz",
-    "name": "Jira Integration",
-    "url": "https://automation.company.com/tracertm-webhook",
-    "secret": "whsec_abc123def456...",
-    "status": "active",
-    "events": ["item.approved", "item.rejected", "item.status_changed"],
-    "filters": {
-      "project_ids": ["proj_abc123"],
-      "item_types": ["requirement", "design"]
-    },
-    "created_at": "2024-12-08T10:00:00Z"
-  }
+  "id": "webhook_abc123",
+  "url": "https://yourapp.com/webhooks/tracertm",
+  "events": ["item.created", "item.updated"],
+  "project_id": "proj_123",
+  "status": "active",
+  "created_at": "2025-01-20T10:30:00Z"
 }
 ```
 
----
+### Python Example
 
-## Webhook Payload Format
+```python
+from tracertm import TraceRTM
 
-All webhook deliveries follow this structure:
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Create webhook
+webhook = client.webhooks.create(
+    url="https://yourapp.com/webhooks/tracertm",
+    events=["item.created", "item.updated", "link.created"],
+    project_id="proj_123",
+    secret="your_webhook_secret"
+)
+
+print(f"Created webhook: {webhook.id}")
+```
+
+## List Webhooks
+
+List all webhooks for your account or project.
+
+### Endpoint
+
+```
+GET /api/v1/webhooks
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | No | Filter by project ID |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/webhooks?project_id=proj_123" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Response
 
 ```json
 {
-  "id": "evt_abc123xyz",
-  "event": "item.approved",
-  "timestamp": "2024-12-08T10:00:00Z",
-  "webhook_id": "wh_abc123",
-  "api_version": "v1",
-  "data": {
-    "item": {
-      "id": "item_req_001",
-      "item_number": "VCS-REQ-001",
-      "title": "Sensor data processing",
-      "type": "requirement",
-      "status": "approved",
-      "priority": "critical",
-      "project_id": "proj_abc123",
-      "project_name": "Vehicle Control System"
-    },
-    "actor": {
-      "id": "user_reviewer123",
-      "name": "Jane Reviewer",
-      "email": "jane.reviewer@company.com"
-    },
-    "changes": {
-      "status": {
-        "from": "in_review",
-        "to": "approved"
-      }
-    },
-    "metadata": {
-      "comment": "Reviewed and approved for implementation",
-      "approval_level": 1
+  "webhooks": [
+    {
+      "id": "webhook_abc123",
+      "url": "https://yourapp.com/webhooks/tracertm",
+      "events": ["item.created", "item.updated"],
+      "status": "active"
     }
-  }
+  ],
+  "total": 1
 }
 ```
 
-### Payload Fields
+## Delete Webhook
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique event ID |
-| `event` | string | Event type |
-| `timestamp` | string | ISO 8601 timestamp |
-| `webhook_id` | string | Webhook that triggered |
-| `api_version` | string | API version |
-| `data` | object | Event-specific data |
+Delete a webhook subscription.
 
----
+### Endpoint
 
-## Event Payloads
+```
+DELETE /api/v1/webhooks/{webhook_id}
+```
 
-### item.created
+### Request Example
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/webhooks/webhook_abc123" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Webhook Payload
+
+Webhook payloads are sent as HTTP POST requests to your endpoint:
 
 ```json
 {
   "event": "item.created",
+  "timestamp": "2025-01-20T10:30:00Z",
   "data": {
-    "item": {
-      "id": "item_req_045",
-      "item_number": "VCS-REQ-045",
-      "title": "New requirement",
-      "type": "requirement",
-      "status": "draft",
-      "priority": "high",
-      "project_id": "proj_abc123"
-    },
-    "actor": {
-      "id": "user_engineer",
-      "name": "John Engineer"
-    }
+    "id": "item_abc123",
+    "title": "New Requirement",
+    "view": "requirements",
+    "status": "draft",
+    "project_id": "proj_123"
   }
 }
 ```
 
-### item.approved
-
-```json
-{
-  "event": "item.approved",
-  "data": {
-    "item": {
-      "id": "item_req_001",
-      "item_number": "VCS-REQ-001",
-      "title": "Sensor processing",
-      "status": "approved"
-    },
-    "actor": {
-      "id": "user_reviewer",
-      "name": "Jane Reviewer"
-    },
-    "changes": {
-      "status": {"from": "in_review", "to": "approved"}
-    },
-    "metadata": {
-      "comment": "Approved for implementation",
-      "approval_level": 1,
-      "total_levels": 1
-    }
-  }
-}
-```
-
-### link.created
-
-```json
-{
-  "event": "link.created",
-  "data": {
-    "link": {
-      "id": "link_abc123",
-      "type": "verified_by",
-      "source": {
-        "id": "item_req_001",
-        "item_number": "VCS-REQ-001",
-        "title": "Sensor processing"
-      },
-      "target": {
-        "id": "item_tc_001",
-        "item_number": "VCS-TC-001",
-        "title": "Sensor test"
-      }
-    },
-    "actor": {
-      "id": "user_engineer",
-      "name": "John Engineer"
-    }
-  }
-}
-```
-
-### test_run.completed
-
-```json
-{
-  "event": "test_run.completed",
-  "data": {
-    "test_run": {
-      "id": "run_abc123",
-      "name": "Sprint 24 Regression",
-      "status": "completed",
-      "project_id": "proj_abc123"
-    },
-    "results": {
-      "total": 150,
-      "passed": 145,
-      "failed": 3,
-      "skipped": 2,
-      "pass_rate": 96.7
-    },
-    "duration_seconds": 3600
-  }
-}
-```
-
----
-
-## Verifying Webhook Signatures
-
-TraceRTM signs all webhook payloads with HMAC-SHA256. Always verify signatures.
-
-### Signature Header
+### Headers
 
 ```http
-X-TraceRTM-Signature: sha256=abc123def456...
-X-TraceRTM-Timestamp: 1702036800
+POST /webhooks/tracertm HTTP/1.1
+Host: yourapp.com
+Content-Type: application/json
+X-TraceRTM-Event: item.created
+X-TraceRTM-Signature: sha256=abc123...
+X-TraceRTM-Timestamp: 1704067200
 ```
 
-### Python Verification
+## Webhook Security
+
+### Signature Verification
+
+Verify webhook signatures to ensure authenticity:
 
 ```python
 import hmac
 import hashlib
 import time
 
-def verify_webhook_signature(
-    payload: bytes,
-    signature: str,
-    timestamp: str,
-    secret: str,
-    tolerance_seconds: int = 300
-) -> bool:
-    """Verify webhook signature and timestamp."""
-
-    # Check timestamp to prevent replay attacks
-    current_time = int(time.time())
-    webhook_time = int(timestamp)
-    if abs(current_time - webhook_time) > tolerance_seconds:
+def verify_webhook_signature(payload, signature, timestamp, secret):
+    # Check timestamp (prevent replay attacks)
+    if abs(time.time() - timestamp) > 300:  # 5 minutes
         return False
-
-    # Create signed payload
-    signed_payload = f"{timestamp}.{payload.decode()}"
-
-    # Calculate expected signature
-    expected = hmac.new(
+    
+    # Compute signature
+    expected_signature = hmac.new(
         secret.encode(),
-        signed_payload.encode(),
+        f"{timestamp}.{payload}".encode(),
         hashlib.sha256
     ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
 
-    # Compare signatures (constant-time)
-    return hmac.compare_digest(f"sha256={expected}", signature)
+# In webhook handler
+signature = request.headers.get('X-TraceRTM-Signature')
+timestamp = int(request.headers.get('X-TraceRTM-Timestamp'))
+payload = request.get_data(as_text=True)
 
-
-# Flask example
-from flask import Flask, request, abort
-
-app = Flask(__name__)
-WEBHOOK_SECRET = "whsec_abc123..."
-
-@app.post("/webhook")
-def handle_webhook():
-    payload = request.get_data()
-    signature = request.headers.get("X-TraceRTM-Signature")
-    timestamp = request.headers.get("X-TraceRTM-Timestamp")
-
-    if not verify_webhook_signature(payload, signature, timestamp, WEBHOOK_SECRET):
-        abort(401, "Invalid signature")
-
-    event = request.get_json()
-
-    # Process event based on type
-    if event["event"] == "item.approved":
-        handle_item_approved(event["data"])
-    elif event["event"] == "test_run.completed":
-        handle_test_completed(event["data"])
-
-    return {"status": "received"}, 200
+if verify_webhook_signature(payload, signature, timestamp, webhook_secret):
+    # Process webhook
+    process_webhook(json.loads(payload))
+else:
+    return "Invalid signature", 401
 ```
 
-### TypeScript Verification
+## Webhook Handler Example
 
-```typescript
-import crypto from 'crypto';
-import express from 'express';
-
-const WEBHOOK_SECRET = 'whsec_abc123...';
-
-function verifyWebhookSignature(
-  payload: string,
-  signature: string,
-  timestamp: string,
-  secret: string,
-  toleranceSeconds: number = 300
-): boolean {
-  // Check timestamp
-  const currentTime = Math.floor(Date.now() / 1000);
-  const webhookTime = parseInt(timestamp, 10);
-  if (Math.abs(currentTime - webhookTime) > toleranceSeconds) {
-    return false;
-  }
-
-  // Calculate expected signature
-  const signedPayload = `${timestamp}.${payload}`;
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(signedPayload)
-    .digest('hex');
-
-  // Compare signatures (constant-time)
-  return crypto.timingSafeEqual(
-    Buffer.from(`sha256=${expected}`),
-    Buffer.from(signature)
-  );
-}
-
-const app = express();
-app.use(express.raw({ type: 'application/json' }));
-
-app.post('/webhook', (req, res) => {
-  const payload = req.body.toString();
-  const signature = req.headers['x-tracertm-signature'] as string;
-  const timestamp = req.headers['x-tracertm-timestamp'] as string;
-
-  if (!verifyWebhookSignature(payload, signature, timestamp, WEBHOOK_SECRET)) {
-    return res.status(401).json({ error: 'Invalid signature' });
-  }
-
-  const event = JSON.parse(payload);
-
-  // Process event
-  switch (event.event) {
-    case 'item.approved':
-      handleItemApproved(event.data);
-      break;
-    case 'test_run.completed':
-      handleTestCompleted(event.data);
-      break;
-  }
-
-  res.status(200).json({ status: 'received' });
-});
-```
-
-### Go Verification
-
-```go
-package main
-
-import (
-    "crypto/hmac"
-    "crypto/sha256"
-    "encoding/hex"
-    "fmt"
-    "math"
-    "strconv"
-    "time"
-)
-
-func verifyWebhookSignature(payload, signature, timestamp, secret string, toleranceSecs int64) bool {
-    // Check timestamp
-    webhookTime, _ := strconv.ParseInt(timestamp, 10, 64)
-    currentTime := time.Now().Unix()
-    if int64(math.Abs(float64(currentTime-webhookTime))) > toleranceSecs {
-        return false
-    }
-
-    // Calculate expected signature
-    signedPayload := fmt.Sprintf("%s.%s", timestamp, payload)
-    mac := hmac.New(sha256.New, []byte(secret))
-    mac.Write([]byte(signedPayload))
-    expected := hex.EncodeToString(mac.Sum(nil))
-
-    // Compare signatures
-    return hmac.Equal([]byte("sha256="+expected), []byte(signature))
-}
-```
-
----
-
-## SDK Examples
-
-### Python
+### Python (Flask)
 
 ```python
-from tracertm import TraceRTMClient
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
 
-client = TraceRTMClient(api_key="rtm_live_sk_...")
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"
 
-# List webhooks
-webhooks = client.webhooks.list(status="active")
-for wh in webhooks.data:
-    print(f"{wh.name}: {wh.statistics.success_rate}% success")
+@app.route('/webhooks/tracertm', methods=['POST'])
+def handle_webhook():
+    # Verify signature
+    signature = request.headers.get('X-TraceRTM-Signature')
+    timestamp = int(request.headers.get('X-TraceRTM-Timestamp'))
+    
+    if not verify_signature(request.data, signature, timestamp):
+        return "Invalid signature", 401
+    
+    # Parse payload
+    event = json.loads(request.data)
+    
+    # Handle event
+    if event['event'] == 'item.created':
+        handle_item_created(event['data'])
+    elif event['event'] == 'item.updated':
+        handle_item_updated(event['data'])
+    
+    return jsonify({"status": "ok"}), 200
 
-# Create webhook
-webhook = client.webhooks.create(
-    name="Slack Notifications",
-    url="https://hooks.slack.com/services/xxx/yyy/zzz",
-    events=["item.approved", "item.rejected"],
-    filters={
-        "project_ids": ["proj_abc123"],
-        "item_types": ["requirement"]
-    }
-)
-print(f"Created: {webhook.id}")
-print(f"Secret: {webhook.secret}")  # Store securely!
-
-# Update webhook
-client.webhooks.update(
-    webhook.id,
-    status="paused",
-    events=["item.approved", "item.rejected", "item.created"]
-)
-
-# Test webhook
-result = client.webhooks.test(webhook.id, event="item.approved")
-if result.success:
-    print(f"Test successful: {result.response_code}")
-else:
-    print(f"Test failed: {result.error}")
-
-# View delivery history
-deliveries = client.webhooks.list_deliveries(
-    webhook.id,
-    status="failed",
-    limit=10
-)
-for delivery in deliveries.data:
-    print(f"{delivery.event}: {delivery.error}")
-
-# Retry failed delivery
-client.webhooks.retry_delivery(webhook.id, delivery.id)
-
-# Delete webhook
-client.webhooks.delete(webhook.id)
+def handle_item_created(item_data):
+    print(f"New item created: {item_data['title']}")
+    # Process item creation
 ```
 
-### TypeScript
+### JavaScript (Express)
 
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
+```javascript
+const express = require('express');
+const crypto = require('crypto');
 
-const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+const app = express();
+const WEBHOOK_SECRET = 'your_webhook_secret';
 
-// List webhooks
-const webhooks = await client.webhooks.list({ status: 'active' });
-webhooks.data.forEach(wh => {
-  console.log(`${wh.name}: ${wh.statistics.successRate}% success`);
+app.post('/webhooks/tracertm', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-tracertm-signature'];
+  const timestamp = req.headers['x-tracertm-timestamp'];
+  
+  // Verify signature
+  if (!verifySignature(req.body, signature, timestamp)) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Parse payload
+  const event = JSON.parse(req.body);
+  
+  // Handle event
+  switch (event.event) {
+    case 'item.created':
+      handleItemCreated(event.data);
+      break;
+    case 'item.updated':
+      handleItemUpdated(event.data);
+      break;
+  }
+  
+  res.json({ status: 'ok' });
 });
 
-// Create webhook
-const webhook = await client.webhooks.create({
-  name: 'Slack Notifications',
-  url: 'https://hooks.slack.com/services/xxx/yyy/zzz',
-  events: ['item.approved', 'item.rejected'],
-  filters: {
-    projectIds: ['proj_abc123'],
-    itemTypes: ['requirement']
-  }
-});
-console.log(`Created: ${webhook.id}`);
-console.log(`Secret: ${webhook.secret}`);
-
-// Test webhook
-const result = await client.webhooks.test(webhook.id, {
-  event: 'item.approved'
-});
-console.log(`Test: ${result.success ? 'passed' : 'failed'}`);
-
-// View deliveries
-const deliveries = await client.webhooks.listDeliveries(webhook.id, {
-  status: 'failed'
-});
-
-// Retry delivery
-await client.webhooks.retryDelivery(webhook.id, deliveries.data[0].id);
-```
-
----
-
-## Retry Policy
-
-Failed deliveries are automatically retried with exponential backoff:
-
-| Attempt | Delay |
-|---------|-------|
-| 1 | Immediate |
-| 2 | 1 minute |
-| 3 | 5 minutes |
-| 4 | 30 minutes |
-| 5 | 1 hour |
-
-### Custom Retry Policy
-
-```json
-{
-  "retry_policy": {
-    "max_attempts": 5,
-    "initial_delay_seconds": 60,
-    "max_delay_seconds": 3600,
-    "backoff_multiplier": 2.0
-  }
+function verifySignature(payload, signature, timestamp) {
+  const expectedSignature = crypto
+    .createHmac('sha256', WEBHOOK_SECRET)
+    .update(`${timestamp}.${payload}`)
+    .digest('hex');
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
 }
 ```
 
-### Automatic Disabling
+## Retry Logic
 
-Webhooks are automatically disabled after:
-- 10 consecutive failures
-- 7 days of failures
+TraceRTM automatically retries failed webhook deliveries:
 
-Re-enable manually after fixing the endpoint.
+- **Initial attempt**: Immediate
+- **Retry 1**: After 1 minute
+- **Retry 2**: After 5 minutes
+- **Retry 3**: After 15 minutes
+- **Retry 4**: After 1 hour
 
----
-
-## Filters
-
-Filter which events trigger the webhook:
-
-```json
-{
-  "filters": {
-    "project_ids": ["proj_abc123", "proj_def456"],
-    "item_types": ["requirement", "test_case"],
-    "statuses": ["approved", "rejected"],
-    "priorities": ["critical", "high"],
-    "user_ids": ["user_reviewer123"]
-  }
-}
-```
-
-### Filter Behavior
-
-- Multiple values in a filter: OR (any match)
-- Multiple filters: AND (all must match)
-- Empty filter: No restriction
-
----
-
-## Error Responses
-
-### Webhook Not Found
-
-```json
-{
-  "error": {
-    "code": "WEBHOOK_NOT_FOUND",
-    "message": "Webhook 'wh_invalid' not found",
-    "status": 404
-  }
-}
-```
-
-### Invalid URL
-
-```json
-{
-  "error": {
-    "code": "WEBHOOK_URL_INVALID",
-    "message": "Webhook URL must use HTTPS",
-    "status": 422,
-    "details": {
-      "url": "http://insecure.example.com"
-    }
-  }
-}
-```
-
-### Disabled Webhook
-
-```json
-{
-  "error": {
-    "code": "WEBHOOK_DISABLED",
-    "message": "Webhook has been disabled due to repeated failures",
-    "status": 422,
-    "details": {
-      "disabled_at": "2024-12-07T10:00:00Z",
-      "failure_count": 10,
-      "last_error": "Connection timeout"
-    }
-  }
-}
-```
-
----
+Webhooks are marked as failed after 4 failed retries.
 
 ## Best Practices
 
-### 1. Always Verify Signatures
+### 1. Respond Quickly
+
+Respond to webhooks within 5 seconds:
 
 ```python
-# Never skip signature verification
-if not verify_signature(payload, signature, secret):
-    return 401
+@app.route('/webhooks/tracertm', methods=['POST'])
+def handle_webhook():
+    # Process asynchronously
+    process_webhook_async.delay(request.data)
+    
+    # Return immediately
+    return jsonify({"status": "ok"}), 200
 ```
 
-### 2. Respond Quickly
+### 2. Idempotency
+
+Handle duplicate events:
 
 ```python
-# Good: Acknowledge quickly, process async
-@app.post("/webhook")
-def webhook():
-    queue.enqueue(process_event, request.json)
-    return {"status": "received"}, 200
-
-# Bad: Long processing blocks response
-@app.post("/webhook")
-def webhook():
-    slow_processing(request.json)  # May timeout
-    return {"status": "done"}, 200
-```
-
-### 3. Handle Duplicates
-
-```python
-# Events may be delivered multiple times
 processed_events = set()
 
-def handle_event(event):
-    if event["id"] in processed_events:
+def handle_webhook(event):
+    event_id = f"{event['event']}_{event['data']['id']}_{event['timestamp']}"
+    
+    if event_id in processed_events:
         return  # Already processed
-    processed_events.add(event["id"])
-    # Process event...
+    
+    process_event(event)
+    processed_events.add(event_id)
 ```
 
-### 4. Use Specific Event Filters
+### 3. Error Handling
+
+Handle errors gracefully:
 
 ```python
-# Good: Subscribe to specific events
-events = ["item.approved", "item.rejected"]
-
-# Bad: Subscribe to all events
-events = ["*"]  # High volume, may miss important events
+def handle_webhook(event):
+    try:
+        process_event(event)
+    except Exception as e:
+        logger.error(f"Webhook processing error: {e}")
+        # Return 500 to trigger retry
+        raise
 ```
-
----
 
 ## Related Documentation
 
-- [Events Reference](/docs/api-reference/rest-api/events) - All event types
-- [Authentication](/docs/api-reference/authentication) - API authentication
-- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Rate limits
-- [Error Handling](/docs/api-reference/rest-api/errors) - Error codes
+- [Authentication](/docs/api-reference/authentication) - Webhook authentication
+- [Events](/docs/api-reference/rest-api/events) - Event types reference

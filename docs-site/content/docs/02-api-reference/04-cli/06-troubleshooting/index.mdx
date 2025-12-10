@@ -1,32 +1,107 @@
 ---
-title: "Troubleshooting"
-description: "Documentation for Troubleshooting"
+title: "CLI Troubleshooting"
+description: "Common CLI issues and solutions"
+keywords: [cli, troubleshooting, errors, problems, solutions]
 ---
 
-# Troubleshooting
+# CLI Troubleshooting
 
-This page contains documentation for Troubleshooting.
+Common issues and solutions for the TraceRTM CLI.
 
-## Overview
+## Command Not Found
 
-This section covers the key aspects of Troubleshooting in TraceRTM.
+### Problem
 
-## Getting Started
+```bash
+$ trace --version
+command not found: trace
+```
 
-To get started with Troubleshooting:
+### Solutions
 
-- Review the Troubleshooting and fundamentals
-- Explore practical examples
-- Check out the API reference
+**macOS/Linux**:
+```bash
+# Check installation
+pip3 show tracertm-cli
 
-## Key Concepts
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+# Or use python -m
+python3 -m tracertm --version
+```
 
-## Next Steps
+**Windows**:
+```powershell
+# Add Python Scripts to PATH
+$env:Path += ";$env:USERPROFILE\AppData\Roaming\Python\Python312\Scripts"
+```
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+## Authentication Errors
+
+### Problem
+
+```bash
+$ trace project list
+Error: Authentication required
+```
+
+### Solutions
+
+```bash
+# Set API key
+trace config set api-key rtm_live_abc123...
+
+# Or use environment variable
+export TRACERTM_API_KEY="rtm_live_abc123..."
+
+# Verify
+trace health
+```
+
+## Connection Errors
+
+### Problem
+
+```bash
+Error: Failed to connect to API
+```
+
+### Solutions
+
+```bash
+# Check API URL
+trace config get api-url
+
+# Update if needed
+trace config set api-url https://api.tracertm.dev
+
+# Test connection
+trace health
+```
+
+## Permission Errors
+
+### Problem
+
+```bash
+PermissionError: [Errno 13] Permission denied
+```
+
+### Solutions
+
+```bash
+# Use --user flag
+pip3 install --user tracertm-cli
+
+# Or use virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip install tracertm-cli
+```
+
+## Related Documentation
+
+- [Common Errors](./06a-common-errors) - More error solutions
+- [Debug Mode](./06b-debug-mode) - Enable debug logging

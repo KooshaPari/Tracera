@@ -1,494 +1,72 @@
 ---
-title: "Authentication"
-description: "Configure authentication for the TraceRTM JavaScript SDK"
+title: "JavaScript SDK Authentication"
+description: "Authenticate with the TraceRTM JavaScript SDK"
+keywords: [javascript, sdk, authentication, api keys, tokens]
 ---
 
-# Authentication
+# JavaScript SDK Authentication
 
-The TraceRTM JavaScript SDK supports multiple authentication methods for both Node.js and browser environments. This guide covers all available options and best practices.
+The TraceRTM JavaScript SDK supports multiple authentication methods.
 
-## Authentication Methods
+## API Key Authentication
 
-### API Keys
+### Basic Usage
 
-API keys are the most common authentication method for server-side applications:
+```javascript
+import { TraceRTM } from '@tracertm/sdk';
 
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({
-  apiKey: 'rtm_live_sk_...'
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
 });
 ```
 
-### Environment Variables
+### From Environment Variable
 
-The recommended approach for Node.js applications:
-
-```bash
-export TRACERTM_API_KEY="rtm_live_sk_..."
-```
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-// Automatically reads from TRACERTM_API_KEY
-const client = new TraceRTMClient();
-```
-
-### OAuth 2.0 Tokens
-
-For user-authenticated requests:
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({
-  accessToken: 'eyJhbGciOi...'
+```javascript
+const client = new TraceRTM({
+  apiKey: process.env.TRACERTM_API_KEY
 });
 ```
 
-### Public Keys (Browser)
+## Token Authentication
 
-For browser-based applications, use public keys with limited scopes:
+### Using Access Token
 
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({
-  apiKey: 'rtm_pub_pk_...'  // Public key for browsers
+```javascript
+const client = new TraceRTM({
+  accessToken: 'eyJhbGciOiJSUzI1NiIs...'
 });
 ```
 
----
+### Token Refresh
 
-## API Key Types
-
-### Production Keys
-
-```typescript
-// Production key (prefix: rtm_live_sk_)
-const client = new TraceRTMClient({
-  apiKey: 'rtm_live_sk_abc123...'
-});
-```
-
-Use for:
-- Production applications
-- Live data access
-- Customer-facing features
-
-### Test Keys
-
-```typescript
-// Test key (prefix: rtm_test_sk_)
-const client = new TraceRTMClient({
-  apiKey: 'rtm_test_sk_xyz789...'
-});
-```
-
-Use for:
-- Development and testing
-- CI/CD pipelines
-- Sandbox environment
-
-Test keys:
-- Access sandbox data only
-- Have separate rate limits
-- Cannot affect production data
-
-### Public Keys
-
-```typescript
-// Public key (prefix: rtm_pub_pk_)
-const client = new TraceRTMClient({
-  apiKey: 'rtm_pub_pk_browser123...'
-});
-```
-
-Use for:
-- Browser-based applications
-- Read-only access
-- Public dashboards
-
-Public keys:
-- Limited to read operations
-- Safe to expose in client-side code
-- Subject to CORS restrictions
-
----
-
-## Scoped Keys
-
-Create keys with limited permissions:
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-import { ForbiddenError } from '@tracertm/sdk/errors';
-
-const client = new TraceRTMClient({
-  apiKey: 'rtm_live_sk_readonly...'
-});
-
-try {
-  // This will fail with a read-only key
-  await client.items.create({ ... });
-} catch (error) {
-  if (error instanceof ForbiddenError) {
-    console.log(`Insufficient permissions: ${error.requiredScope}`);
-  }
-}
-```
-
-### Available Scopes
-
-| Scope | Description |
-|-------|-------------|
-| `read:projects` | Read project data |
-| `write:projects` | Create/update projects |
-| `delete:projects` | Delete projects |
-| `read:items` | Read items |
-| `write:items` | Create/update items |
-| `delete:items` | Delete items |
-| `read:links` | Read links |
-| `write:links` | Create/delete links |
-| `admin` | Full access |
-
----
-
-## Token Refresh
-
-### Automatic Refresh (OAuth)
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({
-  accessToken: 'eyJhbGciOi...',
-  refreshToken: 'refresh_token_xyz',
-  clientId: 'your_client_id',
-  clientSecret: 'your_client_secret',
-  autoRefresh: true,
+```javascript
+const client = new TraceRTM({
+  accessToken: 'current_token',
+  refreshToken: 'refresh_token_abc123...',
   onTokenRefresh: (newToken) => {
-    // Store new token
+    // Save new token
     saveToken(newToken);
   }
 });
 ```
 
-### Manual Refresh
+## Error Handling
 
-```typescript
-const client = new TraceRTMClient({
-  accessToken: 'initial_token'
-});
-
-// Update token when needed
-client.setAccessToken('new_token');
-```
-
-### Custom Token Provider
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({
-  tokenProvider: async () => {
-    // Fetch token from your auth service
-    const response = await fetch('/api/get-tracertm-token');
-    const { token } = await response.json();
-    return token;
-  }
-});
-```
-
----
-
-## Node.js Configuration
-
-### Using Environment Variables
-
-```typescript
-// .env file
-// TRACERTM_API_KEY=rtm_live_sk_...
-// TRACERTM_BASE_URL=https://api.tracertm.dev/v1
-
-import { TraceRTMClient } from '@tracertm/sdk';
-import 'dotenv/config';
-
-const client = new TraceRTMClient();
-```
-
-### Using AWS Secrets Manager
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-import { SecretsManager } from '@aws-sdk/client-secrets-manager';
-
-async function createClient(): Promise<TraceRTMClient> {
-  const secretsManager = new SecretsManager({ region: 'us-east-1' });
-
-  const secret = await secretsManager.getSecretValue({
-    SecretId: 'tracertm/api-key'
-  });
-
-  return new TraceRTMClient({
-    apiKey: secret.SecretString!
-  });
-}
-```
-
-### Using HashiCorp Vault
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-import Vault from 'node-vault';
-
-async function createClient(): Promise<TraceRTMClient> {
-  const vault = Vault({
-    endpoint: 'https://vault.example.com'
-  });
-
-  const { data } = await vault.read('secret/data/tracertm');
-
-  return new TraceRTMClient({
-    apiKey: data.data.api_key
-  });
-}
-```
-
----
-
-## Browser Configuration
-
-### React Application
-
-```tsx
-// config.ts
-export const tracertmClient = new TraceRTMClient({
-  apiKey: import.meta.env.VITE_TRACERTM_PUBLIC_KEY
-});
-
-// App.tsx
-import { tracertmClient } from './config';
-
-function App() {
-  const [projects, setProjects] = useState([]);
-
-  useEffect(() => {
-    tracertmClient.projects.list()
-      .then(response => setProjects(response.data));
-  }, []);
-
-  return <ProjectList projects={projects} />;
-}
-```
-
-### Next.js Application
-
-```typescript
-// lib/tracertm.ts
-import { TraceRTMClient } from '@tracertm/sdk';
-
-// Server-side client (with secret key)
-export const serverClient = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY
-});
-
-// Client-side client (with public key)
-export const browserClient = new TraceRTMClient({
-  apiKey: process.env.NEXT_PUBLIC_TRACERTM_KEY
-});
-```
-
-```typescript
-// pages/api/projects.ts (Server-side)
-import { serverClient } from '@/lib/tracertm';
-
-export default async function handler(req, res) {
-  const projects = await serverClient.projects.list();
-  res.json(projects);
-}
-```
-
-### Angular Service
-
-```typescript
-// tracertm.service.ts
-import { Injectable } from '@angular/core';
-import { TraceRTMClient } from '@tracertm/sdk';
-import { environment } from '../environments/environment';
-
-@Injectable({ providedIn: 'root' })
-export class TraceRTMService {
-  private client: TraceRTMClient;
-
-  constructor() {
-    this.client = new TraceRTMClient({
-      apiKey: environment.tracertmPublicKey
-    });
-  }
-
-  getProjects() {
-    return this.client.projects.list();
-  }
-}
-```
-
----
-
-## Multi-Tenant Authentication
-
-For applications serving multiple organizations:
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-class TenantClientManager {
-  private clients: Map<string, TraceRTMClient> = new Map();
-
-  async getClient(tenantId: string): Promise<TraceRTMClient> {
-    if (!this.clients.has(tenantId)) {
-      const apiKey = await this.getTenantApiKey(tenantId);
-      this.clients.set(tenantId, new TraceRTMClient({ apiKey }));
-    }
-    return this.clients.get(tenantId)!;
-  }
-
-  private async getTenantApiKey(tenantId: string): Promise<string> {
-    // Retrieve from secure storage
-    return getKeyFromVault(tenantId);
-  }
-}
-
-// Usage
-const manager = new TenantClientManager();
-const client = await manager.getClient('tenant_a');
-const projects = await client.projects.list();
-```
-
----
-
-## Best Practices
-
-### 1. Never Expose Secret Keys in Browser
-
-```typescript
-// BAD - secret key in browser code
-const client = new TraceRTMClient({
-  apiKey: 'rtm_live_sk_secret...'  // NEVER do this!
-});
-
-// GOOD - use public key or proxy through your server
-const client = new TraceRTMClient({
-  apiKey: 'rtm_pub_pk_public...'
-});
-```
-
-### 2. Use Environment-Specific Keys
-
-```typescript
-const client = new TraceRTMClient({
-  apiKey: process.env.NODE_ENV === 'production'
-    ? process.env.TRACERTM_PROD_KEY
-    : process.env.TRACERTM_TEST_KEY
-});
-```
-
-### 3. Rotate Keys Regularly
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-// Use a secrets manager that supports rotation
-const client = new TraceRTMClient({
-  tokenProvider: async () => {
-    return await secretsManager.getLatestApiKey();
-  }
-});
-```
-
-### 4. Handle Authentication Errors
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-import { AuthenticationError, ForbiddenError } from '@tracertm/sdk/errors';
+```javascript
+import { TraceRTM, AuthenticationError } from '@tracertm/sdk';
 
 try {
-  const projects = await client.projects.list();
-} catch (error) {
-  if (error instanceof AuthenticationError) {
-    console.log('Authentication failed - check API key');
-    // Redirect to login or refresh token
-  } else if (error instanceof ForbiddenError) {
-    console.log(`Missing permission: ${error.requiredScope}`);
-    // Show permission error to user
-  }
-}
-```
-
----
-
-## Troubleshooting
-
-### Invalid API Key
-
-```typescript
-import { AuthenticationError } from '@tracertm/sdk/errors';
-
-try {
+  const client = new TraceRTM({ apiKey: 'invalid_key' });
   await client.projects.list();
 } catch (error) {
   if (error instanceof AuthenticationError) {
-    console.log(`Error: ${error.message}`);
-    console.log(`Hint: ${error.details?.hint}`);
-    // Verify API key in dashboard
+    console.error('Authentication failed:', error.message);
   }
 }
 ```
 
-### Expired Token
+## Next Steps
 
-```typescript
-import { AuthenticationError } from '@tracertm/sdk/errors';
-
-try {
-  await client.projects.list();
-} catch (error) {
-  if (error instanceof AuthenticationError && error.code === 'TOKEN_EXPIRED') {
-    // Refresh the token
-    const newToken = await refreshOAuthToken();
-    client.setAccessToken(newToken);
-    // Retry the request
-    await client.projects.list();
-  }
-}
-```
-
-### CORS Issues (Browser)
-
-If you encounter CORS errors:
-
-1. Verify you're using a public key (`rtm_pub_pk_`)
-2. Check your domain is whitelisted in TraceRTM settings
-3. Consider proxying requests through your server
-
-```typescript
-// Proxy approach for sensitive operations
-async function createItem(data: CreateItemInput) {
-  const response = await fetch('/api/tracertm/items', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
-  return response.json();
-}
-```
-
----
-
-## Related Documentation
-
-- [API Keys](/docs/api-reference/authentication/api-keys) - Managing API keys
-- [OAuth 2.0](/docs/api-reference/authentication/oauth) - OAuth authentication
-- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Handle auth errors
-- [Browser Usage](/docs/api-reference/sdks/javascript/browser) - Browser-specific guide
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - Code examples

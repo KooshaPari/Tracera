@@ -1,18 +1,299 @@
 ---
 title: "Rate Limiting"
-description: "Rate limit policies and headers."
+description: "Understand API rate limits and how to handle rate limit responses"
+keywords: [rate limiting, throttling, api limits, quotas]
 ---
 
-## Overview
-Respect 429 responses and use Retry-After headers.
+# Rate Limiting
 
-## Request shape
+TraceRTM API enforces rate limits to ensure fair usage and system stability. All authenticated requests are subject to rate limiting based on your plan.
+
+## Rate Limit Overview
+
+Rate limits are applied per API key or user account:
+
+| Plan | Requests/minute | Requests/day |
+|------|----------------|--------------|
+| Free | 60 | 1,000 |
+| Pro | 300 | 50,000 |
+| Enterprise | 1,000 | Unlimited |
+
+## Rate Limit Headers
+
+Every API response includes rate limit information:
+
 ```http
-POST /v1/auth/rate-limiting
-Authorization: Bearer <token>
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1704067200
+X-RateLimit-Used: 1
 ```
 
-## Tips
-- Rotate credentials regularly and record rotation in audit logs.
-- Scope tokens to the minimum set of permissions needed.
-- Enforce MFA for human accounts; restrict service tokens by IP when possible.
+### Header Fields
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests allowed in the window |
+| `X-RateLimit-Remaining` | Requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp when limit resets |
+| `X-RateLimit-Used` | Requests used in current window |
+
+## Rate Limit Windows
+
+### Per-Minute Limits
+
+Reset every 60 seconds:
+
+```python
+# Window: 00:00 - 00:59
+# Reset at: 01:00
+```
+
+### Per-Day Limits
+
+Reset at midnight UTC:
+
+```python
+# Window: 2025-01-15 00:00:00 UTC - 23:59:59 UTC
+# Reset at: 2025-01-16 00:00:00 UTC
+```
+
+## Rate Limit Responses
+
+When rate limit is exceeded:
+
+**Status Code**: `429 Too Many Requests`
+
+**Response**:
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Please retry after 2025-01-15T10:01:00Z",
+    "retry_after": 60
+  }
+}
+```
+
+**Headers**:
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 60
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1704067200
+```
+
+## Handling Rate Limits
+
+### Check Headers
+
+Always check rate limit headers:
+
+```python
+import requests
+import time
+
+response = requests.get(
+    "https://api.tracertm.dev/v1/projects",
+    headers={"Authorization": f"Bearer {token}"}
+)
+
+# Check remaining requests
+remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+if remaining < 10:
+    print(f"Warning: Only {remaining} requests remaining")
+
+# Check if rate limited
+if response.status_code == 429:
+    retry_after = int(response.headers.get('Retry-After', 60))
+    print(f"Rate limited. Retry after {retry_after} seconds")
+```
+
+### Exponential Backoff
+
+Implement exponential backoff for retries:
+
+```python
+import time
+import random
+
+def make_request_with_retry(url, headers, max_retries=3):
+    for attempt in range(max_retries):
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 429:
+            retry_after = int(response.headers.get('Retry-After', 60))
+            wait_time = retry_after + random.uniform(0, 1)
+            print(f"Rate limited. Waiting {wait_time:.2f} seconds...")
+            time.sleep(wait_time)
+            continue
+        
+        return response
+    
+    raise Exception("Max retries exceeded")
+```
+
+### Rate Limit Monitoring
+
+Monitor your rate limit usage:
+
+```python
+class RateLimitMonitor:
+    def __init__(self):
+        self.requests_made = 0
+        self.window_start = time.time()
+    
+    def check_rate_limit(self, response):
+        remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+        limit = int(response.headers.get('X-RateLimit-Limit', 0))
+        reset = int(response.headers.get('X-RateLimit-Reset', 0))
+        
+        usage_percent = ((limit - remaining) / limit) * 100
+        
+        if usage_percent > 80:
+            print(f"Warning: {usage_percent:.1f}% of rate limit used")
+        
+        if remaining == 0:
+            wait_time = reset - time.time()
+            print(f"Rate limit exhausted. Reset in {wait_time:.0f} seconds")
+            return wait_time
+        
+        return 0
+```
+
+## Best Practices
+
+### 1. Monitor Rate Limits
+
+Always check rate limit headers:
+
+```python
+remaining = response.headers.get('X-RateLimit-Remaining')
+if int(remaining) < 10:
+    # Slow down requests
+    time.sleep(1)
+```
+
+### 2. Implement Caching
+
+Cache responses to reduce API calls:
+
+```python
+from functools import lru_cache
+import time
+
+@lru_cache(maxsize=100)
+def get_project(project_id, cache_time=300):
+    # Cache for 5 minutes
+    return requests.get(f"/api/v1/projects/{project_id}")
+```
+
+### 3. Batch Operations
+
+Use batch endpoints when available:
+
+```python
+# ❌ Bad: Multiple requests
+for item_id in item_ids:
+    delete_item(item_id)  # 100 requests
+
+# ✅ Good: Batch request
+batch_delete_items(item_ids)  # 1 request
+```
+
+### 4. Use Webhooks
+
+Subscribe to events instead of polling:
+
+```python
+# ❌ Bad: Polling
+while True:
+    check_for_updates()  # Rate limited!
+    time.sleep(60)
+
+# ✅ Good: Webhooks
+# Receive events automatically
+```
+
+### 5. Request Throttling
+
+Implement client-side throttling:
+
+```python
+import time
+from collections import deque
+
+class RequestThrottler:
+    def __init__(self, max_requests=50, window=60):
+        self.max_requests = max_requests
+        self.window = window
+        self.requests = deque()
+    
+    def wait_if_needed(self):
+        now = time.time()
+        # Remove old requests
+        while self.requests and self.requests[0] < now - self.window:
+            self.requests.popleft()
+        
+        # Check if we need to wait
+        if len(self.requests) >= self.max_requests:
+            wait_time = self.window - (now - self.requests[0])
+            if wait_time > 0:
+                time.sleep(wait_time)
+                self.requests.popleft()
+        
+        self.requests.append(time.time())
+```
+
+## Rate Limit Exemptions
+
+Some endpoints may have different rate limits:
+
+- **Health check**: `/health` - Higher limit
+- **Authentication**: `/oauth/token` - Separate limit
+- **Webhooks**: Webhook delivery - Separate limit
+
+## Enterprise Plans
+
+Enterprise plans include:
+- Higher rate limits (1,000+ requests/minute)
+- Custom rate limit configurations
+- Priority request handling
+- Dedicated support
+
+Contact sales for enterprise rate limit options.
+
+## Monitoring Usage
+
+### Dashboard
+
+View rate limit usage in the TraceRTM dashboard:
+- **Settings** → **API Usage**
+- Real-time usage graphs
+- Historical usage data
+- Alerts for high usage
+
+### API Usage Endpoint
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/usage" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Response:
+```json
+{
+  "period": "2025-01-15",
+  "requests_made": 1250,
+  "requests_limit": 50000,
+  "requests_remaining": 48750,
+  "reset_at": "2025-01-16T00:00:00Z"
+}
+```
+
+## Next Steps
+
+- [Best Practices](./07-best-practices) - Security and usage guidelines
+- [Error Handling](/docs/api-reference/rest-api/error-handling) - Handle API errors
+- [Webhooks](/docs/api-reference/rest-api/webhooks) - Event subscriptions

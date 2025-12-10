@@ -1,32 +1,411 @@
 ---
 title: "Project Commands"
-description: "Documentation for Project Commands"
+description: "Complete reference for TraceRTM CLI project management commands"
+keywords: [cli, projects, commands, create, list, update, delete]
 ---
 
 # Project Commands
 
-This page contains documentation for Project Commands.
+Manage TraceRTM projects from the command line. Create, list, update, delete, and configure projects.
 
-## Overview
+## List Projects
 
-This section covers the key aspects of Project Commands in TraceRTM.
+### Basic Usage
 
-## Getting Started
+```bash
+trace project list
+```
 
-To get started with Project Commands:
+### With Filters
 
-- Review the Project Commands and fundamentals
-- Explore practical examples
-- Check out the API reference
+```bash
+# Filter by status
+trace project list --status active
 
-## Key Concepts
+# Filter by owner
+trace project list --owner user_123
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+# Search by name
+trace project list --search "authentication"
+```
 
-## Next Steps
+### Output Formats
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+```bash
+# Table (default)
+trace project list
+
+# JSON
+trace project list --output json
+
+# YAML
+trace project list --output yaml
+```
+
+### Pagination
+
+```bash
+# Limit results
+trace project list --limit 10
+
+# Skip results
+trace project list --skip 20 --limit 10
+```
+
+---
+
+## Get Project
+
+### By ID
+
+```bash
+trace project get proj_abc123
+```
+
+### By Name
+
+```bash
+trace project get "My Project Name"
+```
+
+### With Details
+
+```bash
+# Include statistics
+trace project get proj_abc123 --include stats
+
+# Include settings
+trace project get proj_abc123 --include settings
+
+# Include all
+trace project get proj_abc123 --include all
+```
+
+### Output
+
+```bash
+# JSON output
+trace project get proj_abc123 --output json | jq
+
+# Specific fields
+trace project get proj_abc123 --output json | jq '{id, name, key}'
+```
+
+---
+
+## Create Project
+
+### Basic Creation
+
+```bash
+trace project create "My Project" \
+  --key "MP"
+```
+
+### With Description
+
+```bash
+trace project create "E-Commerce Platform" \
+  --key "ECOM" \
+  --description "Online shopping platform requirements and tests"
+```
+
+### With Metadata
+
+```bash
+trace project create "Medical Device Software" \
+  --key "MDS" \
+  --metadata '{
+    "team": "medical-devices",
+    "compliance": "FDA",
+    "priority": "high"
+  }'
+```
+
+### With Settings
+
+```bash
+trace project create "My Project" \
+  --key "MP" \
+  --settings '{
+    "default_item_type": "requirement",
+    "require_approval": true,
+    "allowed_item_types": ["requirement", "test_case"]
+  }'
+```
+
+### Complete Example
+
+```bash
+trace project create "Vehicle Control System" \
+  --key "VCS" \
+  --description "Safety-critical vehicle control requirements" \
+  --metadata '{
+    "domain": "automotive",
+    "safety_level": "ASIL-D",
+    "standards": ["ISO-26262"]
+  }' \
+  --settings '{
+    "require_approval": true,
+    "workflow": "safety-critical"
+  }' \
+  --output json
+```
+
+---
+
+## Update Project
+
+### Update Name
+
+```bash
+trace project update proj_abc123 \
+  --name "Updated Project Name"
+```
+
+### Update Description
+
+```bash
+trace project update proj_abc123 \
+  --description "New project description"
+```
+
+### Update Metadata
+
+```bash
+# Replace metadata
+trace project update proj_abc123 \
+  --metadata '{"team": "backend", "priority": "high"}'
+
+# Merge metadata (preserve existing)
+trace project update proj_abc123 \
+  --metadata-merge '{"new_field": "value"}'
+```
+
+### Update Settings
+
+```bash
+trace project update proj_abc123 \
+  --settings '{
+    "default_item_type": "requirement",
+    "require_approval": false
+  }'
+```
+
+### Multiple Updates
+
+```bash
+trace project update proj_abc123 \
+  --name "New Name" \
+  --description "New description" \
+  --metadata '{"updated": true}'
+```
+
+---
+
+## Delete Project
+
+### Delete by ID
+
+```bash
+trace project delete proj_abc123
+```
+
+### Delete by Name
+
+```bash
+trace project delete "My Project"
+```
+
+### Confirmation
+
+```bash
+# Interactive confirmation
+trace project delete proj_abc123
+
+# Force delete (no confirmation)
+trace project delete proj_abc123 --force
+```
+
+### Cascade Delete
+
+```bash
+# Delete project and all items/links
+trace project delete proj_abc123 --cascade
+```
+
+---
+
+## Archive and Restore
+
+### Archive Project
+
+```bash
+trace project archive proj_abc123
+```
+
+### Restore Project
+
+```bash
+trace project restore proj_abc123
+```
+
+### List Archived
+
+```bash
+trace project list --status archived
+```
+
+---
+
+## Switch Project
+
+### Switch by Name
+
+```bash
+trace project switch "My Project"
+```
+
+### Switch by ID
+
+```bash
+trace project switch proj_abc123
+```
+
+### Set as Default
+
+```bash
+# Switch and set as default
+trace project switch proj_abc123 --set-default
+```
+
+---
+
+## Project Statistics
+
+### Get Stats
+
+```bash
+trace project stats proj_abc123
+```
+
+Output:
+```
+Project: My Project (proj_abc123)
+Items: 156
+  Requirements: 45
+  Test Cases: 67
+  Designs: 23
+  Issues: 21
+Links: 234
+Coverage: 78.5%
+Last Updated: 2024-12-08T10:30:00Z
+```
+
+### Detailed Stats
+
+```bash
+trace project stats proj_abc123 --detailed
+```
+
+### JSON Output
+
+```bash
+trace project stats proj_abc123 --output json | jq
+```
+
+---
+
+## Project Settings
+
+### View Settings
+
+```bash
+trace project settings proj_abc123
+```
+
+### Update Settings
+
+```bash
+trace project settings update proj_abc123 \
+  --key "default_item_type" \
+  --value "requirement"
+```
+
+### Reset Settings
+
+```bash
+# Reset to defaults
+trace project settings reset proj_abc123
+```
+
+---
+
+## Examples
+
+### Create Project with Initial Setup
+
+```bash
+#!/bin/bash
+
+# Create project
+PROJECT_ID=$(trace project create "New Project" \
+    --key "NP" \
+    --output json | jq -r '.id')
+
+echo "Created project: $PROJECT_ID"
+
+# Set as default
+trace project switch "$PROJECT_ID" --set-default
+
+# Create initial items
+trace item create --title "Initial Requirement" --view requirements
+trace item create --title "Initial Test" --view test-cases
+```
+
+### Clone Project Structure
+
+```bash
+#!/bin/bash
+
+SOURCE_PROJ="proj_source"
+NEW_NAME="Cloned Project"
+
+# Create new project
+NEW_PROJ=$(trace project create "$NEW_NAME" \
+    --key "CLONE" \
+    --output json | jq -r '.id')
+
+# Export source
+trace export "$SOURCE_PROJ" --format json > /tmp/source.json
+
+# Import to new project
+trace import "$NEW_PROJ" --format json --file /tmp/source.json
+
+echo "Cloned to: $NEW_PROJ"
+```
+
+### Batch Project Operations
+
+```bash
+#!/bin/bash
+
+# List all projects
+PROJECTS=$(trace project list --output json)
+
+# Process each project
+echo "$PROJECTS" | jq -r '.[] | .id' | while read -r proj_id; do
+    echo "Processing: $proj_id"
+    
+    # Get stats
+    trace project stats "$proj_id" --output json | jq '{id, name, item_count: .items.total}'
+done
+```
+
+---
+
+## Related Documentation
+
+- [CLI Commands](./03-commands) - All CLI commands
+- [Item Commands](./03b-item-commands) - Item management
+- [Link Commands](./03c-link-commands) - Link management

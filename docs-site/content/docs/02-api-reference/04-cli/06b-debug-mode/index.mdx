@@ -1,32 +1,70 @@
 ---
 title: "Debug Mode"
-description: "Documentation for Debug Mode"
+description: "Enable debug logging for CLI troubleshooting"
+keywords: [cli, debug, logging, troubleshooting]
 ---
 
 # Debug Mode
 
-This page contains documentation for Debug Mode.
+Enable debug logging to troubleshoot CLI issues.
 
-## Overview
+## Enable Debug Mode
 
-This section covers the key aspects of Debug Mode in TraceRTM.
+### Command Flag
 
-## Getting Started
+```bash
+trace --debug project list
+```
 
-To get started with Debug Mode:
+### Environment Variable
 
-- Review the Debug Mode and fundamentals
-- Explore practical examples
-- Check out the API reference
+```bash
+export TRACERTM_DEBUG=true
+trace project list
+```
 
-## Key Concepts
+### Config Setting
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```bash
+trace config set debug true
+```
 
-## Next Steps
+## Debug Output
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+Debug mode shows:
+- API requests and responses
+- Authentication details
+- Error stack traces
+- Configuration values
+
+## Example Output
+
+```
+[DEBUG] API Request: GET https://api.tracertm.dev/v1/projects
+[DEBUG] Headers: {'Authorization': 'Bearer ...'}
+[DEBUG] Response: 200 OK
+[DEBUG] Response Body: {...}
+```
+
+## Logging to File
+
+```bash
+# Redirect debug output to file
+trace --debug project list 2> debug.log
+
+# Or with environment variable
+TRACERTM_DEBUG=true trace project list 2> debug.log
+```
+
+## Verbose Mode
+
+For more detailed output:
+
+```bash
+trace --verbose project list
+```
+
+## Related Documentation
+
+- [Troubleshooting](./06-troubleshooting) - General troubleshooting
+- [Common Errors](./06a-common-errors) - Error solutions

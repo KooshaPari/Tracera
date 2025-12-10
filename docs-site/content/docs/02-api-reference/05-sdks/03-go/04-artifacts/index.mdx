@@ -1,640 +1,119 @@
 ---
-title: "Artifacts"
-description: "Upload, download, and manage file artifacts with the TraceRTM Go SDK"
+title: "Go SDK - Working with Artifacts"
+description: "Create, read, update, and delete items using the Go SDK"
+keywords: [go, sdk, items, artifacts, crud]
 ---
 
-# Artifacts
+# Working with Artifacts
 
-The TraceRTM Go SDK provides comprehensive support for managing file artifacts such as documents, images, test results, and other files associated with your traceability items.
+The Go SDK provides methods to manage items (artifacts) in your TraceRTM projects.
 
-## Overview
-
-Artifacts are files attached to items or projects in TraceRTM. Common use cases include:
-
-- Attaching specification documents to requirements
-- Uploading test reports to test cases
-- Storing design mockups with user stories
-- Associating code snippets or logs with bugs
-
----
-
-## Uploading Artifacts
-
-### Upload from File Path
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "log"
-
-    "github.com/tracertm/tracertm-go"
-)
-
-func main() {
-    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
-    ctx := context.Background()
-
-    // Upload a file from disk
-    artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-        ItemID:      "item_req_001",
-        FilePath:    "./specs/requirements.pdf",
-        Description: "Requirements specification document",
-    })
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    fmt.Printf("Uploaded: %s\n", artifact.Filename)
-    fmt.Printf("Size: %d bytes\n", artifact.Size)
-    fmt.Printf("URL: %s\n", artifact.DownloadURL)
-}
-```
-
-### Upload from Reader
-
-```go
-import (
-    "bytes"
-    "context"
-    "io"
-)
-
-// Upload from io.Reader (memory efficient for large files)
-func uploadFromReader(ctx context.Context, client *tracertm.Client, itemID string, reader io.Reader) (*tracertm.Artifact, error) {
-    return client.Artifacts.UploadReader(ctx, &tracertm.UploadReaderInput{
-        ItemID:      itemID,
-        Reader:      reader,
-        Filename:    "report.pdf",
-        ContentType: "application/pdf",
-        Description: "Generated report",
-    })
-}
-
-// Upload from bytes
-func uploadFromBytes(ctx context.Context, client *tracertm.Client, itemID string, data []byte) (*tracertm.Artifact, error) {
-    return client.Artifacts.UploadReader(ctx, &tracertm.UploadReaderInput{
-        ItemID:      itemID,
-        Reader:      bytes.NewReader(data),
-        Filename:    "data.json",
-        ContentType: "application/json",
-    })
-}
-```
-
-### Upload from File Handle
-
-```go
-import "os"
-
-func uploadFromFile(ctx context.Context, client *tracertm.Client, itemID string, filePath string) (*tracertm.Artifact, error) {
-    file, err := os.Open(filePath)
-    if err != nil {
-        return nil, err
-    }
-    defer file.Close()
-
-    stat, _ := file.Stat()
-
-    return client.Artifacts.UploadReader(ctx, &tracertm.UploadReaderInput{
-        ItemID:      itemID,
-        Reader:      file,
-        Filename:    stat.Name(),
-        Size:        stat.Size(),
-        ContentType: detectContentType(filePath),
-    })
-}
-```
-
-### Upload to Project
-
-```go
-// Upload artifact at project level (not attached to specific item)
-artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-    ProjectID:   "proj_abc123",
-    FilePath:    "./docs/architecture.png",
-    Description: "System architecture diagram",
-})
-```
-
----
-
-## Downloading Artifacts
-
-### Download to File
-
-```go
-import "os"
-
-// Download artifact to local file
-err := client.Artifacts.DownloadToFile(ctx, "art_abc123", "./downloads/requirements.pdf")
-if err != nil {
-    log.Fatal(err)
-}
-```
-
-### Download to Bytes
-
-```go
-// Get artifact content as bytes
-content, err := client.Artifacts.DownloadBytes(ctx, "art_abc123")
-if err != nil {
-    log.Fatal(err)
-}
-
-// Process the content
-processReport(content)
-```
-
-### Stream Large Files
-
-```go
-import "io"
-
-// Stream large files to avoid memory issues
-func streamToFile(ctx context.Context, client *tracertm.Client, artifactID, destPath string) error {
-    reader, err := client.Artifacts.DownloadStream(ctx, artifactID)
-    if err != nil {
-        return err
-    }
-    defer reader.Close()
-
-    file, err := os.Create(destPath)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
-
-    _, err = io.Copy(file, reader)
-    return err
-}
-```
-
-### Get Download URL
-
-```go
-// Get a pre-signed download URL
-url, err := client.Artifacts.GetDownloadURL(ctx, "art_abc123", &tracertm.DownloadURLOptions{
-    ExpiresIn: 3600, // URL valid for 1 hour
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("Download URL: %s\n", url)
-```
-
----
-
-## Listing Artifacts
-
-### List Item Artifacts
-
-```go
-// List all artifacts for an item
-artifacts, err := client.Artifacts.List(ctx, &tracertm.ListArtifactsInput{
-    ItemID: "item_req_001",
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for _, artifact := range artifacts.Data {
-    fmt.Printf("%s (%d bytes)\n", artifact.Filename, artifact.Size)
-    fmt.Printf("  Uploaded: %s\n", artifact.CreatedAt)
-    fmt.Printf("  Type: %s\n", artifact.ContentType)
-}
-```
-
-### List Project Artifacts
-
-```go
-// List all artifacts in a project
-artifacts, err := client.Artifacts.List(ctx, &tracertm.ListArtifactsInput{
-    ProjectID: "proj_abc123",
-    Limit:     50,
-    Offset:    0,
-})
-```
-
-### Filter Artifacts
-
-```go
-// Filter by content type
-artifacts, err := client.Artifacts.List(ctx, &tracertm.ListArtifactsInput{
-    ProjectID:   "proj_abc123",
-    ContentType: "application/pdf",
-})
-
-// Filter by filename pattern
-artifacts, err := client.Artifacts.List(ctx, &tracertm.ListArtifactsInput{
-    ProjectID:        "proj_abc123",
-    FilenameContains: "report",
-})
-
-// Filter by date range
-artifacts, err := client.Artifacts.List(ctx, &tracertm.ListArtifactsInput{
-    ProjectID:    "proj_abc123",
-    CreatedAfter: time.Now().Add(-7 * 24 * time.Hour), // Last 7 days
-})
-```
-
-### Iterate All Artifacts
-
-```go
-// Iterate through all artifacts (handles pagination)
-iter := client.Artifacts.Iterate(ctx, &tracertm.ListArtifactsInput{
-    ProjectID: "proj_abc123",
-})
-
-for iter.Next() {
-    artifact := iter.Artifact()
-    fmt.Printf("%s: %d bytes\n", artifact.Filename, artifact.Size)
-}
-
-if err := iter.Err(); err != nil {
-    log.Fatal(err)
-}
-```
-
----
-
-## Managing Artifacts
-
-### Get Artifact Details
-
-```go
-artifact, err := client.Artifacts.Get(ctx, "art_abc123")
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("ID: %s\n", artifact.ID)
-fmt.Printf("Filename: %s\n", artifact.Filename)
-fmt.Printf("Size: %d\n", artifact.Size)
-fmt.Printf("Content-Type: %s\n", artifact.ContentType)
-fmt.Printf("Description: %s\n", artifact.Description)
-fmt.Printf("Checksum: %s\n", artifact.Checksum)
-fmt.Printf("Created: %s\n", artifact.CreatedAt)
-fmt.Printf("Created By: %s\n", artifact.CreatedBy)
-```
-
-### Update Artifact Metadata
-
-```go
-artifact, err := client.Artifacts.Update(ctx, "art_abc123", &tracertm.UpdateArtifactInput{
-    Description: "Updated description",
-    Metadata: map[string]interface{}{
-        "version":  "2.0",
-        "reviewed": true,
-    },
-})
-```
-
-### Delete Artifact
-
-```go
-// Delete single artifact
-err := client.Artifacts.Delete(ctx, "art_abc123")
-if err != nil {
-    log.Fatal(err)
-}
-
-// Delete multiple artifacts
-err = client.Artifacts.BulkDelete(ctx, []string{
-    "art_abc123",
-    "art_def456",
-    "art_ghi789",
-})
-```
-
-### Move Artifact
-
-```go
-// Move artifact to different item
-artifact, err := client.Artifacts.Move(ctx, "art_abc123", &tracertm.MoveArtifactInput{
-    TargetItemID: "item_req_002",
-})
-```
-
-### Copy Artifact
-
-```go
-// Copy artifact to another item
-newArtifact, err := client.Artifacts.Copy(ctx, "art_abc123", &tracertm.CopyArtifactInput{
-    TargetItemID: "item_req_002",
-})
-```
-
----
-
-## Artifact Versions
-
-### Upload New Version
-
-```go
-// Upload new version of existing artifact
-artifact, err := client.Artifacts.UploadVersion(ctx, "art_abc123", &tracertm.UploadVersionInput{
-    FilePath:       "./specs/requirements-v2.pdf",
-    VersionComment: "Updated with new requirements",
-})
-
-fmt.Printf("Version: %d\n", artifact.Version)
-```
-
-### List Versions
-
-```go
-// Get all versions of an artifact
-versions, err := client.Artifacts.ListVersions(ctx, "art_abc123")
-if err != nil {
-    log.Fatal(err)
-}
-
-for _, version := range versions.Data {
-    fmt.Printf("v%d: %s\n", version.Version, version.CreatedAt)
-    fmt.Printf("  Comment: %s\n", version.VersionComment)
-    fmt.Printf("  Size: %d bytes\n", version.Size)
-}
-```
-
-### Download Specific Version
-
-```go
-// Download a specific version
-content, err := client.Artifacts.DownloadBytes(ctx, "art_abc123", &tracertm.DownloadOptions{
-    Version: 2,
-})
-```
-
-### Restore Version
-
-```go
-// Restore a previous version as current
-artifact, err := client.Artifacts.RestoreVersion(ctx, "art_abc123", &tracertm.RestoreVersionInput{
-    Version: 1,
-})
-```
-
----
-
-## Bulk Operations
-
-### Bulk Upload
-
-```go
-import "path/filepath"
-
-// Upload multiple files at once
-func bulkUpload(ctx context.Context, client *tracertm.Client, itemID string, dir string) ([]*tracertm.Artifact, error) {
-    files, err := filepath.Glob(filepath.Join(dir, "*.pdf"))
-    if err != nil {
-        return nil, err
-    }
-
-    var artifacts []*tracertm.Artifact
-    for _, file := range files {
-        artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-            ItemID:      itemID,
-            FilePath:    file,
-            Description: "Specification document",
-        })
-        if err != nil {
-            return artifacts, err
-        }
-        artifacts = append(artifacts, artifact)
-        fmt.Printf("Uploaded: %s\n", artifact.Filename)
-    }
-
-    return artifacts, nil
-}
-```
-
-### Bulk Download
-
-```go
-// Download all artifacts for an item
-func bulkDownload(ctx context.Context, client *tracertm.Client, itemID, destDir string) error {
-    iter := client.Artifacts.Iterate(ctx, &tracertm.ListArtifactsInput{
-        ItemID: itemID,
-    })
-
-    for iter.Next() {
-        artifact := iter.Artifact()
-        destPath := filepath.Join(destDir, artifact.Filename)
-
-        if err := client.Artifacts.DownloadToFile(ctx, artifact.ID, destPath); err != nil {
-            return err
-        }
-        fmt.Printf("Downloaded: %s\n", artifact.Filename)
-    }
-
-    return iter.Err()
-}
-```
-
----
-
-## Concurrent Operations
-
-### Parallel Uploads
-
-```go
-import "sync"
-
-func parallelUpload(ctx context.Context, client *tracertm.Client, itemID string, files []string, workers int) ([]*tracertm.Artifact, []error) {
-    var (
-        wg        sync.WaitGroup
-        mu        sync.Mutex
-        artifacts []*tracertm.Artifact
-        errors    []error
-    )
-
-    sem := make(chan struct{}, workers)
-
-    for _, file := range files {
-        wg.Add(1)
-        go func(filePath string) {
-            defer wg.Done()
-            sem <- struct{}{}
-            defer func() { <-sem }()
-
-            artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-                ItemID:   itemID,
-                FilePath: filePath,
-            })
-
-            mu.Lock()
-            if err != nil {
-                errors = append(errors, err)
-            } else {
-                artifacts = append(artifacts, artifact)
-            }
-            mu.Unlock()
-        }(file)
-    }
-
-    wg.Wait()
-    return artifacts, errors
-}
-```
-
-### Context Cancellation
-
-```go
-func uploadWithTimeout(client *tracertm.Client, itemID, filePath string) (*tracertm.Artifact, error) {
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-    defer cancel()
-
-    return client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-        ItemID:   itemID,
-        FilePath: filePath,
-    })
-}
-```
-
----
-
-## Content Type Handling
-
-### Supported Content Types
+## Initialize Client
 
 ```go
 import "github.com/tracertm/tracertm-go"
 
-// Use predefined content types
-artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-    ItemID:      "item_req_001",
-    FilePath:    "./doc.pdf",
-    ContentType: tracertm.ContentTypePDF,
-})
-
-// Available content types
-tracertm.ContentTypePDF   // application/pdf
-tracertm.ContentTypeDOCX  // application/vnd.openxmlformats-officedocument.wordprocessingml.document
-tracertm.ContentTypeXLSX  // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-tracertm.ContentTypePNG   // image/png
-tracertm.ContentTypeJPEG  // image/jpeg
-tracertm.ContentTypeJSON  // application/json
-tracertm.ContentTypeXML   // application/xml
-tracertm.ContentTypeHTML  // text/html
-tracertm.ContentTypeTEXT  // text/plain
-tracertm.ContentTypeZIP   // application/zip
+client := tracertm.NewClient(
+    tracertm.WithAPIKey("rtm_live_abc123..."),
+)
 ```
 
-### Auto-Detection
+## Query Items
 
 ```go
-// Content type is auto-detected from file extension
-artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-    ItemID:   "item_req_001",
-    FilePath: "./image.png", // Auto-detects image/png
+// Query by view
+items, err := client.Items.Query(tracertm.QueryItemsRequest{
+    View:  "requirements",
+    Limit: 50,
+})
+
+// Query by status
+items, err := client.Items.Query(tracertm.QueryItemsRequest{
+    Status: "active",
+    Limit:  50,
 })
 ```
 
----
-
-## Error Handling
+## Create Item
 
 ```go
-import "errors"
-
-artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-    ItemID:   "item_req_001",
-    FilePath: "./large-file.zip",
+item, err := client.Items.Create(tracertm.CreateItemRequest{
+    Title:       "New Requirement",
+    View:        "requirements",
+    Status:      "draft",
+    Description: "Item description",
+    Metadata: map[string]interface{}{
+        "priority":  "high",
+        "component": "api",
+    },
 })
+```
 
+## Get Item
+
+```go
+item, err := client.Items.Get("item_abc123")
 if err != nil {
-    var fileTooLargeErr *tracertm.FileTooLargeError
-    var unsupportedTypeErr *tracertm.UnsupportedContentTypeError
-    var quotaExceededErr *tracertm.QuotaExceededError
-    var notFoundErr *tracertm.NotFoundError
-    var validationErr *tracertm.ValidationError
+    log.Fatal(err)
+}
 
-    switch {
-    case errors.As(err, &fileTooLargeErr):
-        fmt.Printf("File too large: %d bytes (max: %d)\n", fileTooLargeErr.Size, fileTooLargeErr.MaxSize)
+fmt.Printf("Title: %s\n", item.Title)
+fmt.Printf("Status: %s\n", item.Status)
+```
 
-    case errors.As(err, &unsupportedTypeErr):
-        fmt.Printf("Unsupported type: %s\n", unsupportedTypeErr.ContentType)
+## Update Item
 
-    case errors.As(err, &quotaExceededErr):
-        fmt.Printf("Storage quota exceeded: %d/%d bytes\n", quotaExceededErr.Used, quotaExceededErr.Limit)
+```go
+updated, err := client.Items.Update("item_abc123", tracertm.UpdateItemRequest{
+    Title:  "Updated Title",
+    Status: "active",
+})
+```
 
-    case errors.As(err, &notFoundErr):
-        fmt.Println("Item not found")
+## Delete Item
 
-    case errors.As(err, &validationErr):
-        for _, e := range validationErr.Errors {
-            fmt.Printf("  %s: %s\n", e.Field, e.Message)
-        }
-
-    default:
-        fmt.Printf("Error: %v\n", err)
-    }
+```go
+err := client.Items.Delete("item_abc123")
+if err != nil {
+    log.Fatal(err)
 }
 ```
 
----
-
-## Best Practices
-
-### 1. Use Streaming for Large Files
+## Working with Links
 
 ```go
-// Bad - loads entire file into memory
-content, _ := os.ReadFile("./large-file.zip")
-client.Artifacts.UploadReader(ctx, &tracertm.UploadReaderInput{
-    ItemID: itemID,
-    Reader: bytes.NewReader(content),
-    ...
-})
-
-// Good - streams the file
-client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-    ItemID:   itemID,
-    FilePath: "./large-file.zip",
+link, err := client.Links.Create(tracertm.CreateLinkRequest{
+    SourceID: "item_req_001",
+    TargetID: "item_test_001",
+    LinkType: "verified_by",
+    Metadata: map[string]interface{}{
+        "confidence": 0.95,
+    },
 })
 ```
 
-### 2. Validate Before Upload
+## Examples
 
 ```go
-func safeUpload(ctx context.Context, client *tracertm.Client, itemID, filePath string) (*tracertm.Artifact, error) {
-    stat, err := os.Stat(filePath)
-    if err != nil {
-        return nil, fmt.Errorf("file not found: %s", filePath)
-    }
+// Create requirement and test case
+req, _ := client.Items.Create(tracertm.CreateItemRequest{
+    Title: "User Authentication",
+    View:  "requirements",
+})
 
-    maxSize := int64(100 * 1024 * 1024) // 100 MB
-    if stat.Size() > maxSize {
-        return nil, fmt.Errorf("file too large: %s", filePath)
-    }
+test, _ := client.Items.Create(tracertm.CreateItemRequest{
+    Title: "Login Test",
+    View:  "test-cases",
+})
 
-    return client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-        ItemID:   itemID,
-        FilePath: filePath,
-    })
-}
-```
-
-### 3. Use Meaningful Descriptions
-
-```go
-// Good - descriptive
-artifact, err := client.Artifacts.Upload(ctx, &tracertm.UploadArtifactInput{
-    ItemID:      "item_req_001",
-    FilePath:    "./specs/auth-requirements-v2.pdf",
-    Description: "Authentication requirements specification v2.0 - includes OAuth 2.0 and SAML",
+link, _ := client.Links.Create(tracertm.CreateLinkRequest{
+    SourceID: req.ID,
+    TargetID: test.ID,
+    LinkType: "verified_by",
 })
 ```
-
----
 
 ## Related Documentation
 
-- [Items](/docs/api-reference/sdks/go/api-reference) - Item operations
-- [Projects](/docs/api-reference/rest-api/endpoints/projects) - Project operations
-- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error handling
+- [Workflows](./05-workflows) - Manage workflows
+- [Examples](./06-examples) - More examples

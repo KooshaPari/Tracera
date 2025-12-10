@@ -1,906 +1,113 @@
 ---
-title: "Examples"
-description: "Comprehensive code examples for the TraceRTM Go SDK"
+title: "Go SDK Examples"
+description: "Complete examples using the TraceRTM Go SDK"
+keywords: [go, sdk, examples, code samples, tutorials]
 ---
 
-# Examples
+# Go SDK Examples
 
-This guide provides practical, real-world examples of using the TraceRTM Go SDK for common traceability management tasks.
+Complete examples demonstrating TraceRTM Go SDK usage.
 
-## Quick Reference
-
-| Example | Description |
-|---------|-------------|
-| [Project Setup](#project-setup) | Create and configure a new project |
-| [Requirements Management](#requirements-management) | CRUD operations for requirements |
-| [Test Case Management](#test-case-management) | Manage test cases and results |
-| [Traceability Links](#traceability-links) | Create and query relationships |
-| [Bulk Operations](#bulk-operations) | Process multiple items efficiently |
-| [Concurrency Patterns](#concurrency-patterns) | Goroutines and worker pools |
-| [CLI Tools](#cli-tools) | Command-line utilities |
-| [Server Integration](#server-integration) | HTTP handlers and webhooks |
-
----
-
-## Project Setup
-
-### Create a Complete Project
+## Complete Workflow Example
 
 ```go
 package main
 
 import (
-    "context"
     "fmt"
     "log"
     "os"
-
     "github.com/tracertm/tracertm-go"
 )
 
-func createProjectWithStructure(ctx context.Context, client *tracertm.Client) (*tracertm.Project, error) {
-    // Create project
-    project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
-        Name:        "Payment System",
-        Key:         "PAY",
-        Description: "Payment processing system requirements",
-    })
-    if err != nil {
-        return nil, err
-    }
-    fmt.Printf("Created project: %s\n", project.Key)
-
-    // Configure item types
-    itemTypes := []tracertm.ItemTypeInput{
-        {Key: "REQ", Name: "Requirement", Icon: "document"},
-        {Key: "TC", Name: "Test Case", Icon: "check"},
-        {Key: "BUG", Name: "Bug", Icon: "bug"},
-        {Key: "RISK", Name: "Risk", Icon: "warning"},
-    }
-
-    for _, itemType := range itemTypes {
-        if err := client.Projects.AddItemType(ctx, project.ID, &itemType); err != nil {
-            return nil, err
-        }
-    }
-
-    // Configure link types
-    linkTypes := []tracertm.LinkTypeInput{
-        {Key: "verifies", Name: "Verifies", Source: "TC", Target: "REQ"},
-        {Key: "mitigates", Name: "Mitigates", Source: "REQ", Target: "RISK"},
-        {Key: "blocks", Name: "Blocks", Source: "BUG", Target: "REQ"},
-    }
-
-    for _, linkType := range linkTypes {
-        if err := client.Projects.AddLinkType(ctx, project.ID, &linkType); err != nil {
-            return nil, err
-        }
-    }
-
-    return project, nil
-}
-
 func main() {
-    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
-    ctx := context.Background()
+    client := tracertm.NewClient(
+        tracertm.WithAPIKey(os.Getenv("TRACERTM_API_KEY")),
+    )
 
-    project, err := createProjectWithStructure(ctx, client)
+    // Create project
+    project, err := client.Projects.Create(tracertm.CreateProjectRequest{
+        Name:        "Authentication System",
+        Description: "OAuth 2.0 implementation",
+    })
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("Project %s created successfully\n", project.Key)
-}
-```
 
-### Clone Project Structure
-
-```go
-func cloneProjectStructure(ctx context.Context, client *tracertm.Client, sourceProjectID, newName, newKey string) (*tracertm.Project, error) {
-    source, err := client.Projects.Get(ctx, sourceProjectID)
-    if err != nil {
-        return nil, err
-    }
-
-    // Create new project
-    newProject, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
-        Name:        newName,
-        Key:         newKey,
-        Description: fmt.Sprintf("Cloned from %s", source.Name),
+    // Create requirement
+    req, err := client.Items.Create(tracertm.CreateItemRequest{
+        Title:     "OAuth 2.0 Support",
+        View:      "requirements",
+        Status:    "draft",
+        ProjectID: project.ID,
     })
     if err != nil {
-        return nil, err
-    }
-
-    // Copy workflows
-    workflows, err := client.Workflows.List(ctx, &tracertm.ListWorkflowsInput{
-        ProjectID: source.ID,
-    })
-    if err != nil {
-        return nil, err
-    }
-
-    for _, wf := range workflows.Data {
-        if _, err := client.Workflows.Copy(ctx, wf.ID, &tracertm.CopyWorkflowInput{
-            TargetProjectID: newProject.ID,
-        }); err != nil {
-            return nil, err
-        }
-    }
-
-    // Copy custom fields
-    fields, err := client.Projects.ListCustomFields(ctx, source.ID)
-    if err != nil {
-        return nil, err
-    }
-
-    for _, field := range fields.Data {
-        if err := client.Projects.AddCustomField(ctx, newProject.ID, &tracertm.AddCustomFieldInput{
-            Name:      field.Name,
-            FieldType: field.FieldType,
-            Options:   field.Options,
-        }); err != nil {
-            return nil, err
-        }
-    }
-
-    return newProject, nil
-}
-```
-
----
-
-## Requirements Management
-
-### Create Requirements Hierarchy
-
-```go
-func createRequirementsHierarchy(ctx context.Context, client *tracertm.Client, projectID string) (*tracertm.Item, []*tracertm.Item, error) {
-    // Create parent requirement
-    parent, err := client.Items.Create(ctx, projectID, &tracertm.CreateItemInput{
-        Type:        "requirement",
-        Title:       "User Authentication",
-        Description: "System shall provide secure user authentication",
-        Priority:    "high",
-    })
-    if err != nil {
-        return nil, nil, err
-    }
-
-    // Create child requirements
-    children := []struct {
-        Title       string
-        Description string
-    }{
-        {"Email/Password Login", "Users can login with email and password"},
-        {"OAuth 2.0 Support", "Support login via Google and GitHub"},
-        {"Two-Factor Authentication", "Optional 2FA via TOTP or SMS"},
-    }
-
-    var childItems []*tracertm.Item
-    for _, child := range children {
-        item, err := client.Items.Create(ctx, projectID, &tracertm.CreateItemInput{
-            Type:        "requirement",
-            ParentID:    parent.ID,
-            Title:       child.Title,
-            Description: child.Description,
-            Priority:    "medium",
-        })
-        if err != nil {
-            return nil, nil, err
-        }
-        childItems = append(childItems, item)
-        fmt.Printf("Created: %s\n", item.Key)
-    }
-
-    return parent, childItems, nil
-}
-```
-
-### Import Requirements from CSV
-
-```go
-import (
-    "encoding/csv"
-    "io"
-    "os"
-)
-
-type ImportResult struct {
-    Imported []*tracertm.Item
-    Errors   []ImportError
-}
-
-type ImportError struct {
-    Row   int
-    Error string
-}
-
-func importRequirementsFromCSV(ctx context.Context, client *tracertm.Client, projectID, csvPath string) (*ImportResult, error) {
-    file, err := os.Open(csvPath)
-    if err != nil {
-        return nil, err
-    }
-    defer file.Close()
-
-    reader := csv.NewReader(file)
-
-    // Read header
-    header, err := reader.Read()
-    if err != nil {
-        return nil, err
-    }
-
-    // Find column indices
-    colIdx := make(map[string]int)
-    for i, col := range header {
-        colIdx[col] = i
-    }
-
-    result := &ImportResult{}
-    rowNum := 1
-
-    for {
-        row, err := reader.Read()
-        if err == io.EOF {
-            break
-        }
-        if err != nil {
-            return nil, err
-        }
-        rowNum++
-
-        item, err := client.Items.Create(ctx, projectID, &tracertm.CreateItemInput{
-            Type:        "requirement",
-            Title:       row[colIdx["title"]],
-            Description: row[colIdx["description"]],
-            Priority:    row[colIdx["priority"]],
-            CustomFields: map[string]interface{}{
-                "external_id": row[colIdx["external_id"]],
-                "source":      "CSV Import",
-            },
-        })
-
-        if err != nil {
-            result.Errors = append(result.Errors, ImportError{Row: rowNum, Error: err.Error()})
-        } else {
-            result.Imported = append(result.Imported, item)
-            fmt.Printf("Imported: %s\n", item.Key)
-        }
-    }
-
-    fmt.Printf("\nImported %d requirements\n", len(result.Imported))
-    if len(result.Errors) > 0 {
-        fmt.Printf("Errors: %d\n", len(result.Errors))
-    }
-
-    return result, nil
-}
-```
-
-### Export Requirements to JSON
-
-```go
-import (
-    "encoding/json"
-    "os"
-    "time"
-)
-
-type ExportData struct {
-    ExportedAt   time.Time                `json:"exported_at"`
-    ProjectID    string                   `json:"project_id"`
-    Count        int                      `json:"count"`
-    Requirements []map[string]interface{} `json:"requirements"`
-}
-
-func exportRequirementsToJSON(ctx context.Context, client *tracertm.Client, projectID, outputPath string) error {
-    var requirements []map[string]interface{}
-
-    iter := client.Items.Iterate(ctx, projectID, &tracertm.ListItemsOptions{
-        Type: "requirement",
-    })
-
-    for iter.Next() {
-        item := iter.Item()
-        requirements = append(requirements, map[string]interface{}{
-            "id":            item.ID,
-            "key":           item.Key,
-            "title":         item.Title,
-            "description":   item.Description,
-            "status":        item.Status,
-            "priority":      item.Priority,
-            "created_at":    item.CreatedAt,
-            "updated_at":    item.UpdatedAt,
-            "custom_fields": item.CustomFields,
-        })
-    }
-
-    if err := iter.Err(); err != nil {
-        return err
-    }
-
-    export := ExportData{
-        ExportedAt:   time.Now(),
-        ProjectID:    projectID,
-        Count:        len(requirements),
-        Requirements: requirements,
-    }
-
-    file, err := os.Create(outputPath)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
-
-    encoder := json.NewEncoder(file)
-    encoder.SetIndent("", "  ")
-    if err := encoder.Encode(export); err != nil {
-        return err
-    }
-
-    fmt.Printf("Exported %d requirements to %s\n", len(requirements), outputPath)
-    return nil
-}
-```
-
----
-
-## Test Case Management
-
-### Create Test Cases with Steps
-
-```go
-func createTestCaseWithSteps(ctx context.Context, client *tracertm.Client, requirementID string) (*tracertm.Item, error) {
-    // Get the requirement
-    requirement, err := client.Items.Get(ctx, requirementID)
-    if err != nil {
-        return nil, err
+        log.Fatal(err)
     }
 
     // Create test case
-    testCase, err := client.Items.Create(ctx, requirement.ProjectID, &tracertm.CreateItemInput{
-        Type:        "test_case",
-        Title:       fmt.Sprintf("Verify: %s", requirement.Title),
-        Description: fmt.Sprintf("Test case for requirement %s", requirement.Key),
-        Priority:    requirement.Priority,
-        CustomFields: map[string]interface{}{
-            "preconditions": "User is on login page",
-            "test_data":     "Valid credentials: test@example.com / Password123",
-            "steps": []map[string]interface{}{
-                {"step": 1, "action": "Enter valid email address", "expected": "Email field accepts input"},
-                {"step": 2, "action": "Enter valid password", "expected": "Password field shows masked input"},
-                {"step": 3, "action": "Click Login button", "expected": "User is redirected to dashboard"},
-            },
-        },
+    test, err := client.Items.Create(tracertm.CreateItemRequest{
+        Title:     "OAuth Flow Test",
+        View:      "test-cases",
+        Status:    "draft",
+        ProjectID: project.ID,
     })
     if err != nil {
-        return nil, err
+        log.Fatal(err)
     }
 
-    // Link test case to requirement
-    _, err = client.Links.Create(ctx, &tracertm.CreateLinkInput{
-        SourceID: requirement.ID,
-        TargetID: testCase.ID,
+    // Create link
+    link, err := client.Links.Create(tracertm.CreateLinkRequest{
+        SourceID: req.ID,
+        TargetID: test.ID,
         LinkType: "verified_by",
     })
     if err != nil {
-        return nil, err
+        log.Fatal(err)
     }
 
-    fmt.Printf("Created test case: %s\n", testCase.Key)
-    return testCase, nil
+    fmt.Printf("Created traceability: %s --[verified_by]--> %s\n",
+        req.Title, test.Title)
 }
 ```
 
-### Generate Test Coverage Report
+## Impact Analysis Example
 
 ```go
-type CoverageReport struct {
-    TotalRequirements   int                  `json:"total_requirements"`
-    CoveredRequirements int                  `json:"covered_requirements"`
-    CoveragePercent     float64              `json:"coverage_percent"`
-    Details             []RequirementCoverage `json:"details"`
+impact, err := client.Analysis.Impact(tracertm.ImpactRequest{
+    ItemID:    "item_req_001",
+    ProjectID: "proj_123",
+})
+if err != nil {
+    log.Fatal(err)
 }
 
-type RequirementCoverage struct {
-    RequirementKey   string         `json:"requirement_key"`
-    RequirementTitle string         `json:"requirement_title"`
-    Priority         string         `json:"priority"`
-    TestCaseCount    int            `json:"test_case_count"`
-    TestCases        []TestCaseInfo `json:"test_cases"`
-    Covered          bool           `json:"covered"`
-}
-
-type TestCaseInfo struct {
-    Key    string `json:"key"`
-    Title  string `json:"title"`
-    Status string `json:"status"`
-}
-
-func getTestCoverage(ctx context.Context, client *tracertm.Client, projectID string) (*CoverageReport, error) {
-    var details []RequirementCoverage
-
-    reqIter := client.Items.Iterate(ctx, projectID, &tracertm.ListItemsOptions{
-        Type: "requirement",
-    })
-
-    for reqIter.Next() {
-        req := reqIter.Item()
-
-        // Get linked test cases
-        links, err := client.Links.List(ctx, &tracertm.ListLinksInput{
-            SourceID: req.ID,
-            LinkType: "verified_by",
-        })
-        if err != nil {
-            return nil, err
-        }
-
-        var testCases []TestCaseInfo
-        for _, link := range links.Data {
-            tc, err := client.Items.Get(ctx, link.TargetID)
-            if err != nil {
-                continue
-            }
-            testCases = append(testCases, TestCaseInfo{
-                Key:    tc.Key,
-                Title:  tc.Title,
-                Status: tc.Status,
-            })
-        }
-
-        details = append(details, RequirementCoverage{
-            RequirementKey:   req.Key,
-            RequirementTitle: req.Title,
-            Priority:         req.Priority,
-            TestCaseCount:    len(testCases),
-            TestCases:        testCases,
-            Covered:          len(testCases) > 0,
-        })
-    }
-
-    if err := reqIter.Err(); err != nil {
-        return nil, err
-    }
-
-    // Calculate summary
-    total := len(details)
-    covered := 0
-    for _, d := range details {
-        if d.Covered {
-            covered++
-        }
-    }
-
-    coveragePercent := 0.0
-    if total > 0 {
-        coveragePercent = float64(covered) / float64(total) * 100
-    }
-
-    return &CoverageReport{
-        TotalRequirements:   total,
-        CoveredRequirements: covered,
-        CoveragePercent:     coveragePercent,
-        Details:             details,
-    }, nil
+fmt.Printf("Affects %d items:\n", impact.TotalAffected)
+for _, item := range impact.AffectedItems {
+    fmt.Printf("  - %s (depth: %d)\n", item.Title, item.Depth)
 }
 ```
 
----
-
-## Traceability Links
-
-### Build Complete Trace
+## Error Handling Example
 
 ```go
-type TraceChain struct {
-    Item       ItemInfo    `json:"item"`
-    Upstream   []TraceItem `json:"upstream"`
-    Downstream []TraceItem `json:"downstream"`
-}
-
-type ItemInfo struct {
-    ID    string `json:"id"`
-    Key   string `json:"key"`
-    Title string `json:"title"`
-    Type  string `json:"type"`
-}
-
-type TraceItem struct {
-    ItemInfo
-    LinkType string `json:"link_type"`
-}
-
-func buildTraceChain(ctx context.Context, client *tracertm.Client, itemID, direction string) (*TraceChain, error) {
-    item, err := client.Items.Get(ctx, itemID)
-    if err != nil {
-        return nil, err
-    }
-
-    trace := &TraceChain{
-        Item: ItemInfo{
-            ID:    item.ID,
-            Key:   item.Key,
-            Title: item.Title,
-            Type:  item.Type,
-        },
-    }
-
-    if direction == "both" || direction == "upstream" {
-        // Get items this item traces from
-        upstreamLinks, err := client.Links.List(ctx, &tracertm.ListLinksInput{
-            TargetID: item.ID,
-        })
-        if err != nil {
-            return nil, err
-        }
-
-        for _, link := range upstreamLinks.Data {
-            source, err := client.Items.Get(ctx, link.SourceID)
-            if err != nil {
-                continue
-            }
-            trace.Upstream = append(trace.Upstream, TraceItem{
-                ItemInfo: ItemInfo{
-                    ID:    source.ID,
-                    Key:   source.Key,
-                    Title: source.Title,
-                    Type:  source.Type,
-                },
-                LinkType: link.LinkType,
-            })
-        }
-    }
-
-    if direction == "both" || direction == "downstream" {
-        // Get items this item traces to
-        downstreamLinks, err := client.Links.List(ctx, &tracertm.ListLinksInput{
-            SourceID: item.ID,
-        })
-        if err != nil {
-            return nil, err
-        }
-
-        for _, link := range downstreamLinks.Data {
-            target, err := client.Items.Get(ctx, link.TargetID)
-            if err != nil {
-                continue
-            }
-            trace.Downstream = append(trace.Downstream, TraceItem{
-                ItemInfo: ItemInfo{
-                    ID:    target.ID,
-                    Key:   target.Key,
-                    Title: target.Title,
-                    Type:  target.Type,
-                },
-                LinkType: link.LinkType,
-            })
-        }
-    }
-
-    return trace, nil
-}
-```
-
-### Find Orphan Items
-
-```go
-type OrphanRequirement struct {
-    Key      string `json:"key"`
-    Title    string `json:"title"`
-    Priority string `json:"priority"`
-    Status   string `json:"status"`
-}
-
-func findOrphanRequirements(ctx context.Context, client *tracertm.Client, projectID string) ([]OrphanRequirement, error) {
-    var orphans []OrphanRequirement
-
-    iter := client.Items.Iterate(ctx, projectID, &tracertm.ListItemsOptions{
-        Type: "requirement",
-    })
-
-    for iter.Next() {
-        req := iter.Item()
-
-        links, err := client.Links.List(ctx, &tracertm.ListLinksInput{
-            SourceID: req.ID,
-            LinkType: "verified_by",
-        })
-        if err != nil {
-            return nil, err
-        }
-
-        if len(links.Data) == 0 {
-            orphans = append(orphans, OrphanRequirement{
-                Key:      req.Key,
-                Title:    req.Title,
-                Priority: req.Priority,
-                Status:   req.Status,
-            })
-        }
-    }
-
-    if err := iter.Err(); err != nil {
-        return nil, err
-    }
-
-    // Sort by priority
-    priorityOrder := map[string]int{"critical": 0, "high": 1, "medium": 2, "low": 3}
-    sort.Slice(orphans, func(i, j int) bool {
-        return priorityOrder[orphans[i].Priority] < priorityOrder[orphans[j].Priority]
-    })
-
-    return orphans, nil
-}
-```
-
----
-
-## Concurrency Patterns
-
-### Worker Pool for Bulk Processing
-
-```go
-import "sync"
-
-type ProcessResult struct {
-    ItemKey string
-    Result  interface{}
-    Error   error
-}
-
-func processItemsWithWorkerPool(ctx context.Context, client *tracertm.Client, projectID string, workers int, processor func(*tracertm.Item) (interface{}, error)) []ProcessResult {
-    // Collect all items first
-    var items []*tracertm.Item
-    iter := client.Items.Iterate(ctx, projectID, nil)
-    for iter.Next() {
-        items = append(items, iter.Item())
-    }
-
-    // Create channels
-    jobs := make(chan *tracertm.Item, len(items))
-    results := make(chan ProcessResult, len(items))
-
-    // Start workers
-    var wg sync.WaitGroup
-    for w := 0; w < workers; w++ {
-        wg.Add(1)
-        go func() {
-            defer wg.Done()
-            for item := range jobs {
-                result, err := processor(item)
-                results <- ProcessResult{
-                    ItemKey: item.Key,
-                    Result:  result,
-                    Error:   err,
-                }
-            }
-        }()
-    }
-
-    // Send jobs
-    for _, item := range items {
-        jobs <- item
-    }
-    close(jobs)
-
-    // Wait for completion
-    wg.Wait()
-    close(results)
-
-    // Collect results
-    var allResults []ProcessResult
-    for r := range results {
-        allResults = append(allResults, r)
-    }
-
-    return allResults
-}
-
-// Usage
-func main() {
-    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
-    ctx := context.Background()
-
-    results := processItemsWithWorkerPool(ctx, client, "proj_abc123", 5, func(item *tracertm.Item) (interface{}, error) {
-        links, err := client.Links.List(ctx, &tracertm.ListLinksInput{
-            SourceID: item.ID,
-        })
-        if err != nil {
-            return nil, err
-        }
-        return map[string]interface{}{
-            "key":        item.Key,
-            "link_count": len(links.Data),
-        }, nil
-    })
-
-    for _, r := range results {
-        if r.Error != nil {
-            fmt.Printf("%s: Error - %v\n", r.ItemKey, r.Error)
-        } else {
-            fmt.Printf("%s: %v\n", r.ItemKey, r.Result)
-        }
-    }
-}
-```
-
-### Context with Timeout
-
-```go
-func processWithTimeout(client *tracertm.Client, projectID string, timeout time.Duration) error {
-    ctx, cancel := context.WithTimeout(context.Background(), timeout)
-    defer cancel()
-
-    iter := client.Items.Iterate(ctx, projectID, nil)
-    for iter.Next() {
-        item := iter.Item()
-
-        // Check if context is cancelled
-        select {
-        case <-ctx.Done():
-            return ctx.Err()
-        default:
-            // Process item
-            fmt.Printf("Processing: %s\n", item.Key)
-        }
-    }
-
-    return iter.Err()
-}
-```
-
----
-
-## CLI Tools
-
-### Traceability Check CLI
-
-```go
-package main
-
-import (
-    "context"
-    "flag"
-    "fmt"
-    "os"
-
-    "github.com/tracertm/tracertm-go"
-)
-
-func main() {
-    projectID := flag.String("project", "", "Project ID")
-    flag.Parse()
-
-    if *projectID == "" {
-        fmt.Println("Usage: tracertm-check -project <project_id>")
-        os.Exit(1)
-    }
-
-    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
-    ctx := context.Background()
-
-    var issues []string
-
-    // Check for orphan requirements
-    iter := client.Items.Iterate(ctx, *projectID, &tracertm.ListItemsOptions{
-        Type: "requirement",
-    })
-
-    for iter.Next() {
-        req := iter.Item()
-        if req.Priority == "critical" || req.Priority == "high" {
-            links, _ := client.Links.List(ctx, &tracertm.ListLinksInput{
-                SourceID: req.ID,
-                LinkType: "verified_by",
-            })
-            if len(links.Data) == 0 {
-                issues = append(issues, fmt.Sprintf("HIGH: %s has no test coverage", req.Key))
-            }
-        }
-    }
-
-    // Report results
-    if len(issues) > 0 {
-        fmt.Println("Traceability Check FAILED:")
-        for _, issue := range issues {
-            fmt.Printf("  - %s\n", issue)
-        }
-        os.Exit(1)
-    }
-
-    fmt.Println("Traceability Check PASSED")
-}
-```
-
----
-
-## Server Integration
-
-### HTTP Webhook Handler
-
-```go
-package main
-
-import (
-    "context"
-    "encoding/json"
-    "log"
-    "net/http"
-    "os"
-
-    "github.com/tracertm/tracertm-go"
-)
-
-var client *tracertm.Client
-
-type WebhookPayload struct {
-    Item    tracertm.Item          `json:"item"`
-    Changes map[string]ChangeValue `json:"changes"`
-}
-
-type ChangeValue struct {
-    Old interface{} `json:"old"`
-    New interface{} `json:"new"`
-}
-
-func handleItemUpdated(w http.ResponseWriter, r *http.Request) {
-    var payload WebhookPayload
-    if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+item, err := client.Items.Get("item_abc123")
+if err != nil {
+    if tracertm.IsNotFound(err) {
+        log.Println("Item not found")
         return
     }
-
-    ctx := r.Context()
-
-    // If requirement status changed to approved
-    if payload.Item.Type == "requirement" {
-        if change, ok := payload.Changes["status"]; ok && change.New == "approved" {
-            // Create placeholder test case if none exists
-            links, _ := client.Links.List(ctx, &tracertm.ListLinksInput{
-                SourceID: payload.Item.ID,
-                LinkType: "verified_by",
-            })
-
-            if len(links.Data) == 0 {
-                tc, err := client.Items.Create(ctx, payload.Item.ProjectID, &tracertm.CreateItemInput{
-                    Type:        "test_case",
-                    Title:       fmt.Sprintf("[TODO] Test: %s", payload.Item.Title),
-                    Description: "Auto-generated test case placeholder",
-                    Priority:    payload.Item.Priority,
-                })
-                if err != nil {
-                    log.Printf("Error creating test case: %v", err)
-                } else {
-                    client.Links.Create(ctx, &tracertm.CreateLinkInput{
-                        SourceID: payload.Item.ID,
-                        TargetID: tc.ID,
-                        LinkType: "verified_by",
-                    })
-                }
-            }
-        }
+    if tracertm.IsAuthError(err) {
+        log.Fatal("Authentication failed")
     }
-
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(map[string]string{"status": "processed"})
+    log.Fatal(err)
 }
 
-func main() {
-    client = tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
-
-    http.HandleFunc("/webhook/item-updated", handleItemUpdated)
-
-    log.Println("Starting webhook server on :8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
-}
+fmt.Printf("Item: %s\n", item.Title)
 ```
-
----
 
 ## Related Documentation
 
-- [API Reference](/docs/api-reference/sdks/go/api-reference) - Complete method reference
-- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Handle errors
-- [Concurrency](/docs/api-reference/sdks/go/concurrency) - Concurrency patterns
-- [Authentication](/docs/api-reference/sdks/go/authentication) - Authentication
+- [Quickstart](./02-quickstart) - Get started
+- [Authentication](./03-authentication) - Auth setup
+- [Artifacts](./04-artifacts) - Item operations

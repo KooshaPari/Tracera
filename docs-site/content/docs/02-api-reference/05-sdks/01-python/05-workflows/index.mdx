@@ -1,535 +1,80 @@
 ---
-title: "Workflows"
-description: "Manage item workflows and status transitions with the TraceRTM Python SDK"
+title: "Python SDK - Workflows"
+description: "Manage workflows and item status transitions with the Python SDK"
+keywords: [python, sdk, workflows, status, transitions]
 ---
 
-# Workflows
+# Python SDK - Workflows
 
-The TraceRTM Python SDK provides comprehensive workflow management capabilities, allowing you to define, configure, and execute status transitions for your traceability items.
+Manage item status workflows and transitions using the Python SDK.
 
-## Overview
-
-Workflows in TraceRTM define:
-
-- **States**: The possible statuses an item can have (e.g., Draft, In Review, Approved)
-- **Transitions**: The allowed movements between states (e.g., Submit for Review, Approve, Reject)
-- **Rules**: Conditions that must be met for transitions (e.g., required fields, approvals)
-- **Actions**: Automated actions triggered by transitions (e.g., notifications, field updates)
-
----
-
-## Listing Workflows
-
-### Get Project Workflows
+## Transition Item Status
 
 ```python
-from tracertm import TraceRTMClient
+from tracertm import TraceRTM
 
-client = TraceRTMClient()
+client = TraceRTM(api_key="rtm_live_abc123...")
 
-# List all workflows in a project
-workflows = client.workflows.list(project_id="proj_abc123")
-
-for workflow in workflows.data:
-    print(f"{workflow.name} ({workflow.id})")
-    print(f"  Item types: {', '.join(workflow.item_types)}")
-    print(f"  States: {len(workflow.states)}")
-    print(f"  Transitions: {len(workflow.transitions)}")
-```
-
-### Get Workflow Details
-
-```python
-# Get a specific workflow with full details
-workflow = client.workflows.get("wf_abc123")
-
-print(f"Workflow: {workflow.name}")
-print(f"Description: {workflow.description}")
-print(f"Default: {workflow.is_default}")
-
-# List states
-print("\nStates:")
-for state in workflow.states:
-    print(f"  - {state.name} ({state.id})")
-    print(f"    Category: {state.category}")  # initial, in_progress, done
-    print(f"    Color: {state.color}")
-
-# List transitions
-print("\nTransitions:")
-for transition in workflow.transitions:
-    print(f"  - {transition.name}")
-    print(f"    From: {transition.from_state} -> To: {transition.to_state}")
-```
-
----
-
-## Working with States
-
-### Get Current State
-
-```python
-# Get an item's current workflow state
-item = client.items.get("item_req_001")
-
-print(f"Current status: {item.status}")
-print(f"Status category: {item.status_category}")
-```
-
-### List Available States
-
-```python
-# Get all possible states for an item type
-states = client.workflows.list_states(
-    project_id="proj_abc123",
-    item_type="requirement"
+# Transition item status
+result = client.transition_item_status(
+    item_id="item_abc123",
+    to_status="active",
+    comment="Ready for review"
 )
 
-for state in states:
-    print(f"{state.name}: {state.description}")
+print(f"Transitioned from {result['previous_status']} to {result['new_status']}")
 ```
 
----
-
-## Transitions
-
-### Get Available Transitions
+## Get Workflow
 
 ```python
-# Get transitions available for a specific item
-transitions = client.items.available_transitions("item_req_001")
+# Get workflow for project
+workflow = client.get_workflow(project_id="proj_123")
 
-print("Available transitions:")
-for t in transitions:
-    print(f"  - {t.name} ({t.id})")
-    print(f"    To: {t.to_state}")
-    if t.required_fields:
-        print(f"    Required: {', '.join(t.required_fields)}")
-    if t.required_permissions:
-        print(f"    Permissions: {', '.join(t.required_permissions)}")
+print(f"Workflow: {workflow['name']}")
+print(f"States: {workflow['states']}")
 ```
 
-### Execute Transition
+## Check Allowed Transitions
 
 ```python
-# Transition an item to a new state
-item = client.items.transition(
-    item_id="item_req_001",
-    transition="submit_for_review",
-    comment="Ready for technical review"
-)
+# Get current item
+item = client.get_item("item_abc123")
+current_status = item['status']
 
-print(f"New status: {item.status}")
+# Get workflow
+workflow = client.get_workflow(project_id="proj_123")
+
+# Check allowed transitions
+allowed = workflow.get_allowed_transitions(current_status)
+print(f"Can transition to: {allowed}")
 ```
 
-### Transition with Fields
+## Examples
+
+### Transition with Validation
 
 ```python
-# Some transitions require additional fields
-item = client.items.transition(
-    item_id="item_req_001",
-    transition="approve",
-    comment="Approved after technical review",
-    fields={
-        "approved_by": "user_123",
-        "approval_date": "2025-01-15",
-        "approval_notes": "All acceptance criteria met"
-    }
-)
-```
-
-### Transition with Assignee Change
-
-```python
-# Transition and reassign in one operation
-item = client.items.transition(
-    item_id="item_req_001",
-    transition="assign_to_development",
-    assignee_id="user_dev_001",
-    comment="Assigned to development team"
-)
-```
-
----
-
-## Bulk Transitions
-
-### Transition Multiple Items
-
-```python
-# Transition multiple items at once
-results = client.items.bulk_transition(
-    item_ids=["item_req_001", "item_req_002", "item_req_003"],
-    transition="approve",
-    comment="Bulk approval after sprint review"
-)
-
-for result in results:
-    if result.success:
-        print(f"{result.item_id}: Transitioned to {result.new_status}")
+def safe_transition(client, item_id, to_status):
+    item = client.get_item(item_id)
+    workflow = client.get_workflow(project_id=item['project_id'])
+    
+    allowed = workflow.get_allowed_transitions(item['status'])
+    
+    if to_status in allowed:
+        return client.transition_item_status(
+            item_id=item_id,
+            to_status=to_status,
+            comment="Status transition"
+        )
     else:
-        print(f"{result.item_id}: Failed - {result.error}")
+        raise ValueError(f"Cannot transition from {item['status']} to {to_status}")
+
+# Use it
+result = safe_transition(client, "item_abc123", "active")
 ```
-
-### Conditional Bulk Transition
-
-```python
-# Transition items matching criteria
-from tracertm import ItemFilter
-
-results = client.items.bulk_transition_by_filter(
-    project_id="proj_abc123",
-    filter=ItemFilter(
-        type="requirement",
-        status="in_review",
-        assignee_id="user_123"
-    ),
-    transition="approve",
-    comment="Approved all reviewed requirements"
-)
-
-print(f"Transitioned {results.success_count} items")
-print(f"Failed: {results.failure_count}")
-```
-
----
-
-## Workflow Configuration
-
-### Create Workflow
-
-```python
-# Create a new workflow
-workflow = client.workflows.create(
-    project_id="proj_abc123",
-    name="Agile Requirement Workflow",
-    description="Workflow for agile requirement management",
-    item_types=["requirement", "user_story"],
-    states=[
-        {
-            "name": "Backlog",
-            "category": "initial",
-            "color": "#gray"
-        },
-        {
-            "name": "In Analysis",
-            "category": "in_progress",
-            "color": "#blue"
-        },
-        {
-            "name": "Ready for Dev",
-            "category": "in_progress",
-            "color": "#yellow"
-        },
-        {
-            "name": "Done",
-            "category": "done",
-            "color": "#green"
-        }
-    ],
-    transitions=[
-        {
-            "name": "Start Analysis",
-            "from_state": "Backlog",
-            "to_state": "In Analysis"
-        },
-        {
-            "name": "Analysis Complete",
-            "from_state": "In Analysis",
-            "to_state": "Ready for Dev"
-        },
-        {
-            "name": "Mark Done",
-            "from_state": "Ready for Dev",
-            "to_state": "Done"
-        },
-        {
-            "name": "Reopen",
-            "from_state": "Done",
-            "to_state": "Backlog"
-        }
-    ]
-)
-
-print(f"Created workflow: {workflow.id}")
-```
-
-### Update Workflow
-
-```python
-# Update workflow configuration
-workflow = client.workflows.update(
-    workflow_id="wf_abc123",
-    name="Updated Workflow Name",
-    description="Updated description"
-)
-```
-
-### Add State to Workflow
-
-```python
-# Add a new state
-state = client.workflows.add_state(
-    workflow_id="wf_abc123",
-    name="On Hold",
-    category="in_progress",
-    color="#orange",
-    description="Item is temporarily on hold"
-)
-```
-
-### Add Transition
-
-```python
-# Add a new transition
-transition = client.workflows.add_transition(
-    workflow_id="wf_abc123",
-    name="Put On Hold",
-    from_state="In Analysis",
-    to_state="On Hold",
-    required_fields=["hold_reason"],
-    screen_id="screen_hold_form"  # Optional: custom form
-)
-```
-
----
-
-## Transition Rules
-
-### Define Validation Rules
-
-```python
-# Add validation rule to transition
-client.workflows.add_transition_rule(
-    workflow_id="wf_abc123",
-    transition_id="trans_approve",
-    rule_type="field_required",
-    config={
-        "fields": ["acceptance_criteria", "priority"]
-    }
-)
-
-# Add permission rule
-client.workflows.add_transition_rule(
-    workflow_id="wf_abc123",
-    transition_id="trans_approve",
-    rule_type="permission_required",
-    config={
-        "permissions": ["approve_requirements"]
-    }
-)
-
-# Add condition rule
-client.workflows.add_transition_rule(
-    workflow_id="wf_abc123",
-    transition_id="trans_approve",
-    rule_type="condition",
-    config={
-        "expression": "item.linked_test_cases > 0",
-        "error_message": "Item must have at least one linked test case"
-    }
-)
-```
-
-### Check Transition Validity
-
-```python
-# Check if a transition is valid for an item
-validity = client.items.check_transition(
-    item_id="item_req_001",
-    transition="approve"
-)
-
-if validity.valid:
-    print("Transition is allowed")
-else:
-    print("Transition blocked:")
-    for reason in validity.blocking_reasons:
-        print(f"  - {reason}")
-```
-
----
-
-## Workflow Actions
-
-### Configure Post-Transition Actions
-
-```python
-# Add notification action
-client.workflows.add_transition_action(
-    workflow_id="wf_abc123",
-    transition_id="trans_approve",
-    action_type="notify",
-    config={
-        "recipients": ["item.created_by", "item.assignee"],
-        "template": "item_approved"
-    }
-)
-
-# Add field update action
-client.workflows.add_transition_action(
-    workflow_id="wf_abc123",
-    transition_id="trans_approve",
-    action_type="update_field",
-    config={
-        "field": "approved_date",
-        "value": "{{now}}"
-    }
-)
-
-# Add webhook action
-client.workflows.add_transition_action(
-    workflow_id="wf_abc123",
-    transition_id="trans_approve",
-    action_type="webhook",
-    config={
-        "url": "https://api.example.com/webhooks/approval",
-        "method": "POST"
-    }
-)
-```
-
----
-
-## Workflow History
-
-### Get Transition History
-
-```python
-# Get transition history for an item
-history = client.items.transition_history("item_req_001")
-
-for entry in history.data:
-    print(f"{entry.timestamp}: {entry.from_status} -> {entry.to_status}")
-    print(f"  Transition: {entry.transition_name}")
-    print(f"  By: {entry.user_name}")
-    if entry.comment:
-        print(f"  Comment: {entry.comment}")
-```
-
-### Get Workflow Metrics
-
-```python
-# Get workflow performance metrics
-metrics = client.workflows.get_metrics(
-    workflow_id="wf_abc123",
-    start_date="2025-01-01",
-    end_date="2025-01-31"
-)
-
-print(f"Items processed: {metrics.total_items}")
-print(f"Avg time in each state:")
-for state, duration in metrics.avg_time_in_state.items():
-    print(f"  {state}: {duration} hours")
-
-print(f"\nTransition counts:")
-for transition, count in metrics.transition_counts.items():
-    print(f"  {transition}: {count}")
-```
-
----
-
-## Workflow Templates
-
-### Use Built-in Templates
-
-```python
-# List available workflow templates
-templates = client.workflows.list_templates()
-
-for template in templates:
-    print(f"{template.name}: {template.description}")
-
-# Create workflow from template
-workflow = client.workflows.create_from_template(
-    project_id="proj_abc123",
-    template_id="template_agile_requirements",
-    name="My Requirements Workflow"
-)
-```
-
-### Export Workflow as Template
-
-```python
-# Export existing workflow as template
-template = client.workflows.export_template(
-    workflow_id="wf_abc123",
-    name="My Custom Template",
-    description="Custom workflow for our process"
-)
-```
-
-### Import Workflow
-
-```python
-# Import workflow from JSON definition
-workflow_def = {
-    "name": "Imported Workflow",
-    "states": [...],
-    "transitions": [...]
-}
-
-workflow = client.workflows.import_definition(
-    project_id="proj_abc123",
-    definition=workflow_def
-)
-```
-
----
-
-## Error Handling
-
-```python
-from tracertm.exceptions import (
-    TransitionNotAllowedError,
-    WorkflowValidationError,
-    RequiredFieldMissingError
-)
-
-try:
-    item = client.items.transition(
-        item_id="item_req_001",
-        transition="approve"
-    )
-except TransitionNotAllowedError as e:
-    print(f"Transition not allowed: {e.message}")
-    print(f"Current status: {e.current_status}")
-    print(f"Blocking reasons: {e.blocking_reasons}")
-except RequiredFieldMissingError as e:
-    print(f"Missing required fields: {', '.join(e.missing_fields)}")
-except WorkflowValidationError as e:
-    print(f"Workflow validation failed: {e.message}")
-```
-
----
-
-## Async Support
-
-```python
-from tracertm import AsyncTraceRTMClient
-import asyncio
-
-async def process_items():
-    client = AsyncTraceRTMClient()
-
-    # Get available transitions
-    transitions = await client.items.available_transitions("item_req_001")
-
-    # Execute transition
-    item = await client.items.transition(
-        item_id="item_req_001",
-        transition="approve",
-        comment="Approved"
-    )
-
-    return item
-
-asyncio.run(process_items())
-```
-
----
 
 ## Related Documentation
 
-- [Items](/docs/api-reference/sdks/python/api-reference) - Item operations
-- [REST API - Workflows](/docs/api-reference/rest-api/endpoints/workflows) - Workflow endpoints
-- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error handling
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - More examples

@@ -1,11 +1,12 @@
 ---
-title: "Quickstart"
+title: "JavaScript SDK Quickstart"
 description: "Get started with the TraceRTM JavaScript SDK in minutes"
+keywords: [javascript, typescript, sdk, quickstart, tutorial]
 ---
 
-# Quickstart
+# JavaScript SDK Quickstart
 
-Get up and running with the TraceRTM JavaScript SDK in just a few minutes.
+Get started with the TraceRTM JavaScript SDK in 5 minutes.
 
 ## Installation
 
@@ -13,297 +14,124 @@ Get up and running with the TraceRTM JavaScript SDK in just a few minutes.
 npm install @tracertm/sdk
 ```
 
-## Initialize the Client
+## Initialize Client
+
+### TypeScript/ES Modules
 
 ```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
+import { TraceRTM } from '@tracertm/sdk';
 
-const client = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
 });
 ```
 
-## Your First Request
+### CommonJS
 
-```typescript
-// List all projects
-const projects = await client.projects.list();
-console.log(`Found ${projects.total} projects`);
+```javascript
+const { TraceRTM } = require('@tracertm/sdk');
 
-for (const project of projects.data) {
-  console.log(`- ${project.name} (${project.key})`);
-}
+const client = new TraceRTM({
+  apiKey: process.env.TRACERTM_API_KEY
+});
 ```
 
----
+## Basic Operations
 
-## Core Operations
+### List Projects
+
+```javascript
+const projects = await client.projects.list();
+projects.forEach(project => {
+  console.log(`${project.id}: ${project.name}`);
+});
+```
 
 ### Create a Project
 
-```typescript
+```javascript
 const project = await client.projects.create({
-  name: "My First Project",
-  key: "MFP",
-  description: "Learning TraceRTM SDK",
+  name: 'My Project',
+  description: 'Project description'
 });
-
 console.log(`Created project: ${project.id}`);
 ```
 
-### Create Items
+### Create an Item
 
-```typescript
-// Create a requirement
-const requirement = await client.items.create({
-  projectId: project.id,
-  type: "requirement",
-  title: "User Authentication",
-  description: "System shall support user login with email and password",
-  priority: "high",
+```javascript
+const item = await client.items.create({
+  title: 'New Requirement',
+  view: 'requirements',
+  status: 'draft',
+  projectId: 'proj_123'
 });
-
-// Create a test case
-const testCase = await client.items.create({
-  projectId: project.id,
-  type: "test_case",
-  title: "Test Login Success",
-  description: "Verify user can login with valid credentials",
-  priority: "high",
-});
-
-console.log(`Created requirement: ${requirement.id}`);
-console.log(`Created test case: ${testCase.id}`);
-```
-
-### Create a Link
-
-```typescript
-const link = await client.links.create({
-  sourceId: requirement.id,
-  targetId: testCase.id,
-  type: "verified_by",
-});
-
-console.log(`Created link: ${link.id}`);
+console.log(`Created item: ${item.id}`);
 ```
 
 ### Query Items
 
-```typescript
-// List requirements
-const requirements = await client.items.list({
-  projectId: project.id,
-  type: "requirement",
-  priority: "high",
+```javascript
+const items = await client.items.query({
+  view: 'requirements',
+  status: 'active',
+  limit: 50
 });
 
-console.log(`Found ${requirements.total} high-priority requirements`);
+items.forEach(item => {
+  console.log(`${item.title}: ${item.status}`);
+});
 ```
-
----
 
 ## Complete Example
 
-```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
+```javascript
+import { TraceRTM } from '@tracertm/sdk';
 
 async function main() {
-  // Initialize client
-  const client = new TraceRTMClient({
-    apiKey: process.env.TRACERTM_API_KEY,
+  const client = new TraceRTM({
+    apiKey: process.env.TRACERTM_API_KEY
   });
 
-  // Create a project
+  // Create project
   const project = await client.projects.create({
-    name: "E-Commerce Platform",
-    key: "ECOM",
-    description: "Online shopping platform requirements",
+    name: 'Example Project',
+    description: 'Example project for quickstart'
   });
 
-  // Create requirements
-  const requirements = await Promise.all([
-    client.items.create({
-      projectId: project.id,
-      type: "requirement",
-      title: "REQ-001: User Registration",
-      description: "Users shall be able to create accounts",
-      priority: "high",
-      tags: ["auth", "mvp"],
-    }),
-    client.items.create({
-      projectId: project.id,
-      type: "requirement",
-      title: "REQ-002: Shopping Cart",
-      description: "Users shall be able to add items to cart",
-      priority: "high",
-      tags: ["cart", "mvp"],
-    }),
-  ]);
-
-  // Create test cases
-  const testCases = await Promise.all([
-    client.items.create({
-      projectId: project.id,
-      type: "test_case",
-      title: "TC-001: Verify Registration",
-      description: "Test user registration flow",
-      priority: "high",
-    }),
-    client.items.create({
-      projectId: project.id,
-      type: "test_case",
-      title: "TC-002: Verify Add to Cart",
-      description: "Test adding items to cart",
-      priority: "high",
-    }),
-  ]);
-
-  // Create traceability links
-  await Promise.all([
-    client.links.create({
-      sourceId: requirements[0].id,
-      targetId: testCases[0].id,
-      type: "verified_by",
-    }),
-    client.links.create({
-      sourceId: requirements[1].id,
-      targetId: testCases[1].id,
-      type: "verified_by",
-    }),
-  ]);
-
-  // Get coverage report
-  const coverage = await client.reports.coverage({
+  // Create requirement
+  const requirement = await client.items.create({
+    title: 'User Authentication',
+    view: 'requirements',
+    status: 'draft',
     projectId: project.id,
-    sourceType: "requirement",
-    targetType: "test_case",
+    metadata: { priority: 'high' }
   });
 
-  console.log(`
-Project: ${project.name}
-Requirements: ${requirements.length}
-Test Cases: ${testCases.length}
-Coverage: ${coverage.coveragePercent}%
-  `);
+  // Create test case
+  const testCase = await client.items.create({
+    title: 'Login Test',
+    view: 'test-cases',
+    status: 'draft',
+    projectId: project.id
+  });
+
+  // Create link
+  const link = await client.links.create({
+    sourceId: requirement.id,
+    targetId: testCase.id,
+    linkType: 'verified_by',
+    metadata: { confidence: 0.95 }
+  });
+
+  console.log(`Created: ${requirement.title} --[verified_by]--> ${testCase.title}`);
 }
 
 main().catch(console.error);
 ```
 
----
-
-## TypeScript Usage
-
-The SDK provides full TypeScript support:
-
-```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
-import type {
-  Project,
-  Item,
-  Link,
-  ItemType,
-  LinkType,
-  CreateItemInput,
-} from "@tracertm/sdk";
-
-const client = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY!,
-});
-
-// Type-safe item creation
-const input: CreateItemInput = {
-  projectId: "proj_123",
-  type: "requirement" as ItemType,
-  title: "My Requirement",
-  priority: "high",
-};
-
-const item: Item = await client.items.create(input);
-
-// Type inference works automatically
-const projects = await client.projects.list();
-// projects.data is Project[]
-```
-
----
-
-## Error Handling
-
-```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
-import {
-  TraceRTMError,
-  NotFoundError,
-  ValidationError,
-  AuthenticationError,
-} from "@tracertm/sdk/errors";
-
-const client = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-
-try {
-  const item = await client.items.get("item_nonexistent");
-} catch (error) {
-  if (error instanceof NotFoundError) {
-    console.log("Item not found");
-  } else if (error instanceof ValidationError) {
-    console.log("Invalid request:", error.details);
-  } else if (error instanceof AuthenticationError) {
-    console.log("Invalid API key");
-  } else if (error instanceof TraceRTMError) {
-    console.log("API error:", error.message);
-  } else {
-    throw error;
-  }
-}
-```
-
----
-
-## Configuration Options
-
-```typescript
-const client = new TraceRTMClient({
-  // Required
-  apiKey: process.env.TRACERTM_API_KEY,
-
-  // Optional
-  baseUrl: "https://api.tracertm.dev/v1", // Custom API endpoint
-  timeout: 30000, // Request timeout in ms
-  maxRetries: 3, // Retry failed requests
-  debug: false, // Enable debug logging
-});
-```
-
----
-
-## Environment Variables
-
-Create a `.env` file:
-
-```bash
-TRACERTM_API_KEY=rtm_live_sk_your_key_here
-```
-
-Load with dotenv:
-
-```typescript
-import "dotenv/config";
-import { TraceRTMClient } from "@tracertm/sdk";
-
-const client = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-```
-
----
-
 ## Next Steps
 
-- [First Request](/docs/api-reference/sdks/javascript/first-request) - Detailed first request guide
-- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - Complete API documentation
-- [Examples](/docs/api-reference/sdks/javascript/examples) - More code examples
-- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - TypeScript configuration
+- [Authentication](./03-authentication) - Authentication options
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - More examples

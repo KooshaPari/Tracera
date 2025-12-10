@@ -1,586 +1,110 @@
 ---
 title: "Workflows API"
-description: "Complete guide to managing workflows and item status transitions via the REST API"
+description: "Manage item status workflows and transitions in TraceRTM"
+keywords: [workflows, status, transitions, state machine, api]
 ---
 
 # Workflows API
 
-Workflows define the lifecycle of items in TraceRTM, controlling valid status transitions, approval requirements, and automation triggers. This guide covers workflow management and item transitions.
+Workflows define the allowed status transitions for items in your TraceRTM projects. Use the Workflows API to manage workflow definitions and transition item statuses.
 
-## Endpoints Overview
+## Overview
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/v1/projects/{project_id}/workflows` | List workflows |
-| `POST` | `/v1/projects/{project_id}/workflows` | Create workflow |
-| `GET` | `/v1/workflows/{workflow_id}` | Get workflow details |
-| `PATCH` | `/v1/workflows/{workflow_id}` | Update workflow |
-| `DELETE` | `/v1/workflows/{workflow_id}` | Delete workflow |
-| `POST` | `/v1/items/{item_id}/transition` | Transition item status |
-| `GET` | `/v1/items/{item_id}/transitions` | Get available transitions |
-| `GET` | `/v1/workflows/{workflow_id}/history` | Workflow change history |
+Workflows control:
+- **Status definitions**: Available statuses (draft, active, review, etc.)
+- **Transitions**: Allowed status changes
+- **Validation**: Rules for status transitions
+- **Automation**: Automatic actions on transitions
 
----
+## Workflow Structure
 
-## The Workflow Object
+A workflow defines states and transitions:
 
 ```json
 {
-  "id": "wf_standard_001",
-  "project_id": "proj_abc123",
-  "name": "Standard Requirement Workflow",
-  "description": "Standard approval workflow for requirements",
-  "item_types": ["requirement", "design"],
-  "is_default": true,
-  "statuses": [
-    {
-      "id": "draft",
-      "name": "Draft",
-      "color": "#6B7280",
-      "is_initial": true,
-      "is_final": false,
-      "allow_edit": true
-    },
-    {
-      "id": "in_review",
-      "name": "In Review",
-      "color": "#F59E0B",
-      "is_initial": false,
-      "is_final": false,
-      "allow_edit": false
-    },
-    {
-      "id": "approved",
-      "name": "Approved",
-      "color": "#10B981",
-      "is_initial": false,
-      "is_final": false,
-      "allow_edit": false
-    },
-    {
-      "id": "obsolete",
-      "name": "Obsolete",
-      "color": "#EF4444",
-      "is_initial": false,
-      "is_final": true,
-      "allow_edit": false
-    }
-  ],
+  "id": "workflow_standard",
+  "name": "Standard Workflow",
+  "states": ["draft", "active", "review", "approved"],
   "transitions": [
-    {
-      "id": "trans_001",
-      "from": "draft",
-      "to": "in_review",
-      "name": "Submit for Review",
-      "required_fields": ["description"],
-      "required_permissions": ["item:submit"],
-      "conditions": [],
-      "actions": [
-        {
-          "type": "notify",
-          "config": {"role": "reviewer"}
-        }
-      ]
-    },
-    {
-      "id": "trans_002",
-      "from": "in_review",
-      "to": "approved",
-      "name": "Approve",
-      "required_fields": [],
-      "required_permissions": ["item:approve"],
-      "conditions": [
-        {"type": "has_links", "config": {"min": 1}}
-      ],
-      "actions": [
-        {
-          "type": "notify",
-          "config": {"role": "author"}
-        },
-        {
-          "type": "set_field",
-          "config": {"field": "approved_at", "value": "{{now}}"}
-        }
-      ]
-    },
-    {
-      "id": "trans_003",
-      "from": "in_review",
-      "to": "draft",
-      "name": "Request Changes",
-      "required_fields": ["rejection_reason"],
-      "required_permissions": ["item:review"],
-      "conditions": [],
-      "actions": []
-    },
-    {
-      "id": "trans_004",
-      "from": "approved",
-      "to": "obsolete",
-      "name": "Mark Obsolete",
-      "required_fields": ["obsolete_reason"],
-      "required_permissions": ["item:obsolete"],
-      "conditions": [],
-      "actions": [
-        {
-          "type": "mark_links_suspect",
-          "config": {}
-        }
-      ]
-    }
-  ],
-  "created_at": "2024-01-15T10:00:00Z",
-  "updated_at": "2024-06-20T14:30:00Z"
+    {"from": "draft", "to": "active"},
+    {"from": "active", "to": "review"},
+    {"from": "review", "to": "approved"}
+  ]
 }
 ```
-
-### Workflow Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique workflow identifier (prefix: `wf_`) |
-| `project_id` | string | Parent project ID |
-| `name` | string | Workflow display name |
-| `description` | string | Workflow description |
-| `item_types` | array | Item types this workflow applies to |
-| `is_default` | boolean | Default workflow for item types |
-| `statuses` | array | Status definitions |
-| `transitions` | array | Transition definitions |
-| `created_at` | string | ISO 8601 creation timestamp |
-| `updated_at` | string | ISO 8601 last update timestamp |
-
-### Status Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Status identifier (lowercase, no spaces) |
-| `name` | string | Display name |
-| `color` | string | Hex color code for UI |
-| `is_initial` | boolean | Starting status for new items |
-| `is_final` | boolean | Terminal status (no outgoing transitions) |
-| `allow_edit` | boolean | Allow item edits in this status |
-
-### Transition Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Transition identifier |
-| `from` | string | Source status ID |
-| `to` | string | Target status ID |
-| `name` | string | Transition display name |
-| `required_fields` | array | Fields that must be set |
-| `required_permissions` | array | Permissions needed |
-| `conditions` | array | Conditions that must be met |
-| `actions` | array | Automated actions on transition |
-
----
 
 ## List Workflows
 
-Retrieve all workflows in a project.
+Get all workflows for a project.
 
-```http
-GET /v1/projects/{project_id}/workflows
+### Endpoint
+
+```
+GET /api/v1/workflows
 ```
 
 ### Query Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `item_type` | string | — | Filter by applicable item type |
-| `include_system` | boolean | true | Include system workflows |
-| `limit` | integer | 20 | Results per page |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | No | Filter by project |
 
-### Request
+### Request Example
 
 ```bash
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/workflows" \
-  -H "Authorization: Bearer rtm_live_sk_..."
+curl -X GET "https://api.tracertm.dev/v1/workflows?project_id=proj_123" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ### Response
 
 ```json
 {
-  "data": [
+  "workflows": [
     {
-      "id": "wf_standard_001",
-      "name": "Standard Requirement Workflow",
-      "description": "Standard approval workflow",
-      "item_types": ["requirement", "design"],
-      "is_default": true,
-      "status_count": 4,
-      "transition_count": 6,
-      "created_at": "2024-01-15T10:00:00Z"
-    },
-    {
-      "id": "wf_test_001",
-      "name": "Test Case Workflow",
-      "description": "Workflow for test cases",
-      "item_types": ["test_case"],
-      "is_default": true,
-      "status_count": 5,
-      "transition_count": 8,
-      "created_at": "2024-01-15T10:00:00Z"
+      "id": "workflow_standard",
+      "name": "Standard Workflow",
+      "states": ["draft", "active", "review", "approved"],
+      "project_id": "proj_123"
     }
-  ],
-  "pagination": {
-    "total": 5,
-    "limit": 20,
-    "has_next": false
-  }
+  ]
 }
 ```
-
-### SDK Examples
-
-#### Python
-
-```python
-from tracertm import TraceRTMClient
-
-client = TraceRTMClient(api_key="rtm_live_sk_...")
-
-# List all workflows
-workflows = client.workflows.list(project_id="proj_abc123")
-
-for wf in workflows.data:
-    print(f"{wf.name}: {wf.status_count} statuses, {wf.transition_count} transitions")
-
-# Filter by item type
-req_workflows = client.workflows.list(
-    project_id="proj_abc123",
-    item_type="requirement"
-)
-```
-
-#### TypeScript
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
-
-// List workflows
-const workflows = await client.workflows.list({
-  projectId: 'proj_abc123'
-});
-
-workflows.data.forEach(wf => {
-  console.log(`${wf.name}: ${wf.statusCount} statuses`);
-});
-```
-
-#### Go
-
-```go
-workflows, err := client.Workflows.List(ctx, "proj_abc123", &tracertm.ListWorkflowsRequest{})
-if err != nil {
-    log.Fatal(err)
-}
-
-for _, wf := range workflows.Data {
-    fmt.Printf("%s: %d statuses\n", wf.Name, wf.StatusCount)
-}
-```
-
----
-
-## Create Workflow
-
-Create a new workflow for a project.
-
-```http
-POST /v1/projects/{project_id}/workflows
-```
-
-### Request Body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | Yes | Workflow name |
-| `description` | string | No | Workflow description |
-| `item_types` | array | Yes | Applicable item types |
-| `is_default` | boolean | No | Set as default for item types |
-| `statuses` | array | Yes | Status definitions |
-| `transitions` | array | Yes | Transition definitions |
-
-### Request
-
-```bash
-curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/workflows" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "FDA Compliant Workflow",
-    "description": "Workflow with FDA 21 CFR Part 11 compliance",
-    "item_types": ["requirement"],
-    "is_default": false,
-    "statuses": [
-      {
-        "id": "draft",
-        "name": "Draft",
-        "color": "#6B7280",
-        "is_initial": true,
-        "is_final": false,
-        "allow_edit": true
-      },
-      {
-        "id": "pending_review",
-        "name": "Pending Review",
-        "color": "#F59E0B",
-        "is_initial": false,
-        "is_final": false,
-        "allow_edit": false
-      },
-      {
-        "id": "approved",
-        "name": "Approved",
-        "color": "#10B981",
-        "is_initial": false,
-        "is_final": false,
-        "allow_edit": false
-      },
-      {
-        "id": "released",
-        "name": "Released",
-        "color": "#3B82F6",
-        "is_initial": false,
-        "is_final": true,
-        "allow_edit": false
-      }
-    ],
-    "transitions": [
-      {
-        "from": "draft",
-        "to": "pending_review",
-        "name": "Submit for Review",
-        "required_fields": ["description"],
-        "required_permissions": ["item:submit"],
-        "conditions": [
-          {"type": "has_links", "config": {"min": 1, "link_type": "verified_by"}}
-        ],
-        "actions": [
-          {"type": "notify", "config": {"role": "reviewer"}}
-        ]
-      },
-      {
-        "from": "pending_review",
-        "to": "approved",
-        "name": "Approve",
-        "required_fields": ["approval_comment"],
-        "required_permissions": ["item:approve"],
-        "conditions": [
-          {"type": "electronic_signature", "config": {"required": true}}
-        ],
-        "actions": [
-          {"type": "audit_log", "config": {"event": "approval"}}
-        ]
-      },
-      {
-        "from": "approved",
-        "to": "released",
-        "name": "Release",
-        "required_fields": [],
-        "required_permissions": ["item:release"],
-        "conditions": [
-          {"type": "all_links_approved", "config": {}}
-        ],
-        "actions": []
-      }
-    ]
-  }'
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "id": "wf_fda_001",
-    "project_id": "proj_abc123",
-    "name": "FDA Compliant Workflow",
-    "description": "Workflow with FDA 21 CFR Part 11 compliance",
-    "item_types": ["requirement"],
-    "is_default": false,
-    "statuses": [...],
-    "transitions": [...],
-    "created_at": "2024-12-08T10:00:00Z",
-    "updated_at": "2024-12-08T10:00:00Z"
-  }
-}
-```
-
-### SDK Examples
-
-#### Python
-
-```python
-workflow = client.workflows.create(
-    project_id="proj_abc123",
-    name="FDA Compliant Workflow",
-    description="FDA 21 CFR Part 11 compliance",
-    item_types=["requirement"],
-    statuses=[
-        {"id": "draft", "name": "Draft", "is_initial": True, "allow_edit": True},
-        {"id": "pending_review", "name": "Pending Review", "allow_edit": False},
-        {"id": "approved", "name": "Approved", "allow_edit": False},
-        {"id": "released", "name": "Released", "is_final": True, "allow_edit": False}
-    ],
-    transitions=[
-        {
-            "from": "draft",
-            "to": "pending_review",
-            "name": "Submit for Review",
-            "required_permissions": ["item:submit"]
-        },
-        {
-            "from": "pending_review",
-            "to": "approved",
-            "name": "Approve",
-            "required_permissions": ["item:approve"]
-        }
-    ]
-)
-
-print(f"Created workflow: {workflow.id}")
-```
-
----
-
-## Get Workflow
-
-Retrieve a workflow with full details.
-
-```http
-GET /v1/workflows/{workflow_id}
-```
-
-### Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `include` | string | — | Include: `statistics`, `history` |
-
-### Request
-
-```bash
-curl "https://api.tracertm.dev/v1/workflows/wf_standard_001?include=statistics" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "id": "wf_standard_001",
-    "name": "Standard Requirement Workflow",
-    "statuses": [...],
-    "transitions": [...],
-    "statistics": {
-      "items_using": 450,
-      "items_by_status": {
-        "draft": 50,
-        "in_review": 30,
-        "approved": 350,
-        "obsolete": 20
-      },
-      "transitions_last_30_days": 125
-    }
-  }
-}
-```
-
----
-
-## Update Workflow
-
-Update an existing workflow. Changes affect future transitions, not existing items.
-
-```http
-PATCH /v1/workflows/{workflow_id}
-```
-
-### Request Body
-
-All fields are optional. Provide only fields to update.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | string | Workflow name |
-| `description` | string | Workflow description |
-| `item_types` | array | Applicable item types |
-| `is_default` | boolean | Default workflow flag |
-| `statuses` | array | Replace all statuses |
-| `transitions` | array | Replace all transitions |
-
-### Request
-
-```bash
-curl -X PATCH "https://api.tracertm.dev/v1/workflows/wf_standard_001" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "description": "Updated workflow description",
-    "transitions": [...]
-  }'
-```
-
----
-
-## Delete Workflow
-
-Delete a workflow. Cannot delete if items are using it.
-
-```http
-DELETE /v1/workflows/{workflow_id}
-```
-
-### Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `migrate_to` | string | — | Workflow ID to migrate items to |
-
-### Request
-
-```bash
-curl -X DELETE "https://api.tracertm.dev/v1/workflows/wf_old_001?migrate_to=wf_new_001" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
----
 
 ## Transition Item Status
 
-Transition an item to a new status.
+Transition an item to a new status according to workflow rules.
 
-```http
-POST /v1/items/{item_id}/transition
+### Endpoint
+
 ```
+POST /api/v1/items/{item_id}/transition
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item ID to transition |
 
 ### Request Body
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `to_status` | string | Yes | Target status ID |
-| `comment` | string | Conditional | Transition comment |
-| `fields` | object | Conditional | Required field values |
-| `signature` | object | Conditional | Electronic signature |
+```json
+{
+  "to_status": "active",
+  "comment": "Ready for review"
+}
+```
 
-### Request
+### Request Example
 
 ```bash
-curl -X POST "https://api.tracertm.dev/v1/items/item_req_001/transition" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
+curl -X POST "https://api.tracertm.dev/v1/items/item_abc123/transition" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "to_status": "in_review",
-    "comment": "Ready for technical review",
-    "fields": {
-      "reviewer_id": "user_reviewer123"
-    }
+    "to_status": "active",
+    "comment": "Ready for review"
   }'
 ```
 
@@ -588,311 +112,108 @@ curl -X POST "https://api.tracertm.dev/v1/items/item_req_001/transition" \
 
 ```json
 {
-  "data": {
-    "item_id": "item_req_001",
-    "previous_status": "draft",
-    "new_status": "in_review",
-    "transition": {
-      "id": "trans_001",
-      "name": "Submit for Review"
-    },
-    "transitioned_at": "2024-12-08T10:00:00Z",
-    "transitioned_by": "user_author123",
-    "comment": "Ready for technical review",
-    "actions_executed": [
-      {
-        "type": "notify",
-        "status": "success",
-        "details": {"notified": ["user_reviewer123"]}
-      }
-    ]
-  }
+  "item_id": "item_abc123",
+  "previous_status": "draft",
+  "new_status": "active",
+  "transitioned_at": "2025-01-20T10:30:00Z",
+  "transitioned_by": "user_123"
 }
 ```
 
-### SDK Examples
-
-#### Python
+### Python Example
 
 ```python
-# Simple transition
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Transition item status
 result = client.items.transition(
-    item_id="item_req_001",
-    to_status="in_review",
+    item_id="item_abc123",
+    to_status="active",
     comment="Ready for review"
 )
 
 print(f"Transitioned from {result.previous_status} to {result.new_status}")
+```
 
-# Transition with approval signature
-result = client.items.transition(
-    item_id="item_req_001",
-    to_status="approved",
-    comment="Approved after technical review",
-    signature={
-        "meaning": "I approve this requirement",
-        "password": "user_password"  # Or use MFA
-    }
+## Common Status Values
+
+| Status | Description | Typical Use |
+|--------|-------------|-------------|
+| `draft` | Work in progress | Initial state |
+| `active` | Currently active | In development |
+| `review` | Under review | Pending approval |
+| `approved` | Approved | Finalized |
+| `deprecated` | No longer valid | Superseded |
+| `archived` | Archived | Historical |
+
+## Workflow Validation
+
+The API validates transitions:
+
+- **Valid transition**: Transition is allowed by workflow
+- **Required fields**: All required fields are present
+- **Permissions**: User has permission to transition
+
+### Invalid Transition Error
+
+```json
+{
+  "error": {
+    "code": "invalid_transition",
+    "message": "Cannot transition from 'approved' to 'draft'",
+    "allowed_transitions": ["archived"]
+  }
+}
+```
+
+## Best Practices
+
+### 1. Check Allowed Transitions
+
+Before transitioning, check allowed transitions:
+
+```python
+# Get item current status
+item = client.items.get("item_abc123")
+current_status = item.status
+
+# Get workflow
+workflow = client.workflows.get(project_id="proj_123")
+
+# Check allowed transitions
+allowed = workflow.get_allowed_transitions(current_status)
+print(f"Can transition to: {allowed}")
+
+# Transition if allowed
+if "active" in allowed:
+    client.items.transition("item_abc123", "active")
+```
+
+### 2. Add Transition Comments
+
+Always include comments for audit trail:
+
+```python
+client.items.transition(
+    item_id="item_abc123",
+    to_status="active",
+    comment="All requirements met, ready for production"
 )
 ```
 
-#### TypeScript
-
-```typescript
-// Transition item
-const result = await client.items.transition({
-  itemId: 'item_req_001',
-  toStatus: 'in_review',
-  comment: 'Ready for review'
-});
-
-console.log(`Transitioned to ${result.newStatus}`);
-
-// With required fields
-const result = await client.items.transition({
-  itemId: 'item_req_001',
-  toStatus: 'approved',
-  comment: 'Approved',
-  fields: {
-    approvalComment: 'Requirements are complete and testable'
-  }
-});
-```
-
----
-
-## Get Available Transitions
-
-Get valid transitions for an item's current status.
-
-```http
-GET /v1/items/{item_id}/transitions
-```
-
-### Request
-
-```bash
-curl "https://api.tracertm.dev/v1/items/item_req_001/transitions" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "item_id": "item_req_001",
-    "current_status": "draft",
-    "available_transitions": [
-      {
-        "id": "trans_001",
-        "name": "Submit for Review",
-        "to_status": "in_review",
-        "can_execute": true,
-        "required_fields": ["description"],
-        "missing_fields": [],
-        "conditions_met": true,
-        "condition_details": [
-          {"type": "has_links", "met": true, "message": "Has 2 verification links"}
-        ]
-      },
-      {
-        "id": "trans_005",
-        "name": "Mark Obsolete",
-        "to_status": "obsolete",
-        "can_execute": false,
-        "required_fields": ["obsolete_reason"],
-        "missing_fields": ["obsolete_reason"],
-        "conditions_met": true,
-        "condition_details": []
-      }
-    ]
-  }
-}
-```
-
-### SDK Examples
-
-#### Python
+### 3. Handle Workflow Errors
 
 ```python
-transitions = client.items.available_transitions(item_id="item_req_001")
-
-print(f"Current status: {transitions.current_status}")
-print("Available transitions:")
-
-for t in transitions.available_transitions:
-    status = "✓" if t.can_execute else "✗"
-    print(f"  {status} {t.name} → {t.to_status}")
-    if not t.can_execute:
-        if t.missing_fields:
-            print(f"      Missing: {', '.join(t.missing_fields)}")
+try:
+    result = client.items.transition("item_abc123", "active")
+except InvalidTransitionError as e:
+    print(f"Cannot transition: {e.message}")
+    print(f"Allowed transitions: {e.allowed_transitions}")
 ```
-
----
-
-## Transition Conditions
-
-### Built-in Condition Types
-
-| Type | Description | Config |
-|------|-------------|--------|
-| `has_links` | Requires minimum links | `{"min": 1, "link_type": "verified_by"}` |
-| `all_links_approved` | All linked items approved | `{}` |
-| `no_open_issues` | No linked open issues | `{}` |
-| `required_fields_set` | Specific fields must have values | `{"fields": ["priority"]}` |
-| `custom_field_value` | Custom field matches value | `{"field": "risk", "operator": "eq", "value": "low"}` |
-| `electronic_signature` | Requires e-signature | `{"required": true}` |
-| `approval_count` | Minimum approvals | `{"min": 2}` |
-| `time_in_status` | Minimum time in status | `{"hours": 24}` |
-
-### Condition Example
-
-```json
-{
-  "conditions": [
-    {
-      "type": "has_links",
-      "config": {
-        "min": 1,
-        "link_type": "verified_by"
-      }
-    },
-    {
-      "type": "custom_field_value",
-      "config": {
-        "field": "safety_level",
-        "operator": "in",
-        "value": ["ASIL-C", "ASIL-D"]
-      }
-    }
-  ]
-}
-```
-
----
-
-## Transition Actions
-
-### Built-in Action Types
-
-| Type | Description | Config |
-|------|-------------|--------|
-| `notify` | Send notification | `{"role": "reviewer", "users": [...]}` |
-| `set_field` | Set item field value | `{"field": "approved_at", "value": "{{now}}"}` |
-| `mark_links_suspect` | Mark related links suspect | `{}` |
-| `create_task` | Create follow-up task | `{"title": "...", "assignee": "..."}` |
-| `webhook` | Call external webhook | `{"url": "...", "method": "POST"}` |
-| `audit_log` | Create audit entry | `{"event": "approval"}` |
-
-### Action Example
-
-```json
-{
-  "actions": [
-    {
-      "type": "notify",
-      "config": {
-        "role": "reviewer",
-        "template": "review_requested"
-      }
-    },
-    {
-      "type": "set_field",
-      "config": {
-        "field": "submitted_at",
-        "value": "{{now}}"
-      }
-    },
-    {
-      "type": "webhook",
-      "config": {
-        "url": "https://ci.example.com/trigger",
-        "method": "POST",
-        "body": {"item_id": "{{item.id}}"}
-      }
-    }
-  ]
-}
-```
-
----
-
-## Error Responses
-
-### Invalid Transition
-
-```json
-{
-  "error": {
-    "code": "INVALID_TRANSITION",
-    "message": "Cannot transition from 'draft' to 'approved'",
-    "status": 422,
-    "details": {
-      "current_status": "draft",
-      "requested_status": "approved",
-      "allowed_statuses": ["in_review", "obsolete"]
-    }
-  }
-}
-```
-
-### Transition Conditions Not Met
-
-```json
-{
-  "error": {
-    "code": "TRANSITION_CONDITIONS_NOT_MET",
-    "message": "Transition conditions not satisfied",
-    "status": 422,
-    "details": {
-      "failed_conditions": [
-        {
-          "type": "has_links",
-          "message": "Item must have at least 1 verification link"
-        }
-      ]
-    }
-  }
-}
-```
-
-### Missing Required Fields
-
-```json
-{
-  "error": {
-    "code": "MISSING_REQUIRED_FIELDS",
-    "message": "Required fields not provided for transition",
-    "status": 422,
-    "details": {
-      "missing_fields": ["rejection_reason", "reviewer_comment"]
-    }
-  }
-}
-```
-
-### Workflow In Use
-
-```json
-{
-  "error": {
-    "code": "WORKFLOW_IN_USE",
-    "message": "Cannot delete workflow with active items",
-    "status": 409,
-    "details": {
-      "item_count": 450,
-      "hint": "Use migrate_to parameter to move items to another workflow"
-    }
-  }
-}
-```
-
----
 
 ## Related Documentation
 
-- [Items API](/docs/api-reference/rest-api/endpoints/requirements) - Item management
-- [Projects API](/docs/api-reference/rest-api/endpoints/projects) - Project configuration
-- [Webhooks API](/docs/api-reference/rest-api/webhooks) - Workflow event subscriptions
-- [Filtering](/docs/api-reference/rest-api/filtering) - Query filtering
+- [Items API](./02-artifacts) - Manage items
+- [Projects API](./01-projects) - Project management

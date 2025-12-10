@@ -9,7 +9,10 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
+import tempfile
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Force pytest-asyncio plugin to load
 pytest_plugins = ("pytest_asyncio",)
@@ -38,11 +41,47 @@ except ImportError:
     Base = None
 
 
+def _build_sync_engine():
+    db_url = os.getenv("TEST_SYNC_DATABASE_URL")
+    temp_path = None
+    if db_url is None:
+        temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        temp_path = temp_db.name
+        temp_db.close()
+        db_url = f"sqlite:///{temp_path}"
+
+    engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    if Base is not None:
+        Base.metadata.create_all(engine)
+    return engine, temp_path
+
+
+@pytest.fixture(scope="function")
+def db_session():
+    """Synchronous SQLAlchemy session for tests expecting sync operations."""
+    engine, temp_path = _build_sync_engine()
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        try:
+            session.rollback()
+        finally:
+            session.close()
+            if Base is not None:
+                Base.metadata.drop_all(engine)
+            engine.dispose()
+            if temp_path:
+                try:
+                    Path(temp_path).unlink()
+                except Exception:
+                    pass
+
+
 @pytest_asyncio.fixture(scope="session")
 async def test_db_engine():
     """Create test database engine with SQLite (file-based for sync/async compatibility)."""
-    import tempfile
-
     # Use file-based SQLite for both async and sync access
     # In-memory databases can't be reliably shared between async and sync engines
     db_url = os.getenv("TEST_DATABASE_URL")
@@ -83,9 +122,9 @@ async def test_db_engine():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def db_session(test_db_engine):
+async def async_db_session(test_db_engine):
     """
-    Create a test database session for each test with proper transaction handling.
+    Create an async test database session for each test with proper transaction handling.
 
     This fixture provides a clean session for each test. Tests can call commit()
     or flush() as needed, and all changes will be automatically rolled back
@@ -102,11 +141,17 @@ async def db_session(test_db_engine):
 
     async with async_session_maker() as session:
         try:
-            yield session
+            sync_session = session.sync_session if hasattr(session, "sync_session") else None
+            if sync_session is not None:
+                yield sync_session
+            else:
+                yield session
         finally:
             # Always rollback to ensure test isolation
-            await session.rollback()
-            await session.close()
+            try:
+                await session.rollback()
+            finally:
+                await session.close()
 
 
 @pytest_asyncio.fixture

@@ -1,32 +1,99 @@
 ---
-title: "Install on macOS"
-description: "Documentation for Install on macOS"
+title: "CLI Installation - macOS"
+description: "Install the TraceRTM CLI on macOS using Homebrew or pip"
+keywords: [cli, installation, macos, homebrew, pip]
 ---
 
-# Install on macOS
+# CLI Installation - macOS
 
-This page contains documentation for Install on macOS.
+Install the TraceRTM CLI on macOS using Homebrew (recommended) or pip.
 
-## Overview
+## Method 1: Homebrew (Recommended)
 
-This section covers the key aspects of Install on macOS in TraceRTM.
+### Install Homebrew
 
-## Getting Started
+If you don't have Homebrew installed:
 
-To get started with Install on macOS:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
-- Review the Install on macOS and fundamentals
-- Explore practical examples
-- Check out the API reference
+### Install TraceRTM CLI
 
-## Key Concepts
+```bash
+brew install tracertm-cli
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Upgrade
+
+```bash
+brew upgrade tracertm-cli
+```
+
+### Uninstall
+
+```bash
+brew uninstall tracertm-cli
+```
+
+## Method 2: pip
+
+### Install Python 3.12+
+
+```bash
+# Using Homebrew
+brew install python@3.12
+
+# Or download from python.org
+```
+
+### Install CLI
+
+```bash
+pip3 install tracertm-cli
+```
+
+### Add to PATH
+
+If `trace` command is not found:
+
+```bash
+# Add to ~/.zshrc or ~/.bash_profile
+echo 'export PATH="$HOME/Library/Python/3.12/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## Verify Installation
+
+```bash
+trace --version
+```
+
+Expected output:
+```
+tracertm-cli version 2.4.0
+```
+
+## Troubleshooting
+
+### Command Not Found
+
+```bash
+# Check installation
+pip3 show tracertm-cli
+
+# Use python -m instead
+python3 -m tracertm --version
+```
+
+### Permission Errors
+
+```bash
+# Use --user flag
+pip3 install --user tracertm-cli
+```
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- [Configuration](../02-configuration) - Configure CLI
+- [Commands](../03-commands) - Learn commands

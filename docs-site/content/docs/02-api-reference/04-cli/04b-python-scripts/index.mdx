@@ -1,32 +1,80 @@
 ---
-title: "Python Scripts"
-description: "Documentation for Python Scripts"
+title: "Python Scripting"
+description: "Use the TraceRTM Python SDK in CLI scripts"
+keywords: [cli, python, scripting, sdk, automation]
 ---
 
-# Python Scripts
+# Python Scripting
 
-This page contains documentation for Python Scripts.
+Use the TraceRTM Python SDK in your CLI scripts for advanced automation.
 
-## Overview
+## Using Python SDK
 
-This section covers the key aspects of Python Scripts in TraceRTM.
+### Basic Script
 
-## Getting Started
+```python
+#!/usr/bin/env python3
+from tracertm import TraceRTM
+import os
 
-To get started with Python Scripts:
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
 
-- Review the Python Scripts and fundamentals
-- Explore practical examples
-- Check out the API reference
+# List projects
+projects = client.projects.list()
+for project in projects:
+    print(f"{project.id}: {project.name}")
+```
 
-## Key Concepts
+### Advanced Script
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+```python
+#!/usr/bin/env python3
+from tracertm import TraceRTM
+import sys
 
-## Next Steps
+def main():
+    client = TraceRTM(api_key=sys.argv[1])
+    project_id = sys.argv[2]
+    
+    # Query items
+    items = client.query_items(
+        view="requirements",
+        status="active",
+        limit=100
+    )
+    
+    # Process items
+    for item in items:
+        print(f"Processing: {item['title']}")
+        # Your logic here
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+if __name__ == "__main__":
+    main()
+```
+
+## Combining CLI and SDK
+
+```python
+import subprocess
+import json
+
+# Use CLI for simple operations
+result = subprocess.run(
+    ["trace", "project", "list", "--output", "json"],
+    capture_output=True,
+    text=True
+)
+projects = json.loads(result.stdout)
+
+# Use SDK for complex operations
+from tracertm import TraceRTM
+client = TraceRTM()
+for project in projects:
+    items = client.query_items(project_id=project["id"])
+    # Process with SDK
+```
+
+## Related Documentation
+
+- [Scripting](./04-scripting) - Scripting basics
+- [Python SDK](/docs/api-reference/sdks/python) - SDK documentation

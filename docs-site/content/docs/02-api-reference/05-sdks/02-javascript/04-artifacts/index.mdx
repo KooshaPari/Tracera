@@ -1,590 +1,158 @@
 ---
-title: "Artifacts"
-description: "Upload, download, and manage file artifacts with the TraceRTM JavaScript SDK"
+title: "JavaScript SDK - Working with Artifacts"
+description: "Create, read, update, and delete items using the JavaScript SDK"
+keywords: [javascript, sdk, items, artifacts, crud]
 ---
 
-# Artifacts
+# Working with Artifacts
 
-The TraceRTM JavaScript SDK provides comprehensive support for managing file artifacts such as documents, images, test results, and other files associated with your traceability items.
+The JavaScript SDK provides methods to manage items (artifacts) in your TraceRTM projects.
 
-## Overview
+## Initialize Client
 
-Artifacts are files attached to items or projects in TraceRTM. Common use cases include:
+```javascript
+import { TraceRTM } from '@tracertm/sdk';
 
-- Attaching specification documents to requirements
-- Uploading test reports to test cases
-- Storing design mockups with user stories
-- Associating code snippets or logs with bugs
-
----
-
-## Uploading Artifacts
-
-### Node.js - File Path
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-import { createReadStream } from 'fs';
-import path from 'path';
-
-const client = new TraceRTMClient();
-
-// Upload a file from disk
-const artifact = await client.artifacts.upload({
-  itemId: 'item_req_001',
-  filePath: './specs/requirements.pdf',
-  description: 'Requirements specification document'
-});
-
-console.log(`Uploaded: ${artifact.filename}`);
-console.log(`Size: ${artifact.size} bytes`);
-console.log(`URL: ${artifact.downloadUrl}`);
-```
-
-### Node.js - Buffer
-
-```typescript
-// Upload from buffer (e.g., generated content)
-const reportContent = await generateTestReport();
-
-const artifact = await client.artifacts.upload({
-  itemId: 'item_tc_001',
-  content: Buffer.from(reportContent),
-  filename: 'test-report.html',
-  contentType: 'text/html',
-  description: 'Automated test report'
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
 });
 ```
 
-### Node.js - Stream
+## Query Items
 
-```typescript
-import { createReadStream } from 'fs';
+```javascript
+// Query by view
+const items = await client.items.query({
+  view: 'requirements',
+  limit: 50
+});
 
-// Upload from stream (memory efficient for large files)
-const artifact = await client.artifacts.upload({
-  itemId: 'item_req_001',
-  content: createReadStream('./large-file.zip'),
-  filename: 'archive.zip',
-  contentType: 'application/zip'
+// Query by status
+const items = await client.items.query({
+  status: 'active',
+  limit: 50
+});
+
+// Multiple filters
+const items = await client.items.query({
+  view: 'requirements',
+  status: 'active',
+  limit: 50
 });
 ```
 
-### Browser - File Input
+## Create Item
 
-```typescript
-// Handle file input in browser
-const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-
-fileInput.addEventListener('change', async (event) => {
-  const file = fileInput.files?.[0];
-  if (!file) return;
-
-  const artifact = await client.artifacts.upload({
-    itemId: 'item_req_001',
-    content: file,
-    filename: file.name,
-    contentType: file.type,
-    description: 'User uploaded file'
-  });
-
-  console.log(`Uploaded: ${artifact.filename}`);
-});
-```
-
-### Browser - Drag and Drop
-
-```typescript
-const dropZone = document.getElementById('dropZone');
-
-dropZone.addEventListener('drop', async (event) => {
-  event.preventDefault();
-
-  const files = event.dataTransfer?.files;
-  if (!files?.length) return;
-
-  const uploads = Array.from(files).map(file =>
-    client.artifacts.upload({
-      itemId: 'item_req_001',
-      content: file,
-      filename: file.name,
-      contentType: file.type
-    })
-  );
-
-  const artifacts = await Promise.all(uploads);
-  console.log(`Uploaded ${artifacts.length} files`);
-});
-```
-
-### Upload to Project
-
-```typescript
-// Upload artifact at project level (not attached to specific item)
-const artifact = await client.artifacts.upload({
-  projectId: 'proj_abc123',
-  filePath: './docs/architecture.png',
-  description: 'System architecture diagram'
-});
-```
-
----
-
-## Downloading Artifacts
-
-### Node.js - Save to File
-
-```typescript
-import { writeFile } from 'fs/promises';
-
-// Download artifact content
-const content = await client.artifacts.download('art_abc123');
-
-// Save to file
-await writeFile('./downloads/requirements.pdf', content);
-```
-
-### Node.js - Stream to File
-
-```typescript
-import { createWriteStream } from 'fs';
-import { pipeline } from 'stream/promises';
-
-// Stream large files to avoid memory issues
-const stream = await client.artifacts.downloadStream('art_abc123');
-const output = createWriteStream('./downloads/large-file.zip');
-
-await pipeline(stream, output);
-```
-
-### Browser - Download Link
-
-```typescript
-// Get download URL for browser
-const url = await client.artifacts.getDownloadUrl('art_abc123', {
-  expiresIn: 3600  // URL valid for 1 hour
-});
-
-// Create download link
-const link = document.createElement('a');
-link.href = url;
-link.download = 'requirements.pdf';
-link.click();
-```
-
-### Browser - Blob
-
-```typescript
-// Download as blob for in-browser processing
-const blob = await client.artifacts.downloadBlob('art_abc123');
-
-// Display image
-const imageUrl = URL.createObjectURL(blob);
-document.getElementById('preview').src = imageUrl;
-```
-
----
-
-## Listing Artifacts
-
-### List Item Artifacts
-
-```typescript
-// List all artifacts for an item
-const { data: artifacts } = await client.artifacts.list({
-  itemId: 'item_req_001'
-});
-
-for (const artifact of artifacts) {
-  console.log(`${artifact.filename} (${artifact.size} bytes)`);
-  console.log(`  Uploaded: ${artifact.createdAt}`);
-  console.log(`  Type: ${artifact.contentType}`);
-}
-```
-
-### List Project Artifacts
-
-```typescript
-// List all artifacts in a project
-const { data: artifacts } = await client.artifacts.list({
-  projectId: 'proj_abc123',
-  limit: 50,
-  offset: 0
-});
-```
-
-### Filter Artifacts
-
-```typescript
-// Filter by content type
-const { data: pdfs } = await client.artifacts.list({
-  projectId: 'proj_abc123',
-  contentType: 'application/pdf'
-});
-
-// Filter by filename pattern
-const { data: reports } = await client.artifacts.list({
-  projectId: 'proj_abc123',
-  filenameContains: 'report'
-});
-
-// Filter by date range
-const { data: recent } = await client.artifacts.list({
-  projectId: 'proj_abc123',
-  createdAfter: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)  // Last 7 days
-});
-```
-
-### Iterate All Artifacts
-
-```typescript
-// Iterate through all artifacts (handles pagination)
-for await (const artifact of client.artifacts.iterate({
-  projectId: 'proj_abc123'
-})) {
-  console.log(`${artifact.filename}: ${artifact.size} bytes`);
-}
-```
-
----
-
-## Managing Artifacts
-
-### Get Artifact Details
-
-```typescript
-const artifact = await client.artifacts.get('art_abc123');
-
-console.log(`ID: ${artifact.id}`);
-console.log(`Filename: ${artifact.filename}`);
-console.log(`Size: ${artifact.size}`);
-console.log(`Content-Type: ${artifact.contentType}`);
-console.log(`Description: ${artifact.description}`);
-console.log(`Checksum: ${artifact.checksum}`);
-console.log(`Created: ${artifact.createdAt}`);
-console.log(`Created By: ${artifact.createdBy}`);
-```
-
-### Update Artifact Metadata
-
-```typescript
-const artifact = await client.artifacts.update('art_abc123', {
-  description: 'Updated description',
+```javascript
+const item = await client.items.create({
+  title: 'New Requirement',
+  view: 'requirements',
+  status: 'draft',
+  description: 'Item description',
   metadata: {
-    version: '2.0',
-    reviewed: true
+    priority: 'high',
+    component: 'api'
+  }
+});
+
+console.log(`Created item: ${item.id}`);
+```
+
+## Get Item
+
+```javascript
+const item = await client.items.get('item_abc123');
+console.log(`Title: ${item.title}`);
+console.log(`Status: ${item.status}`);
+```
+
+## Update Item
+
+```javascript
+const updated = await client.items.update('item_abc123', {
+  title: 'Updated Title',
+  status: 'active'
+});
+```
+
+## Delete Item
+
+```javascript
+await client.items.delete('item_abc123');
+```
+
+## Working with Links
+
+### Create Link
+
+```javascript
+const link = await client.links.create({
+  sourceId: 'item_req_001',
+  targetId: 'item_test_001',
+  linkType: 'verified_by',
+  metadata: {
+    confidence: 0.95
   }
 });
 ```
 
-### Delete Artifact
+### Query Links
 
-```typescript
-// Delete single artifact
-await client.artifacts.delete('art_abc123');
+```javascript
+const links = await client.links.query({
+  projectId: 'proj_123',
+  linkType: 'verified_by'
+});
 
-// Delete multiple artifacts
-await client.artifacts.bulkDelete([
-  'art_abc123',
-  'art_def456',
-  'art_ghi789'
-]);
-```
-
-### Move Artifact
-
-```typescript
-// Move artifact to different item
-const artifact = await client.artifacts.move('art_abc123', {
-  targetItemId: 'item_req_002'
+links.forEach(link => {
+  console.log(`${link.sourceId} --[${link.linkType}]--> ${link.targetId}`);
 });
 ```
 
-### Copy Artifact
+## Examples
 
-```typescript
-// Copy artifact to another item
-const newArtifact = await client.artifacts.copy('art_abc123', {
-  targetItemId: 'item_req_002'
-});
-```
+### Create Requirement and Test Case
 
----
-
-## Artifact Versions
-
-### Upload New Version
-
-```typescript
-// Upload new version of existing artifact
-const artifact = await client.artifacts.uploadVersion('art_abc123', {
-  filePath: './specs/requirements-v2.pdf',
-  versionComment: 'Updated with new requirements'
+```javascript
+// Create requirement
+const req = await client.items.create({
+  title: 'User Authentication',
+  view: 'requirements',
+  status: 'draft'
 });
 
-console.log(`Version: ${artifact.version}`);
-```
-
-### List Versions
-
-```typescript
-// Get all versions of an artifact
-const { data: versions } = await client.artifacts.listVersions('art_abc123');
-
-for (const version of versions) {
-  console.log(`v${version.version}: ${version.createdAt}`);
-  console.log(`  Comment: ${version.versionComment}`);
-  console.log(`  Size: ${version.size} bytes`);
-}
-```
-
-### Download Specific Version
-
-```typescript
-// Download a specific version
-const content = await client.artifacts.download('art_abc123', {
-  version: 2
-});
-```
-
-### Restore Version
-
-```typescript
-// Restore a previous version as current
-const artifact = await client.artifacts.restoreVersion('art_abc123', {
-  version: 1
-});
-```
-
----
-
-## Bulk Operations
-
-### Bulk Upload
-
-```typescript
-import { glob } from 'glob';
-
-// Upload multiple files at once
-const filePaths = await glob('./docs/*.pdf');
-
-const artifacts = await client.artifacts.bulkUpload({
-  itemId: 'item_req_001',
-  files: filePaths.map(fp => ({ filePath: fp })),
-  description: 'Specification documents'
+// Create test case
+const test = await client.items.create({
+  title: 'Login Test',
+  view: 'test-cases',
+  status: 'draft'
 });
 
-for (const artifact of artifacts) {
-  console.log(`Uploaded: ${artifact.filename}`);
-}
-```
-
-### Bulk Download
-
-```typescript
-// Download all artifacts for an item
-await client.artifacts.bulkDownload({
-  itemId: 'item_req_001',
-  destination: './downloads/'
-});
-
-// Download as ZIP archive
-await client.artifacts.downloadZip({
-  itemId: 'item_req_001',
-  destination: './downloads/artifacts.zip'
+// Link them
+const link = await client.links.create({
+  sourceId: req.id,
+  targetId: test.id,
+  linkType: 'verified_by'
 });
 ```
-
----
-
-## Progress Tracking
-
-### Upload Progress
-
-```typescript
-const artifact = await client.artifacts.upload({
-  itemId: 'item_req_001',
-  filePath: './large-file.zip',
-  onProgress: (progress) => {
-    console.log(`Upload progress: ${progress.percent}%`);
-    console.log(`${progress.loaded} / ${progress.total} bytes`);
-  }
-});
-```
-
-### Download Progress
-
-```typescript
-const content = await client.artifacts.download('art_abc123', {
-  onProgress: (progress) => {
-    console.log(`Download progress: ${progress.percent}%`);
-  }
-});
-```
-
-### React Progress Component
-
-```tsx
-import { useState } from 'react';
-
-function FileUpload({ itemId }: { itemId: string }) {
-  const [progress, setProgress] = useState(0);
-  const [uploading, setUploading] = useState(false);
-
-  const handleUpload = async (file: File) => {
-    setUploading(true);
-    setProgress(0);
-
-    try {
-      await client.artifacts.upload({
-        itemId,
-        content: file,
-        filename: file.name,
-        onProgress: (p) => setProgress(p.percent)
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div>
-      <input
-        type="file"
-        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
-        disabled={uploading}
-      />
-      {uploading && (
-        <progress value={progress} max={100}>
-          {progress}%
-        </progress>
-      )}
-    </div>
-  );
-}
-```
-
----
-
-## Content Type Handling
-
-### Supported Content Types
-
-```typescript
-import { ContentType } from '@tracertm/sdk';
-
-// Use predefined content types
-const artifact = await client.artifacts.upload({
-  itemId: 'item_req_001',
-  filePath: './doc.pdf',
-  contentType: ContentType.PDF
-});
-
-// Available content types
-ContentType.PDF          // application/pdf
-ContentType.DOCX         // application/vnd.openxmlformats-officedocument.wordprocessingml.document
-ContentType.XLSX         // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-ContentType.PNG          // image/png
-ContentType.JPEG         // image/jpeg
-ContentType.JSON         // application/json
-ContentType.XML          // application/xml
-ContentType.HTML         // text/html
-ContentType.TEXT         // text/plain
-ContentType.ZIP          // application/zip
-```
-
-### Auto-Detection
-
-```typescript
-// Content type is auto-detected from filename
-const artifact = await client.artifacts.upload({
-  itemId: 'item_req_001',
-  filePath: './image.png'  // Auto-detects image/png
-});
-```
-
----
 
 ## Error Handling
 
-```typescript
-import {
-  NotFoundError,
-  ValidationError,
-  FileTooLargeError,
-  UnsupportedContentTypeError,
-  QuotaExceededError
-} from '@tracertm/sdk/errors';
+```javascript
+import { NotFoundError, ValidationError } from '@tracertm/sdk';
 
 try {
-  const artifact = await client.artifacts.upload({
-    itemId: 'item_req_001',
-    filePath: './large-file.zip'
-  });
+  const item = await client.items.get('item_abc123');
 } catch (error) {
-  if (error instanceof FileTooLargeError) {
-    console.log(`File too large: ${error.size} bytes (max: ${error.maxSize})`);
-  } else if (error instanceof UnsupportedContentTypeError) {
-    console.log(`Unsupported type: ${error.contentType}`);
-  } else if (error instanceof QuotaExceededError) {
-    console.log(`Storage quota exceeded: ${error.used}/${error.limit} bytes`);
-  } else if (error instanceof NotFoundError) {
+  if (error instanceof NotFoundError) {
     console.log('Item not found');
   } else if (error instanceof ValidationError) {
-    for (const err of error.errors) {
-      console.log(`  ${err.field}: ${err.message}`);
-    }
+    console.log(`Validation error: ${error.message}`);
   }
 }
 ```
 
----
+## Next Steps
 
-## Best Practices
-
-### 1. Use Streaming for Large Files
-
-```typescript
-// Bad - loads entire file into memory
-const content = await fs.promises.readFile('./large-file.zip');
-await client.artifacts.upload({ content, ... });
-
-// Good - streams the file
-await client.artifacts.upload({ filePath: './large-file.zip', ... });
-```
-
-### 2. Validate Before Upload
-
-```typescript
-import { stat } from 'fs/promises';
-
-async function safeUpload(itemId: string, filePath: string) {
-  const stats = await stat(filePath);
-
-  const maxSize = 100 * 1024 * 1024;  // 100 MB
-  if (stats.size > maxSize) {
-    throw new Error(`File too large: ${filePath}`);
-  }
-
-  return client.artifacts.upload({ itemId, filePath });
-}
-```
-
-### 3. Use Meaningful Descriptions
-
-```typescript
-// Good - descriptive
-const artifact = await client.artifacts.upload({
-  itemId: 'item_req_001',
-  filePath: './specs/auth-requirements-v2.pdf',
-  description: 'Authentication requirements specification v2.0 - includes OAuth 2.0 and SAML'
-});
-```
-
----
-
-## Related Documentation
-
-- [Items](/docs/api-reference/sdks/javascript/api-reference) - Item operations
-- [Projects](/docs/api-reference/rest-api/endpoints/projects) - Project operations
-- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error handling
+- [Workflows](./05-workflows) - Manage workflows
+- [Examples](./06-examples) - More examples

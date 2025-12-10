@@ -1,32 +1,79 @@
 ---
-title: "Common Errors"
-description: "Documentation for Common Errors"
+title: "Common CLI Errors"
+description: "Solutions for common CLI error messages"
+keywords: [cli, errors, troubleshooting, solutions]
 ---
 
-# Common Errors
+# Common CLI Errors
 
-This page contains documentation for Common Errors.
+Solutions for frequently encountered CLI errors.
 
-## Overview
+## Error: "Invalid API key"
 
-This section covers the key aspects of Common Errors in TraceRTM.
+**Problem**: API key is incorrect or revoked.
 
-## Getting Started
+**Solution**:
+```bash
+# Verify API key
+trace config get api-key
 
-To get started with Common Errors:
+# Update API key
+trace config set api-key rtm_live_abc123...
 
-- Review the Common Errors and fundamentals
-- Explore practical examples
-- Check out the API reference
+# Test
+trace health
+```
 
-## Key Concepts
+## Error: "Project not found"
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+**Problem**: Project ID doesn't exist or you don't have access.
 
-## Next Steps
+**Solution**:
+```bash
+# List available projects
+trace project list
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+# Switch to valid project
+trace project switch "Project Name"
+```
+
+## Error: "Rate limit exceeded"
+
+**Problem**: Too many API requests.
+
+**Solution**:
+```bash
+# Wait and retry
+# Or upgrade plan for higher limits
+```
+
+## Error: "Command not found"
+
+**Problem**: CLI not installed or not in PATH.
+
+**Solution**:
+```bash
+# Reinstall
+pip3 install tracertm-cli
+
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Error: "Invalid JSON"
+
+**Problem**: Invalid JSON in command arguments.
+
+**Solution**:
+```bash
+# Validate JSON
+echo '{"key": "value"}' | jq .
+
+# Use proper JSON syntax
+trace item create --metadata '{"priority": "high"}'
+```
+
+## Related Documentation
+
+- [Troubleshooting](./06-troubleshooting) - General troubleshooting
+- [Debug Mode](./06b-debug-mode) - Debug logging

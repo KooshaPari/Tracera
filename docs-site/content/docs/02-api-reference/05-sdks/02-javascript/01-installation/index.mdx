@@ -1,388 +1,72 @@
 ---
-title: "Installation"
-description: "Install and configure the TraceRTM JavaScript/TypeScript SDK"
+title: "JavaScript SDK Installation"
+description: "Install and set up the TraceRTM JavaScript/TypeScript SDK"
+keywords: [javascript, typescript, sdk, installation, npm, node]
 ---
 
-# Installation
+# JavaScript SDK Installation
 
-Complete guide to installing the TraceRTM JavaScript SDK in your Node.js, browser, or TypeScript project.
+The TraceRTM JavaScript SDK provides a TypeScript-first interface to the TraceRTM API for Node.js and browser environments.
 
-## Requirements
+## Installation
 
-- **Node.js**: 18.0 or higher (for server-side usage)
-- **npm**: 8.0+ or **yarn**: 1.22+ or **pnpm**: 7.0+
-- **TypeScript**: 4.7+ (optional, for TypeScript projects)
-
----
-
-## Quick Install
-
-### npm
+### Using npm
 
 ```bash
 npm install @tracertm/sdk
 ```
 
-### yarn
+### Using yarn
 
 ```bash
 yarn add @tracertm/sdk
 ```
 
-### pnpm
+### Using pnpm
 
 ```bash
 pnpm add @tracertm/sdk
 ```
 
-### Bun
+## Requirements
 
-```bash
-bun add @tracertm/sdk
-```
-
----
+- Node.js 18.0 or higher
+- npm 9.0 or higher (or yarn/pnpm)
 
 ## TypeScript Support
 
-The SDK is written in TypeScript and includes full type definitions. No additional `@types` packages are needed.
+The SDK includes full TypeScript definitions:
 
 ```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
-import type { Item, Project, Link } from "@tracertm/sdk";
+import { TraceRTM } from '@tracertm/sdk';
 
-const client = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-
-// Full type inference
-const project: Project = await client.projects.get("proj_abc123");
-const items: Item[] = (await client.items.list({ projectId: project.id })).data;
-```
-
----
-
-## Environment-Specific Installation
-
-### Node.js Server
-
-```bash
-npm install @tracertm/sdk
-```
-
-```typescript
-// CommonJS
-const { TraceRTMClient } = require("@tracertm/sdk");
-
-// ES Modules
-import { TraceRTMClient } from "@tracertm/sdk";
-```
-
-### Browser (Bundler)
-
-When using webpack, Vite, Rollup, or other bundlers:
-
-```bash
-npm install @tracertm/sdk
-```
-
-```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
-
-// Use publishable key for browser
-const client = new TraceRTMClient({
-  apiKey: "rtm_pub_pk_...", // Public key only
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
 });
 ```
-
-### Browser (CDN)
-
-```html
-<script type="module">
-  import { TraceRTMClient } from "https://cdn.jsdelivr.net/npm/@tracertm/sdk@latest/dist/browser.esm.js";
-
-  const client = new TraceRTMClient({
-    apiKey: "rtm_pub_pk_...",
-  });
-</script>
-```
-
-### Deno
-
-```typescript
-import { TraceRTMClient } from "npm:@tracertm/sdk";
-
-const client = new TraceRTMClient({
-  apiKey: Deno.env.get("TRACERTM_API_KEY"),
-});
-```
-
----
 
 ## Verify Installation
 
-### Test Connection
-
-```typescript
-import { TraceRTMClient } from "@tracertm/sdk";
-
-async function verifyInstallation() {
-  const client = new TraceRTMClient({
-    apiKey: process.env.TRACERTM_API_KEY,
-  });
-
-  try {
-    const projects = await client.projects.list({ limit: 1 });
-    console.log("Connection successful!");
-    console.log(`Found ${projects.total} projects`);
-  } catch (error) {
-    console.error("Connection failed:", error.message);
-  }
-}
-
-verifyInstallation();
+```javascript
+const { TraceRTM } = require('@tracertm/sdk');
+console.log(TraceRTM.VERSION);
 ```
 
-### Check Version
-
-```typescript
-import { version } from "@tracertm/sdk";
-
-console.log(`TraceRTM SDK version: ${version}`);
-```
-
----
-
-## Project Configuration
-
-### package.json
-
-```json
-{
-  "name": "my-tracertm-app",
-  "type": "module",
-  "dependencies": {
-    "@tracertm/sdk": "^2.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0"
-  }
-}
-```
-
-### tsconfig.json (TypeScript)
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "outDir": "dist"
-  },
-  "include": ["src/**/*"]
-}
-```
-
----
-
-## Environment Variables
-
-### .env File
-
-```bash
-# API Configuration
-TRACERTM_API_KEY=rtm_live_sk_your_api_key_here
-TRACERTM_BASE_URL=https://api.tracertm.dev/v1
-
-# Optional Settings
-TRACERTM_TIMEOUT=30000
-TRACERTM_MAX_RETRIES=3
-TRACERTM_DEBUG=false
-```
-
-### Load with dotenv
-
-```bash
-npm install dotenv
-```
-
-```typescript
-import "dotenv/config";
-import { TraceRTMClient } from "@tracertm/sdk";
-
-const client = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-```
-
----
-
-## Framework Integration
-
-### Next.js
-
-```typescript
-// lib/tracertm.ts
-import { TraceRTMClient } from "@tracertm/sdk";
-
-// Server-side client (API routes, Server Components)
-export const tracertm = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-
-// app/api/projects/route.ts
-import { tracertm } from "@/lib/tracertm";
-
-export async function GET() {
-  const projects = await tracertm.projects.list();
-  return Response.json(projects);
-}
-```
-
-### Express.js
-
-```typescript
-import express from "express";
-import { TraceRTMClient } from "@tracertm/sdk";
-
-const app = express();
-const tracertm = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-
-app.get("/api/projects", async (req, res) => {
-  const projects = await tracertm.projects.list();
-  res.json(projects);
-});
-
-app.listen(3000);
-```
-
-### Fastify
-
-```typescript
-import Fastify from "fastify";
-import { TraceRTMClient } from "@tracertm/sdk";
-
-const fastify = Fastify();
-const tracertm = new TraceRTMClient({
-  apiKey: process.env.TRACERTM_API_KEY,
-});
-
-fastify.decorate("tracertm", tracertm);
-
-fastify.get("/projects", async () => {
-  return fastify.tracertm.projects.list();
-});
-
-fastify.listen({ port: 3000 });
-```
-
-### NestJS
-
-```typescript
-// tracertm.module.ts
-import { Module, Global } from "@nestjs/common";
-import { TraceRTMClient } from "@tracertm/sdk";
-
-@Global()
-@Module({
-  providers: [
-    {
-      provide: "TRACERTM_CLIENT",
-      useFactory: () => {
-        return new TraceRTMClient({
-          apiKey: process.env.TRACERTM_API_KEY,
-        });
-      },
-    },
-  ],
-  exports: ["TRACERTM_CLIENT"],
-})
-export class TraceRTMModule {}
-
-// projects.service.ts
-import { Injectable, Inject } from "@nestjs/common";
-import { TraceRTMClient } from "@tracertm/sdk";
-
-@Injectable()
-export class ProjectsService {
-  constructor(
-    @Inject("TRACERTM_CLIENT")
-    private readonly tracertm: TraceRTMClient
-  ) {}
-
-  async findAll() {
-    return this.tracertm.projects.list();
-  }
-}
-```
-
----
-
-## Troubleshooting
-
-### Module Resolution Issues
-
-If you encounter "Cannot find module" errors:
-
-```json
-// tsconfig.json
-{
-  "compilerOptions": {
-    "moduleResolution": "NodeNext",
-    // or for older setups:
-    "moduleResolution": "Node"
-  }
-}
-```
-
-### ESM/CJS Compatibility
-
-For projects using CommonJS:
+## Quick Start
 
 ```javascript
-// Use dynamic import
-const { TraceRTMClient } = await import("@tracertm/sdk");
+import { TraceRTM } from '@tracertm/sdk';
 
-// Or configure package.json
-{
-  "type": "commonjs"
-}
+const client = new TraceRTM({
+  apiKey: process.env.TRACERTM_API_KEY
+});
+
+// List projects
+const projects = await client.projects.list();
+console.log(projects);
 ```
 
-### Bundler Configuration
+## Next Steps
 
-**Webpack:**
-```javascript
-// webpack.config.js
-module.exports = {
-  resolve: {
-    extensions: [".ts", ".js"],
-    mainFields: ["module", "main"],
-  },
-};
-```
-
-**Vite:**
-```typescript
-// vite.config.ts
-export default {
-  optimizeDeps: {
-    include: ["@tracertm/sdk"],
-  },
-};
-```
-
----
-
-## Related Documentation
-
-- [NPM Install](/docs/api-reference/sdks/javascript/npm-install) - Detailed npm setup
-- [Yarn Install](/docs/api-reference/sdks/javascript/yarn-install) - Detailed yarn setup
-- [Quickstart](/docs/api-reference/sdks/javascript/quickstart) - Get started quickly
-- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - TypeScript configuration
+- [Quickstart](./02-quickstart) - Get started quickly
+- [Authentication](./03-authentication) - Set up authentication

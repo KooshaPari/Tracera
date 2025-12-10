@@ -1,32 +1,79 @@
 ---
 title: "Config Files"
-description: "Documentation for Config Files"
+description: "Configure CLI using configuration files"
+keywords: [cli, config, configuration, files, settings]
 ---
 
 # Config Files
 
-This page contains documentation for Config Files.
+Configure the TraceRTM CLI using configuration files for persistent settings.
 
-## Overview
+## Config File Location
 
-This section covers the key aspects of Config Files in TraceRTM.
+Configuration files are stored in:
 
-## Getting Started
+- **macOS/Linux**: `~/.config/tracertm/config.json`
+- **Windows**: `%APPDATA%\tracertm\config.json`
 
-To get started with Config Files:
+## Config File Format
 
-- Review the Config Files and fundamentals
-- Explore practical examples
-- Check out the API reference
+```json
+{
+  "api-url": "https://api.tracertm.dev",
+  "api-key": "rtm_live_abc123...",
+  "default-project": "proj_123",
+  "output-format": "json",
+  "timeout": 30,
+  "verbose": false
+}
+```
 
-## Key Concepts
+## Editing Config
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+### Using CLI
 
-## Next Steps
+```bash
+# Set values
+trace config set api-url https://api.tracertm.dev
+trace config set api-key rtm_live_abc123...
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+# View config
+trace config show
+```
+
+### Manual Editing
+
+Edit the config file directly:
+
+```bash
+# macOS/Linux
+nano ~/.config/tracertm/config.json
+
+# Windows
+notepad %APPDATA%\tracertm\config.json
+```
+
+## Config Options
+
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `api-url` | string | API endpoint | `https://api.tracertm.dev` |
+| `api-key` | string | API key | None |
+| `default-project` | string | Default project ID | None |
+| `output-format` | string | Output format | `table` |
+| `timeout` | number | Request timeout | `30` |
+| `verbose` | boolean | Verbose output | `false` |
+
+## Multiple Config Files
+
+Use different config files for different environments:
+
+```bash
+# Use specific config
+trace --config ~/.config/tracertm/prod.json project list
+```
+
+## Related Documentation
+
+- [Configuration](./02-configuration) - Configuration overview
+- [Environment Variables](./02b-environment-variables) - Environment config

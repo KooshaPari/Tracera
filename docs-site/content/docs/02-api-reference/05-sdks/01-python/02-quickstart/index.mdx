@@ -1,314 +1,134 @@
 ---
-title: "Quick Start"
+title: "Python SDK Quickstart"
 description: "Get started with the TraceRTM Python SDK in minutes"
+keywords: [python, sdk, quickstart, tutorial, getting started]
 ---
 
-# Quick Start
+# Python SDK Quickstart
 
-This guide will help you get started with the TraceRTM Python SDK in just a few minutes. You'll learn how to install the SDK, authenticate, and make your first API calls.
+Get started with the TraceRTM Python SDK in 5 minutes.
 
-## Prerequisites
-
-- Python 3.9 or higher
-- A TraceRTM account with an API key
-- pip or another Python package manager
-
-## Step 1: Install the SDK
+## Installation
 
 ```bash
 pip install tracertm
 ```
 
-## Step 2: Set Up Authentication
-
-Get your API key from the [TraceRTM Dashboard](https://app.tracertm.dev/settings/api-keys).
-
-```bash
-export TRACERTM_API_KEY="rtm_live_sk_..."
-```
-
-## Step 3: Create Your First Script
+## Initialize Client
 
 ```python
-from tracertm import TraceRTMClient
+from tracertm import TraceRTM
 
-# Initialize the client (reads API key from environment)
-client = TraceRTMClient()
+# Using API key
+client = TraceRTM(api_key="rtm_live_abc123...")
 
-# List all projects
+# Or from environment variable
+import os
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
+```
+
+## Basic Operations
+
+### List Projects
+
+```python
 projects = client.projects.list()
-print(f"Found {len(projects.data)} projects")
-
-for project in projects.data:
-    print(f"  - {project.key}: {project.name}")
+for project in projects:
+    print(f"{project.id}: {project.name}")
 ```
 
----
-
-## Common Operations
-
-### Working with Projects
+### Create a Project
 
 ```python
-from tracertm import TraceRTMClient
-
-client = TraceRTMClient()
-
-# Create a new project
 project = client.projects.create(
-    name="My Requirements Project",
-    key="MRP",
-    description="Track requirements for my application"
+    name="My Project",
+    description="Project description"
 )
 print(f"Created project: {project.id}")
-
-# Get project details
-project = client.projects.get(project.id)
-print(f"Project: {project.name}")
-print(f"Items: {project.item_count}")
-
-# Update project
-project = client.projects.update(
-    project.id,
-    description="Updated description"
-)
 ```
 
-### Working with Items
+### Create an Item
 
 ```python
-# Create a requirement
-requirement = client.items.create(
-    project_id=project.id,
-    type="requirement",
-    title="User Authentication",
-    description="System shall support secure user authentication via OAuth 2.0",
-    priority="high",
-    custom_fields={
-        "story_points": 8,
-        "sprint": "Sprint 1"
-    }
+item = client.items.create(
+    title="New Requirement",
+    view="requirements",
+    status="draft",
+    project_id="proj_123"
 )
-print(f"Created requirement: {requirement.key}")
-
-# Create a test case
-test_case = client.items.create(
-    project_id=project.id,
-    type="test_case",
-    title="Verify OAuth login flow",
-    description="Test that users can login via OAuth",
-    priority="high"
-)
-print(f"Created test case: {test_case.key}")
-
-# List all requirements
-requirements = client.items.list(
-    project_id=project.id,
-    type="requirement"
-)
-print(f"Found {len(requirements.data)} requirements")
-
-# Update an item
-requirement = client.items.update(
-    requirement.id,
-    priority="critical"
-)
-
-# Get item details
-item = client.items.get(requirement.id)
-print(f"Status: {item.status}")
-print(f"Priority: {item.priority}")
+print(f"Created item: {item.id}")
 ```
 
-### Creating Traceability Links
+### Query Items
 
 ```python
-# Link test case to requirement
-link = client.links.create(
-    source_id=requirement.id,
-    target_id=test_case.id,
+# Query items
+items = client.query_items(
+    view="requirements",
+    status="active",
+    limit=50
+)
+
+for item in items:
+    print(f"{item['title']}: {item['status']}")
+```
+
+### Create a Link
+
+```python
+link = client.create_link(
+    source_id="item_req_001",
+    target_id="item_test_001",
     link_type="verified_by"
 )
 print(f"Created link: {link.id}")
-
-# Get all links for an item
-links = client.links.list(
-    project_id=project.id,
-    source_id=requirement.id
-)
-print(f"Requirement has {len(links.data)} links")
-
-# Bulk create links
-links = client.links.bulk_create([
-    {
-        "source_id": requirement.id,
-        "target_id": test_case.id,
-        "link_type": "verified_by"
-    }
-])
 ```
-
-### Status Transitions
-
-```python
-# Get available transitions
-transitions = client.items.available_transitions(requirement.id)
-print("Available transitions:")
-for t in transitions:
-    print(f"  - {t.name}: {t.from_status} -> {t.to_status}")
-
-# Transition item status
-item = client.items.transition(
-    requirement.id,
-    transition="submit_for_review",
-    comment="Ready for review"
-)
-print(f"New status: {item.status}")
-```
-
----
-
-## Iteration and Pagination
-
-### Automatic Iteration
-
-```python
-# Iterate through all items (handles pagination automatically)
-for item in client.items.iterate(project_id=project.id):
-    print(f"{item.key}: {item.title}")
-```
-
-### Manual Pagination
-
-```python
-# Fetch first page
-page = client.items.list(project_id=project.id, limit=50)
-
-while True:
-    for item in page.data:
-        process(item)
-
-    if not page.has_next:
-        break
-
-    page = page.next_page()
-```
-
-### Async Iteration
-
-```python
-from tracertm import AsyncTraceRTMClient
-import asyncio
-
-async def main():
-    client = AsyncTraceRTMClient()
-
-    async for item in client.items.iterate(project_id=project.id):
-        print(f"{item.key}: {item.title}")
-
-asyncio.run(main())
-```
-
----
-
-## Error Handling
-
-```python
-from tracertm import TraceRTMClient
-from tracertm.exceptions import NotFoundError, ValidationError, RateLimitError
-import time
-
-client = TraceRTMClient()
-
-try:
-    item = client.items.get("item_nonexistent")
-except NotFoundError:
-    print("Item not found")
-except ValidationError as e:
-    print(f"Validation error: {e.message}")
-    for error in e.errors:
-        print(f"  - {error['field']}: {error['message']}")
-except RateLimitError as e:
-    print(f"Rate limited, waiting {e.retry_after} seconds")
-    time.sleep(e.retry_after)
-```
-
----
 
 ## Complete Example
 
 ```python
-"""
-Complete example: Create a project with requirements and test cases
-"""
-from tracertm import TraceRTMClient
-from tracertm.exceptions import TraceRTMError
+from tracertm import TraceRTM
+import os
 
-def main():
-    # Initialize client
-    client = TraceRTMClient()
+# Initialize client
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
 
-    try:
-        # Create project
-        project = client.projects.create(
-            name="Authentication System",
-            key="AUTH",
-            description="Authentication system requirements"
-        )
-        print(f"Created project: {project.key}")
+# Create project
+project = client.projects.create(
+    name="Example Project",
+    description="Example project for quickstart"
+)
 
-        # Create requirements
-        requirements = []
-        for i, req in enumerate([
-            "User login with email/password",
-            "OAuth 2.0 social login",
-            "Two-factor authentication",
-            "Password reset flow"
-        ], 1):
-            item = client.items.create(
-                project_id=project.id,
-                type="requirement",
-                title=req,
-                priority="high"
-            )
-            requirements.append(item)
-            print(f"Created requirement: {item.key}")
+# Create requirement
+requirement = client.items.create(
+    title="User Authentication",
+    view="requirements",
+    status="draft",
+    project_id=project.id,
+    metadata={"priority": "high"}
+)
 
-        # Create test cases and link to requirements
-        for req in requirements:
-            test_case = client.items.create(
-                project_id=project.id,
-                type="test_case",
-                title=f"Test: {req.title}",
-                priority="high"
-            )
+# Create test case
+test_case = client.items.create(
+    title="Login Test",
+    view="test-cases",
+    status="draft",
+    project_id=project.id
+)
 
-            link = client.links.create(
-                source_id=req.id,
-                target_id=test_case.id,
-                link_type="verified_by"
-            )
-            print(f"Linked {req.key} -> {test_case.key}")
+# Create traceability link
+link = client.create_link(
+    source_id=requirement.id,
+    target_id=test_case.id,
+    link_type="verified_by",
+    metadata={"confidence": 0.95}
+)
 
-        # Print summary
-        print(f"\nProject {project.key} created with:")
-        print(f"  - {len(requirements)} requirements")
-        print(f"  - {len(requirements)} test cases")
-        print(f"  - {len(requirements)} traceability links")
-
-    except TraceRTMError as e:
-        print(f"Error: {e.message}")
-        raise
-
-if __name__ == "__main__":
-    main()
+print(f"Created traceability: {requirement.title} --[verified_by]--> {test_case.title}")
 ```
-
----
 
 ## Next Steps
 
-- [API Reference](/docs/api-reference/sdks/python/api-reference) - Explore all available methods
-- [Examples](/docs/api-reference/sdks/python/examples) - More code examples
-- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Handle errors properly
-- [Async Usage](/docs/api-reference/sdks/python/async) - Async/await patterns
+- [Authentication](./03-authentication) - Authentication options
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - More examples

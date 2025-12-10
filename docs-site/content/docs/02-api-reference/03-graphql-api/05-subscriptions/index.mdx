@@ -1,115 +1,713 @@
 ---
-title: "Subscriptions"
-description: "Documentation for Subscriptions"
+title: "GraphQL Subscriptions"
+description: "Real-time GraphQL subscriptions in TraceRTM - subscribe to item updates, link changes, and project events"
+keywords: [graphql, subscriptions, real-time, websocket, events]
 ---
 
-# Subscriptions
+# GraphQL Subscriptions
 
+GraphQL subscriptions provide real-time updates via WebSocket connections. Subscribe to item changes, link updates, and project events to build reactive applications.
 
 ## Overview
 
-Complete API reference for Subscriptions.
+Subscriptions enable real-time data synchronization:
 
-## Authentication
+- **Item Updates** - Get notified when items change
+- **Link Changes** - Track traceability link modifications
+- **Project Events** - Monitor project-level changes
+- **Workflow Transitions** - Real-time status updates
 
-All API requests require authentication:
+---
+
+## WebSocket Connection
+
+### Endpoint
+
+```
+wss://api.tracertm.dev/graphql
+```
+
+### Connection Protocol
+
+Subscriptions use the **GraphQL over WebSocket** protocol (graphql-ws).
+
+### Authentication
+
+Authenticate via connection parameters:
 
 ```typescript
-const headers = {
-  'Authorization': 'Bearer YOUR_JWT_TOKEN',
-  'Content-Type': 'application/json'
-}
+const client = new SubscriptionClient(
+  'wss://api.tracertm.dev/graphql',
+  {
+    connectionParams: {
+      authorization: `Bearer ${apiKey}`
+    }
+  }
+);
 ```
 
-## Endpoints
+---
 
-### List All Subscriptions
+## Available Subscriptions
 
-```http
-GET /api/v1/subscriptions
-```
+### Item Updated
 
-**Response:**
-```json
-{
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 100
+Subscribe to item changes in a project:
+
+```graphql
+subscription ItemUpdates($projectId: ID!) {
+  itemUpdated(projectId: $projectId) {
+    item {
+      id
+      title
+      status
+      priority
+      updatedAt
+    }
+    previousValues {
+      status
+      priority
+    }
+    changes {
+      field
+      oldValue
+      newValue
+    }
+    updatedBy {
+      id
+      name
+    }
+    updatedAt
   }
 }
 ```
 
-### Get Subscriptions by ID
+### Item Created
 
-```http
-GET /api/v1/subscriptions/:id
-```
+Subscribe to new items:
 
-### Create Subscriptions
-
-```http
-POST /api/v1/subscriptions
-```
-
-**Request Body:**
-```json
-{
-  "name": "Example Subscriptions",
-  "description": "Description here"
+```graphql
+subscription ItemCreated($projectId: ID!) {
+  itemCreated(projectId: $projectId) {
+    id
+    itemNumber
+    title
+    type
+    status
+    createdBy {
+      id
+      name
+    }
+    createdAt
+  }
 }
 ```
 
-### Update Subscriptions
+### Item Deleted
 
-```http
-PUT /api/v1/subscriptions/:id
+Subscribe to item deletions:
+
+```graphql
+subscription ItemDeleted($projectId: ID!) {
+  itemDeleted(projectId: $projectId) {
+    itemId
+    itemNumber
+    title
+    deletedBy {
+      id
+      name
+    }
+    deletedAt
+  }
+}
 ```
 
-### Delete Subscriptions
+### Link Changed
 
-```http
-DELETE /api/v1/subscriptions/:id
+Subscribe to link modifications:
+
+```graphql
+subscription LinkChanges($projectId: ID!) {
+  linkChanged(projectId: $projectId) {
+    link {
+      id
+      type
+      source {
+        id
+        title
+      }
+      target {
+        id
+        title
+      }
+      status
+    }
+    event
+    changedBy {
+      id
+      name
+    }
+    changedAt
+  }
+}
 ```
 
-## Query Parameters
+### Project Updated
 
-- `page` - Page number (default: 1)
-- `per_page` - Items per page (default: 20)
-- `sort` - Sort field
-- `order` - Sort order (asc/desc)
-- `filter` - Filter criteria
+Subscribe to project changes:
 
-## Error Responses
+```graphql
+subscription ProjectUpdates($projectId: ID!) {
+  projectUpdated(projectId: $projectId) {
+    id
+    name
+    description
+    status
+    updatedAt
+    updatedBy {
+      id
+      name
+    }
+  }
+}
+```
 
-### 400 Bad Request
-Invalid request parameters
+---
 
-### 401 Unauthorized
-Missing or invalid authentication token
+## Implementation Examples
 
-### 404 Not Found
-Resource not found
+### JavaScript/TypeScript
 
-### 500 Internal Server Error
-Server error
+#### Using `graphql-ws`
 
-## SDK Examples
-
-### TypeScript
 ```typescript
-import { TraceRTMClient } from '@tracertm/sdk'
+import { createClient } from 'graphql-ws';
 
-const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
-const items = await client.subscriptions.list()
+const client = createClient({
+  url: 'wss://api.tracertm.dev/graphql',
+  connectionParams: {
+    authorization: `Bearer ${process.env.TRACERTM_API_KEY}`
+  }
+});
+
+// Subscribe to item updates
+const unsubscribe = client.subscribe(
+  {
+    query: `
+      subscription ItemUpdates($projectId: ID!) {
+        itemUpdated(projectId: $projectId) {
+          item {
+            id
+            title
+            status
+          }
+          changes {
+            field
+            oldValue
+            newValue
+          }
+        }
+      }
+    `,
+    variables: { projectId: 'proj_abc123' }
+  },
+  {
+    next: (data) => {
+      console.log('Item updated:', data.data.itemUpdated);
+      // Update UI
+    },
+    error: (error) => {
+      console.error('Subscription error:', error);
+    },
+    complete: () => {
+      console.log('Subscription completed');
+    }
+  }
+);
+
+// Unsubscribe when done
+unsubscribe();
+```
+
+#### Using Apollo Client
+
+```typescript
+import { ApolloClient, InMemoryCache, split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
+
+const httpLink = new HttpLink({
+  uri: 'https://api.tracertm.dev/graphql',
+  headers: {
+    authorization: `Bearer ${apiKey}`
+  }
+});
+
+const wsLink = new GraphQLWsLink(createClient({
+  url: 'wss://api.tracertm.dev/graphql',
+  connectionParams: {
+    authorization: `Bearer ${apiKey}`
+  }
+}));
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink
+);
+
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
+
+// Use subscription in React component
+import { useSubscription } from '@apollo/client';
+
+const ITEM_UPDATES = gql`
+  subscription ItemUpdates($projectId: ID!) {
+    itemUpdated(projectId: $projectId) {
+      item {
+        id
+        title
+        status
+      }
+    }
+  }
+`;
+
+function ItemUpdates({ projectId }: { projectId: string }) {
+  const { data, loading } = useSubscription(ITEM_UPDATES, {
+    variables: { projectId }
+  });
+
+  if (loading) return <div>Listening for updates...</div>;
+
+  return (
+    <div>
+      <p>Item updated: {data.itemUpdated.item.title}</p>
+    </div>
+  );
+}
 ```
 
 ### Python
-```python
-from tracertm import Client
 
-client = Client(api_key='YOUR_KEY')
-items = client.subscriptions.list()
+```python
+from gql import Client, gql
+from gql.transport.websockets import WebsocketsTransport
+
+transport = WebsocketsTransport(
+    url="wss://api.tracertm.dev/graphql",
+    init_payload={
+        "authorization": f"Bearer {api_key}"
+    }
+)
+
+client = Client(transport=transport, fetch_schema_from_transport=True)
+
+subscription = gql("""
+    subscription ItemUpdates($projectId: ID!) {
+        itemUpdated(projectId: $projectId) {
+            item {
+                id
+                title
+                status
+            }
+            changes {
+                field
+                oldValue
+                newValue
+            }
+        }
+    }
+""")
+
+# Subscribe and process events
+for result in client.subscribe(subscription, variable_values={"projectId": "proj_abc123"}):
+    print(f"Item updated: {result['itemUpdated']['item']['title']}")
+    # Update your application state
 ```
+
+---
+
+## Subscription Filters
+
+Filter subscriptions to specific events:
+
+### Filter by Item Type
+
+```graphql
+subscription RequirementUpdates($projectId: ID!) {
+  itemUpdated(projectId: $projectId, filter: { type: REQUIREMENT }) {
+    item {
+      id
+      title
+      status
+    }
+  }
+}
+```
+
+### Filter by Status
+
+```graphql
+subscription ApprovedItemUpdates($projectId: ID!) {
+  itemUpdated(projectId: $projectId, filter: { status: APPROVED }) {
+    item {
+      id
+      title
+    }
+  }
+}
+```
+
+### Filter by Multiple Criteria
+
+```graphql
+subscription CriticalItemUpdates($projectId: ID!) {
+  itemUpdated(
+    projectId: $projectId
+    filter: {
+      type: REQUIREMENT
+      priority: CRITICAL
+      status: APPROVED
+    }
+  ) {
+    item {
+      id
+      title
+      priority
+    }
+  }
+}
+```
+
+---
+
+## Event Types
+
+### ItemUpdateEvent
+
+```graphql
+type ItemUpdateEvent {
+  item: Item!
+  previousValues: Item
+  changes: [FieldChange!]!
+  updatedBy: User!
+  updatedAt: DateTime!
+}
+
+type FieldChange {
+  field: String!
+  oldValue: JSON
+  newValue: JSON
+}
+```
+
+**Example Event:**
+```json
+{
+  "item": {
+    "id": "item_req_001",
+    "title": "Updated Title",
+    "status": "APPROVED"
+  },
+  "previousValues": {
+    "status": "IN_REVIEW"
+  },
+  "changes": [
+    {
+      "field": "status",
+      "oldValue": "IN_REVIEW",
+      "newValue": "APPROVED"
+    },
+    {
+      "field": "title",
+      "oldValue": "Old Title",
+      "newValue": "Updated Title"
+    }
+  ],
+  "updatedBy": {
+    "id": "user_reviewer123",
+    "name": "Jane Reviewer"
+  },
+  "updatedAt": "2024-12-08T10:30:00Z"
+}
+```
+
+---
+
+## Connection Management
+
+### Connection Lifecycle
+
+1. **Connect** - Establish WebSocket connection
+2. **Authenticate** - Send auth token
+3. **Subscribe** - Register subscription
+4. **Receive** - Process events
+5. **Unsubscribe** - Cancel subscription
+6. **Disconnect** - Close connection
+
+### Reconnection
+
+Handle connection drops automatically:
+
+```typescript
+const client = createClient({
+  url: 'wss://api.tracertm.dev/graphql',
+  connectionParams: {
+    authorization: `Bearer ${apiKey}`
+  },
+  shouldRetry: () => true,
+  retryAttempts: Infinity,
+  retryWait: async function* retryWait() {
+    for (let i = 0; ; i++) {
+      yield new Promise(resolve => setTimeout(resolve, 1000 * 2 ** i));
+    }
+  }
+});
+```
+
+### Connection Status
+
+```typescript
+client.on('connected', () => {
+  console.log('Connected to GraphQL subscription server');
+});
+
+client.on('closed', () => {
+  console.log('Connection closed');
+});
+
+client.on('error', (error) => {
+  console.error('Connection error:', error);
+});
+```
+
+---
+
+## Best Practices
+
+### 1. Filter Subscriptions
+
+Only subscribe to events you need:
+
+```graphql
+# ✅ Good: Filtered subscription
+subscription {
+  itemUpdated(projectId: $projectId, filter: { type: REQUIREMENT }) {
+    item { id title }
+  }
+}
+
+# ❌ Bad: All item updates
+subscription {
+  itemUpdated(projectId: $projectId) {
+    item { id title }
+  }
+}
+```
+
+### 2. Handle Connection Errors
+
+```typescript
+client.subscribe({ query, variables }, {
+  next: (data) => {
+    // Process update
+  },
+  error: (error) => {
+    if (error.message.includes('authentication')) {
+      // Re-authenticate
+    } else if (error.message.includes('rate limit')) {
+      // Back off and retry
+    }
+  }
+});
+```
+
+### 3. Debounce Rapid Updates
+
+```typescript
+import { debounce } from 'lodash';
+
+const debouncedUpdate = debounce((data) => {
+  updateUI(data);
+}, 300);
+
+client.subscribe({ query, variables }, {
+  next: (data) => {
+    debouncedUpdate(data);
+  }
+});
+```
+
+### 4. Clean Up Subscriptions
+
+```typescript
+useEffect(() => {
+  const unsubscribe = client.subscribe({ query, variables }, {
+    next: handleUpdate
+  });
+
+  return () => {
+    unsubscribe();
+  };
+}, [projectId]);
+```
+
+### 5. Batch Updates
+
+Collect multiple updates and process together:
+
+```typescript
+const updateQueue: ItemUpdate[] = [];
+
+client.subscribe({ query, variables }, {
+  next: (data) => {
+    updateQueue.push(data.itemUpdated);
+    
+    // Process queue every 500ms
+    setTimeout(() => {
+      processBatchUpdates(updateQueue);
+      updateQueue.length = 0;
+    }, 500);
+  }
+});
+```
+
+---
+
+## Rate Limits
+
+Subscriptions count toward your API rate limits. Each event delivery consumes rate limit tokens.
+
+**Limits:**
+- **Free**: 10 concurrent subscriptions
+- **Pro**: 50 concurrent subscriptions
+- **Enterprise**: 200 concurrent subscriptions
+
+---
+
+## Error Handling
+
+### Authentication Errors
+
+```json
+{
+  "errors": [
+    {
+      "message": "Authentication required",
+      "extensions": {
+        "code": "UNAUTHORIZED"
+      }
+    }
+  ]
+}
+```
+
+### Permission Errors
+
+```json
+{
+  "errors": [
+    {
+      "message": "Permission denied",
+      "extensions": {
+        "code": "FORBIDDEN",
+        "requiredPermission": "items:read"
+      }
+    }
+  ]
+}
+```
+
+### Connection Errors
+
+Handle WebSocket connection issues:
+
+```typescript
+client.on('error', (error) => {
+  if (error.message.includes('WebSocket')) {
+    // Connection issue - will auto-reconnect
+    console.log('Connection error, reconnecting...');
+  }
+});
+```
+
+---
+
+## Use Cases
+
+### Real-time Dashboard
+
+```graphql
+subscription DashboardUpdates($projectId: ID!) {
+  itemUpdated(projectId: $projectId) {
+    item {
+      id
+      status
+      priority
+    }
+  }
+  linkChanged(projectId: $projectId) {
+    link {
+      id
+      type
+    }
+  }
+}
+```
+
+### Collaborative Editing
+
+```graphql
+subscription ItemCollaboration($itemId: ID!) {
+  itemUpdated(filter: { id: $itemId }) {
+    item {
+      id
+      title
+      description
+    }
+    updatedBy {
+      id
+      name
+    }
+  }
+}
+```
+
+### Live Notifications
+
+```graphql
+subscription UserNotifications($userId: ID!) {
+  itemUpdated(filter: { assigneeId: $userId }) {
+    item {
+      id
+      title
+      status
+    }
+    changes {
+      field
+      newValue
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [GraphQL Overview](/docs/api-reference/graphql-api/overview) - Introduction
+- [Schema Reference](/docs/api-reference/graphql-api/schema) - Complete schema
+- [Mutations](/docs/api-reference/graphql-api/mutations) - Mutation reference
+- [Webhooks](/docs/api-reference/webhooks) - Alternative real-time notifications
 

@@ -1,23 +1,513 @@
 ---
 title: "CLI Import"
-description: "Import data safely with validation."
+description: "Import data into TraceRTM from JSON, CSV, YAML, and other formats with validation and safety checks"
+keywords: [cli, import, migration, data, json, csv, validation]
 ---
 
-## What this covers
-- How to manage import with the Trace CLI
-- Expected inputs, flags, and outputs
-- Safety checks before executing
+# CLI Import
 
-## Quick commands
+Import projects, items, links, and related data into TraceRTM from external sources. Supports JSON, CSV, YAML, and other formats with validation and safety checks.
+
+## Import Formats
+
+The CLI supports importing from:
+
+| Format | Extension | Use Case |
+|--------|-----------|----------|
+| JSON | `.json` | Full project migration, backups |
+| CSV | `.csv` | Spreadsheet imports, bulk data |
+| YAML | `.yaml` | Human-editable imports |
+| Excel | `.xlsx` | Business data imports |
+
+---
+
+## Safety Features
+
+### Dry Run
+
+Always test imports with `--dry-run` first:
+
 ```bash
+# Test import without making changes
 trace import project --file project.json --dry-run
 ```
 
+### Validation
+
 ```bash
-trace import links --file links.csv --project <id> --dry-run
+# Validate file before import
+trace import validate --file project.json
 ```
 
-## Best practices
-- Use `--project` to scope actions and avoid cross-project edits.
-- Prefer idempotent operations (`trace ... upsert`) in automation.
-- Pipe to jq for verification before destructive changes.
+### Preview
+
+```bash
+# Preview what will be imported
+trace import preview --file project.json
+```
+
+---
+
+## Import Project
+
+### Basic Import
+
+```bash
+# Import complete project
+trace import project --file project.json
+```
+
+### Import to Existing Project
+
+```bash
+# Import into existing project
+trace import project \
+  --file project.json \
+  --target-project proj_abc123
+```
+
+### Import Options
+
+```bash
+# Skip existing items
+trace import project \
+  --file project.json \
+  --skip-existing
+
+# Update existing items
+trace import project \
+  --file project.json \
+  --update-existing
+
+# Create new project
+trace import project \
+  --file project.json \
+  --create-project
+```
+
+### Import with Mapping
+
+```bash
+# Map fields during import
+trace import project \
+  --file project.json \
+  --field-map '{
+    "old_field": "new_field",
+    "legacy_status": "status"
+  }'
+```
+
+---
+
+## Import Items
+
+### Import Items
+
+```bash
+# Import items from JSON
+trace import items \
+  --file items.json \
+  --project proj_abc123
+```
+
+### Import from CSV
+
+```bash
+# Import from CSV
+trace import items \
+  --file items.csv \
+  --format csv \
+  --project proj_abc123
+```
+
+### Import Options
+
+```bash
+# Skip duplicates
+trace import items \
+  --file items.json \
+  --project proj_abc123 \
+  --skip-duplicates
+
+# Update existing
+trace import items \
+  --file items.json \
+  --project proj_abc123 \
+  --update-existing
+
+# Batch size
+trace import items \
+  --file items.json \
+  --project proj_abc123 \
+  --batch-size 100
+```
+
+### Import with Validation
+
+```bash
+# Validate before import
+trace import items \
+  --file items.json \
+  --project proj_abc123 \
+  --validate \
+  --dry-run
+```
+
+---
+
+## Import Links
+
+### Import Links
+
+```bash
+# Import links from JSON
+trace import links \
+  --file links.json \
+  --project proj_abc123
+```
+
+### Import from CSV
+
+```bash
+# Import links from CSV
+trace import links \
+  --file links.csv \
+  --format csv \
+  --project proj_abc123
+```
+
+### Link Mapping
+
+```bash
+# Map item IDs during import
+trace import links \
+  --file links.json \
+  --project proj_abc123 \
+  --id-map '{
+    "old_item_1": "new_item_1",
+    "old_item_2": "new_item_2"
+  }'
+```
+
+---
+
+## Import Formats
+
+### JSON Format
+
+```json
+{
+  "items": [
+    {
+      "title": "User Authentication",
+      "view": "requirements",
+      "status": "draft",
+      "priority": "high",
+      "description": "System shall support login"
+    }
+  ],
+  "links": [
+    {
+      "source_title": "User Authentication",
+      "target_title": "Login Test",
+      "type": "verified_by"
+    }
+  ]
+}
+```
+
+### CSV Format
+
+```csv
+title,view,status,priority,description
+User Authentication,requirements,draft,high,System shall support login
+Login Test,test-cases,draft,high,Test login functionality
+```
+
+### Import CSV
+
+```bash
+trace import items \
+  --file items.csv \
+  --format csv \
+  --project proj_abc123 \
+  --header-row
+```
+
+---
+
+## Import Examples
+
+### Complete Migration
+
+```bash
+#!/bin/bash
+
+# Export from source
+trace export project proj_source \
+  --format json \
+  --include all \
+  --output source_export.json
+
+# Validate export
+trace import validate --file source_export.json
+
+# Dry run import
+trace import project \
+  --file source_export.json \
+  --target-project proj_target \
+  --dry-run
+
+# Actual import
+trace import project \
+  --file source_export.json \
+  --target-project proj_target
+```
+
+### Import from External System
+
+```bash
+#!/bin/bash
+
+# Convert external format to TraceRTM format
+python convert_jira_to_trace.py jira_export.json trace_format.json
+
+# Validate
+trace import validate --file trace_format.json
+
+# Import
+trace import items \
+  --file trace_format.json \
+  --project proj_123 \
+  --update-existing
+```
+
+### Batch Import with Error Handling
+
+```bash
+#!/bin/bash
+
+# Import with error handling
+if trace import items \
+    --file items.json \
+    --project proj_123 \
+    --batch-size 50 \
+    --continue-on-error; then
+    echo "Import successful"
+else
+    echo "Import completed with errors"
+    # Check error log
+    cat import_errors.log
+fi
+```
+
+### Incremental Import
+
+```bash
+#!/bin/bash
+
+# Import only new items
+trace import items \
+  --file new_items.json \
+  --project proj_123 \
+  --skip-existing \
+  --output import_results.json
+
+# Check results
+jq '.imported, .skipped, .errors' import_results.json
+```
+
+---
+
+## Import Validation
+
+### Validate File
+
+```bash
+# Validate import file
+trace import validate --file project.json
+```
+
+Output:
+```
+✓ File format: valid
+✓ Schema: valid
+✓ Items: 156 valid, 0 errors
+✓ Links: 234 valid, 0 errors
+✓ References: all valid
+```
+
+### Validate with Details
+
+```bash
+# Detailed validation
+trace import validate \
+  --file project.json \
+  --verbose
+```
+
+### Fix Common Issues
+
+```bash
+# Auto-fix common issues
+trace import validate \
+  --file project.json \
+  --auto-fix \
+  --output project_fixed.json
+```
+
+---
+
+## Import Options
+
+### Conflict Resolution
+
+```bash
+# Skip existing items
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --conflict skip
+
+# Update existing items
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --conflict update
+
+# Create new versions
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --conflict version
+```
+
+### Field Mapping
+
+```bash
+# Map fields during import
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --map '{
+    "jira_key": "custom_id",
+    "jira_status": "status",
+    "summary": "title"
+  }'
+```
+
+### ID Mapping
+
+```bash
+# Map item IDs
+trace import links \
+  --file links.json \
+  --project proj_123 \
+  --id-map '{
+    "old_req_1": "new_req_1",
+    "old_tc_1": "new_tc_1"
+  }'
+```
+
+---
+
+## Best Practices
+
+### 1. Always Use Dry Run
+
+```bash
+# Test first
+trace import project --file project.json --dry-run
+
+# Review results
+# Then import for real
+trace import project --file project.json
+```
+
+### 2. Validate Before Import
+
+```bash
+# Validate file
+trace import validate --file project.json
+
+# Check for errors
+if [ $? -ne 0 ]; then
+    echo "Validation failed, fix errors before importing"
+    exit 1
+fi
+```
+
+### 3. Backup Before Import
+
+```bash
+#!/bin/bash
+
+# Backup existing data
+trace export project proj_123 \
+  --format json \
+  --output backup_before_import.json
+
+# Import new data
+trace import project --file new_data.json --project proj_123
+
+# If something goes wrong, restore from backup
+# trace import project --file backup_before_import.json --project proj_123
+```
+
+### 4. Use Batch Processing
+
+```bash
+# Import in batches for large files
+trace import items \
+  --file large_items.json \
+  --project proj_123 \
+  --batch-size 100 \
+  --continue-on-error
+```
+
+### 5. Monitor Import Progress
+
+```bash
+# Import with progress
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --progress \
+  --output import_log.json
+```
+
+---
+
+## Error Handling
+
+### Continue on Error
+
+```bash
+# Continue importing even if some items fail
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --continue-on-error \
+  --error-log errors.json
+```
+
+### Error Log
+
+```bash
+# Import with error logging
+trace import items \
+  --file items.json \
+  --project proj_123 \
+  --error-log import_errors.json
+
+# Review errors
+jq '.errors' import_errors.json
+```
+
+---
+
+## Related Documentation
+
+- [CLI Export](./07-export) - Export data
+- [CLI Commands](./03-commands) - All CLI commands
+- [Data Migration](/docs/wiki/guides/data-migration) - Migration guide

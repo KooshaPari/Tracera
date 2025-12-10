@@ -1,870 +1,389 @@
 ---
-title: "Metadata API"
-description: "Complete guide to managing custom fields, metadata schemas, and item properties via REST API"
+title: "Analysis & Graph API"
+description: "Advanced analysis endpoints for impact analysis, cycle detection, and graph queries"
+keywords: [analysis, impact analysis, cycles, graph, shortest path, dependencies]
 ---
 
-# Metadata API
+# Analysis & Graph API
 
-Custom fields and metadata extend TraceRTM items with project-specific data. This guide covers defining metadata schemas, managing custom fields, and querying by metadata.
+The Analysis API provides advanced capabilities for analyzing traceability relationships, detecting cycles, finding paths, and querying the dependency graph.
 
-## Endpoints Overview
+## Impact Analysis
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/v1/projects/{project_id}/metadata` | List metadata definitions |
-| `POST` | `/v1/projects/{project_id}/metadata` | Create metadata field |
-| `GET` | `/v1/metadata/{field_id}` | Get metadata field |
-| `PATCH` | `/v1/metadata/{field_id}` | Update metadata field |
-| `DELETE` | `/v1/metadata/{field_id}` | Delete metadata field |
-| `GET` | `/v1/projects/{project_id}/metadata/schema` | Get full schema |
-| `POST` | `/v1/projects/{project_id}/metadata/validate` | Validate metadata |
+Analyze the impact of changing or deleting an item by finding all items that depend on it.
 
----
+### Endpoint
 
-## The Metadata Field Object
-
-```json
-{
-  "id": "field_safety_level",
-  "project_id": "proj_abc123",
-  "name": "safety_level",
-  "display_name": "Safety Level",
-  "description": "ASIL classification for automotive safety",
-  "type": "select",
-  "required": true,
-  "default_value": "QM",
-  "options": [
-    {"value": "QM", "label": "QM (Quality Management)"},
-    {"value": "ASIL-A", "label": "ASIL A"},
-    {"value": "ASIL-B", "label": "ASIL B"},
-    {"value": "ASIL-C", "label": "ASIL C"},
-    {"value": "ASIL-D", "label": "ASIL D"}
-  ],
-  "applies_to": ["requirement", "design"],
-  "validation": {
-    "required_for_status": ["approved"],
-    "allowed_values": ["QM", "ASIL-A", "ASIL-B", "ASIL-C", "ASIL-D"]
-  },
-  "ui_config": {
-    "position": 1,
-    "section": "Safety",
-    "visible_in_list": true,
-    "searchable": true,
-    "filterable": true
-  },
-  "created_at": "2024-01-15T10:00:00Z",
-  "updated_at": "2024-06-20T14:30:00Z"
-}
+```
+GET /api/v1/analysis/impact/{item_id}
 ```
 
-### Metadata Field Properties
+### Path Parameters
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique field identifier (prefix: `field_`) |
-| `project_id` | string | Parent project ID |
-| `name` | string | Field key (lowercase, underscores) |
-| `display_name` | string | Human-readable name |
-| `description` | string | Field description |
-| `type` | string | Field type |
-| `required` | boolean | Whether field is required |
-| `default_value` | any | Default value for new items |
-| `options` | array | Options for select/multiselect |
-| `applies_to` | array | Item types this field applies to |
-| `validation` | object | Validation rules |
-| `ui_config` | object | UI display settings |
-| `created_at` | string | ISO 8601 creation timestamp |
-| `updated_at` | string | ISO 8601 last update timestamp |
-
-### Field Types
-
-| Type | Description | Value Format |
-|------|-------------|--------------|
-| `text` | Single-line text | `"string value"` |
-| `textarea` | Multi-line text | `"long text..."` |
-| `number` | Integer or decimal | `42` or `3.14` |
-| `boolean` | True/false | `true` or `false` |
-| `date` | Date without time | `"2024-12-08"` |
-| `datetime` | Date with time | `"2024-12-08T10:00:00Z"` |
-| `select` | Single selection | `"option_value"` |
-| `multiselect` | Multiple selection | `["opt1", "opt2"]` |
-| `user` | User reference | `"user_id"` |
-| `item` | Item reference | `"item_id"` |
-| `url` | URL/link | `"https://..."` |
-| `email` | Email address | `"user@example.com"` |
-| `json` | Structured data | `{"key": "value"}` |
-
----
-
-## List Metadata Definitions
-
-Retrieve all custom field definitions for a project.
-
-```http
-GET /v1/projects/{project_id}/metadata
-```
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item ID to analyze |
 
 ### Query Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `applies_to` | string | — | Filter by item type |
-| `type` | string | — | Filter by field type |
-| `required` | boolean | — | Filter by required status |
-| `searchable` | boolean | — | Filter searchable fields |
-| `limit` | integer | 50 | Results per page |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID |
 
-### Request
+### Request Example
 
 ```bash
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/metadata?applies_to=requirement" \
-  -H "Authorization: Bearer rtm_live_sk_..."
+curl -X GET "https://api.tracertm.dev/v1/analysis/impact/item_req_001?project_id=proj_123" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
 ```
 
 ### Response
 
 ```json
 {
-  "data": [
+  "root_item_id": "item_req_001",
+  "total_affected": 15,
+  "max_depth": 3,
+  "affected_items": [
     {
-      "id": "field_safety_level",
-      "name": "safety_level",
-      "display_name": "Safety Level",
-      "type": "select",
-      "required": true,
-      "applies_to": ["requirement", "design"],
-      "options": [
-        {"value": "QM", "label": "QM"},
-        {"value": "ASIL-A", "label": "ASIL A"},
-        {"value": "ASIL-B", "label": "ASIL B"},
-        {"value": "ASIL-C", "label": "ASIL C"},
-        {"value": "ASIL-D", "label": "ASIL D"}
-      ]
+      "id": "item_test_001",
+      "title": "Test Case 1",
+      "depth": 1,
+      "link_type": "verified_by"
     },
     {
-      "id": "field_story_points",
-      "name": "story_points",
-      "display_name": "Story Points",
-      "type": "number",
-      "required": false,
-      "applies_to": ["requirement", "task"],
-      "validation": {"min": 0, "max": 100}
-    },
-    {
-      "id": "field_due_date",
-      "name": "due_date",
-      "display_name": "Due Date",
-      "type": "date",
-      "required": false,
-      "applies_to": ["requirement", "task", "issue"]
+      "id": "item_design_001",
+      "title": "Design Document 1",
+      "depth": 2,
+      "link_type": "implements"
     }
-  ],
-  "pagination": {
-    "total": 12,
-    "limit": 50,
-    "has_next": false
-  }
-}
-```
-
-### SDK Examples
-
-#### Python
-
-```python
-from tracertm import TraceRTMClient
-
-client = TraceRTMClient(api_key="rtm_live_sk_...")
-
-# List all metadata fields
-fields = client.metadata.list(project_id="proj_abc123")
-
-for field in fields.data:
-    req = "required" if field.required else "optional"
-    print(f"{field.display_name} ({field.type}): {req}")
-
-# Filter by item type
-req_fields = client.metadata.list(
-    project_id="proj_abc123",
-    applies_to="requirement"
-)
-```
-
-#### TypeScript
-
-```typescript
-import { TraceRTMClient } from '@tracertm/sdk';
-
-const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
-
-// List metadata fields
-const fields = await client.metadata.list({
-  projectId: 'proj_abc123'
-});
-
-fields.data.forEach(field => {
-  console.log(`${field.displayName}: ${field.type}`);
-});
-```
-
----
-
-## Create Metadata Field
-
-Create a new custom field definition.
-
-```http
-POST /v1/projects/{project_id}/metadata
-```
-
-### Request Body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | Yes | Field key (unique, lowercase) |
-| `display_name` | string | Yes | Display name |
-| `description` | string | No | Field description |
-| `type` | string | Yes | Field type |
-| `required` | boolean | No | Required field (default: false) |
-| `default_value` | any | No | Default value |
-| `options` | array | Conditional | Required for select/multiselect |
-| `applies_to` | array | Yes | Item types |
-| `validation` | object | No | Validation rules |
-| `ui_config` | object | No | UI settings |
-
-### Request
-
-```bash
-curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/metadata" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "verification_method",
-    "display_name": "Verification Method",
-    "description": "How this requirement will be verified",
-    "type": "select",
-    "required": true,
-    "applies_to": ["requirement"],
-    "options": [
-      {"value": "test", "label": "Test"},
-      {"value": "inspection", "label": "Inspection"},
-      {"value": "analysis", "label": "Analysis"},
-      {"value": "demonstration", "label": "Demonstration"}
-    ],
-    "validation": {
-      "required_for_status": ["in_review", "approved"]
-    },
-    "ui_config": {
-      "position": 2,
-      "section": "Verification",
-      "visible_in_list": true,
-      "filterable": true
-    }
-  }'
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "id": "field_verification_method",
-    "project_id": "proj_abc123",
-    "name": "verification_method",
-    "display_name": "Verification Method",
-    "description": "How this requirement will be verified",
-    "type": "select",
-    "required": true,
-    "applies_to": ["requirement"],
-    "options": [
-      {"value": "test", "label": "Test"},
-      {"value": "inspection", "label": "Inspection"},
-      {"value": "analysis", "label": "Analysis"},
-      {"value": "demonstration", "label": "Demonstration"}
-    ],
-    "validation": {
-      "required_for_status": ["in_review", "approved"]
-    },
-    "ui_config": {
-      "position": 2,
-      "section": "Verification",
-      "visible_in_list": true,
-      "filterable": true
-    },
-    "created_at": "2024-12-08T10:00:00Z",
-    "updated_at": "2024-12-08T10:00:00Z"
-  }
-}
-```
-
-### SDK Examples
-
-#### Python
-
-```python
-# Create select field
-field = client.metadata.create(
-    project_id="proj_abc123",
-    name="verification_method",
-    display_name="Verification Method",
-    type="select",
-    required=True,
-    applies_to=["requirement"],
-    options=[
-        {"value": "test", "label": "Test"},
-        {"value": "inspection", "label": "Inspection"},
-        {"value": "analysis", "label": "Analysis"},
-        {"value": "demonstration", "label": "Demonstration"}
-    ]
-)
-
-print(f"Created field: {field.id}")
-
-# Create number field with validation
-field = client.metadata.create(
-    project_id="proj_abc123",
-    name="story_points",
-    display_name="Story Points",
-    type="number",
-    required=False,
-    applies_to=["requirement", "task"],
-    default_value=0,
-    validation={
-        "min": 0,
-        "max": 100,
-        "integer_only": True
-    }
-)
-
-# Create date field
-field = client.metadata.create(
-    project_id="proj_abc123",
-    name="target_release",
-    display_name="Target Release Date",
-    type="date",
-    applies_to=["requirement"],
-    validation={
-        "min_date": "today"
-    }
-)
-```
-
-#### TypeScript
-
-```typescript
-// Create select field
-const field = await client.metadata.create({
-  projectId: 'proj_abc123',
-  name: 'verification_method',
-  displayName: 'Verification Method',
-  type: 'select',
-  required: true,
-  appliesTo: ['requirement'],
-  options: [
-    { value: 'test', label: 'Test' },
-    { value: 'inspection', label: 'Inspection' },
-    { value: 'analysis', label: 'Analysis' },
-    { value: 'demonstration', label: 'Demonstration' }
   ]
-});
-
-console.log(`Created field: ${field.id}`);
+}
 ```
 
----
-
-## Get Metadata Field
-
-Retrieve a single metadata field definition.
-
-```http
-GET /v1/metadata/{field_id}
-```
-
-### Request
-
-```bash
-curl "https://api.tracertm.dev/v1/metadata/field_safety_level" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-### Response
-
-Returns the full metadata field object.
-
----
-
-## Update Metadata Field
-
-Update a metadata field definition. Some changes may require data migration.
-
-```http
-PATCH /v1/metadata/{field_id}
-```
-
-### Request Body
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `display_name` | string | Update display name |
-| `description` | string | Update description |
-| `required` | boolean | Change required status |
-| `default_value` | any | Change default value |
-| `options` | array | Add/modify options |
-| `validation` | object | Update validation rules |
-| `ui_config` | object | Update UI settings |
-
-### Request
-
-```bash
-curl -X PATCH "https://api.tracertm.dev/v1/metadata/field_safety_level" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "options": [
-      {"value": "QM", "label": "QM (Quality Management)"},
-      {"value": "ASIL-A", "label": "ASIL A"},
-      {"value": "ASIL-B", "label": "ASIL B"},
-      {"value": "ASIL-C", "label": "ASIL C"},
-      {"value": "ASIL-D", "label": "ASIL D"},
-      {"value": "ASIL-D+", "label": "ASIL D (Enhanced)"}
-    ],
-    "ui_config": {
-      "position": 1,
-      "section": "Safety Classification"
-    }
-  }'
-```
-
-### SDK Examples
-
-#### Python
+### Python Example
 
 ```python
-# Add new option
-field = client.metadata.update(
-    field_id="field_safety_level",
-    options=[
-        {"value": "QM", "label": "QM"},
-        {"value": "ASIL-A", "label": "ASIL A"},
-        {"value": "ASIL-B", "label": "ASIL B"},
-        {"value": "ASIL-C", "label": "ASIL C"},
-        {"value": "ASIL-D", "label": "ASIL D"},
-        {"value": "ASIL-D+", "label": "ASIL D (Enhanced)"}
-    ]
-)
+from tracertm import TraceRTM
 
-# Update validation
-field = client.metadata.update(
-    field_id="field_story_points",
-    validation={"min": 0, "max": 200}
-)
-```
+client = TraceRTM(api_key="rtm_live_abc123...")
 
----
-
-## Delete Metadata Field
-
-Delete a metadata field. Removes the field from all items.
-
-```http
-DELETE /v1/metadata/{field_id}
-```
-
-### Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `confirm` | boolean | false | Must be true to delete |
-| `preserve_data` | boolean | false | Keep data in item history |
-
-### Request
-
-```bash
-curl -X DELETE "https://api.tracertm.dev/v1/metadata/field_old_field?confirm=true" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "id": "field_old_field",
-    "deleted": true,
-    "items_affected": 45,
-    "deleted_at": "2024-12-08T10:00:00Z"
-  }
-}
-```
-
----
-
-## Get Schema
-
-Retrieve the complete metadata schema for a project.
-
-```http
-GET /v1/projects/{project_id}/metadata/schema
-```
-
-### Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `item_type` | string | — | Schema for specific item type |
-| `format` | string | `json` | Output format: `json`, `jsonschema` |
-
-### Request
-
-```bash
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/metadata/schema?item_type=requirement" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "project_id": "proj_abc123",
-    "item_type": "requirement",
-    "fields": [
-      {
-        "name": "safety_level",
-        "display_name": "Safety Level",
-        "type": "select",
-        "required": true,
-        "options": ["QM", "ASIL-A", "ASIL-B", "ASIL-C", "ASIL-D"]
-      },
-      {
-        "name": "verification_method",
-        "display_name": "Verification Method",
-        "type": "select",
-        "required": true,
-        "options": ["test", "inspection", "analysis", "demonstration"]
-      },
-      {
-        "name": "story_points",
-        "display_name": "Story Points",
-        "type": "number",
-        "required": false,
-        "validation": {"min": 0, "max": 100}
-      }
-    ],
-    "sections": [
-      {
-        "name": "Safety",
-        "fields": ["safety_level"]
-      },
-      {
-        "name": "Verification",
-        "fields": ["verification_method"]
-      },
-      {
-        "name": "Planning",
-        "fields": ["story_points"]
-      }
-    ]
-  }
-}
-```
-
-### JSON Schema Format
-
-```bash
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/metadata/schema?format=jsonschema" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-```json
-{
-  "data": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "safety_level": {
-        "type": "string",
-        "enum": ["QM", "ASIL-A", "ASIL-B", "ASIL-C", "ASIL-D"],
-        "title": "Safety Level"
-      },
-      "verification_method": {
-        "type": "string",
-        "enum": ["test", "inspection", "analysis", "demonstration"],
-        "title": "Verification Method"
-      },
-      "story_points": {
-        "type": "integer",
-        "minimum": 0,
-        "maximum": 100,
-        "title": "Story Points"
-      }
-    },
-    "required": ["safety_level", "verification_method"]
-  }
-}
-```
-
----
-
-## Validate Metadata
-
-Validate metadata values against the schema.
-
-```http
-POST /v1/projects/{project_id}/metadata/validate
-```
-
-### Request Body
-
-```json
-{
-  "item_type": "requirement",
-  "custom_fields": {
-    "safety_level": "ASIL-B",
-    "verification_method": "test",
-    "story_points": 5
-  }
-}
-```
-
-### Response (Valid)
-
-```json
-{
-  "data": {
-    "valid": true,
-    "errors": []
-  }
-}
-```
-
-### Response (Invalid)
-
-```json
-{
-  "data": {
-    "valid": false,
-    "errors": [
-      {
-        "field": "safety_level",
-        "code": "invalid_value",
-        "message": "Value 'ASIL-E' is not a valid option",
-        "allowed_values": ["QM", "ASIL-A", "ASIL-B", "ASIL-C", "ASIL-D"]
-      },
-      {
-        "field": "story_points",
-        "code": "out_of_range",
-        "message": "Value 150 exceeds maximum of 100"
-      }
-    ]
-  }
-}
-```
-
-### SDK Examples
-
-#### Python
-
-```python
-# Validate before creating item
-validation = client.metadata.validate(
-    project_id="proj_abc123",
-    item_type="requirement",
-    custom_fields={
-        "safety_level": "ASIL-B",
-        "verification_method": "test",
-        "story_points": 5
-    }
-)
-
-if validation.valid:
-    # Proceed with item creation
-    item = client.items.create(...)
-else:
-    for error in validation.errors:
-        print(f"Error in {error.field}: {error.message}")
-```
-
----
-
-## Using Metadata with Items
-
-### Setting Custom Fields
-
-```bash
-curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/items" \
-  -H "Authorization: Bearer rtm_live_sk_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "requirement",
-    "title": "System shall respond within 10ms",
-    "custom_fields": {
-      "safety_level": "ASIL-D",
-      "verification_method": "test",
-      "story_points": 8,
-      "target_release": "2025-03-01"
-    }
-  }'
-```
-
-### Querying by Metadata
-
-```bash
-# Filter by custom field value
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?custom_fields.safety_level=ASIL-D" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-
-# Multiple custom field filters
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?\
-custom_fields.safety_level[in]=ASIL-C,ASIL-D&\
-custom_fields.story_points[gte]=5" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-
-# Sort by custom field
-curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?sort=-custom_fields.story_points" \
-  -H "Authorization: Bearer rtm_live_sk_..."
-```
-
-### SDK Examples
-
-#### Python
-
-```python
-# Create item with custom fields
-item = client.items.create(
-    project_id="proj_abc123",
-    type="requirement",
-    title="System shall respond within 10ms",
-    custom_fields={
-        "safety_level": "ASIL-D",
-        "verification_method": "test",
-        "story_points": 8
-    }
-)
-
-# Query by custom fields
-items = client.items.list(
-    project_id="proj_abc123",
-    custom_fields={
-        "safety_level": {"in": ["ASIL-C", "ASIL-D"]},
-        "story_points": {"gte": 5}
-    },
-    sort="-custom_fields.story_points"
-)
-
-# Update custom fields
-item = client.items.update(
+# Analyze impact
+impact = client.analysis.impact(
     item_id="item_req_001",
-    custom_fields={
-        "story_points": 13,
-        "target_release": "2025-06-01"
-    }
+    project_id="proj_123"
 )
+
+print(f"Total affected items: {impact.total_affected}")
+print(f"Max depth: {impact.max_depth}")
+
+for item in impact.affected_items:
+    print(f"  - {item.title} (depth: {item.depth})")
 ```
 
----
+## Cycle Detection
 
-## Validation Rules
+Detect circular dependencies in the project's traceability graph.
 
-### Common Validation Options
+### Endpoint
+
+```
+GET /api/v1/analysis/cycles/{project_id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID to analyze |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/analysis/cycles/proj_123" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Response
 
 ```json
 {
-  "validation": {
-    "required": true,
-    "required_for_status": ["approved"],
-    "min": 0,
-    "max": 100,
-    "min_length": 1,
-    "max_length": 500,
-    "pattern": "^[A-Z]{2,4}-\\d+$",
-    "allowed_values": ["opt1", "opt2"],
-    "min_date": "today",
-    "max_date": "2025-12-31",
-    "unique": true,
-    "custom_validator": "validate_part_number"
-  }
+  "has_cycles": true,
+  "total_cycles": 2,
+  "severity": "medium",
+  "affected_items": [
+    "item_req_001",
+    "item_req_002",
+    "item_req_003"
+  ]
 }
 ```
 
-### Validation by Type
+### Python Example
 
-| Type | Available Validations |
-|------|----------------------|
-| `text` | min_length, max_length, pattern, unique |
-| `number` | min, max, integer_only |
-| `date` | min_date, max_date |
-| `select` | allowed_values |
-| `multiselect` | allowed_values, min_selections, max_selections |
-| `url` | pattern (URL regex) |
-| `email` | pattern (email regex) |
+```python
+# Detect cycles
+cycles = client.analysis.detect_cycles(project_id="proj_123")
 
----
+if cycles.has_cycles:
+    print(f"Warning: {cycles.total_cycles} cycles detected")
+    print(f"Severity: {cycles.severity}")
+    print(f"Affected items: {cycles.affected_items}")
+else:
+    print("No cycles detected")
+```
+
+## Shortest Path
+
+Find the shortest path between two items in the traceability graph.
+
+### Endpoint
+
+```
+GET /api/v1/analysis/shortest-path
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID |
+| `source_id` | string | Yes | Source item ID |
+| `target_id` | string | Yes | Target item ID |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/analysis/shortest-path?project_id=proj_123&source_id=item_req_001&target_id=item_test_005" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Response
+
+```json
+{
+  "exists": true,
+  "distance": 3,
+  "path": [
+    "item_req_001",
+    "item_design_001",
+    "item_code_001",
+    "item_test_005"
+  ],
+  "link_types": [
+    "implements",
+    "implements",
+    "verified_by"
+  ]
+}
+```
+
+### Python Example
+
+```python
+# Find shortest path
+path = client.analysis.shortest_path(
+    project_id="proj_123",
+    source_id="item_req_001",
+    target_id="item_test_005"
+)
+
+if path.exists:
+    print(f"Path found (distance: {path.distance}):")
+    for i, item_id in enumerate(path.path):
+        if i > 0:
+            link_type = path.link_types[i-1]
+            print(f"  --[{link_type}]--> {item_id}")
+        else:
+            print(f"  {item_id}")
+else:
+    print("No path found between items")
+```
+
+## Graph Neighbors
+
+Get all neighbors of an item in the traceability graph.
+
+### Endpoint
+
+```
+GET /api/v1/projects/{project_id}/graph/neighbors
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID |
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item ID |
+| `direction` | string | No | `in`, `out`, or `both` (default: `both`) |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_123/graph/neighbors?item_id=item_req_001&direction=both" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Response
+
+```json
+{
+  "project_id": "proj_123",
+  "item_id": "item_req_001",
+  "direction": "both",
+  "neighbors": [
+    {
+      "id": "link_abc123",
+      "item_id": "item_test_001",
+      "link_type": "verified_by",
+      "direction": "out"
+    },
+    {
+      "id": "link_def456",
+      "item_id": "item_design_001",
+      "link_type": "implements",
+      "direction": "in"
+    }
+  ],
+  "total": 2
+}
+```
+
+### Python Example
+
+```python
+# Get neighbors
+neighbors = client.graph.neighbors(
+    project_id="proj_123",
+    item_id="item_req_001",
+    direction="both"
+)
+
+print(f"Total neighbors: {neighbors.total}")
+for neighbor in neighbors.neighbors:
+    print(f"  {neighbor.item_id} ({neighbor.direction}, {neighbor.link_type})")
+```
+
+## Use Cases
+
+### 1. Change Impact Analysis
+
+Before modifying a requirement, analyze what will be affected:
+
+```python
+# Analyze impact before change
+impact = client.analysis.impact("item_req_001", "proj_123")
+
+print(f"Changing this requirement will affect {impact.total_affected} items:")
+for item in impact.affected_items:
+    print(f"  - {item.title}")
+```
+
+### 2. Dependency Validation
+
+Check for cycles before creating links:
+
+```python
+# Check for cycles
+cycles = client.analysis.detect_cycles("proj_123")
+
+if cycles.has_cycles:
+    print("Warning: Cycles detected. Review dependencies.")
+    # Prevent link creation or alert user
+```
+
+### 3. Traceability Verification
+
+Verify traceability paths exist:
+
+```python
+# Check if requirement is traced to test
+path = client.analysis.shortest_path(
+    project_id="proj_123",
+    source_id="item_req_001",
+    target_id="item_test_001"
+)
+
+if path.exists:
+    print(f"Traceability verified (path length: {path.distance})")
+else:
+    print("Warning: No traceability path found")
+```
+
+## Best Practices
+
+### 1. Cache Analysis Results
+
+Analysis can be expensive. Cache results when appropriate:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def get_cached_impact(item_id, project_id):
+    return client.analysis.impact(item_id, project_id)
+```
+
+### 2. Batch Analysis
+
+For multiple items, consider batch processing:
+
+```python
+items_to_analyze = ["item_req_001", "item_req_002", "item_req_003"]
+
+for item_id in items_to_analyze:
+    impact = client.analysis.impact(item_id, "proj_123")
+    print(f"{item_id}: {impact.total_affected} affected items")
+```
+
+### 3. Monitor Cycle Detection
+
+Regularly check for cycles:
+
+```python
+# Daily cycle check
+cycles = client.analysis.detect_cycles("proj_123")
+
+if cycles.has_cycles:
+    send_alert(f"Cycles detected: {cycles.total_cycles}")
+```
 
 ## Error Responses
 
-### Field Not Found
+### Item Not Found
 
 ```json
 {
   "error": {
-    "code": "FIELD_NOT_FOUND",
-    "message": "Metadata field 'field_invalid' not found",
-    "status": 404
+    "code": "not_found",
+    "message": "Item not found"
   }
 }
 ```
 
-### Duplicate Field Name
+### Project Access Denied
 
 ```json
 {
   "error": {
-    "code": "FIELD_NAME_EXISTS",
-    "message": "A field with name 'safety_level' already exists",
-    "status": 409
+    "code": "forbidden",
+    "message": "Project access denied"
   }
 }
 ```
-
-### Invalid Field Type
-
-```json
-{
-  "error": {
-    "code": "INVALID_FIELD_TYPE",
-    "message": "Field type 'invalid' is not supported",
-    "status": 422,
-    "details": {
-      "supported_types": ["text", "textarea", "number", "boolean", "date", "datetime", "select", "multiselect", "user", "item", "url", "email", "json"]
-    }
-  }
-}
-```
-
-### Validation Error
-
-```json
-{
-  "error": {
-    "code": "METADATA_VALIDATION_ERROR",
-    "message": "Custom field validation failed",
-    "status": 422,
-    "details": {
-      "errors": [
-        {"field": "story_points", "message": "Value must be between 0 and 100"}
-      ]
-    }
-  }
-}
-```
-
----
 
 ## Related Documentation
 
-- [Items API](/docs/api-reference/rest-api/endpoints/requirements) - Using metadata with items
-- [Filtering](/docs/api-reference/rest-api/filtering) - Filtering by custom fields
-- [Sorting](/docs/api-reference/rest-api/sorting) - Sorting by custom fields
-- [Search](/docs/api-reference/rest-api/search) - Searching metadata
+- [Items API](./02-artifacts) - Manage items
+- [Links API](./04-relationships) - Create relationships
+- [Search API](./06-search) - Search items and links

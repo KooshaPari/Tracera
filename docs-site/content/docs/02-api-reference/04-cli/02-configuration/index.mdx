@@ -1,32 +1,108 @@
 ---
-title: "Configuration"
-description: "Documentation for Configuration"
+title: "CLI Configuration"
+description: "Configure the TraceRTM CLI with API keys, endpoints, and preferences"
+keywords: [cli, configuration, settings, api key, config]
 ---
 
-# Configuration
+# CLI Configuration
 
-This page contains documentation for Configuration.
+Configure the TraceRTM CLI to connect to your API instance and customize behavior.
 
-## Overview
+## Configuration File Location
 
-This section covers the key aspects of Configuration in TraceRTM.
+Configuration is stored in:
 
-## Getting Started
+- **macOS/Linux**: `~/.config/tracertm/config.json`
+- **Windows**: `%APPDATA%\tracertm\config.json`
 
-To get started with Configuration:
+## View Configuration
 
-- Review the Configuration and fundamentals
-- Explore practical examples
-- Check out the API reference
+```bash
+# Show all settings
+trace config show
 
-## Key Concepts
+# Show specific setting
+trace config get api-url
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+## Set Configuration
+
+### API Endpoint
+
+```bash
+# Production
+trace config set api-url https://api.tracertm.dev
+
+# Self-hosted
+trace config set api-url https://your-domain.com/api/v1
+```
+
+### API Key
+
+```bash
+trace config set api-key rtm_live_abc123...
+```
+
+### Default Project
+
+```bash
+trace config set default-project proj_123
+```
+
+### Output Format
+
+```bash
+# JSON output
+trace config set output-format json
+
+# Table output (default)
+trace config set output-format table
+
+# YAML output
+trace config set output-format yaml
+```
+
+## Environment Variables
+
+You can also use environment variables:
+
+```bash
+# Set in shell
+export TRACERTM_API_URL="https://api.tracertm.dev"
+export TRACERTM_API_KEY="rtm_live_abc123..."
+export TRACERTM_PROJECT_ID="proj_123"
+
+# Use CLI
+trace project list
+```
+
+Environment variables override config file settings.
+
+## Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `api-url` | API endpoint URL | `https://api.tracertm.dev` |
+| `api-key` | API key for authentication | None |
+| `default-project` | Default project ID | None |
+| `output-format` | Output format (json/table/yaml) | `table` |
+| `timeout` | Request timeout (seconds) | `30` |
+| `verbose` | Verbose output | `false` |
+
+## Example Configuration
+
+```json
+{
+  "api-url": "https://api.tracertm.dev",
+  "api-key": "rtm_live_abc123...",
+  "default-project": "proj_123",
+  "output-format": "json",
+  "timeout": 30,
+  "verbose": false
+}
+```
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- [Commands](./03-commands) - Learn CLI commands
+- [Environment Variables](./02b-environment-variables) - Advanced configuration

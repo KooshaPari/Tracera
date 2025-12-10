@@ -1,32 +1,204 @@
 ---
-title: "Installation"
-description: "Documentation for Installation"
+title: "CLI Installation"
+description: "Install the TraceRTM command-line interface on macOS, Linux, and Windows"
+keywords: [cli, installation, command line, terminal, setup]
 ---
 
-# Installation
+# CLI Installation
 
-This page contains documentation for Installation.
+The TraceRTM CLI provides command-line access to all TraceRTM features. Install it on your system to manage projects, items, and links from the terminal.
 
-## Overview
+## Prerequisites
 
-This section covers the key aspects of Installation in TraceRTM.
+- Python 3.12 or higher
+- pip (Python package manager)
+- Internet connection
 
-## Getting Started
+## Installation Methods
 
-To get started with Installation:
+### macOS
 
-- Review the Installation and fundamentals
-- Explore practical examples
-- Check out the API reference
+#### Using Homebrew (Recommended)
 
-## Key Concepts
+```bash
+brew install tracertm-cli
+```
 
-- **Concept 1**: Description of concept 1
-- **Concept 2**: Description of concept 2
-- **Concept 3**: Description of concept 3
+#### Using pip
+
+```bash
+pip install tracertm-cli
+```
+
+#### Verify Installation
+
+```bash
+trace --version
+```
+
+### Linux
+
+#### Ubuntu/Debian
+
+```bash
+# Install Python 3.12+ if needed
+sudo apt-get update
+sudo apt-get install python3.12 python3-pip
+
+# Install CLI
+pip3 install tracertm-cli
+
+# Add to PATH (if needed)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### Fedora/RHEL
+
+```bash
+sudo dnf install python3.12 python3-pip
+pip3 install tracertm-cli
+```
+
+#### Verify Installation
+
+```bash
+trace --version
+```
+
+### Windows
+
+#### Using pip
+
+```powershell
+# Install Python 3.12+ from python.org if needed
+pip install tracertm-cli
+```
+
+#### Add to PATH
+
+1. Find installation location: `python -m site --user-base`
+2. Add `Scripts` folder to PATH
+3. Restart terminal
+
+#### Verify Installation
+
+```powershell
+trace --version
+```
+
+## Post-Installation Setup
+
+### 1. Configure API Connection
+
+```bash
+# Set API endpoint
+trace config set api-url https://api.tracertm.dev
+
+# Set API key
+trace config set api-key rtm_live_abc123...
+```
+
+### 2. Verify Connection
+
+```bash
+trace health
+```
+
+Expected output:
+```
+✓ API is healthy
+✓ Database is connected
+```
+
+### 3. Select Project
+
+```bash
+# List projects
+trace project list
+
+# Switch to project
+trace project switch "My Project"
+```
+
+## Upgrade
+
+### macOS (Homebrew)
+
+```bash
+brew upgrade tracertm-cli
+```
+
+### pip
+
+```bash
+pip install --upgrade tracertm-cli
+```
+
+## Uninstall
+
+### macOS (Homebrew)
+
+```bash
+brew uninstall tracertm-cli
+```
+
+### pip
+
+```bash
+pip uninstall tracertm-cli
+```
+
+## Troubleshooting
+
+### Command Not Found
+
+**Problem**: `trace: command not found`
+
+**Solution**:
+```bash
+# Check if installed
+pip show tracertm-cli
+
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# Or use python -m
+python -m tracertm --version
+```
+
+### Permission Denied
+
+**Problem**: Permission errors during installation
+
+**Solution**:
+```bash
+# Use --user flag
+pip install --user tracertm-cli
+
+# Or use virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install tracertm-cli
+```
+
+### Python Version
+
+**Problem**: Python version too old
+
+**Solution**:
+```bash
+# Check version
+python --version
+
+# Install Python 3.12+
+# macOS: brew install python@3.12
+# Linux: Use package manager
+# Windows: Download from python.org
+```
 
 ## Next Steps
 
-- [Learn more about related topics](#)
-- [View examples](#)
-- [Check the API reference](#)
+- [Configuration](./02-configuration) - Configure CLI settings
+- [Commands](./03-commands) - Learn CLI commands
+- [Scripting](./04-scripting) - Automate with scripts
