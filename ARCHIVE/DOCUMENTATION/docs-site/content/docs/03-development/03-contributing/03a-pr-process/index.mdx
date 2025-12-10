@@ -1,0 +1,188 @@
+---
+title: "Pull Request Process"
+description: "Process for creating and reviewing pull requests"
+keywords: [pull requests, pr, code review, process]
+---
+
+# Pull Request Process
+
+Process for creating, reviewing, and merging pull requests in TraceRTM.
+
+## Creating a Pull Request
+
+### 1. Prepare Your Branch
+
+```bash
+# Create feature branch
+git checkout -b feature/your-feature-name
+
+# Make changes
+# ...
+
+# Commit changes
+git commit -m "feat: add new feature"
+
+# Push to your fork
+git push origin feature/your-feature-name
+```
+
+### 2. Create PR on GitHub
+
+1. Go to the repository
+2. Click "New Pull Request"
+3. Select your branch
+4. Fill out PR template
+
+### 3. PR Title
+
+Use conventional commit format:
+
+```
+feat: Add export to Excel functionality
+fix: Resolve authentication token refresh issue
+```
+
+### 4. PR Description
+
+Use the PR template and include:
+
+- **What**: What changes were made
+- **Why**: Why these changes are needed
+- **How**: How the changes work
+- **Testing**: How to test the changes
+- **Screenshots**: If UI changes
+
+## PR Template
+
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing performed
+
+## Checklist
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex code
+- [ ] Documentation updated
+- [ ] No new warnings
+- [ ] Tests pass locally
+```
+
+## Code Review Process
+
+### For Authors
+
+1. **Self-Review**: Review your own code first
+2. **Address Feedback**: Respond to all comments
+3. **Update PR**: Push fixes as new commits
+4. **Mark Resolved**: Mark conversations as resolved
+
+### For Reviewers
+
+1. **Review Promptly**: Review within 24-48 hours
+2. **Be Constructive**: Provide helpful feedback
+3. **Approve or Request Changes**: Clear action required
+4. **Follow Up**: Check if feedback was addressed
+
+## Review Criteria
+
+### Code Quality
+
+- Follows style guide
+- Well-documented
+- No obvious bugs
+- Handles edge cases
+
+### Testing
+
+- Tests added for new features
+- Existing tests still pass
+- Coverage maintained or improved
+
+### Documentation
+
+- Code comments added
+- Documentation updated
+- Examples provided if needed
+
+## Approval Process
+
+### Required Approvals
+
+- At least 1 approval from maintainers
+- All CI checks must pass
+- No unresolved conversations
+
+### Merge Process
+
+1. **Squash and Merge**: Preferred for feature branches
+2. **Rebase and Merge**: For clean history
+3. **Merge Commit**: For complex PRs
+
+## After Merge
+
+### Clean Up
+
+```bash
+# Delete local branch
+git branch -d feature/your-feature-name
+
+# Delete remote branch
+git push origin --delete feature/your-feature-name
+```
+
+### Follow Up
+
+- Monitor for issues
+- Update related documentation
+- Announce if breaking change
+
+## Best Practices
+
+### 1. Keep PRs Focused
+
+```bash
+# Good - focused PR
+feat: add item search functionality
+
+# Bad - too many changes
+feat: add search, filtering, pagination, and export
+```
+
+### 2. Write Clear Descriptions
+
+Explain:
+- What problem it solves
+- How it works
+- Why this approach
+
+### 3. Respond to Feedback
+
+- Address all comments
+- Ask questions if unclear
+- Update PR with fixes
+
+### 4. Keep PRs Updated
+
+```bash
+# Rebase on main
+git checkout main
+git pull
+git checkout feature/your-feature
+git rebase main
+```
+
+## Related Documentation
+
+- [Commit Conventions](./02a-commit-conventions) - Commit message format
+- [Code Review](./03b-code-review) - Code review guidelines

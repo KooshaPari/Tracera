@@ -129,6 +129,17 @@ class TraceRTMClient:
         """Check if the session is async."""
         return isinstance(self._session, AsyncSession)
 
+    def _ensure_sync_session(self) -> Session:
+        """
+        Return a synchronous Session, using sync_session when AsyncSession is patched in tests.
+        """
+        session = self._get_session()
+        if isinstance(session, Session):
+            return session
+        if hasattr(session, "sync_session"):
+            return session.sync_session
+        raise ValueError("Synchronous session required for this operation")
+
     def _execute_query(self, stmt):
         """Execute a select statement compatible with both sync and async sessions."""
         try:
@@ -415,26 +426,9 @@ class TraceRTMClient:
             {"view": view, "status": status, "count": len(items)},
         )
 
-        return [
-            {
-                "id": item.id,
-                "title": item.title,
-                "description": item.description or "",
-                "view": item.view,
-                "type": item.item_type,
-                "status": item.status,
-                "priority": item.priority,
-                "owner": item.owner,
-                "parent_id": item.parent_id,
-                "metadata": item.item_metadata,
-                "version": item.version,
-                "created_at": item.created_at.isoformat() if item.created_at else None,
-                "updated_at": item.updated_at.isoformat() if item.updated_at else None,
-            }
-            for item in items
-        ]
+        return items
 
-    def get_item(self, item_id: str) -> dict[str, Any] | None:
+    def get_item(self, item_id: str) -> Item | None:
         """
         Get a specific item (FR37).
 
@@ -477,35 +471,23 @@ class TraceRTMClient:
         if not item:
             return None
 
-        return {
-            "id": item.id,
-            "title": item.title,
-            "description": item.description or "",
-            "view": item.view,
-            "type": item.item_type,
-            "status": item.status,
-            "priority": item.priority,
-            "owner": item.owner,
-            "parent_id": item.parent_id,
-            "metadata": item.item_metadata,
-            "version": item.version,
-            "created_at": item.created_at.isoformat() if item.created_at else None,
-            "updated_at": item.updated_at.isoformat() if item.updated_at else None,
-        }
+        return item
 
     # FR38: Create/update/delete items
     def create_item(
         self,
         title: str,
         view: str,
-        item_type: str,
+        item_type: str | None = None,
         description: str | None = None,
         status: str = "todo",
         priority: str = "medium",
         owner: str | None = None,
         parent_id: str | None = None,
         metadata: dict | None = None,
-    ) -> dict[str, Any]:
+        project_id: str | None = None,
+        **kwargs,
+    ) -> Item:
         """
         Create a new item (FR38).
 
@@ -521,10 +503,11 @@ class TraceRTMClient:
             metadata: Optional metadata
 
         Returns:
-            Created item dictionary
+            Created item
         """
-        session = self._get_session()
-        project_id = self._get_project_id()
+        session = self._ensure_sync_session()
+        project_id = project_id or self._get_project_id()
+        item_type = item_type or kwargs.get("type")
 
         item = Item(
             project_id=project_id,
@@ -549,14 +532,7 @@ class TraceRTMClient:
             {"title": title, "view": view, "type": item_type},
         )
 
-        return {
-            "id": item.id,
-            "title": item.title,
-            "view": item.view,
-            "type": item.item_type,
-            "status": item.status,
-            "version": item.version,
-        }
+        return item
 
     @retry_with_backoff(max_retries=3, initial_delay=0.1)
     def update_item(
@@ -588,7 +564,7 @@ class TraceRTMClient:
             ValueError: If item not found
             ConcurrencyError: If conflict detected after retries (FR43)
         """
-        session = self._get_session()
+        session = self._ensure_sync_session()
         project_id = self._get_project_id()
 
         if self._is_async_session():
@@ -642,12 +618,7 @@ class TraceRTMClient:
                 },
             )
 
-            return {
-                "id": item.id,
-                "title": item.title,
-                "status": item.status,
-                "version": item.version,
-            }
+            return item
         except StaleDataError:
             # Conflict detected (FR43) - will be retried by decorator
             session.rollback()
@@ -667,7 +638,7 @@ class TraceRTMClient:
             # Re-raise for retry decorator
             raise
 
-    def delete_item(self, item_id: str) -> None:
+    def delete_item(self, item_id: str) -> bool:
         """
         Delete an item (soft delete) (FR38).
 
@@ -701,6 +672,7 @@ class TraceRTMClient:
             item.id,
             {"title": item.title},
         )
+        return True
 
     # FR39: Export project data
     def export_project(self, format: str = "json") -> str:
