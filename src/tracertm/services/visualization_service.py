@@ -10,7 +10,7 @@ class VisualizationService:
 
     @staticmethod
     def render_tree(
-        items: list[dict],
+        items: list[dict[str, object]],
         root_id: str | None = None,
         prefix: str = "",
         is_last: bool = True,
@@ -43,7 +43,7 @@ class VisualizationService:
 
             # Add children
             children = item.get('children', [])
-            if children:
+            if isinstance(children, list):
                 extension = "    " if is_last_item else "│   "
                 child_prefix = prefix + extension if prefix else extension
                 child_tree = VisualizationService.render_tree(
@@ -58,8 +58,8 @@ class VisualizationService:
 
     @staticmethod
     def render_graph(
-        items: dict[str, dict],
-        links: list[dict],
+        items: dict[str, dict[str, object]],
+        links: list[dict[str, object]],
     ) -> str:
         """Render items and links as ASCII graph.
 
@@ -92,8 +92,10 @@ class VisualizationService:
             # Find items that depend on this one
             for link in links:
                 if link.get('source') == item_id:
-                    target_level = get_level(link.get('target'), current_level + 1)
-                    max_level = max(max_level, target_level)
+                    target = link.get('target')
+                    if isinstance(target, str):
+                        target_level = get_level(target, current_level + 1)
+                        max_level = max(max_level, target_level)
 
             return max_level
 
@@ -114,17 +116,23 @@ class VisualizationService:
         # Render links
         lines.append("\nDependencies:")
         for link in links:
-            source = items.get(link['source'], {}).get('title', link['source'])
-            target = items.get(link['target'], {}).get('title', link['target'])
-            link_type = link.get('type', 'relates_to')
-            lines.append(f"  {source} --[{link_type}]--> {target}")
+            source_key = link.get('source')
+            target_key = link.get('target')
+            if isinstance(source_key, str) and isinstance(target_key, str):
+                source_item = items.get(source_key, {})
+                target_item = items.get(target_key, {})
+                if isinstance(source_item, dict) and isinstance(target_item, dict):
+                    source = source_item.get('title', source_key)
+                    target = target_item.get('title', target_key)
+                    link_type = link.get('type', 'relates_to')
+                    lines.append(f"  {source} --[{link_type}]--> {target}")
 
         return "\n".join(lines)
 
     @staticmethod
     def render_dependency_matrix(
-        items: dict[str, dict],
-        links: list[dict],
+        items: dict[str, dict[str, object]],
+        links: list[dict[str, object]],
     ) -> str:
         """Render dependency matrix.
 

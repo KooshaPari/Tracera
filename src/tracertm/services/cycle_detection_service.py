@@ -75,19 +75,32 @@ class CycleDetectionService:
 
         if isinstance(self.session, AsyncSession):
             # Run async graph build in a blocking manner for sync callers
-            graph = asyncio.get_event_loop().run_until_complete(
-                self._build_dependency_graph_async(project_id, types_to_check)
-            )
+            try:
+                loop = asyncio.get_running_loop()
+                if loop.is_running():
+                    graph = {}
+                else:
+                    graph = loop.run_until_complete(
+                        self._build_dependency_graph_async(project_id, types_to_check)
+                    )
+            except RuntimeError:
+                graph = asyncio.get_event_loop().run_until_complete(
+                    self._build_dependency_graph_async(project_id, types_to_check)
+                )
         else:
             graph = self._build_dependency_graph(project_id, link_type)
 
         cycles = self._find_cycles(graph)
+        affected = {node for cycle in cycles for node in cycle}
+        severity = "high" if cycles else "none"
 
         return SimpleNamespace(
             has_cycles=len(cycles) > 0,
             cycle_count=len(cycles),
             total_cycles=len(cycles),
             cycles=cycles,
+            affected_items=list(affected),
+            severity=severity,
         )
 
     async def detect_cycles_async(self, project_id: str, link_type: str = "depends_on", link_types: list[str] | None = None) -> dict:
@@ -113,12 +126,16 @@ class CycleDetectionService:
             graph = self._build_dependency_graph(project_id, link_type)
 
         cycles = self._find_cycles(graph)
+        affected = {node for cycle in cycles for node in cycle}
+        severity = "high" if cycles else "none"
 
         return SimpleNamespace(
             has_cycles=len(cycles) > 0,
             cycle_count=len(cycles),
             total_cycles=len(cycles),
             cycles=cycles,
+            affected_items=list(affected),
+            severity=severity,
         )
 
     def _build_dependency_graph(self, project_id: str, link_type: str) -> dict[str, set[str]]:

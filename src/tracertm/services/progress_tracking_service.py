@@ -13,5 +13,5 @@ class ProgressTrackingService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def progress(self) -> dict:
+    async def progress(self) -> dict[str, object]:
         return {"progress": 0}

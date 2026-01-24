@@ -13,5 +13,5 @@ class SyncService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def sync(self) -> dict:
+    async def sync(self) -> dict[str, object]:
         return {"synced": True}

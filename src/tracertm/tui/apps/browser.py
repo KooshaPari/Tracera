@@ -4,6 +4,7 @@ Item browser TUI application.
 Interactive browser for viewing and navigating items.
 """
 
+from typing import TYPE_CHECKING, ClassVar
 
 try:
     from textual.app import App, ComposeResult
@@ -13,26 +14,33 @@ try:
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
-    class App:
-        pass
-    class ComposeResult:
-        pass
-    class Container:
-        pass
-    class Header:
-        pass
-    class Footer:
-        pass
-    class DataTable:
-        pass
-    class Tree:
-        pass
-    class Static:
-        pass
-    class Input:
-        pass
-    class Binding:
-        pass
+
+    if TYPE_CHECKING:
+        from textual.app import App, ComposeResult
+        from textual.binding import Binding
+        from textual.containers import Container, Horizontal, Vertical
+        from textual.widgets import DataTable, Footer, Header, Input, Static, Tree
+    else:
+        class App:
+            pass
+        class ComposeResult:
+            pass
+        class Container:
+            pass
+        class Header:
+            pass
+        class Footer:
+            pass
+        class DataTable:
+            pass
+        class Tree:
+            pass
+        class Static:
+            pass
+        class Input:
+            pass
+        class Binding:
+            pass
 
 from sqlalchemy.orm import Session
 
@@ -67,7 +75,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        BINDINGS = [
+        BINDINGS: ClassVar[list] = [
             Binding("q", "quit", "Quit", priority=True),
             Binding("r", "refresh", "Refresh"),
             Binding("f", "filter", "Filter"),
@@ -210,8 +218,8 @@ if TEXTUAL_AVAILABLE:
             if self.db:
                 self.db.close()
 
-else:
-    class BrowserApp:
+if not TEXTUAL_AVAILABLE:
+    class BrowserApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
         def __init__(self) -> None:

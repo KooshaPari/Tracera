@@ -4,34 +4,46 @@ Main dashboard TUI application.
 Provides interactive dashboard with project state, view switching, and item browsing.
 """
 
+from typing import TYPE_CHECKING, ClassVar
 
 try:
     from textual.app import App, ComposeResult
     from textual.binding import Binding
     from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import DataTable, Footer, Header, Static, Tree
+    from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
-    # Create dummy classes for type checking
-    class App:
-        pass
-    class ComposeResult:
-        pass
-    class Container:
-        pass
-    class Header:
-        pass
-    class Footer:
-        pass
-    class DataTable:
-        pass
-    class Static:
-        pass
-    class Tree:
-        pass
-    class Binding:
-        pass
+
+    if TYPE_CHECKING:
+        from textual.app import App, ComposeResult
+        from textual.binding import Binding
+        from textual.containers import Container, Horizontal, Vertical
+        from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
+    else:
+        # Create dummy classes for type checking
+        class App:
+            pass
+        class ComposeResult:
+            pass
+        class Container:
+            pass
+        class Header:
+            pass
+        class Footer:
+            pass
+        class DataTable:
+            pass
+        class Static:
+            pass
+        class Tree:
+            pass
+        class Binding:
+            pass
+        class Button:
+            pass
+        class Input:
+            pass
 
 from sqlalchemy.orm import Session
 
@@ -72,7 +84,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        BINDINGS = [
+        BINDINGS: ClassVar[list] = [
             Binding("q", "quit", "Quit", priority=True),
             Binding("v", "switch_view", "Switch View"),
             Binding("r", "refresh", "Refresh"),
@@ -241,9 +253,6 @@ if TEXTUAL_AVAILABLE:
         def action_search(self) -> None:
             """Open search dialog."""
             try:
-                from textual.widgets import Input, Static, Button
-                from textual.containers import Container, Horizontal
-
                 class SearchDialog(Container):
                     """Search dialog for items."""
 
@@ -314,7 +323,7 @@ if TEXTUAL_AVAILABLE:
                     self.notify("No items match the search query", severity="warning")
 
             except Exception as e:
-                self.notify(f"Search error: {str(e)}", severity="error")
+                self.notify(f"Search error: {e!s}", severity="error")
 
         def action_help(self) -> None:
             """Show help."""
@@ -325,9 +334,9 @@ if TEXTUAL_AVAILABLE:
             if self.db:
                 self.db.close()
 
-else:
+if not TEXTUAL_AVAILABLE:
     # Fallback when Textual is not available
-    class DashboardApp:
+    class DashboardApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
         def __init__(self) -> None:

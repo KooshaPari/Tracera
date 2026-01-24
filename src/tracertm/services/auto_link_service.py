@@ -5,6 +5,7 @@ Automatically links code commits to stories via commit message parsing.
 """
 
 import re
+from typing import ClassVar
 
 from sqlalchemy.orm import Session
 
@@ -16,7 +17,7 @@ class AutoLinkService:
     """Service for auto-linking items from commit messages."""
 
     # Patterns for matching story IDs in commit messages
-    STORY_PATTERNS = [
+    STORY_PATTERNS: ClassVar[list[str]] = [
         r'#(\w+-\d+)',  # #STORY-123
         r'STORY[-\s]?(\d+)',  # STORY-123 or STORY 123
         r'\[(\w+-\d+)\]',  # [STORY-123]

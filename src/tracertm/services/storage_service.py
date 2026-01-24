@@ -13,5 +13,5 @@ class StorageService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def info(self) -> dict:
+    async def info(self) -> dict[str, object]:
         return {"status": "ok"}

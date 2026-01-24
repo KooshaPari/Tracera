@@ -13,5 +13,5 @@ class GraphAnalysisService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def analyze(self, *args, **kwargs) -> dict:
+    async def analyze(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"status": "ok", "nodes": 0, "edges": 0}

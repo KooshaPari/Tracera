@@ -3,7 +3,7 @@
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,7 +37,7 @@ class BenchmarkService:
     """Service for benchmarking materialized views and SSOT operations."""
 
     # Performance targets for each view (in milliseconds)
-    PERFORMANCE_TARGETS = {
+    PERFORMANCE_TARGETS: ClassVar[dict[str, int]] = {
         "traceability_matrix": 50,
         "impact_analysis": 100,
         "coverage_analysis": 50,

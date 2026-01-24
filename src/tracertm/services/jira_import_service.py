@@ -1,7 +1,7 @@
 """Service for importing projects from Jira."""
 
 import json
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +22,7 @@ class JiraImportService:
         self.events = EventRepository(session)
 
     # Jira to TraceRTM status mapping
-    STATUS_MAP = {
+    STATUS_MAP: ClassVar[dict[str, str]] = {
         "To Do": "todo",
         "In Progress": "in_progress",
         "In Review": "in_progress",
@@ -31,7 +31,7 @@ class JiraImportService:
     }
 
     # Jira to TraceRTM type mapping
-    TYPE_MAP = {
+    TYPE_MAP: ClassVar[dict[str, str]] = {
         "Epic": "epic",
         "Story": "story",
         "Task": "task",
@@ -40,7 +40,7 @@ class JiraImportService:
     }
 
     # Jira to TraceRTM link type mapping
-    LINK_TYPE_MAP = {
+    LINK_TYPE_MAP: ClassVar[dict[str, str]] = {
         "relates to": "relates_to",
         "blocks": "blocks",
         "is blocked by": "blocked_by",

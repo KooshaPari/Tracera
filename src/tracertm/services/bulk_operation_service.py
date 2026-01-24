@@ -8,7 +8,7 @@ import csv
 import json
 from datetime import datetime
 from io import StringIO
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy.orm import Session
 
@@ -289,27 +289,36 @@ class BulkOperationService:
             validation_errors.append(f"Missing required CSV columns: {', '.join(missing_headers)}")
 
         # Validate and parse each row
-        valid_items = []
-        invalid_rows = []
+        valid_items: list[dict[str, Any]] = []
+        invalid_rows: list[dict[str, Any]] = []
 
         for row_num, row in enumerate(rows, start=2):  # Start at 2 (row 1 is header)
             try:
                 # Normalize column names (case-insensitive, handle spaces)
-                normalized_row = {}
+                normalized_row: dict[str, str | None] = {}
                 for key, value in row.items():
                     normalized_key = key.strip().title()
                     normalized_row[normalized_key] = value.strip() if value else None
 
                 # Extract fields
-                title = normalized_row.get("Title", "").strip()
-                view = normalized_row.get("View", "").strip().upper()
-                item_type = normalized_row.get("Type", "").strip()
-                description = normalized_row.get("Description", "").strip() or None
-                status = normalized_row.get("Status", "todo").strip() or "todo"
-                priority = normalized_row.get("Priority", "medium").strip() or "medium"
-                owner = normalized_row.get("Owner", "").strip() or None
-                parent_id = normalized_row.get("Parent Id", "").strip() or None
-                metadata_str = normalized_row.get("Metadata", "").strip() or None
+                title_val = normalized_row.get("Title")
+                title = title_val.strip() if title_val else ""
+                view_val = normalized_row.get("View")
+                view = view_val.strip().upper() if view_val else ""
+                type_val = normalized_row.get("Type")
+                item_type = type_val.strip() if type_val else ""
+                desc_val = normalized_row.get("Description")
+                description = desc_val.strip() if desc_val else None
+                status_val = normalized_row.get("Status")
+                status = (status_val.strip() if status_val else "todo") or "todo"
+                priority_val = normalized_row.get("Priority")
+                priority = (priority_val.strip() if priority_val else "medium") or "medium"
+                owner_val = normalized_row.get("Owner")
+                owner = owner_val.strip() if owner_val else None
+                parent_val = normalized_row.get("Parent Id")
+                parent_id = parent_val.strip() if parent_val else None
+                meta_val = normalized_row.get("Metadata")
+                metadata_str = meta_val.strip() if meta_val else None
 
                 # Parse metadata JSON if provided
                 metadata = {}
@@ -334,7 +343,7 @@ class BulkOperationService:
                     metadata=metadata,
                 )
 
-                valid_items.append({
+                valid_item: dict[str, Any] = {
                     "row": row_num,
                     "data": {
                         "title": item_data.title,
@@ -347,7 +356,8 @@ class BulkOperationService:
                         "parent_id": item_data.parent_id,
                         "metadata": item_data.metadata,
                     },
-                })
+                }
+                valid_items.append(valid_item)
 
             except Exception as e:
                 invalid_rows.append({
@@ -369,29 +379,40 @@ class BulkOperationService:
             warnings.append(f"{len(invalid_rows)} row(s) have validation errors and will be skipped")
 
         # Check for duplicate titles in same view
-        title_view_pairs = {}
+        title_view_pairs: dict[tuple[str, str], int] = {}
         for item in valid_items:
-            key = (item["data"]["title"], item["data"]["view"])
+            data_dict = item.get("data", {})
+            key = (
+                str(data_dict.get("title", "")),
+                str(data_dict.get("view", "")),
+            )
+            row_num_val = int(item.get("row", 0))
             if key in title_view_pairs:
-                warnings.append(f"Duplicate title '{item['data']['title']}' in view {item['data']['view']} (rows {title_view_pairs[key]} and {item['row']})")
+                warnings.append(
+                    f"Duplicate title '{data_dict.get('title', '')}' in view "
+                    f"{data_dict.get('view', '')} (rows {title_view_pairs[key]} and {row_num_val})"
+                )
             else:
-                title_view_pairs[key] = item["row"]
+                title_view_pairs[key] = row_num_val
 
         # Estimate duration (rough: 15ms per item)
         estimated_duration_ms = total_count * 15
 
         # Build sample preview (first N valid items)
-        samples = []
+        samples: list[dict[str, Any]] = []
         for item in valid_items[:limit]:
-            samples.append({
-                "row": item["row"],
-                "title": item["data"]["title"][:50],
-                "view": item["data"]["view"],
-                "type": item["data"]["item_type"],
-                "status": item["data"]["status"],
-                "priority": item["data"].get("priority", "medium"),
-                "owner": item["data"].get("owner"),
-            })
+            data_dict = item.get("data", {})
+            title_str = str(data_dict.get("title", ""))[:50]
+            sample_item: dict[str, Any] = {
+                "row": int(item.get("row", 0)),
+                "title": title_str,
+                "view": str(data_dict.get("view", "")),
+                "type": str(data_dict.get("item_type", "")),
+                "status": str(data_dict.get("status", "")),
+                "priority": str(data_dict.get("priority", "medium")),
+                "owner": data_dict.get("owner"),
+            }
+            samples.append(sample_item)
 
         return {
             "total_count": total_count,
@@ -466,37 +487,40 @@ class BulkOperationService:
                     )
 
                     # Create item
-                    item = Item(
-                        project_id=project_id,
-                        title=item_data.title,
-                        description=item_data.description,
-                        view=item_data.view,
-                        item_type=item_data.item_type,
-                        status=item_data.status,
-                        priority=priority,
-                        owner=owner,
-                        parent_id=item_data.parent_id,
-                        item_metadata=item_data.metadata,
-                        version=1,
+                    new_item = cast(
+                        Item,
+                        Item(
+                            project_id=project_id,
+                            title=item_data.title,
+                            description=item_data.description,
+                            view=item_data.view,
+                            item_type=item_data.item_type,
+                            status=item_data.status,
+                            priority=priority,
+                            owner=owner,
+                            parent_id=item_data.parent_id,
+                            item_metadata=item_data.metadata,
+                            version=1,
+                        ),
                     )
 
-                    self.session.add(item)
+                    self.session.add(new_item)
                     self.session.flush()  # Get item.id
-                    created_items.append(item)
+                    created_items.append(new_item)
                     items_created += 1
 
                     # Log creation event
                     event_data = {
-                        "item_id": item.id,
-                        "item_title": item.title,
-                        "view": item.view,
-                        "item_type": item.item_type,
+                        "item_id": new_item.id,
+                        "item_title": new_item.title,
+                        "view": new_item.view,
+                        "item_type": new_item.item_type,
                     }
                     event = Event(
                         project_id=project_id,
                         event_type="item_bulk_created",
                         entity_type="item",
-                        entity_id=item.id,
+                        entity_id=new_item.id,
                         agent_id=agent_id,
                         data=event_data,
                     )

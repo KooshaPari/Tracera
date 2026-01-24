@@ -13,5 +13,5 @@ class PurgeService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def purge(self, *args, **kwargs) -> dict:
+    async def purge(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"purged": True}

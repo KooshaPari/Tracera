@@ -13,5 +13,5 @@ class StatsService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def stats(self) -> dict:
+    async def stats(self) -> dict[str, object]:
         return {"counts": {}}

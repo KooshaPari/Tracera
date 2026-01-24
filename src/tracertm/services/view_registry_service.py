@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import ClassVar
 
 
 class ViewType(StrEnum):
@@ -70,7 +71,7 @@ class ViewRegistryService:
     """Service for managing view types."""
 
     # View metadata registry
-    REGISTRY: dict[ViewType, ViewMetadata] = {
+    REGISTRY: ClassVar[dict[ViewType, ViewMetadata]] = {
         # Core views
         ViewType.FEATURE: ViewMetadata(
             name="Feature",

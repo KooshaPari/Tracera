@@ -47,21 +47,19 @@ class AdvancedTraceabilityEnhancementsService:
 
         # Find outgoing links
         for item in items:
-            if hasattr(item, "id") and item.id == item_id:
-                # Check for outgoing links
-                if hasattr(item, "outgoing_links"):
-                    for link in item.outgoing_links:
-                        target_id = (
-                            link.target_item_id
-                            if hasattr(link, "target_item_id")
-                            else None
-                        )
+            if hasattr(item, "id") and item.id == item_id and hasattr(item, "outgoing_links"):
+                for link in item.outgoing_links:
+                    target_id = (
+                        link.target_item_id
+                        if hasattr(link, "target_item_id")
+                        else None
+                    )
 
-                        if target_id not in visited:
-                            if self._has_cycle(target_id, visited, rec_stack, items):
-                                return True
-                        elif target_id in rec_stack:
+                    if target_id not in visited:
+                        if self._has_cycle(target_id, visited, rec_stack, items):
                             return True
+                    elif target_id in rec_stack:
+                        return True
 
         rec_stack.remove(item_id)
         return False
