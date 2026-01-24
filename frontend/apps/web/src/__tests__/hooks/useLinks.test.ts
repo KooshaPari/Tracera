@@ -2,162 +2,187 @@
  * Tests for useLinks hook
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, waitFor } from '@testing-library/react'
-import React from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useCreateLink, useLinks } from '../../hooks/useLinks'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useCreateLink, useLinks } from "../../hooks/useLinks";
 
 // Mock fetch
-const mockFetch = vi.fn()
-global.fetch = mockFetch as unknown as typeof fetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  })
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: { retry: false },
+			mutations: { retry: false },
+		},
+	});
 
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
-}
+	return ({ children }: { children: React.ReactNode }) =>
+		React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
 
-describe('useLinks', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+describe("useLinks", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
-  it('should fetch links', async () => {
-    const mockLinks = [
-      { id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' },
-      { id: '2', sourceId: 'item-2', targetId: 'item-3', type: 'implements' },
-    ]
+	it("should fetch links", async () => {
+		const mockLinksArray = [
+			{ id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
+			{ id: "2", sourceId: "item-2", targetId: "item-3", type: "implements" },
+		];
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockLinks,
-    })
+		const mockResponse = {
+			links: mockLinksArray,
+			total: mockLinksArray.length,
+		};
 
-    const { result } = renderHook(() => useLinks(), {
-      wrapper: createWrapper(),
-    })
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		});
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		const { result } = renderHook(() => useLinks(), {
+			wrapper: createWrapper(),
+		});
 
-    expect(result.current.data).toEqual(mockLinks)
-    expect(mockFetch).toHaveBeenCalledTimes(1)
-  })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-  it('should fetch links with source filter', async () => {
-    const mockLinks = [{ id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' }]
+		expect(result.current.data).toEqual(mockResponse);
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+	});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockLinks,
-    })
+	it("should fetch links with source filter", async () => {
+		const mockLinksArray = [
+			{ id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
+		];
 
-    const { result } = renderHook(() => useLinks({ sourceId: 'item-1' }), {
-      wrapper: createWrapper(),
-    })
+		const mockResponse = {
+			links: mockLinksArray,
+			total: mockLinksArray.length,
+		};
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		});
 
-    expect(result.current.data).toEqual(mockLinks)
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('source_id=item-1'))
-  })
+		const { result } = renderHook(() => useLinks({ sourceId: "item-1" }), {
+			wrapper: createWrapper(),
+		});
 
-  it('should fetch links with target filter', async () => {
-    const mockLinks = [{ id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' }]
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockLinks,
-    })
+		expect(result.current.data).toEqual(mockResponse);
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("source_id=item-1"),
+			expect.any(Object),
+		);
+	});
 
-    const { result } = renderHook(() => useLinks({ targetId: 'item-2' }), {
-      wrapper: createWrapper(),
-    })
+	it("should fetch links with target filter", async () => {
+		const mockLinksArray = [
+			{ id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
+		];
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		const mockResponse = {
+			links: mockLinksArray,
+			total: mockLinksArray.length,
+		};
 
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('target_id=item-2'))
-  })
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		});
 
-  it('should handle fetch error', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    })
+		const { result } = renderHook(() => useLinks({ targetId: "item-2" }), {
+			wrapper: createWrapper(),
+		});
 
-    const { result } = renderHook(() => useLinks(), {
-      wrapper: createWrapper(),
-    })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    await waitFor(() => expect(result.current.isError).toBe(true))
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("target_id=item-2"),
+			expect.any(Object),
+		);
+	});
 
-    expect(result.current.error).toBeTruthy()
-  })
-})
+	it("should handle fetch error", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 500,
+		});
 
-describe('useCreateLink', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+		const { result } = renderHook(() => useLinks(), {
+			wrapper: createWrapper(),
+		});
 
-  it('should create a link', async () => {
-    const newLink = {
-      sourceId: 'item-1',
-      targetId: 'item-2',
-      type: 'depends_on' as const,
-      projectId: 'proj-1',
-    }
+		await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const createdLink = {
-      id: '1',
-      ...newLink,
-    }
+		expect(result.current.error).toBeTruthy();
+	});
+});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => createdLink,
-    })
+describe("useCreateLink", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
-    const { result } = renderHook(() => useCreateLink(), {
-      wrapper: createWrapper(),
-    })
+	it("should create a link", async () => {
+		const newLink = {
+			sourceId: "item-1",
+			targetId: "item-2",
+			type: "depends_on" as const,
+			projectId: "proj-1",
+		};
 
-    result.current.mutate(newLink)
+		const createdLink = {
+			id: "1",
+			...newLink,
+		};
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => createdLink,
+		});
 
-    expect(result.current.data).toEqual(createdLink)
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/links'),
-      expect.objectContaining({
-        method: 'POST',
-      })
-    )
-  })
+		const { result } = renderHook(() => useCreateLink(), {
+			wrapper: createWrapper(),
+		});
 
-  it('should handle create error', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    })
+		result.current.mutate(newLink);
 
-    const { result } = renderHook(() => useCreateLink(), {
-      wrapper: createWrapper(),
-    })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    result.current.mutate({
-      sourceId: 'item-1',
-      targetId: 'item-2',
-      type: 'depends_on' as const,
-      projectId: 'proj-1',
-    })
+		expect(result.current.data).toEqual(createdLink);
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("/api/v1/links"),
+			expect.objectContaining({
+				method: "POST",
+			}),
+		);
+	});
 
-    await waitFor(() => expect(result.current.isError).toBe(true))
-  })
-})
+	it("should handle create error", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 400,
+		});
+
+		const { result } = renderHook(() => useCreateLink(), {
+			wrapper: createWrapper(),
+		});
+
+		result.current.mutate({
+			sourceId: "item-1",
+			targetId: "item-2",
+			type: "depends_on" as const,
+			projectId: "proj-1",
+		});
+
+		await waitFor(() => expect(result.current.isError).toBe(true));
+	});
+});
