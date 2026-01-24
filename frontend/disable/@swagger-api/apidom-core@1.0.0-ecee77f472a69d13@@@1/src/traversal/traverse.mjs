@@ -1,7 +1,7 @@
-import { pathOr } from 'ramda';
-import { isFunction, noop } from 'ramda-adjunct';
-import { visit, PredicateVisitor } from "./visitor.mjs";
+import { pathOr } from "ramda";
+import { isFunction, noop } from "ramda-adjunct";
 import { isElement } from "../predicates/index.mjs";
+import { PredicateVisitor, visit } from "./visitor.mjs";
 /**
  * @public
  */
@@ -9,23 +9,20 @@ import { isElement } from "../predicates/index.mjs";
  * @public
  */
 export class CallbackVisitor extends PredicateVisitor {
-  callback;
-  constructor({
-    callback = noop,
-    ...rest
-  } = {}) {
-    super({
-      ...rest
-    });
-    this.callback = callback;
-  }
-  enter(element) {
-    if (this.predicate(element)) {
-      this.callback(element);
-      return this.returnOnTrue;
-    }
-    return this.returnOnFalse;
-  }
+	callback;
+	constructor({ callback = noop, ...rest } = {}) {
+		super({
+			...rest,
+		});
+		this.callback = callback;
+	}
+	enter(element) {
+		if (this.predicate(element)) {
+			this.callback(element);
+			return this.returnOnTrue;
+		}
+		return this.returnOnFalse;
+	}
 }
 
 /**
@@ -33,21 +30,21 @@ export class CallbackVisitor extends PredicateVisitor {
  * @public
  */
 const traverse = (options, element) => {
-  let callback;
-  let predicate;
-  if (isFunction(options)) {
-    callback = options;
-    predicate = isElement;
-  } else {
-    callback = pathOr(noop, ['callback'], options);
-    predicate = pathOr(isElement, ['predicate'], options);
-  }
-  const visitor = new CallbackVisitor({
-    callback,
-    predicate
-  });
+	let callback;
+	let predicate;
+	if (isFunction(options)) {
+		callback = options;
+		predicate = isElement;
+	} else {
+		callback = pathOr(noop, ["callback"], options);
+		predicate = pathOr(isElement, ["predicate"], options);
+	}
+	const visitor = new CallbackVisitor({
+		callback,
+		predicate,
+	});
 
-  // @ts-ignore
-  visit(element, visitor);
+	// @ts-expect-error
+	visit(element, visitor);
 };
 export default traverse;

@@ -16,14 +16,14 @@ var _index5 = require("./en-CA/_lib/formatLong.cjs");
  * @author Marco Imperatore [@mimperatore](https://github.com/mimperatore)
  */
 const enCA = (exports.enCA = {
-  code: "en-CA",
-  formatDistance: _index4.formatDistance,
-  formatLong: _index5.formatLong,
-  formatRelative: _index.formatRelative,
-  localize: _index2.localize,
-  match: _index3.match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "en-CA",
+	formatDistance: _index4.formatDistance,
+	formatLong: _index5.formatLong,
+	formatRelative: _index.formatRelative,
+	localize: _index2.localize,
+	match: _index3.match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

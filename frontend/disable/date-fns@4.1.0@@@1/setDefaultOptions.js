@@ -1,6 +1,6 @@
 import {
-  getDefaultOptions,
-  setDefaultOptions as setInternalDefaultOptions,
+	getDefaultOptions,
+	setDefaultOptions as setInternalDefaultOptions,
 } from "./_lib/defaultOptions.js";
 
 /**
@@ -49,29 +49,29 @@ import {
  * //=> Sun Aug 31 2014 00:00:00
  */
 export function setDefaultOptions(options) {
-  const result = {};
-  const defaultOptions = getDefaultOptions();
+	const result = {};
+	const defaultOptions = getDefaultOptions();
 
-  for (const property in defaultOptions) {
-    if (Object.prototype.hasOwnProperty.call(defaultOptions, property)) {
-      // [TODO] I challenge you to fix the type
-      result[property] = defaultOptions[property];
-    }
-  }
+	for (const property in defaultOptions) {
+		if (Object.hasOwn(defaultOptions, property)) {
+			// [TODO] I challenge you to fix the type
+			result[property] = defaultOptions[property];
+		}
+	}
 
-  for (const property in options) {
-    if (Object.prototype.hasOwnProperty.call(options, property)) {
-      if (options[property] === undefined) {
-        // [TODO] I challenge you to fix the type
-        delete result[property];
-      } else {
-        // [TODO] I challenge you to fix the type
-        result[property] = options[property];
-      }
-    }
-  }
+	for (const property in options) {
+		if (Object.hasOwn(options, property)) {
+			if (options[property] === undefined) {
+				// [TODO] I challenge you to fix the type
+				delete result[property];
+			} else {
+				// [TODO] I challenge you to fix the type
+				result[property] = options[property];
+			}
+		}
+	}
 
-  setInternalDefaultOptions(result);
+	setInternalDefaultOptions(result);
 }
 
 // Fallback for modularized imports:

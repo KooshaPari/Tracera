@@ -7,13 +7,13 @@
  * like Request and Response, for unimplemented properties.
  */
 export function isPropertyAccessible<Obj extends Record<string, any>>(
-  obj: Obj,
-  key: keyof Obj
+	obj: Obj,
+	key: keyof Obj,
 ) {
-  try {
-    obj[key]
-    return true
-  } catch {
-    return false
-  }
+	try {
+		obj[key];
+		return true;
+	} catch {
+		return false;
+	}
 }

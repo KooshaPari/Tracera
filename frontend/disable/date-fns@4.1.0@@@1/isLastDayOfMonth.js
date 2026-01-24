@@ -21,8 +21,8 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isLastDayOfMonth(date, options) {
-  const _date = toDate(date, options?.in);
-  return +endOfDay(_date, options) === +endOfMonth(_date, options);
+	const _date = toDate(date, options?.in);
+	return +endOfDay(_date, options) === +endOfMonth(_date, options);
 }
 
 // Fallback for modularized imports:

@@ -14,14 +14,14 @@ var _index5 = require("./fa-IR/_lib/match.cjs");
  * @author Morteza Ziyae [@mort3za](https://github.com/mort3za)
  */
 const faIR = (exports.faIR = {
-  code: "fa-IR",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 6 /* Saturday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "fa-IR",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 6 /* Saturday */,
+		firstWeekContainsDate: 1,
+	},
 });

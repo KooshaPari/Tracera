@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _eachSeries = require('./eachSeries.js');
+var _eachSeries = require("./eachSeries.js");
 
 var _eachSeries2 = _interopRequireDefault(_eachSeries);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * It runs each task in series but stops whenever any of the functions were
@@ -57,21 +57,25 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function tryEach(tasks, callback) {
-    var error = null;
-    var result;
-    return (0, _eachSeries2.default)(tasks, (task, taskCb) => {
-        (0, _wrapAsync2.default)(task)((err, ...args) => {
-            if (err === false) return taskCb(err);
+	var error = null;
+	var result;
+	return (0, _eachSeries2.default)(
+		tasks,
+		(task, taskCb) => {
+			(0, _wrapAsync2.default)(task)((err, ...args) => {
+				if (err === false) return taskCb(err);
 
-            if (args.length < 2) {
-                [result] = args;
-            } else {
-                result = args;
-            }
-            error = err;
-            taskCb(err ? null : {});
-        });
-    }, () => callback(error, result));
+				if (args.length < 2) {
+					[result] = args;
+				} else {
+					result = args;
+				}
+				error = err;
+				taskCb(err ? null : {});
+			});
+		},
+		() => callback(error, result),
+	);
 }
 
 exports.default = (0, _awaitify2.default)(tryEach);

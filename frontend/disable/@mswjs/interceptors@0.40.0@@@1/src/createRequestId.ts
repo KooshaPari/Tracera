@@ -5,5 +5,5 @@
  * // "f774b6c9c600f"
  */
 export function createRequestId(): string {
-  return Math.random().toString(16).slice(2)
+	return Math.random().toString(16).slice(2);
 }

@@ -16,4 +16,4 @@
  * The SubscriptionArgs type is retained for backwards compatibility.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export { subscribe, createSourceEventStream } from '../execution/subscribe.mjs';
+export { createSourceEventStream, subscribe } from "../execution/subscribe.mjs";

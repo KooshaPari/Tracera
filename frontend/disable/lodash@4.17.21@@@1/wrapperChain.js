@@ -1,4 +1,4 @@
-var chain = require('./chain');
+var chain = require("./chain");
 
 /**
  * Creates a `lodash` wrapper instance with explicit method chain sequences enabled.
@@ -28,7 +28,7 @@ var chain = require('./chain');
  * // => { 'user': 'barney' }
  */
 function wrapperChain() {
-  return chain(this);
+	return chain(this);
 }
 
 module.exports = wrapperChain;

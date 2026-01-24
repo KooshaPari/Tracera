@@ -57,7 +57,7 @@ export interface DifferenceInDaysOptions extends ContextOptions<Date> {}
  * //=> 92
  */
 export declare function differenceInDays(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInDaysOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInDaysOptions | undefined,
 ): number;

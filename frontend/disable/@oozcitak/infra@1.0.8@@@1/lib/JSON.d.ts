@@ -21,4 +21,6 @@ export declare function parseJSONIntoInfraValues(jsonText: string): any;
  *
  * @param jsValue - a JavaScript value
  */
-export declare function convertAJSONDerivedJavaScriptValueToAnInfraValue(jsValue: any): any;
+export declare function convertAJSONDerivedJavaScriptValueToAnInfraValue(
+	jsValue: any,
+): any;

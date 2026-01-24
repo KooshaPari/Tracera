@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 exports.default = void 0;
 var _ramda = require("ramda");
@@ -17,18 +18,21 @@ var _namespace = _interopRequireDefault(require("../namespace.cjs"));
  * @public
  */
 const fromFn = (data, namespace = _namespace.default) => {
-  if ((0, _ramdaAdjunct.isString)(data)) {
-    // JSON serialized refract
-    try {
-      return namespace.fromRefract(JSON.parse(data));
-    } catch {
-      // noop
-    }
-  }
-  if ((0, _ramdaAdjunct.isPlainObject)(data) && (0, _ramda.has)('element', data)) {
-    // refract javascript structure
-    return namespace.fromRefract(data);
-  }
-  return namespace.toElement(data);
+	if ((0, _ramdaAdjunct.isString)(data)) {
+		// JSON serialized refract
+		try {
+			return namespace.fromRefract(JSON.parse(data));
+		} catch {
+			// noop
+		}
+	}
+	if (
+		(0, _ramdaAdjunct.isPlainObject)(data) &&
+		(0, _ramda.has)("element", data)
+	) {
+		// refract javascript structure
+		return namespace.fromRefract(data);
+	}
+	return namespace.toElement(data);
 };
-var _default = exports.default = fromFn;
+var _default = (exports.default = fromFn);

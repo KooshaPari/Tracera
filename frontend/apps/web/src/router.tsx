@@ -1,11 +1,23 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-import { routeTree } from './routeTree.gen'
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+
+let routerInstance: ReturnType<typeof createTanStackRouter> | null = null;
 
 export function createRouter() {
-  return createTanStackRouter({
-    routeTree,
-    defaultPreload: 'intent',
-  })
+	if (!routerInstance) {
+		routerInstance = createTanStackRouter({
+			routeTree,
+			defaultPreload: "intent",
+		});
+	}
+	return routerInstance;
 }
 
-export type AppRouter = ReturnType<typeof createRouter>
+export function getRouter() {
+	if (!routerInstance) {
+		routerInstance = createRouter();
+	}
+	return routerInstance;
+}
+
+export type AppRouter = ReturnType<typeof createRouter>;

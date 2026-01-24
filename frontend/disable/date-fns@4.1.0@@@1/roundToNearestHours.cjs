@@ -51,26 +51,26 @@ var _index3 = require("./toDate.cjs");
  * //=> Thu Jul 10 2014 08:00:00
  */
 function roundToNearestHours(date, options) {
-  const nearestTo = options?.nearestTo ?? 1;
+	const nearestTo = options?.nearestTo ?? 1;
 
-  if (nearestTo < 1 || nearestTo > 12)
-    return (0, _index2.constructFrom)(options?.in || date, NaN);
+	if (nearestTo < 1 || nearestTo > 12)
+		return (0, _index2.constructFrom)(options?.in || date, NaN);
 
-  const date_ = (0, _index3.toDate)(date, options?.in);
-  const fractionalMinutes = date_.getMinutes() / 60;
-  const fractionalSeconds = date_.getSeconds() / 60 / 60;
-  const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60 / 60;
-  const hours =
-    date_.getHours() +
-    fractionalMinutes +
-    fractionalSeconds +
-    fractionalMilliseconds;
+	const date_ = (0, _index3.toDate)(date, options?.in);
+	const fractionalMinutes = date_.getMinutes() / 60;
+	const fractionalSeconds = date_.getSeconds() / 60 / 60;
+	const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60 / 60;
+	const hours =
+		date_.getHours() +
+		fractionalMinutes +
+		fractionalSeconds +
+		fractionalMilliseconds;
 
-  const method = options?.roundingMethod ?? "round";
-  const roundingMethod = (0, _index.getRoundingMethod)(method);
+	const method = options?.roundingMethod ?? "round";
+	const roundingMethod = (0, _index.getRoundingMethod)(method);
 
-  const roundedHours = roundingMethod(hours / nearestTo) * nearestTo;
+	const roundedHours = roundingMethod(hours / nearestTo) * nearestTo;
 
-  date_.setHours(roundedHours, 0, 0, 0);
-  return date_;
+	date_.setHours(roundedHours, 0, 0, 0);
+	return date_;
 }

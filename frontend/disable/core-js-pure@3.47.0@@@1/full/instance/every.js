@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/instance/every');
+"use strict";
+var parent = require("../../actual/instance/every");
 
 module.exports = parent;

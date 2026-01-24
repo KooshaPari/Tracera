@@ -1,6 +1,6 @@
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
-import type { IntrospectionQuery } from './getIntrospectionQuery';
+import type { GraphQLSchemaValidationOptions } from "../type/schema";
+import { GraphQLSchema } from "../type/schema";
+import type { IntrospectionQuery } from "./getIntrospectionQuery";
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -14,6 +14,6 @@ import type { IntrospectionQuery } from './getIntrospectionQuery';
  * the "errors" field of a server response before calling this function.
  */
 export declare function buildClientSchema(
-  introspection: IntrospectionQuery,
-  options?: GraphQLSchemaValidationOptions,
+	introspection: IntrospectionQuery,
+	options?: GraphQLSchemaValidationOptions,
 ): GraphQLSchema;

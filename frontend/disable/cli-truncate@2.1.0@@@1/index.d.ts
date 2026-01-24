@@ -5,7 +5,7 @@ declare namespace cliTruncate {
 
 		@default 'end'
 		*/
-		readonly position?: 'start' | 'middle' | 'end';
+		readonly position?: "start" | "middle" | "end";
 
 		/**
 		Add a space between the text and the ellipsis.
@@ -90,7 +90,7 @@ cliTruncate(paragraph, process.stdout.columns));
 declare function cliTruncate(
 	text: string,
 	columns: number,
-	options?: cliTruncate.Options
+	options?: cliTruncate.Options,
 ): string;
 
 export = cliTruncate;

@@ -1,9 +1,3 @@
-'use strict';
-
 const internals = {};
 
-
-module.exports = function (promise) {
-
-    return !!promise && typeof promise.then === 'function';
-};
+module.exports = (promise) => !!promise && typeof promise.then === "function";

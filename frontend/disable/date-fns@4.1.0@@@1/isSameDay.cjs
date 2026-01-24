@@ -37,12 +37,12 @@ var _index2 = require("./startOfDay.cjs");
  * //=> false
  */
 function isSameDay(laterDate, earlierDate, options) {
-  const [dateLeft_, dateRight_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    +(0, _index2.startOfDay)(dateLeft_) === +(0, _index2.startOfDay)(dateRight_)
-  );
+	const [dateLeft_, dateRight_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		+(0, _index2.startOfDay)(dateLeft_) === +(0, _index2.startOfDay)(dateRight_)
+	);
 }

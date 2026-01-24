@@ -1,11 +1,10 @@
-"use strict";
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-exports.default = function (fn, ...args) {
-    return (...callArgs) => fn(...args, ...callArgs);
-};
+exports.default =
+	(fn, ...args) =>
+	(...callArgs) =>
+		fn(...args, ...callArgs);
 
 module.exports = exports.default;

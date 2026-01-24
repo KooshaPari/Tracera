@@ -1,7 +1,4 @@
-import {
-  noop,
-  resolve as _resolve
-} from '../-internal';
+import { resolve as _resolve, noop } from "../-internal";
 
 /**
   `Promise.resolve` returns a promise that will become resolved with the
@@ -35,14 +32,11 @@ import {
   `value`
 */
 export default function resolve(object) {
-  /*jshint validthis:true */
-  let Constructor = this;
+	if (object && typeof object === "object" && object.constructor === this) {
+		return object;
+	}
 
-  if (object && typeof object === 'object' && object.constructor === Constructor) {
-    return object;
-  }
-
-  let promise = new Constructor(noop);
-  _resolve(promise, object);
-  return promise;
+	const promise = new this(noop);
+	_resolve(promise, object);
+	return promise;
 }

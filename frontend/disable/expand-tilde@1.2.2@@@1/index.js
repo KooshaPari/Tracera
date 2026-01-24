@@ -5,18 +5,18 @@
  * Licensed under the MIT license.
  */
 
-var path = require('path');
-var homedir = require('os-homedir');
+var path = require("path");
+var homedir = require("os-homedir");
 
 module.exports = function expandTilde(filepath) {
-  var home = homedir();
+	var home = homedir();
 
-  if (filepath.charCodeAt(0) === 126 /* ~ */) {
-    if (filepath.charCodeAt(1) === 43 /* + */) {
-      return path.join(process.cwd(), filepath.slice(2));
-    }
-    return home ? path.join(home, filepath.slice(1)) : filepath;
-  }
+	if (filepath.charCodeAt(0) === 126 /* ~ */) {
+		if (filepath.charCodeAt(1) === 43 /* + */) {
+			return path.join(process.cwd(), filepath.slice(2));
+		}
+		return home ? path.join(home, filepath.slice(1)) : filepath;
+	}
 
-  return filepath;
+	return filepath;
 };

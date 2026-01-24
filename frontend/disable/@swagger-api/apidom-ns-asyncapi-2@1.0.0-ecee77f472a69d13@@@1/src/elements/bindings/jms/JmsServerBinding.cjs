@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class JmsServerBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'jmsServerBinding';
-    this.classes.push('server-binding');
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "jmsServerBinding";
+		this.classes.push("server-binding");
+	}
 }
-var _default = exports.default = JmsServerBinding;
+var _default = (exports.default = JmsServerBinding);

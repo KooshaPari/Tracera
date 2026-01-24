@@ -1,15 +1,14 @@
-import { render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { typeboxResolver } from '..';
-
-import { Static, Type } from '@sinclair/typebox';
-import { TypeCompiler } from '@sinclair/typebox/compiler';
+import { type Static, Type } from "@sinclair/typebox";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { render, screen } from "@testing-library/react";
+import user from "@testing-library/user-event";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { typeboxResolver } from "..";
 
 const schema = Type.Object({
-  username: Type.String({ minLength: 1 }),
-  password: Type.String({ minLength: 1 }),
+	username: Type.String({ minLength: 1 }),
+	password: Type.String({ minLength: 1 }),
 });
 
 const typecheck = TypeCompiler.Compile(schema);
@@ -17,70 +16,70 @@ const typecheck = TypeCompiler.Compile(schema);
 type FormData = Static<typeof schema>;
 
 interface Props {
-  onSubmit: (data: FormData) => void;
+	onSubmit: (data: FormData) => void;
 }
 
 function TestComponent({ onSubmit }: Props) {
-  const { register, handleSubmit } = useForm({
-    resolver: typeboxResolver(typecheck),
-    shouldUseNativeValidation: true,
-  });
+	const { register, handleSubmit } = useForm({
+		resolver: typeboxResolver(typecheck),
+		shouldUseNativeValidation: true,
+	});
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register('username')} placeholder="username" />
+	return (
+		<form onSubmit={handleSubmit(onSubmit)}>
+			<input {...register("username")} placeholder="username" />
 
-      <input {...register('password')} placeholder="password" />
+			<input {...register("password")} placeholder="password" />
 
-      <button type="submit">submit</button>
-    </form>
-  );
+			<button type="submit">submit</button>
+		</form>
+	);
 }
 
 test("form's native validation with Typebox (with compiler)", async () => {
-  const handleSubmit = vi.fn();
-  render(<TestComponent onSubmit={handleSubmit} />);
+	const handleSubmit = vi.fn();
+	render(<TestComponent onSubmit={handleSubmit} />);
 
-  // username
-  let usernameField = screen.getByPlaceholderText(
-    /username/i,
-  ) as HTMLInputElement;
-  expect(usernameField.validity.valid).toBe(true);
-  expect(usernameField.validationMessage).toBe('');
+	// username
+	let usernameField = screen.getByPlaceholderText(
+		/username/i,
+	) as HTMLInputElement;
+	expect(usernameField.validity.valid).toBe(true);
+	expect(usernameField.validationMessage).toBe("");
 
-  // password
-  let passwordField = screen.getByPlaceholderText(
-    /password/i,
-  ) as HTMLInputElement;
-  expect(passwordField.validity.valid).toBe(true);
-  expect(passwordField.validationMessage).toBe('');
+	// password
+	let passwordField = screen.getByPlaceholderText(
+		/password/i,
+	) as HTMLInputElement;
+	expect(passwordField.validity.valid).toBe(true);
+	expect(passwordField.validationMessage).toBe("");
 
-  await user.click(screen.getByText(/submit/i));
+	await user.click(screen.getByText(/submit/i));
 
-  // username
-  usernameField = screen.getByPlaceholderText(/username/i) as HTMLInputElement;
-  expect(usernameField.validity.valid).toBe(false);
-  expect(usernameField.validationMessage).toBe(
-    'Expected string length greater or equal to 1',
-  );
+	// username
+	usernameField = screen.getByPlaceholderText(/username/i) as HTMLInputElement;
+	expect(usernameField.validity.valid).toBe(false);
+	expect(usernameField.validationMessage).toBe(
+		"Expected string length greater or equal to 1",
+	);
 
-  // password
-  passwordField = screen.getByPlaceholderText(/password/i) as HTMLInputElement;
-  expect(passwordField.validity.valid).toBe(false);
-  expect(passwordField.validationMessage).toBe(
-    'Expected string length greater or equal to 1',
-  );
+	// password
+	passwordField = screen.getByPlaceholderText(/password/i) as HTMLInputElement;
+	expect(passwordField.validity.valid).toBe(false);
+	expect(passwordField.validationMessage).toBe(
+		"Expected string length greater or equal to 1",
+	);
 
-  await user.type(screen.getByPlaceholderText(/username/i), 'joe');
-  await user.type(screen.getByPlaceholderText(/password/i), 'password');
+	await user.type(screen.getByPlaceholderText(/username/i), "joe");
+	await user.type(screen.getByPlaceholderText(/password/i), "password");
 
-  // username
-  usernameField = screen.getByPlaceholderText(/username/i) as HTMLInputElement;
-  expect(usernameField.validity.valid).toBe(true);
-  expect(usernameField.validationMessage).toBe('');
+	// username
+	usernameField = screen.getByPlaceholderText(/username/i) as HTMLInputElement;
+	expect(usernameField.validity.valid).toBe(true);
+	expect(usernameField.validationMessage).toBe("");
 
-  // password
-  passwordField = screen.getByPlaceholderText(/password/i) as HTMLInputElement;
-  expect(passwordField.validity.valid).toBe(true);
-  expect(passwordField.validationMessage).toBe('');
+	// password
+	passwordField = screen.getByPlaceholderText(/password/i) as HTMLInputElement;
+	expect(passwordField.validity.valid).toBe(true);
+	expect(passwordField.validationMessage).toBe("");
 });

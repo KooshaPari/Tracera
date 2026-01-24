@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Async2 channels-kebab-case', () => {
-  it('should report on no kebab-case channel path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Async2 channels-kebab-case", () => {
+	it("should report on no kebab-case channel path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         asyncapi: '3.0.0'
         info:
           title: Cool API
@@ -17,16 +21,16 @@ describe('Async2 channels-kebab-case', () => {
             payload:
               type: object
         `,
-      'asyncapi.yaml'
-    );
+			"asyncapi.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'channels-kebab-case': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "channels-kebab-case": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -43,11 +47,11 @@ describe('Async2 channels-kebab-case', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on snake_case in channel path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on snake_case in channel path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         asyncapi: '3.0.0'
         info:
           title: Cool API
@@ -58,16 +62,16 @@ describe('Async2 channels-kebab-case', () => {
             payload:
               type: object
         `,
-      'asyncapi.yaml'
-    );
+			"asyncapi.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'channels-kebab-case': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "channels-kebab-case": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -84,11 +88,11 @@ describe('Async2 channels-kebab-case', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should allow trailing slash in channel path with "channels-kebab-case" rule', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it('should allow trailing slash in channel path with "channels-kebab-case" rule', async () => {
+		const document = parseYamlToDocument(
+			outdent`
         asyncapi: '3.0.0'
         info:
           title: Cool API
@@ -99,25 +103,25 @@ describe('Async2 channels-kebab-case', () => {
             payload:
               type: object
         `,
-      'asyncapi.yaml'
-    );
+			"asyncapi.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'paths-kebab-case': 'error',
-          'no-path-trailing-slash': 'off',
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"paths-kebab-case": "error",
+					"no-path-trailing-slash": "off",
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('words with hyphens are allowed with "channels-kebab-case" rule', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it('words with hyphens are allowed with "channels-kebab-case" rule', async () => {
+		const document = parseYamlToDocument(
+			outdent`
         asyncapi: '3.0.0'
         info:
           title: Cool API
@@ -128,18 +132,18 @@ describe('Async2 channels-kebab-case', () => {
             payload:
               type: object
         `,
-      'asyncapi.yaml'
-    );
+			"asyncapi.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'paths-kebab-case': 'error',
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"paths-kebab-case": "error",
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

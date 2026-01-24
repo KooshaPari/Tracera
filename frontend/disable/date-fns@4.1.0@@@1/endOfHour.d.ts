@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfHour} function options.
  */
 export interface EndOfHourOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfHour
  * @category Hour Helpers
@@ -27,9 +27,9 @@ export interface EndOfHourOptions<DateType extends Date = Date>
  * //=> Tue Sep 02 2014 11:59:59.999
  */
 export declare function endOfHour<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EndOfHourOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: EndOfHourOptions<ResultDate> | undefined,
 ): ResultDate;

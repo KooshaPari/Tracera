@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // Export classes
 var DOMParserImpl_1 = require("./DOMParserImpl");

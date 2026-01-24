@@ -23,6 +23,6 @@ export interface IsTodayOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isToday(
-  date: DateArg<Date> & {},
-  options?: IsTodayOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsTodayOptions | undefined,
 ): boolean;

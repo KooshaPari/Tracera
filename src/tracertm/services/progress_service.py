@@ -5,6 +5,7 @@ Calculates completion percentages, tracks velocity, and identifies blocked/stall
 """
 
 from datetime import datetime, timedelta
+from typing import Any
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -62,7 +63,7 @@ class ProgressService:
 
         return sum(child_completions) / len(child_completions)
 
-    def get_blocked_items(self, project_id: str) -> list[dict]:
+    def get_blocked_items(self, project_id: str) -> list[dict[str, Any]]:
         """
         Get items that are blocking others (FR70).
 
@@ -85,7 +86,7 @@ class ProgressService:
         )
 
         # Group by target (blocked item)
-        blocked_map = {}
+        blocked_map: dict[str, list[str]] = {}
         for link in blocking_links:
             if link.target_item_id not in blocked_map:
                 blocked_map[link.target_item_id] = []
@@ -94,12 +95,12 @@ class ProgressService:
         # Get item details
         for item_id, blocker_ids in blocked_map.items():
             item = self.session.query(Item).filter(Item.id == item_id).first()
-            if item:
+            if item is not None:
                 blockers = [
                     self.session.query(Item).filter(Item.id == bid).first()
                     for bid in blocker_ids
                 ]
-                blockers = [b for b in blockers if b]
+                blockers_filtered = [b for b in blockers if b is not None]
 
                 blocked_items.append({
                     "item_id": item.id,
@@ -107,13 +108,13 @@ class ProgressService:
                     "status": item.status,
                     "blockers": [
                         {"id": b.id, "title": b.title, "status": b.status}
-                        for b in blockers
+                        for b in blockers_filtered
                     ],
                 })
 
         return blocked_items
 
-    def get_stalled_items(self, project_id: str, days_threshold: int = 7) -> list[dict]:
+    def get_stalled_items(self, project_id: str, days_threshold: int = 7) -> list[dict[str, Any]]:
         """
         Get items with no progress (stalled items) (FR71).
 
@@ -150,7 +151,7 @@ class ProgressService:
 
     def calculate_velocity(
         self, project_id: str, days: int = 7
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Calculate velocity (items completed per time period) (FR73).
 
@@ -196,7 +197,7 @@ class ProgressService:
 
     def generate_progress_report(
         self, project_id: str, start_date: datetime | None = None, end_date: datetime | None = None
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Generate progress report for time period (FR72).
 
@@ -225,8 +226,8 @@ class ProgressService:
 
         # Calculate statistics
         total_items = len(items)
-        by_status = {}
-        by_view = {}
+        by_status: dict[str, int] = {}
+        by_view: dict[str, int] = {}
 
         for item in items:
             by_status[item.status] = by_status.get(item.status, 0) + 1

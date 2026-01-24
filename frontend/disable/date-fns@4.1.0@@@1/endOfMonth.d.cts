@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfMonth} function options.
  */
 export interface EndOfMonthOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfMonth
  * @category Month Helpers
@@ -27,9 +27,9 @@ export interface EndOfMonthOptions<DateType extends Date = Date>
  * //=> Tue Sep 30 2014 23:59:59.999
  */
 export declare function endOfMonth<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EndOfMonthOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: EndOfMonthOptions<ResultDate> | undefined,
 ): ResultDate;

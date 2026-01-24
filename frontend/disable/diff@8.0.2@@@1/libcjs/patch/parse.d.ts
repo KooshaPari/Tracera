@@ -1,4 +1,4 @@
-import type { StructuredPatch } from '../types.js';
+import type { StructuredPatch } from "../types.js";
 /**
  * Parses a patch into structured data, in the same structure returned by `structuredPatch`.
  *

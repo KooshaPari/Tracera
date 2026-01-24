@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/number/is-integer');
+"use strict";
+module.exports = require("../../full/number/is-integer");

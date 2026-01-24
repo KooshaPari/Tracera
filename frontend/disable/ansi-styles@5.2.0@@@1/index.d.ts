@@ -162,6 +162,9 @@ declare const ansiStyles: {
 	readonly color: ansiStyles.ForegroundColor & ansiStyles.ColorBase;
 	readonly bgColor: ansiStyles.BackgroundColor & ansiStyles.ColorBase;
 	readonly codes: ReadonlyMap<number, number>;
-} & ansiStyles.BackgroundColor & ansiStyles.ForegroundColor & ansiStyles.Modifier & ansiStyles.ConvertColor;
+} & ansiStyles.BackgroundColor &
+	ansiStyles.ForegroundColor &
+	ansiStyles.Modifier &
+	ansiStyles.ConvertColor;
 
 export = ansiStyles;

@@ -1,7 +1,7 @@
-var toInteger = require('./toInteger');
+var toInteger = require("./toInteger");
 
 /** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
+var FUNC_ERROR_TEXT = "Expected a function";
 
 /**
  * The opposite of `_.before`; this method creates a function that invokes
@@ -28,15 +28,15 @@ var FUNC_ERROR_TEXT = 'Expected a function';
  * // => Logs 'done saving!' after the two async saves have completed.
  */
 function after(n, func) {
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  n = toInteger(n);
-  return function() {
-    if (--n < 1) {
-      return func.apply(this, arguments);
-    }
-  };
+	if (typeof func != "function") {
+		throw new TypeError(FUNC_ERROR_TEXT);
+	}
+	n = toInteger(n);
+	return function () {
+		if (--n < 1) {
+			return func.apply(this, arguments);
+		}
+	};
 }
 
 module.exports = after;

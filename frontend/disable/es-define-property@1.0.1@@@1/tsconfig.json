@@ -1,10 +1,7 @@
 {
 	"extends": "@ljharb/tsconfig",
 	"compilerOptions": {
-		"target": "es2022",
+		"target": "es2022"
 	},
-	"exclude": [
-		"coverage",
-		"test/list-exports"
-	],
+	"exclude": ["coverage", "test/list-exports"]
 }

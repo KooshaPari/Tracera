@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/cbrt');
+"use strict";
+module.exports = require("../../full/math/cbrt");

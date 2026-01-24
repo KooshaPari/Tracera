@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/reflect/get-own-metadata-keys');
+"use strict";
+module.exports = require("../../full/reflect/get-own-metadata-keys");

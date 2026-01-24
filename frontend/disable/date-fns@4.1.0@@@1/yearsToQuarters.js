@@ -18,7 +18,7 @@ import { quartersInYear } from "./constants.js";
  * //=> 8
  */
 export function yearsToQuarters(years) {
-  return Math.trunc(years * quartersInYear);
+	return Math.trunc(years * quartersInYear);
 }
 
 // Fallback for modularized imports:

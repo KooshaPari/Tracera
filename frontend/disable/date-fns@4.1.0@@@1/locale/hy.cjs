@@ -14,14 +14,14 @@ var _index5 = require("./hy/_lib/match.cjs");
  * @author Alex Igityan [@alexigityan](https://github.com/alexigityan)
  */
 const hy = (exports.hy = {
-  code: "hy",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "hy",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 });

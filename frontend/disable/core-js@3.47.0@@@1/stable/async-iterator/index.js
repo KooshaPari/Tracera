@@ -1,2 +1,2 @@
-'use strict';
-require('../../es/async-iterator');
+"use strict";
+require("../../es/async-iterator");

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/bigint');
+"use strict";
+module.exports = require("../../full/bigint");

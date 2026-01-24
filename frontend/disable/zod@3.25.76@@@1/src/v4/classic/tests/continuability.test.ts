@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import * as z from "zod/v4";
 
 test("continuability", () => {
-  /** 
+	/** 
    *  | $ZodGUID
   | $ZodUUID
   | $ZodEmail
@@ -27,12 +27,12 @@ test("continuability", () => {
   | $ZodE164
   | $ZodJWT;
    */
-  expect(
-    z
-      .email()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.email()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -49,12 +49,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .uuid()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.uuid()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -71,12 +71,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .url()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.url()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -91,12 +91,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .jwt()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.jwt()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -111,12 +111,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .cidrv4()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.cidrv4()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -133,12 +133,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .cidrv6()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.cidrv6()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -153,12 +153,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .ipv4()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.ipv4()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -175,12 +175,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .ipv6()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.ipv6()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -195,12 +195,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .emoji()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.emoji()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -217,12 +217,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .nanoid()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.nanoid()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -239,12 +239,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .cuid()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.cuid()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -261,12 +261,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .cuid2()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.cuid2()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -283,12 +283,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .ulid()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.ulid()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -305,12 +305,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .xid()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.xid()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",
@@ -327,12 +327,12 @@ test("continuability", () => {
       },
     ]
   `);
-  expect(
-    z
-      .ksuid()
-      .refine(() => false)
-      .safeParse("invalid_value").error!.issues
-  ).toMatchInlineSnapshot(`
+	expect(
+		z
+			.ksuid()
+			.refine(() => false)
+			.safeParse("invalid_value").error!.issues,
+	).toMatchInlineSnapshot(`
     [
       {
         "code": "invalid_format",

@@ -45,29 +45,29 @@ var _index4 = require("./startOfQuarter.cjs");
  * // ]
  */
 function eachQuarterOfInterval(interval, options) {
-  const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
+	const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
 
-  let reversed = +start > +end;
-  const endTime = reversed
-    ? +(0, _index4.startOfQuarter)(start)
-    : +(0, _index4.startOfQuarter)(end);
-  let date = reversed
-    ? (0, _index4.startOfQuarter)(end)
-    : (0, _index4.startOfQuarter)(start);
+	let reversed = +start > +end;
+	const endTime = reversed
+		? +(0, _index4.startOfQuarter)(start)
+		: +(0, _index4.startOfQuarter)(end);
+	let date = reversed
+		? (0, _index4.startOfQuarter)(end)
+		: (0, _index4.startOfQuarter)(start);
 
-  let step = options?.step ?? 1;
-  if (!step) return [];
-  if (step < 0) {
-    step = -step;
-    reversed = !reversed;
-  }
+	let step = options?.step ?? 1;
+	if (!step) return [];
+	if (step < 0) {
+		step = -step;
+		reversed = !reversed;
+	}
 
-  const dates = [];
+	const dates = [];
 
-  while (+date <= endTime) {
-    dates.push((0, _index3.constructFrom)(start, date));
-    date = (0, _index2.addQuarters)(date, step);
-  }
+	while (+date <= endTime) {
+		dates.push((0, _index3.constructFrom)(start, date));
+		date = (0, _index2.addQuarters)(date, step);
+	}
 
-  return reversed ? dates.reverse() : dates;
+	return reversed ? dates.reverse() : dates;
 }

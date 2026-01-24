@@ -1,1 +1,1 @@
-export const isNegativePattern = pattern => pattern[0] === '!';
+export const isNegativePattern = (pattern) => pattern[0] === "!";

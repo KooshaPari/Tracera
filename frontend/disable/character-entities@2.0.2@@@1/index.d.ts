@@ -3,4 +3,4 @@
  *
  * @type {Record<string, string>}
  */
-export const characterEntities: Record<string, string>
+export const characterEntities: Record<string, string>;

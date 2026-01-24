@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link nextTuesday} function options.
  */
 export interface NextTuesdayOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name nextTuesday
  * @category Weekday Helpers
@@ -26,9 +26,9 @@ export interface NextTuesdayOptions<DateType extends Date = Date>
  * //=> Tue Mar 24 2020 00:00:00
  */
 export declare function nextTuesday<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: NextTuesdayOptions<ResultDate>,
+	date: DateArg<DateType>,
+	options?: NextTuesdayOptions<ResultDate>,
 ): ResultDate;

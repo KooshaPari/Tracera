@@ -487,21 +487,18 @@ class BulkOperationService:
                     )
 
                     # Create item
-                    new_item = cast(
-                        Item,
-                        Item(
-                            project_id=project_id,
-                            title=item_data.title,
-                            description=item_data.description,
-                            view=item_data.view,
-                            item_type=item_data.item_type,
-                            status=item_data.status,
-                            priority=priority,
-                            owner=owner,
-                            parent_id=item_data.parent_id,
-                            item_metadata=item_data.metadata,
-                            version=1,
-                        ),
+                    new_item: Item = Item(
+                        project_id=project_id,
+                        title=item_data.title,
+                        description=item_data.description,
+                        view=item_data.view,
+                        item_type=item_data.item_type,
+                        status=item_data.status,
+                        priority=priority,
+                        owner=owner,
+                        parent_id=item_data.parent_id,
+                        item_metadata=item_data.metadata,
+                        version=1,
                     )
 
                     self.session.add(new_item)

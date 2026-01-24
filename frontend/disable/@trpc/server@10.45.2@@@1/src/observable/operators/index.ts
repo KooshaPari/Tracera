@@ -1,3 +1,3 @@
-export * from './share';
-export * from './map';
-export * from './tap';
+export * from "./map";
+export * from "./share";
+export * from "./tap";

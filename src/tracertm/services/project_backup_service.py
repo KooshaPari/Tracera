@@ -213,9 +213,11 @@ class ProjectBackupService:
             old_parent_id = item_data.get("parent_id")
 
             if old_parent_id and old_parent_id in item_id_map:
-                item = self.session.query(Item).filter(Item.id == item_id_map[old_id]).first()
-                if item:
-                    item.parent_id = item_id_map[old_parent_id]
+                new_id = item_id_map.get(old_id)
+                if new_id is not None:
+                    item_to_update: Item | None = self.session.query(Item).filter(Item.id == new_id).first()
+                    if item_to_update is not None:
+                        item_to_update.parent_id = item_id_map[old_parent_id]
 
         self.session.commit()
 

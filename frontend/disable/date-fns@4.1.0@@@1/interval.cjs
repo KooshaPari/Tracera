@@ -36,13 +36,13 @@ var _index = require("./_lib/normalizeDates.cjs");
  * @returns The normalized and validated interval object.
  */
 function interval(start, end, options) {
-  const [_start, _end] = (0, _index.normalizeDates)(options?.in, start, end);
+	const [_start, _end] = (0, _index.normalizeDates)(options?.in, start, end);
 
-  if (isNaN(+_start)) throw new TypeError("Start date is invalid");
-  if (isNaN(+_end)) throw new TypeError("End date is invalid");
+	if (isNaN(+_start)) throw new TypeError("Start date is invalid");
+	if (isNaN(+_end)) throw new TypeError("End date is invalid");
 
-  if (options?.assertPositive && +_start > +_end)
-    throw new TypeError("End date must be after start date");
+	if (options?.assertPositive && +_start > +_end)
+		throw new TypeError("End date must be after start date");
 
-  return { start: _start, end: _end };
+	return { start: _start, end: _end };
 }

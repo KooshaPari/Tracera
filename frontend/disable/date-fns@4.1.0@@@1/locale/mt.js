@@ -13,16 +13,16 @@ import { match } from "./mt/_lib/match.js";
  * @author Bryan Borg [@bryanMt](@link https://github.com/bryanMt)
  */
 export const mt = {
-  code: "mt",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "mt",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

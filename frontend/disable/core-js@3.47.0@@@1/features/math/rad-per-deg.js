@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/rad-per-deg');
+"use strict";
+module.exports = require("../../full/math/rad-per-deg");

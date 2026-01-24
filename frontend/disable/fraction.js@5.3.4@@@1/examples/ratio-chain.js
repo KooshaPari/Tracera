@@ -10,9 +10,9 @@ a_i = r_i / r_k * a_k.
 Given an array r and a given value a_k, the following function calculates all a_i:
 */
 
-function calculateRatios(r, a_k, k) {    
-    const x = Fraction(a_k).div(r[k]);
-    return r.map(r_i => x.mul(r_i));
+function calculateRatios(r, a_k, k) {
+	const x = Fraction(a_k).div(r[k]);
+	return r.map((r_i) => x.mul(r_i));
 }
 
 // Example usage:

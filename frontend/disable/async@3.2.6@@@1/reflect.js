@@ -1,19 +1,19 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = reflect;
 
-var _initialParams = require('./internal/initialParams.js');
+var _initialParams = require("./internal/initialParams.js");
 
 var _initialParams2 = _interopRequireDefault(_initialParams);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Wraps the async function in another function that always completes with a
@@ -55,24 +55,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function reflect(fn) {
-    var _fn = (0, _wrapAsync2.default)(fn);
-    return (0, _initialParams2.default)(function reflectOn(args, reflectCallback) {
-        args.push((error, ...cbArgs) => {
-            let retVal = {};
-            if (error) {
-                retVal.error = error;
-            }
-            if (cbArgs.length > 0) {
-                var value = cbArgs;
-                if (cbArgs.length <= 1) {
-                    [value] = cbArgs;
-                }
-                retVal.value = value;
-            }
-            reflectCallback(null, retVal);
-        });
+	var _fn = (0, _wrapAsync2.default)(fn);
+	return (0, _initialParams2.default)(
+		function reflectOn(args, reflectCallback) {
+			args.push((error, ...cbArgs) => {
+				const retVal = {};
+				if (error) {
+					retVal.error = error;
+				}
+				if (cbArgs.length > 0) {
+					var value = cbArgs;
+					if (cbArgs.length <= 1) {
+						[value] = cbArgs;
+					}
+					retVal.value = value;
+				}
+				reflectCallback(null, retVal);
+			});
 
-        return _fn.apply(this, args);
-    });
+			return _fn.apply(this, args);
+		},
+	);
 }
 module.exports = exports.default;

@@ -1,5 +1,5 @@
-import * as node from '../node/index-generate.js';
+import * as node from "../node/index-generate.js";
 
 export default {
-    node
+	node,
 };

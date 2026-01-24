@@ -42,29 +42,29 @@ import { constructFrom } from "./constructFrom.js";
  * // ]
  */
 export function eachYearOfInterval(interval, options) {
-  const { start, end } = normalizeInterval(options?.in, interval);
+	const { start, end } = normalizeInterval(options?.in, interval);
 
-  let reversed = +start > +end;
-  const endTime = reversed ? +start : +end;
-  const date = reversed ? end : start;
-  date.setHours(0, 0, 0, 0);
-  date.setMonth(0, 1);
+	let reversed = +start > +end;
+	const endTime = reversed ? +start : +end;
+	const date = reversed ? end : start;
+	date.setHours(0, 0, 0, 0);
+	date.setMonth(0, 1);
 
-  let step = options?.step ?? 1;
-  if (!step) return [];
-  if (step < 0) {
-    step = -step;
-    reversed = !reversed;
-  }
+	let step = options?.step ?? 1;
+	if (!step) return [];
+	if (step < 0) {
+		step = -step;
+		reversed = !reversed;
+	}
 
-  const dates = [];
+	const dates = [];
 
-  while (+date <= endTime) {
-    dates.push(constructFrom(start, date));
-    date.setFullYear(date.getFullYear() + step);
-  }
+	while (+date <= endTime) {
+		dates.push(constructFrom(start, date));
+		date.setFullYear(date.getFullYear() + step);
+	}
 
-  return reversed ? dates.reverse() : dates;
+	return reversed ? dates.reverse() : dates;
 }
 
 // Fallback for modularized imports:

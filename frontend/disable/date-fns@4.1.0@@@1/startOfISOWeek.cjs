@@ -31,5 +31,5 @@ var _index = require("./startOfWeek.cjs");
  * //=> Mon Sep 01 2014 00:00:00
  */
 function startOfISOWeek(date, options) {
-  return (0, _index.startOfWeek)(date, { ...options, weekStartsOn: 1 });
+	return (0, _index.startOfWeek)(date, { ...options, weekStartsOn: 1 });
 }

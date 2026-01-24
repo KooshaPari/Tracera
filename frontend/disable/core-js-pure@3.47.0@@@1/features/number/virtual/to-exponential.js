@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../full/number/virtual/to-exponential');
+"use strict";
+module.exports = require("../../../full/number/virtual/to-exponential");

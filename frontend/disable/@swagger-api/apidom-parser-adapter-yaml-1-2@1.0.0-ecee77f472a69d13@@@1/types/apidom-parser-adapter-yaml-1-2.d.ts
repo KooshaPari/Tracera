@@ -1,8 +1,8 @@
-import { MediaTypes } from '@swagger-api/apidom-core';
-import { Namespace } from '@swagger-api/apidom-core';
-import { ParseResultElement } from '@swagger-api/apidom-core';
-import { Tree as Tree_2 } from 'web-tree-sitter';
-import { Tree as Tree_3 } from 'tree-sitter';
+import { MediaTypes } from "@swagger-api/apidom-core";
+import { Namespace } from "@swagger-api/apidom-core";
+import { ParseResultElement } from "@swagger-api/apidom-core";
+import { Tree as Tree_2 } from "web-tree-sitter";
+import { Tree as Tree_3 } from "tree-sitter";
 
 /**
  * @public
@@ -37,13 +37,16 @@ export declare const parse: ParseFunction;
 /**
  * @public
  */
-export declare type ParseFunction = (source: string, options?: ParseFunctionOptions) => Promise<ParseResultElement>;
+export declare type ParseFunction = (
+	source: string,
+	options?: ParseFunctionOptions,
+) => Promise<ParseResultElement>;
 
 /**
  * @public
  */
 export declare interface ParseFunctionOptions {
-    sourceMap?: boolean;
+	sourceMap?: boolean;
 }
 
 /**
@@ -52,9 +55,14 @@ export declare interface ParseFunctionOptions {
  * Two traversals passes are needed to get from CST to ApiDOM.
  * @public
  */
-export declare const syntacticAnalysis: (cst: Tree, { sourceMap }?: {
-    sourceMap?: boolean | undefined;
-}) => ParseResultElement;
+export declare const syntacticAnalysis: (
+	cst: Tree,
+	{
+		sourceMap,
+	}?: {
+		sourceMap?: boolean | undefined;
+	},
+) => ParseResultElement;
 
 /**
  * @public
@@ -65,7 +73,5 @@ export declare type Tree = Tree_2 | Tree_3;
  * @public
  */
 export declare class YamlMediaTypes extends MediaTypes<string> {
-    latest(): string;
+	latest(): string;
 }
-
-export { }

@@ -1,10 +1,14 @@
-'use strict';
-
 const ANSI_BACKGROUND_OFFSET = 10;
 
-const wrapAnsi256 = (offset = 0) => code => `\u001B[${38 + offset};5;${code}m`;
+const wrapAnsi256 =
+	(offset = 0) =>
+	(code) =>
+		`\u001B[${38 + offset};5;${code}m`;
 
-const wrapAnsi16m = (offset = 0) => (red, green, blue) => `\u001B[${38 + offset};2;${red};${green};${blue}m`;
+const wrapAnsi16m =
+	(offset = 0) =>
+	(red, green, blue) =>
+		`\u001B[${38 + offset};2;${red};${green};${blue}m`;
 
 function assembleStyles() {
 	const codes = new Map();
@@ -19,7 +23,7 @@ function assembleStyles() {
 			overline: [53, 55],
 			inverse: [7, 27],
 			hidden: [8, 28],
-			strikethrough: [9, 29]
+			strikethrough: [9, 29],
 		},
 		color: {
 			black: [30, 39],
@@ -39,7 +43,7 @@ function assembleStyles() {
 			blueBright: [94, 39],
 			magentaBright: [95, 39],
 			cyanBright: [96, 39],
-			whiteBright: [97, 39]
+			whiteBright: [97, 39],
 		},
 		bgColor: {
 			bgBlack: [40, 49],
@@ -59,8 +63,8 @@ function assembleStyles() {
 			bgBlueBright: [104, 49],
 			bgMagentaBright: [105, 49],
 			bgCyanBright: [106, 49],
-			bgWhiteBright: [107, 49]
-		}
+			bgWhiteBright: [107, 49],
+		},
 	};
 
 	// Alias bright black as gray (and grey)
@@ -73,7 +77,7 @@ function assembleStyles() {
 		for (const [styleName, style] of Object.entries(group)) {
 			styles[styleName] = {
 				open: `\u001B[${style[0]}m`,
-				close: `\u001B[${style[1]}m`
+				close: `\u001B[${style[1]}m`,
 			};
 
 			group[styleName] = styles[styleName];
@@ -83,17 +87,17 @@ function assembleStyles() {
 
 		Object.defineProperty(styles, groupName, {
 			value: group,
-			enumerable: false
+			enumerable: false,
 		});
 	}
 
-	Object.defineProperty(styles, 'codes', {
+	Object.defineProperty(styles, "codes", {
 		value: codes,
-		enumerable: false
+		enumerable: false,
 	});
 
-	styles.color.close = '\u001B[39m';
-	styles.bgColor.close = '\u001B[49m';
+	styles.color.close = "\u001B[39m";
+	styles.bgColor.close = "\u001B[49m";
 
 	styles.color.ansi256 = wrapAnsi256();
 	styles.color.ansi16m = wrapAnsi16m();
@@ -118,47 +122,50 @@ function assembleStyles() {
 					return Math.round(((red - 8) / 247) * 24) + 232;
 				}
 
-				return 16 +
-					(36 * Math.round(red / 255 * 5)) +
-					(6 * Math.round(green / 255 * 5)) +
-					Math.round(blue / 255 * 5);
+				return (
+					16 +
+					36 * Math.round((red / 255) * 5) +
+					6 * Math.round((green / 255) * 5) +
+					Math.round((blue / 255) * 5)
+				);
 			},
-			enumerable: false
+			enumerable: false,
 		},
 		hexToRgb: {
-			value: hex => {
-				const matches = /(?<colorString>[a-f\d]{6}|[a-f\d]{3})/i.exec(hex.toString(16));
+			value: (hex) => {
+				const matches = /(?<colorString>[a-f\d]{6}|[a-f\d]{3})/i.exec(
+					hex.toString(16),
+				);
 				if (!matches) {
 					return [0, 0, 0];
 				}
 
-				let {colorString} = matches.groups;
+				let { colorString } = matches.groups;
 
 				if (colorString.length === 3) {
-					colorString = colorString.split('').map(character => character + character).join('');
+					colorString = colorString
+						.split("")
+						.map((character) => character + character)
+						.join("");
 				}
 
 				const integer = Number.parseInt(colorString, 16);
 
-				return [
-					(integer >> 16) & 0xFF,
-					(integer >> 8) & 0xFF,
-					integer & 0xFF
-				];
+				return [(integer >> 16) & 0xff, (integer >> 8) & 0xff, integer & 0xff];
 			},
-			enumerable: false
+			enumerable: false,
 		},
 		hexToAnsi256: {
-			value: hex => styles.rgbToAnsi256(...styles.hexToRgb(hex)),
-			enumerable: false
-		}
+			value: (hex) => styles.rgbToAnsi256(...styles.hexToRgb(hex)),
+			enumerable: false,
+		},
 	});
 
 	return styles;
 }
 
 // Make the export immutable
-Object.defineProperty(module, 'exports', {
+Object.defineProperty(module, "exports", {
 	enumerable: true,
-	get: assembleStyles
+	get: assembleStyles,
 });

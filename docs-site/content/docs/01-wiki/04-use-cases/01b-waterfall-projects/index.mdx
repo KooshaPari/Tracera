@@ -1,0 +1,153 @@
+---
+title: "Waterfall Projects"
+description: "TraceRTM for traditional waterfall development"
+keywords: [waterfall, traditional, requirements, design, testing]
+---
+
+# Waterfall Projects
+
+Using TraceRTM for requirements traceability in traditional waterfall development.
+
+## Waterfall Phases
+
+### 1. Requirements Phase
+
+```python
+# Create requirements
+requirement = client.items.create(
+    title="System Requirement 1.1",
+    view="requirements",
+    status="approved"
+)
+```
+
+### 2. Design Phase
+
+```python
+# Create design document
+design = client.items.create(
+    title="System Design Document",
+    view="design",
+    status="draft"
+)
+
+# Link design to requirements
+client.links.create(
+    source_id=design.id,
+    target_id=requirement.id,
+    link_type="implements"
+)
+```
+
+### 3. Implementation Phase
+
+```python
+# Create code reference
+code = client.items.create(
+    title="Authentication Module",
+    view="code",
+    status="implemented"
+)
+
+# Link code to design
+client.links.create(
+    source_id=code.id,
+    target_id=design.id,
+    link_type="implements"
+)
+```
+
+### 4. Testing Phase
+
+```python
+# Create test cases
+test = client.items.create(
+    title="System Test Case 1.1.1",
+    view="test-cases",
+    status="ready"
+)
+
+# Link test to requirement
+client.links.create(
+    source_id=requirement.id,
+    target_id=test.id,
+    link_type="verified_by"
+)
+```
+
+## Traceability Matrix
+
+### Generate Matrix
+
+```python
+# Export traceability matrix
+matrix = client.export.traceability_matrix(
+    project_id=project_id,
+    format="excel"
+)
+```
+
+### Matrix Structure
+
+| Requirement | Design | Code | Test Case | Status |
+|------------|--------|------|-----------|--------|
+| REQ-1.1 | DES-1.1 | CODE-1.1 | TEST-1.1.1 | Complete |
+| REQ-1.2 | DES-1.2 | CODE-1.2 | TEST-1.2.1 | In Progress |
+
+## Formal Documentation
+
+### Requirements Specification
+
+```python
+# Organize requirements hierarchically
+parent_req = client.items.create(
+    title="Section 1: User Management",
+    view="requirements"
+)
+
+child_req = client.items.create(
+    title="1.1 User Authentication",
+    view="requirements",
+    parent_id=parent_req.id
+)
+```
+
+### Test Specification
+
+```python
+# Organize test cases
+test_spec = client.items.create(
+    title="Test Specification 1.1",
+    view="test-cases"
+)
+
+test_case = client.items.create(
+    title="TC 1.1.1: Valid Login",
+    view="test-cases",
+    parent_id=test_spec.id
+)
+```
+
+## Compliance
+
+### Generate Compliance Reports
+
+```python
+# Export for audits
+report = client.export.compliance_report(
+    project_id=project_id,
+    standard="ISO 26262"
+)
+```
+
+## Benefits
+
+1. **Formal Traceability** - Complete requirement-to-test traceability
+2. **Compliance** - Generate audit-ready documentation
+3. **Change Management** - Track changes through phases
+4. **Reporting** - Formal traceability matrices
+
+## Related Documentation
+
+- [Software Development](./01-software-development) - General workflows
+- [Agile Teams](./01a-agile-teams) - Agile workflows

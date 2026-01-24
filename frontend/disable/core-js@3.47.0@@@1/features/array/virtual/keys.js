@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../full/array/virtual/keys');
+"use strict";
+module.exports = require("../../../full/array/virtual/keys");

@@ -28,13 +28,13 @@ import { toDate } from "./toDate.js";
  * //=> Sun Sep 01 2013 00:00:00
  */
 export function setYear(date, year, options) {
-  const date_ = toDate(date, options?.in);
+	const date_ = toDate(date, options?.in);
 
-  // Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
-  if (isNaN(+date_)) return constructFrom(options?.in || date, NaN);
+	// Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
+	if (isNaN(+date_)) return constructFrom(options?.in || date, NaN);
 
-  date_.setFullYear(year);
-  return date_;
+	date_.setFullYear(year);
+	return date_;
 }
 
 // Fallback for modularized imports:

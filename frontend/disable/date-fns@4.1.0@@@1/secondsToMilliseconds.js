@@ -18,7 +18,7 @@ import { millisecondsInSecond } from "./constants.js";
  * //=> 2000
  */
 export function secondsToMilliseconds(seconds) {
-  return seconds * millisecondsInSecond;
+	return seconds * millisecondsInSecond;
 }
 
 // Fallback for modularized imports:

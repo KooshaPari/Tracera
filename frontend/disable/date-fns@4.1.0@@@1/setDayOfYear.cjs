@@ -29,8 +29,8 @@ var _index = require("./toDate.cjs");
  * //=> Thu Jan 02 2014 00:00:00
  */
 function setDayOfYear(date, dayOfYear, options) {
-  const date_ = (0, _index.toDate)(date, options?.in);
-  date_.setMonth(0);
-  date_.setDate(dayOfYear);
-  return date_;
+	const date_ = (0, _index.toDate)(date, options?.in);
+	date_.setMonth(0);
+	date_.setDate(dayOfYear);
+	return date_;
 }

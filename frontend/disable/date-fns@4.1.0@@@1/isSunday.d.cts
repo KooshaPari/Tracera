@@ -22,6 +22,6 @@ export interface IsSundayOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isSunday(
-  date: DateArg<Date> & {},
-  options?: IsSundayOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsSundayOptions | undefined,
 ): boolean;

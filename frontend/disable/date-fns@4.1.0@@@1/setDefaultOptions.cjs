@@ -48,27 +48,27 @@ var _index = require("./_lib/defaultOptions.cjs");
  * //=> Sun Aug 31 2014 00:00:00
  */
 function setDefaultOptions(options) {
-  const result = {};
-  const defaultOptions = (0, _index.getDefaultOptions)();
+	const result = {};
+	const defaultOptions = (0, _index.getDefaultOptions)();
 
-  for (const property in defaultOptions) {
-    if (Object.prototype.hasOwnProperty.call(defaultOptions, property)) {
-      // [TODO] I challenge you to fix the type
-      result[property] = defaultOptions[property];
-    }
-  }
+	for (const property in defaultOptions) {
+		if (Object.hasOwn(defaultOptions, property)) {
+			// [TODO] I challenge you to fix the type
+			result[property] = defaultOptions[property];
+		}
+	}
 
-  for (const property in options) {
-    if (Object.prototype.hasOwnProperty.call(options, property)) {
-      if (options[property] === undefined) {
-        // [TODO] I challenge you to fix the type
-        delete result[property];
-      } else {
-        // [TODO] I challenge you to fix the type
-        result[property] = options[property];
-      }
-    }
-  }
+	for (const property in options) {
+		if (Object.hasOwn(options, property)) {
+			if (options[property] === undefined) {
+				// [TODO] I challenge you to fix the type
+				delete result[property];
+			} else {
+				// [TODO] I challenge you to fix the type
+				result[property] = options[property];
+			}
+		}
+	}
 
-  (0, _index.setDefaultOptions)(result);
+	(0, _index.setDefaultOptions)(result);
 }

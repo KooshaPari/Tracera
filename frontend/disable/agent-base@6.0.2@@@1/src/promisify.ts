@@ -1,20 +1,20 @@
-import {
+import type {
 	Agent,
-	ClientRequest,
-	RequestOptions,
 	AgentCallbackCallback,
 	AgentCallbackPromise,
-	AgentCallbackReturn
-} from './index';
+	AgentCallbackReturn,
+	ClientRequest,
+	RequestOptions,
+} from "./index";
 
 type LegacyCallback = (
 	req: ClientRequest,
 	opts: RequestOptions,
-	fn: AgentCallbackCallback
+	fn: AgentCallbackCallback,
 ) => void;
 
 export default function promisify(fn: LegacyCallback): AgentCallbackPromise {
-	return function(this: Agent, req: ClientRequest, opts: RequestOptions) {
+	return function (this: Agent, req: ClientRequest, opts: RequestOptions) {
 		return new Promise((resolve, reject) => {
 			fn.call(
 				this,
@@ -26,7 +26,7 @@ export default function promisify(fn: LegacyCallback): AgentCallbackPromise {
 					} else {
 						resolve(rtn);
 					}
-				}
+				},
 			);
 		});
 	};

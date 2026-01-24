@@ -12,5 +12,7 @@ declare function genRedactedString(str: string, maxLen: number): string;
  * a wrapper for the `debug` module, used to generate
  * "debug functions" that trim the values in their output
  */
-export default function genDebugFunction(namespace: string): (...args: any[]) => void;
+export default function genDebugFunction(
+	namespace: string,
+): (...args: any[]) => void;
 export { MAX_ARGUMENT_LENGTH, getStringValue, genRedactedString };

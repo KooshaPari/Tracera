@@ -1,41 +1,41 @@
-import { codeFrameColumns } from '@babel/code-frame'
-import type * as t from '@babel/types'
-import type * as babel from '@babel/core'
+import { codeFrameColumns } from "@babel/code-frame";
+import type * as babel from "@babel/core";
+import type * as t from "@babel/types";
 
 export function getRootCallExpression(path: babel.NodePath<t.CallExpression>) {
-  // Find the highest callExpression parent
-  let rootCallExpression: babel.NodePath<t.CallExpression> = path
+	// Find the highest callExpression parent
+	let rootCallExpression: babel.NodePath<t.CallExpression> = path;
 
-  // Traverse up the chain of CallExpressions
-  while (rootCallExpression.parentPath.isMemberExpression()) {
-    const parent = rootCallExpression.parentPath
-    if (parent.parentPath.isCallExpression()) {
-      rootCallExpression = parent.parentPath
-    }
-  }
+	// Traverse up the chain of CallExpressions
+	while (rootCallExpression.parentPath.isMemberExpression()) {
+		const parent = rootCallExpression.parentPath;
+		if (parent.parentPath.isCallExpression()) {
+			rootCallExpression = parent.parentPath;
+		}
+	}
 
-  return rootCallExpression
+	return rootCallExpression;
 }
 
 export function codeFrameError(
-  code: string,
-  loc: {
-    start: { line: number; column: number }
-    end: { line: number; column: number }
-  },
-  message: string,
+	code: string,
+	loc: {
+		start: { line: number; column: number };
+		end: { line: number; column: number };
+	},
+	message: string,
 ) {
-  const frame = codeFrameColumns(
-    code,
-    {
-      start: loc.start,
-      end: loc.end,
-    },
-    {
-      highlightCode: true,
-      message,
-    },
-  )
+	const frame = codeFrameColumns(
+		code,
+		{
+			start: loc.start,
+			end: loc.end,
+		},
+		{
+			highlightCode: true,
+			message,
+		},
+	);
 
-  return new Error(frame)
+	return new Error(frame);
 }

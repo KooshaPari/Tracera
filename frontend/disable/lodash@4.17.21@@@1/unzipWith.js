@@ -1,6 +1,6 @@
-var apply = require('./_apply'),
-    arrayMap = require('./_arrayMap'),
-    unzip = require('./unzip');
+var apply = require("./_apply"),
+	arrayMap = require("./_arrayMap"),
+	unzip = require("./unzip");
 
 /**
  * This method is like `_.unzip` except that it accepts `iteratee` to specify
@@ -24,16 +24,14 @@ var apply = require('./_apply'),
  * // => [3, 30, 300]
  */
 function unzipWith(array, iteratee) {
-  if (!(array && array.length)) {
-    return [];
-  }
-  var result = unzip(array);
-  if (iteratee == null) {
-    return result;
-  }
-  return arrayMap(result, function(group) {
-    return apply(iteratee, undefined, group);
-  });
+	if (!(array && array.length)) {
+		return [];
+	}
+	var result = unzip(array);
+	if (iteratee == null) {
+		return result;
+	}
+	return arrayMap(result, (group) => apply(iteratee, undefined, group));
 }
 
 module.exports = unzipWith;

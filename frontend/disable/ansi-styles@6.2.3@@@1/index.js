@@ -1,10 +1,19 @@
 const ANSI_BACKGROUND_OFFSET = 10;
 
-const wrapAnsi16 = (offset = 0) => code => `\u001B[${code + offset}m`;
+const wrapAnsi16 =
+	(offset = 0) =>
+	(code) =>
+		`\u001B[${code + offset}m`;
 
-const wrapAnsi256 = (offset = 0) => code => `\u001B[${38 + offset};5;${code}m`;
+const wrapAnsi256 =
+	(offset = 0) =>
+	(code) =>
+		`\u001B[${38 + offset};5;${code}m`;
 
-const wrapAnsi16m = (offset = 0) => (red, green, blue) => `\u001B[${38 + offset};2;${red};${green};${blue}m`;
+const wrapAnsi16m =
+	(offset = 0) =>
+	(red, green, blue) =>
+		`\u001B[${38 + offset};2;${red};${green};${blue}m`;
 
 const styles = {
 	modifier: {
@@ -91,13 +100,13 @@ function assembleStyles() {
 		});
 	}
 
-	Object.defineProperty(styles, 'codes', {
+	Object.defineProperty(styles, "codes", {
 		value: codes,
 		enumerable: false,
 	});
 
-	styles.color.close = '\u001B[39m';
-	styles.bgColor.close = '\u001B[49m';
+	styles.color.close = "\u001B[39m";
+	styles.bgColor.close = "\u001B[49m";
 
 	styles.color.ansi = wrapAnsi16();
 	styles.color.ansi256 = wrapAnsi256();
@@ -124,10 +133,12 @@ function assembleStyles() {
 					return Math.round(((red - 8) / 247) * 24) + 232;
 				}
 
-				return 16
-					+ (36 * Math.round(red / 255 * 5))
-					+ (6 * Math.round(green / 255 * 5))
-					+ Math.round(blue / 255 * 5);
+				return (
+					16 +
+					36 * Math.round((red / 255) * 5) +
+					6 * Math.round((green / 255) * 5) +
+					Math.round((blue / 255) * 5)
+				);
 			},
 			enumerable: false,
 		},
@@ -141,23 +152,25 @@ function assembleStyles() {
 				let [colorString] = matches;
 
 				if (colorString.length === 3) {
-					colorString = [...colorString].map(character => character + character).join('');
+					colorString = [...colorString]
+						.map((character) => character + character)
+						.join("");
 				}
 
 				const integer = Number.parseInt(colorString, 16);
 
 				return [
 					/* eslint-disable no-bitwise */
-					(integer >> 16) & 0xFF,
-					(integer >> 8) & 0xFF,
-					integer & 0xFF,
+					(integer >> 16) & 0xff,
+					(integer >> 8) & 0xff,
+					integer & 0xff,
 					/* eslint-enable no-bitwise */
 				];
 			},
 			enumerable: false,
 		},
 		hexToAnsi256: {
-			value: hex => styles.rgbToAnsi256(...styles.hexToRgb(hex)),
+			value: (hex) => styles.rgbToAnsi256(...styles.hexToRgb(hex)),
 			enumerable: false,
 		},
 		ansi256ToAnsi: {
@@ -175,7 +188,7 @@ function assembleStyles() {
 				let blue;
 
 				if (code >= 232) {
-					red = (((code - 232) * 10) + 8) / 255;
+					red = ((code - 232) * 10 + 8) / 255;
 					green = red;
 					blue = red;
 				} else {
@@ -195,7 +208,11 @@ function assembleStyles() {
 				}
 
 				// eslint-disable-next-line no-bitwise
-				let result = 30 + ((Math.round(blue) << 2) | (Math.round(green) << 1) | Math.round(red));
+				let result =
+					30 +
+					((Math.round(blue) << 2) |
+						(Math.round(green) << 1) |
+						Math.round(red));
 
 				if (value === 2) {
 					result += 60;
@@ -206,11 +223,12 @@ function assembleStyles() {
 			enumerable: false,
 		},
 		rgbToAnsi: {
-			value: (red, green, blue) => styles.ansi256ToAnsi(styles.rgbToAnsi256(red, green, blue)),
+			value: (red, green, blue) =>
+				styles.ansi256ToAnsi(styles.rgbToAnsi256(red, green, blue)),
 			enumerable: false,
 		},
 		hexToAnsi: {
-			value: hex => styles.ansi256ToAnsi(styles.hexToAnsi256(hex)),
+			value: (hex) => styles.ansi256ToAnsi(styles.hexToAnsi256(hex)),
 			enumerable: false,
 		},
 	});

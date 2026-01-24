@@ -12,16 +12,16 @@ import { match } from "./hi/_lib/match.js";
  * @author Mukesh Mandiwal [@mukeshmandiwal](https://github.com/mukeshmandiwal)
  */
 export const hi = {
-  code: "hi",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "hi",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

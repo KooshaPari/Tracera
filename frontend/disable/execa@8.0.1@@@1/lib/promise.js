@@ -1,7 +1,7 @@
 // eslint-disable-next-line unicorn/prefer-top-level-await
 const nativePromisePrototype = (async () => {})().constructor.prototype;
 
-const descriptors = ['then', 'catch', 'finally'].map(property => [
+const descriptors = ["then", "catch", "finally"].map((property) => [
 	property,
 	Reflect.getOwnPropertyDescriptor(nativePromisePrototype, property),
 ]);
@@ -10,27 +10,29 @@ const descriptors = ['then', 'catch', 'finally'].map(property => [
 export const mergePromise = (spawned, promise) => {
 	for (const [property, descriptor] of descriptors) {
 		// Starting the main `promise` is deferred to avoid consuming streams
-		const value = typeof promise === 'function'
-			? (...args) => Reflect.apply(descriptor.value, promise(), args)
-			: descriptor.value.bind(promise);
+		const value =
+			typeof promise === "function"
+				? (...args) => Reflect.apply(descriptor.value, promise(), args)
+				: descriptor.value.bind(promise);
 
-		Reflect.defineProperty(spawned, property, {...descriptor, value});
+		Reflect.defineProperty(spawned, property, { ...descriptor, value });
 	}
 };
 
 // Use promises instead of `child_process` events
-export const getSpawnedPromise = spawned => new Promise((resolve, reject) => {
-	spawned.on('exit', (exitCode, signal) => {
-		resolve({exitCode, signal});
-	});
+export const getSpawnedPromise = (spawned) =>
+	new Promise((resolve, reject) => {
+		spawned.on("exit", (exitCode, signal) => {
+			resolve({ exitCode, signal });
+		});
 
-	spawned.on('error', error => {
-		reject(error);
-	});
-
-	if (spawned.stdin) {
-		spawned.stdin.on('error', error => {
+		spawned.on("error", (error) => {
 			reject(error);
 		});
-	}
-});
+
+		if (spawned.stdin) {
+			spawned.stdin.on("error", (error) => {
+				reject(error);
+			});
+		}
+	});

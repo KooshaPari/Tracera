@@ -10,9 +10,9 @@
  * @property {string[]} allFields - An array of all available fields in a lunr.Index.
  */
 lunr.Query = function (allFields) {
-  this.clauses = []
-  this.allFields = allFields
-}
+	this.clauses = [];
+	this.allFields = allFields;
+};
 
 /**
  * Constants for indicating what kind of automatic wildcard insertion will be used when constructing a query clause.
@@ -38,10 +38,10 @@ lunr.Query = function (allFields) {
  * })
  */
 
-lunr.Query.wildcard = new String ("*")
-lunr.Query.wildcard.NONE = 0
-lunr.Query.wildcard.LEADING = 1
-lunr.Query.wildcard.TRAILING = 2
+lunr.Query.wildcard = new String("*");
+lunr.Query.wildcard.NONE = 0;
+lunr.Query.wildcard.LEADING = 1;
+lunr.Query.wildcard.TRAILING = 2;
 
 /**
  * Constants for indicating what kind of presence a term must have in matching documents.
@@ -55,23 +55,23 @@ lunr.Query.wildcard.TRAILING = 2
  * query.term('foo', { presence: lunr.Query.presence.REQUIRED })
  */
 lunr.Query.presence = {
-  /**
-   * Term's presence in a document is optional, this is the default value.
-   */
-  OPTIONAL: 1,
+	/**
+	 * Term's presence in a document is optional, this is the default value.
+	 */
+	OPTIONAL: 1,
 
-  /**
-   * Term's presence in a document is required, documents that do not contain
-   * this term will not be returned.
-   */
-  REQUIRED: 2,
+	/**
+	 * Term's presence in a document is required, documents that do not contain
+	 * this term will not be returned.
+	 */
+	REQUIRED: 2,
 
-  /**
-   * Term's presence in a document is prohibited, documents that do contain
-   * this term will not be returned.
-   */
-  PROHIBITED: 3
-}
+	/**
+	 * Term's presence in a document is prohibited, documents that do contain
+	 * this term will not be returned.
+	 */
+	PROHIBITED: 3,
+};
 
 /**
  * A single clause in a {@link lunr.Query} contains a term and details on how to
@@ -97,38 +97,44 @@ lunr.Query.presence = {
  * @returns {lunr.Query}
  */
 lunr.Query.prototype.clause = function (clause) {
-  if (!('fields' in clause)) {
-    clause.fields = this.allFields
-  }
+	if (!("fields" in clause)) {
+		clause.fields = this.allFields;
+	}
 
-  if (!('boost' in clause)) {
-    clause.boost = 1
-  }
+	if (!("boost" in clause)) {
+		clause.boost = 1;
+	}
 
-  if (!('usePipeline' in clause)) {
-    clause.usePipeline = true
-  }
+	if (!("usePipeline" in clause)) {
+		clause.usePipeline = true;
+	}
 
-  if (!('wildcard' in clause)) {
-    clause.wildcard = lunr.Query.wildcard.NONE
-  }
+	if (!("wildcard" in clause)) {
+		clause.wildcard = lunr.Query.wildcard.NONE;
+	}
 
-  if ((clause.wildcard & lunr.Query.wildcard.LEADING) && (clause.term.charAt(0) != lunr.Query.wildcard)) {
-    clause.term = "*" + clause.term
-  }
+	if (
+		clause.wildcard & lunr.Query.wildcard.LEADING &&
+		clause.term.charAt(0) != lunr.Query.wildcard
+	) {
+		clause.term = "*" + clause.term;
+	}
 
-  if ((clause.wildcard & lunr.Query.wildcard.TRAILING) && (clause.term.slice(-1) != lunr.Query.wildcard)) {
-    clause.term = "" + clause.term + "*"
-  }
+	if (
+		clause.wildcard & lunr.Query.wildcard.TRAILING &&
+		clause.term.slice(-1) != lunr.Query.wildcard
+	) {
+		clause.term = "" + clause.term + "*";
+	}
 
-  if (!('presence' in clause)) {
-    clause.presence = lunr.Query.presence.OPTIONAL
-  }
+	if (!("presence" in clause)) {
+		clause.presence = lunr.Query.presence.OPTIONAL;
+	}
 
-  this.clauses.push(clause)
+	this.clauses.push(clause);
 
-  return this
-}
+	return this;
+};
 
 /**
  * A negated query is one in which every clause has a presence of
@@ -138,14 +144,14 @@ lunr.Query.prototype.clause = function (clause) {
  * @returns boolean
  */
 lunr.Query.prototype.isNegated = function () {
-  for (var i = 0; i < this.clauses.length; i++) {
-    if (this.clauses[i].presence != lunr.Query.presence.PROHIBITED) {
-      return false
-    }
-  }
+	for (var i = 0; i < this.clauses.length; i++) {
+		if (this.clauses[i].presence != lunr.Query.presence.PROHIBITED) {
+			return false;
+		}
+	}
 
-  return true
-}
+	return true;
+};
 
 /**
  * Adds a term to the current query, under the covers this will create a {@link lunr.Query~Clause}
@@ -174,15 +180,17 @@ lunr.Query.prototype.isNegated = function () {
  * query.term(lunr.tokenizer("foo bar"))
  */
 lunr.Query.prototype.term = function (term, options) {
-  if (Array.isArray(term)) {
-    term.forEach(function (t) { this.term(t, lunr.utils.clone(options)) }, this)
-    return this
-  }
+	if (Array.isArray(term)) {
+		term.forEach(function (t) {
+			this.term(t, lunr.utils.clone(options));
+		}, this);
+		return this;
+	}
 
-  var clause = options || {}
-  clause.term = term.toString()
+	var clause = options || {};
+	clause.term = term.toString();
 
-  this.clause(clause)
+	this.clause(clause);
 
-  return this
-}
+	return this;
+};

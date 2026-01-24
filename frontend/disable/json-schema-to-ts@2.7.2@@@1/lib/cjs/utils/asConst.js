@@ -1,7 +1,5 @@
-"use strict";
-
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.asConst = void 0;
 
@@ -19,7 +17,7 @@ exports.asConst = void 0;
  * ```
  */
 var asConst = function asConst(narrowed) {
-  return narrowed;
+	return narrowed;
 };
 
 exports.asConst = asConst;

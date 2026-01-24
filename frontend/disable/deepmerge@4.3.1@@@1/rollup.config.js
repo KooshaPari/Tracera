@@ -1,22 +1,19 @@
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
-import pkg from './package.json'
+import commonjs from "rollup-plugin-commonjs";
+import resolve from "rollup-plugin-node-resolve";
+import pkg from "./package.json";
 
 export default {
 	input: `index.js`,
-	plugins: [
-		commonjs(),
-		resolve(),
-	],
+	plugins: [commonjs(), resolve()],
 	output: [
 		{
 			file: pkg.main,
-			format: `cjs`
+			format: `cjs`,
 		},
 		{
-			name: 'deepmerge',
-			file: 'dist/umd.js',
-			format: `umd`
+			name: "deepmerge",
+			file: "dist/umd.js",
+			format: `umd`,
 		},
 	],
-}
+};

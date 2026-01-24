@@ -1,10 +1,10 @@
-import fs from 'node:fs';
-import stream from 'node:stream';
-import zlib from 'node:zlib';
-import {promisify} from 'node:util';
-import duplexer from 'duplexer';
+import fs from "node:fs";
+import stream from "node:stream";
+import { promisify } from "node:util";
+import zlib from "node:zlib";
+import duplexer from "duplexer";
 
-const getOptions = options => ({level: 9, ...options});
+const getOptions = (options) => ({ level: 9, ...options });
 const gzip = promisify(zlib.gzip);
 
 export async function gzipSize(input, options) {
@@ -25,11 +25,11 @@ export function gzipSizeFromFile(path, options) {
 
 	return new Promise((resolve, reject) => {
 		const stream = fs.createReadStream(path);
-		stream.on('error', reject);
+		stream.on("error", reject);
 
 		const gzipStream = stream.pipe(gzipSizeStream(options));
-		gzipStream.on('error', reject);
-		gzipStream.on('gzip-size', resolve);
+		gzipStream.on("error", reject);
+		gzipStream.on("gzip-size", resolve);
 	});
 }
 
@@ -45,21 +45,22 @@ export function gzipSizeStream(options) {
 	const wrapper = duplexer(input, output);
 
 	let gzipSize = 0;
-	const gzip = zlib.createGzip(getOptions(options))
-		.on('data', buf => {
+	const gzip = zlib
+		.createGzip(getOptions(options))
+		.on("data", (buf) => {
 			gzipSize += buf.length;
 		})
-		.on('error', () => {
+		.on("error", () => {
 			wrapper.gzipSize = 0;
 		})
-		.on('end', () => {
+		.on("end", () => {
 			wrapper.gzipSize = gzipSize;
-			wrapper.emit('gzip-size', gzipSize);
+			wrapper.emit("gzip-size", gzipSize);
 			output.end();
 		});
 
 	input.pipe(gzip);
-	input.pipe(output, {end: false});
+	input.pipe(output, { end: false });
 
 	return wrapper;
 }

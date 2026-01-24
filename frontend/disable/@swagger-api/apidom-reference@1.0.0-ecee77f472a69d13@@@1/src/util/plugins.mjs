@@ -1,11 +1,13 @@
-import { invokeArgs } from 'ramda-adjunct';
+import { invokeArgs } from "ramda-adjunct";
 import PluginError from "../errors/PluginError.mjs";
 /**
  * Filters the given plugins, returning only the ones return `true` for the given method.
  */
 export const filter = async (method, parameters, plugins) => {
-  const pluginResults = await Promise.all(plugins.map(invokeArgs([method], parameters)));
-  return plugins.filter((plugin, index) => pluginResults[index]);
+	const pluginResults = await Promise.all(
+		plugins.map(invokeArgs([method], parameters)),
+	);
+	return plugins.filter((plugin, index) => pluginResults[index]);
 };
 
 /**
@@ -18,20 +20,20 @@ export const filter = async (method, parameters, plugins) => {
  * If ALL plugins fail, then the last error is thrown.
  */
 export const run = async (method, parameters, plugins) => {
-  let lastError;
-  for (const plugin of plugins) {
-    try {
-      const result = await plugin[method].call(plugin, ...parameters); // eslint-disable-line no-await-in-loop
-      return {
-        plugin,
-        result
-      };
-    } catch (error) {
-      lastError = new PluginError('Error while running plugin', {
-        cause: error,
-        plugin
-      });
-    }
-  }
-  return Promise.reject(lastError);
+	let lastError;
+	for (const plugin of plugins) {
+		try {
+			const result = await plugin[method].call(plugin, ...parameters); // eslint-disable-line no-await-in-loop
+			return {
+				plugin,
+				result,
+			};
+		} catch (error) {
+			lastError = new PluginError("Error while running plugin", {
+				cause: error,
+				plugin,
+			});
+		}
+	}
+	return Promise.reject(lastError);
 };

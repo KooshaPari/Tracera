@@ -1,34 +1,31 @@
-import {
-    LeftParenthesis,
-    RightParenthesis
-} from '../../tokenizer/index.js';
+import { LeftParenthesis, RightParenthesis } from "../../tokenizer/index.js";
 
-export const name = 'Parentheses';
+export const name = "Parentheses";
 export const structure = {
-    children: [[]]
+	children: [[]],
 };
 
 export function parse(readSequence, recognizer) {
-    const start = this.tokenStart;
-    let children = null;
+	const start = this.tokenStart;
+	let children = null;
 
-    this.eat(LeftParenthesis);
+	this.eat(LeftParenthesis);
 
-    children = readSequence.call(this, recognizer);
+	children = readSequence.call(this, recognizer);
 
-    if (!this.eof) {
-        this.eat(RightParenthesis);
-    }
+	if (!this.eof) {
+		this.eat(RightParenthesis);
+	}
 
-    return {
-        type: 'Parentheses',
-        loc: this.getLocation(start, this.tokenStart),
-        children
-    };
+	return {
+		type: "Parentheses",
+		loc: this.getLocation(start, this.tokenStart),
+		children,
+	};
 }
 
 export function generate(node) {
-    this.token(LeftParenthesis, '(');
-    this.children(node);
-    this.token(RightParenthesis, ')');
+	this.token(LeftParenthesis, "(");
+	this.children(node);
+	this.token(RightParenthesis, ")");
 }

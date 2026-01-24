@@ -1,13 +1,13 @@
 /// <reference types="node"/>
-import {ChildProcess} from 'child_process';
-import {Stream, Readable as ReadableStream} from 'stream';
+import { ChildProcess } from "child_process";
+import { Stream, Readable as ReadableStream } from "stream";
 
 declare namespace execa {
 	type StdioOption =
-		| 'pipe'
-		| 'ipc'
-		| 'ignore'
-		| 'inherit'
+		| "pipe"
+		| "ipc"
+		| "ignore"
+		| "inherit"
 		| Stream
 		| number
 		| undefined;
@@ -133,7 +133,7 @@ declare namespace execa {
 
 		@default 'pipe'
 		*/
-		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | readonly StdioOption[];
+		readonly stdio?: "pipe" | "ignore" | "inherit" | readonly StdioOption[];
 
 		/**
 		Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execa.node()`:
@@ -146,7 +146,7 @@ declare namespace execa {
 
 		@default 'json'
 		*/
-		readonly serialization?: 'json' | 'advanced';
+		readonly serialization?: "json" | "advanced";
 
 		/**
 		Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
@@ -227,7 +227,8 @@ declare namespace execa {
 		readonly input?: string | Buffer | ReadableStream;
 	}
 
-	interface SyncOptions<EncodingType = string> extends CommonOptions<EncodingType> {
+	interface SyncOptions<EncodingType = string>
+		extends CommonOptions<EncodingType> {
 		/**
 		Write some input to the `stdin` of your binary.
 		*/
@@ -312,8 +313,7 @@ declare namespace execa {
 	}
 
 	interface ExecaSyncReturnValue<StdoutErrorType = string>
-		extends ExecaReturnBase<StdoutErrorType> {
-	}
+		extends ExecaReturnBase<StdoutErrorType> {}
 
 	/**
 	Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
@@ -344,7 +344,7 @@ declare namespace execa {
 
 	interface ExecaSyncError<StdoutErrorType = string>
 		extends Error,
-		ExecaReturnBase<StdoutErrorType> {
+			ExecaReturnBase<StdoutErrorType> {
 		/**
 		Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -404,7 +404,9 @@ declare namespace execa {
 		all?: ReadableStream;
 
 		catch<ResultType = never>(
-			onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
+			onRejected?: (
+				reason: ExecaError<StdoutErrorType>,
+			) => ResultType | PromiseLike<ResultType>,
 		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
 
 		/**
@@ -419,8 +421,8 @@ declare namespace execa {
 	}
 
 	type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
-	ExecaChildPromise<StdoutErrorType> &
-	Promise<ExecaReturnValue<StdoutErrorType>>;
+		ExecaChildPromise<StdoutErrorType> &
+		Promise<ExecaReturnValue<StdoutErrorType>>;
 }
 
 declare const execa: {
@@ -465,17 +467,18 @@ declare const execa: {
 	(
 		file: string,
 		arguments?: readonly string[],
-		options?: execa.Options
+		options?: execa.Options,
 	): execa.ExecaChildProcess;
 	(
 		file: string,
 		arguments?: readonly string[],
-		options?: execa.Options<null>
+		options?: execa.Options<null>,
 	): execa.ExecaChildProcess<Buffer>;
 	(file: string, options?: execa.Options): execa.ExecaChildProcess;
-	(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<
-	Buffer
-	>;
+	(
+		file: string,
+		options?: execa.Options<null>,
+	): execa.ExecaChildProcess<Buffer>;
 
 	/**
 	Execute a file synchronously.
@@ -489,17 +492,17 @@ declare const execa: {
 	sync(
 		file: string,
 		arguments?: readonly string[],
-		options?: execa.SyncOptions
+		options?: execa.SyncOptions,
 	): execa.ExecaSyncReturnValue;
 	sync(
 		file: string,
 		arguments?: readonly string[],
-		options?: execa.SyncOptions<null>
+		options?: execa.SyncOptions<null>,
 	): execa.ExecaSyncReturnValue<Buffer>;
 	sync(file: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
 	sync(
 		file: string,
-		options?: execa.SyncOptions<null>
+		options?: execa.SyncOptions<null>,
 	): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
@@ -524,7 +527,10 @@ declare const execa: {
 	```
 	*/
 	command(command: string, options?: execa.Options): execa.ExecaChildProcess;
-	command(command: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
+	command(
+		command: string,
+		options?: execa.Options<null>,
+	): execa.ExecaChildProcess<Buffer>;
 
 	/**
 	Same as `execa.command()` but synchronous.
@@ -532,8 +538,14 @@ declare const execa: {
 	@param command - The program/script to execute and its arguments.
 	@returns A result `Object` with `stdout` and `stderr` properties.
 	*/
-	commandSync(command: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
-	commandSync(command: string, options?: execa.SyncOptions<null>): execa.ExecaSyncReturnValue<Buffer>;
+	commandSync(
+		command: string,
+		options?: execa.SyncOptions,
+	): execa.ExecaSyncReturnValue;
+	commandSync(
+		command: string,
+		options?: execa.SyncOptions<null>,
+	): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
 	Execute a Node.js script as a child process.
@@ -550,15 +562,18 @@ declare const execa: {
 	node(
 		scriptPath: string,
 		arguments?: readonly string[],
-		options?: execa.NodeOptions
+		options?: execa.NodeOptions,
 	): execa.ExecaChildProcess;
 	node(
 		scriptPath: string,
 		arguments?: readonly string[],
-		options?: execa.Options<null>
+		options?: execa.Options<null>,
 	): execa.ExecaChildProcess<Buffer>;
 	node(scriptPath: string, options?: execa.Options): execa.ExecaChildProcess;
-	node(scriptPath: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
+	node(
+		scriptPath: string,
+		options?: execa.Options<null>,
+	): execa.ExecaChildProcess<Buffer>;
 };
 
 export = execa;

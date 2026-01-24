@@ -26,10 +26,10 @@ import { isSameDay } from "./isSameDay.js";
  * //=> true
  */
 export function isToday(date, options) {
-  return isSameDay(
-    constructFrom(options?.in || date, date),
-    constructNow(options?.in || date),
-  );
+	return isSameDay(
+		constructFrom(options?.in || date, date),
+		constructNow(options?.in || date),
+	);
 }
 
 // Fallback for modularized imports:

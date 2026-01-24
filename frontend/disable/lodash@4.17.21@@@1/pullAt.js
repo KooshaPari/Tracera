@@ -1,9 +1,9 @@
-var arrayMap = require('./_arrayMap'),
-    baseAt = require('./_baseAt'),
-    basePullAt = require('./_basePullAt'),
-    compareAscending = require('./_compareAscending'),
-    flatRest = require('./_flatRest'),
-    isIndex = require('./_isIndex');
+var arrayMap = require("./_arrayMap"),
+	baseAt = require("./_baseAt"),
+	basePullAt = require("./_basePullAt"),
+	compareAscending = require("./_compareAscending"),
+	flatRest = require("./_flatRest"),
+	isIndex = require("./_isIndex");
 
 /**
  * Removes elements from `array` corresponding to `indexes` and returns an
@@ -29,15 +29,18 @@ var arrayMap = require('./_arrayMap'),
  * console.log(pulled);
  * // => ['b', 'd']
  */
-var pullAt = flatRest(function(array, indexes) {
-  var length = array == null ? 0 : array.length,
-      result = baseAt(array, indexes);
+var pullAt = flatRest((array, indexes) => {
+	var length = array == null ? 0 : array.length,
+		result = baseAt(array, indexes);
 
-  basePullAt(array, arrayMap(indexes, function(index) {
-    return isIndex(index, length) ? +index : index;
-  }).sort(compareAscending));
+	basePullAt(
+		array,
+		arrayMap(indexes, (index) =>
+			isIndex(index, length) ? +index : index,
+		).sort(compareAscending),
+	);
 
-  return result;
+	return result;
 });
 
 module.exports = pullAt;

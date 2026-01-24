@@ -1,4 +1,4 @@
-'use strict';
-require('../../modules/esnext.function.metadata');
+"use strict";
+require("../../modules/esnext.function.metadata");
 
 module.exports = null;

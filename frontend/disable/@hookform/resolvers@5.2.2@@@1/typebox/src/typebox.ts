@@ -1,42 +1,42 @@
-import { toNestErrors, validateFieldsNatively } from '@hookform/resolvers';
-import { Static, StaticDecode, TObject } from '@sinclair/typebox';
-import { TypeCheck } from '@sinclair/typebox/compiler';
-import { Value, type ValueError } from '@sinclair/typebox/value';
-import { FieldError, Resolver, appendErrors } from 'react-hook-form';
+import { toNestErrors, validateFieldsNatively } from "@hookform/resolvers";
+import type { Static, StaticDecode, TObject } from "@sinclair/typebox";
+import { TypeCheck } from "@sinclair/typebox/compiler";
+import { Value, type ValueError } from "@sinclair/typebox/value";
+import { appendErrors, type FieldError, type Resolver } from "react-hook-form";
 
 function parseErrorSchema(
-  _errors: ValueError[],
-  validateAllFieldCriteria: boolean,
+	_errors: ValueError[],
+	validateAllFieldCriteria: boolean,
 ) {
-  const errors: Record<string, FieldError> = {};
-  for (; _errors.length; ) {
-    const error = _errors[0];
-    const { type, message, path } = error;
-    const _path = path.substring(1).replace(/\//g, '.');
+	const errors: Record<string, FieldError> = {};
+	for (; _errors.length; ) {
+		const error = _errors[0];
+		const { type, message, path } = error;
+		const _path = path.substring(1).replace(/\//g, ".");
 
-    if (!errors[_path]) {
-      errors[_path] = { message, type: '' + type };
-    }
+		if (!errors[_path]) {
+			errors[_path] = { message, type: "" + type };
+		}
 
-    if (validateAllFieldCriteria) {
-      const types = errors[_path].types;
-      const messages = types && types['' + type];
+		if (validateAllFieldCriteria) {
+			const types = errors[_path].types;
+			const messages = types && types["" + type];
 
-      errors[_path] = appendErrors(
-        _path,
-        validateAllFieldCriteria,
-        errors,
-        '' + type,
-        messages
-          ? ([] as string[]).concat(messages as string[], error.message)
-          : error.message,
-      ) as FieldError;
-    }
+			errors[_path] = appendErrors(
+				_path,
+				validateAllFieldCriteria,
+				errors,
+				"" + type,
+				messages
+					? ([] as string[]).concat(messages as string[], error.message)
+					: error.message,
+			) as FieldError;
+		}
 
-    _errors.shift();
-  }
+		_errors.shift();
+	}
 
-  return errors;
+	return errors;
 }
 
 /**
@@ -56,33 +56,33 @@ function parseErrorSchema(
  * });
  */
 export function typeboxResolver<Schema extends TObject, Context>(
-  schema: Schema | TypeCheck<Schema>,
+	schema: Schema | TypeCheck<Schema>,
 ): Resolver<Static<Schema>, Context, StaticDecode<Schema>> {
-  return async (values: Static<Schema>, _, options) => {
-    const errors = Array.from(
-      schema instanceof TypeCheck
-        ? schema.Errors(values)
-        : Value.Errors(schema, values),
-    );
+	return async (values: Static<Schema>, _, options) => {
+		const errors = Array.from(
+			schema instanceof TypeCheck
+				? schema.Errors(values)
+				: Value.Errors(schema, values),
+		);
 
-    options.shouldUseNativeValidation && validateFieldsNatively({}, options);
+		options.shouldUseNativeValidation && validateFieldsNatively({}, options);
 
-    if (!errors.length) {
-      return {
-        errors: {},
-        values,
-      };
-    }
+		if (!errors.length) {
+			return {
+				errors: {},
+				values,
+			};
+		}
 
-    return {
-      values: {},
-      errors: toNestErrors(
-        parseErrorSchema(
-          errors,
-          !options.shouldUseNativeValidation && options.criteriaMode === 'all',
-        ),
-        options,
-      ),
-    };
-  };
+		return {
+			values: {},
+			errors: toNestErrors(
+				parseErrorSchema(
+					errors,
+					!options.shouldUseNativeValidation && options.criteriaMode === "all",
+				),
+				options,
+			),
+		};
+	};
 }

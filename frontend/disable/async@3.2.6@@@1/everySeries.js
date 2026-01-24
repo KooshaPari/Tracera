@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _createTester = require('./internal/createTester.js');
+var _createTester = require("./internal/createTester.js");
 
 var _createTester2 = _interopRequireDefault(_createTester);
 
-var _eachOfSeries = require('./eachOfSeries.js');
+var _eachOfSeries = require("./eachOfSeries.js");
 
 var _eachOfSeries2 = _interopRequireDefault(_eachOfSeries);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`every`]{@link module:Collections.every} but runs only a single async operation at a time.
@@ -39,7 +39,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback provided
  */
 function everySeries(coll, iteratee, callback) {
-    return (0, _createTester2.default)(bool => !bool, res => !res)(_eachOfSeries2.default, coll, iteratee, callback);
+	return (0, _createTester2.default)(
+		(bool) => !bool,
+		(res) => !res,
+	)(_eachOfSeries2.default, coll, iteratee, callback);
 }
 exports.default = (0, _awaitify2.default)(everySeries, 3);
 module.exports = exports.default;

@@ -27,7 +27,7 @@ import { addQuarters } from "./addQuarters.js";
  * //=> Sun Dec 01 2013 00:00:00
  */
 export function subQuarters(date, amount, options) {
-  return addQuarters(date, -amount, options);
+	return addQuarters(date, -amount, options);
 }
 
 // Fallback for modularized imports:

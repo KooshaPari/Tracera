@@ -20,5 +20,5 @@ var _index = require("./constants.cjs");
  * //=> 14
  */
 function weeksToDays(weeks) {
-  return Math.trunc(weeks * _index.daysInWeek);
+	return Math.trunc(weeks * _index.daysInWeek);
 }

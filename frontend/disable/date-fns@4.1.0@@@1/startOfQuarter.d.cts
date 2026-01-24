@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link startOfQuarter} function options.
  */
 export interface StartOfQuarterOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name startOfQuarter
  * @category Quarter Helpers
@@ -27,9 +27,9 @@ export interface StartOfQuarterOptions<DateType extends Date = Date>
  * //=> Tue Jul 01 2014 00:00:00
  */
 export declare function startOfQuarter<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: StartOfQuarterOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: StartOfQuarterOptions<ResultDate> | undefined,
 ): ResultDate;

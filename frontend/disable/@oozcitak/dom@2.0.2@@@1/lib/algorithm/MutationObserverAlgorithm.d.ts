@@ -21,7 +21,17 @@ export declare function observer_notifyMutationObservers(): void;
  * @param previousSibling - previous sibling of target before mutation
  * @param nextSibling - next sibling of target before mutation
  */
-export declare function observer_queueMutationRecord(type: "attributes" | "characterData" | "childList", target: Node, name: string | null, namespace: string | null, oldValue: string | null, addedNodes: Node[], removedNodes: Node[], previousSibling: Node | null, nextSibling: Node | null): void;
+export declare function observer_queueMutationRecord(
+	type: "attributes" | "characterData" | "childList",
+	target: Node,
+	name: string | null,
+	namespace: string | null,
+	oldValue: string | null,
+	addedNodes: Node[],
+	removedNodes: Node[],
+	previousSibling: Node | null,
+	nextSibling: Node | null,
+): void;
 /**
  * Queues a tree mutation record for target.
  *
@@ -31,7 +41,13 @@ export declare function observer_queueMutationRecord(type: "attributes" | "chara
  * @param previousSibling - previous sibling of target before mutation
  * @param nextSibling - next sibling of target before mutation
  */
-export declare function observer_queueTreeMutationRecord(target: Node, addedNodes: Node[], removedNodes: Node[], previousSibling: Node | null, nextSibling: Node | null): void;
+export declare function observer_queueTreeMutationRecord(
+	target: Node,
+	addedNodes: Node[],
+	removedNodes: Node[],
+	previousSibling: Node | null,
+	nextSibling: Node | null,
+): void;
 /**
  * Queues an attribute mutation record for target.
  *
@@ -40,4 +56,9 @@ export declare function observer_queueTreeMutationRecord(target: Node, addedNode
  * @param namespace - namespace before mutation
  * @param oldValue - attribute value before mutation
  */
-export declare function observer_queueAttributeMutationRecord(target: Node, name: string | null, namespace: string | null, oldValue: string | null): void;
+export declare function observer_queueAttributeMutationRecord(
+	target: Node,
+	name: string | null,
+	namespace: string | null,
+	oldValue: string | null,
+): void;

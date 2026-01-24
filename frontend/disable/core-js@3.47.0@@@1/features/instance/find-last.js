@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/find-last');
+"use strict";
+module.exports = require("../../full/instance/find-last");

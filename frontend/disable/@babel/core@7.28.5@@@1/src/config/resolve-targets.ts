@@ -5,49 +5,48 @@ type nodeType = typeof import("./resolve-targets");
 // exports of index-browser, since this file may be replaced at bundle time with index-browser.
 ({}) as any as browserType as nodeType;
 
-import type { InputOptions } from "./validation/options.ts";
 import path from "node:path";
-import getTargets, {
-  type InputTargets,
-} from "@babel/helper-compilation-targets";
-
 import type { Targets } from "@babel/helper-compilation-targets";
+import getTargets, {
+	type InputTargets,
+} from "@babel/helper-compilation-targets";
+import type { InputOptions } from "./validation/options.ts";
 
 export function resolveBrowserslistConfigFile(
-  browserslistConfigFile: string,
-  configFileDir: string,
+	browserslistConfigFile: string,
+	configFileDir: string,
 ): string | undefined {
-  return path.resolve(configFileDir, browserslistConfigFile);
+	return path.resolve(configFileDir, browserslistConfigFile);
 }
 
 export function resolveTargets(options: InputOptions, root: string): Targets {
-  const optTargets = options.targets;
-  let targets: InputTargets;
+	const optTargets = options.targets;
+	let targets: InputTargets;
 
-  if (typeof optTargets === "string" || Array.isArray(optTargets)) {
-    targets = { browsers: optTargets };
-  } else if (optTargets) {
-    if ("esmodules" in optTargets) {
-      targets = { ...optTargets, esmodules: "intersect" };
-    } else {
-      // https://github.com/microsoft/TypeScript/issues/17002
-      targets = optTargets as InputTargets;
-    }
-  }
+	if (typeof optTargets === "string" || Array.isArray(optTargets)) {
+		targets = { browsers: optTargets };
+	} else if (optTargets) {
+		if ("esmodules" in optTargets) {
+			targets = { ...optTargets, esmodules: "intersect" };
+		} else {
+			// https://github.com/microsoft/TypeScript/issues/17002
+			targets = optTargets as InputTargets;
+		}
+	}
 
-  const { browserslistConfigFile } = options;
-  let configFile;
-  let ignoreBrowserslistConfig = false;
-  if (typeof browserslistConfigFile === "string") {
-    configFile = browserslistConfigFile;
-  } else {
-    ignoreBrowserslistConfig = browserslistConfigFile === false;
-  }
+	const { browserslistConfigFile } = options;
+	let configFile;
+	let ignoreBrowserslistConfig = false;
+	if (typeof browserslistConfigFile === "string") {
+		configFile = browserslistConfigFile;
+	} else {
+		ignoreBrowserslistConfig = browserslistConfigFile === false;
+	}
 
-  return getTargets(targets, {
-    ignoreBrowserslistConfig,
-    configFile,
-    configPath: root,
-    browserslistEnv: options.browserslistEnv,
-  });
+	return getTargets(targets, {
+		ignoreBrowserslistConfig,
+		configFile,
+		configPath: root,
+		browserslistEnv: options.browserslistEnv,
+	});
 }

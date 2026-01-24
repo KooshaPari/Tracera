@@ -6,11 +6,11 @@ var _apidomCore = require("@swagger-api/apidom-core");
 /**
  * @public
  */
-const getNodeType = element => {
-  if (!(0, _apidomCore.isElement)(element)) {
-    return undefined;
-  }
-  return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
+const getNodeType = (element) => {
+	if (!(0, _apidomCore.isElement)(element)) {
+		return undefined;
+	}
+	return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
 };
 
 /**
@@ -24,34 +24,34 @@ const getNodeType = element => {
  * @public
  */
 exports.getNodeType = getNodeType;
-const keyMap = exports.keyMap = {
-  CallbackElement: ['content'],
-  ComponentsElement: ['content'],
-  ContactElement: ['content'],
-  DiscriminatorElement: ['content'],
-  Encoding: ['content'],
-  Example: ['content'],
-  ExternalDocumentationElement: ['content'],
-  HeaderElement: ['content'],
-  InfoElement: ['content'],
-  LicenseElement: ['content'],
-  MediaTypeElement: ['content'],
-  OAuthFlowElement: ['content'],
-  OAuthFlowsElement: ['content'],
-  OpenApi3_0Element: ['content'],
-  OperationElement: ['content'],
-  ParameterElement: ['content'],
-  PathItemElement: ['content'],
-  PathsElement: ['content'],
-  ReferenceElement: ['content'],
-  RequestBodyElement: ['content'],
-  ResponseElement: ['content'],
-  ResponsesElement: ['content'],
-  SchemaElement: ['content'],
-  SecurityRequirementElement: ['content'],
-  SecuritySchemeElement: ['content'],
-  ServerElement: ['content'],
-  ServerVariableElement: ['content'],
-  TagElement: ['content'],
-  ..._apidomCore.keyMap
-};
+const keyMap = (exports.keyMap = {
+	CallbackElement: ["content"],
+	ComponentsElement: ["content"],
+	ContactElement: ["content"],
+	DiscriminatorElement: ["content"],
+	Encoding: ["content"],
+	Example: ["content"],
+	ExternalDocumentationElement: ["content"],
+	HeaderElement: ["content"],
+	InfoElement: ["content"],
+	LicenseElement: ["content"],
+	MediaTypeElement: ["content"],
+	OAuthFlowElement: ["content"],
+	OAuthFlowsElement: ["content"],
+	OpenApi3_0Element: ["content"],
+	OperationElement: ["content"],
+	ParameterElement: ["content"],
+	PathItemElement: ["content"],
+	PathsElement: ["content"],
+	ReferenceElement: ["content"],
+	RequestBodyElement: ["content"],
+	ResponseElement: ["content"],
+	ResponsesElement: ["content"],
+	SchemaElement: ["content"],
+	SecurityRequirementElement: ["content"],
+	SecuritySchemeElement: ["content"],
+	ServerElement: ["content"],
+	ServerVariableElement: ["content"],
+	TagElement: ["content"],
+	..._apidomCore.keyMap,
+});

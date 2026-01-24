@@ -292,7 +292,7 @@ var _index2 = require("./parse.cjs");
  * //=> true
  */
 function isMatch(dateStr, formatStr, options) {
-  return (0, _index.isValid)(
-    (0, _index2.parse)(dateStr, formatStr, new Date(), options),
-  );
+	return (0, _index.isValid)(
+		(0, _index2.parse)(dateStr, formatStr, new Date(), options),
+	);
 }

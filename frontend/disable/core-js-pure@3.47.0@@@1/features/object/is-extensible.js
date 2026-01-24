@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/is-extensible');
+"use strict";
+module.exports = require("../../full/object/is-extensible");

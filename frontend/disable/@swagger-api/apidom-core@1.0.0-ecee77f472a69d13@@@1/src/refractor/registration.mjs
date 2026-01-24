@@ -1,8 +1,18 @@
-import { ObjectElement, ArrayElement, StringElement, BooleanElement, NullElement, NumberElement, LinkElement, RefElement } from 'minim';
+import {
+	ArrayElement,
+	BooleanElement,
+	LinkElement,
+	NullElement,
+	NumberElement,
+	ObjectElement,
+	RefElement,
+	StringElement,
+} from "minim";
 import AnnotationElement from "../elements/Annotation.mjs";
 import CommentElement from "../elements/Comment.mjs";
 import ParseResultElement from "../elements/ParseResult.mjs";
 import { createRefractor } from "./index.mjs";
+
 ObjectElement.refract = createRefractor(ObjectElement);
 ArrayElement.refract = createRefractor(ArrayElement);
 StringElement.refract = createRefractor(StringElement);
@@ -14,4 +24,16 @@ RefElement.refract = createRefractor(RefElement);
 AnnotationElement.refract = createRefractor(AnnotationElement);
 CommentElement.refract = createRefractor(CommentElement);
 ParseResultElement.refract = createRefractor(ParseResultElement);
-export { ObjectElement, ArrayElement, StringElement, BooleanElement, NullElement, NumberElement, LinkElement, RefElement, AnnotationElement, CommentElement, ParseResultElement };
+export {
+	ObjectElement,
+	ArrayElement,
+	StringElement,
+	BooleanElement,
+	NullElement,
+	NumberElement,
+	LinkElement,
+	RefElement,
+	AnnotationElement,
+	CommentElement,
+	ParseResultElement,
+};

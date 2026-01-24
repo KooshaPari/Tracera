@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 var _Callback = _interopRequireDefault(require("../elements/Callback.cjs"));
 exports.CallbackElement = _Callback.default;
@@ -8,19 +9,25 @@ var _Components = _interopRequireDefault(require("../elements/Components.cjs"));
 exports.ComponentsElement = _Components.default;
 var _Contact = _interopRequireDefault(require("../elements/Contact.cjs"));
 exports.ContactElement = _Contact.default;
-var _Discriminator = _interopRequireDefault(require("../elements/Discriminator.cjs"));
+var _Discriminator = _interopRequireDefault(
+	require("../elements/Discriminator.cjs"),
+);
 exports.DiscriminatorElement = _Discriminator.default;
 var _Encoding = _interopRequireDefault(require("../elements/Encoding.cjs"));
 exports.EncodingElement = _Encoding.default;
 var _Example = _interopRequireDefault(require("../elements/Example.cjs"));
 exports.ExampleElement = _Example.default;
-var _ExternalDocumentation = _interopRequireDefault(require("../elements/ExternalDocumentation.cjs"));
+var _ExternalDocumentation = _interopRequireDefault(
+	require("../elements/ExternalDocumentation.cjs"),
+);
 exports.ExternalDocumentationElement = _ExternalDocumentation.default;
 var _Header = _interopRequireDefault(require("../elements/Header.cjs"));
 exports.HeaderElement = _Header.default;
 var _Info = _interopRequireDefault(require("../elements/Info.cjs"));
 exports.InfoElement = _Info.default;
-var _JsonSchemaDialect = _interopRequireDefault(require("../elements/JsonSchemaDialect.cjs"));
+var _JsonSchemaDialect = _interopRequireDefault(
+	require("../elements/JsonSchemaDialect.cjs"),
+);
 exports.JsonSchemaDialectElement = _JsonSchemaDialect.default;
 var _License = _interopRequireDefault(require("../elements/License.cjs"));
 exports.LicenseElement = _License.default;
@@ -46,7 +53,9 @@ var _Paths = _interopRequireDefault(require("../elements/Paths.cjs"));
 exports.PathsElement = _Paths.default;
 var _Reference = _interopRequireDefault(require("../elements/Reference.cjs"));
 exports.ReferenceElement = _Reference.default;
-var _RequestBody = _interopRequireDefault(require("../elements/RequestBody.cjs"));
+var _RequestBody = _interopRequireDefault(
+	require("../elements/RequestBody.cjs"),
+);
 exports.RequestBodyElement = _RequestBody.default;
 var _Response = _interopRequireDefault(require("../elements/Response.cjs"));
 exports.ResponseElement = _Response.default;
@@ -54,13 +63,19 @@ var _Responses = _interopRequireDefault(require("../elements/Responses.cjs"));
 exports.ResponsesElement = _Responses.default;
 var _Schema = _interopRequireDefault(require("../elements/Schema.cjs"));
 exports.SchemaElement = _Schema.default;
-var _SecurityRequirement = _interopRequireDefault(require("../elements/SecurityRequirement.cjs"));
+var _SecurityRequirement = _interopRequireDefault(
+	require("../elements/SecurityRequirement.cjs"),
+);
 exports.SecurityRequirementElement = _SecurityRequirement.default;
-var _SecurityScheme = _interopRequireDefault(require("../elements/SecurityScheme.cjs"));
+var _SecurityScheme = _interopRequireDefault(
+	require("../elements/SecurityScheme.cjs"),
+);
 exports.SecuritySchemeElement = _SecurityScheme.default;
 var _Server = _interopRequireDefault(require("../elements/Server.cjs"));
 exports.ServerElement = _Server.default;
-var _ServerVariable = _interopRequireDefault(require("../elements/ServerVariable.cjs"));
+var _ServerVariable = _interopRequireDefault(
+	require("../elements/ServerVariable.cjs"),
+);
 exports.ServerVariableElement = _ServerVariable.default;
 var _Tag = _interopRequireDefault(require("../elements/Tag.cjs"));
 exports.TagElement = _Tag.default;
@@ -68,35 +83,229 @@ var _Xml = _interopRequireDefault(require("../elements/Xml.cjs"));
 exports.XmlElement = _Xml.default;
 var _index = require("./index.cjs");
 // register refractors specific to element types
-_Callback.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Callback', '$visitor']);
-_Components.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Components', '$visitor']);
-_Contact.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Contact', '$visitor']);
-_Example.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Example', '$visitor']);
-_Discriminator.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Discriminator', '$visitor']);
-_Encoding.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Encoding', '$visitor']);
-_ExternalDocumentation.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'ExternalDocumentation', '$visitor']);
-_Header.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Header', '$visitor']);
-_Info.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Info', '$visitor']);
-_JsonSchemaDialect.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'OpenApi', 'fixedFields', 'jsonSchemaDialect']);
-_License.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'License', '$visitor']);
-_Link.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Link', '$visitor']);
-_MediaType.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'MediaType', '$visitor']);
-_OAuthFlow.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'OAuthFlow', '$visitor']);
-_OAuthFlows.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'OAuthFlows', '$visitor']);
-_Openapi.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'OpenApi', 'fixedFields', 'openapi']);
-_OpenApi.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'OpenApi', '$visitor']);
-_Operation.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Operation', '$visitor']);
-_Parameter.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Parameter', '$visitor']);
-_PathItem.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'PathItem', '$visitor']);
-_Paths.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Paths', '$visitor']);
-_Reference.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Reference', '$visitor']);
-_RequestBody.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'RequestBody', '$visitor']);
-_Response.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Response', '$visitor']);
-_Responses.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Responses', '$visitor']);
-_Schema.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Schema', '$visitor']);
-_SecurityRequirement.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'SecurityRequirement', '$visitor']);
-_SecurityScheme.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'SecurityScheme', '$visitor']);
-_Server.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Server', '$visitor']);
-_ServerVariable.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'ServerVariable', '$visitor']);
-_Tag.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'Tag', '$visitor']);
-_Xml.default.refract = (0, _index.createRefractor)(['visitors', 'document', 'objects', 'XML', '$visitor']);
+_Callback.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Callback",
+	"$visitor",
+]);
+_Components.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Components",
+	"$visitor",
+]);
+_Contact.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Contact",
+	"$visitor",
+]);
+_Example.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Example",
+	"$visitor",
+]);
+_Discriminator.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Discriminator",
+	"$visitor",
+]);
+_Encoding.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Encoding",
+	"$visitor",
+]);
+_ExternalDocumentation.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"ExternalDocumentation",
+	"$visitor",
+]);
+_Header.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Header",
+	"$visitor",
+]);
+_Info.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Info",
+	"$visitor",
+]);
+_JsonSchemaDialect.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"OpenApi",
+	"fixedFields",
+	"jsonSchemaDialect",
+]);
+_License.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"License",
+	"$visitor",
+]);
+_Link.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Link",
+	"$visitor",
+]);
+_MediaType.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"MediaType",
+	"$visitor",
+]);
+_OAuthFlow.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"OAuthFlow",
+	"$visitor",
+]);
+_OAuthFlows.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"OAuthFlows",
+	"$visitor",
+]);
+_Openapi.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"OpenApi",
+	"fixedFields",
+	"openapi",
+]);
+_OpenApi.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"OpenApi",
+	"$visitor",
+]);
+_Operation.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Operation",
+	"$visitor",
+]);
+_Parameter.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Parameter",
+	"$visitor",
+]);
+_PathItem.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"PathItem",
+	"$visitor",
+]);
+_Paths.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Paths",
+	"$visitor",
+]);
+_Reference.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Reference",
+	"$visitor",
+]);
+_RequestBody.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"RequestBody",
+	"$visitor",
+]);
+_Response.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Response",
+	"$visitor",
+]);
+_Responses.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Responses",
+	"$visitor",
+]);
+_Schema.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Schema",
+	"$visitor",
+]);
+_SecurityRequirement.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"SecurityRequirement",
+	"$visitor",
+]);
+_SecurityScheme.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"SecurityScheme",
+	"$visitor",
+]);
+_Server.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Server",
+	"$visitor",
+]);
+_ServerVariable.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"ServerVariable",
+	"$visitor",
+]);
+_Tag.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"Tag",
+	"$visitor",
+]);
+_Xml.default.refract = (0, _index.createRefractor)([
+	"visitors",
+	"document",
+	"objects",
+	"XML",
+	"$visitor",
+]);

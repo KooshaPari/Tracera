@@ -32,8 +32,8 @@ var _index2 = require("./getDay.cjs");
  * //=> Tue Mar 24 2020 00:00:00
  */
 function nextDay(date, day, options) {
-  let delta = day - (0, _index2.getDay)(date, options);
-  if (delta <= 0) delta += 7;
+	let delta = day - (0, _index2.getDay)(date, options);
+	if (delta <= 0) delta += 7;
 
-  return (0, _index.addDays)(date, delta, options);
+	return (0, _index.addDays)(date, delta, options);
 }

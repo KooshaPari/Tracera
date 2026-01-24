@@ -1,23 +1,23 @@
-import { Dimension } from '../../tokenizer/index.js';
+import { Dimension } from "../../tokenizer/index.js";
 
-export const name = 'Dimension';
+export const name = "Dimension";
 export const structure = {
-    value: String,
-    unit: String
+	value: String,
+	unit: String,
 };
 
 export function parse() {
-    const start = this.tokenStart;
-    const value = this.consumeNumber(Dimension);
+	const start = this.tokenStart;
+	const value = this.consumeNumber(Dimension);
 
-    return {
-        type: 'Dimension',
-        loc: this.getLocation(start, this.tokenStart),
-        value,
-        unit: this.substring(start + value.length, this.tokenStart)
-    };
+	return {
+		type: "Dimension",
+		loc: this.getLocation(start, this.tokenStart),
+		value,
+		unit: this.substring(start + value.length, this.tokenStart),
+	};
 }
 
 export function generate(node) {
-    this.token(Dimension, node.value + node.unit);
+	this.token(Dimension, node.value + node.unit);
 }

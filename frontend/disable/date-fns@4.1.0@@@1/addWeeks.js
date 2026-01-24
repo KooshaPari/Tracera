@@ -27,7 +27,7 @@ import { addDays } from "./addDays.js";
  * //=> Mon Sep 29 2014 00:00:00
  */
 export function addWeeks(date, amount, options) {
-  return addDays(date, amount * 7, options);
+	return addDays(date, amount * 7, options);
 }
 
 // Fallback for modularized imports:

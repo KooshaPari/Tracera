@@ -10,11 +10,9 @@ exports.default = void 0;
  * @public
  */
 class ResolveStrategy {
-  name;
-  constructor({
-    name
-  }) {
-    this.name = name;
-  }
+	name;
+	constructor({ name }) {
+		this.name = name;
+	}
 }
-var _default = exports.default = ResolveStrategy;
+var _default = (exports.default = ResolveStrategy);

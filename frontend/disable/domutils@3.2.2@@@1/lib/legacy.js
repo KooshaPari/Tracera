@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.testElement = testElement;
 exports.getElements = getElements;
@@ -12,27 +11,26 @@ var querying_js_1 = require("./querying.js");
  * A map of functions to check nodes against.
  */
 var Checks = {
-    tag_name: function (name) {
-        if (typeof name === "function") {
-            return function (elem) { return (0, domhandler_1.isTag)(elem) && name(elem.name); };
-        }
-        else if (name === "*") {
-            return domhandler_1.isTag;
-        }
-        return function (elem) { return (0, domhandler_1.isTag)(elem) && elem.name === name; };
-    },
-    tag_type: function (type) {
-        if (typeof type === "function") {
-            return function (elem) { return type(elem.type); };
-        }
-        return function (elem) { return elem.type === type; };
-    },
-    tag_contains: function (data) {
-        if (typeof data === "function") {
-            return function (elem) { return (0, domhandler_1.isText)(elem) && data(elem.data); };
-        }
-        return function (elem) { return (0, domhandler_1.isText)(elem) && elem.data === data; };
-    },
+	tag_name: (name) => {
+		if (typeof name === "function") {
+			return (elem) => (0, domhandler_1.isTag)(elem) && name(elem.name);
+		} else if (name === "*") {
+			return domhandler_1.isTag;
+		}
+		return (elem) => (0, domhandler_1.isTag)(elem) && elem.name === name;
+	},
+	tag_type: (type) => {
+		if (typeof type === "function") {
+			return (elem) => type(elem.type);
+		}
+		return (elem) => elem.type === type;
+	},
+	tag_contains: (data) => {
+		if (typeof data === "function") {
+			return (elem) => (0, domhandler_1.isText)(elem) && data(elem.data);
+		}
+		return (elem) => (0, domhandler_1.isText)(elem) && elem.data === data;
+	},
 };
 /**
  * Returns a function to check whether a node has an attribute with a particular
@@ -44,10 +42,12 @@ var Checks = {
  *   particular value.
  */
 function getAttribCheck(attrib, value) {
-    if (typeof value === "function") {
-        return function (elem) { return (0, domhandler_1.isTag)(elem) && value(elem.attribs[attrib]); };
-    }
-    return function (elem) { return (0, domhandler_1.isTag)(elem) && elem.attribs[attrib] === value; };
+	if (typeof value === "function") {
+		return (elem) =>
+			(0, domhandler_1.isTag)(elem) && value(elem.attribs[attrib]);
+	}
+	return (elem) =>
+		(0, domhandler_1.isTag)(elem) && elem.attribs[attrib] === value;
 }
 /**
  * Returns a function that returns `true` if either of the input functions
@@ -59,7 +59,7 @@ function getAttribCheck(attrib, value) {
  *   functions returns `true` for the node.
  */
 function combineFuncs(a, b) {
-    return function (elem) { return a(elem) || b(elem); };
+	return (elem) => a(elem) || b(elem);
 }
 /**
  * Returns a function that executes all checks in `options` and returns `true`
@@ -70,13 +70,13 @@ function combineFuncs(a, b) {
  *   if any of them match a node.
  */
 function compileTest(options) {
-    var funcs = Object.keys(options).map(function (key) {
-        var value = options[key];
-        return Object.prototype.hasOwnProperty.call(Checks, key)
-            ? Checks[key](value)
-            : getAttribCheck(key, value);
-    });
-    return funcs.length === 0 ? null : funcs.reduce(combineFuncs);
+	var funcs = Object.keys(options).map((key) => {
+		var value = options[key];
+		return Object.hasOwn(Checks, key)
+			? Checks[key](value)
+			: getAttribCheck(key, value);
+	});
+	return funcs.length === 0 ? null : funcs.reduce(combineFuncs);
 }
 /**
  * Checks whether a node matches the description in `options`.
@@ -87,8 +87,8 @@ function compileTest(options) {
  * @returns Whether the element matches the description in `options`.
  */
 function testElement(options, node) {
-    var test = compileTest(options);
-    return test ? test(node) : true;
+	var test = compileTest(options);
+	return test ? test(node) : true;
 }
 /**
  * Returns all nodes that match `options`.
@@ -101,9 +101,11 @@ function testElement(options, node) {
  * @returns All nodes that match `options`.
  */
 function getElements(options, nodes, recurse, limit) {
-    if (limit === void 0) { limit = Infinity; }
-    var test = compileTest(options);
-    return test ? (0, querying_js_1.filter)(test, nodes, recurse, limit) : [];
+	if (limit === void 0) {
+		limit = Infinity;
+	}
+	var test = compileTest(options);
+	return test ? (0, querying_js_1.filter)(test, nodes, recurse, limit) : [];
 }
 /**
  * Returns the node with the supplied ID.
@@ -115,10 +117,11 @@ function getElements(options, nodes, recurse, limit) {
  * @returns The node with the supplied ID.
  */
 function getElementById(id, nodes, recurse) {
-    if (recurse === void 0) { recurse = true; }
-    if (!Array.isArray(nodes))
-        nodes = [nodes];
-    return (0, querying_js_1.findOne)(getAttribCheck("id", id), nodes, recurse);
+	if (recurse === void 0) {
+		recurse = true;
+	}
+	if (!Array.isArray(nodes)) nodes = [nodes];
+	return (0, querying_js_1.findOne)(getAttribCheck("id", id), nodes, recurse);
 }
 /**
  * Returns all nodes with the supplied `tagName`.
@@ -131,9 +134,18 @@ function getElementById(id, nodes, recurse) {
  * @returns All nodes with the supplied `tagName`.
  */
 function getElementsByTagName(tagName, nodes, recurse, limit) {
-    if (recurse === void 0) { recurse = true; }
-    if (limit === void 0) { limit = Infinity; }
-    return (0, querying_js_1.filter)(Checks["tag_name"](tagName), nodes, recurse, limit);
+	if (recurse === void 0) {
+		recurse = true;
+	}
+	if (limit === void 0) {
+		limit = Infinity;
+	}
+	return (0, querying_js_1.filter)(
+		Checks["tag_name"](tagName),
+		nodes,
+		recurse,
+		limit,
+	);
 }
 /**
  * Returns all nodes with the supplied `className`.
@@ -146,9 +158,18 @@ function getElementsByTagName(tagName, nodes, recurse, limit) {
  * @returns All nodes with the supplied `className`.
  */
 function getElementsByClassName(className, nodes, recurse, limit) {
-    if (recurse === void 0) { recurse = true; }
-    if (limit === void 0) { limit = Infinity; }
-    return (0, querying_js_1.filter)(getAttribCheck("class", className), nodes, recurse, limit);
+	if (recurse === void 0) {
+		recurse = true;
+	}
+	if (limit === void 0) {
+		limit = Infinity;
+	}
+	return (0, querying_js_1.filter)(
+		getAttribCheck("class", className),
+		nodes,
+		recurse,
+		limit,
+	);
 }
 /**
  * Returns all nodes with the supplied `type`.
@@ -161,8 +182,17 @@ function getElementsByClassName(className, nodes, recurse, limit) {
  * @returns All nodes with the supplied `type`.
  */
 function getElementsByTagType(type, nodes, recurse, limit) {
-    if (recurse === void 0) { recurse = true; }
-    if (limit === void 0) { limit = Infinity; }
-    return (0, querying_js_1.filter)(Checks["tag_type"](type), nodes, recurse, limit);
+	if (recurse === void 0) {
+		recurse = true;
+	}
+	if (limit === void 0) {
+		limit = Infinity;
+	}
+	return (0, querying_js_1.filter)(
+		Checks["tag_type"](type),
+		nodes,
+		recurse,
+		limit,
+	);
 }
 //# sourceMappingURL=legacy.js.map

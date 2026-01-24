@@ -1,10 +1,198 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
-var _interopRequireWildcard = require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireWildcard =
+	require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
 exports.__esModule = true;
-exports.OperationTraitsElement = exports.OperationTraitSecurityElement = exports.OperationTraitElement = exports.OperationSecurityElement = exports.OperationMessageMapElement = exports.OperationMessageElement = exports.OperationElement = exports.OperationBindingsElement = exports.OAuthFlowsElement = exports.OAuthFlowScopesElement = exports.OAuthFlowElement = exports.NatsServerBindingElement = exports.NatsOperationBindingElement = exports.NatsMessageBindingElement = exports.NatsChannelBindingElement = exports.MqttServerBindingElement = exports.MqttOperationBindingElement = exports.MqttMessageBindingElement = exports.MqttChannelBindingElement = exports.Mqtt5ServerBindingElement = exports.Mqtt5OperationBindingElement = exports.Mqtt5MessageBindingElement = exports.Mqtt5ChannelBindingElement = exports.MixedFieldsVisitor = exports.MessageTraitsElement = exports.MessageTraitExamplesElement = exports.MessageTraitElement = exports.MessageExamplesElement = exports.MessageExampleElement = exports.MessageElement = exports.MessageBindingsElement = exports.MercureServerBindingElement = exports.MercureOperationBindingElement = exports.MercureMessageBindingElement = exports.MercureChannelBindingElement = exports.MapVisitor = exports.LicenseElement = exports.KafkaServerBindingElement = exports.KafkaOperationBindingElement = exports.KafkaMessageBindingElement = exports.KafkaChannelBindingElement = exports.JmsServerBindingElement = exports.JmsOperationBindingElement = exports.JmsMessageBindingElement = exports.JmsChannelBindingElement = exports.InfoElement = exports.IdentifierElement = exports.IbmmqServerBindingElement = exports.IbmmqOperationBindingElement = exports.IbmmqMessageBindingElement = exports.IbmmqChannelBindingElement = exports.HttpServerBindingElement = exports.HttpOperationBindingElement = exports.HttpMessageBindingElement = exports.HttpChannelBindingElement = exports.GooglepubsubServerBindingElement = exports.GooglepubsubOperationBindingElement = exports.GooglepubsubMessageBindingElement = exports.GooglepubsubChannelBindingElement = exports.FixedFieldsVisitor = exports.FallbackVisitor = exports.ExternalDocumentationElement = exports.DefaultContentTypeElement = exports.CorrelationIDElement = exports.ContactElement = exports.ComponentsServersElement = exports.ComponentsServerVariablesElement = exports.ComponentsServerBindingsElement = exports.ComponentsSecuritySchemesElement = exports.ComponentsSchemasElement = exports.ComponentsParametersElement = exports.ComponentsOperationTraitsElement = exports.ComponentsOperationBindingsElement = exports.ComponentsMessagesElement = exports.ComponentsMessageTraitsElement = exports.ComponentsMessageBindingsElement = exports.ComponentsElement = exports.ComponentsCorrelationIDsElement = exports.ComponentsChannelsElement = exports.ComponentsChannelBindingsElement = exports.ChannelsElement = exports.ChannelItemsServersElement = exports.ChannelItemElement = exports.ChannelBindingsElement = exports.AsyncApiVersionElement = exports.AsyncApi2Element = exports.AsyncAPIMediaTypes = exports.AnypointmqServerBindingElement = exports.AnypointmqOperationBindingElement = exports.AnypointmqMessageBindingElement = exports.AnypointmqChannelBindingElement = exports.AmqpServerBindingElement = exports.AmqpOperationBindingElement = exports.AmqpMessageBindingElement = exports.AmqpChannelBindingElement = exports.Amqp1ServerBindingElement = exports.Amqp1OperationBindingElement = exports.Amqp1MessageBindingElement = exports.Amqp1ChannelBindingElement = exports.AlternatingVisitor = void 0;
-exports.specificationObj = exports.refractorPluginReplaceEmptyElement = exports.mediaTypes = exports.keyMap = exports.isStringElement = exports.isServersElement = exports.isServerVariableElement = exports.isServerElement = exports.isServerBindingsElement = exports.isSecurityRequirementElement = exports.isSchemaElement = exports.isReferenceLikeElement = exports.isReferenceElement = exports.isRefElement = exports.isParametersElement = exports.isParameterElement = exports.isOperationElement = exports.isObjectElement = exports.isNumberElement = exports.isNullElement = exports.isMemberElement = exports.isLinkElement = exports.isLicenseElement = exports.isInfoElement = exports.isIdentifierElement = exports.isElement = exports.isContactElement = exports.isComponentsElement = exports.isChannelsElement = exports.isChannelItemElement = exports.isChannelBindingsElement = exports.isBooleanJsonSchemaElement = exports.isBooleanElement = exports.isAsyncApiVersionElement = exports.isAsyncApiExtension = exports.isAsyncApi2Element = exports.isArrayElement = exports.getNodeType = exports.default = exports.WebSocketServerBindingElement = exports.WebSocketOperationBindingElement = exports.WebSocketMessageBindingElement = exports.WebSocketChannelBindingElement = exports.Visitor = exports.TagsElement = exports.TagElement = exports.StompServerBindingElement = exports.StompOperationBindingElement = exports.StompMessageBindingElement = exports.StompChannelBindingElement = exports.SqsServerBindingElement = exports.SqsOperationBindingElement = exports.SqsMessageBindingElement = exports.SqsChannelBindingElement = exports.SpecificationVisitor = exports.SpecificationExtensionVisitor = exports.SolaceServerBindingElement = exports.SolaceOperationBindingElement = exports.SolaceMessageBindingElement = exports.SolaceChannelBindingElement = exports.SnsServerBindingElement = exports.SnsOperationBindingElement = exports.SnsMessageBindingElement = exports.SnsChannelBindingElement = exports.ServersElement = exports.ServerVariablesElement = exports.ServerVariableElement = exports.ServerSecurityElement = exports.ServerElement = exports.ServerBindingsElement = exports.SecuritySchemeElement = exports.SecurityRequirementElement = exports.SchemaOrReferenceVisitor = exports.SchemaElement = exports.ReferenceElement = exports.RedisServerBindingElement = exports.RedisOperationBindingElement = exports.RedisMessageBindingElement = exports.RedisChannelBindingElement = exports.PulsarServerBindingElement = exports.PulsarOperationBindingElement = exports.PulsarMessageBindingElement = exports.PulsarChannelBindingElement = exports.PatternedFieldsVisitor = exports.ParametersElement = exports.ParameterElement = void 0;
+exports.OperationTraitsElement =
+	exports.OperationTraitSecurityElement =
+	exports.OperationTraitElement =
+	exports.OperationSecurityElement =
+	exports.OperationMessageMapElement =
+	exports.OperationMessageElement =
+	exports.OperationElement =
+	exports.OperationBindingsElement =
+	exports.OAuthFlowsElement =
+	exports.OAuthFlowScopesElement =
+	exports.OAuthFlowElement =
+	exports.NatsServerBindingElement =
+	exports.NatsOperationBindingElement =
+	exports.NatsMessageBindingElement =
+	exports.NatsChannelBindingElement =
+	exports.MqttServerBindingElement =
+	exports.MqttOperationBindingElement =
+	exports.MqttMessageBindingElement =
+	exports.MqttChannelBindingElement =
+	exports.Mqtt5ServerBindingElement =
+	exports.Mqtt5OperationBindingElement =
+	exports.Mqtt5MessageBindingElement =
+	exports.Mqtt5ChannelBindingElement =
+	exports.MixedFieldsVisitor =
+	exports.MessageTraitsElement =
+	exports.MessageTraitExamplesElement =
+	exports.MessageTraitElement =
+	exports.MessageExamplesElement =
+	exports.MessageExampleElement =
+	exports.MessageElement =
+	exports.MessageBindingsElement =
+	exports.MercureServerBindingElement =
+	exports.MercureOperationBindingElement =
+	exports.MercureMessageBindingElement =
+	exports.MercureChannelBindingElement =
+	exports.MapVisitor =
+	exports.LicenseElement =
+	exports.KafkaServerBindingElement =
+	exports.KafkaOperationBindingElement =
+	exports.KafkaMessageBindingElement =
+	exports.KafkaChannelBindingElement =
+	exports.JmsServerBindingElement =
+	exports.JmsOperationBindingElement =
+	exports.JmsMessageBindingElement =
+	exports.JmsChannelBindingElement =
+	exports.InfoElement =
+	exports.IdentifierElement =
+	exports.IbmmqServerBindingElement =
+	exports.IbmmqOperationBindingElement =
+	exports.IbmmqMessageBindingElement =
+	exports.IbmmqChannelBindingElement =
+	exports.HttpServerBindingElement =
+	exports.HttpOperationBindingElement =
+	exports.HttpMessageBindingElement =
+	exports.HttpChannelBindingElement =
+	exports.GooglepubsubServerBindingElement =
+	exports.GooglepubsubOperationBindingElement =
+	exports.GooglepubsubMessageBindingElement =
+	exports.GooglepubsubChannelBindingElement =
+	exports.FixedFieldsVisitor =
+	exports.FallbackVisitor =
+	exports.ExternalDocumentationElement =
+	exports.DefaultContentTypeElement =
+	exports.CorrelationIDElement =
+	exports.ContactElement =
+	exports.ComponentsServersElement =
+	exports.ComponentsServerVariablesElement =
+	exports.ComponentsServerBindingsElement =
+	exports.ComponentsSecuritySchemesElement =
+	exports.ComponentsSchemasElement =
+	exports.ComponentsParametersElement =
+	exports.ComponentsOperationTraitsElement =
+	exports.ComponentsOperationBindingsElement =
+	exports.ComponentsMessagesElement =
+	exports.ComponentsMessageTraitsElement =
+	exports.ComponentsMessageBindingsElement =
+	exports.ComponentsElement =
+	exports.ComponentsCorrelationIDsElement =
+	exports.ComponentsChannelsElement =
+	exports.ComponentsChannelBindingsElement =
+	exports.ChannelsElement =
+	exports.ChannelItemsServersElement =
+	exports.ChannelItemElement =
+	exports.ChannelBindingsElement =
+	exports.AsyncApiVersionElement =
+	exports.AsyncApi2Element =
+	exports.AsyncAPIMediaTypes =
+	exports.AnypointmqServerBindingElement =
+	exports.AnypointmqOperationBindingElement =
+	exports.AnypointmqMessageBindingElement =
+	exports.AnypointmqChannelBindingElement =
+	exports.AmqpServerBindingElement =
+	exports.AmqpOperationBindingElement =
+	exports.AmqpMessageBindingElement =
+	exports.AmqpChannelBindingElement =
+	exports.Amqp1ServerBindingElement =
+	exports.Amqp1OperationBindingElement =
+	exports.Amqp1MessageBindingElement =
+	exports.Amqp1ChannelBindingElement =
+	exports.AlternatingVisitor =
+		void 0;
+exports.specificationObj =
+	exports.refractorPluginReplaceEmptyElement =
+	exports.mediaTypes =
+	exports.keyMap =
+	exports.isStringElement =
+	exports.isServersElement =
+	exports.isServerVariableElement =
+	exports.isServerElement =
+	exports.isServerBindingsElement =
+	exports.isSecurityRequirementElement =
+	exports.isSchemaElement =
+	exports.isReferenceLikeElement =
+	exports.isReferenceElement =
+	exports.isRefElement =
+	exports.isParametersElement =
+	exports.isParameterElement =
+	exports.isOperationElement =
+	exports.isObjectElement =
+	exports.isNumberElement =
+	exports.isNullElement =
+	exports.isMemberElement =
+	exports.isLinkElement =
+	exports.isLicenseElement =
+	exports.isInfoElement =
+	exports.isIdentifierElement =
+	exports.isElement =
+	exports.isContactElement =
+	exports.isComponentsElement =
+	exports.isChannelsElement =
+	exports.isChannelItemElement =
+	exports.isChannelBindingsElement =
+	exports.isBooleanJsonSchemaElement =
+	exports.isBooleanElement =
+	exports.isAsyncApiVersionElement =
+	exports.isAsyncApiExtension =
+	exports.isAsyncApi2Element =
+	exports.isArrayElement =
+	exports.getNodeType =
+	exports.default =
+	exports.WebSocketServerBindingElement =
+	exports.WebSocketOperationBindingElement =
+	exports.WebSocketMessageBindingElement =
+	exports.WebSocketChannelBindingElement =
+	exports.Visitor =
+	exports.TagsElement =
+	exports.TagElement =
+	exports.StompServerBindingElement =
+	exports.StompOperationBindingElement =
+	exports.StompMessageBindingElement =
+	exports.StompChannelBindingElement =
+	exports.SqsServerBindingElement =
+	exports.SqsOperationBindingElement =
+	exports.SqsMessageBindingElement =
+	exports.SqsChannelBindingElement =
+	exports.SpecificationVisitor =
+	exports.SpecificationExtensionVisitor =
+	exports.SolaceServerBindingElement =
+	exports.SolaceOperationBindingElement =
+	exports.SolaceMessageBindingElement =
+	exports.SolaceChannelBindingElement =
+	exports.SnsServerBindingElement =
+	exports.SnsOperationBindingElement =
+	exports.SnsMessageBindingElement =
+	exports.SnsChannelBindingElement =
+	exports.ServersElement =
+	exports.ServerVariablesElement =
+	exports.ServerVariableElement =
+	exports.ServerSecurityElement =
+	exports.ServerElement =
+	exports.ServerBindingsElement =
+	exports.SecuritySchemeElement =
+	exports.SecurityRequirementElement =
+	exports.SchemaOrReferenceVisitor =
+	exports.SchemaElement =
+	exports.ReferenceElement =
+	exports.RedisServerBindingElement =
+	exports.RedisOperationBindingElement =
+	exports.RedisMessageBindingElement =
+	exports.RedisChannelBindingElement =
+	exports.PulsarServerBindingElement =
+	exports.PulsarOperationBindingElement =
+	exports.PulsarMessageBindingElement =
+	exports.PulsarChannelBindingElement =
+	exports.PatternedFieldsVisitor =
+	exports.ParametersElement =
+	exports.ParameterElement =
+		void 0;
 var _apidomCore = require("@swagger-api/apidom-core");
 exports.isRefElement = _apidomCore.isRefElement;
 exports.isLinkElement = _apidomCore.isLinkElement;
@@ -21,9 +209,13 @@ exports.mediaTypes = _mediaTypes.default;
 exports.AsyncAPIMediaTypes = _mediaTypes.AsyncAPIMediaTypes;
 var _namespace = _interopRequireDefault(require("./namespace.cjs"));
 exports.default = _namespace.default;
-var _specification = _interopRequireDefault(require("./refractor/specification.cjs"));
+var _specification = _interopRequireDefault(
+	require("./refractor/specification.cjs"),
+);
 exports.specificationObj = _specification.default;
-var _replaceEmptyElement = _interopRequireDefault(require("./refractor/plugins/replace-empty-element.cjs"));
+var _replaceEmptyElement = _interopRequireDefault(
+	require("./refractor/plugins/replace-empty-element.cjs"),
+);
 exports.refractorPluginReplaceEmptyElement = _replaceEmptyElement.default;
 var _predicates = require("./predicates.cjs");
 exports.isAsyncApi2Element = _predicates.isAsyncApi2Element;
@@ -50,25 +242,45 @@ exports.isServerVariableElement = _predicates.isServerVariableElement;
 var _predicates2 = require("./refractor/predicates.cjs");
 exports.isReferenceLikeElement = _predicates2.isReferenceLikeElement;
 exports.isAsyncApiExtension = _predicates2.isAsyncApiExtension;
-var _AlternatingVisitor = _interopRequireDefault(require("./refractor/visitors/generics/AlternatingVisitor.cjs"));
+var _AlternatingVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/AlternatingVisitor.cjs"),
+);
 exports.AlternatingVisitor = _AlternatingVisitor.default;
-var _FixedFieldsVisitor = _interopRequireDefault(require("./refractor/visitors/generics/FixedFieldsVisitor.cjs"));
+var _FixedFieldsVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/FixedFieldsVisitor.cjs"),
+);
 exports.FixedFieldsVisitor = _FixedFieldsVisitor.default;
-var _MapVisitor = _interopRequireDefault(require("./refractor/visitors/generics/MapVisitor.cjs"));
+var _MapVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/MapVisitor.cjs"),
+);
 exports.MapVisitor = _MapVisitor.default;
-var _MixedFieldsVisitor = _interopRequireDefault(require("./refractor/visitors/generics/MixedFieldsVisitor.cjs"));
+var _MixedFieldsVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/MixedFieldsVisitor.cjs"),
+);
 exports.MixedFieldsVisitor = _MixedFieldsVisitor.default;
-var _PatternedFieldsVisitor = _interopRequireDefault(require("./refractor/visitors/generics/PatternedFieldsVisitor.cjs"));
+var _PatternedFieldsVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/PatternedFieldsVisitor.cjs"),
+);
 exports.PatternedFieldsVisitor = _PatternedFieldsVisitor.default;
-var _FallbackVisitor = _interopRequireDefault(require("./refractor/visitors/FallbackVisitor.cjs"));
+var _FallbackVisitor = _interopRequireDefault(
+	require("./refractor/visitors/FallbackVisitor.cjs"),
+);
 exports.FallbackVisitor = _FallbackVisitor.default;
-var _SpecificationExtensionVisitor = _interopRequireDefault(require("./refractor/visitors/SpecificationExtensionVisitor.cjs"));
+var _SpecificationExtensionVisitor = _interopRequireDefault(
+	require("./refractor/visitors/SpecificationExtensionVisitor.cjs"),
+);
 exports.SpecificationExtensionVisitor = _SpecificationExtensionVisitor.default;
-var _SpecificationVisitor = _interopRequireDefault(require("./refractor/visitors/SpecificationVisitor.cjs"));
+var _SpecificationVisitor = _interopRequireDefault(
+	require("./refractor/visitors/SpecificationVisitor.cjs"),
+);
 exports.SpecificationVisitor = _SpecificationVisitor.default;
-var _Visitor = _interopRequireDefault(require("./refractor/visitors/Visitor.cjs"));
+var _Visitor = _interopRequireDefault(
+	require("./refractor/visitors/Visitor.cjs"),
+);
 exports.Visitor = _Visitor.default;
-var _SchemaOrReferenceVisitor = _interopRequireDefault(require("./refractor/visitors/async-api-2/schema/SchemaOrReferenceVisitor.cjs"));
+var _SchemaOrReferenceVisitor = _interopRequireDefault(
+	require("./refractor/visitors/async-api-2/schema/SchemaOrReferenceVisitor.cjs"),
+);
 exports.SchemaOrReferenceVisitor = _SchemaOrReferenceVisitor.default;
 var _visitor = require("./traversal/visitor.cjs");
 exports.keyMap = _visitor.keyMap;
@@ -83,7 +295,8 @@ exports.ComponentsElement = _registration.ComponentsElement;
 exports.ContactElement = _registration.ContactElement;
 exports.CorrelationIDElement = _registration.CorrelationIDElement;
 exports.DefaultContentTypeElement = _registration.DefaultContentTypeElement;
-exports.ExternalDocumentationElement = _registration.ExternalDocumentationElement;
+exports.ExternalDocumentationElement =
+	_registration.ExternalDocumentationElement;
 exports.IdentifierElement = _registration.IdentifierElement;
 exports.InfoElement = _registration.InfoElement;
 exports.LicenseElement = _registration.LicenseElement;
@@ -114,23 +327,33 @@ exports.AmqpOperationBindingElement = _registration.AmqpOperationBindingElement;
 exports.AmqpServerBindingElement = _registration.AmqpServerBindingElement;
 exports.Amqp1ChannelBindingElement = _registration.Amqp1ChannelBindingElement;
 exports.Amqp1MessageBindingElement = _registration.Amqp1MessageBindingElement;
-exports.Amqp1OperationBindingElement = _registration.Amqp1OperationBindingElement;
+exports.Amqp1OperationBindingElement =
+	_registration.Amqp1OperationBindingElement;
 exports.Amqp1ServerBindingElement = _registration.Amqp1ServerBindingElement;
-exports.AnypointmqChannelBindingElement = _registration.AnypointmqChannelBindingElement;
-exports.AnypointmqMessageBindingElement = _registration.AnypointmqMessageBindingElement;
-exports.AnypointmqOperationBindingElement = _registration.AnypointmqOperationBindingElement;
-exports.AnypointmqServerBindingElement = _registration.AnypointmqServerBindingElement;
-exports.GooglepubsubChannelBindingElement = _registration.GooglepubsubChannelBindingElement;
-exports.GooglepubsubMessageBindingElement = _registration.GooglepubsubMessageBindingElement;
-exports.GooglepubsubOperationBindingElement = _registration.GooglepubsubOperationBindingElement;
-exports.GooglepubsubServerBindingElement = _registration.GooglepubsubServerBindingElement;
+exports.AnypointmqChannelBindingElement =
+	_registration.AnypointmqChannelBindingElement;
+exports.AnypointmqMessageBindingElement =
+	_registration.AnypointmqMessageBindingElement;
+exports.AnypointmqOperationBindingElement =
+	_registration.AnypointmqOperationBindingElement;
+exports.AnypointmqServerBindingElement =
+	_registration.AnypointmqServerBindingElement;
+exports.GooglepubsubChannelBindingElement =
+	_registration.GooglepubsubChannelBindingElement;
+exports.GooglepubsubMessageBindingElement =
+	_registration.GooglepubsubMessageBindingElement;
+exports.GooglepubsubOperationBindingElement =
+	_registration.GooglepubsubOperationBindingElement;
+exports.GooglepubsubServerBindingElement =
+	_registration.GooglepubsubServerBindingElement;
 exports.HttpChannelBindingElement = _registration.HttpChannelBindingElement;
 exports.HttpMessageBindingElement = _registration.HttpMessageBindingElement;
 exports.HttpOperationBindingElement = _registration.HttpOperationBindingElement;
 exports.HttpServerBindingElement = _registration.HttpServerBindingElement;
 exports.IbmmqChannelBindingElement = _registration.IbmmqChannelBindingElement;
 exports.IbmmqMessageBindingElement = _registration.IbmmqMessageBindingElement;
-exports.IbmmqOperationBindingElement = _registration.IbmmqOperationBindingElement;
+exports.IbmmqOperationBindingElement =
+	_registration.IbmmqOperationBindingElement;
 exports.IbmmqServerBindingElement = _registration.IbmmqServerBindingElement;
 exports.JmsChannelBindingElement = _registration.JmsChannelBindingElement;
 exports.JmsMessageBindingElement = _registration.JmsMessageBindingElement;
@@ -138,11 +361,15 @@ exports.JmsOperationBindingElement = _registration.JmsOperationBindingElement;
 exports.JmsServerBindingElement = _registration.JmsServerBindingElement;
 exports.KafkaChannelBindingElement = _registration.KafkaChannelBindingElement;
 exports.KafkaMessageBindingElement = _registration.KafkaMessageBindingElement;
-exports.KafkaOperationBindingElement = _registration.KafkaOperationBindingElement;
+exports.KafkaOperationBindingElement =
+	_registration.KafkaOperationBindingElement;
 exports.KafkaServerBindingElement = _registration.KafkaServerBindingElement;
-exports.MercureChannelBindingElement = _registration.MercureChannelBindingElement;
-exports.MercureMessageBindingElement = _registration.MercureMessageBindingElement;
-exports.MercureOperationBindingElement = _registration.MercureOperationBindingElement;
+exports.MercureChannelBindingElement =
+	_registration.MercureChannelBindingElement;
+exports.MercureMessageBindingElement =
+	_registration.MercureMessageBindingElement;
+exports.MercureOperationBindingElement =
+	_registration.MercureOperationBindingElement;
 exports.MercureServerBindingElement = _registration.MercureServerBindingElement;
 exports.MqttChannelBindingElement = _registration.MqttChannelBindingElement;
 exports.MqttMessageBindingElement = _registration.MqttMessageBindingElement;
@@ -150,7 +377,8 @@ exports.MqttOperationBindingElement = _registration.MqttOperationBindingElement;
 exports.MqttServerBindingElement = _registration.MqttServerBindingElement;
 exports.Mqtt5ChannelBindingElement = _registration.Mqtt5ChannelBindingElement;
 exports.Mqtt5MessageBindingElement = _registration.Mqtt5MessageBindingElement;
-exports.Mqtt5OperationBindingElement = _registration.Mqtt5OperationBindingElement;
+exports.Mqtt5OperationBindingElement =
+	_registration.Mqtt5OperationBindingElement;
 exports.Mqtt5ServerBindingElement = _registration.Mqtt5ServerBindingElement;
 exports.NatsChannelBindingElement = _registration.NatsChannelBindingElement;
 exports.NatsMessageBindingElement = _registration.NatsMessageBindingElement;
@@ -158,11 +386,13 @@ exports.NatsOperationBindingElement = _registration.NatsOperationBindingElement;
 exports.NatsServerBindingElement = _registration.NatsServerBindingElement;
 exports.PulsarChannelBindingElement = _registration.PulsarChannelBindingElement;
 exports.PulsarMessageBindingElement = _registration.PulsarMessageBindingElement;
-exports.PulsarOperationBindingElement = _registration.PulsarOperationBindingElement;
+exports.PulsarOperationBindingElement =
+	_registration.PulsarOperationBindingElement;
 exports.PulsarServerBindingElement = _registration.PulsarServerBindingElement;
 exports.RedisChannelBindingElement = _registration.RedisChannelBindingElement;
 exports.RedisMessageBindingElement = _registration.RedisMessageBindingElement;
-exports.RedisOperationBindingElement = _registration.RedisOperationBindingElement;
+exports.RedisOperationBindingElement =
+	_registration.RedisOperationBindingElement;
 exports.RedisServerBindingElement = _registration.RedisServerBindingElement;
 exports.SnsChannelBindingElement = _registration.SnsChannelBindingElement;
 exports.SnsMessageBindingElement = _registration.SnsMessageBindingElement;
@@ -170,7 +400,8 @@ exports.SnsOperationBindingElement = _registration.SnsOperationBindingElement;
 exports.SnsServerBindingElement = _registration.SnsServerBindingElement;
 exports.SolaceChannelBindingElement = _registration.SolaceChannelBindingElement;
 exports.SolaceMessageBindingElement = _registration.SolaceMessageBindingElement;
-exports.SolaceOperationBindingElement = _registration.SolaceOperationBindingElement;
+exports.SolaceOperationBindingElement =
+	_registration.SolaceOperationBindingElement;
 exports.SolaceServerBindingElement = _registration.SolaceServerBindingElement;
 exports.SqsChannelBindingElement = _registration.SqsChannelBindingElement;
 exports.SqsMessageBindingElement = _registration.SqsMessageBindingElement;
@@ -178,61 +409,119 @@ exports.SqsOperationBindingElement = _registration.SqsOperationBindingElement;
 exports.SqsServerBindingElement = _registration.SqsServerBindingElement;
 exports.StompChannelBindingElement = _registration.StompChannelBindingElement;
 exports.StompMessageBindingElement = _registration.StompMessageBindingElement;
-exports.StompOperationBindingElement = _registration.StompOperationBindingElement;
+exports.StompOperationBindingElement =
+	_registration.StompOperationBindingElement;
 exports.StompServerBindingElement = _registration.StompServerBindingElement;
-exports.WebSocketChannelBindingElement = _registration.WebSocketChannelBindingElement;
-exports.WebSocketMessageBindingElement = _registration.WebSocketMessageBindingElement;
-exports.WebSocketOperationBindingElement = _registration.WebSocketOperationBindingElement;
-exports.WebSocketServerBindingElement = _registration.WebSocketServerBindingElement;
-var _ChannelItemsServers = _interopRequireDefault(require("./elements/nces/ChannelItemsServers.cjs"));
+exports.WebSocketChannelBindingElement =
+	_registration.WebSocketChannelBindingElement;
+exports.WebSocketMessageBindingElement =
+	_registration.WebSocketMessageBindingElement;
+exports.WebSocketOperationBindingElement =
+	_registration.WebSocketOperationBindingElement;
+exports.WebSocketServerBindingElement =
+	_registration.WebSocketServerBindingElement;
+var _ChannelItemsServers = _interopRequireDefault(
+	require("./elements/nces/ChannelItemsServers.cjs"),
+);
 exports.ChannelItemsServersElement = _ChannelItemsServers.default;
-var _ComponentsChannelBindings = _interopRequireDefault(require("./elements/nces/ComponentsChannelBindings.cjs"));
+var _ComponentsChannelBindings = _interopRequireDefault(
+	require("./elements/nces/ComponentsChannelBindings.cjs"),
+);
 exports.ComponentsChannelBindingsElement = _ComponentsChannelBindings.default;
-var _ComponentsChannels = _interopRequireDefault(require("./elements/nces/ComponentsChannels.cjs"));
+var _ComponentsChannels = _interopRequireDefault(
+	require("./elements/nces/ComponentsChannels.cjs"),
+);
 exports.ComponentsChannelsElement = _ComponentsChannels.default;
-var _ComponentsCorrelationIDs = _interopRequireDefault(require("./elements/nces/ComponentsCorrelationIDs.cjs"));
+var _ComponentsCorrelationIDs = _interopRequireDefault(
+	require("./elements/nces/ComponentsCorrelationIDs.cjs"),
+);
 exports.ComponentsCorrelationIDsElement = _ComponentsCorrelationIDs.default;
-var _ComponentsMessageBindings = _interopRequireDefault(require("./elements/nces/ComponentsMessageBindings.cjs"));
+var _ComponentsMessageBindings = _interopRequireDefault(
+	require("./elements/nces/ComponentsMessageBindings.cjs"),
+);
 exports.ComponentsMessageBindingsElement = _ComponentsMessageBindings.default;
-var _ComponentsMessages = _interopRequireDefault(require("./elements/nces/ComponentsMessages.cjs"));
+var _ComponentsMessages = _interopRequireDefault(
+	require("./elements/nces/ComponentsMessages.cjs"),
+);
 exports.ComponentsMessagesElement = _ComponentsMessages.default;
-var _ComponentsMessageTraits = _interopRequireDefault(require("./elements/nces/ComponentsMessageTraits.cjs"));
+var _ComponentsMessageTraits = _interopRequireDefault(
+	require("./elements/nces/ComponentsMessageTraits.cjs"),
+);
 exports.ComponentsMessageTraitsElement = _ComponentsMessageTraits.default;
-var _ComponentsOperationBindings = _interopRequireDefault(require("./elements/nces/ComponentsOperationBindings.cjs"));
-exports.ComponentsOperationBindingsElement = _ComponentsOperationBindings.default;
-var _ComponentsOperationTraits = _interopRequireDefault(require("./elements/nces/ComponentsOperationTraits.cjs"));
+var _ComponentsOperationBindings = _interopRequireDefault(
+	require("./elements/nces/ComponentsOperationBindings.cjs"),
+);
+exports.ComponentsOperationBindingsElement =
+	_ComponentsOperationBindings.default;
+var _ComponentsOperationTraits = _interopRequireDefault(
+	require("./elements/nces/ComponentsOperationTraits.cjs"),
+);
 exports.ComponentsOperationTraitsElement = _ComponentsOperationTraits.default;
-var _ComponentsParameters = _interopRequireDefault(require("./elements/nces/ComponentsParameters.cjs"));
+var _ComponentsParameters = _interopRequireDefault(
+	require("./elements/nces/ComponentsParameters.cjs"),
+);
 exports.ComponentsParametersElement = _ComponentsParameters.default;
-var _ComponentsSchemas = _interopRequireDefault(require("./elements/nces/ComponentsSchemas.cjs"));
+var _ComponentsSchemas = _interopRequireDefault(
+	require("./elements/nces/ComponentsSchemas.cjs"),
+);
 exports.ComponentsSchemasElement = _ComponentsSchemas.default;
-var _ComponentsSecuritySchemes = _interopRequireDefault(require("./elements/nces/ComponentsSecuritySchemes.cjs"));
+var _ComponentsSecuritySchemes = _interopRequireDefault(
+	require("./elements/nces/ComponentsSecuritySchemes.cjs"),
+);
 exports.ComponentsSecuritySchemesElement = _ComponentsSecuritySchemes.default;
-var _ComponentsServerBindings = _interopRequireDefault(require("./elements/nces/ComponentsServerBindings.cjs"));
+var _ComponentsServerBindings = _interopRequireDefault(
+	require("./elements/nces/ComponentsServerBindings.cjs"),
+);
 exports.ComponentsServerBindingsElement = _ComponentsServerBindings.default;
-var _ComponentsServers = _interopRequireDefault(require("./elements/nces/ComponentsServers.cjs"));
+var _ComponentsServers = _interopRequireDefault(
+	require("./elements/nces/ComponentsServers.cjs"),
+);
 exports.ComponentsServersElement = _ComponentsServers.default;
-var _ComponentsServerVariables = _interopRequireDefault(require("./elements/nces/ComponentsServerVariables.cjs"));
+var _ComponentsServerVariables = _interopRequireDefault(
+	require("./elements/nces/ComponentsServerVariables.cjs"),
+);
 exports.ComponentsServerVariablesElement = _ComponentsServerVariables.default;
-var _MessageExamples = _interopRequireDefault(require("./elements/nces/MessageExamples.cjs"));
+var _MessageExamples = _interopRequireDefault(
+	require("./elements/nces/MessageExamples.cjs"),
+);
 exports.MessageExamplesElement = _MessageExamples.default;
-var _MessageTraits = _interopRequireDefault(require("./elements/nces/MessageTraits.cjs"));
+var _MessageTraits = _interopRequireDefault(
+	require("./elements/nces/MessageTraits.cjs"),
+);
 exports.MessageTraitsElement = _MessageTraits.default;
-var _MessageTraitExamples = _interopRequireDefault(require("./elements/nces/MessageTraitExamples.cjs"));
+var _MessageTraitExamples = _interopRequireDefault(
+	require("./elements/nces/MessageTraitExamples.cjs"),
+);
 exports.MessageTraitExamplesElement = _MessageTraitExamples.default;
-var _OAuthFlowScopes = _interopRequireDefault(require("./elements/nces/OAuthFlowScopes.cjs"));
+var _OAuthFlowScopes = _interopRequireDefault(
+	require("./elements/nces/OAuthFlowScopes.cjs"),
+);
 exports.OAuthFlowScopesElement = _OAuthFlowScopes.default;
-var _OperationMessage = _interopRequireDefault(require("./elements/nces/OperationMessage.cjs"));
+var _OperationMessage = _interopRequireDefault(
+	require("./elements/nces/OperationMessage.cjs"),
+);
 exports.OperationMessageElement = _OperationMessage.default;
-var _OperationMessageMap = _interopRequireDefault(require("./elements/nces/OperationMessageMap.cjs"));
+var _OperationMessageMap = _interopRequireDefault(
+	require("./elements/nces/OperationMessageMap.cjs"),
+);
 exports.OperationMessageMapElement = _OperationMessageMap.default;
-var _OperationSecurity = _interopRequireDefault(require("./elements/nces/OperationSecurity.cjs"));
+var _OperationSecurity = _interopRequireDefault(
+	require("./elements/nces/OperationSecurity.cjs"),
+);
 exports.OperationSecurityElement = _OperationSecurity.default;
-var _ServerVariables = _interopRequireDefault(require("./elements/nces/ServerVariables.cjs"));
+var _ServerVariables = _interopRequireDefault(
+	require("./elements/nces/ServerVariables.cjs"),
+);
 exports.ServerVariablesElement = _ServerVariables.default;
-var _OperationTraits = _interopRequireDefault(require("./elements/nces/OperationTraits.cjs"));
+var _OperationTraits = _interopRequireDefault(
+	require("./elements/nces/OperationTraits.cjs"),
+);
 exports.OperationTraitsElement = _OperationTraits.default;
-var _OperationTraitSecurity = _interopRequireDefault(require("./elements/nces/OperationTraitSecurity.cjs"));
+var _OperationTraitSecurity = _interopRequireDefault(
+	require("./elements/nces/OperationTraitSecurity.cjs"),
+);
 exports.OperationTraitSecurityElement = _OperationTraitSecurity.default;
-var _ServerSecurity = _interopRequireDefault(require("./elements/nces/ServerSecurity.cjs"));
+var _ServerSecurity = _interopRequireDefault(
+	require("./elements/nces/ServerSecurity.cjs"),
+);
 exports.ServerSecurityElement = _ServerSecurity.default;

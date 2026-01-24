@@ -1,6 +1,6 @@
-var arrayShuffle = require('./_arrayShuffle'),
-    baseShuffle = require('./_baseShuffle'),
-    isArray = require('./isArray');
+var arrayShuffle = require("./_arrayShuffle"),
+	baseShuffle = require("./_baseShuffle"),
+	isArray = require("./isArray");
 
 /**
  * Creates an array of shuffled values, using a version of the
@@ -18,8 +18,8 @@ var arrayShuffle = require('./_arrayShuffle'),
  * // => [4, 1, 3, 2]
  */
 function shuffle(collection) {
-  var func = isArray(collection) ? arrayShuffle : baseShuffle;
-  return func(collection);
+	var func = isArray(collection) ? arrayShuffle : baseShuffle;
+	return func(collection);
 }
 
 module.exports = shuffle;

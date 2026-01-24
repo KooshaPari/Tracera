@@ -25,6 +25,6 @@ var _index = require("./constants.cjs");
  * //=> 2
  */
 function quartersToYears(quarters) {
-  const years = quarters / _index.quartersInYear;
-  return Math.trunc(years);
+	const years = quarters / _index.quartersInYear;
+	return Math.trunc(years);
 }

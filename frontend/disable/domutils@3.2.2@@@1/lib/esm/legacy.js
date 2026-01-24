@@ -1,30 +1,30 @@
 import { isTag, isText } from "domhandler";
 import { filter, findOne } from "./querying.js";
+
 /**
  * A map of functions to check nodes against.
  */
 const Checks = {
-    tag_name(name) {
-        if (typeof name === "function") {
-            return (elem) => isTag(elem) && name(elem.name);
-        }
-        else if (name === "*") {
-            return isTag;
-        }
-        return (elem) => isTag(elem) && elem.name === name;
-    },
-    tag_type(type) {
-        if (typeof type === "function") {
-            return (elem) => type(elem.type);
-        }
-        return (elem) => elem.type === type;
-    },
-    tag_contains(data) {
-        if (typeof data === "function") {
-            return (elem) => isText(elem) && data(elem.data);
-        }
-        return (elem) => isText(elem) && elem.data === data;
-    },
+	tag_name(name) {
+		if (typeof name === "function") {
+			return (elem) => isTag(elem) && name(elem.name);
+		} else if (name === "*") {
+			return isTag;
+		}
+		return (elem) => isTag(elem) && elem.name === name;
+	},
+	tag_type(type) {
+		if (typeof type === "function") {
+			return (elem) => type(elem.type);
+		}
+		return (elem) => elem.type === type;
+	},
+	tag_contains(data) {
+		if (typeof data === "function") {
+			return (elem) => isText(elem) && data(elem.data);
+		}
+		return (elem) => isText(elem) && elem.data === data;
+	},
 };
 /**
  * Returns a function to check whether a node has an attribute with a particular
@@ -36,10 +36,10 @@ const Checks = {
  *   particular value.
  */
 function getAttribCheck(attrib, value) {
-    if (typeof value === "function") {
-        return (elem) => isTag(elem) && value(elem.attribs[attrib]);
-    }
-    return (elem) => isTag(elem) && elem.attribs[attrib] === value;
+	if (typeof value === "function") {
+		return (elem) => isTag(elem) && value(elem.attribs[attrib]);
+	}
+	return (elem) => isTag(elem) && elem.attribs[attrib] === value;
 }
 /**
  * Returns a function that returns `true` if either of the input functions
@@ -51,7 +51,7 @@ function getAttribCheck(attrib, value) {
  *   functions returns `true` for the node.
  */
 function combineFuncs(a, b) {
-    return (elem) => a(elem) || b(elem);
+	return (elem) => a(elem) || b(elem);
 }
 /**
  * Returns a function that executes all checks in `options` and returns `true`
@@ -62,13 +62,13 @@ function combineFuncs(a, b) {
  *   if any of them match a node.
  */
 function compileTest(options) {
-    const funcs = Object.keys(options).map((key) => {
-        const value = options[key];
-        return Object.prototype.hasOwnProperty.call(Checks, key)
-            ? Checks[key](value)
-            : getAttribCheck(key, value);
-    });
-    return funcs.length === 0 ? null : funcs.reduce(combineFuncs);
+	const funcs = Object.keys(options).map((key) => {
+		const value = options[key];
+		return Object.hasOwn(Checks, key)
+			? Checks[key](value)
+			: getAttribCheck(key, value);
+	});
+	return funcs.length === 0 ? null : funcs.reduce(combineFuncs);
 }
 /**
  * Checks whether a node matches the description in `options`.
@@ -79,8 +79,8 @@ function compileTest(options) {
  * @returns Whether the element matches the description in `options`.
  */
 export function testElement(options, node) {
-    const test = compileTest(options);
-    return test ? test(node) : true;
+	const test = compileTest(options);
+	return test ? test(node) : true;
 }
 /**
  * Returns all nodes that match `options`.
@@ -93,8 +93,8 @@ export function testElement(options, node) {
  * @returns All nodes that match `options`.
  */
 export function getElements(options, nodes, recurse, limit = Infinity) {
-    const test = compileTest(options);
-    return test ? filter(test, nodes, recurse, limit) : [];
+	const test = compileTest(options);
+	return test ? filter(test, nodes, recurse, limit) : [];
 }
 /**
  * Returns the node with the supplied ID.
@@ -106,9 +106,8 @@ export function getElements(options, nodes, recurse, limit = Infinity) {
  * @returns The node with the supplied ID.
  */
 export function getElementById(id, nodes, recurse = true) {
-    if (!Array.isArray(nodes))
-        nodes = [nodes];
-    return findOne(getAttribCheck("id", id), nodes, recurse);
+	if (!Array.isArray(nodes)) nodes = [nodes];
+	return findOne(getAttribCheck("id", id), nodes, recurse);
 }
 /**
  * Returns all nodes with the supplied `tagName`.
@@ -120,8 +119,13 @@ export function getElementById(id, nodes, recurse = true) {
  * @param limit Maximum number of nodes to return.
  * @returns All nodes with the supplied `tagName`.
  */
-export function getElementsByTagName(tagName, nodes, recurse = true, limit = Infinity) {
-    return filter(Checks["tag_name"](tagName), nodes, recurse, limit);
+export function getElementsByTagName(
+	tagName,
+	nodes,
+	recurse = true,
+	limit = Infinity,
+) {
+	return filter(Checks["tag_name"](tagName), nodes, recurse, limit);
 }
 /**
  * Returns all nodes with the supplied `className`.
@@ -133,8 +137,13 @@ export function getElementsByTagName(tagName, nodes, recurse = true, limit = Inf
  * @param limit Maximum number of nodes to return.
  * @returns All nodes with the supplied `className`.
  */
-export function getElementsByClassName(className, nodes, recurse = true, limit = Infinity) {
-    return filter(getAttribCheck("class", className), nodes, recurse, limit);
+export function getElementsByClassName(
+	className,
+	nodes,
+	recurse = true,
+	limit = Infinity,
+) {
+	return filter(getAttribCheck("class", className), nodes, recurse, limit);
 }
 /**
  * Returns all nodes with the supplied `type`.
@@ -146,7 +155,12 @@ export function getElementsByClassName(className, nodes, recurse = true, limit =
  * @param limit Maximum number of nodes to return.
  * @returns All nodes with the supplied `type`.
  */
-export function getElementsByTagType(type, nodes, recurse = true, limit = Infinity) {
-    return filter(Checks["tag_type"](type), nodes, recurse, limit);
+export function getElementsByTagType(
+	type,
+	nodes,
+	recurse = true,
+	limit = Infinity,
+) {
+	return filter(Checks["tag_type"](type), nodes, recurse, limit);
 }
 //# sourceMappingURL=legacy.js.map

@@ -9,7 +9,9 @@ export declare function parseJSONFromBytes(bytes: Uint8Array): any;
  *
  * @param value - a JavaScript value
  */
-export declare function serializeJSONToBytes(value: any): Uint8Array<ArrayBuffer>;
+export declare function serializeJSONToBytes(
+	value: any,
+): Uint8Array<ArrayBuffer>;
 /**
  * Parses the given JSON string into a Realm-independent JavaScript value.
  *
@@ -21,4 +23,6 @@ export declare function parseJSONIntoInfraValues(jsonText: string): any;
  *
  * @param jsValue - a JavaScript value
  */
-export declare function convertAJSONDerivedJavaScriptValueToAnInfraValue(jsValue: any): any;
+export declare function convertAJSONDerivedJavaScriptValueToAnInfraValue(
+	jsValue: any,
+): any;

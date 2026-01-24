@@ -1,4 +1,4 @@
-import Enumerator from '../enumerator';
+import Enumerator from "../enumerator";
 
 /**
   `Promise.all` accepts an array of promises, and returns a new promise which
@@ -48,5 +48,5 @@ import Enumerator from '../enumerator';
   @static
 */
 export default function all(entries) {
-  return new Enumerator(this, entries).promise;
+	return new Enumerator(this, entries).promise;
 }

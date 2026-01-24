@@ -1,164 +1,176 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { ExportView } from '../../views/ExportView'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ExportView } from "../../views/ExportView";
 
 // Mock the API
-vi.mock('../../api/endpoints', () => ({
-  api: {
-    projects: {
-      list: vi.fn().mockResolvedValue([]),
-    },
-    exportImport: {
-      export: vi.fn(),
-    },
-  },
-}))
+vi.mock("../../api/endpoints", () => ({
+	api: {
+		projects: {
+			list: vi.fn().mockResolvedValue([]),
+		},
+		exportImport: {
+			export: vi.fn(),
+		},
+	},
+}));
 
-describe('ExportView', () => {
-  let queryClient: QueryClient
+describe("ExportView", () => {
+	let queryClient: QueryClient;
 
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
-      },
-    })
-    vi.clearAllMocks()
-  })
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: {
+				queries: { retry: false },
+				mutations: { retry: false },
+			},
+		});
+		vi.clearAllMocks();
+	});
 
-  it('renders export interface', () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ExportView />
-      </QueryClientProvider>
-    )
+	it("renders export interface", () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ExportView />
+			</QueryClientProvider>,
+		);
 
-    // Check heading exists
-    expect(screen.getByRole('heading', { name: /Export Project/i })).toBeInTheDocument()
-    // Check format label exists
-    expect(screen.getByText('Export Format')).toBeInTheDocument()
-    // Check button exists
-    expect(screen.getByRole('button', { name: /Export Project/i })).toBeInTheDocument()
-  })
+		// Check heading exists
+		expect(
+			screen.getByRole("heading", { name: /Export Project/i }),
+		).toBeInTheDocument();
+		// Check format label exists
+		expect(screen.getByText("Export Format")).toBeInTheDocument();
+		// Check button exists
+		expect(
+			screen.getByRole("button", { name: /Export Project/i }),
+		).toBeInTheDocument();
+	});
 
-  it('displays format options', async () => {
-    const user = userEvent.setup()
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ExportView />
-      </QueryClientProvider>
-    )
+	it("displays format options", async () => {
+		const _user = userEvent.setup();
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ExportView />
+			</QueryClientProvider>,
+		);
 
-    // Format options are in Select component - they show in the description list
-    expect(screen.getByText(/JSON:/)).toBeInTheDocument()
-    expect(screen.getByText(/CSV:/)).toBeInTheDocument()
-    expect(screen.getByText(/Markdown:/)).toBeInTheDocument()
-  })
+		// Format options are in Select component - they show in the description list
+		expect(screen.getByText(/JSON:/)).toBeInTheDocument();
+		expect(screen.getByText(/CSV:/)).toBeInTheDocument();
+		expect(screen.getByText(/Markdown:/)).toBeInTheDocument();
+	});
 
-  it('shows format details', () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ExportView />
-      </QueryClientProvider>
-    )
+	it("shows format details", () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ExportView />
+			</QueryClientProvider>,
+		);
 
-    expect(screen.getByText(/JSON:/)).toBeInTheDocument()
-    expect(screen.getByText(/CSV:/)).toBeInTheDocument()
-    expect(screen.getByText(/Markdown:/)).toBeInTheDocument()
-  })
+		expect(screen.getByText(/JSON:/)).toBeInTheDocument();
+		expect(screen.getByText(/CSV:/)).toBeInTheDocument();
+		expect(screen.getByText(/Markdown:/)).toBeInTheDocument();
+	});
 
-  it('disables export button when no project selected', () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ExportView />
-      </QueryClientProvider>
-    )
+	it("disables export button when no project selected", () => {
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ExportView />
+			</QueryClientProvider>,
+		);
 
-    const exportButton = screen.getByRole('button', { name: /Export Project/i })
-    expect(exportButton).toBeDisabled()
-  })
+		const exportButton = screen.getByRole("button", {
+			name: /Export Project/i,
+		});
+		expect(exportButton).toBeDisabled();
+	});
 
-  it('enables export button when project is selected', async () => {
-    const { api } = await import('../../api/endpoints')
-    ;(api.projects.list as any).mockResolvedValue([
-      { id: 'proj-1', name: 'Test Project' },
-    ])
+	it("enables export button when project is selected", async () => {
+		const { api } = await import("../../api/endpoints");
+		(api.projects.list as any).mockResolvedValue([
+			{ id: "proj-1", name: "Test Project" },
+		]);
 
-    const user = userEvent.setup()
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ExportView />
-      </QueryClientProvider>
-    )
+		const user = userEvent.setup();
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ExportView />
+			</QueryClientProvider>,
+		);
 
-    // Wait for projects to load
-    await waitFor(() => {
-      expect(api.projects.list).toHaveBeenCalled()
-    })
+		// Wait for projects to load
+		await waitFor(() => {
+			expect(api.projects.list).toHaveBeenCalled();
+		});
 
-    // Open the project select and choose a project
-    const projectSelect = screen.getByRole('combobox', { name: /Project/i })
-    await user.click(projectSelect)
+		// Open the project select and choose a project
+		const projectSelect = screen.getByRole("combobox", { name: /Project/i });
+		await user.click(projectSelect);
 
-    // Select "Test Project"
-    const option = await screen.findByRole('option', { name: 'Test Project' })
-    await user.click(option)
+		// Select "Test Project"
+		const option = await screen.findByRole("option", { name: "Test Project" });
+		await user.click(option);
 
-    // Check button is now enabled
-    await waitFor(() => {
-      const exportButton = screen.getByRole('button', { name: /Export Project/i })
-      expect(exportButton).not.toBeDisabled()
-    })
-  })
+		// Check button is now enabled
+		await waitFor(() => {
+			const exportButton = screen.getByRole("button", {
+				name: /Export Project/i,
+			});
+			expect(exportButton).not.toBeDisabled();
+		});
+	});
 
-  it('triggers download on export', async () => {
-    const user = userEvent.setup()
-    const { api } = await import('../../api/endpoints')
-    const mockBlob = new Blob(['test data'], { type: 'application/json' })
-    ;(api.exportImport.export as any).mockResolvedValue(mockBlob)
-    ;(api.projects.list as any).mockResolvedValue([
-      { id: 'proj-1', name: 'Test Project' },
-    ])
+	it("triggers download on export", async () => {
+		const user = userEvent.setup();
+		const { api } = await import("../../api/endpoints");
+		const mockBlob = new Blob(["test data"], { type: "application/json" });
+		(api.exportImport.export as any).mockResolvedValue(mockBlob);
+		(api.projects.list as any).mockResolvedValue([
+			{ id: "proj-1", name: "Test Project" },
+		]);
 
-    // Render first, then set up spies
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ExportView />
-      </QueryClientProvider>
-    )
+		// Render first, then set up spies
+		render(
+			<QueryClientProvider client={queryClient}>
+				<ExportView />
+			</QueryClientProvider>,
+		);
 
-    // Wait for projects to load
-    await waitFor(() => {
-      expect(api.projects.list).toHaveBeenCalled()
-    })
+		// Wait for projects to load
+		await waitFor(() => {
+			expect(api.projects.list).toHaveBeenCalled();
+		});
 
-    // Now set up URL and document spies (after render)
-    const mockUrl = 'blob:test-url'
-    vi.spyOn(window.URL, 'createObjectURL').mockReturnValue(mockUrl)
-    vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => {})
+		// Now set up URL and document spies (after render)
+		const mockUrl = "blob:test-url";
+		vi.spyOn(window.URL, "createObjectURL").mockReturnValue(mockUrl);
+		vi.spyOn(window.URL, "revokeObjectURL").mockImplementation(() => {});
 
-    // Select a project
-    const projectSelect = screen.getByRole('combobox', { name: /Project/i })
-    await user.click(projectSelect)
-    const option = await screen.findByRole('option', { name: 'Test Project' })
-    await user.click(option)
+		// Select a project
+		const projectSelect = screen.getByRole("combobox", { name: /Project/i });
+		await user.click(projectSelect);
+		const option = await screen.findByRole("option", { name: "Test Project" });
+		await user.click(option);
 
-    // Wait for button to be enabled
-    await waitFor(() => {
-      const exportButton = screen.getByRole('button', { name: /Export Project/i })
-      expect(exportButton).not.toBeDisabled()
-    })
+		// Wait for button to be enabled
+		await waitFor(() => {
+			const exportButton = screen.getByRole("button", {
+				name: /Export Project/i,
+			});
+			expect(exportButton).not.toBeDisabled();
+		});
 
-    // Click export
-    const exportButton = screen.getByRole('button', { name: /Export Project/i })
-    await user.click(exportButton)
+		// Click export
+		const exportButton = screen.getByRole("button", {
+			name: /Export Project/i,
+		});
+		await user.click(exportButton);
 
-    // Verify export was called
-    await waitFor(() => {
-      expect(api.exportImport.export).toHaveBeenCalledWith('proj-1', 'json')
-    })
-  })
-})
+		// Verify export was called
+		await waitFor(() => {
+			expect(api.exportImport.export).toHaveBeenCalledWith("proj-1", "json");
+		});
+	});
+});

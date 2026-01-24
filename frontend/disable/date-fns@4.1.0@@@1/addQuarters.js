@@ -27,7 +27,7 @@ import { addMonths } from "./addMonths.js";
  * //=; Mon Dec 01 2014 00:00:00
  */
 export function addQuarters(date, amount, options) {
-  return addMonths(date, amount * 3, options);
+	return addMonths(date, amount * 3, options);
 }
 
 // Fallback for modularized imports:

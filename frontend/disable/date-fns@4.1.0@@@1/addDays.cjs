@@ -30,12 +30,12 @@ var _index2 = require("./toDate.cjs");
  * //=> Thu Sep 11 2014 00:00:00
  */
 function addDays(date, amount, options) {
-  const _date = (0, _index2.toDate)(date, options?.in);
-  if (isNaN(amount)) return (0, _index.constructFrom)(options?.in || date, NaN);
+	const _date = (0, _index2.toDate)(date, options?.in);
+	if (isNaN(amount)) return (0, _index.constructFrom)(options?.in || date, NaN);
 
-  // If 0 days, no-op to avoid changing times in the hour before end of DST
-  if (!amount) return _date;
+	// If 0 days, no-op to avoid changing times in the hour before end of DST
+	if (!amount) return _date;
 
-  _date.setDate(_date.getDate() + amount);
-  return _date;
+	_date.setDate(_date.getDate() + amount);
+	return _date;
 }

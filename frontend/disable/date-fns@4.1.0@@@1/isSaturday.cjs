@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isSaturday(date, options) {
-  return (0, _index.toDate)(date, options?.in).getDay() === 6;
+	return (0, _index.toDate)(date, options?.in).getDay() === 6;
 }

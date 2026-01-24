@@ -39,27 +39,27 @@ import { toDate } from "./toDate.js";
  */
 
 export function getOverlappingDaysInIntervals(intervalLeft, intervalRight) {
-  const [leftStart, leftEnd] = [
-    +toDate(intervalLeft.start),
-    +toDate(intervalLeft.end),
-  ].sort((a, b) => a - b);
-  const [rightStart, rightEnd] = [
-    +toDate(intervalRight.start),
-    +toDate(intervalRight.end),
-  ].sort((a, b) => a - b);
+	const [leftStart, leftEnd] = [
+		+toDate(intervalLeft.start),
+		+toDate(intervalLeft.end),
+	].sort((a, b) => a - b);
+	const [rightStart, rightEnd] = [
+		+toDate(intervalRight.start),
+		+toDate(intervalRight.end),
+	].sort((a, b) => a - b);
 
-  // Prevent NaN result if intervals don't overlap at all.
-  const isOverlapping = leftStart < rightEnd && rightStart < leftEnd;
-  if (!isOverlapping) return 0;
+	// Prevent NaN result if intervals don't overlap at all.
+	const isOverlapping = leftStart < rightEnd && rightStart < leftEnd;
+	if (!isOverlapping) return 0;
 
-  // Remove the timezone offset to negate the DST effect on calculations.
-  const overlapLeft = rightStart < leftStart ? leftStart : rightStart;
-  const left = overlapLeft - getTimezoneOffsetInMilliseconds(overlapLeft);
-  const overlapRight = rightEnd > leftEnd ? leftEnd : rightEnd;
-  const right = overlapRight - getTimezoneOffsetInMilliseconds(overlapRight);
+	// Remove the timezone offset to negate the DST effect on calculations.
+	const overlapLeft = rightStart < leftStart ? leftStart : rightStart;
+	const left = overlapLeft - getTimezoneOffsetInMilliseconds(overlapLeft);
+	const overlapRight = rightEnd > leftEnd ? leftEnd : rightEnd;
+	const right = overlapRight - getTimezoneOffsetInMilliseconds(overlapRight);
 
-  // Ceil the number to include partial days too.
-  return Math.ceil((right - left) / millisecondsInDay);
+	// Ceil the number to include partial days too.
+	return Math.ceil((right - left) / millisecondsInDay);
 }
 
 // Fallback for modularized imports:

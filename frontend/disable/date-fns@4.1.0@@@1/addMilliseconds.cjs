@@ -30,8 +30,8 @@ var _index2 = require("./toDate.cjs");
  * //=> Thu Jul 10 2014 12:45:30.750
  */
 function addMilliseconds(date, amount, options) {
-  return (0, _index.constructFrom)(
-    options?.in || date,
-    +(0, _index2.toDate)(date) + amount,
-  );
+	return (0, _index.constructFrom)(
+		options?.in || date,
+		+(0, _index2.toDate)(date) + amount,
+	);
 }

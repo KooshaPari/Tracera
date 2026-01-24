@@ -28,6 +28,6 @@ var _index = require("./toDate.cjs");
  * //=> 7
  */
 function getISODay(date, options) {
-  const day = (0, _index.toDate)(date, options?.in).getDay();
-  return day === 0 ? 7 : day;
+	const day = (0, _index.toDate)(date, options?.in).getDay();
+	return day === 0 ? 7 : day;
 }

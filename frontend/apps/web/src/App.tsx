@@ -1,87 +1,70 @@
-import { Route, Routes } from 'react-router-dom'
-import { CommandPalette } from './components/CommandPalette'
-import { Layout } from './components/layout/Layout'
+// LEGACY FILE - Not currently used (app uses @tanstack/react-router via main.tsx)
+// This file is kept for reference but is not imported anywhere
+// If you need to use this, install react-router-dom: bun add react-router-dom
+
+// LEGACY FILE - All imports commented out since file is not used
+// import { Route, Routes } from 'react-router-dom'
+// import { CommandPalette } from './components/CommandPalette'
+// import { Layout } from './components/layout/Layout'
 // Legacy pages (kept for compatibility)
-import { Dashboard } from './pages/Dashboard'
-import { ProjectDetail } from './pages/projects/ProjectDetail'
-import { ProjectList } from './pages/projects/ProjectList'
-import { ApiView } from './pages/projects/views/ApiView'
-import { CodeView } from './pages/projects/views/CodeView'
-import { DatabaseView } from './pages/projects/views/DatabaseView'
-import { DeploymentView } from './pages/projects/views/DeploymentView'
-import { DocumentationView } from './pages/projects/views/DocumentationView'
-import { FeatureView } from './pages/projects/views/FeatureView'
-import { GraphView as LegacyGraphView } from './pages/projects/views/GraphView'
-import { TestView } from './pages/projects/views/TestView'
-import { WireframeView } from './pages/projects/views/WireframeView'
-import { Settings } from './pages/settings/Settings'
+// import { Dashboard } from './pages/Dashboard'
+// import { ProjectDetail } from './pages/projects/ProjectDetail'
+// import { ProjectList } from './pages/projects/ProjectList'
+// import { ApiView } from './pages/projects/views/ApiView'
+// import { CodeView } from './pages/projects/views/CodeView'
+// import { DatabaseView } from './pages/projects/views/DatabaseView'
+// import { DeploymentView } from './pages/projects/views/DeploymentView'
+// import { DocumentationView } from './pages/projects/views/DocumentationView'
+// import { FeatureView } from './pages/projects/views/FeatureView'
+// import { GraphView as LegacyGraphView } from './pages/projects/views/GraphView'
+// import { TestView } from './pages/projects/views/TestView'
+// import { WireframeView } from './pages/projects/views/WireframeView'
+// import { Settings } from './pages/settings/Settings'
 // Import all views
-import {
-  AgentsView,
-  DashboardView,
-  EventsTimelineView,
-  GraphView,
-  ImpactAnalysisView,
-  ItemDetailView,
-  ItemsKanbanView,
-  ItemsTableView,
-  ItemsTreeView,
-  LinksView,
-  ProjectDetailView,
-  ProjectsListView,
-  ReportsView,
-  SearchView,
-  SettingsView,
-  TraceabilityMatrixView,
-} from './views'
+// import {
+//   AgentsView,
+//   DashboardView,
+//   EventsTimelineView,
+//   GraphView,
+//   ImpactAnalysisView,
+//   ItemDetailView,
+//   ItemsKanbanView,
+//   ItemsTableView,
+//   ItemsTreeView,
+//   LinksView,
+//   ProjectDetailView,
+//   ProjectsListView,
+//   ReportsView,
+//   SearchView,
+//   SettingsView,
+//   TraceabilityMatrixView,
+// } from './views'
 
 export default function App() {
-  return (
-    <>
-      <CommandPalette />
+	// Legacy component - not used (app uses @tanstack/react-router)
+	// All Routes are commented out to avoid type errors since react-router-dom is not installed
+	return (
+		<>
+			{/* <CommandPalette /> */}
+			{/* Legacy routes - uncomment if react-router-dom is installed
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* Main Dashboard */}
           <Route index element={<DashboardView />} />
-
-          {/* Projects Routes */}
           <Route path="projects" element={<ProjectsListView />} />
           <Route path="projects/:projectId" element={<ProjectDetailView />} />
-
-          {/* Items Routes */}
           <Route path="items" element={<ItemsTableView />} />
           <Route path="items/kanban" element={<ItemsKanbanView />} />
           <Route path="items/tree" element={<ItemsTreeView />} />
           <Route path="items/:itemId" element={<ItemDetailView />} />
-
-          {/* Links Route */}
           <Route path="links" element={<LinksView />} />
-
-          {/* Graph Visualization */}
           <Route path="graph" element={<GraphView />} />
-
-          {/* Agents Management */}
           <Route path="agents" element={<AgentsView />} />
-
-          {/* Events Timeline */}
           <Route path="events" element={<EventsTimelineView />} />
-
-          {/* Search */}
           <Route path="search" element={<SearchView />} />
-
-          {/* Traceability Matrix */}
           <Route path="matrix" element={<TraceabilityMatrixView />} />
-
-          {/* Impact Analysis */}
           <Route path="impact" element={<ImpactAnalysisView />} />
-
-          {/* Reports */}
           <Route path="reports" element={<ReportsView />} />
-
-          {/* Settings */}
           <Route path="settings" element={<SettingsView />} />
-
-          {/* Legacy Routes (for backward compatibility) */}
           <Route path="legacy/dashboard" element={<Dashboard />} />
           <Route path="legacy/projects" element={<ProjectList />} />
           <Route path="legacy/projects/:projectId" element={<ProjectDetail />}>
@@ -99,6 +82,7 @@ export default function App() {
           <Route path="legacy/settings" element={<Settings />} />
         </Route>
       </Routes>
-    </>
-  )
+      */}
+		</>
+	);
 }

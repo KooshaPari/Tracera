@@ -12,16 +12,16 @@ import { match } from "./eu/_lib/match.js";
  * @author Jacob Söderblom [@JacobSoderblom](https://github.com/JacobSoderblom)
  */
 export const eu = {
-  code: "eu",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "eu",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

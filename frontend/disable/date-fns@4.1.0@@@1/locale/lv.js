@@ -12,16 +12,16 @@ import { match } from "./lv/_lib/match.js";
  * @author Rūdolfs Puķītis [@prudolfs](https://github.com/prudolfs)
  */
 export const lv = {
-  code: "lv",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "lv",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

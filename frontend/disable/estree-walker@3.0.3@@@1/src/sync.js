@@ -1,4 +1,4 @@
-import { WalkerBase } from './walker.js';
+import { WalkerBase } from "./walker.js";
 
 /**
  * @typedef { import('estree').Node} Node
@@ -34,7 +34,7 @@ export class SyncWalker extends WalkerBase {
 		this.context = {
 			skip: () => (this.should_skip = true),
 			remove: () => (this.should_remove = true),
-			replace: (node) => (this.replacement = node)
+			replace: (node) => (this.replacement = node),
 		};
 
 		/** @type {SyncHandler | undefined} */
@@ -91,7 +91,7 @@ export class SyncWalker extends WalkerBase {
 				/** @type {unknown} */
 				const value = node[key];
 
-				if (value && typeof value === 'object') {
+				if (value && typeof value === "object") {
 					if (Array.isArray(value)) {
 						const nodes = /** @type {Array<unknown>} */ (value);
 						for (let i = 0; i < nodes.length; i += 1) {
@@ -147,6 +147,9 @@ export class SyncWalker extends WalkerBase {
  */
 function isNode(value) {
 	return (
-		value !== null && typeof value === 'object' && 'type' in value && typeof value.type === 'string'
+		value !== null &&
+		typeof value === "object" &&
+		"type" in value &&
+		typeof value.type === "string"
 	);
 }

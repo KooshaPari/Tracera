@@ -1,9 +1,7 @@
 {
-  "extends": "@ljharb/tsconfig",
-  "compilerOptions": {
-    "target": "ESNext",
-  },
-  "exclude": [
-    "coverage"
-  ]
+	"extends": "@ljharb/tsconfig",
+	"compilerOptions": {
+		"target": "ESNext"
+	},
+	"exclude": ["coverage"]
 }

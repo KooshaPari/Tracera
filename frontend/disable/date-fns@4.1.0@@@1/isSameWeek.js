@@ -38,14 +38,14 @@ import { startOfWeek } from "./startOfWeek.js";
  * //=> false
  */
 export function isSameWeek(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    +startOfWeek(laterDate_, options) === +startOfWeek(earlierDate_, options)
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		+startOfWeek(laterDate_, options) === +startOfWeek(earlierDate_, options)
+	);
 }
 
 // Fallback for modularized imports:

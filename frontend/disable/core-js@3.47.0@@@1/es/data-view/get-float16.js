@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.data-view.get-float16');
+"use strict";
+require("../../modules/es.data-view.get-float16");

@@ -21,31 +21,31 @@
  *   List of tokens.
  */
 export function parse(value) {
-  /** @type {Array<string>} */
-  const tokens = []
-  const input = String(value || '')
-  let index = input.indexOf(',')
-  let start = 0
-  /** @type {boolean} */
-  let end = false
+	/** @type {Array<string>} */
+	const tokens = [];
+	const input = String(value || "");
+	let index = input.indexOf(",");
+	let start = 0;
+	/** @type {boolean} */
+	let end = false;
 
-  while (!end) {
-    if (index === -1) {
-      index = input.length
-      end = true
-    }
+	while (!end) {
+		if (index === -1) {
+			index = input.length;
+			end = true;
+		}
 
-    const token = input.slice(start, index).trim()
+		const token = input.slice(start, index).trim();
 
-    if (token || !end) {
-      tokens.push(token)
-    }
+		if (token || !end) {
+			tokens.push(token);
+		}
 
-    start = index + 1
-    index = input.indexOf(',', start)
-  }
+		start = index + 1;
+		index = input.indexOf(",", start);
+	}
 
-  return tokens
+	return tokens;
 }
 
 /**
@@ -59,16 +59,16 @@ export function parse(value) {
  *   Comma-separated tokens.
  */
 export function stringify(values, options) {
-  const settings = options || {}
+	const settings = options || {};
 
-  // Ensure the last empty entry is seen.
-  const input = values[values.length - 1] === '' ? [...values, ''] : values
+	// Ensure the last empty entry is seen.
+	const input = values[values.length - 1] === "" ? [...values, ""] : values;
 
-  return input
-    .join(
-      (settings.padRight ? ' ' : '') +
-        ',' +
-        (settings.padLeft === false ? '' : ' ')
-    )
-    .trim()
+	return input
+		.join(
+			(settings.padRight ? " " : "") +
+				"," +
+				(settings.padLeft === false ? "" : " "),
+		)
+		.trim();
 }

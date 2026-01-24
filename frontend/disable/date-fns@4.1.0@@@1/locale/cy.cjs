@@ -14,14 +14,14 @@ var _index5 = require("./cy/_lib/match.cjs");
  * @author Elwyn Malethan [@elmomalmo](https://github.com/elmomalmo)
  */
 const cy = (exports.cy = {
-  code: "cy",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "cy",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

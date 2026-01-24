@@ -1,31 +1,31 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  RoundingOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	RoundingOptions,
 } from "./types.js";
 /**
  * The {@link formatDistanceStrict} function options.
  */
 export interface FormatDistanceStrictOptions
-  extends LocalizedOptions<"formatDistance">,
-    RoundingOptions,
-    ContextOptions<Date> {
-  /** Add "X ago"/"in X" in the locale language */
-  addSuffix?: boolean;
-  /** If specified, will force the unit */
-  unit?: FormatDistanceStrictUnit;
+	extends LocalizedOptions<"formatDistance">,
+		RoundingOptions,
+		ContextOptions<Date> {
+	/** Add "X ago"/"in X" in the locale language */
+	addSuffix?: boolean;
+	/** If specified, will force the unit */
+	unit?: FormatDistanceStrictUnit;
 }
 /**
  * The unit used to format the distance in {@link formatDistanceStrict}.
  */
 export type FormatDistanceStrictUnit =
-  | "second"
-  | "minute"
-  | "hour"
-  | "day"
-  | "month"
-  | "year";
+	| "second"
+	| "minute"
+	| "hour"
+	| "day"
+	| "month"
+	| "year";
 /**
  * @name formatDistanceStrict
  * @category Common Helpers
@@ -104,7 +104,7 @@ export type FormatDistanceStrictUnit =
  * //=> '1 jaro'
  */
 export declare function formatDistanceStrict(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: FormatDistanceStrictOptions,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: FormatDistanceStrictOptions,
 ): string;

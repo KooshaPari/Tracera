@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../es/escape');
+"use strict";
+var parent = require("../es/escape");
 
 module.exports = parent;

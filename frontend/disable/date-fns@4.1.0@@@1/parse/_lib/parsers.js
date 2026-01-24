@@ -1,34 +1,34 @@
-import { EraParser } from "./parsers/EraParser.js";
-import { YearParser } from "./parsers/YearParser.js";
-import { LocalWeekYearParser } from "./parsers/LocalWeekYearParser.js";
-import { ISOWeekYearParser } from "./parsers/ISOWeekYearParser.js";
-import { ExtendedYearParser } from "./parsers/ExtendedYearParser.js";
-import { QuarterParser } from "./parsers/QuarterParser.js";
-import { StandAloneQuarterParser } from "./parsers/StandAloneQuarterParser.js";
-import { MonthParser } from "./parsers/MonthParser.js";
-import { StandAloneMonthParser } from "./parsers/StandAloneMonthParser.js";
-import { LocalWeekParser } from "./parsers/LocalWeekParser.js";
-import { ISOWeekParser } from "./parsers/ISOWeekParser.js";
+import { AMPMMidnightParser } from "./parsers/AMPMMidnightParser.js";
+import { AMPMParser } from "./parsers/AMPMParser.js";
 import { DateParser } from "./parsers/DateParser.js";
 import { DayOfYearParser } from "./parsers/DayOfYearParser.js";
 import { DayParser } from "./parsers/DayParser.js";
-import { LocalDayParser } from "./parsers/LocalDayParser.js";
-import { StandAloneLocalDayParser } from "./parsers/StandAloneLocalDayParser.js";
-import { ISODayParser } from "./parsers/ISODayParser.js";
-import { AMPMParser } from "./parsers/AMPMParser.js";
-import { AMPMMidnightParser } from "./parsers/AMPMMidnightParser.js";
 import { DayPeriodParser } from "./parsers/DayPeriodParser.js";
-import { Hour1to12Parser } from "./parsers/Hour1to12Parser.js";
-import { Hour0to23Parser } from "./parsers/Hour0to23Parser.js";
-import { Hour0To11Parser } from "./parsers/Hour0To11Parser.js";
-import { Hour1To24Parser } from "./parsers/Hour1To24Parser.js";
-import { MinuteParser } from "./parsers/MinuteParser.js";
-import { SecondParser } from "./parsers/SecondParser.js";
+import { EraParser } from "./parsers/EraParser.js";
+import { ExtendedYearParser } from "./parsers/ExtendedYearParser.js";
 import { FractionOfSecondParser } from "./parsers/FractionOfSecondParser.js";
-import { ISOTimezoneWithZParser } from "./parsers/ISOTimezoneWithZParser.js";
+import { Hour0To11Parser } from "./parsers/Hour0To11Parser.js";
+import { Hour0to23Parser } from "./parsers/Hour0to23Parser.js";
+import { Hour1To24Parser } from "./parsers/Hour1To24Parser.js";
+import { Hour1to12Parser } from "./parsers/Hour1to12Parser.js";
+import { ISODayParser } from "./parsers/ISODayParser.js";
 import { ISOTimezoneParser } from "./parsers/ISOTimezoneParser.js";
-import { TimestampSecondsParser } from "./parsers/TimestampSecondsParser.js";
+import { ISOTimezoneWithZParser } from "./parsers/ISOTimezoneWithZParser.js";
+import { ISOWeekParser } from "./parsers/ISOWeekParser.js";
+import { ISOWeekYearParser } from "./parsers/ISOWeekYearParser.js";
+import { LocalDayParser } from "./parsers/LocalDayParser.js";
+import { LocalWeekParser } from "./parsers/LocalWeekParser.js";
+import { LocalWeekYearParser } from "./parsers/LocalWeekYearParser.js";
+import { MinuteParser } from "./parsers/MinuteParser.js";
+import { MonthParser } from "./parsers/MonthParser.js";
+import { QuarterParser } from "./parsers/QuarterParser.js";
+import { SecondParser } from "./parsers/SecondParser.js";
+import { StandAloneLocalDayParser } from "./parsers/StandAloneLocalDayParser.js";
+import { StandAloneMonthParser } from "./parsers/StandAloneMonthParser.js";
+import { StandAloneQuarterParser } from "./parsers/StandAloneQuarterParser.js";
 import { TimestampMillisecondsParser } from "./parsers/TimestampMillisecondsParser.js";
+import { TimestampSecondsParser } from "./parsers/TimestampSecondsParser.js";
+import { YearParser } from "./parsers/YearParser.js";
 
 /*
  * |     | Unit                           |     | Unit                           |
@@ -74,35 +74,35 @@ import { TimestampMillisecondsParser } from "./parsers/TimestampMillisecondsPars
  *   for week-numbering date specific to the locale.
  */
 export const parsers = {
-  G: new EraParser(),
-  y: new YearParser(),
-  Y: new LocalWeekYearParser(),
-  R: new ISOWeekYearParser(),
-  u: new ExtendedYearParser(),
-  Q: new QuarterParser(),
-  q: new StandAloneQuarterParser(),
-  M: new MonthParser(),
-  L: new StandAloneMonthParser(),
-  w: new LocalWeekParser(),
-  I: new ISOWeekParser(),
-  d: new DateParser(),
-  D: new DayOfYearParser(),
-  E: new DayParser(),
-  e: new LocalDayParser(),
-  c: new StandAloneLocalDayParser(),
-  i: new ISODayParser(),
-  a: new AMPMParser(),
-  b: new AMPMMidnightParser(),
-  B: new DayPeriodParser(),
-  h: new Hour1to12Parser(),
-  H: new Hour0to23Parser(),
-  K: new Hour0To11Parser(),
-  k: new Hour1To24Parser(),
-  m: new MinuteParser(),
-  s: new SecondParser(),
-  S: new FractionOfSecondParser(),
-  X: new ISOTimezoneWithZParser(),
-  x: new ISOTimezoneParser(),
-  t: new TimestampSecondsParser(),
-  T: new TimestampMillisecondsParser(),
+	G: new EraParser(),
+	y: new YearParser(),
+	Y: new LocalWeekYearParser(),
+	R: new ISOWeekYearParser(),
+	u: new ExtendedYearParser(),
+	Q: new QuarterParser(),
+	q: new StandAloneQuarterParser(),
+	M: new MonthParser(),
+	L: new StandAloneMonthParser(),
+	w: new LocalWeekParser(),
+	I: new ISOWeekParser(),
+	d: new DateParser(),
+	D: new DayOfYearParser(),
+	E: new DayParser(),
+	e: new LocalDayParser(),
+	c: new StandAloneLocalDayParser(),
+	i: new ISODayParser(),
+	a: new AMPMParser(),
+	b: new AMPMMidnightParser(),
+	B: new DayPeriodParser(),
+	h: new Hour1to12Parser(),
+	H: new Hour0to23Parser(),
+	K: new Hour0To11Parser(),
+	k: new Hour1To24Parser(),
+	m: new MinuteParser(),
+	s: new SecondParser(),
+	S: new FractionOfSecondParser(),
+	X: new ISOTimezoneWithZParser(),
+	x: new ISOTimezoneParser(),
+	t: new TimestampSecondsParser(),
+	T: new TimestampMillisecondsParser(),
 };

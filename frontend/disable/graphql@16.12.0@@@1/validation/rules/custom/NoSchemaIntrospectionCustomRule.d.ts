@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../../language/visitor';
-import type { ValidationContext } from '../../ValidationContext';
+import type { ASTVisitor } from "../../../language/visitor";
+import type { ValidationContext } from "../../ValidationContext";
 /**
  * Prohibit introspection queries
  *
@@ -11,5 +11,5 @@ import type { ValidationContext } from '../../ValidationContext';
  * does not reflect best practices and should only be done if absolutely necessary.
  */
 export declare function NoSchemaIntrospectionCustomRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

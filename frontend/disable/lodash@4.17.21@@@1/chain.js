@@ -1,4 +1,4 @@
-var lodash = require('./wrapperLodash');
+var lodash = require("./wrapperLodash");
 
 /**
  * Creates a `lodash` wrapper instance that wraps `value` with explicit method
@@ -30,9 +30,9 @@ var lodash = require('./wrapperLodash');
  * // => 'pebbles is 1'
  */
 function chain(value) {
-  var result = lodash(value);
-  result.__chain__ = true;
-  return result;
+	var result = lodash(value);
+	result.__chain__ = true;
+	return result;
 }
 
 module.exports = chain;

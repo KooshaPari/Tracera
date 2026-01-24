@@ -1,4 +1,4 @@
-var baseEach = require('./_baseEach');
+var baseEach = require("./_baseEach");
 
 /**
  * Aggregates elements of `collection` on `accumulator` with keys transformed
@@ -12,10 +12,10 @@ var baseEach = require('./_baseEach');
  * @returns {Function} Returns `accumulator`.
  */
 function baseAggregator(collection, setter, iteratee, accumulator) {
-  baseEach(collection, function(value, key, collection) {
-    setter(accumulator, value, iteratee(value), collection);
-  });
-  return accumulator;
+	baseEach(collection, (value, key, collection) => {
+		setter(accumulator, value, iteratee(value), collection);
+	});
+	return accumulator;
 }
 
 module.exports = baseAggregator;

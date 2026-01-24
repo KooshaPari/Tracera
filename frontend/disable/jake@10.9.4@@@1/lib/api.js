@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
-let { uuid } = require('./utils');
+ */
+const { uuid } = require("./utils");
 
-let api = new (function () {
-  /**
+const api = new (function () {
+	/**
     @name task
     @static
     @function
@@ -49,16 +49,16 @@ let api = new (function () {
       setTimeout(complete, 1000);
     }, {async: true});
    */
-  this.task = function (name, prereqs, action, opts) {
-    let args = Array.prototype.slice.call(arguments);
-    let createdTask;
-    args.unshift('task');
-    createdTask = jake.createTask.apply(global, args);
-    jake.currentTaskDescription = null;
-    return createdTask;
-  };
+	this.task = function (name, prereqs, action, opts) {
+		const args = Array.prototype.slice.call(arguments);
+		let createdTask;
+		args.unshift("task");
+		createdTask = jake.createTask.apply(global, args);
+		jake.currentTaskDescription = null;
+		return createdTask;
+	};
 
-  /**
+	/**
     @name rule
     @static
     @function
@@ -130,41 +130,39 @@ let api = new (function () {
       });
     }
    */
-  this.rule = function () {
-    let args = Array.prototype.slice.call(arguments);
-    let arg;
-    let pattern = args.shift();
-    let source = args.shift();
-    let prereqs = [];
-    let action = function () {};
-    let opts = {};
-    let key = pattern.toString(); // May be a RegExp
+	this.rule = function () {
+		const args = Array.prototype.slice.call(arguments);
+		let arg;
+		const pattern = args.shift();
+		const source = args.shift();
+		let prereqs = [];
+		let action = () => {};
+		let opts = {};
+		const key = pattern.toString(); // May be a RegExp
 
-    while ((arg = args.shift())) {
-      if (typeof arg == 'function') {
-        action = arg;
-      }
-      else if (Array.isArray(arg)) {
-        prereqs = arg;
-      }
-      else {
-        opts = arg;
-      }
-    }
+		while ((arg = args.shift())) {
+			if (typeof arg == "function") {
+				action = arg;
+			} else if (Array.isArray(arg)) {
+				prereqs = arg;
+			} else {
+				opts = arg;
+			}
+		}
 
-    jake.currentNamespace.rules[key] = new jake.Rule({
-      pattern: pattern,
-      source: source,
-      prereqs: prereqs,
-      action: action,
-      opts: opts,
-      desc: jake.currentTaskDescription,
-      ns: jake.currentNamespace
-    });
-    jake.currentTaskDescription = null;
-  };
+		jake.currentNamespace.rules[key] = new jake.Rule({
+			pattern: pattern,
+			source: source,
+			prereqs: prereqs,
+			action: action,
+			opts: opts,
+			desc: jake.currentTaskDescription,
+			ns: jake.currentNamespace,
+		});
+		jake.currentTaskDescription = null;
+	};
 
-  /**
+	/**
     @name directory
     @static
     @function
@@ -179,16 +177,16 @@ let api = new (function () {
     // Creates the package directory for distribution
     directory('pkg');
    */
-  this.directory = function (name) {
-    let args = Array.prototype.slice.call(arguments);
-    let createdTask;
-    args.unshift('directory');
-    createdTask = jake.createTask.apply(global, args);
-    jake.currentTaskDescription = null;
-    return createdTask;
-  };
+	this.directory = function (name) {
+		const args = Array.prototype.slice.call(arguments);
+		let createdTask;
+		args.unshift("directory");
+		createdTask = jake.createTask.apply(global, args);
+		jake.currentTaskDescription = null;
+		return createdTask;
+	};
 
-  /**
+	/**
     @name file
     @static
     @function
@@ -205,16 +203,16 @@ let api = new (function () {
       to the next task.
 
    */
-  this.file = function (name, prereqs, action, opts) {
-    let args = Array.prototype.slice.call(arguments);
-    let createdTask;
-    args.unshift('file');
-    createdTask = jake.createTask.apply(global, args);
-    jake.currentTaskDescription = null;
-    return createdTask;
-  };
+	this.file = function (name, prereqs, action, opts) {
+		const args = Array.prototype.slice.call(arguments);
+		let createdTask;
+		args.unshift("file");
+		createdTask = jake.createTask.apply(global, args);
+		jake.currentTaskDescription = null;
+		return createdTask;
+	};
 
-  /**
+	/**
     @name desc
     @static
     @function
@@ -224,11 +222,11 @@ let api = new (function () {
     `
     @param {String} description The description for the Task
    */
-  this.desc = function (description) {
-    jake.currentTaskDescription = description;
-  };
+	this.desc = (description) => {
+		jake.currentTaskDescription = description;
+	};
 
-  /**
+	/**
     @name namespace
     @static
     @function
@@ -250,19 +248,19 @@ let api = new (function () {
       });
     });
    */
-  this.namespace = function (name, closure) {
-    let curr = jake.currentNamespace;
-    let ns = curr.childNamespaces[name] || new jake.Namespace(name, curr);
-    let fn = closure || function () {};
-    curr.childNamespaces[name] = ns;
-    jake.currentNamespace = ns;
-    fn();
-    jake.currentNamespace = curr;
-    jake.currentTaskDescription = null;
-    return ns;
-  };
+	this.namespace = (name, closure) => {
+		const curr = jake.currentNamespace;
+		const ns = curr.childNamespaces[name] || new jake.Namespace(name, curr);
+		const fn = closure || (() => {});
+		curr.childNamespaces[name] = ns;
+		jake.currentNamespace = ns;
+		fn();
+		jake.currentNamespace = curr;
+		jake.currentTaskDescription = null;
+		return ns;
+	};
 
-  /**
+	/**
     @name complete
     @static
     @function
@@ -286,20 +284,19 @@ let api = new (function () {
       });
     }, {async: true});
    */
-  this.complete = function (task, val) {
-    //this should detect if the first arg is a task, but I guess it should be more thorough
-    if(task && task. _currentPrereqIndex >=0 ) {
-      task.complete(val);
-    }
-    else {
-      val = task;
-      if(jake._invocationChain.length > 0) {
-        jake._invocationChain[jake._invocationChain.length-1].complete(val);
-      }
-    }
-  };
+	this.complete = (task, val) => {
+		//this should detect if the first arg is a task, but I guess it should be more thorough
+		if (task && task._currentPrereqIndex >= 0) {
+			task.complete(val);
+		} else {
+			val = task;
+			if (jake._invocationChain.length > 0) {
+				jake._invocationChain[jake._invocationChain.length - 1].complete(val);
+			}
+		}
+	};
 
-  /**
+	/**
     @name fail
     @static
     @function
@@ -323,87 +320,78 @@ let api = new (function () {
       }
     });
    */
-  this.fail = function (err, code) {
-    let msg;
-    let errObj;
-    if (code) {
-      jake.errorCode = code;
-    }
-    if (err) {
-      if (typeof err == 'string') {
-        // Use the initial or only line of the error as the error-message
-        // If there was a multi-line error, use the rest as the stack
-        msg = err.split('\n');
-        errObj = new Error(msg.shift());
-        if (msg.length) {
-          errObj.stack = msg.join('\n');
-        }
-        throw errObj;
-      }
-      else if (err instanceof Error) {
-        throw err;
-      }
-      else {
-        throw new Error(err.toString());
-      }
-    }
-    else {
-      throw new Error();
-    }
-  };
+	this.fail = (err, code) => {
+		let msg;
+		let errObj;
+		if (code) {
+			jake.errorCode = code;
+		}
+		if (err) {
+			if (typeof err == "string") {
+				// Use the initial or only line of the error as the error-message
+				// If there was a multi-line error, use the rest as the stack
+				msg = err.split("\n");
+				errObj = new Error(msg.shift());
+				if (msg.length) {
+					errObj.stack = msg.join("\n");
+				}
+				throw errObj;
+			} else if (err instanceof Error) {
+				throw err;
+			} else {
+				throw new Error(err.toString());
+			}
+		} else {
+			throw new Error();
+		}
+	};
 
-  this.packageTask = function (name, version, prereqs, definition) {
-    return new jake.PackageTask(name, version, prereqs, definition);
-  };
+	this.packageTask = (name, version, prereqs, definition) =>
+		new jake.PackageTask(name, version, prereqs, definition);
 
-  this.publishTask = function (name, prereqs, opts, definition) {
-    return new jake.PublishTask(name, prereqs, opts, definition);
-  };
+	this.publishTask = (name, prereqs, opts, definition) =>
+		new jake.PublishTask(name, prereqs, opts, definition);
 
-  // Backward-compat
-  this.npmPublishTask = function (name, prereqs, opts, definition) {
-    return new jake.PublishTask(name, prereqs, opts, definition);
-  };
+	// Backward-compat
+	this.npmPublishTask = (name, prereqs, opts, definition) =>
+		new jake.PublishTask(name, prereqs, opts, definition);
 
-  this.testTask = function () {
-    let ctor = function () {};
-    let t;
-    ctor.prototype = jake.TestTask.prototype;
-    t = new ctor();
-    jake.TestTask.apply(t, arguments);
-    return t;
-  };
+	this.testTask = function () {
+		const ctor = () => {};
+		let t;
+		ctor.prototype = jake.TestTask.prototype;
+		t = new ctor();
+		jake.TestTask.apply(t, arguments);
+		return t;
+	};
 
-  this.setTaskTimeout = function (t) {
-    this._taskTimeout = t;
-  };
+	this.setTaskTimeout = function (t) {
+		this._taskTimeout = t;
+	};
 
-  this.setSeriesAutoPrefix = function (prefix) {
-    this._seriesAutoPrefix = prefix;
-  };
+	this.setSeriesAutoPrefix = function (prefix) {
+		this._seriesAutoPrefix = prefix;
+	};
 
-  this.series = function (...args) {
-    let prereqs = args.map((arg) => {
-      let name = (this._seriesAutoPrefix || '') + arg.name;
-      jake.task(name, arg);
-      return name;
-    });
-    let seriesName = uuid();
-    let seriesTask = jake.task(seriesName, prereqs);
-    seriesTask._internal = true;
-    let res = function () {
-      return new Promise((resolve) => {
-        seriesTask.invoke();
-        seriesTask.on('complete', (val) => {
-          resolve(val);
-        });
-      });
-    };
-    Object.defineProperty(res, 'name', {value: uuid(),
-      writable: false});
-    return res;
-  };
-
+	this.series = function (...args) {
+		const prereqs = args.map((arg) => {
+			const name = (this._seriesAutoPrefix || "") + arg.name;
+			jake.task(name, arg);
+			return name;
+		});
+		const seriesName = uuid();
+		const seriesTask = jake.task(seriesName, prereqs);
+		seriesTask._internal = true;
+		const res = () =>
+			new Promise((resolve) => {
+				seriesTask.invoke();
+				seriesTask.on("complete", (val) => {
+					resolve(val);
+				});
+			});
+		Object.defineProperty(res, "name", { value: uuid(), writable: false });
+		return res;
+	};
 })();
 
 module.exports = api;

@@ -7,80 +7,80 @@
  * @see https://github.com/facebook/react/blob/4f604941569d2e8947ce1460a0b2997e835f37b9/packages/react-debug-tools/src/ReactDebugHooks.js#L224-L227
  */
 
-import { noop } from './utils'
+import { noop } from "./utils";
 
 interface Fulfilled<T> {
-  status: 'fulfilled'
-  value: T
+	status: "fulfilled";
+	value: T;
 }
 interface Rejected {
-  status: 'rejected'
-  reason: unknown
+	status: "rejected";
+	reason: unknown;
 }
 interface Pending<T> {
-  status: 'pending'
+	status: "pending";
 
-  /**
-   * Resolve the promise with a value.
-   * Will remove the `resolve` and `reject` properties from the promise.
-   */
-  resolve: (value: T) => void
-  /**
-   * Reject the promise with a reason.
-   * Will remove the `resolve` and `reject` properties from the promise.
-   */
-  reject: (reason: unknown) => void
+	/**
+	 * Resolve the promise with a value.
+	 * Will remove the `resolve` and `reject` properties from the promise.
+	 */
+	resolve: (value: T) => void;
+	/**
+	 * Reject the promise with a reason.
+	 * Will remove the `resolve` and `reject` properties from the promise.
+	 */
+	reject: (reason: unknown) => void;
 }
 
-export type FulfilledThenable<T> = Promise<T> & Fulfilled<T>
-export type RejectedThenable<T> = Promise<T> & Rejected
-export type PendingThenable<T> = Promise<T> & Pending<T>
+export type FulfilledThenable<T> = Promise<T> & Fulfilled<T>;
+export type RejectedThenable<T> = Promise<T> & Rejected;
+export type PendingThenable<T> = Promise<T> & Pending<T>;
 
 export type Thenable<T> =
-  | FulfilledThenable<T>
-  | RejectedThenable<T>
-  | PendingThenable<T>
+	| FulfilledThenable<T>
+	| RejectedThenable<T>
+	| PendingThenable<T>;
 
 export function pendingThenable<T>(): PendingThenable<T> {
-  let resolve: Pending<T>['resolve']
-  let reject: Pending<T>['reject']
-  // this could use `Promise.withResolvers()` in the future
-  const thenable = new Promise((_resolve, _reject) => {
-    resolve = _resolve
-    reject = _reject
-  }) as PendingThenable<T>
+	let resolve: Pending<T>["resolve"];
+	let reject: Pending<T>["reject"];
+	// this could use `Promise.withResolvers()` in the future
+	const thenable = new Promise((_resolve, _reject) => {
+		resolve = _resolve;
+		reject = _reject;
+	}) as PendingThenable<T>;
 
-  thenable.status = 'pending'
-  thenable.catch(() => {
-    // prevent unhandled rejection errors
-  })
+	thenable.status = "pending";
+	thenable.catch(() => {
+		// prevent unhandled rejection errors
+	});
 
-  function finalize(data: Fulfilled<T> | Rejected) {
-    Object.assign(thenable, data)
+	function finalize(data: Fulfilled<T> | Rejected) {
+		Object.assign(thenable, data);
 
-    // clear pending props props to avoid calling them twice
-    delete (thenable as Partial<PendingThenable<T>>).resolve
-    delete (thenable as Partial<PendingThenable<T>>).reject
-  }
+		// clear pending props props to avoid calling them twice
+		delete (thenable as Partial<PendingThenable<T>>).resolve;
+		delete (thenable as Partial<PendingThenable<T>>).reject;
+	}
 
-  thenable.resolve = (value) => {
-    finalize({
-      status: 'fulfilled',
-      value,
-    })
+	thenable.resolve = (value) => {
+		finalize({
+			status: "fulfilled",
+			value,
+		});
 
-    resolve(value)
-  }
-  thenable.reject = (reason) => {
-    finalize({
-      status: 'rejected',
-      reason,
-    })
+		resolve(value);
+	};
+	thenable.reject = (reason) => {
+		finalize({
+			status: "rejected",
+			reason,
+		});
 
-    reject(reason)
-  }
+		reject(reason);
+	};
 
-  return thenable
+	return thenable;
 }
 
 /**
@@ -92,20 +92,20 @@ export function pendingThenable<T>(): PendingThenable<T> {
  * should not be considered part of the public API.
  */
 export function tryResolveSync(promise: Promise<unknown> | Thenable<unknown>) {
-  let data: unknown
+	let data: unknown;
 
-  promise
-    .then((result) => {
-      data = result
-      return result
-    }, noop)
-    // .catch can be unavailable on certain kinds of thenable's
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    ?.catch(noop)
+	promise
+		.then((result) => {
+			data = result;
+			return result;
+		}, noop)
+		// .catch can be unavailable on certain kinds of thenable's
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		?.catch(noop);
 
-  if (data !== undefined) {
-    return { data }
-  }
+	if (data !== undefined) {
+		return { data };
+	}
 
-  return undefined
+	return undefined;
 }

@@ -1,5 +1,5 @@
-var baseGet = require('./_baseGet'),
-    baseSet = require('./_baseSet');
+var baseGet = require("./_baseGet"),
+	baseSet = require("./_baseSet");
 
 /**
  * The base implementation of `_.update`.
@@ -12,7 +12,7 @@ var baseGet = require('./_baseGet'),
  * @returns {Object} Returns `object`.
  */
 function baseUpdate(object, path, updater, customizer) {
-  return baseSet(object, path, updater(baseGet(object, path)), customizer);
+	return baseSet(object, path, updater(baseGet(object, path)), customizer);
 }
 
 module.exports = baseUpdate;

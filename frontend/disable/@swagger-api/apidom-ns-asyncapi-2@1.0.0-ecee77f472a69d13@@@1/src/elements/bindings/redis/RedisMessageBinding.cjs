@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class RedisMessageBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'redisMessageBinding';
-    this.classes.push('message-binding');
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "redisMessageBinding";
+		this.classes.push("message-binding");
+	}
 }
-var _default = exports.default = RedisMessageBinding;
+var _default = (exports.default = RedisMessageBinding);

@@ -59,7 +59,7 @@ class ConflictResolutionService:
         events = query.order_by(Event.created_at.desc()).all()
 
         # Group by entity_id and detect multiple agents updating same item
-        entity_events = {}
+        entity_events: dict[str, list[Event]] = {}
         for event in events:
             if event.entity_id not in entity_events:
                 entity_events[event.entity_id] = []

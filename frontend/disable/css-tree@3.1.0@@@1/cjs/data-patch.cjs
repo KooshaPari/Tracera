@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const patch = require('../data/patch.json');
+const patch = require("../data/patch.json");
 
 const patch$1 = patch;
 

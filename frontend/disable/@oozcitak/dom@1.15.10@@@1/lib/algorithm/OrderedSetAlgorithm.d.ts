@@ -24,4 +24,8 @@ export declare function orderedSet_sanitize(value: string): string;
  * @param set1 - a set that is contained in set1
  * @param caseSensitive - whether matches are case-sensitive
  */
-export declare function orderedSet_contains(set1: Set<string>, set2: Set<string>, caseSensitive: boolean): boolean;
+export declare function orderedSet_contains(
+	set1: Set<string>,
+	set2: Set<string>,
+	caseSensitive: boolean,
+): boolean;

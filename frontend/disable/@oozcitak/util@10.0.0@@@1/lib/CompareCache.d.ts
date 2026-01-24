@@ -12,21 +12,21 @@
  * The cache has a size limit which is defined on initialization.
  */
 export declare class CompareCache<T> {
-    private _limit;
-    private _items;
-    /**
-     * Initializes a new instance of `CompareCache`.
-     *
-     * @param limit - maximum number of items to keep in the cache. When the limit
-     * is exceeded the first item is removed from the cache.
-     */
-    constructor(limit?: number);
-    /**
-     * Compares and caches the given objects. Returns `true` if `objA < objB` and
-     * `false` otherwise.
-     *
-     * @param objA - an item to compare
-     * @param objB - an item to compare
-     */
-    check(objA: T, objB: T): boolean;
+	private _limit;
+	private _items;
+	/**
+	 * Initializes a new instance of `CompareCache`.
+	 *
+	 * @param limit - maximum number of items to keep in the cache. When the limit
+	 * is exceeded the first item is removed from the cache.
+	 */
+	constructor(limit?: number);
+	/**
+	 * Compares and caches the given objects. Returns `true` if `objA < objB` and
+	 * `false` otherwise.
+	 *
+	 * @param objA - an item to compare
+	 * @param objB - an item to compare
+	 */
+	check(objA: T, objB: T): boolean;
 }

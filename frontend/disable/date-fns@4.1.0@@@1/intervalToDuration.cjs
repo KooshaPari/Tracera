@@ -35,39 +35,39 @@ var _index8 = require("./differenceInYears.cjs");
  * //=> { years: 39, months: 2, days: 20, hours: 7, minutes: 5, seconds: 0 }
  */
 function intervalToDuration(interval, options) {
-  const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
-  const duration = {};
+	const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
+	const duration = {};
 
-  const years = (0, _index8.differenceInYears)(end, start);
-  if (years) duration.years = years;
+	const years = (0, _index8.differenceInYears)(end, start);
+	if (years) duration.years = years;
 
-  const remainingMonths = (0, _index2.add)(start, { years: duration.years });
-  const months = (0, _index6.differenceInMonths)(end, remainingMonths);
-  if (months) duration.months = months;
+	const remainingMonths = (0, _index2.add)(start, { years: duration.years });
+	const months = (0, _index6.differenceInMonths)(end, remainingMonths);
+	if (months) duration.months = months;
 
-  const remainingDays = (0, _index2.add)(remainingMonths, {
-    months: duration.months,
-  });
-  const days = (0, _index3.differenceInDays)(end, remainingDays);
-  if (days) duration.days = days;
+	const remainingDays = (0, _index2.add)(remainingMonths, {
+		months: duration.months,
+	});
+	const days = (0, _index3.differenceInDays)(end, remainingDays);
+	if (days) duration.days = days;
 
-  const remainingHours = (0, _index2.add)(remainingDays, {
-    days: duration.days,
-  });
-  const hours = (0, _index4.differenceInHours)(end, remainingHours);
-  if (hours) duration.hours = hours;
+	const remainingHours = (0, _index2.add)(remainingDays, {
+		days: duration.days,
+	});
+	const hours = (0, _index4.differenceInHours)(end, remainingHours);
+	if (hours) duration.hours = hours;
 
-  const remainingMinutes = (0, _index2.add)(remainingHours, {
-    hours: duration.hours,
-  });
-  const minutes = (0, _index5.differenceInMinutes)(end, remainingMinutes);
-  if (minutes) duration.minutes = minutes;
+	const remainingMinutes = (0, _index2.add)(remainingHours, {
+		hours: duration.hours,
+	});
+	const minutes = (0, _index5.differenceInMinutes)(end, remainingMinutes);
+	if (minutes) duration.minutes = minutes;
 
-  const remainingSeconds = (0, _index2.add)(remainingMinutes, {
-    minutes: duration.minutes,
-  });
-  const seconds = (0, _index7.differenceInSeconds)(end, remainingSeconds);
-  if (seconds) duration.seconds = seconds;
+	const remainingSeconds = (0, _index2.add)(remainingMinutes, {
+		minutes: duration.minutes,
+	});
+	const seconds = (0, _index7.differenceInSeconds)(end, remainingSeconds);
+	if (seconds) duration.seconds = seconds;
 
-  return duration;
+	return duration;
 }

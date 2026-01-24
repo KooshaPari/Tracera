@@ -1,4 +1,4 @@
-import { isTag, hasChildren, } from "domhandler";
+import { hasChildren, isTag } from "domhandler";
 /**
  * Get a node's children.
  *
@@ -7,7 +7,7 @@ import { isTag, hasChildren, } from "domhandler";
  * @returns `elem`'s children, or an empty array.
  */
 export function getChildren(elem) {
-    return hasChildren(elem) ? elem.children : [];
+	return hasChildren(elem) ? elem.children : [];
 }
 /**
  * Get a node's parent.
@@ -17,7 +17,7 @@ export function getChildren(elem) {
  * @returns `elem`'s parent node, or `null` if `elem` is a root node.
  */
 export function getParent(elem) {
-    return elem.parent || null;
+	return elem.parent || null;
 }
 /**
  * Gets an elements siblings, including the element itself.
@@ -31,20 +31,19 @@ export function getParent(elem) {
  * @returns `elem`'s siblings, including `elem`.
  */
 export function getSiblings(elem) {
-    const parent = getParent(elem);
-    if (parent != null)
-        return getChildren(parent);
-    const siblings = [elem];
-    let { prev, next } = elem;
-    while (prev != null) {
-        siblings.unshift(prev);
-        ({ prev } = prev);
-    }
-    while (next != null) {
-        siblings.push(next);
-        ({ next } = next);
-    }
-    return siblings;
+	const parent = getParent(elem);
+	if (parent != null) return getChildren(parent);
+	const siblings = [elem];
+	let { prev, next } = elem;
+	while (prev != null) {
+		siblings.unshift(prev);
+		({ prev } = prev);
+	}
+	while (next != null) {
+		siblings.push(next);
+		({ next } = next);
+	}
+	return siblings;
 }
 /**
  * Gets an attribute from an element.
@@ -55,8 +54,8 @@ export function getSiblings(elem) {
  * @returns The element's attribute value, or `undefined`.
  */
 export function getAttributeValue(elem, name) {
-    var _a;
-    return (_a = elem.attribs) === null || _a === void 0 ? void 0 : _a[name];
+	var _a;
+	return (_a = elem.attribs) === null || _a === void 0 ? void 0 : _a[name];
 }
 /**
  * Checks whether an element has an attribute.
@@ -67,9 +66,11 @@ export function getAttributeValue(elem, name) {
  * @returns Returns whether `elem` has the attribute `name`.
  */
 export function hasAttrib(elem, name) {
-    return (elem.attribs != null &&
-        Object.prototype.hasOwnProperty.call(elem.attribs, name) &&
-        elem.attribs[name] != null);
+	return (
+		elem.attribs != null &&
+		Object.hasOwn(elem.attribs, name) &&
+		elem.attribs[name] != null
+	);
 }
 /**
  * Get the tag name of an element.
@@ -79,7 +80,7 @@ export function hasAttrib(elem, name) {
  * @returns The tag name of `elem`.
  */
 export function getName(elem) {
-    return elem.name;
+	return elem.name;
 }
 /**
  * Returns the next element sibling of a node.
@@ -90,10 +91,9 @@ export function getName(elem) {
  * sibling.
  */
 export function nextElementSibling(elem) {
-    let { next } = elem;
-    while (next !== null && !isTag(next))
-        ({ next } = next);
-    return next;
+	let { next } = elem;
+	while (next !== null && !isTag(next)) ({ next } = next);
+	return next;
 }
 /**
  * Returns the previous element sibling of a node.
@@ -104,9 +104,8 @@ export function nextElementSibling(elem) {
  * previous sibling.
  */
 export function prevElementSibling(elem) {
-    let { prev } = elem;
-    while (prev !== null && !isTag(prev))
-        ({ prev } = prev);
-    return prev;
+	let { prev } = elem;
+	while (prev !== null && !isTag(prev)) ({ prev } = prev);
+	return prev;
 }
 //# sourceMappingURL=traversal.js.map

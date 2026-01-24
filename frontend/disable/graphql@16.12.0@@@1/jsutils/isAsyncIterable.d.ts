@@ -3,5 +3,5 @@
  * implementing a `Symbol.asyncIterator` method.
  */
 export declare function isAsyncIterable(
-  maybeAsyncIterable: any,
+	maybeAsyncIterable: any,
 ): maybeAsyncIterable is AsyncIterable<unknown>;

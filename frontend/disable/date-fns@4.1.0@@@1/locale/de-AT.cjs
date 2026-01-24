@@ -15,14 +15,14 @@ var _index5 = require("./de-AT/_lib/localize.cjs"); // difference to 'de' locale
  * @author Christoph Tobias Stenglein [@cstenglein](https://github.com/cstenglein)
  */
 const deAT = (exports.deAT = {
-  code: "de-AT",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index5.localize,
-  match: _index4.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "de-AT",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index5.localize,
+	match: _index4.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 });

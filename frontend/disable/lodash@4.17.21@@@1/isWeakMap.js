@@ -1,8 +1,8 @@
-var getTag = require('./_getTag'),
-    isObjectLike = require('./isObjectLike');
+var getTag = require("./_getTag"),
+	isObjectLike = require("./isObjectLike");
 
 /** `Object#toString` result references. */
-var weakMapTag = '[object WeakMap]';
+var weakMapTag = "[object WeakMap]";
 
 /**
  * Checks if `value` is classified as a `WeakMap` object.
@@ -22,7 +22,7 @@ var weakMapTag = '[object WeakMap]';
  * // => false
  */
 function isWeakMap(value) {
-  return isObjectLike(value) && getTag(value) == weakMapTag;
+	return isObjectLike(value) && getTag(value) == weakMapTag;
 }
 
 module.exports = isWeakMap;

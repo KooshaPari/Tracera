@@ -13,7 +13,11 @@ export declare function node_stringReplaceAll(str: string, parent: Node): void;
  * @param document - the document to own the cloned node
  * @param cloneChildrenFlag - whether to clone node's children
  */
-export declare function node_clone(node: Node, document?: Document | null, cloneChildrenFlag?: boolean): Node;
+export declare function node_clone(
+	node: Node,
+	document?: Document | null,
+	cloneChildrenFlag?: boolean,
+): Node;
 /**
  * Determines if two nodes can be considered equal.
  *
@@ -29,7 +33,10 @@ export declare function node_equals(a: Node, b: Node): boolean;
  * @param qualifiedName - qualified name
  * @param root - root node
  */
-export declare function node_listOfElementsWithQualifiedName(qualifiedName: string, root: Node): HTMLCollection;
+export declare function node_listOfElementsWithQualifiedName(
+	qualifiedName: string,
+	root: Node,
+): HTMLCollection;
 /**
  * Returns a collection of elements with the given namespace which are
  * descendants of the given root node.
@@ -39,7 +46,11 @@ export declare function node_listOfElementsWithQualifiedName(qualifiedName: stri
  * @param localName - local name
  * @param root - root node
  */
-export declare function node_listOfElementsWithNamespace(namespace: string | null, localName: string, root: Node): HTMLCollection;
+export declare function node_listOfElementsWithNamespace(
+	namespace: string | null,
+	localName: string,
+	root: Node,
+): HTMLCollection;
 /**
  * Returns a collection of elements with the given class names which are
  * descendants of the given root node.
@@ -49,7 +60,10 @@ export declare function node_listOfElementsWithNamespace(namespace: string | nul
  * @param localName - local name
  * @param root - root node
  */
-export declare function node_listOfElementsWithClassNames(classNames: string, root: Node): HTMLCollection;
+export declare function node_listOfElementsWithClassNames(
+	classNames: string,
+	root: Node,
+): HTMLCollection;
 /**
  * Searches for a namespace prefix associated with the given namespace
  * starting from the given element through its ancestors.
@@ -57,7 +71,10 @@ export declare function node_listOfElementsWithClassNames(classNames: string, ro
  * @param element - an element node to start searching at
  * @param namespace - namespace to search for
  */
-export declare function node_locateANamespacePrefix(element: Element, namespace: string | null): string | null;
+export declare function node_locateANamespacePrefix(
+	element: Element,
+	namespace: string | null,
+): string | null;
 /**
  * Searches for a namespace associated with the given namespace prefix
  * starting from the given node through its ancestors.
@@ -65,4 +82,7 @@ export declare function node_locateANamespacePrefix(element: Element, namespace:
  * @param node - a node to start searching at
  * @param prefix - namespace prefix to search for
  */
-export declare function node_locateANamespace(node: Node, prefix: string | null): string | null;
+export declare function node_locateANamespace(
+	node: Node,
+	prefix: string | null,
+): string | null;

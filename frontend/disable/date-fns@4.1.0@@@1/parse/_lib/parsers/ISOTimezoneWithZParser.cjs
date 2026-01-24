@@ -9,49 +9,49 @@ var _utils = require("../utils.cjs");
 
 // Timezone (ISO-8601. +00:00 is `'Z'`)
 class ISOTimezoneWithZParser extends _Parser.Parser {
-  priority = 10;
+	priority = 10;
 
-  parse(dateString, token) {
-    switch (token) {
-      case "X":
-        return (0, _utils.parseTimezonePattern)(
-          _constants.timezonePatterns.basicOptionalMinutes,
-          dateString,
-        );
-      case "XX":
-        return (0, _utils.parseTimezonePattern)(
-          _constants.timezonePatterns.basic,
-          dateString,
-        );
-      case "XXXX":
-        return (0, _utils.parseTimezonePattern)(
-          _constants.timezonePatterns.basicOptionalSeconds,
-          dateString,
-        );
-      case "XXXXX":
-        return (0, _utils.parseTimezonePattern)(
-          _constants.timezonePatterns.extendedOptionalSeconds,
-          dateString,
-        );
-      case "XXX":
-      default:
-        return (0, _utils.parseTimezonePattern)(
-          _constants.timezonePatterns.extended,
-          dateString,
-        );
-    }
-  }
+	parse(dateString, token) {
+		switch (token) {
+			case "X":
+				return (0, _utils.parseTimezonePattern)(
+					_constants.timezonePatterns.basicOptionalMinutes,
+					dateString,
+				);
+			case "XX":
+				return (0, _utils.parseTimezonePattern)(
+					_constants.timezonePatterns.basic,
+					dateString,
+				);
+			case "XXXX":
+				return (0, _utils.parseTimezonePattern)(
+					_constants.timezonePatterns.basicOptionalSeconds,
+					dateString,
+				);
+			case "XXXXX":
+				return (0, _utils.parseTimezonePattern)(
+					_constants.timezonePatterns.extendedOptionalSeconds,
+					dateString,
+				);
+			case "XXX":
+			default:
+				return (0, _utils.parseTimezonePattern)(
+					_constants.timezonePatterns.extended,
+					dateString,
+				);
+		}
+	}
 
-  set(date, flags, value) {
-    if (flags.timestampIsSet) return date;
-    return (0, _index.constructFrom)(
-      date,
-      date.getTime() -
-        (0, _index2.getTimezoneOffsetInMilliseconds)(date) -
-        value,
-    );
-  }
+	set(date, flags, value) {
+		if (flags.timestampIsSet) return date;
+		return (0, _index.constructFrom)(
+			date,
+			date.getTime() -
+				(0, _index2.getTimezoneOffsetInMilliseconds)(date) -
+				value,
+		);
+	}
 
-  incompatibleTokens = ["t", "T", "x"];
+	incompatibleTokens = ["t", "T", "x"];
 }
 exports.ISOTimezoneWithZParser = ISOTimezoneWithZParser;

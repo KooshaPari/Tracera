@@ -1,13 +1,17 @@
-import { outdent } from 'outdent';
-import { bundleDocument } from '../../bundle';
-import { BaseResolver } from '../../resolve';
-import { makeConfig, parseYamlToDocument, yamlSerializer } from '../../../__tests__/utils';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	yamlSerializer,
+} from "../../../__tests__/utils";
+import { bundleDocument } from "../../bundle";
+import { BaseResolver } from "../../resolve";
 
-describe('oas3 filter-out', () => {
-  expect.addSnapshotSerializer(yamlSerializer);
+describe("oas3 filter-out", () => {
+	expect.addSnapshotSerializer(yamlSerializer);
 
-  const inputDoc = parseYamlToDocument(
-    outdent`
+	const inputDoc = parseYamlToDocument(
+		outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -27,12 +31,12 @@ describe('oas3 filter-out', () => {
               callbacks:
                 x-access: protected
                 orderInProgress:
-                  x-internal: true`
-  );
+                  x-internal: true`,
+	);
 
-  it('should remove /pet path and y parameter', async () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("should remove /pet path and y parameter", async () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         /pet:
@@ -47,17 +51,19 @@ describe('oas3 filter-out', () => {
           y:
             x-access: private
             name: y  
-    `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDocument,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: { 'filter-out': { property: 'x-access', value: 'private' } },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+    `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDocument,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-out": { property: "x-access", value: "private" },
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
           openapi: 3.0.0
           components:
             parameters:
@@ -65,24 +71,24 @@ describe('oas3 filter-out', () => {
                 name: x
 
                 `);
-  });
+	});
 
-  it('should remove only /order path', async () => {
-    const { bundle: res } = await bundleDocument({
-      document: inputDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-out': {
-            property: 'x-audience',
-            value: ['Private', 'Protected'],
-            matchStrategy: 'all',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+	it("should remove only /order path", async () => {
+		const { bundle: res } = await bundleDocument({
+			document: inputDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-out": {
+						property: "x-audience",
+						value: ["Private", "Protected"],
+						matchStrategy: "all",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /pet:
@@ -96,33 +102,33 @@ describe('oas3 filter-out', () => {
       components: {}
       
       `);
-  });
+	});
 
-  it('should remove all paths', async () => {
-    const { bundle: res } = await bundleDocument({
-      document: inputDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-out': {
-            property: 'x-audience',
-            value: ['Private', 'Protected'],
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+	it("should remove all paths", async () => {
+		const { bundle: res } = await bundleDocument({
+			document: inputDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-out": {
+						property: "x-audience",
+						value: ["Private", "Protected"],
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
         openapi: 3.0.0
         components: {}
         
         `);
-  });
+	});
 
-  it('should remove requestBody', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should remove requestBody", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         /pet:
@@ -136,23 +142,23 @@ describe('oas3 filter-out', () => {
                     type: object
       components: {}
             
-        `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-out': {
-            property: 'x-access',
-            value: 'private',
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+        `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-out": {
+						property: "x-access",
+						value: "private",
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /pet:
@@ -161,11 +167,11 @@ describe('oas3 filter-out', () => {
       components: {}
 
     `);
-  });
+	});
 
-  it('should remove /pet path and /my/path/false path', async () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("should remove /pet path and /my/path/false path", async () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         /pet:
@@ -190,17 +196,17 @@ describe('oas3 filter-out', () => {
           x:
             name: x
             
-            `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDocument,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: { 'filter-out': { property: 'x-prop', value: false } },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+            `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDocument,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "filter-out": { property: "x-prop", value: false } },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /my/path/null:
@@ -215,11 +221,11 @@ describe('oas3 filter-out', () => {
             name: x
 
             `);
-  });
+	});
 
-  it('should remove /my/path/null path ', async () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("should remove /my/path/null path ", async () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         /pet:
@@ -245,17 +251,17 @@ describe('oas3 filter-out', () => {
           x:
             name: x
             
-            `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDocument,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: { 'filter-out': { property: 'x-prop', value: null } },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+            `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDocument,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "filter-out": { property: "x-prop", value: null } },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /pet:
@@ -276,13 +282,13 @@ describe('oas3 filter-out', () => {
             name: x
 
             `);
-  });
+	});
 });
 
-describe('oas2 filter-out', () => {
-  it('should clean all parameters and responses ', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+describe("oas2 filter-out", () => {
+	it("should clean all parameters and responses ", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         host: api.instagram.com
         paths:
@@ -309,23 +315,23 @@ describe('oas2 filter-out', () => {
             '200':
                   description: List of recent media entries.
                   x-access: [protected, public]            
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-out': {
-            property: 'x-access',
-            value: ['private', 'protected'],
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-out": {
+						property: "x-access",
+						value: ["private", "protected"],
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       swagger: '2.0'
       host: api.instagram.com
       paths:
@@ -340,5 +346,5 @@ describe('oas2 filter-out', () => {
               - public
 
     `);
-  });
+	});
 });

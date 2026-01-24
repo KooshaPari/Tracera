@@ -19,83 +19,83 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var common = require('./common');
-var assert = require('assert');
-var events = require('../');
+var common = require("./common");
+var assert = require("assert");
+var events = require("../");
 
 // Redirect warning output to tape.
 var consoleWarn = console.warn;
 console.warn = common.test.comment;
 
-common.test.on('end', function () {
-  console.warn = consoleWarn;
+common.test.on("end", () => {
+	console.warn = consoleWarn;
 });
 
 // default
 {
-  var e = new events.EventEmitter();
+	var e = new events.EventEmitter();
 
-  for (var i = 0; i < 10; i++) {
-    e.on('default', common.mustNotCall());
-  }
-  assert.ok(!e._events['default'].hasOwnProperty('warned'));
-  e.on('default', common.mustNotCall());
-  assert.ok(e._events['default'].warned);
+	for (var i = 0; i < 10; i++) {
+		e.on("default", common.mustNotCall());
+	}
+	assert.ok(!Object.hasOwn(e._events["default"], "warned"));
+	e.on("default", common.mustNotCall());
+	assert.ok(e._events["default"].warned);
 
-  // specific
-  e.setMaxListeners(5);
-  for (var i = 0; i < 5; i++) {
-    e.on('specific', common.mustNotCall());
-  }
-  assert.ok(!e._events['specific'].hasOwnProperty('warned'));
-  e.on('specific', common.mustNotCall());
-  assert.ok(e._events['specific'].warned);
+	// specific
+	e.setMaxListeners(5);
+	for (var i = 0; i < 5; i++) {
+		e.on("specific", common.mustNotCall());
+	}
+	assert.ok(!Object.hasOwn(e._events["specific"], "warned"));
+	e.on("specific", common.mustNotCall());
+	assert.ok(e._events["specific"].warned);
 
-  // only one
-  e.setMaxListeners(1);
-  e.on('only one', common.mustNotCall());
-  assert.ok(!e._events['only one'].hasOwnProperty('warned'));
-  e.on('only one', common.mustNotCall());
-  assert.ok(e._events['only one'].hasOwnProperty('warned'));
+	// only one
+	e.setMaxListeners(1);
+	e.on("only one", common.mustNotCall());
+	assert.ok(!Object.hasOwn(e._events["only one"], "warned"));
+	e.on("only one", common.mustNotCall());
+	assert.ok(Object.hasOwn(e._events["only one"], "warned"));
 
-  // unlimited
-  e.setMaxListeners(0);
-  for (var i = 0; i < 1000; i++) {
-    e.on('unlimited', common.mustNotCall());
-  }
-  assert.ok(!e._events['unlimited'].hasOwnProperty('warned'));
+	// unlimited
+	e.setMaxListeners(0);
+	for (var i = 0; i < 1000; i++) {
+		e.on("unlimited", common.mustNotCall());
+	}
+	assert.ok(!Object.hasOwn(e._events["unlimited"], "warned"));
 }
 
 // process-wide
 {
-  events.EventEmitter.defaultMaxListeners = 42;
-  var e = new events.EventEmitter();
+	events.EventEmitter.defaultMaxListeners = 42;
+	var e = new events.EventEmitter();
 
-  for (var i = 0; i < 42; ++i) {
-    e.on('fortytwo', common.mustNotCall());
-  }
-  assert.ok(!e._events['fortytwo'].hasOwnProperty('warned'));
-  e.on('fortytwo', common.mustNotCall());
-  assert.ok(e._events['fortytwo'].hasOwnProperty('warned'));
-  delete e._events['fortytwo'].warned;
+	for (var i = 0; i < 42; ++i) {
+		e.on("fortytwo", common.mustNotCall());
+	}
+	assert.ok(!Object.hasOwn(e._events["fortytwo"], "warned"));
+	e.on("fortytwo", common.mustNotCall());
+	assert.ok(Object.hasOwn(e._events["fortytwo"], "warned"));
+	delete e._events["fortytwo"].warned;
 
-  events.EventEmitter.defaultMaxListeners = 44;
-  e.on('fortytwo', common.mustNotCall());
-  assert.ok(!e._events['fortytwo'].hasOwnProperty('warned'));
-  e.on('fortytwo', common.mustNotCall());
-  assert.ok(e._events['fortytwo'].hasOwnProperty('warned'));
+	events.EventEmitter.defaultMaxListeners = 44;
+	e.on("fortytwo", common.mustNotCall());
+	assert.ok(!Object.hasOwn(e._events["fortytwo"], "warned"));
+	e.on("fortytwo", common.mustNotCall());
+	assert.ok(Object.hasOwn(e._events["fortytwo"], "warned"));
 }
 
 // but _maxListeners still has precedence over defaultMaxListeners
 {
-  events.EventEmitter.defaultMaxListeners = 42;
-  var e = new events.EventEmitter();
-  e.setMaxListeners(1);
-  e.on('uno', common.mustNotCall());
-  assert.ok(!e._events['uno'].hasOwnProperty('warned'));
-  e.on('uno', common.mustNotCall());
-  assert.ok(e._events['uno'].hasOwnProperty('warned'));
+	events.EventEmitter.defaultMaxListeners = 42;
+	var e = new events.EventEmitter();
+	e.setMaxListeners(1);
+	e.on("uno", common.mustNotCall());
+	assert.ok(!Object.hasOwn(e._events["uno"], "warned"));
+	e.on("uno", common.mustNotCall());
+	assert.ok(Object.hasOwn(e._events["uno"], "warned"));
 
-  // chainable
-  assert.strictEqual(e, e.setMaxListeners(1));
+	// chainable
+	assert.strictEqual(e, e.setMaxListeners(1));
 }

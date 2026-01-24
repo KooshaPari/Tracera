@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Mon Dec 01 2014 22:15:45.000
  */
 function startOfSecond(date, options) {
-  const date_ = (0, _index.toDate)(date, options?.in);
-  date_.setMilliseconds(0);
-  return date_;
+	const date_ = (0, _index.toDate)(date, options?.in);
+	date_.setMilliseconds(0);
+	return date_;
 }

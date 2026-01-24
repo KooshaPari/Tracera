@@ -1,15 +1,15 @@
-import { type CheerioAPI, getLoad } from './load.js';
-import { getParse } from './parse.js';
-import { renderWithParse5, parseWithParse5 } from './parsers/parse5-adapter.js';
-import type { CheerioOptions } from './options.js';
-import renderWithHtmlparser2 from 'dom-serializer';
-import { parseDocument as parseWithHtmlparser2 } from 'htmlparser2';
-import type { AnyNode } from 'domhandler';
+import renderWithHtmlparser2 from "dom-serializer";
+import type { AnyNode } from "domhandler";
+import { parseDocument as parseWithHtmlparser2 } from "htmlparser2";
+import { type CheerioAPI, getLoad } from "./load.js";
+import type { CheerioOptions } from "./options.js";
+import { getParse } from "./parse.js";
+import { parseWithParse5, renderWithParse5 } from "./parsers/parse5-adapter.js";
 
 const parse = getParse((content, options, isDocument, context) =>
-  options._useHtmlParser2
-    ? parseWithHtmlparser2(content, options)
-    : parseWithParse5(content, options, isDocument, context),
+	options._useHtmlParser2
+		? parseWithHtmlparser2(content, options)
+		: parseWithParse5(content, options, isDocument, context),
 );
 
 // Duplicate docs due to https://github.com/TypeStrong/typedoc/issues/1616
@@ -29,11 +29,11 @@ const parse = getParse((content, options, isDocument, context) =>
  * @see {@link https://cheerio.js.org/docs/basics/loading#load} for additional usage information.
  */
 export const load: (
-  content: string | AnyNode | AnyNode[] | Buffer,
-  options?: CheerioOptions | null,
-  isDocument?: boolean,
+	content: string | AnyNode | AnyNode[] | Buffer,
+	options?: CheerioOptions | null,
+	isDocument?: boolean,
 ) => CheerioAPI = getLoad(parse, (dom, options) =>
-  options._useHtmlParser2
-    ? renderWithHtmlparser2(dom, options)
-    : renderWithParse5(dom),
+	options._useHtmlParser2
+		? renderWithHtmlparser2(dom, options)
+		: renderWithParse5(dom),
 );

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/weak-set/from');
+"use strict";
+module.exports = require("../../full/weak-set/from");

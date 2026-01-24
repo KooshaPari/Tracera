@@ -22,6 +22,6 @@ export interface GetDaysInYearOptions extends ContextOptions<Date> {}
  * //=> 366
  */
 export declare function getDaysInYear(
-  date: DateArg<Date> & {},
-  options?: GetDaysInYearOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetDaysInYearOptions | undefined,
 ): number;

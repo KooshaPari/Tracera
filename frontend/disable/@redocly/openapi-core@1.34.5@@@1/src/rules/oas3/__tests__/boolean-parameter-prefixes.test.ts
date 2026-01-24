@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { lintDocument } from '../../../lint';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('oas3 boolean-parameter-prefixes', () => {
-  it('should report on boolean param without prefix', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("oas3 boolean-parameter-prefixes", () => {
+	it("should report on boolean param without prefix", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -16,16 +20,18 @@ describe('oas3 boolean-parameter-prefixes', () => {
               schema:
                 type: boolean
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'boolean-parameter-prefixes': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "boolean-parameter-prefixes": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -42,11 +48,11 @@ describe('oas3 boolean-parameter-prefixes', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on boolean param with prefix', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on boolean param with prefix", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test':
@@ -68,21 +74,23 @@ describe('oas3 boolean-parameter-prefixes', () => {
                   schema:
                     type: boolean
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'boolean-parameter-prefixes': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "boolean-parameter-prefixes": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on boolean param with custom prefix', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on boolean param with custom prefix", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test':
@@ -92,22 +100,22 @@ describe('oas3 boolean-parameter-prefixes', () => {
                 schema:
                   type: boolean
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'boolean-parameter-prefixes': {
-            severity: 'error',
-            prefixes: ['should'],
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"boolean-parameter-prefixes": {
+						severity: "error",
+						prefixes: ["should"],
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

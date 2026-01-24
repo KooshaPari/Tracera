@@ -100,21 +100,21 @@ import { toDate } from "./toDate.js";
  */
 
 export function intlFormat(date, formatOrLocale, localeOptions) {
-  let formatOptions;
+	let formatOptions;
 
-  if (isFormatOptions(formatOrLocale)) {
-    formatOptions = formatOrLocale;
-  } else {
-    localeOptions = formatOrLocale;
-  }
+	if (isFormatOptions(formatOrLocale)) {
+		formatOptions = formatOrLocale;
+	} else {
+		localeOptions = formatOrLocale;
+	}
 
-  return new Intl.DateTimeFormat(localeOptions?.locale, formatOptions).format(
-    toDate(date),
-  );
+	return new Intl.DateTimeFormat(localeOptions?.locale, formatOptions).format(
+		toDate(date),
+	);
 }
 
 function isFormatOptions(opts) {
-  return opts !== undefined && !("locale" in opts);
+	return opts !== undefined && !("locale" in opts);
 }
 
 // Fallback for modularized imports:

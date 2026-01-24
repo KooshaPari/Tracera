@@ -1,36 +1,31 @@
-
-task('foo', function () {
-  console.log('ran top-level foo');
+task("foo", () => {
+	console.log("ran top-level foo");
 });
 
-task('bar', function () {
-  console.log('ran top-level bar');
+task("bar", () => {
+	console.log("ran top-level bar");
 });
 
-task('zerb', function () {
-  console.log('ran zerb');
+task("zerb", () => {
+	console.log("ran zerb");
 });
 
-namespace('zooby', function () {
-  task('zerp', function () {});
+namespace("zooby", () => {
+	task("zerp", () => {});
 
-  task('derp', ['zerp'], function () {});
+	task("derp", ["zerp"], () => {});
 
-  namespace('frang', function () {
+	namespace("frang", () => {
+		namespace("w00t", () => {
+			task("bar", () => {
+				console.log("ran zooby:frang:w00t:bar");
+			});
+		});
 
-    namespace('w00t', function () {
-      task('bar', function () {
-        console.log('ran zooby:frang:w00t:bar');
-      });
-    });
-
-    task('asdf', function () {});
-  });
-
+		task("asdf", () => {});
+	});
 });
 
-namespace('hurr', function () {
-  namespace('durr');
+namespace("hurr", () => {
+	namespace("durr");
 });
-
-

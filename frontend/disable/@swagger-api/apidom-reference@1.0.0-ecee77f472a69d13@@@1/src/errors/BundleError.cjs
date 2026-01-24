@@ -7,4 +7,4 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 class BundleError extends _apidomError.ApiDOMError {}
-var _default = exports.default = BundleError;
+var _default = (exports.default = BundleError);

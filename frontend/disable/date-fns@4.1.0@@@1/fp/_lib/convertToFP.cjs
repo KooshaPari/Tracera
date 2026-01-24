@@ -14,7 +14,7 @@ exports.convertToFP = convertToFP;
  * @private
  */
 function convertToFP(fn, arity, curriedArgs = []) {
-  return curriedArgs.length >= arity
-    ? fn(...curriedArgs.slice(0, arity).reverse())
-    : (...args) => convertToFP(fn, arity, curriedArgs.concat(args));
+	return curriedArgs.length >= arity
+		? fn(...curriedArgs.slice(0, arity).reverse())
+		: (...args) => convertToFP(fn, arity, curriedArgs.concat(args));
 }

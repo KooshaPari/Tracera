@@ -29,10 +29,10 @@ var _index = require("./_lib/normalizeDates.cjs");
  * //=> 2
  */
 function differenceInCalendarYears(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return laterDate_.getFullYear() - earlierDate_.getFullYear();
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return laterDate_.getFullYear() - earlierDate_.getFullYear();
 }

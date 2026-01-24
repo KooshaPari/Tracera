@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/sort');
+"use strict";
+module.exports = require("../../full/instance/sort");

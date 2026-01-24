@@ -1,1 +1,1 @@
-export * from '../../dist/adapters/standalone';
+export * from "../../dist/adapters/standalone";

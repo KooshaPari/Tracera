@@ -15,14 +15,14 @@ var _index5 = require("./ckb/_lib/match.cjs");
  * @author Revan Sarbast [@Revan99]{@link https://github.com/Revan99}
  */
 const ckb = (exports.ckb = {
-  code: "ckb",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ckb",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

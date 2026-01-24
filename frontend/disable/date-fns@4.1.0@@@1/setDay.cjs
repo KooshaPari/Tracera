@@ -36,24 +36,24 @@ var _index3 = require("./toDate.cjs");
  * //=> Sun Sep 07 2014 00:00:00
  */
 function setDay(date, day, options) {
-  const defaultOptions = (0, _index.getDefaultOptions)();
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const defaultOptions = (0, _index.getDefaultOptions)();
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const date_ = (0, _index3.toDate)(date, options?.in);
-  const currentDay = date_.getDay();
+	const date_ = (0, _index3.toDate)(date, options?.in);
+	const currentDay = date_.getDay();
 
-  const remainder = day % 7;
-  const dayIndex = (remainder + 7) % 7;
+	const remainder = day % 7;
+	const dayIndex = (remainder + 7) % 7;
 
-  const delta = 7 - weekStartsOn;
-  const diff =
-    day < 0 || day > 6
-      ? day - ((currentDay + delta) % 7)
-      : ((dayIndex + delta) % 7) - ((currentDay + delta) % 7);
-  return (0, _index2.addDays)(date_, diff, options);
+	const delta = 7 - weekStartsOn;
+	const diff =
+		day < 0 || day > 6
+			? day - ((currentDay + delta) % 7)
+			: ((dayIndex + delta) % 7) - ((currentDay + delta) % 7);
+	return (0, _index2.addDays)(date_, diff, options);
 }

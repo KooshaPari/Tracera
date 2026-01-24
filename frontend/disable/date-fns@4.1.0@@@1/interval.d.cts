@@ -3,9 +3,9 @@ import type { ContextOptions, DateArg, NormalizedInterval } from "./types.js";
  * The {@link interval} function options.
  */
 export interface IntervalOptions<ContextDate extends Date = Date>
-  extends ContextOptions<ContextDate> {
-  /** Asserts that the interval is positive (start is after the end). */
-  assertPositive?: boolean;
+	extends ContextOptions<ContextDate> {
+	/** Asserts that the interval is positive (start is after the end). */
+	assertPositive?: boolean;
 }
 /**
  * The {@link interval} function result type. It resolves the proper data type.
@@ -14,17 +14,17 @@ export interface IntervalOptions<ContextDate extends Date = Date>
  * function return type.
  */
 export type IntervalResult<
-  StartDate extends DateArg<Date>,
-  EndDate extends DateArg<Date>,
-  Options extends IntervalOptions | undefined = undefined,
+	StartDate extends DateArg<Date>,
+	EndDate extends DateArg<Date>,
+	Options extends IntervalOptions | undefined = undefined,
 > = NormalizedInterval<
-  Options extends IntervalOptions<infer DateType extends Date>
-    ? DateType
-    : StartDate extends Date
-      ? StartDate
-      : EndDate extends Date
-        ? EndDate
-        : Date
+	Options extends IntervalOptions<infer DateType extends Date>
+		? DateType
+		: StartDate extends Date
+			? StartDate
+			: EndDate extends Date
+				? EndDate
+				: Date
 >;
 /**
  * @name interval
@@ -49,11 +49,11 @@ export type IntervalResult<
  * @returns The normalized and validated interval object.
  */
 export declare function interval<
-  StartDate extends DateArg<Date>,
-  EndDate extends DateArg<Date>,
-  Options extends IntervalOptions | undefined = undefined,
+	StartDate extends DateArg<Date>,
+	EndDate extends DateArg<Date>,
+	Options extends IntervalOptions | undefined = undefined,
 >(
-  start: StartDate,
-  end: EndDate,
-  options?: Options,
+	start: StartDate,
+	end: EndDate,
+	options?: Options,
 ): IntervalResult<StartDate, EndDate, Options>;

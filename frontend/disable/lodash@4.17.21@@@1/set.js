@@ -1,4 +1,4 @@
-var baseSet = require('./_baseSet');
+var baseSet = require("./_baseSet");
 
 /**
  * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
@@ -29,7 +29,7 @@ var baseSet = require('./_baseSet');
  * // => 5
  */
 function set(object, path, value) {
-  return object == null ? object : baseSet(object, path, value);
+	return object == null ? object : baseSet(object, path, value);
 }
 
 module.exports = set;

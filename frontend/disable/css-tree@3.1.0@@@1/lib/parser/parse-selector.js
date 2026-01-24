@@ -1,4 +1,4 @@
-import { createParser } from './create.js';
-import config from '../syntax/config/parser-selector.js';
+import config from "../syntax/config/parser-selector.js";
+import { createParser } from "./create.js";
 
 export default createParser(config);

@@ -1,10 +1,9 @@
 //.CommonJS
 var CSSOM = {
 	CSSRule: require("./CSSRule").CSSRule,
-	CSSRuleList: require("./CSSRuleList").CSSRuleList
+	CSSRuleList: require("./CSSRuleList").CSSRuleList,
 };
 ///CommonJS
-
 
 /**
  * @constructor
@@ -25,22 +24,25 @@ CSSOM.CSSHostRule.prototype.type = 1001;
 //CSSOM.CSSHostRule.prototype.deleteRule = CSSStyleSheet.prototype.deleteRule;
 
 Object.defineProperty(CSSOM.CSSHostRule.prototype, "cssText", {
-	get: function() {
+	get: function () {
 		var values = "";
 		var valuesArr = [" {"];
 		if (this.cssRules.length) {
-			valuesArr.push(this.cssRules.reduce(function(acc, rule){ 
-			if (rule.cssText !== "") {
-				acc.push(rule.cssText);
-			}
-			return acc;
-			}, []).join("\n  "));
+			valuesArr.push(
+				this.cssRules
+					.reduce((acc, rule) => {
+						if (rule.cssText !== "") {
+							acc.push(rule.cssText);
+						}
+						return acc;
+					}, [])
+					.join("\n  "),
+			);
 		}
 		values = valuesArr.join("\n  ") + "\n}";
 		return "@host" + values;
-	}
+	},
 });
-
 
 //.CommonJS
 exports.CSSHostRule = CSSOM.CSSHostRule;

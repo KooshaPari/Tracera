@@ -23,19 +23,19 @@
  * ```
  */
 export function encode(
-  obj: Record<string, any>,
-  stringify: (value: any) => string = String,
+	obj: Record<string, any>,
+	stringify: (value: any) => string = String,
 ): string {
-  const result = new URLSearchParams()
+	const result = new URLSearchParams();
 
-  for (const key in obj) {
-    const val = obj[key]
-    if (val !== undefined) {
-      result.set(key, stringify(val))
-    }
-  }
+	for (const key in obj) {
+		const val = obj[key];
+		if (val !== undefined) {
+			result.set(key, stringify(val));
+		}
+	}
 
-  return result.toString()
+	return result.toString();
 }
 
 /**
@@ -47,11 +47,11 @@ export function encode(
  * // Expected output: 123
  */
 function toValue(str: unknown) {
-  if (!str) return ''
+	if (!str) return "";
 
-  if (str === 'false') return false
-  if (str === 'true') return true
-  return +str * 0 === 0 && +str + '' === str ? +str : str
+	if (str === "false") return false;
+	if (str === "true") return true;
+	return +str * 0 === 0 && +str + "" === str ? +str : str;
 }
 
 /**
@@ -63,20 +63,20 @@ function toValue(str: unknown) {
  * // Expected output: { "token": "foo", "key": "value" }
  */
 export function decode(str: any): any {
-  const searchParams = new URLSearchParams(str)
+	const searchParams = new URLSearchParams(str);
 
-  const result: Record<string, unknown> = {}
+	const result: Record<string, unknown> = {};
 
-  for (const [key, value] of searchParams.entries()) {
-    const previousValue = result[key]
-    if (previousValue == null) {
-      result[key] = toValue(value)
-    } else if (Array.isArray(previousValue)) {
-      previousValue.push(toValue(value))
-    } else {
-      result[key] = [previousValue, toValue(value)]
-    }
-  }
+	for (const [key, value] of searchParams.entries()) {
+		const previousValue = result[key];
+		if (previousValue == null) {
+			result[key] = toValue(value);
+		} else if (Array.isArray(previousValue)) {
+			previousValue.push(toValue(value));
+		} else {
+			result[key] = [previousValue, toValue(value)];
+		}
+	}
 
-  return result
+	return result;
 }

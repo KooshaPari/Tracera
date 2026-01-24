@@ -1,4 +1,4 @@
-import {type Get} from 'type-fest';
+import { type Get } from "type-fest";
 
 /**
 Get the value of the property at the given path.
@@ -30,13 +30,21 @@ getProperty({foo: [{bar: 'unicorn'}]}, 'foo.0.bar');
 //=> 'unicorn'
 ```
 */
-export function getProperty<ObjectType, PathType extends string, DefaultValue = undefined>(
+export function getProperty<
+	ObjectType,
+	PathType extends string,
+	DefaultValue = undefined,
+>(
 	object: ObjectType,
 	path: PathType | ReadonlyArray<string | number>,
-	defaultValue?: DefaultValue
+	defaultValue?: DefaultValue,
 ): ObjectType extends Record<string, unknown> | unknown[]
-	? (unknown extends Get<ObjectType, PathType> ? DefaultValue : Get<ObjectType, PathType>)
-	: DefaultValue extends undefined ? unknown : DefaultValue;
+	? unknown extends Get<ObjectType, PathType>
+		? DefaultValue
+		: Get<ObjectType, PathType>
+	: DefaultValue extends undefined
+		? unknown
+		: DefaultValue;
 
 /**
 Set the property at the given path to the given value.
@@ -72,10 +80,10 @@ console.log(object);
 //=> {foo: {bar: 'b', baz: 'x', biz: ['a'], items: ['first']}}
 ```
 */
-export function setProperty<ObjectType extends (Record<string, any> | unknown[])>(
+export function setProperty<ObjectType extends Record<string, any> | unknown[]>(
 	object: ObjectType,
 	path: string | ReadonlyArray<string | number>,
-	value: unknown
+	value: unknown,
 ): ObjectType;
 
 /**
@@ -92,7 +100,10 @@ hasProperty({foo: {bar: 'unicorn'}}, 'foo.bar');
 //=> true
 ```
 */
-export function hasProperty(object: Record<string, any> | unknown[] | undefined, path: string | ReadonlyArray<string | number>): boolean;
+export function hasProperty(
+	object: Record<string, any> | unknown[] | undefined,
+	path: string | ReadonlyArray<string | number>,
+): boolean;
 
 /**
 Delete the property at the given path.
@@ -116,7 +127,10 @@ console.log(object);
 //=> {foo: {bar: {y: 'x'}}}
 ```
 */
-export function deleteProperty(object: Record<string, any> | unknown[], path: string | ReadonlyArray<string | number>): boolean;
+export function deleteProperty(
+	object: Record<string, any> | unknown[],
+	path: string | ReadonlyArray<string | number>,
+): boolean;
 
 /**
 Escape special characters in a path. Useful for sanitizing user input.
@@ -195,7 +209,10 @@ stringifyPath(['foo', 0, 'bar'], {preferDotForIndices: true});
 //=> 'foo.0.bar'
 ```
 */
-export function stringifyPath(pathSegments: ReadonlyArray<string | number>, options?: {preferDotForIndices?: boolean}): string;
+export function stringifyPath(
+	pathSegments: ReadonlyArray<string | number>,
+	options?: { preferDotForIndices?: boolean },
+): string;
 
 /**
 Returns an array of every path. Non-empty plain objects and arrays are deeply recursed and are not themselves included.
@@ -257,4 +274,6 @@ unflatten(flat);
 //=> }
 ```
 */
-export function unflatten(object: Record<string, unknown>): Record<string, unknown>;
+export function unflatten(
+	object: Record<string, unknown>,
+): Record<string, unknown>;

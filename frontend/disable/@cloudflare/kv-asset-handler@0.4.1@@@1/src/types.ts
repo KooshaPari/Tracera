@@ -37,7 +37,7 @@ export class KVError extends Error {
 export class MethodNotAllowedError extends KVError {
 	constructor(
 		message: string = `Not a valid request method`,
-		status: number = 405
+		status: number = 405,
 	) {
 		super(message, status);
 	}
@@ -50,7 +50,7 @@ export class NotFoundError extends KVError {
 export class InternalError extends KVError {
 	constructor(
 		message: string = `Internal Error in KV Asset Handler`,
-		status: number = 500
+		status: number = 500,
 	) {
 		super(message, status);
 	}

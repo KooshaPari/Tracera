@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> 1
  */
 function getMonth(date, options) {
-  return (0, _index.toDate)(date, options?.in).getMonth();
+	return (0, _index.toDate)(date, options?.in).getMonth();
 }

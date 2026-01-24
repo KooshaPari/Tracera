@@ -55,9 +55,9 @@ class Link(Base, TimestampMixin):
     )
 
     link_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    link_metadata: Mapped[dict] = mapped_column(JSONType, nullable=False, default=dict)
+    link_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: object) -> None:
         if "type" in kwargs and "link_type" not in kwargs:
             kwargs["link_type"] = kwargs.pop("type")
         if "metadata" in kwargs and "link_metadata" not in kwargs:
@@ -68,7 +68,7 @@ class Link(Base, TimestampMixin):
             kwargs["target_item_id"] = kwargs.pop("target_id")
         super().__init__(**kwargs)
 
-    def __getattribute__(self, name):
+    def __getattribute__(self, name: str) -> object:
         if name == "type":
             return object.__getattribute__(self, "link_type")
         if name == "metadata":
@@ -79,7 +79,7 @@ class Link(Base, TimestampMixin):
             return object.__getattribute__(self, "target_item_id")
         return super().__getattribute__(name)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: object) -> None:
         if name == "type":
             name = "link_type"
         if name == "metadata":

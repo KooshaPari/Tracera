@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var util_1 = require("@oozcitak/util");
 // Import implementation classes
@@ -60,7 +59,8 @@ var NonDocumentTypeChildNodeImpl_1 = require("./NonDocumentTypeChildNodeImpl");
 var NonElementParentNodeImpl_1 = require("./NonElementParentNodeImpl");
 var ParentNodeImpl_1 = require("./ParentNodeImpl");
 var ProcessingInstructionImpl_1 = require("./ProcessingInstructionImpl");
-exports.ProcessingInstruction = ProcessingInstructionImpl_1.ProcessingInstructionImpl;
+exports.ProcessingInstruction =
+	ProcessingInstructionImpl_1.ProcessingInstructionImpl;
 var RangeImpl_1 = require("./RangeImpl");
 exports.Range = RangeImpl_1.RangeImpl;
 var ShadowRootImpl_1 = require("./ShadowRootImpl");
@@ -81,20 +81,47 @@ exports.XMLDocument = XMLDocumentImpl_1.XMLDocumentImpl;
 // Apply mixins
 // ChildNode
 util_1.applyMixin(ElementImpl_1.ElementImpl, ChildNodeImpl_1.ChildNodeImpl);
-util_1.applyMixin(CharacterDataImpl_1.CharacterDataImpl, ChildNodeImpl_1.ChildNodeImpl);
-util_1.applyMixin(DocumentTypeImpl_1.DocumentTypeImpl, ChildNodeImpl_1.ChildNodeImpl);
+util_1.applyMixin(
+	CharacterDataImpl_1.CharacterDataImpl,
+	ChildNodeImpl_1.ChildNodeImpl,
+);
+util_1.applyMixin(
+	DocumentTypeImpl_1.DocumentTypeImpl,
+	ChildNodeImpl_1.ChildNodeImpl,
+);
 // DocumentOrShadowRoot
-util_1.applyMixin(DocumentImpl_1.DocumentImpl, DocumentOrShadowRootImpl_1.DocumentOrShadowRootImpl);
-util_1.applyMixin(ShadowRootImpl_1.ShadowRootImpl, DocumentOrShadowRootImpl_1.DocumentOrShadowRootImpl);
+util_1.applyMixin(
+	DocumentImpl_1.DocumentImpl,
+	DocumentOrShadowRootImpl_1.DocumentOrShadowRootImpl,
+);
+util_1.applyMixin(
+	ShadowRootImpl_1.ShadowRootImpl,
+	DocumentOrShadowRootImpl_1.DocumentOrShadowRootImpl,
+);
 // NonDocumentTypeChildNode
-util_1.applyMixin(ElementImpl_1.ElementImpl, NonDocumentTypeChildNodeImpl_1.NonDocumentTypeChildNodeImpl);
-util_1.applyMixin(CharacterDataImpl_1.CharacterDataImpl, NonDocumentTypeChildNodeImpl_1.NonDocumentTypeChildNodeImpl);
+util_1.applyMixin(
+	ElementImpl_1.ElementImpl,
+	NonDocumentTypeChildNodeImpl_1.NonDocumentTypeChildNodeImpl,
+);
+util_1.applyMixin(
+	CharacterDataImpl_1.CharacterDataImpl,
+	NonDocumentTypeChildNodeImpl_1.NonDocumentTypeChildNodeImpl,
+);
 // NonElementParentNode
-util_1.applyMixin(DocumentImpl_1.DocumentImpl, NonElementParentNodeImpl_1.NonElementParentNodeImpl);
-util_1.applyMixin(DocumentFragmentImpl_1.DocumentFragmentImpl, NonElementParentNodeImpl_1.NonElementParentNodeImpl);
+util_1.applyMixin(
+	DocumentImpl_1.DocumentImpl,
+	NonElementParentNodeImpl_1.NonElementParentNodeImpl,
+);
+util_1.applyMixin(
+	DocumentFragmentImpl_1.DocumentFragmentImpl,
+	NonElementParentNodeImpl_1.NonElementParentNodeImpl,
+);
 // ParentNode
 util_1.applyMixin(DocumentImpl_1.DocumentImpl, ParentNodeImpl_1.ParentNodeImpl);
-util_1.applyMixin(DocumentFragmentImpl_1.DocumentFragmentImpl, ParentNodeImpl_1.ParentNodeImpl);
+util_1.applyMixin(
+	DocumentFragmentImpl_1.DocumentFragmentImpl,
+	ParentNodeImpl_1.ParentNodeImpl,
+);
 util_1.applyMixin(ElementImpl_1.ElementImpl, ParentNodeImpl_1.ParentNodeImpl);
 // Slotable
 util_1.applyMixin(TextImpl_1.TextImpl, SlotableImpl_1.SlotableImpl);

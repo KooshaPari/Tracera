@@ -1,7 +1,25 @@
-export { E as ExtractEventNames, H as HttpRequestEventMap, e as INTERNAL_REQUEST_ID_HEADER_NAME, I as IS_PATCHED_MODULE, i as Interceptor, c as InterceptorEventMap, h as InterceptorReadyState, d as InterceptorSubscription, R as RequestController, a as RequestControllerSource, b as RequestCredentials, f as deleteGlobalSymbol, g as getGlobalSymbol } from './Interceptor-dc0a39b5.js';
-export { a as BatchInterceptor, B as BatchInterceptorOptions, E as ExtractEventMapType } from './BatchInterceptor-cb9a2eee.js';
-import '@open-draft/logger';
-import 'strict-event-emitter';
+export {
+	E as ExtractEventNames,
+	H as HttpRequestEventMap,
+	e as INTERNAL_REQUEST_ID_HEADER_NAME,
+	I as IS_PATCHED_MODULE,
+	i as Interceptor,
+	c as InterceptorEventMap,
+	h as InterceptorReadyState,
+	d as InterceptorSubscription,
+	R as RequestController,
+	a as RequestControllerSource,
+	b as RequestCredentials,
+	f as deleteGlobalSymbol,
+	g as getGlobalSymbol,
+} from "./Interceptor-dc0a39b5.js";
+export {
+	a as BatchInterceptor,
+	B as BatchInterceptorOptions,
+	E as ExtractEventMapType,
+} from "./BatchInterceptor-cb9a2eee.js";
+import "@open-draft/logger";
+import "strict-event-emitter";
 
 /**
  * Generate a random ID string to represent a request.
@@ -20,28 +38,28 @@ declare function encodeBuffer(text: string): Uint8Array;
 declare function decodeBuffer(buffer: ArrayBuffer, encoding?: string): string;
 
 interface FetchResponseInit extends ResponseInit {
-    url?: string;
+	url?: string;
 }
 declare class FetchResponse extends Response {
-    /**
-     * Response status codes for responses that cannot have body.
-     * @see https://fetch.spec.whatwg.org/#statuses
-     */
-    static readonly STATUS_CODES_WITHOUT_BODY: number[];
-    static readonly STATUS_CODES_WITH_REDIRECT: number[];
-    static isConfigurableStatusCode(status: number): boolean;
-    static isRedirectResponse(status: number): boolean;
-    /**
-     * Returns a boolean indicating whether the given response status
-     * code represents a response that can have a body.
-     */
-    static isResponseWithBody(status: number): boolean;
-    static setUrl(url: string | undefined, response: Response): void;
-    /**
-     * Parses the given raw HTTP headers into a Fetch API `Headers` instance.
-     */
-    static parseRawHeaders(rawHeaders: Array<string>): Headers;
-    constructor(body?: BodyInit | null, init?: FetchResponseInit);
+	/**
+	 * Response status codes for responses that cannot have body.
+	 * @see https://fetch.spec.whatwg.org/#statuses
+	 */
+	static readonly STATUS_CODES_WITHOUT_BODY: number[];
+	static readonly STATUS_CODES_WITH_REDIRECT: number[];
+	static isConfigurableStatusCode(status: number): boolean;
+	static isRedirectResponse(status: number): boolean;
+	/**
+	 * Returns a boolean indicating whether the given response status
+	 * code represents a response that can have a body.
+	 */
+	static isResponseWithBody(status: number): boolean;
+	static setUrl(url: string | undefined, response: Response): void;
+	/**
+	 * Parses the given raw HTTP headers into a Fetch API `Headers` instance.
+	 */
+	static parseRawHeaders(rawHeaders: Array<string>): Headers;
+	constructor(body?: BodyInit | null, init?: FetchResponseInit);
 }
 
 /**
@@ -58,4 +76,11 @@ declare class FetchResponse extends Response {
  */
 declare function getRawRequest(request: Request): unknown | undefined;
 
-export { FetchResponse, createRequestId, decodeBuffer, encodeBuffer, getCleanUrl, getRawRequest };
+export {
+	FetchResponse,
+	createRequestId,
+	decodeBuffer,
+	encodeBuffer,
+	getCleanUrl,
+	getRawRequest,
+};

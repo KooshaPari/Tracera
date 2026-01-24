@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/iterator/windows');
+"use strict";
+module.exports = require("../../full/iterator/windows");

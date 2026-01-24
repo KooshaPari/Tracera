@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/instance/match-all');
+"use strict";
+var parent = require("../../stable/instance/match-all");
 
 module.exports = parent;

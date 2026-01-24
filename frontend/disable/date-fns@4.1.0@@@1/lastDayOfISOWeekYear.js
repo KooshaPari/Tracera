@@ -32,14 +32,14 @@ import { startOfISOWeek } from "./startOfISOWeek.js";
  * //=> Sun Jan 01 2006 00:00:00
  */
 export function lastDayOfISOWeekYear(date, options) {
-  const year = getISOWeekYear(date, options);
-  const fourthOfJanuary = constructFrom(options?.in || date, 0);
-  fourthOfJanuary.setFullYear(year + 1, 0, 4);
-  fourthOfJanuary.setHours(0, 0, 0, 0);
+	const year = getISOWeekYear(date, options);
+	const fourthOfJanuary = constructFrom(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(year + 1, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
 
-  const date_ = startOfISOWeek(fourthOfJanuary, options);
-  date_.setDate(date_.getDate() - 1);
-  return date_;
+	const date_ = startOfISOWeek(fourthOfJanuary, options);
+	date_.setDate(date_.getDate() - 1);
+	return date_;
 }
 
 // Fallback for modularized imports:

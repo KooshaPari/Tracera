@@ -24,7 +24,7 @@ import { addDays } from "./addDays.js";
  * //=> Fri Aug 22 2014 00:00:00
  */
 export function subDays(date, amount, options) {
-  return addDays(date, -amount, options);
+	return addDays(date, -amount, options);
 }
 
 // Fallback for modularized imports:

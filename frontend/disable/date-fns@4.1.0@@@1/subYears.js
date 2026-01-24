@@ -27,7 +27,7 @@ import { addYears } from "./addYears.js";
  * //=> Tue Sep 01 2009 00:00:00
  */
 export function subYears(date, amount, options) {
-  return addYears(date, -amount, options);
+	return addYears(date, -amount, options);
 }
 
 // Fallback for modularized imports:

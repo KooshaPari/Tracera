@@ -1,4 +1,4 @@
-import {Options as LocatePathOptions} from 'locate-path';
+import { Options as LocatePathOptions } from "locate-path";
 
 declare const stop: unique symbol;
 
@@ -40,7 +40,10 @@ declare const findUp: {
 	})();
 	```
 	*/
-	(name: string | string[], options?: findUp.Options): Promise<string | undefined>;
+	(
+		name: string | string[],
+		options?: findUp.Options,
+	): Promise<string | undefined>;
 
 	/**
 	Find a file or directory by walking up parent directories.
@@ -62,7 +65,10 @@ declare const findUp: {
 	})();
 	```
 	*/
-	(matcher: (directory: string) => (findUp.Match | Promise<findUp.Match>), options?: findUp.Options): Promise<string | undefined>;
+	(
+		matcher: (directory: string) => findUp.Match | Promise<findUp.Match>,
+		options?: findUp.Options,
+	): Promise<string | undefined>;
 
 	sync: {
 		/**
@@ -91,7 +97,10 @@ declare const findUp: {
 		//=> '/Users/sindresorhus'
 		```
 		*/
-		(matcher: (directory: string) => findUp.Match, options?: findUp.Options): string | undefined;
+		(
+			matcher: (directory: string) => findUp.Match,
+			options?: findUp.Options,
+		): string | undefined;
 
 		/**
 		Synchronously check if a path exists.
@@ -108,7 +117,7 @@ declare const findUp: {
 		```
 		*/
 		exists(path: string): boolean;
-	}
+	};
 
 	/**
 	Check if a path exists.

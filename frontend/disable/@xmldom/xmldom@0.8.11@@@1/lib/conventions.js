@@ -1,5 +1,3 @@
-'use strict'
-
 /**
  * Ponyfill for `Array.prototype.find` which is only available in ES6 runtimes.
  *
@@ -19,11 +17,11 @@ function find(list, predicate, ac) {
 	if (ac === undefined) {
 		ac = Array.prototype;
 	}
-	if (list && typeof ac.find === 'function') {
+	if (list && typeof ac.find === "function") {
 		return ac.find.call(list, predicate);
 	}
 	for (var i = 0; i < list.length; i++) {
-		if (Object.prototype.hasOwnProperty.call(list, i)) {
+		if (Object.hasOwn(list, i)) {
 			var item = list[i];
 			if (predicate.call(undefined, item, i, list)) {
 				return item;
@@ -49,9 +47,9 @@ function find(list, predicate, ac) {
  */
 function freeze(object, oc) {
 	if (oc === undefined) {
-		oc = Object
+		oc = Object;
 	}
-	return oc && typeof oc.freeze === 'function' ? oc.freeze(object) : object
+	return oc && typeof oc.freeze === "function" ? oc.freeze(object) : object;
 }
 
 /**
@@ -68,15 +66,15 @@ function freeze(object, oc) {
  * @see https://tc39.es/ecma262/multipage/fundamental-objects.html#sec-object.assign
  */
 function assign(target, source) {
-	if (target === null || typeof target !== 'object') {
-		throw new TypeError('target is not an object')
+	if (target === null || typeof target !== "object") {
+		throw new TypeError("target is not an object");
 	}
 	for (var key in source) {
-		if (Object.prototype.hasOwnProperty.call(source, key)) {
-			target[key] = source[key]
+		if (Object.hasOwn(source, key)) {
+			target[key] = source[key];
 		}
 	}
-	return target
+	return target;
 }
 
 /**
@@ -96,7 +94,7 @@ var MIME_TYPE = freeze({
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString MDN
 	 * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-domparser-parsefromstring WHATWG HTML Spec
 	 */
-	HTML: 'text/html',
+	HTML: "text/html",
 
 	/**
 	 * Helper method to check a mime type if it indicates an HTML document
@@ -108,9 +106,7 @@ var MIME_TYPE = freeze({
 	 * @see https://en.wikipedia.org/wiki/HTML Wikipedia
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString MDN
 	 * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-domparser-parsefromstring 	 */
-	isHTML: function (value) {
-		return value === MIME_TYPE.HTML
-	},
+	isHTML: (value) => value === MIME_TYPE.HTML,
 
 	/**
 	 * `application/xml`, the standard mime type for XML documents.
@@ -119,7 +115,7 @@ var MIME_TYPE = freeze({
 	 * @see https://tools.ietf.org/html/rfc7303#section-9.1 RFC 7303
 	 * @see https://en.wikipedia.org/wiki/XML_and_MIME Wikipedia
 	 */
-	XML_APPLICATION: 'application/xml',
+	XML_APPLICATION: "application/xml",
 
 	/**
 	 * `text/html`, an alias for `application/xml`.
@@ -128,7 +124,7 @@ var MIME_TYPE = freeze({
 	 * @see https://www.iana.org/assignments/media-types/text/xml IANA MimeType registration
 	 * @see https://en.wikipedia.org/wiki/XML_and_MIME Wikipedia
 	 */
-	XML_TEXT: 'text/xml',
+	XML_TEXT: "text/xml",
 
 	/**
 	 * `application/xhtml+xml`, indicates an XML document that has the default HTML namespace,
@@ -138,7 +134,7 @@ var MIME_TYPE = freeze({
 	 * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument WHATWG DOM Spec
 	 * @see https://en.wikipedia.org/wiki/XHTML Wikipedia
 	 */
-	XML_XHTML_APPLICATION: 'application/xhtml+xml',
+	XML_XHTML_APPLICATION: "application/xhtml+xml",
 
 	/**
 	 * `image/svg+xml`,
@@ -147,8 +143,8 @@ var MIME_TYPE = freeze({
 	 * @see https://www.w3.org/TR/SVG11/ W3C SVG 1.1
 	 * @see https://en.wikipedia.org/wiki/Scalable_Vector_Graphics Wikipedia
 	 */
-	XML_SVG_IMAGE: 'image/svg+xml',
-})
+	XML_SVG_IMAGE: "image/svg+xml",
+});
 
 /**
  * Namespaces that are used in this code base.
@@ -161,7 +157,7 @@ var NAMESPACE = freeze({
 	 *
 	 * @see http://www.w3.org/1999/xhtml
 	 */
-	HTML: 'http://www.w3.org/1999/xhtml',
+	HTML: "http://www.w3.org/1999/xhtml",
 
 	/**
 	 * Checks if `uri` equals `NAMESPACE.HTML`.
@@ -170,31 +166,29 @@ var NAMESPACE = freeze({
 	 *
 	 * @see NAMESPACE.HTML
 	 */
-	isHTML: function (uri) {
-		return uri === NAMESPACE.HTML
-	},
+	isHTML: (uri) => uri === NAMESPACE.HTML,
 
 	/**
 	 * The SVG namespace.
 	 *
 	 * @see http://www.w3.org/2000/svg
 	 */
-	SVG: 'http://www.w3.org/2000/svg',
+	SVG: "http://www.w3.org/2000/svg",
 
 	/**
 	 * The `xml:` namespace.
 	 *
 	 * @see http://www.w3.org/XML/1998/namespace
 	 */
-	XML: 'http://www.w3.org/XML/1998/namespace',
+	XML: "http://www.w3.org/XML/1998/namespace",
 
 	/**
 	 * The `xmlns:` namespace
 	 *
 	 * @see https://www.w3.org/2000/xmlns/
 	 */
-	XMLNS: 'http://www.w3.org/2000/xmlns/',
-})
+	XMLNS: "http://www.w3.org/2000/xmlns/",
+});
 
 exports.assign = assign;
 exports.find = find;

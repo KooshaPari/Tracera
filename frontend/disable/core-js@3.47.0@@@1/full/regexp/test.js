@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/regexp/test');
+"use strict";
+var parent = require("../../actual/regexp/test");
 
 module.exports = parent;

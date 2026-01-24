@@ -24,6 +24,6 @@ export interface GetISOWeekOptions extends ContextOptions<Date> {}
  * //=> 53
  */
 export declare function getISOWeek(
-  date: DateArg<Date> & {},
-  options?: GetISOWeekOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetISOWeekOptions | undefined,
 ): number;

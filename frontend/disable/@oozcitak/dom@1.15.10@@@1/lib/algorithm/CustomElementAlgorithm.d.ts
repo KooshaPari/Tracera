@@ -4,7 +4,9 @@ import { Element, Document, CustomElementDefinition } from "../dom/interfaces";
  *
  * @param name - a name string
  */
-export declare function customElement_isValidCustomElementName(name: string): boolean;
+export declare function customElement_isValidCustomElementName(
+	name: string,
+): boolean;
 /**
  * Determines if the given string is a valid element name.
  *
@@ -22,14 +24,19 @@ export declare function customElement_isVoidElementName(name: string): boolean;
  *
  * @param name - a name string
  */
-export declare function customElement_isValidShadowHostName(name: string): boolean;
+export declare function customElement_isValidShadowHostName(
+	name: string,
+): boolean;
 /**
  * Enqueues an upgrade reaction for a custom element.
  *
  * @param element - a custom element
  * @param definition - a custom element definition
  */
-export declare function customElement_enqueueACustomElementUpgradeReaction(element: Element, definition: CustomElementDefinition): void;
+export declare function customElement_enqueueACustomElementUpgradeReaction(
+	element: Element,
+	definition: CustomElementDefinition,
+): void;
 /**
  * Enqueues a callback reaction for a custom element.
  *
@@ -37,13 +44,20 @@ export declare function customElement_enqueueACustomElementUpgradeReaction(eleme
  * @param callbackName - name of the callback
  * @param args - callback arguments
  */
-export declare function customElement_enqueueACustomElementCallbackReaction(element: Element, callbackName: string, args: any[]): void;
+export declare function customElement_enqueueACustomElementCallbackReaction(
+	element: Element,
+	callbackName: string,
+	args: any[],
+): void;
 /**
  * Upgrade a custom element.
  *
  * @param element - a custom element
  */
-export declare function customElement_upgrade(definition: CustomElementDefinition, element: Element): void;
+export declare function customElement_upgrade(
+	definition: CustomElementDefinition,
+	element: Element,
+): void;
 /**
  * Tries to upgrade a custom element.
  *
@@ -58,4 +72,9 @@ export declare function customElement_tryToUpgrade(element: Element): void;
  * @param localName - element local name
  * @param is - an `is` value
  */
-export declare function customElement_lookUpACustomElementDefinition(document: Document, namespace: string | null, localName: string | null, is: string | null): CustomElementDefinition | null;
+export declare function customElement_lookUpACustomElementDefinition(
+	document: Document,
+	namespace: string | null,
+	localName: string | null,
+	is: string | null,
+): CustomElementDefinition | null;

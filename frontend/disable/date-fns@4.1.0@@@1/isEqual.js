@@ -22,7 +22,7 @@ import { toDate } from "./toDate.js";
  * //=> false
  */
 export function isEqual(leftDate, rightDate) {
-  return +toDate(leftDate) === +toDate(rightDate);
+	return +toDate(leftDate) === +toDate(rightDate);
 }
 
 // Fallback for modularized imports:

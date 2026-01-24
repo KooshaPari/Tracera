@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 /**
  * Executable definitions
  *
@@ -9,5 +9,5 @@ import type { ASTValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Executable-Definitions
  */
 export declare function ExecutableDefinitionsRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

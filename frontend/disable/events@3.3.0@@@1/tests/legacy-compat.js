@@ -1,16 +1,16 @@
 // sigh... life is hard
 if (!global.console) {
-    console = {}
+	console = {};
 }
 
-var fns = ['log', 'error', 'trace'];
-for (var i=0 ; i<fns.length ; ++i) {
-    var fn = fns[i];
-    if (!console[fn]) {
-        console[fn] = function() {};
-    }
+var fns = ["log", "error", "trace"];
+for (var i = 0; i < fns.length; ++i) {
+	var fn = fns[i];
+	if (!console[fn]) {
+		console[fn] = () => {};
+	}
 }
 
 if (!Array.isArray) {
-    Array.isArray = require('isarray');
+	Array.isArray = require("isarray");
 }

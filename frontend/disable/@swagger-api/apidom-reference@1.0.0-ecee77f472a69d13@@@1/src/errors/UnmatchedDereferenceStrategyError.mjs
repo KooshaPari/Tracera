@@ -1,4 +1,5 @@
 import DereferenceError from "./DereferenceError.mjs";
+
 /**
  * @public
  */

@@ -1,23 +1,24 @@
-var deburrLetter = require('./_deburrLetter'),
-    toString = require('./toString');
+var deburrLetter = require("./_deburrLetter"),
+	toString = require("./toString");
 
 /** Used to match Latin Unicode letters (excluding mathematical operators). */
 var reLatin = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g;
 
 /** Used to compose unicode character classes. */
-var rsComboMarksRange = '\\u0300-\\u036f',
-    reComboHalfMarksRange = '\\ufe20-\\ufe2f',
-    rsComboSymbolsRange = '\\u20d0-\\u20ff',
-    rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange;
+var rsComboMarksRange = "\\u0300-\\u036f",
+	reComboHalfMarksRange = "\\ufe20-\\ufe2f",
+	rsComboSymbolsRange = "\\u20d0-\\u20ff",
+	rsComboRange =
+		rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange;
 
 /** Used to compose unicode capture groups. */
-var rsCombo = '[' + rsComboRange + ']';
+var rsCombo = "[" + rsComboRange + "]";
 
 /**
  * Used to match [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks) and
  * [combining diacritical marks for symbols](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks_for_Symbols).
  */
-var reComboMark = RegExp(rsCombo, 'g');
+var reComboMark = RegExp(rsCombo, "g");
 
 /**
  * Deburrs `string` by converting
@@ -38,8 +39,10 @@ var reComboMark = RegExp(rsCombo, 'g');
  * // => 'deja vu'
  */
 function deburr(string) {
-  string = toString(string);
-  return string && string.replace(reLatin, deburrLetter).replace(reComboMark, '');
+	string = toString(string);
+	return (
+		string && string.replace(reLatin, deburrLetter).replace(reComboMark, "")
+	);
 }
 
 module.exports = deburr;

@@ -1,4 +1,4 @@
-'use strict';
-require('../../modules/esnext.math.rad-per-deg');
+"use strict";
+require("../../modules/esnext.math.rad-per-deg");
 
 module.exports = 180 / Math.PI;

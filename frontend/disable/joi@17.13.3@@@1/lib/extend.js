@@ -1,312 +1,297 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
+const Clone = require("@hapi/hoek/lib/clone");
 
-const Assert = require('@hapi/hoek/lib/assert');
-const Clone = require('@hapi/hoek/lib/clone');
-
-const Common = require('./common');
-const Messages = require('./messages');
-
+const Common = require("./common");
+const Messages = require("./messages");
 
 const internals = {};
 
+exports.type = (from, options) => {
+	const base = Object.getPrototypeOf(from);
+	const prototype = Clone(base);
+	const schema = from._assign(Object.create(prototype));
+	const def = Object.assign({}, options); // Shallow cloned
+	delete def.base;
 
-exports.type = function (from, options) {
+	prototype._definition = def;
 
-    const base = Object.getPrototypeOf(from);
-    const prototype = Clone(base);
-    const schema = from._assign(Object.create(prototype));
-    const def = Object.assign({}, options);                                 // Shallow cloned
-    delete def.base;
+	const parent = base._definition || {};
+	def.messages = Messages.merge(parent.messages, def.messages);
+	def.properties = Object.assign({}, parent.properties, def.properties);
 
-    prototype._definition = def;
+	// Type
 
-    const parent = base._definition || {};
-    def.messages = Messages.merge(parent.messages, def.messages);
-    def.properties = Object.assign({}, parent.properties, def.properties);
+	schema.type = def.type;
 
-    // Type
+	// Flags
 
-    schema.type = def.type;
+	def.flags = Object.assign({}, parent.flags, def.flags);
 
-    // Flags
+	// Terms
 
-    def.flags = Object.assign({}, parent.flags, def.flags);
+	const terms = Object.assign({}, parent.terms);
+	if (def.terms) {
+		for (const name in def.terms) {
+			// Only apply own terms
+			const term = def.terms[name];
+			Assert(
+				schema.$_terms[name] === undefined,
+				"Invalid term override for",
+				def.type,
+				name,
+			);
+			schema.$_terms[name] = term.init;
+			terms[name] = term;
+		}
+	}
 
-    // Terms
+	def.terms = terms;
 
-    const terms = Object.assign({}, parent.terms);
-    if (def.terms) {
-        for (const name in def.terms) {                                     // Only apply own terms
-            const term = def.terms[name];
-            Assert(schema.$_terms[name] === undefined, 'Invalid term override for', def.type, name);
-            schema.$_terms[name] = term.init;
-            terms[name] = term;
-        }
-    }
+	// Constructor arguments
 
-    def.terms = terms;
+	if (!def.args) {
+		def.args = parent.args;
+	}
 
-    // Constructor arguments
+	// Prepare
 
-    if (!def.args) {
-        def.args = parent.args;
-    }
+	def.prepare = internals.prepare(def.prepare, parent.prepare);
 
-    // Prepare
+	// Coerce
 
-    def.prepare = internals.prepare(def.prepare, parent.prepare);
+	if (def.coerce) {
+		if (typeof def.coerce === "function") {
+			def.coerce = { method: def.coerce };
+		}
 
-    // Coerce
+		if (def.coerce.from && !Array.isArray(def.coerce.from)) {
+			def.coerce = {
+				method: def.coerce.method,
+				from: [].concat(def.coerce.from),
+			};
+		}
+	}
 
-    if (def.coerce) {
-        if (typeof def.coerce === 'function') {
-            def.coerce = { method: def.coerce };
-        }
+	def.coerce = internals.coerce(def.coerce, parent.coerce);
 
-        if (def.coerce.from &&
-            !Array.isArray(def.coerce.from)) {
+	// Validate
 
-            def.coerce = { method: def.coerce.method, from: [].concat(def.coerce.from) };
-        }
-    }
+	def.validate = internals.validate(def.validate, parent.validate);
 
-    def.coerce = internals.coerce(def.coerce, parent.coerce);
+	// Rules
 
-    // Validate
+	const rules = Object.assign({}, parent.rules);
+	if (def.rules) {
+		for (const name in def.rules) {
+			const rule = def.rules[name];
+			Assert(
+				typeof rule === "object",
+				"Invalid rule definition for",
+				def.type,
+				name,
+			);
 
-    def.validate = internals.validate(def.validate, parent.validate);
+			let method = rule.method;
+			if (method === undefined) {
+				method = function () {
+					return this.$_addRule(name);
+				};
+			}
 
-    // Rules
+			if (method) {
+				Assert(!prototype[name], "Rule conflict in", def.type, name);
+				prototype[name] = method;
+			}
 
-    const rules = Object.assign({}, parent.rules);
-    if (def.rules) {
-        for (const name in def.rules) {
-            const rule = def.rules[name];
-            Assert(typeof rule === 'object', 'Invalid rule definition for', def.type, name);
+			Assert(!rules[name], "Rule conflict in", def.type, name);
+			rules[name] = rule;
 
-            let method = rule.method;
-            if (method === undefined) {
-                method = function () {
+			if (rule.alias) {
+				const aliases = [].concat(rule.alias);
+				for (const alias of aliases) {
+					prototype[alias] = rule.method;
+				}
+			}
 
-                    return this.$_addRule(name);
-                };
-            }
+			if (rule.args) {
+				rule.argsByName = new Map();
+				rule.args = rule.args.map((arg) => {
+					if (typeof arg === "string") {
+						arg = { name: arg };
+					}
 
-            if (method) {
-                Assert(!prototype[name], 'Rule conflict in', def.type, name);
-                prototype[name] = method;
-            }
+					Assert(
+						!rule.argsByName.has(arg.name),
+						"Duplicated argument name",
+						arg.name,
+					);
 
-            Assert(!rules[name], 'Rule conflict in', def.type, name);
-            rules[name] = rule;
+					if (Common.isSchema(arg.assert)) {
+						arg.assert = arg.assert.strict().label(arg.name);
+					}
 
-            if (rule.alias) {
-                const aliases = [].concat(rule.alias);
-                for (const alias of aliases) {
-                    prototype[alias] = rule.method;
-                }
-            }
+					rule.argsByName.set(arg.name, arg);
+					return arg;
+				});
+			}
+		}
+	}
 
-            if (rule.args) {
-                rule.argsByName = new Map();
-                rule.args = rule.args.map((arg) => {
+	def.rules = rules;
 
-                    if (typeof arg === 'string') {
-                        arg = { name: arg };
-                    }
+	// Modifiers
 
-                    Assert(!rule.argsByName.has(arg.name), 'Duplicated argument name', arg.name);
+	const modifiers = Object.assign({}, parent.modifiers);
+	if (def.modifiers) {
+		for (const name in def.modifiers) {
+			Assert(!prototype[name], "Rule conflict in", def.type, name);
 
-                    if (Common.isSchema(arg.assert)) {
-                        arg.assert = arg.assert.strict().label(arg.name);
-                    }
+			const modifier = def.modifiers[name];
+			Assert(
+				typeof modifier === "function",
+				"Invalid modifier definition for",
+				def.type,
+				name,
+			);
 
-                    rule.argsByName.set(arg.name, arg);
-                    return arg;
-                });
-            }
-        }
-    }
+			const method = function (arg) {
+				return this.rule({ [name]: arg });
+			};
 
-    def.rules = rules;
+			prototype[name] = method;
+			modifiers[name] = modifier;
+		}
+	}
 
-    // Modifiers
+	def.modifiers = modifiers;
 
-    const modifiers = Object.assign({}, parent.modifiers);
-    if (def.modifiers) {
-        for (const name in def.modifiers) {
-            Assert(!prototype[name], 'Rule conflict in', def.type, name);
+	// Overrides
 
-            const modifier = def.modifiers[name];
-            Assert(typeof modifier === 'function', 'Invalid modifier definition for', def.type, name);
+	if (def.overrides) {
+		prototype._super = base;
+		schema.$_super = {}; // Backwards compatibility
+		for (const override in def.overrides) {
+			Assert(base[override], "Cannot override missing", override);
+			def.overrides[override][Common.symbols.parent] = base[override];
+			schema.$_super[override] = base[override].bind(schema); // Backwards compatibility
+		}
 
-            const method = function (arg) {
+		Object.assign(prototype, def.overrides);
+	}
 
-                return this.rule({ [name]: arg });
-            };
+	// Casts
 
-            prototype[name] = method;
-            modifiers[name] = modifier;
-        }
-    }
+	def.cast = Object.assign({}, parent.cast, def.cast);
 
-    def.modifiers = modifiers;
+	// Manifest
 
-    // Overrides
+	const manifest = Object.assign({}, parent.manifest, def.manifest);
+	manifest.build = internals.build(
+		def.manifest && def.manifest.build,
+		parent.manifest && parent.manifest.build,
+	);
+	def.manifest = manifest;
 
-    if (def.overrides) {
-        prototype._super = base;
-        schema.$_super = {};                                                            // Backwards compatibility
-        for (const override in def.overrides) {
-            Assert(base[override], 'Cannot override missing', override);
-            def.overrides[override][Common.symbols.parent] = base[override];
-            schema.$_super[override] = base[override].bind(schema);                     // Backwards compatibility
-        }
+	// Rebuild
 
-        Object.assign(prototype, def.overrides);
-    }
+	def.rebuild = internals.rebuild(def.rebuild, parent.rebuild);
 
-    // Casts
-
-    def.cast = Object.assign({}, parent.cast, def.cast);
-
-    // Manifest
-
-    const manifest = Object.assign({}, parent.manifest, def.manifest);
-    manifest.build = internals.build(def.manifest && def.manifest.build, parent.manifest && parent.manifest.build);
-    def.manifest = manifest;
-
-    // Rebuild
-
-    def.rebuild = internals.rebuild(def.rebuild, parent.rebuild);
-
-    return schema;
+	return schema;
 };
-
 
 // Helpers
 
-internals.build = function (child, parent) {
+internals.build = (child, parent) => {
+	if (!child || !parent) {
+		return child || parent;
+	}
 
-    if (!child ||
-        !parent) {
-
-        return child || parent;
-    }
-
-    return function (obj, desc) {
-
-        return parent(child(obj, desc), desc);
-    };
+	return (obj, desc) => parent(child(obj, desc), desc);
 };
 
+internals.coerce = (child, parent) => {
+	if (!child || !parent) {
+		return child || parent;
+	}
 
-internals.coerce = function (child, parent) {
+	return {
+		from:
+			child.from && parent.from
+				? [...new Set([...child.from, ...parent.from])]
+				: null,
+		method(value, helpers) {
+			let coerced;
+			if (!parent.from || parent.from.includes(typeof value)) {
+				coerced = parent.method(value, helpers);
+				if (coerced) {
+					if (coerced.errors || coerced.value === undefined) {
+						return coerced;
+					}
 
-    if (!child ||
-        !parent) {
+					value = coerced.value;
+				}
+			}
 
-        return child || parent;
-    }
+			if (!child.from || child.from.includes(typeof value)) {
+				const own = child.method(value, helpers);
+				if (own) {
+					return own;
+				}
+			}
 
-    return {
-        from: child.from && parent.from ? [...new Set([...child.from, ...parent.from])] : null,
-        method(value, helpers) {
-
-            let coerced;
-            if (!parent.from ||
-                parent.from.includes(typeof value)) {
-
-                coerced = parent.method(value, helpers);
-                if (coerced) {
-                    if (coerced.errors ||
-                        coerced.value === undefined) {
-
-                        return coerced;
-                    }
-
-                    value = coerced.value;
-                }
-            }
-
-            if (!child.from ||
-                child.from.includes(typeof value)) {
-
-                const own = child.method(value, helpers);
-                if (own) {
-                    return own;
-                }
-            }
-
-            return coerced;
-        }
-    };
+			return coerced;
+		},
+	};
 };
 
+internals.prepare = (child, parent) => {
+	if (!child || !parent) {
+		return child || parent;
+	}
 
-internals.prepare = function (child, parent) {
+	return (value, helpers) => {
+		const prepared = child(value, helpers);
+		if (prepared) {
+			if (prepared.errors || prepared.value === undefined) {
+				return prepared;
+			}
 
-    if (!child ||
-        !parent) {
+			value = prepared.value;
+		}
 
-        return child || parent;
-    }
-
-    return function (value, helpers) {
-
-        const prepared = child(value, helpers);
-        if (prepared) {
-            if (prepared.errors ||
-                prepared.value === undefined) {
-
-                return prepared;
-            }
-
-            value = prepared.value;
-        }
-
-        return parent(value, helpers) || prepared;
-    };
+		return parent(value, helpers) || prepared;
+	};
 };
 
+internals.rebuild = (child, parent) => {
+	if (!child || !parent) {
+		return child || parent;
+	}
 
-internals.rebuild = function (child, parent) {
-
-    if (!child ||
-        !parent) {
-
-        return child || parent;
-    }
-
-    return function (schema) {
-
-        parent(schema);
-        child(schema);
-    };
+	return (schema) => {
+		parent(schema);
+		child(schema);
+	};
 };
 
+internals.validate = (child, parent) => {
+	if (!child || !parent) {
+		return child || parent;
+	}
 
-internals.validate = function (child, parent) {
+	return (value, helpers) => {
+		const result = parent(value, helpers);
+		if (result) {
+			if (
+				result.errors &&
+				(!Array.isArray(result.errors) || result.errors.length)
+			) {
+				return result;
+			}
 
-    if (!child ||
-        !parent) {
+			value = result.value;
+		}
 
-        return child || parent;
-    }
-
-    return function (value, helpers) {
-
-        const result = parent(value, helpers);
-        if (result) {
-            if (result.errors &&
-                (!Array.isArray(result.errors) || result.errors.length)) {
-
-                return result;
-            }
-
-            value = result.value;
-        }
-
-        return child(value, helpers) || result;
-    };
+		return child(value, helpers) || result;
+	};
 };

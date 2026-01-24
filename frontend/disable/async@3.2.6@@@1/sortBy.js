@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _map = require('./map.js');
+var _map = require("./map.js");
 
 var _map2 = _interopRequireDefault(_map);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Sorts a list by the results of running each `coll` value through an async
@@ -169,22 +169,29 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function sortBy(coll, iteratee, callback) {
-    var _iteratee = (0, _wrapAsync2.default)(iteratee);
-    return (0, _map2.default)(coll, (x, iterCb) => {
-        _iteratee(x, (err, criteria) => {
-            if (err) return iterCb(err);
-            iterCb(err, { value: x, criteria });
-        });
-    }, (err, results) => {
-        if (err) return callback(err);
-        callback(null, results.sort(comparator).map(v => v.value));
-    });
+	var _iteratee = (0, _wrapAsync2.default)(iteratee);
+	return (0, _map2.default)(
+		coll,
+		(x, iterCb) => {
+			_iteratee(x, (err, criteria) => {
+				if (err) return iterCb(err);
+				iterCb(err, { value: x, criteria });
+			});
+		},
+		(err, results) => {
+			if (err) return callback(err);
+			callback(
+				null,
+				results.sort(comparator).map((v) => v.value),
+			);
+		},
+	);
 
-    function comparator(left, right) {
-        var a = left.criteria,
-            b = right.criteria;
-        return a < b ? -1 : a > b ? 1 : 0;
-    }
+	function comparator(left, right) {
+		var a = left.criteria,
+			b = right.criteria;
+		return a < b ? -1 : a > b ? 1 : 0;
+	}
 }
 exports.default = (0, _awaitify2.default)(sortBy, 3);
 module.exports = exports.default;

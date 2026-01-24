@@ -1,31 +1,35 @@
-import net from 'net';
-import http from 'http';
-import https from 'https';
-import { Duplex } from 'stream';
-import { EventEmitter } from 'events';
-import createDebug from 'debug';
-import promisify from './promisify';
+import createDebug from "debug";
+import { EventEmitter } from "events";
+import type http from "http";
+import type https from "https";
+import type net from "net";
+import type { Duplex } from "stream";
+import promisify from "./promisify";
 
-const debug = createDebug('agent-base');
+const debug = createDebug("agent-base");
 
 function isAgent(v: any): v is createAgent.AgentLike {
-	return Boolean(v) && typeof v.addRequest === 'function';
+	return Boolean(v) && typeof v.addRequest === "function";
 }
 
 function isSecureEndpoint(): boolean {
 	const { stack } = new Error();
-	if (typeof stack !== 'string') return false;
-	return stack.split('\n').some(l => l.indexOf('(https.js:') !== -1  || l.indexOf('node:https:') !== -1);
+	if (typeof stack !== "string") return false;
+	return stack
+		.split("\n")
+		.some(
+			(l) => l.indexOf("(https.js:") !== -1 || l.indexOf("node:https:") !== -1,
+		);
 }
 
 function createAgent(opts?: createAgent.AgentOptions): createAgent.Agent;
 function createAgent(
 	callback: createAgent.AgentCallback,
-	opts?: createAgent.AgentOptions
+	opts?: createAgent.AgentOptions,
 ): createAgent.Agent;
 function createAgent(
 	callback?: createAgent.AgentCallback | createAgent.AgentOptions,
-	opts?: createAgent.AgentOptions
+	opts?: createAgent.AgentOptions,
 ) {
 	return new createAgent.Agent(callback, opts);
 }
@@ -59,18 +63,18 @@ namespace createAgent {
 
 	export type RequestOptions = HttpRequestOptions | HttpsRequestOptions;
 
-	export type AgentLike = Pick<createAgent.Agent, 'addRequest'> | http.Agent;
+	export type AgentLike = Pick<createAgent.Agent, "addRequest"> | http.Agent;
 
 	export type AgentCallbackReturn = Duplex | AgentLike;
 
 	export type AgentCallbackCallback = (
 		err?: Error | null,
-		socket?: createAgent.AgentCallbackReturn
+		socket?: createAgent.AgentCallbackReturn,
 	) => void;
 
 	export type AgentCallbackPromise = (
 		req: createAgent.ClientRequest,
-		opts: createAgent.RequestOptions
+		opts: createAgent.RequestOptions,
 	) =>
 		| createAgent.AgentCallbackReturn
 		| Promise<createAgent.AgentCallbackReturn>;
@@ -109,12 +113,12 @@ namespace createAgent {
 
 		constructor(
 			callback?: createAgent.AgentCallback | createAgent.AgentOptions,
-			_opts?: createAgent.AgentOptions
+			_opts?: createAgent.AgentOptions,
 		) {
 			super();
 
 			let opts = _opts;
-			if (typeof callback === 'function') {
+			if (typeof callback === "function") {
 				this.callback = callback;
 			} else if (callback) {
 				opts = callback;
@@ -122,7 +126,7 @@ namespace createAgent {
 
 			// Timeout for the socket to be returned from the callback
 			this.timeout = null;
-			if (opts && typeof opts.timeout === 'number') {
+			if (opts && typeof opts.timeout === "number") {
 				this.timeout = opts.timeout;
 			}
 
@@ -138,7 +142,7 @@ namespace createAgent {
 		}
 
 		get defaultPort(): number {
-			if (typeof this.explicitDefaultPort === 'number') {
+			if (typeof this.explicitDefaultPort === "number") {
 				return this.explicitDefaultPort;
 			}
 			return isSecureEndpoint() ? 443 : 80;
@@ -149,10 +153,10 @@ namespace createAgent {
 		}
 
 		get protocol(): string {
-			if (typeof this.explicitProtocol === 'string') {
+			if (typeof this.explicitProtocol === "string") {
 				return this.explicitProtocol;
 			}
-			return isSecureEndpoint() ? 'https:' : 'http:';
+			return isSecureEndpoint() ? "https:" : "http:";
 		}
 
 		set protocol(v: string) {
@@ -162,24 +166,24 @@ namespace createAgent {
 		callback(
 			req: createAgent.ClientRequest,
 			opts: createAgent.RequestOptions,
-			fn: createAgent.AgentCallbackCallback
+			fn: createAgent.AgentCallbackCallback,
 		): void;
 		callback(
 			req: createAgent.ClientRequest,
-			opts: createAgent.RequestOptions
+			opts: createAgent.RequestOptions,
 		):
 			| createAgent.AgentCallbackReturn
 			| Promise<createAgent.AgentCallbackReturn>;
 		callback(
 			req: createAgent.ClientRequest,
 			opts: createAgent.AgentOptions,
-			fn?: createAgent.AgentCallbackCallback
+			fn?: createAgent.AgentCallbackCallback,
 		):
 			| createAgent.AgentCallbackReturn
 			| Promise<createAgent.AgentCallbackReturn>
 			| void {
 			throw new Error(
-				'"agent-base" has no default implementation, you must subclass and override `callback()`'
+				'"agent-base" has no default implementation, you must subclass and override `callback()`',
 			);
 		}
 
@@ -192,12 +196,12 @@ namespace createAgent {
 		addRequest(req: ClientRequest, _opts: RequestOptions): void {
 			const opts: RequestOptions = { ..._opts };
 
-			if (typeof opts.secureEndpoint !== 'boolean') {
+			if (typeof opts.secureEndpoint !== "boolean") {
 				opts.secureEndpoint = isSecureEndpoint();
 			}
 
 			if (opts.host == null) {
-				opts.host = 'localhost';
+				opts.host = "localhost";
 			}
 
 			if (opts.port == null) {
@@ -205,7 +209,7 @@ namespace createAgent {
 			}
 
 			if (opts.protocol == null) {
-				opts.protocol = opts.secureEndpoint ? 'https:' : 'http:';
+				opts.protocol = opts.secureEndpoint ? "https:" : "http:";
 			}
 
 			if (opts.host && opts.path) {
@@ -233,7 +237,7 @@ namespace createAgent {
 
 			const onerror = (err: NodeJS.ErrnoException) => {
 				if (req._hadError) return;
-				req.emit('error', err);
+				req.emit("error", err);
 				// For Safety. Some additional errors might fire later on
 				// and we need to make sure we don't double-fire the error event.
 				req._hadError = true;
@@ -243,9 +247,9 @@ namespace createAgent {
 				timeoutId = null;
 				timedOut = true;
 				const err: NodeJS.ErrnoException = new Error(
-					`A "socket" was not created for HTTP request before ${timeoutMs}ms`
+					`A "socket" was not created for HTTP request before ${timeoutMs}ms`,
 				);
-				err.code = 'ETIMEOUT';
+				err.code = "ETIMEOUT";
 				onerror(err);
 			};
 
@@ -270,15 +274,15 @@ namespace createAgent {
 					// relinquish responsibility for this `req` to the Agent
 					// from here on
 					debug(
-						'Callback returned another Agent instance %o',
-						socket.constructor.name
+						"Callback returned another Agent instance %o",
+						socket.constructor.name,
 					);
 					(socket as createAgent.Agent).addRequest(req, opts);
 					return;
 				}
 
 				if (socket) {
-					socket.once('free', () => {
+					socket.once("free", () => {
 						this.freeSocket(socket as net.Socket, opts);
 					});
 					req.onSocket(socket as net.Socket);
@@ -286,42 +290,42 @@ namespace createAgent {
 				}
 
 				const err = new Error(
-					`no Duplex stream was returned to agent-base for \`${req.method} ${req.path}\``
+					`no Duplex stream was returned to agent-base for \`${req.method} ${req.path}\``,
 				);
 				onerror(err);
 			};
 
-			if (typeof this.callback !== 'function') {
-				onerror(new Error('`callback` is not defined'));
+			if (typeof this.callback !== "function") {
+				onerror(new Error("`callback` is not defined"));
 				return;
 			}
 
 			if (!this.promisifiedCallback) {
 				if (this.callback.length >= 3) {
-					debug('Converting legacy callback function to promise');
+					debug("Converting legacy callback function to promise");
 					this.promisifiedCallback = promisify(this.callback);
 				} else {
 					this.promisifiedCallback = this.callback;
 				}
 			}
 
-			if (typeof timeoutMs === 'number' && timeoutMs > 0) {
+			if (typeof timeoutMs === "number" && timeoutMs > 0) {
 				timeoutId = setTimeout(ontimeout, timeoutMs);
 			}
 
-			if ('port' in opts && typeof opts.port !== 'number') {
+			if ("port" in opts && typeof opts.port !== "number") {
 				opts.port = Number(opts.port);
 			}
 
 			try {
 				debug(
-					'Resolving socket for %o request: %o',
+					"Resolving socket for %o request: %o",
 					opts.protocol,
-					`${req.method} ${req.path}`
+					`${req.method} ${req.path}`,
 				);
 				Promise.resolve(this.promisifiedCallback(req, opts)).then(
 					onsocket,
-					callbackError
+					callbackError,
 				);
 			} catch (err) {
 				Promise.reject(err).catch(callbackError);
@@ -329,12 +333,12 @@ namespace createAgent {
 		}
 
 		freeSocket(socket: net.Socket, opts: AgentOptions) {
-			debug('Freeing socket %o %o', socket.constructor.name, opts);
+			debug("Freeing socket %o %o", socket.constructor.name, opts);
 			socket.destroy();
 		}
 
 		destroy() {
-			debug('Destroying agent %o', this.constructor.name);
+			debug("Destroying agent %o", this.constructor.name);
 		}
 	}
 

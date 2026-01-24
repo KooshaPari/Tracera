@@ -1,28 +1,34 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('no-path-trailing-slash', () => {
-  it('should report on trailing slash in path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-path-trailing-slash", () => {
+	it("should report on trailing slash in path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/bad/':
             get:
               summary: List all pets
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-path-trailing-slash': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-path-trailing-slash": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -39,11 +45,11 @@ describe('no-path-trailing-slash', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on trailing slash in path on key when referencing', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on trailing slash in path on key when referencing", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/bad/':
@@ -54,16 +60,18 @@ describe('no-path-trailing-slash', () => {
               get:
                 summary: List all pets
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-path-trailing-slash': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-path-trailing-slash": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -80,47 +88,51 @@ describe('no-path-trailing-slash', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on if no trailing slash in path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on if no trailing slash in path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/good':
             get:
               summary: List all pets
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-path-trailing-slash': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-path-trailing-slash": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on trailing slash in path if the path is root', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on trailing slash in path if the path is root", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/':
             get:
               summary: List all pets
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-path-trailing-slash': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-path-trailing-slash": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

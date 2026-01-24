@@ -7,10 +7,10 @@ var _apidomNsJsonSchemaDraft = require("@swagger-api/apidom-ns-json-schema-draft
  * @public
  */
 class $refVisitor extends _apidomNsJsonSchemaDraft.FallbackVisitor {
-  StringElement(stringElement) {
-    const result = super.enter(stringElement);
-    this.element.classes.push('reference-value');
-    return result;
-  }
+	StringElement(stringElement) {
+		const result = super.enter(stringElement);
+		this.element.classes.push("reference-value");
+		return result;
+	}
 }
-var _default = exports.default = $refVisitor;
+var _default = (exports.default = $refVisitor);

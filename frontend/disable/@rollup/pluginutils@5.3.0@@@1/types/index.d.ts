@@ -1,31 +1,39 @@
-import type { BaseNode } from 'estree';
+import type { BaseNode } from "estree";
 
 export interface AttachedScope {
-  parent?: AttachedScope;
-  isBlockScope: boolean;
-  declarations: { [key: string]: boolean };
-  addDeclaration(node: BaseNode, isBlockDeclaration: boolean, isVar: boolean): void;
-  contains(name: string): boolean;
+	parent?: AttachedScope;
+	isBlockScope: boolean;
+	declarations: { [key: string]: boolean };
+	addDeclaration(
+		node: BaseNode,
+		isBlockDeclaration: boolean,
+		isVar: boolean,
+	): void;
+	contains(name: string): boolean;
 }
 
 export interface DataToEsmOptions {
-  compact?: boolean;
-  /**
-   * @desc When this option is set, dataToEsm will generate a named export for keys that
-   * are not a valid identifier, by leveraging the "Arbitrary Module Namespace Identifier
-   * Names" feature. See: https://github.com/tc39/ecma262/pull/2154
-   */
-  includeArbitraryNames?: boolean;
-  indent?: string;
-  namedExports?: boolean;
-  objectShorthand?: boolean;
-  preferConst?: boolean;
+	compact?: boolean;
+	/**
+	 * @desc When this option is set, dataToEsm will generate a named export for keys that
+	 * are not a valid identifier, by leveraging the "Arbitrary Module Namespace Identifier
+	 * Names" feature. See: https://github.com/tc39/ecma262/pull/2154
+	 */
+	includeArbitraryNames?: boolean;
+	indent?: string;
+	namedExports?: boolean;
+	objectShorthand?: boolean;
+	preferConst?: boolean;
 }
 
 /**
  * A valid `picomatch` glob pattern, or array of patterns.
  */
-export type FilterPattern = ReadonlyArray<string | RegExp> | string | RegExp | null;
+export type FilterPattern =
+	| ReadonlyArray<string | RegExp>
+	| string
+	| RegExp
+	| null;
 
 /**
  * Adds an extension to a module ID if one does not exist.
@@ -37,7 +45,10 @@ export function addExtension(filename: string, ext?: string): string;
  * Each `Scope` object has a `scope.contains(name)` method that returns `true`
  * if a given name is defined in the current scope or a parent scope.
  */
-export function attachScopes(ast: BaseNode, propertyName?: string): AttachedScope;
+export function attachScopes(
+	ast: BaseNode,
+	propertyName?: string,
+): AttachedScope;
 
 /**
  * Constructs a filter function which can be used to determine whether or not
@@ -51,9 +62,9 @@ export function attachScopes(ast: BaseNode, propertyName?: string): AttachedScop
  * This can be useful if you want to create a filter for virtual module names.
  */
 export function createFilter(
-  include?: FilterPattern,
-  exclude?: FilterPattern,
-  options?: { resolve?: string | false | null }
+	include?: FilterPattern,
+	exclude?: FilterPattern,
+	options?: { resolve?: string | false | null },
 ): (id: string | unknown) => boolean;
 
 /**
@@ -111,15 +122,15 @@ export type PrefixRegex = typeof prefixRegex;
 export type SuffixRegex = typeof suffixRegex;
 
 declare const defaultExport: {
-  addExtension: AddExtension;
-  attachScopes: AttachScopes;
-  createFilter: CreateFilter;
-  dataToEsm: DataToEsm;
-  exactRegex: ExactRegex;
-  extractAssignedNames: ExtractAssignedNames;
-  makeLegalIdentifier: MakeLegalIdentifier;
-  normalizePath: NormalizePath;
-  prefixRegex: PrefixRegex;
-  suffixRegex: SuffixRegex;
+	addExtension: AddExtension;
+	attachScopes: AttachScopes;
+	createFilter: CreateFilter;
+	dataToEsm: DataToEsm;
+	exactRegex: ExactRegex;
+	extractAssignedNames: ExtractAssignedNames;
+	makeLegalIdentifier: MakeLegalIdentifier;
+	normalizePath: NormalizePath;
+	prefixRegex: PrefixRegex;
+	suffixRegex: SuffixRegex;
 };
 export default defaultExport;

@@ -6,8 +6,8 @@ import {
 	ForegroundColorName,
 	BackgroundColorName,
 	ColorName,
-} from './vendor/ansi-styles/index.js';
-import {ColorInfo, ColorSupportLevel} from './vendor/supports-color/index.js';
+} from "./vendor/ansi-styles/index.js";
+import { ColorInfo, ColorSupportLevel } from "./vendor/supports-color/index.js";
 
 export interface Options {
 	/**
@@ -247,17 +247,23 @@ export const chalkStderr: typeof chalk;
 export const supportsColorStderr: typeof supportsColor;
 
 export {
-	ModifierName, ForegroundColorName, BackgroundColorName, ColorName,
-	modifierNames, foregroundColorNames, backgroundColorNames, colorNames,
-// } from '#ansi-styles';
-} from './vendor/ansi-styles/index.js';
+	ModifierName,
+	ForegroundColorName,
+	BackgroundColorName,
+	ColorName,
+	modifierNames,
+	foregroundColorNames,
+	backgroundColorNames,
+	colorNames,
+	// } from '#ansi-styles';
+} from "./vendor/ansi-styles/index.js";
 
 export {
 	ColorInfo,
 	ColorSupport,
 	ColorSupportLevel,
-// } from '#supports-color';
-} from './vendor/supports-color/index.js';
+	// } from '#supports-color';
+} from "./vendor/supports-color/index.js";
 
 // TODO: Remove these aliases in the next major version
 /**

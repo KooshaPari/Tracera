@@ -5,14 +5,12 @@
  * Licensed under the MIT License.
  */
 
-'use strict';
+var fs = require("fs");
 
-var fs = require('fs');
-
-module.exports = function(filepath) {
-  try {
-    (fs.accessSync || fs.statSync)(filepath);
-    return true;
-  } catch (err) {}
-  return false;
+module.exports = (filepath) => {
+	try {
+		(fs.accessSync || fs.statSync)(filepath);
+		return true;
+	} catch (err) {}
+	return false;
 };

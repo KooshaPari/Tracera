@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfDecade} function options.
  */
 export interface EndOfDecadeOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfDecade
  * @category Decade Helpers
@@ -26,9 +26,9 @@ export interface EndOfDecadeOptions<DateType extends Date = Date>
  * //=> Dec 31 1989 23:59:59.999
  */
 export declare function endOfDecade<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EndOfDecadeOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: EndOfDecadeOptions<ResultDate> | undefined,
 ): ResultDate;

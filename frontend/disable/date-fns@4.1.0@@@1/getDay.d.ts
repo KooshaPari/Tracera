@@ -22,6 +22,6 @@ export interface GetDayOptions extends ContextOptions<Date> {}
  * //=> 3
  */
 export declare function getDay(
-  date: DateArg<Date> & {},
-  options?: GetDayOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetDayOptions | undefined,
 ): number;

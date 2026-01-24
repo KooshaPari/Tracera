@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Character class utilities for XML NS 1.0 edition 3.
  *
@@ -11,14 +10,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Fragments.
 //
 // tslint:disable-next-line:max-line-length
-exports.NC_NAME_START_CHAR = "A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\uD800\uDC00-\uDB7F\uDFFF";
-exports.NC_NAME_CHAR = "-" + exports.NC_NAME_START_CHAR + ".0-9\u00B7\u0300-\u036F\u203F-\u2040";
+exports.NC_NAME_START_CHAR =
+	"A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\uD800\uDC00-\uDB7F\uDFFF";
+exports.NC_NAME_CHAR =
+	"-" + exports.NC_NAME_START_CHAR + ".0-9\u00B7\u0300-\u036F\u203F-\u2040";
 //
 // Regular expressions.
 //
-exports.NC_NAME_START_CHAR_RE = new RegExp("^[" + exports.NC_NAME_START_CHAR + "]$", "u");
+exports.NC_NAME_START_CHAR_RE = new RegExp(
+	"^[" + exports.NC_NAME_START_CHAR + "]$",
+	"u",
+);
 exports.NC_NAME_CHAR_RE = new RegExp("^[" + exports.NC_NAME_CHAR + "]$", "u");
-exports.NC_NAME_RE = new RegExp("^[" + exports.NC_NAME_START_CHAR + "][" + exports.NC_NAME_CHAR + "]*$", "u");
+exports.NC_NAME_RE = new RegExp(
+	"^[" + exports.NC_NAME_START_CHAR + "][" + exports.NC_NAME_CHAR + "]*$",
+	"u",
+);
 /**
  * Determines whether a codepoint matches [[NC_NAME_START_CHAR]].
  *
@@ -28,21 +35,23 @@ exports.NC_NAME_RE = new RegExp("^[" + exports.NC_NAME_START_CHAR + "][" + expor
  */
 // tslint:disable-next-line:cyclomatic-complexity
 function isNCNameStartChar(c) {
-    return ((c >= 0x41 && c <= 0x5A) ||
-        c === 0x5F ||
-        (c >= 0x61 && c <= 0x7A) ||
-        (c >= 0xC0 && c <= 0xD6) ||
-        (c >= 0xD8 && c <= 0xF6) ||
-        (c >= 0x00F8 && c <= 0x02FF) ||
-        (c >= 0x0370 && c <= 0x037D) ||
-        (c >= 0x037F && c <= 0x1FFF) ||
-        (c >= 0x200C && c <= 0x200D) ||
-        (c >= 0x2070 && c <= 0x218F) ||
-        (c >= 0x2C00 && c <= 0x2FEF) ||
-        (c >= 0x3001 && c <= 0xD7FF) ||
-        (c >= 0xF900 && c <= 0xFDCF) ||
-        (c >= 0xFDF0 && c <= 0xFFFD) ||
-        (c >= 0x10000 && c <= 0xEFFFF));
+	return (
+		(c >= 0x41 && c <= 0x5a) ||
+		c === 0x5f ||
+		(c >= 0x61 && c <= 0x7a) ||
+		(c >= 0xc0 && c <= 0xd6) ||
+		(c >= 0xd8 && c <= 0xf6) ||
+		(c >= 0x00f8 && c <= 0x02ff) ||
+		(c >= 0x0370 && c <= 0x037d) ||
+		(c >= 0x037f && c <= 0x1fff) ||
+		(c >= 0x200c && c <= 0x200d) ||
+		(c >= 0x2070 && c <= 0x218f) ||
+		(c >= 0x2c00 && c <= 0x2fef) ||
+		(c >= 0x3001 && c <= 0xd7ff) ||
+		(c >= 0xf900 && c <= 0xfdcf) ||
+		(c >= 0xfdf0 && c <= 0xfffd) ||
+		(c >= 0x10000 && c <= 0xeffff)
+	);
 }
 exports.isNCNameStartChar = isNCNameStartChar;
 /**
@@ -53,13 +62,15 @@ exports.isNCNameStartChar = isNCNameStartChar;
  * @returns ``true`` if the codepoint matches.
  */
 function isNCNameChar(c) {
-    return isNCNameStartChar(c) ||
-        (c === 0x2D ||
-            c === 0x2E ||
-            (c >= 0x30 && c <= 0x39) ||
-            c === 0x00B7 ||
-            (c >= 0x0300 && c <= 0x036F) ||
-            (c >= 0x203F && c <= 0x2040));
+	return (
+		isNCNameStartChar(c) ||
+		c === 0x2d ||
+		c === 0x2e ||
+		(c >= 0x30 && c <= 0x39) ||
+		c === 0x00b7 ||
+		(c >= 0x0300 && c <= 0x036f) ||
+		(c >= 0x203f && c <= 0x2040)
+	);
 }
 exports.isNCNameChar = isNCNameChar;
 //# sourceMappingURL=ed3.js.map

@@ -1,4 +1,4 @@
-import { ExampleElement } from '@swagger-api/apidom-ns-openapi-3-0';
+import { ExampleElement } from "@swagger-api/apidom-ns-openapi-3-0";
 
 /**
  * @public

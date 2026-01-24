@@ -1,4 +1,4 @@
-var createAggregator = require('./_createAggregator');
+var createAggregator = require("./_createAggregator");
 
 /**
  * Creates an array of elements split into two groups, the first of which
@@ -36,8 +36,11 @@ var createAggregator = require('./_createAggregator');
  * _.partition(users, 'active');
  * // => objects for [['fred'], ['barney', 'pebbles']]
  */
-var partition = createAggregator(function(result, value, key) {
-  result[key ? 0 : 1].push(value);
-}, function() { return [[], []]; });
+var partition = createAggregator(
+	(result, value, key) => {
+		result[key ? 0 : 1].push(value);
+	},
+	() => [[], []],
+);
 
 module.exports = partition;

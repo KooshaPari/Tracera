@@ -32,11 +32,11 @@ import { startOfISOWeek } from "./startOfISOWeek.js";
  * //=> Mon Jan 03 2005 00:00:00
  */
 export function startOfISOWeekYear(date, options) {
-  const year = getISOWeekYear(date, options);
-  const fourthOfJanuary = constructFrom(options?.in || date, 0);
-  fourthOfJanuary.setFullYear(year, 0, 4);
-  fourthOfJanuary.setHours(0, 0, 0, 0);
-  return startOfISOWeek(fourthOfJanuary);
+	const year = getISOWeekYear(date, options);
+	const fourthOfJanuary = constructFrom(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(year, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
+	return startOfISOWeek(fourthOfJanuary);
 }
 
 // Fallback for modularized imports:

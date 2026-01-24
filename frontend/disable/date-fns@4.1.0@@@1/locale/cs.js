@@ -14,16 +14,16 @@ import { match } from "./cs/_lib/match.js";
  * @author Jozef Bíroš [@JozefBiros](https://github.com/JozefBiros)
  */
 export const cs = {
-  code: "cs",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "cs",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

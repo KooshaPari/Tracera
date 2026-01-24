@@ -1,1 +1,1 @@
-export * from './arktype';
+export * from "./arktype";

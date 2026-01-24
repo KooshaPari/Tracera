@@ -1,5 +1,5 @@
-import { invariant } from '../../jsutils/invariant.mjs';
-import { GraphQLError } from '../../error/GraphQLError.mjs';
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { invariant } from "../../jsutils/invariant.mjs";
 
 /**
  * Unique input field names
@@ -10,37 +10,37 @@ import { GraphQLError } from '../../error/GraphQLError.mjs';
  * See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
  */
 export function UniqueInputFieldNamesRule(context) {
-  const knownNameStack = [];
-  let knownNames = Object.create(null);
-  return {
-    ObjectValue: {
-      enter() {
-        knownNameStack.push(knownNames);
-        knownNames = Object.create(null);
-      },
+	const knownNameStack = [];
+	let knownNames = Object.create(null);
+	return {
+		ObjectValue: {
+			enter() {
+				knownNameStack.push(knownNames);
+				knownNames = Object.create(null);
+			},
 
-      leave() {
-        const prevKnownNames = knownNameStack.pop();
-        prevKnownNames || invariant(false);
-        knownNames = prevKnownNames;
-      },
-    },
+			leave() {
+				const prevKnownNames = knownNameStack.pop();
+				prevKnownNames || invariant(false);
+				knownNames = prevKnownNames;
+			},
+		},
 
-    ObjectField(node) {
-      const fieldName = node.name.value;
+		ObjectField(node) {
+			const fieldName = node.name.value;
 
-      if (knownNames[fieldName]) {
-        context.reportError(
-          new GraphQLError(
-            `There can be only one input field named "${fieldName}".`,
-            {
-              nodes: [knownNames[fieldName], node.name],
-            },
-          ),
-        );
-      } else {
-        knownNames[fieldName] = node.name;
-      }
-    },
-  };
+			if (knownNames[fieldName]) {
+				context.reportError(
+					new GraphQLError(
+						`There can be only one input field named "${fieldName}".`,
+						{
+							nodes: [knownNames[fieldName], node.name],
+						},
+					),
+				);
+			} else {
+				knownNames[fieldName] = node.name;
+			}
+		},
+	};
 }

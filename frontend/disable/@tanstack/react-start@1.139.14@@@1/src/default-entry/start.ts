@@ -1,1 +1,1 @@
-export const startInstance = undefined
+export const startInstance = undefined;

@@ -1,6 +1,6 @@
 declare const _default: {
-    (node: Element): number;
-    (node: Element, val: number): undefined;
+	(node: Element): number;
+	(node: Element, val: number): undefined;
 };
 /**
  * Gets or sets the scroll left position of a given element.

@@ -4,4 +4,7 @@
  * @param element the element
  * @param className the CSS class name
  */
-export default function addClass(element: Element | SVGElement, className: string): void;
+export default function addClass(
+	element: Element | SVGElement,
+	className: string,
+): void;

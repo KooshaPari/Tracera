@@ -1,19 +1,19 @@
-import { CDO } from '../../tokenizer/index.js';
+import { CDO } from "../../tokenizer/index.js";
 
-export const name = 'CDO';
+export const name = "CDO";
 export const structure = [];
 
 export function parse() {
-    const start = this.tokenStart;
+	const start = this.tokenStart;
 
-    this.eat(CDO); // <!--
+	this.eat(CDO); // <!--
 
-    return {
-        type: 'CDO',
-        loc: this.getLocation(start, this.tokenStart)
-    };
+	return {
+		type: "CDO",
+		loc: this.getLocation(start, this.tokenStart),
+	};
 }
 
 export function generate() {
-    this.token(CDO, '<!--');
+	this.token(CDO, "<!--");
 }

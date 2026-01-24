@@ -1,178 +1,184 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
+const Clone = require("@hapi/hoek/lib/clone");
 
-const Assert = require('@hapi/hoek/lib/assert');
-const Clone = require('@hapi/hoek/lib/clone');
-
-const Template = require('./template');
-
+const Template = require("./template");
 
 const internals = {};
 
+exports.compile = (messages, target) => {
+	// Single value string ('plain error message', 'template {error} message')
 
-exports.compile = function (messages, target) {
+	if (typeof messages === "string") {
+		Assert(!target, "Cannot set single message string");
+		return new Template(messages);
+	}
 
-    // Single value string ('plain error message', 'template {error} message')
+	// Single value template
 
-    if (typeof messages === 'string') {
-        Assert(!target, 'Cannot set single message string');
-        return new Template(messages);
-    }
+	if (Template.isTemplate(messages)) {
+		Assert(!target, "Cannot set single message template");
+		return messages;
+	}
 
-    // Single value template
+	// By error code { 'number.min': <string | template> }
 
-    if (Template.isTemplate(messages)) {
-        Assert(!target, 'Cannot set single message template');
-        return messages;
-    }
+	Assert(
+		typeof messages === "object" && !Array.isArray(messages),
+		"Invalid message options",
+	);
 
-    // By error code { 'number.min': <string | template> }
+	target = target ? Clone(target) : {};
 
-    Assert(typeof messages === 'object' && !Array.isArray(messages), 'Invalid message options');
+	for (let code in messages) {
+		const message = messages[code];
 
-    target = target ? Clone(target) : {};
+		if (code === "root" || Template.isTemplate(message)) {
+			target[code] = message;
+			continue;
+		}
 
-    for (let code in messages) {
-        const message = messages[code];
+		if (typeof message === "string") {
+			target[code] = new Template(message);
+			continue;
+		}
 
-        if (code === 'root' ||
-            Template.isTemplate(message)) {
+		// By language { english: { 'number.min': <string | template> } }
 
-            target[code] = message;
-            continue;
-        }
+		Assert(
+			typeof message === "object" && !Array.isArray(message),
+			"Invalid message for",
+			code,
+		);
 
-        if (typeof message === 'string') {
-            target[code] = new Template(message);
-            continue;
-        }
+		const language = code;
+		target[language] = target[language] || {};
 
-        // By language { english: { 'number.min': <string | template> } }
+		for (code in message) {
+			const localized = message[code];
 
-        Assert(typeof message === 'object' && !Array.isArray(message), 'Invalid message for', code);
+			if (code === "root" || Template.isTemplate(localized)) {
+				target[language][code] = localized;
+				continue;
+			}
 
-        const language = code;
-        target[language] = target[language] || {};
+			Assert(
+				typeof localized === "string",
+				"Invalid message for",
+				code,
+				"in",
+				language,
+			);
+			target[language][code] = new Template(localized);
+		}
+	}
 
-        for (code in message) {
-            const localized = message[code];
-
-            if (code === 'root' ||
-                Template.isTemplate(localized)) {
-
-                target[language][code] = localized;
-                continue;
-            }
-
-            Assert(typeof localized === 'string', 'Invalid message for', code, 'in', language);
-            target[language][code] = new Template(localized);
-        }
-    }
-
-    return target;
+	return target;
 };
 
+exports.decompile = (messages) => {
+	// By error code { 'number.min': <string | template> }
 
-exports.decompile = function (messages) {
+	const target = {};
+	for (let code in messages) {
+		const message = messages[code];
 
-    // By error code { 'number.min': <string | template> }
+		if (code === "root") {
+			target.root = message;
+			continue;
+		}
 
-    const target = {};
-    for (let code in messages) {
-        const message = messages[code];
+		if (Template.isTemplate(message)) {
+			target[code] = message.describe({ compact: true });
+			continue;
+		}
 
-        if (code === 'root') {
-            target.root = message;
-            continue;
-        }
+		// By language { english: { 'number.min': <string | template> } }
 
-        if (Template.isTemplate(message)) {
-            target[code] = message.describe({ compact: true });
-            continue;
-        }
+		const language = code;
+		target[language] = {};
 
-        // By language { english: { 'number.min': <string | template> } }
+		for (code in message) {
+			const localized = message[code];
 
-        const language = code;
-        target[language] = {};
+			if (code === "root") {
+				target[language].root = localized;
+				continue;
+			}
 
-        for (code in message) {
-            const localized = message[code];
+			target[language][code] = localized.describe({ compact: true });
+		}
+	}
 
-            if (code === 'root') {
-                target[language].root = localized;
-                continue;
-            }
-
-            target[language][code] = localized.describe({ compact: true });
-        }
-    }
-
-    return target;
+	return target;
 };
 
+exports.merge = (base, extended) => {
+	if (!base) {
+		return exports.compile(extended);
+	}
 
-exports.merge = function (base, extended) {
+	if (!extended) {
+		return base;
+	}
 
-    if (!base) {
-        return exports.compile(extended);
-    }
+	// Single value string
 
-    if (!extended) {
-        return base;
-    }
+	if (typeof extended === "string") {
+		return new Template(extended);
+	}
 
-    // Single value string
+	// Single value template
 
-    if (typeof extended === 'string') {
-        return new Template(extended);
-    }
+	if (Template.isTemplate(extended)) {
+		return extended;
+	}
 
-    // Single value template
+	// By error code { 'number.min': <string | template> }
 
-    if (Template.isTemplate(extended)) {
-        return extended;
-    }
+	const target = Clone(base);
 
-    // By error code { 'number.min': <string | template> }
+	for (let code in extended) {
+		const message = extended[code];
 
-    const target = Clone(base);
+		if (code === "root" || Template.isTemplate(message)) {
+			target[code] = message;
+			continue;
+		}
 
-    for (let code in extended) {
-        const message = extended[code];
+		if (typeof message === "string") {
+			target[code] = new Template(message);
+			continue;
+		}
 
-        if (code === 'root' ||
-            Template.isTemplate(message)) {
+		// By language { english: { 'number.min': <string | template> } }
 
-            target[code] = message;
-            continue;
-        }
+		Assert(
+			typeof message === "object" && !Array.isArray(message),
+			"Invalid message for",
+			code,
+		);
 
-        if (typeof message === 'string') {
-            target[code] = new Template(message);
-            continue;
-        }
+		const language = code;
+		target[language] = target[language] || {};
 
-        // By language { english: { 'number.min': <string | template> } }
+		for (code in message) {
+			const localized = message[code];
 
-        Assert(typeof message === 'object' && !Array.isArray(message), 'Invalid message for', code);
+			if (code === "root" || Template.isTemplate(localized)) {
+				target[language][code] = localized;
+				continue;
+			}
 
-        const language = code;
-        target[language] = target[language] || {};
+			Assert(
+				typeof localized === "string",
+				"Invalid message for",
+				code,
+				"in",
+				language,
+			);
+			target[language][code] = new Template(localized);
+		}
+	}
 
-        for (code in message) {
-            const localized = message[code];
-
-            if (code === 'root' ||
-                Template.isTemplate(localized)) {
-
-                target[language][code] = localized;
-                continue;
-            }
-
-            Assert(typeof localized === 'string', 'Invalid message for', code, 'in', language);
-            target[language][code] = new Template(localized);
-        }
-    }
-
-    return target;
+	return target;
 };

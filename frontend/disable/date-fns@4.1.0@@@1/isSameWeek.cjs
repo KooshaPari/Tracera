@@ -40,13 +40,13 @@ var _index2 = require("./startOfWeek.cjs");
  * //=> false
  */
 function isSameWeek(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    +(0, _index2.startOfWeek)(laterDate_, options) ===
-    +(0, _index2.startOfWeek)(earlierDate_, options)
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		+(0, _index2.startOfWeek)(laterDate_, options) ===
+		+(0, _index2.startOfWeek)(earlierDate_, options)
+	);
 }

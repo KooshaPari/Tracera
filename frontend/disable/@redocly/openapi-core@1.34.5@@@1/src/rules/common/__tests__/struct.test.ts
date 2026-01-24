@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 struct', () => {
-  it('should report missing schema property', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 struct", () => {
+	it("should report missing schema property", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         '/test':
@@ -19,16 +23,16 @@ describe('Oas3 struct', () => {
               200:
                 description: Ok
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -60,11 +64,11 @@ describe('Oas3 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report with "referenced from"', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it('should report with "referenced from"', async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       components:
         requestBodies:
@@ -79,16 +83,16 @@ describe('Oas3 struct', () => {
             allOf:
               - $ref: "#/components/requestBodies/TestRequestBody"
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -137,11 +141,11 @@ describe('Oas3 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on nullable without type', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on nullable without type", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       components:
         requestBodies:
@@ -151,16 +155,16 @@ describe('Oas3 struct', () => {
                 schema:
                   nullable: true
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -205,11 +209,11 @@ describe('Oas3 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on nullable with type defined in allOf', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on nullable with type defined in allOf", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       components:
         requestBodies:
@@ -225,16 +229,16 @@ describe('Oas3 struct', () => {
               title: TestSchema
               type: object
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -307,25 +311,25 @@ describe('Oas3 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on SpecExtension with additionalProperties', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on SpecExtension with additionalProperties", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       x-foo:
         prop: bar
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -357,13 +361,13 @@ describe('Oas3 struct', () => {
         },
       ]
     `);
-  });
+	});
 });
 
-describe('Oas3.1 struct', () => {
-  it('should report with "type can be one of the following only"', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3.1 struct", () => {
+	it('should report with "type can be one of the following only"', async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.1.0
       info:
         version: 1.0.0
@@ -378,16 +382,16 @@ describe('Oas3.1 struct', () => {
             title: TestSchema
             description: Property name's description
             type: test
-        `
-    );
+        `,
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -405,11 +409,11 @@ describe('Oas3.1 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report with unknown type in type`s list', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report with unknown type in type`s list", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.1.0
       info:
         version: 1.0.0
@@ -426,16 +430,16 @@ describe('Oas3.1 struct', () => {
             type:
               - string
               - foo
-        `
-    );
+        `,
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -453,11 +457,11 @@ describe('Oas3.1 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report about `type: null` and not report `type: "null"`', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it('should report about `type: null` and not report `type: "null"`', async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.1.0
       info:
         version: 1.0.0
@@ -480,16 +484,16 @@ describe('Oas3.1 struct', () => {
             type:
               - 'null'
               - string
-        `
-    );
+        `,
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -537,11 +541,11 @@ describe('Oas3.1 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on SpecExtension with additionalProperties', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on SpecExtension with additionalProperties", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.1.0
       info:
         x-logo:
@@ -551,16 +555,16 @@ describe('Oas3.1 struct', () => {
       x-foo:
         prop: bar
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -606,11 +610,11 @@ describe('Oas3.1 struct', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should flag invalid dependentSchemas', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should flag invalid dependentSchemas", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.1.0
       info:
         version: 1.0.0
@@ -626,16 +630,16 @@ describe('Oas3.1 struct', () => {
               - invalid1
               - invalid2
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { struct: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { struct: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -653,5 +657,5 @@ describe('Oas3.1 struct', () => {
         },
       ]
     `);
-  });
+	});
 });

@@ -1,4 +1,4 @@
-import { ObjectElement } from '@swagger-api/apidom-core';
+import { ObjectElement } from "@swagger-api/apidom-core";
 
 /**
  * In Draft 4, $ref behaves a little differently. When an object contains a $ref property,
@@ -11,16 +11,16 @@ import { ObjectElement } from '@swagger-api/apidom-core';
  */
 
 class JSONReference extends ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'JSONReference';
-    this.classes.push('json-reference');
-  }
-  get $ref() {
-    return this.get('$ref');
-  }
-  set $ref($ref) {
-    this.set('$ref', $ref);
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "JSONReference";
+		this.classes.push("json-reference");
+	}
+	get $ref() {
+		return this.get("$ref");
+	}
+	set $ref($ref) {
+		this.set("$ref", $ref);
+	}
 }
 export default JSONReference;

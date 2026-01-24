@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link endOfWeek} function options.
  */
 export interface EndOfWeekOptions<DateType extends Date = Date>
-  extends WeekOptions,
-    LocalizedOptions<"options">,
-    ContextOptions<DateType> {}
+	extends WeekOptions,
+		LocalizedOptions<"options">,
+		ContextOptions<DateType> {}
 /**
  * @name endOfWeek
  * @category Week Helpers
@@ -39,6 +39,6 @@ export interface EndOfWeekOptions<DateType extends Date = Date>
  * //=> Sun Sep 07 2014 23:59:59.999
  */
 export declare function endOfWeek<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(date: DateArg<DateType>, options?: EndOfWeekOptions<ResultDate>): ResultDate;

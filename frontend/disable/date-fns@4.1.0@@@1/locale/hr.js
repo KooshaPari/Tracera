@@ -14,16 +14,16 @@ import { match } from "./hr/_lib/match.js";
  * @author Ivan Jeržabek [@jerzabek](https://github.com/jerzabek)
  */
 export const hr = {
-  code: "hr",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "hr",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

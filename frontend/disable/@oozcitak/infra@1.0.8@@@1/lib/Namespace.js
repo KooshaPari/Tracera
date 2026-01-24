@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HTML = "http://www.w3.org/1999/xhtml";
 exports.XML = "http://www.w3.org/XML/1998/namespace";

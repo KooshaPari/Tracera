@@ -1,5 +1,5 @@
-var baseFlatten = require('./_baseFlatten'),
-    map = require('./map');
+var baseFlatten = require("./_baseFlatten"),
+	map = require("./map");
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -25,7 +25,7 @@ var INFINITY = 1 / 0;
  * // => [1, 1, 2, 2]
  */
 function flatMapDeep(collection, iteratee) {
-  return baseFlatten(map(collection, iteratee), INFINITY);
+	return baseFlatten(map(collection, iteratee), INFINITY);
 }
 
 module.exports = flatMapDeep;

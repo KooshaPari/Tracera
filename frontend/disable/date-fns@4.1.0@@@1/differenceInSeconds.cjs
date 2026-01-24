@@ -31,7 +31,7 @@ var _index2 = require("./differenceInMilliseconds.cjs");
  * //=> 12
  */
 function differenceInSeconds(laterDate, earlierDate, options) {
-  const diff =
-    (0, _index2.differenceInMilliseconds)(laterDate, earlierDate) / 1000;
-  return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
+	const diff =
+		(0, _index2.differenceInMilliseconds)(laterDate, earlierDate) / 1000;
+	return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
 }

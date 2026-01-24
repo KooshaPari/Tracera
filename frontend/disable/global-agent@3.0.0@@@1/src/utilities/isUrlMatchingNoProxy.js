@@ -1,9 +1,9 @@
 // @flow
 
+import matcher from 'matcher';
 import {
   parse as parseUrl,
 } from 'url';
-import matcher from 'matcher';
 import {
   UnexpectedStateError,
 } from '../errors';

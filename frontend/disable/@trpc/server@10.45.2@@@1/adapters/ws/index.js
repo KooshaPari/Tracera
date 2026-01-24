@@ -1,1 +1,1 @@
-module.exports = require('../../dist/adapters/ws');
+module.exports = require("../../dist/adapters/ws");

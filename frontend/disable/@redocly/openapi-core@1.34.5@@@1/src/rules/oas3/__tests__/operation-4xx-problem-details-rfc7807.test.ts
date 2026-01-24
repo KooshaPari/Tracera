@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
-  it('should report `4xx` must have content type `application/problem+json` ', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 operation-4xx-problem-details-rfc7807", () => {
+	it("should report `4xx` must have content type `application/problem+json` ", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: "3.0.0"
         paths:
           /pets:
@@ -26,15 +30,17 @@ describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
                           title:
                             type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-problem-details-rfc7807': 'error' } }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-problem-details-rfc7807": "error" },
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -51,11 +57,11 @@ describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report `application/problem+json` must have `type` property', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report `application/problem+json` must have `type` property", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: "3.0.0"
         paths:
           /pets:
@@ -73,15 +79,17 @@ describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
                           title:
                             type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-problem-details-rfc7807': 'error' } }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-problem-details-rfc7807": "error" },
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -98,11 +106,11 @@ describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report `application/problem+json` must have `schema` property', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report `application/problem+json` must have `schema` property", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: "3.0.0"
         paths:
           /pets:
@@ -116,15 +124,17 @@ describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
                     application/problem+json:
                       example: asd
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-problem-details-rfc7807': 'error' } }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-problem-details-rfc7807": "error" },
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -141,5 +151,5 @@ describe('Oas3 operation-4xx-problem-details-rfc7807', () => {
         },
       ]
     `);
-  });
+	});
 });

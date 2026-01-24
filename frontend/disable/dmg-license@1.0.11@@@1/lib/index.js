@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Plist = require("plist");
 const assembleLicenses_1 = require("./assembleLicenses");
@@ -18,27 +17,40 @@ var Labels_2 = require("./Labels");
 exports.LabelEncodingError = Labels_2.LabelEncodingError;
 exports.NoDefaultLabelsError = Labels_2.NoDefaultLabelsError;
 async function dmgLicense(imagePath, spec, options) {
-    return await writePlistToDmg_1.default(imagePath, (await dmgLicensePlist(spec, options)).plist);
+	return await writePlistToDmg_1.default(
+		imagePath,
+		(await dmgLicensePlist(spec, options)).plist,
+	);
 }
 exports.dmgLicense = dmgLicense;
 exports.default = dmgLicense;
 async function dmgLicensePlist(spec, options) {
-    const context = new Context_1.default(options);
-    const plist = makeLicensePlist_1.default(await assembleLicenses_1.default(spec, context), context);
-    return {
-        plist,
-        get plistText() {
-            return Plist.build(plist);
-        }
-    };
+	const context = new Context_1.default(options);
+	const plist = makeLicensePlist_1.default(
+		await assembleLicenses_1.default(spec, context),
+		context,
+	);
+	return {
+		plist,
+		get plistText() {
+			return Plist.build(plist);
+		},
+	};
 }
 exports.dmgLicensePlist = dmgLicensePlist;
 async function dmgLicenseFromJSON(imagePath, specJSON, options) {
-    return await dmgLicense(imagePath, specFromJSON_1.default(specJSON, options), options);
+	return await dmgLicense(
+		imagePath,
+		specFromJSON_1.default(specJSON, options),
+		options,
+	);
 }
 exports.dmgLicenseFromJSON = dmgLicenseFromJSON;
 async function dmgLicensePlistFromJSON(specJSON, options) {
-    return await dmgLicensePlist(specFromJSON_1.default(specJSON, options), options);
+	return await dmgLicensePlist(
+		specFromJSON_1.default(specJSON, options),
+		options,
+	);
 }
 exports.dmgLicensePlistFromJSON = dmgLicensePlistFromJSON;
 //# sourceMappingURL=index.js.map

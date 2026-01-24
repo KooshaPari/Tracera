@@ -1,83 +1,90 @@
 export type CodeWalkthroughStepAttr = {
-    id: string;
-    title?: string;
+	id: string;
+	title?: string;
 };
 export type FilesetsMarkdocAttr = WithConditions<{
-    files?: string[];
-    downloadAssociatedFiles?: string[];
+	files?: string[];
+	downloadAssociatedFiles?: string[];
 }>[];
 export type InputsMarkdocAttr = {
-    [id: string]: WithConditions<{
-        value: string;
-    }>;
+	[id: string]: WithConditions<{
+		value: string;
+	}>;
 };
 export type TogglesMarkdocAttr = {
-    [id: string]: CodeWalkthroughConditionsObject;
+	[id: string]: CodeWalkthroughConditionsObject;
 };
 export type CodeWalkthroughConditions = {
-    [key: string]: string | string[] | undefined | boolean;
+	[key: string]: string | string[] | undefined | boolean;
 };
 export type CodeWalkthroughFileset = WithConditions<{
-    files?: CodeWalkthroughFile[];
-    downloadAssociatedFiles?: CodeWalkthroughFile[];
+	files?: CodeWalkthroughFile[];
+	downloadAssociatedFiles?: CodeWalkthroughFile[];
 }>;
 export type CodeWalkthroughAttr = {
-    steps: CodeWalkthroughStepAttr[];
-    filters: Record<string, CodeWalkthroughFilter>;
-    filesets: CodeWalkthroughFileset[];
-    preview: React.ReactNode[];
-    inputs: InputsMarkdocAttr;
-    toggles: TogglesMarkdocAttr;
-    __idx: number;
+	steps: CodeWalkthroughStepAttr[];
+	filters: Record<string, CodeWalkthroughFilter>;
+	filesets: CodeWalkthroughFileset[];
+	preview: React.ReactNode[];
+	inputs: InputsMarkdocAttr;
+	toggles: TogglesMarkdocAttr;
+	__idx: number;
 };
 export type CodeWalkthroughFile = {
-    path: string;
-    content: CodeWalkthroughNode[];
-    basename: string;
-    metadata: CodeWalkthroughFileMetadata;
-    language: string;
+	path: string;
+	content: CodeWalkthroughNode[];
+	basename: string;
+	metadata: CodeWalkthroughFileMetadata;
+	language: string;
 };
 export type CodeWalkthroughChunk = {
-    start: number;
-    children: CodeWalkthroughNode[];
-    condition: CodeWalkthroughChunkCondition;
+	start: number;
+	children: CodeWalkthroughNode[];
+	condition: CodeWalkthroughChunkCondition;
 };
 export type CodeWalkthroughChunkCondition = WithConditions<{
-    steps: string[];
+	steps: string[];
 }>;
 export type CodeWalkthroughNode = CodeWalkthroughChunk | string;
 export type CodeWalkthroughFileMetadata = {
-    steps: string[];
+	steps: string[];
 };
 export type CodeWalkthroughFilter = WithConditions<{
-    id: string;
-    label?: string;
-    items: CodeWalkthroughFilterItem[];
+	id: string;
+	label?: string;
+	items: CodeWalkthroughFilterItem[];
 }>;
 export type CodeWalkthroughFilterItem = WithConditions<{
-    value: string;
+	value: string;
 }>;
 export type CodeWalkthroughConditionsObject = {
-    when?: CodeWalkthroughConditions;
-    unless?: CodeWalkthroughConditions;
+	when?: CodeWalkthroughConditions;
+	unless?: CodeWalkthroughConditions;
 };
 export type WithConditions<T> = T & CodeWalkthroughConditionsObject;
 export type CodeWalkthroughControls = {
-    toggle: boolean;
-    input: string;
-    filter: string;
+	toggle: boolean;
+	input: string;
+	filter: string;
 };
-export type CodeWalkthroughControlState = WithConditions<{
-    value: string;
-    render: boolean;
-    type: 'input';
-} | {
-    value: string;
-    render: boolean;
-    type: 'filter';
-} | {
-    value: boolean;
-    render: boolean;
-    type: 'toggle';
-}>;
-export type CodeWalkthroughControlsState = Record<string, CodeWalkthroughControlState>;
+export type CodeWalkthroughControlState = WithConditions<
+	| {
+			value: string;
+			render: boolean;
+			type: "input";
+	  }
+	| {
+			value: string;
+			render: boolean;
+			type: "filter";
+	  }
+	| {
+			value: boolean;
+			render: boolean;
+			type: "toggle";
+	  }
+>;
+export type CodeWalkthroughControlsState = Record<
+	string,
+	CodeWalkthroughControlState
+>;

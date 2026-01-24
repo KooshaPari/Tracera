@@ -28,9 +28,9 @@ var _index3 = require("./isSameDay.cjs");
  * //=> true
  */
 function isTomorrow(date, options) {
-  return (0, _index3.isSameDay)(
-    date,
-    (0, _index.addDays)((0, _index2.constructNow)(options?.in || date), 1),
-    options,
-  );
+	return (0, _index3.isSameDay)(
+		date,
+		(0, _index.addDays)((0, _index2.constructNow)(options?.in || date), 1),
+		options,
+	);
 }

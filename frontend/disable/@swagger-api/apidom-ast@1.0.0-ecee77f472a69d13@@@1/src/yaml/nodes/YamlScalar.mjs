@@ -1,4 +1,5 @@
 import YamlNode from "./YamlNode.mjs";
+
 /**
  * @public
  */
@@ -6,16 +7,13 @@ import YamlNode from "./YamlNode.mjs";
  * @public
  */
 class YamlScalar extends YamlNode {
-  static type = 'scalar';
-  content;
-  constructor({
-    content,
-    ...rest
-  }) {
-    super({
-      ...rest
-    });
-    this.content = content;
-  }
+	static type = "scalar";
+	content;
+	constructor({ content, ...rest }) {
+		super({
+			...rest,
+		});
+		this.content = content;
+	}
 }
 export default YamlScalar;

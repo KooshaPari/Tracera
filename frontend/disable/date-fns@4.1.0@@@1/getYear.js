@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> 2014
  */
 export function getYear(date, options) {
-  return toDate(date, options?.in).getFullYear();
+	return toDate(date, options?.in).getFullYear();
 }
 
 // Fallback for modularized imports:

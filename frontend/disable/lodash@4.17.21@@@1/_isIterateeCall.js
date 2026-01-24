@@ -1,7 +1,7 @@
-var eq = require('./eq'),
-    isArrayLike = require('./isArrayLike'),
-    isIndex = require('./_isIndex'),
-    isObject = require('./isObject');
+var eq = require("./eq"),
+	isArrayLike = require("./isArrayLike"),
+	isIndex = require("./_isIndex"),
+	isObject = require("./isObject");
 
 /**
  * Checks if the given arguments are from an iteratee call.
@@ -14,17 +14,18 @@ var eq = require('./eq'),
  *  else `false`.
  */
 function isIterateeCall(value, index, object) {
-  if (!isObject(object)) {
-    return false;
-  }
-  var type = typeof index;
-  if (type == 'number'
-        ? (isArrayLike(object) && isIndex(index, object.length))
-        : (type == 'string' && index in object)
-      ) {
-    return eq(object[index], value);
-  }
-  return false;
+	if (!isObject(object)) {
+		return false;
+	}
+	var type = typeof index;
+	if (
+		type == "number"
+			? isArrayLike(object) && isIndex(index, object.length)
+			: type == "string" && index in object
+	) {
+		return eq(object[index], value);
+	}
+	return false;
 }
 
 module.exports = isIterateeCall;

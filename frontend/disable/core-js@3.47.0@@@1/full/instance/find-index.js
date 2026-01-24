@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/instance/find-index');
+"use strict";
+var parent = require("../../actual/instance/find-index");
 
 module.exports = parent;

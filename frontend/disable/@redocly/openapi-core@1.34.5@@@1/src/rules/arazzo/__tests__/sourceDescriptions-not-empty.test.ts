@@ -1,11 +1,15 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Arazzo sourceDescriptions-not-empty', () => {
-  const document1 = parseYamlToDocument(
-    outdent`
+describe("Arazzo sourceDescriptions-not-empty", () => {
+	const document1 = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.1'
       info:
         title: Cool API
@@ -33,11 +37,11 @@ describe('Arazzo sourceDescriptions-not-empty', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  const document2 = parseYamlToDocument(
-    outdent`
+	const document2 = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.1'
       info:
         title: Cool API
@@ -59,31 +63,31 @@ describe('Arazzo sourceDescriptions-not-empty', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  it('should not report an error when sourceDescriptions have at least one entry.', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document: document1,
-      config: await makeConfig({
-        rules: { 'sourceDescriptions-not-empty': 'error' },
-      }),
-    });
+	it("should not report an error when sourceDescriptions have at least one entry.", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document: document1,
+			config: await makeConfig({
+				rules: { "sourceDescriptions-not-empty": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report an error when sourceDescriptions is empty list.', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document: document2,
-      config: await makeConfig({
-        rules: { 'sourceDescriptions-not-empty': 'error' },
-      }),
-    });
+	it("should report an error when sourceDescriptions is empty list.", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document: document2,
+			config: await makeConfig({
+				rules: { "sourceDescriptions-not-empty": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -100,5 +104,5 @@ describe('Arazzo sourceDescriptions-not-empty', () => {
         },
       ]
     `);
-  });
+	});
 });

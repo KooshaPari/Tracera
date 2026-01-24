@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/parse-float');
+"use strict";
+module.exports = require("../full/parse-float");

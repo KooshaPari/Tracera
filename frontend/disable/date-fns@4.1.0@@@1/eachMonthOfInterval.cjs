@@ -44,27 +44,27 @@ var _index2 = require("./constructFrom.cjs");
  * // ]
  */
 function eachMonthOfInterval(interval, options) {
-  const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
+	const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
 
-  let reversed = +start > +end;
-  const endTime = reversed ? +start : +end;
-  const date = reversed ? end : start;
-  date.setHours(0, 0, 0, 0);
-  date.setDate(1);
+	let reversed = +start > +end;
+	const endTime = reversed ? +start : +end;
+	const date = reversed ? end : start;
+	date.setHours(0, 0, 0, 0);
+	date.setDate(1);
 
-  let step = options?.step ?? 1;
-  if (!step) return [];
-  if (step < 0) {
-    step = -step;
-    reversed = !reversed;
-  }
+	let step = options?.step ?? 1;
+	if (!step) return [];
+	if (step < 0) {
+		step = -step;
+		reversed = !reversed;
+	}
 
-  const dates = [];
+	const dates = [];
 
-  while (+date <= endTime) {
-    dates.push((0, _index2.constructFrom)(start, date));
-    date.setMonth(date.getMonth() + step);
-  }
+	while (+date <= endTime) {
+		dates.push((0, _index2.constructFrom)(start, date));
+		date.setMonth(date.getMonth() + step);
+	}
 
-  return reversed ? dates.reverse() : dates;
+	return reversed ? dates.reverse() : dates;
 }

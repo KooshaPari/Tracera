@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg, Duration } from "./types.js";
  * The {@link add} function options.
  */
 export interface AddOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name add
  * @category Common Helpers
@@ -35,10 +35,10 @@ export interface AddOptions<DateType extends Date = Date>
  * //=> Thu Jun 15 2017 15:29:20
  */
 export declare function add<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  duration: Duration,
-  options?: AddOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	duration: Duration,
+	options?: AddOptions<ResultDate> | undefined,
 ): ResultDate;

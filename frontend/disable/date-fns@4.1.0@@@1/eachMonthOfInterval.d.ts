@@ -3,22 +3,22 @@ import type { ContextOptions, Interval, StepOptions } from "./types.js";
  * The {@link eachMonthOfInterval} function options.
  */
 export interface EachMonthOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachMonthOfInterval} function result type. It resolves the proper data type.
  */
 export type EachMonthOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachMonthOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachMonthOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachMonthOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachMonthOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachMonthOfInterval
@@ -53,9 +53,9 @@ export type EachMonthOfIntervalResult<
  * // ]
  */
 export declare function eachMonthOfInterval<
-  IntervalType extends Interval,
-  Options extends EachMonthOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachMonthOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachMonthOfIntervalResult<IntervalType, Options>;

@@ -13,7 +13,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from threading import Lock, Timer
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -80,7 +80,7 @@ class TraceFileWatcher:
         self._changes_by_type: dict[str, int] = defaultdict(int)
 
         # Watchdog observer
-        self._observer: Observer | None = None
+        self._observer: "Observer | None" = None  # type: ignore[valid-type]
         self._event_handler = _TraceEventHandler(self)
 
         # Load or create project in database
@@ -122,8 +122,9 @@ class TraceFileWatcher:
             return
 
         self._observer = Observer()
-        self._observer.schedule(self._event_handler, str(self.trace_path), recursive=True)
-        self._observer.start()
+        if self._observer is not None:
+            self._observer.schedule(self._event_handler, str(self.trace_path), recursive=True)
+            self._observer.start()
 
         logger.info(f"Started watching: {self.trace_path}")
         logger.info(f"Debounce delay: {self.debounce_delay * 1000}ms")
@@ -294,7 +295,7 @@ class TraceFileWatcher:
                         external_id=item_data.external_id,
                         description=item_data.description,
                         status=item_data.status,
-                        priority=item_data.priority,
+                        priority=item_data.priority or "medium",
                         owner=item_data.owner,
                         parent_id=item_data.parent,
                         metadata={
@@ -370,7 +371,7 @@ class TraceFileWatcher:
 
         logger.info(f"Updated project config: {project_name}")
 
-    def _queue_for_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict) -> None:
+    def _queue_for_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]) -> None:
         """
         Queue a change for remote sync.
 
@@ -404,7 +405,8 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        path = Path(event.src_path)
+        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode('utf-8')
+        path = Path(src_path)
         if self._should_process(path):
             logger.debug(f"File created: {path}")
             self.watcher._debounce_event(path, "created")
@@ -414,7 +416,8 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        path = Path(event.src_path)
+        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode('utf-8')
+        path = Path(src_path)
         if self._should_process(path):
             logger.debug(f"File modified: {path}")
             self.watcher._debounce_event(path, "modified")
@@ -424,7 +427,8 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        path = Path(event.src_path)
+        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode('utf-8')
+        path = Path(src_path)
         if self._should_process(path):
             logger.debug(f"File deleted: {path}")
             self.watcher._debounce_event(path, "deleted")

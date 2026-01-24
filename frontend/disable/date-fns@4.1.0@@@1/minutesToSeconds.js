@@ -18,7 +18,7 @@ import { secondsInMinute } from "./constants.js";
  * //=> 120
  */
 export function minutesToSeconds(minutes) {
-  return Math.trunc(minutes * secondsInMinute);
+	return Math.trunc(minutes * secondsInMinute);
 }
 
 // Fallback for modularized imports:

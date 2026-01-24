@@ -1,112 +1,110 @@
-import * as util from '../util/index.mjs';
+import * as util from "../util/index.mjs";
 
-let rendererDefaults = util.defaults({
-  hideEdgesOnViewport: false,
-  textureOnViewport: false,
-  motionBlur: false,
-  motionBlurOpacity: 0.05,
-  pixelRatio: undefined,
-  desktopTapThreshold: 4,
-  touchTapThreshold: 8,
-  wheelSensitivity: 1,
-  debug: false,
-  showFps: false,
-  
-  // webgl options
-  webgl: false,
-  webglDebug: false,
-  webglDebugShowAtlases: false,
-  // defaults good for mobile
-  webglTexSize: 2048,
-  webglTexRows: 36,
-  webglTexRowsNodes: 18,
-  webglBatchSize: 2048,
-  webglTexPerBatch: 14,
-  webglBgColor: [255, 255, 255]
+const rendererDefaults = util.defaults({
+	hideEdgesOnViewport: false,
+	textureOnViewport: false,
+	motionBlur: false,
+	motionBlurOpacity: 0.05,
+	pixelRatio: undefined,
+	desktopTapThreshold: 4,
+	touchTapThreshold: 8,
+	wheelSensitivity: 1,
+	debug: false,
+	showFps: false,
+
+	// webgl options
+	webgl: false,
+	webglDebug: false,
+	webglDebugShowAtlases: false,
+	// defaults good for mobile
+	webglTexSize: 2048,
+	webglTexRows: 36,
+	webglTexRowsNodes: 18,
+	webglBatchSize: 2048,
+	webglTexPerBatch: 14,
+	webglBgColor: [255, 255, 255],
 });
 
-let corefn = ({
+const corefn = {
+	renderTo: function (context, zoom, pan, pxRatio) {
+		const r = this._private.renderer;
 
-  renderTo: function( context, zoom, pan, pxRatio ){
-    let r = this._private.renderer;
+		r.renderTo(context, zoom, pan, pxRatio);
+		return this;
+	},
 
-    r.renderTo( context, zoom, pan, pxRatio );
-    return this;
-  },
+	renderer: function () {
+		return this._private.renderer;
+	},
 
-  renderer: function(){
-    return this._private.renderer;
-  },
+	forceRender: function () {
+		this.notify("draw");
 
-  forceRender: function(){
-    this.notify('draw');
+		return this;
+	},
 
-    return this;
-  },
+	resize: function () {
+		this.invalidateSize();
 
-  resize: function(){
-    this.invalidateSize();
+		this.emitAndNotify("resize");
 
-    this.emitAndNotify('resize');
+		return this;
+	},
 
-    return this;
-  },
+	initRenderer: function (options) {
+		const RendererProto = this.extension("renderer", options.name);
+		if (RendererProto == null) {
+			util.error(
+				`Can not initialise: No such renderer \`${options.name}\` found. Did you forget to import it and \`cytoscape.use()\` it?`,
+			);
+			return;
+		}
 
-  initRenderer: function( options ){
-    let cy = this;
+		if (options.wheelSensitivity !== undefined) {
+			util.warn(
+				`You have set a custom wheel sensitivity.  This will make your app zoom unnaturally when using mainstream mice.  You should change this value from the default only if you can guarantee that all your users will use the same hardware and OS configuration as your current machine.`,
+			);
+		}
 
-    let RendererProto = cy.extension( 'renderer', options.name );
-    if( RendererProto == null ){
-      util.error( `Can not initialise: No such renderer \`${options.name}\` found. Did you forget to import it and \`cytoscape.use()\` it?` );
-      return;
-    }
+		const rOpts = rendererDefaults(options);
 
-    if( options.wheelSensitivity !== undefined ){
-      util.warn(`You have set a custom wheel sensitivity.  This will make your app zoom unnaturally when using mainstream mice.  You should change this value from the default only if you can guarantee that all your users will use the same hardware and OS configuration as your current machine.`);
-    }
+		rOpts.cy = this;
 
-    let rOpts = rendererDefaults(options);
+		this._private.renderer = new RendererProto(rOpts);
 
-    rOpts.cy = cy;
+		this.notify("init");
+	},
 
-    cy._private.renderer = new RendererProto( rOpts );
+	destroyRenderer: function () {
+		this.notify("destroy"); // destroy the renderer
 
-    this.notify('init');
-  },
+		const domEle = this.container();
+		if (domEle) {
+			domEle._cyreg = null;
 
-  destroyRenderer: function(){
-    let cy = this;
+			while (domEle.childNodes.length > 0) {
+				domEle.removeChild(domEle.childNodes[0]);
+			}
+		}
 
-    cy.notify('destroy'); // destroy the renderer
+		this._private.renderer = null; // to be extra safe, remove the ref
+		this.mutableElements().forEach((ele) => {
+			const _p = ele._private;
+			_p.rscratch = {};
+			_p.rstyle = {};
+			_p.animation.current = [];
+			_p.animation.queue = [];
+		});
+	},
 
-    let domEle = cy.container();
-    if( domEle ){
-      domEle._cyreg = null;
+	onRender: function (fn) {
+		return this.on("render", fn);
+	},
 
-      while( domEle.childNodes.length > 0 ){
-        domEle.removeChild( domEle.childNodes[0] );
-      }
-    }
-
-    cy._private.renderer = null; // to be extra safe, remove the ref
-    cy.mutableElements().forEach(function( ele ){
-      let _p = ele._private;
-      _p.rscratch = {};
-      _p.rstyle = {};
-      _p.animation.current = [];
-      _p.animation.queue = [];
-    });
-  },
-
-  onRender: function( fn ){
-    return this.on('render', fn);
-  },
-
-  offRender: function( fn ){
-    return this.off('render', fn);
-  }
-
-});
+	offRender: function (fn) {
+		return this.off("render", fn);
+	},
+};
 
 corefn.invalidateDimensions = corefn.resize;
 

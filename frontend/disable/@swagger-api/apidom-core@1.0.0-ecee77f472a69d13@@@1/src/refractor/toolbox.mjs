@@ -1,5 +1,6 @@
-import * as basePredicates from "../predicates/index.mjs";
 import defaultNamespaceInstance from "../namespace.mjs";
+import * as basePredicates from "../predicates/index.mjs";
+
 /**
  * @public
  */
@@ -10,12 +11,12 @@ import defaultNamespaceInstance from "../namespace.mjs";
  * @public
  */
 const createToolbox = () => {
-  const predicates = {
-    ...basePredicates
-  };
-  return {
-    predicates,
-    namespace: defaultNamespaceInstance
-  };
+	const predicates = {
+		...basePredicates,
+	};
+	return {
+		predicates,
+		namespace: defaultNamespaceInstance,
+	};
 };
 export default createToolbox;

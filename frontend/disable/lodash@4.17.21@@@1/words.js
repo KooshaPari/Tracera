@@ -1,7 +1,7 @@
-var asciiWords = require('./_asciiWords'),
-    hasUnicodeWord = require('./_hasUnicodeWord'),
-    toString = require('./toString'),
-    unicodeWords = require('./_unicodeWords');
+var asciiWords = require("./_asciiWords"),
+	hasUnicodeWord = require("./_hasUnicodeWord"),
+	toString = require("./toString"),
+	unicodeWords = require("./_unicodeWords");
 
 /**
  * Splits `string` into an array of its words.
@@ -23,13 +23,13 @@ var asciiWords = require('./_asciiWords'),
  * // => ['fred', 'barney', '&', 'pebbles']
  */
 function words(string, pattern, guard) {
-  string = toString(string);
-  pattern = guard ? undefined : pattern;
+	string = toString(string);
+	pattern = guard ? undefined : pattern;
 
-  if (pattern === undefined) {
-    return hasUnicodeWord(string) ? unicodeWords(string) : asciiWords(string);
-  }
-  return string.match(pattern) || [];
+	if (pattern === undefined) {
+		return hasUnicodeWord(string) ? unicodeWords(string) : asciiWords(string);
+	}
+	return string.match(pattern) || [];
 }
 
 module.exports = words;

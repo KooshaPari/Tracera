@@ -1,18 +1,18 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link formatRelative} function options.
  */
 export interface FormatRelativeOptions
-  extends LocalizedOptions<
-      "options" | "localize" | "formatLong" | "formatRelative"
-    >,
-    WeekOptions,
-    ContextOptions<Date> {}
+	extends LocalizedOptions<
+			"options" | "localize" | "formatLong" | "formatRelative"
+		>,
+		WeekOptions,
+		ContextOptions<Date> {}
 /**
  * @name formatRelative
  * @category Common Helpers
@@ -48,7 +48,7 @@ export interface FormatRelativeOptions
  * //=> "last Thursday at 12:45 AM"
  */
 export declare function formatRelative(
-  date: DateArg<Date> & {},
-  baseDate: DateArg<Date> & {},
-  options?: FormatRelativeOptions,
+	date: DateArg<Date> & {},
+	baseDate: DateArg<Date> & {},
+	options?: FormatRelativeOptions,
 ): string;

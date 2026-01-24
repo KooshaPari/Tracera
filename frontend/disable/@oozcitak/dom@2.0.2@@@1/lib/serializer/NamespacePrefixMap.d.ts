@@ -15,38 +15,38 @@
  * See: https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map
  */
 export declare class NamespacePrefixMap {
-    private _items;
-    private _nullItems;
-    /**
-     * Creates a copy of the map.
-     */
-    copy(): NamespacePrefixMap;
-    /**
-     * Retrieves a preferred prefix string from the namespace prefix map.
-     *
-     * @param preferredPrefix - preferred prefix string
-     * @param ns - namespace
-     */
-    get(preferredPrefix: string | null, ns: string | null): string | null;
-    /**
-     * Checks if a prefix string is found in the namespace prefix map associated
-     * with the given namespace.
-     *
-     * @param prefix - prefix string
-     * @param ns - namespace
-     */
-    has(prefix: string, ns: string | null): boolean;
-    /**
-     * Checks if a prefix string is found in the namespace prefix map.
-     *
-     * @param prefix - prefix string
-     */
-    hasPrefix(prefix: string): boolean;
-    /**
-     * Adds a prefix string associated with a namespace to the prefix map.
-     *
-     * @param prefix - prefix string
-     * @param ns - namespace
-     */
-    set(prefix: string, ns: string | null): void;
+	private _items;
+	private _nullItems;
+	/**
+	 * Creates a copy of the map.
+	 */
+	copy(): NamespacePrefixMap;
+	/**
+	 * Retrieves a preferred prefix string from the namespace prefix map.
+	 *
+	 * @param preferredPrefix - preferred prefix string
+	 * @param ns - namespace
+	 */
+	get(preferredPrefix: string | null, ns: string | null): string | null;
+	/**
+	 * Checks if a prefix string is found in the namespace prefix map associated
+	 * with the given namespace.
+	 *
+	 * @param prefix - prefix string
+	 * @param ns - namespace
+	 */
+	has(prefix: string, ns: string | null): boolean;
+	/**
+	 * Checks if a prefix string is found in the namespace prefix map.
+	 *
+	 * @param prefix - prefix string
+	 */
+	hasPrefix(prefix: string): boolean;
+	/**
+	 * Adds a prefix string associated with a namespace to the prefix map.
+	 *
+	 * @param prefix - prefix string
+	 * @param ns - namespace
+	 */
+	set(prefix: string, ns: string | null): void;
 }

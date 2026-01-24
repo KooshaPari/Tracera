@@ -1,8 +1,6 @@
-'use strict';
-
-import utils from './../utils.js';
-import defaults from '../defaults/index.js';
-import AxiosHeaders from '../core/AxiosHeaders.js';
+import AxiosHeaders from "../core/AxiosHeaders.js";
+import defaults from "../defaults/index.js";
+import utils from "./../utils.js";
 
 /**
  * Transform the data for a request or a response
@@ -13,16 +11,21 @@ import AxiosHeaders from '../core/AxiosHeaders.js';
  * @returns {*} The resulting transformed data
  */
 export default function transformData(fns, response) {
-  const config = this || defaults;
-  const context = response || config;
-  const headers = AxiosHeaders.from(context.headers);
-  let data = context.data;
+	const config = this || defaults;
+	const context = response || config;
+	const headers = AxiosHeaders.from(context.headers);
+	let data = context.data;
 
-  utils.forEach(fns, function transform(fn) {
-    data = fn.call(config, data, headers.normalize(), response ? response.status : undefined);
-  });
+	utils.forEach(fns, function transform(fn) {
+		data = fn.call(
+			config,
+			data,
+			headers.normalize(),
+			response ? response.status : undefined,
+		);
+	});
 
-  headers.normalize();
+	headers.normalize();
 
-  return data;
+	return data;
 }

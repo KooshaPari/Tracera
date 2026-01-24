@@ -31,9 +31,9 @@ var _index2 = require("./setISOWeekYear.cjs");
  * //=> Fri Jun 26 2015 00:00:00
  */
 function addISOWeekYears(date, amount, options) {
-  return (0, _index2.setISOWeekYear)(
-    date,
-    (0, _index.getISOWeekYear)(date, options) + amount,
-    options,
-  );
+	return (0, _index2.setISOWeekYear)(
+		date,
+		(0, _index.getISOWeekYear)(date, options) + amount,
+		options,
+	);
 }

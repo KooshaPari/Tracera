@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentOrShadowRootImpl = void 0;
 /**
@@ -9,7 +8,6 @@ exports.DocumentOrShadowRootImpl = void 0;
  * _Note:_ The DocumentOrShadowRoot mixin is expected to be used by other
  * standards that want to define APIs shared between documents and shadow roots.
  */
-class DocumentOrShadowRootImpl {
-}
+class DocumentOrShadowRootImpl {}
 exports.DocumentOrShadowRootImpl = DocumentOrShadowRootImpl;
 //# sourceMappingURL=DocumentOrShadowRootImpl.js.map

@@ -1,5 +1,5 @@
-var baseForRight = require('./_baseForRight'),
-    keys = require('./keys');
+var baseForRight = require("./_baseForRight"),
+	keys = require("./keys");
 
 /**
  * The base implementation of `_.forOwnRight` without support for iteratee shorthands.
@@ -10,7 +10,7 @@ var baseForRight = require('./_baseForRight'),
  * @returns {Object} Returns `object`.
  */
 function baseForOwnRight(object, iteratee) {
-  return object && baseForRight(object, iteratee, keys);
+	return object && baseForRight(object, iteratee, keys);
 }
 
 module.exports = baseForOwnRight;

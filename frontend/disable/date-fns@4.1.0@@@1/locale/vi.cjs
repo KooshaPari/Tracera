@@ -15,14 +15,14 @@ var _index5 = require("./vi/_lib/match.cjs");
  * @author Leroy Hopson [@lihop](https://github.com/lihop)
  */
 const vi = (exports.vi = {
-  code: "vi",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1 /* First week of new year contains Jan 1st  */,
-  },
+	code: "vi",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1 /* First week of new year contains Jan 1st  */,
+	},
 });

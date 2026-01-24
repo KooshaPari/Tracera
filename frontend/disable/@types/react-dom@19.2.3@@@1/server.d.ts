@@ -1,24 +1,24 @@
 // forward declarations
 declare global {
-    namespace NodeJS {
-        // eslint-disable-next-line @typescript-eslint/no-empty-interface
-        interface ReadableStream {}
+	namespace NodeJS {
+		// eslint-disable-next-line @typescript-eslint/no-empty-interface
+		interface ReadableStream {}
 
-        // eslint-disable-next-line @typescript-eslint/no-empty-interface
-        interface WritableStream {}
-    }
+		// eslint-disable-next-line @typescript-eslint/no-empty-interface
+		interface WritableStream {}
+	}
 
-    /**
-     * Stub for https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
-     */
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface AbortSignal {}
+	/**
+	 * Stub for https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-empty-interface
+	interface AbortSignal {}
 
-    /**
-     * Stub for https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream
-     */
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface ReadableStream {}
+	/**
+	 * Stub for https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-empty-interface
+	interface ReadableStream {}
 }
 
 import { ReactNode } from "react";
@@ -26,9 +26,9 @@ import { ErrorInfo, ReactFormState } from "./client";
 import { PostponedState, ResumeOptions } from "./static";
 
 export interface BootstrapScriptDescriptor {
-    src: string;
-    integrity?: string | undefined;
-    crossOrigin?: string | undefined;
+	src: string;
+	integrity?: string | undefined;
+	crossOrigin?: string | undefined;
 }
 
 /**
@@ -37,58 +37,66 @@ export interface BootstrapScriptDescriptor {
 // TODO: Ideally TypeScripts standard library would include this type.
 // Until then we keep the prefixed one for future compatibility.
 export interface ReactImportMap {
-    /**
-     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap#imports `imports` reference}
-     */
-    imports?: {
-        [specifier: string]: string;
-    } | undefined;
-    /**
-     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap#integrity `integrity` reference}
-     */
-    integrity?: {
-        [moduleURL: string]: string;
-    } | undefined;
-    /**
-     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap#scopes `scopes` reference}
-     */
-    scopes?: {
-        [scope: string]: {
-            [specifier: string]: string;
-        };
-    } | undefined;
+	/**
+	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap#imports `imports` reference}
+	 */
+	imports?:
+		| {
+				[specifier: string]: string;
+		  }
+		| undefined;
+	/**
+	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap#integrity `integrity` reference}
+	 */
+	integrity?:
+		| {
+				[moduleURL: string]: string;
+		  }
+		| undefined;
+	/**
+	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap#scopes `scopes` reference}
+	 */
+	scopes?:
+		| {
+				[scope: string]: {
+					[specifier: string]: string;
+				};
+		  }
+		| undefined;
 }
 
 export interface RenderToPipeableStreamOptions {
-    identifierPrefix?: string;
-    namespaceURI?: string;
-    nonce?: string;
-    bootstrapScriptContent?: string;
-    bootstrapScripts?: Array<string | BootstrapScriptDescriptor>;
-    bootstrapModules?: Array<string | BootstrapScriptDescriptor>;
-    /**
-     * Maximum length of the header content in unicode code units i.e. string.length.
-     * Must be a positive integer if specified.
-     * @default 2000
-     */
-    headersLengthHint?: number | undefined;
-    importMap?: ReactImportMap | undefined;
-    progressiveChunkSize?: number;
-    onHeaders?: ((headers: Headers) => void) | undefined;
-    onShellReady?: () => void;
-    onShellError?: (error: unknown) => void;
-    onAllReady?: () => void;
-    onError?: (error: unknown, errorInfo: ErrorInfo) => string | void;
-    formState?: ReactFormState | null;
+	identifierPrefix?: string;
+	namespaceURI?: string;
+	nonce?: string;
+	bootstrapScriptContent?: string;
+	bootstrapScripts?: Array<string | BootstrapScriptDescriptor>;
+	bootstrapModules?: Array<string | BootstrapScriptDescriptor>;
+	/**
+	 * Maximum length of the header content in unicode code units i.e. string.length.
+	 * Must be a positive integer if specified.
+	 * @default 2000
+	 */
+	headersLengthHint?: number | undefined;
+	importMap?: ReactImportMap | undefined;
+	progressiveChunkSize?: number;
+	onHeaders?: ((headers: Headers) => void) | undefined;
+	onShellReady?: () => void;
+	onShellError?: (error: unknown) => void;
+	onAllReady?: () => void;
+	onError?: (error: unknown, errorInfo: ErrorInfo) => string | void;
+	formState?: ReactFormState | null;
 }
 
 export interface PipeableStream {
-    abort: (reason?: unknown) => void;
-    pipe: <Writable extends NodeJS.WritableStream>(destination: Writable) => Writable;
+	abort: (reason?: unknown) => void;
+	pipe: <Writable extends NodeJS.WritableStream>(
+		destination: Writable,
+	) => Writable;
 }
 
 export interface ServerOptions {
-    identifierPrefix?: string;
+	identifierPrefix?: string;
 }
 
 /**
@@ -99,7 +107,10 @@ export interface ServerOptions {
  * @param children
  * @param options
  */
-export function renderToPipeableStream(children: ReactNode, options?: RenderToPipeableStreamOptions): PipeableStream;
+export function renderToPipeableStream(
+	children: ReactNode,
+	options?: RenderToPipeableStreamOptions,
+): PipeableStream;
 
 /**
  * Render a React element to its initial HTML. This should only be used on the server.
@@ -111,7 +122,10 @@ export function renderToPipeableStream(children: ReactNode, options?: RenderToPi
  * React will preserve it and only attach event handlers, allowing you
  * to have a very performant first-load experience.
  */
-export function renderToString(element: ReactNode, options?: ServerOptions): string;
+export function renderToString(
+	element: ReactNode,
+	options?: ServerOptions,
+): string;
 
 /**
  * Similar to `renderToString`, except this doesn't create extra DOM attributes
@@ -119,31 +133,34 @@ export function renderToString(element: ReactNode, options?: ServerOptions): str
  * to use React as a simple static page generator, as stripping away the extra
  * attributes can save lots of bytes.
  */
-export function renderToStaticMarkup(element: ReactNode, options?: ServerOptions): string;
+export function renderToStaticMarkup(
+	element: ReactNode,
+	options?: ServerOptions,
+): string;
 
 export interface RenderToReadableStreamOptions {
-    identifierPrefix?: string;
-    importMap?: ReactImportMap | undefined;
-    namespaceURI?: string;
-    nonce?: string;
-    bootstrapScriptContent?: string;
-    bootstrapScripts?: Array<string | BootstrapScriptDescriptor>;
-    bootstrapModules?: Array<string | BootstrapScriptDescriptor>;
-    /**
-     * Maximum length of the header content in unicode code units i.e. string.length.
-     * Must be a positive integer if specified.
-     * @default 2000
-     */
-    headersLengthHint?: number | undefined;
-    progressiveChunkSize?: number;
-    signal?: AbortSignal;
-    onError?: (error: unknown, errorInfo: ErrorInfo) => string | void;
-    onHeaders?: ((headers: Headers) => void) | undefined;
-    formState?: ReactFormState | null;
+	identifierPrefix?: string;
+	importMap?: ReactImportMap | undefined;
+	namespaceURI?: string;
+	nonce?: string;
+	bootstrapScriptContent?: string;
+	bootstrapScripts?: Array<string | BootstrapScriptDescriptor>;
+	bootstrapModules?: Array<string | BootstrapScriptDescriptor>;
+	/**
+	 * Maximum length of the header content in unicode code units i.e. string.length.
+	 * Must be a positive integer if specified.
+	 * @default 2000
+	 */
+	headersLengthHint?: number | undefined;
+	progressiveChunkSize?: number;
+	signal?: AbortSignal;
+	onError?: (error: unknown, errorInfo: ErrorInfo) => string | void;
+	onHeaders?: ((headers: Headers) => void) | undefined;
+	formState?: ReactFormState | null;
 }
 
 export interface ReactDOMServerReadableStream extends ReadableStream {
-    allReady: Promise<void>;
+	allReady: Promise<void>;
 }
 
 /**
@@ -152,8 +169,8 @@ export interface ReactDOMServerReadableStream extends ReadableStream {
  * @see [API](https://react.dev/reference/react-dom/server/renderToReadableStream)
  */
 export function renderToReadableStream(
-    children: ReactNode,
-    options?: RenderToReadableStreamOptions,
+	children: ReactNode,
+	options?: RenderToReadableStreamOptions,
 ): Promise<ReactDOMServerReadableStream>;
 
 export { ResumeOptions };
@@ -163,9 +180,9 @@ export { ResumeOptions };
  * @version 19.2
  */
 export function resume(
-    children: React.ReactNode,
-    postponedState: PostponedState,
-    options?: ResumeOptions,
+	children: React.ReactNode,
+	postponedState: PostponedState,
+	options?: ResumeOptions,
 ): Promise<ReactDOMServerReadableStream>;
 
 /**
@@ -173,9 +190,9 @@ export function resume(
  * @version 19.2
  */
 export function resumeToPipeableStream(
-    children: React.ReactNode,
-    postponedState: PostponedState,
-    options?: ResumeOptions,
+	children: React.ReactNode,
+	postponedState: PostponedState,
+	options?: ResumeOptions,
 ): Promise<PipeableStream>;
 
 export const version: string;

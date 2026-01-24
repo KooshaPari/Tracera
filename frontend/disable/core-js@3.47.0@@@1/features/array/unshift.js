@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/array/unshift');
+"use strict";
+module.exports = require("../../full/array/unshift");

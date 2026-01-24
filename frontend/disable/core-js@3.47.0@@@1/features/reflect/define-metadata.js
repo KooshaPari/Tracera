@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/reflect/define-metadata');
+"use strict";
+module.exports = require("../../full/reflect/define-metadata");

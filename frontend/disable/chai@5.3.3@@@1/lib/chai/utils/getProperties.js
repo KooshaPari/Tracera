@@ -17,22 +17,22 @@
  * @public
  */
 export function getProperties(object) {
-  let result = Object.getOwnPropertyNames(object);
+	const result = Object.getOwnPropertyNames(object);
 
-  /**
-   * @param {unknown} property
-   */
-  function addProperty(property) {
-    if (result.indexOf(property) === -1) {
-      result.push(property);
-    }
-  }
+	/**
+	 * @param {unknown} property
+	 */
+	function addProperty(property) {
+		if (result.indexOf(property) === -1) {
+			result.push(property);
+		}
+	}
 
-  let proto = Object.getPrototypeOf(object);
-  while (proto !== null) {
-    Object.getOwnPropertyNames(proto).forEach(addProperty);
-    proto = Object.getPrototypeOf(proto);
-  }
+	let proto = Object.getPrototypeOf(object);
+	while (proto !== null) {
+		Object.getOwnPropertyNames(proto).forEach(addProperty);
+		proto = Object.getPrototypeOf(proto);
+	}
 
-  return result;
+	return result;
 }

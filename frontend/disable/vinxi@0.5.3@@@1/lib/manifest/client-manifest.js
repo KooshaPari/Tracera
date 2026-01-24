@@ -17,7 +17,7 @@ const manifest = new Proxy(
 				handler: import.meta.env.DEV
 					? join(import.meta.env.CWD, import.meta.env.ROUTER_HANDLER)
 					: // @ts-ignore
-					  virtualId(handlerModule({ name: routerName })),
+						virtualId(handlerModule({ name: routerName })),
 				baseURL: import.meta.env.BASE_URL,
 				chunks: new Proxy(
 					{},

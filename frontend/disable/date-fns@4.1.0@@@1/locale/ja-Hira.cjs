@@ -14,14 +14,14 @@ var _index5 = require("./ja-Hira/_lib/match.cjs");
  * @author Eri Hiramatsu [@Eritutteo](https://github.com/Eritutteo)
  */
 const jaHira = (exports.jaHira = {
-  code: "ja-Hira",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ja-Hira",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

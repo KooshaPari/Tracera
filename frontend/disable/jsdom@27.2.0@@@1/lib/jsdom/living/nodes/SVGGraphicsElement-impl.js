@@ -7,8 +7,8 @@ const SVGTestsImpl = require("./SVGTests-impl").implementation;
 class SVGGraphicsElementImpl extends SVGElementImpl {}
 
 SVGGraphicsElementImpl.attributeRegistry = new Map([
-  ...SVGElementImpl.attributeRegistry,
-  ...SVGTestsImpl.attributeRegistry
+	...SVGElementImpl.attributeRegistry,
+	...SVGTestsImpl.attributeRegistry,
 ]);
 
 mixin(SVGGraphicsElementImpl.prototype, SVGTestsImpl.prototype);

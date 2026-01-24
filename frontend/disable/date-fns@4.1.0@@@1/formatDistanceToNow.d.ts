@@ -4,8 +4,8 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link formatDistanceToNow} function options.
  */
 export interface FormatDistanceToNowOptions
-  extends FormatDistanceOptions,
-    ContextOptions<Date> {}
+	extends FormatDistanceOptions,
+		ContextOptions<Date> {}
 /**
  * @name formatDistanceToNow
  * @category Common Helpers
@@ -88,6 +88,6 @@ export interface FormatDistanceToNowOptions
  * //=> 'pli ol 1 jaro'
  */
 export declare function formatDistanceToNow(
-  date: DateArg<Date> & {},
-  options?: FormatDistanceToNowOptions,
+	date: DateArg<Date> & {},
+	options?: FormatDistanceToNowOptions,
 ): string;

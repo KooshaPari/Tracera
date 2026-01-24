@@ -1,36 +1,34 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = mergeSourceMap;
 function _remapping() {
-  const data = require("@jridgewell/remapping");
-  _remapping = function () {
-    return data;
-  };
-  return data;
+	const data = require("@jridgewell/remapping");
+	_remapping = () => data;
+	return data;
 }
 function mergeSourceMap(inputMap, map, sourceFileName) {
-  const source = sourceFileName.replace(/\\/g, "/");
-  let found = false;
-  const result = _remapping()(rootless(map), (s, ctx) => {
-    if (s === source && !found) {
-      found = true;
-      ctx.source = "";
-      return rootless(inputMap);
-    }
-    return null;
-  });
-  if (typeof inputMap.sourceRoot === "string") {
-    result.sourceRoot = inputMap.sourceRoot;
-  }
-  return Object.assign({}, result);
+	const source = sourceFileName.replace(/\\/g, "/");
+	let found = false;
+	const result = _remapping()(rootless(map), (s, ctx) => {
+		if (s === source && !found) {
+			found = true;
+			ctx.source = "";
+			return rootless(inputMap);
+		}
+		return null;
+	});
+	if (typeof inputMap.sourceRoot === "string") {
+		result.sourceRoot = inputMap.sourceRoot;
+	}
+	return Object.assign({}, result);
 }
 function rootless(map) {
-  return Object.assign({}, map, {
-    sourceRoot: null
-  });
+	return Object.assign({}, map, {
+		sourceRoot: null,
+	});
 }
 0 && 0;
 

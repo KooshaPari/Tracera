@@ -1,21 +1,21 @@
-import process from 'node:process';
-import fs from 'node:fs';
-import nodePath from 'node:path';
-import {Readable} from 'node:stream';
-import mergeStreams from '@sindresorhus/merge-streams';
-import fastGlob from 'fast-glob';
-import {isDirectory, isDirectorySync} from 'path-type';
-import {toPath} from 'unicorn-magic';
+import fs from "node:fs";
+import nodePath from "node:path";
+import process from "node:process";
+import { Readable } from "node:stream";
+import mergeStreams from "@sindresorhus/merge-streams";
+import fastGlob from "fast-glob";
+import { isDirectory, isDirectorySync } from "path-type";
+import { toPath } from "unicorn-magic";
 import {
 	GITIGNORE_FILES_PATTERN,
 	isIgnoredByIgnoreFiles,
 	isIgnoredByIgnoreFilesSync,
-} from './ignore.js';
-import {isNegativePattern} from './utilities.js';
+} from "./ignore.js";
+import { isNegativePattern } from "./utilities.js";
 
-const assertPatternsInput = patterns => {
-	if (patterns.some(pattern => typeof pattern !== 'string')) {
-		throw new TypeError('Patterns must be a string or an array of strings');
+const assertPatternsInput = (patterns) => {
+	if (patterns.some((pattern) => typeof pattern !== "string")) {
+		throw new TypeError("Patterns must be a string or an array of strings");
 	}
 };
 
@@ -24,7 +24,7 @@ const normalizePathForDirectoryGlob = (filePath, cwd) => {
 	return nodePath.isAbsolute(path) ? path : nodePath.join(cwd, path);
 };
 
-const shouldExpandGlobstarDirectory = pattern => {
+const shouldExpandGlobstarDirectory = (pattern) => {
 	const match = pattern?.match(/\*\*\/([^/]+)$/);
 	if (!match) {
 		return false;
@@ -32,65 +32,87 @@ const shouldExpandGlobstarDirectory = pattern => {
 
 	const dirname = match[1];
 	const hasWildcards = /[*?[\]{}]/.test(dirname);
-	const hasExtension = nodePath.extname(dirname) && !dirname.startsWith('.');
+	const hasExtension = nodePath.extname(dirname) && !dirname.startsWith(".");
 
 	return !hasWildcards && !hasExtension;
 };
 
-const getDirectoryGlob = ({directoryPath, files, extensions}) => {
-	const extensionGlob = extensions?.length > 0 ? `.${extensions.length > 1 ? `{${extensions.join(',')}}` : extensions[0]}` : '';
+const getDirectoryGlob = ({ directoryPath, files, extensions }) => {
+	const extensionGlob =
+		extensions?.length > 0
+			? `.${extensions.length > 1 ? `{${extensions.join(",")}}` : extensions[0]}`
+			: "";
 	return files
-		? files.map(file => nodePath.posix.join(directoryPath, `**/${nodePath.extname(file) ? file : `${file}${extensionGlob}`}`))
-		: [nodePath.posix.join(directoryPath, `**${extensionGlob ? `/*${extensionGlob}` : ''}`)];
+		? files.map((file) =>
+				nodePath.posix.join(
+					directoryPath,
+					`**/${nodePath.extname(file) ? file : `${file}${extensionGlob}`}`,
+				),
+			)
+		: [
+				nodePath.posix.join(
+					directoryPath,
+					`**${extensionGlob ? `/*${extensionGlob}` : ""}`,
+				),
+			];
 };
 
-const directoryToGlob = async (directoryPaths, {
-	cwd = process.cwd(),
-	files,
-	extensions,
-} = {}) => {
-	const globs = await Promise.all(directoryPaths.map(async directoryPath => {
-		// Check pattern without negative prefix
-		const checkPattern = isNegativePattern(directoryPath) ? directoryPath.slice(1) : directoryPath;
+const directoryToGlob = async (
+	directoryPaths,
+	{ cwd = process.cwd(), files, extensions } = {},
+) => {
+	const globs = await Promise.all(
+		directoryPaths.map(async (directoryPath) => {
+			// Check pattern without negative prefix
+			const checkPattern = isNegativePattern(directoryPath)
+				? directoryPath.slice(1)
+				: directoryPath;
 
-		// Expand globstar directory patterns like **/dirname to **/dirname/**
-		if (shouldExpandGlobstarDirectory(checkPattern)) {
-			return getDirectoryGlob({directoryPath, files, extensions});
-		}
+			// Expand globstar directory patterns like **/dirname to **/dirname/**
+			if (shouldExpandGlobstarDirectory(checkPattern)) {
+				return getDirectoryGlob({ directoryPath, files, extensions });
+			}
 
-		// Original logic for checking actual directories
-		const pathToCheck = normalizePathForDirectoryGlob(directoryPath, cwd);
-		return (await isDirectory(pathToCheck)) ? getDirectoryGlob({directoryPath, files, extensions}) : directoryPath;
-	}));
+			// Original logic for checking actual directories
+			const pathToCheck = normalizePathForDirectoryGlob(directoryPath, cwd);
+			return (await isDirectory(pathToCheck))
+				? getDirectoryGlob({ directoryPath, files, extensions })
+				: directoryPath;
+		}),
+	);
 
 	return globs.flat();
 };
 
-const directoryToGlobSync = (directoryPaths, {
-	cwd = process.cwd(),
-	files,
-	extensions,
-} = {}) => directoryPaths.flatMap(directoryPath => {
-	// Check pattern without negative prefix
-	const checkPattern = isNegativePattern(directoryPath) ? directoryPath.slice(1) : directoryPath;
+const directoryToGlobSync = (
+	directoryPaths,
+	{ cwd = process.cwd(), files, extensions } = {},
+) =>
+	directoryPaths.flatMap((directoryPath) => {
+		// Check pattern without negative prefix
+		const checkPattern = isNegativePattern(directoryPath)
+			? directoryPath.slice(1)
+			: directoryPath;
 
-	// Expand globstar directory patterns like **/dirname to **/dirname/**
-	if (shouldExpandGlobstarDirectory(checkPattern)) {
-		return getDirectoryGlob({directoryPath, files, extensions});
-	}
+		// Expand globstar directory patterns like **/dirname to **/dirname/**
+		if (shouldExpandGlobstarDirectory(checkPattern)) {
+			return getDirectoryGlob({ directoryPath, files, extensions });
+		}
 
-	// Original logic for checking actual directories
-	const pathToCheck = normalizePathForDirectoryGlob(directoryPath, cwd);
-	return isDirectorySync(pathToCheck) ? getDirectoryGlob({directoryPath, files, extensions}) : directoryPath;
-});
+		// Original logic for checking actual directories
+		const pathToCheck = normalizePathForDirectoryGlob(directoryPath, cwd);
+		return isDirectorySync(pathToCheck)
+			? getDirectoryGlob({ directoryPath, files, extensions })
+			: directoryPath;
+	});
 
-const toPatternsArray = patterns => {
+const toPatternsArray = (patterns) => {
 	patterns = [...new Set([patterns].flat())];
 	assertPatternsInput(patterns);
 	return patterns;
 };
 
-const checkCwdOption = cwd => {
+const checkCwdOption = (cwd) => {
 	if (!cwd) {
 		return;
 	}
@@ -103,7 +125,7 @@ const checkCwdOption = cwd => {
 	}
 
 	if (!stat.isDirectory()) {
-		throw new Error('The `cwd` option must be a path to a directory');
+		throw new Error("The `cwd` option must be a path to a directory");
 	}
 };
 
@@ -120,11 +142,13 @@ const normalizeOptions = (options = {}) => {
 	return options;
 };
 
-const normalizeArguments = function_ => async (patterns, options) => function_(toPatternsArray(patterns), normalizeOptions(options));
-const normalizeArgumentsSync = function_ => (patterns, options) => function_(toPatternsArray(patterns), normalizeOptions(options));
+const normalizeArguments = (function_) => async (patterns, options) =>
+	function_(toPatternsArray(patterns), normalizeOptions(options));
+const normalizeArgumentsSync = (function_) => (patterns, options) =>
+	function_(toPatternsArray(patterns), normalizeOptions(options));
 
-const getIgnoreFilesPatterns = options => {
-	const {ignoreFiles, gitignore} = options;
+const getIgnoreFilesPatterns = (options) => {
+	const { ignoreFiles, gitignore } = options;
 
 	const patterns = ignoreFiles ? toPatternsArray(ignoreFiles) : [];
 	if (gitignore) {
@@ -134,20 +158,26 @@ const getIgnoreFilesPatterns = options => {
 	return patterns;
 };
 
-const getFilter = async options => {
+const getFilter = async (options) => {
 	const ignoreFilesPatterns = getIgnoreFilesPatterns(options);
-	return createFilterFunction(ignoreFilesPatterns.length > 0 && await isIgnoredByIgnoreFiles(ignoreFilesPatterns, options));
+	return createFilterFunction(
+		ignoreFilesPatterns.length > 0 &&
+			(await isIgnoredByIgnoreFiles(ignoreFilesPatterns, options)),
+	);
 };
 
-const getFilterSync = options => {
+const getFilterSync = (options) => {
 	const ignoreFilesPatterns = getIgnoreFilesPatterns(options);
-	return createFilterFunction(ignoreFilesPatterns.length > 0 && isIgnoredByIgnoreFilesSync(ignoreFilesPatterns, options));
+	return createFilterFunction(
+		ignoreFilesPatterns.length > 0 &&
+			isIgnoredByIgnoreFilesSync(ignoreFilesPatterns, options),
+	);
 };
 
-const createFilterFunction = isIgnored => {
+const createFilterFunction = (isIgnored) => {
 	const seen = new Set();
 
-	return fastGlobResult => {
+	return (fastGlobResult) => {
 		const pathKey = nodePath.normalize(fastGlobResult.path ?? fastGlobResult);
 
 		if (seen.has(pathKey) || (isIgnored && isIgnored(pathKey))) {
@@ -160,16 +190,17 @@ const createFilterFunction = isIgnored => {
 	};
 };
 
-const unionFastGlobResults = (results, filter) => results.flat().filter(fastGlobResult => filter(fastGlobResult));
+const unionFastGlobResults = (results, filter) =>
+	results.flat().filter((fastGlobResult) => filter(fastGlobResult));
 
 const convertNegativePatterns = (patterns, options) => {
 	const tasks = [];
 
 	while (patterns.length > 0) {
-		const index = patterns.findIndex(pattern => isNegativePattern(pattern));
+		const index = patterns.findIndex((pattern) => isNegativePattern(pattern));
 
 		if (index === -1) {
-			tasks.push({patterns, options});
+			tasks.push({ patterns, options });
 			break;
 		}
 
@@ -184,10 +215,7 @@ const convertNegativePatterns = (patterns, options) => {
 				patterns: patterns.slice(0, index),
 				options: {
 					...options,
-					ignore: [
-						...options.ignore,
-						ignorePattern,
-					],
+					ignore: [...options.ignore, ignorePattern],
 				},
 			});
 		}
@@ -199,84 +227,94 @@ const convertNegativePatterns = (patterns, options) => {
 };
 
 const normalizeExpandDirectoriesOption = (options, cwd) => ({
-	...(cwd ? {cwd} : {}),
-	...(Array.isArray(options) ? {files: options} : options),
+	...(cwd ? { cwd } : {}),
+	...(Array.isArray(options) ? { files: options } : options),
 });
 
 const generateTasks = async (patterns, options) => {
 	const globTasks = convertNegativePatterns(patterns, options);
 
-	const {cwd, expandDirectories} = options;
+	const { cwd, expandDirectories } = options;
 
 	if (!expandDirectories) {
 		return globTasks;
 	}
 
-	const directoryToGlobOptions = normalizeExpandDirectoriesOption(expandDirectories, cwd);
+	const directoryToGlobOptions = normalizeExpandDirectoriesOption(
+		expandDirectories,
+		cwd,
+	);
 
-	return Promise.all(globTasks.map(async task => {
-		let {patterns, options} = task;
+	return Promise.all(
+		globTasks.map(async (task) => {
+			let { patterns, options } = task;
 
-		[
-			patterns,
-			options.ignore,
-		] = await Promise.all([
-			directoryToGlob(patterns, directoryToGlobOptions),
-			directoryToGlob(options.ignore, {cwd}),
-		]);
+			[patterns, options.ignore] = await Promise.all([
+				directoryToGlob(patterns, directoryToGlobOptions),
+				directoryToGlob(options.ignore, { cwd }),
+			]);
 
-		return {patterns, options};
-	}));
+			return { patterns, options };
+		}),
+	);
 };
 
 const generateTasksSync = (patterns, options) => {
 	const globTasks = convertNegativePatterns(patterns, options);
-	const {cwd, expandDirectories} = options;
+	const { cwd, expandDirectories } = options;
 
 	if (!expandDirectories) {
 		return globTasks;
 	}
 
-	const directoryToGlobSyncOptions = normalizeExpandDirectoriesOption(expandDirectories, cwd);
+	const directoryToGlobSyncOptions = normalizeExpandDirectoriesOption(
+		expandDirectories,
+		cwd,
+	);
 
-	return globTasks.map(task => {
-		let {patterns, options} = task;
+	return globTasks.map((task) => {
+		let { patterns, options } = task;
 		patterns = directoryToGlobSync(patterns, directoryToGlobSyncOptions);
-		options.ignore = directoryToGlobSync(options.ignore, {cwd});
-		return {patterns, options};
+		options.ignore = directoryToGlobSync(options.ignore, { cwd });
+		return { patterns, options };
 	});
 };
 
 export const globby = normalizeArguments(async (patterns, options) => {
-	const [
-		tasks,
-		filter,
-	] = await Promise.all([
+	const [tasks, filter] = await Promise.all([
 		generateTasks(patterns, options),
 		getFilter(options),
 	]);
 
-	const results = await Promise.all(tasks.map(task => fastGlob(task.patterns, task.options)));
+	const results = await Promise.all(
+		tasks.map((task) => fastGlob(task.patterns, task.options)),
+	);
 	return unionFastGlobResults(results, filter);
 });
 
 export const globbySync = normalizeArgumentsSync((patterns, options) => {
 	const tasks = generateTasksSync(patterns, options);
 	const filter = getFilterSync(options);
-	const results = tasks.map(task => fastGlob.sync(task.patterns, task.options));
+	const results = tasks.map((task) =>
+		fastGlob.sync(task.patterns, task.options),
+	);
 	return unionFastGlobResults(results, filter);
 });
 
 export const globbyStream = normalizeArgumentsSync((patterns, options) => {
 	const tasks = generateTasksSync(patterns, options);
 	const filter = getFilterSync(options);
-	const streams = tasks.map(task => fastGlob.stream(task.patterns, task.options));
+	const streams = tasks.map((task) =>
+		fastGlob.stream(task.patterns, task.options),
+	);
 
 	if (streams.length === 0) {
 		return Readable.from([]);
 	}
 
-	const stream = mergeStreams(streams).filter(fastGlobResult => filter(fastGlobResult));
+	const stream = mergeStreams(streams).filter((fastGlobResult) =>
+		filter(fastGlobResult),
+	);
 
 	// Returning a web stream will require revisiting once Readable.toWeb integration is viable.
 	// return Readable.toWeb(stream);
@@ -284,7 +322,9 @@ export const globbyStream = normalizeArgumentsSync((patterns, options) => {
 	return stream;
 });
 
-export const isDynamicPattern = normalizeArgumentsSync((patterns, options) => patterns.some(pattern => fastGlob.isDynamicPattern(pattern, options)));
+export const isDynamicPattern = normalizeArgumentsSync((patterns, options) =>
+	patterns.some((pattern) => fastGlob.isDynamicPattern(pattern, options)),
+);
 
 export const generateGlobTasks = normalizeArguments(generateTasks);
 export const generateGlobTasksSync = normalizeArgumentsSync(generateTasksSync);
@@ -294,6 +334,6 @@ export {
 	isGitIgnoredSync,
 	isIgnoredByIgnoreFiles,
 	isIgnoredByIgnoreFilesSync,
-} from './ignore.js';
+} from "./ignore.js";
 
-export const {convertPathToPattern} = fastGlob;
+export const { convertPathToPattern } = fastGlob;

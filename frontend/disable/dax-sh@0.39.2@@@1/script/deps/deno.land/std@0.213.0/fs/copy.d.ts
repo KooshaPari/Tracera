@@ -1,19 +1,19 @@
 /// <reference types="node" />
 /** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {
-    /**
-     * overwrite existing file or directory.
-     * @default {false}
-     */
-    overwrite?: boolean;
-    /**
-     * When `true`, will set last modification and access times to the ones of the
-     * original source files.
-     * When `false`, timestamp behavior is OS-dependent.
-     *
-     * @default {false}
-     */
-    preserveTimestamps?: boolean;
+	/**
+	 * overwrite existing file or directory.
+	 * @default {false}
+	 */
+	overwrite?: boolean;
+	/**
+	 * When `true`, will set last modification and access times to the ones of the
+	 * original source files.
+	 * When `false`, timestamp behavior is OS-dependent.
+	 *
+	 * @default {false}
+	 */
+	preserveTimestamps?: boolean;
 }
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
@@ -32,7 +32,11 @@ export interface CopyOptions {
  *             be a directory
  * @param options
  */
-export declare function copy(src: string | URL, dest: string | URL, options?: CopyOptions): Promise<void>;
+export declare function copy(
+	src: string | URL,
+	dest: string | URL,
+	options?: CopyOptions,
+): Promise<void>;
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
  * Requires the `--allow-read` and `--allow-write` flag.
@@ -49,4 +53,8 @@ export declare function copy(src: string | URL, dest: string | URL, options?: Co
  *             be a directory
  * @param options
  */
-export declare function copySync(src: string | URL, dest: string | URL, options?: CopyOptions): void;
+export declare function copySync(
+	src: string | URL,
+	dest: string | URL,
+	options?: CopyOptions,
+): void;

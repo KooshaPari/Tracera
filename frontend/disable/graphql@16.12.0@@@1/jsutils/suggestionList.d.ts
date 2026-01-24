@@ -3,6 +3,6 @@
  * list of valid options sorted based on their similarity with the input.
  */
 export declare function suggestionList(
-  input: string,
-  options: ReadonlyArray<string>,
+	input: string,
+	options: ReadonlyArray<string>,
 ): Array<string>;

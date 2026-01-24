@@ -27,14 +27,14 @@ import { startOfISOWeekYear } from "./startOfISOWeekYear.js";
  * //=> 53
  */
 export function getISOWeeksInYear(date, options) {
-  const thisYear = startOfISOWeekYear(date, options);
-  const nextYear = startOfISOWeekYear(addWeeks(thisYear, 60));
-  const diff = +nextYear - +thisYear;
+	const thisYear = startOfISOWeekYear(date, options);
+	const nextYear = startOfISOWeekYear(addWeeks(thisYear, 60));
+	const diff = +nextYear - +thisYear;
 
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(diff / millisecondsInWeek);
+	// Round the number of weeks to the nearest integer because the number of
+	// milliseconds in a week is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round(diff / millisecondsInWeek);
 }
 
 // Fallback for modularized imports:

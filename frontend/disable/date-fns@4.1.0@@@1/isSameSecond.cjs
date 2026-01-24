@@ -40,8 +40,8 @@ var _index = require("./startOfSecond.cjs");
  * //=> false
  */
 function isSameSecond(laterDate, earlierDate) {
-  return (
-    +(0, _index.startOfSecond)(laterDate) ===
-    +(0, _index.startOfSecond)(earlierDate)
-  );
+	return (
+		+(0, _index.startOfSecond)(laterDate) ===
+		+(0, _index.startOfSecond)(earlierDate)
+	);
 }

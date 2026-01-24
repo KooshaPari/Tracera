@@ -6,5 +6,8 @@ var _apidomNsApiDesignSystems = require("@swagger-api/apidom-ns-api-design-syste
 /**
  * @public
  */
-const yamlMediaTypes = new _apidomNsApiDesignSystems.ApiDesignSystemsMediaTypes(..._apidomNsApiDesignSystems.mediaTypes.filterByFormat('generic'), ..._apidomNsApiDesignSystems.mediaTypes.filterByFormat('yaml'));
-var _default = exports.default = yamlMediaTypes;
+const yamlMediaTypes = new _apidomNsApiDesignSystems.ApiDesignSystemsMediaTypes(
+	..._apidomNsApiDesignSystems.mediaTypes.filterByFormat("generic"),
+	..._apidomNsApiDesignSystems.mediaTypes.filterByFormat("yaml"),
+);
+var _default = (exports.default = yamlMediaTypes);

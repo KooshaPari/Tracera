@@ -1,4 +1,5 @@
-export interface CSPair { // eslint-disable-line @typescript-eslint/naming-convention
+export interface CSPair {
+	// eslint-disable-line @typescript-eslint/naming-convention
 	/**
 	The ANSI terminal control sequence for starting this style.
 	*/
@@ -231,6 +232,9 @@ declare const ansiStyles: {
 	readonly color: ColorBase & ForegroundColor;
 	readonly bgColor: ColorBase & BackgroundColor;
 	readonly codes: ReadonlyMap<number, number>;
-} & ForegroundColor & BackgroundColor & Modifier & ConvertColor;
+} & ForegroundColor &
+	BackgroundColor &
+	Modifier &
+	ConvertColor;
 
 export default ansiStyles;

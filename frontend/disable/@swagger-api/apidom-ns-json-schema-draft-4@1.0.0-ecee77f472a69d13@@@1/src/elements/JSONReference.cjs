@@ -14,16 +14,16 @@ var _apidomCore = require("@swagger-api/apidom-core");
  */
 
 class JSONReference extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'JSONReference';
-    this.classes.push('json-reference');
-  }
-  get $ref() {
-    return this.get('$ref');
-  }
-  set $ref($ref) {
-    this.set('$ref', $ref);
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "JSONReference";
+		this.classes.push("json-reference");
+	}
+	get $ref() {
+		return this.get("$ref");
+	}
+	set $ref($ref) {
+		this.set("$ref", $ref);
+	}
 }
-var _default = exports.default = JSONReference;
+var _default = (exports.default = JSONReference);

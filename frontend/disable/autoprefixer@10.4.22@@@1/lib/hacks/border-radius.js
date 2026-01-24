@@ -1,40 +1,40 @@
-let Declaration = require('../declaration')
+const Declaration = require("../declaration");
 
 class BorderRadius extends Declaration {
-  /**
-   * Return unprefixed version of property
-   */
-  normalize(prop) {
-    return BorderRadius.toNormal[prop] || prop
-  }
+	/**
+	 * Return unprefixed version of property
+	 */
+	normalize(prop) {
+		return BorderRadius.toNormal[prop] || prop;
+	}
 
-  /**
-   * Change syntax, when add Mozilla prefix
-   */
-  prefixed(prop, prefix) {
-    if (prefix === '-moz-') {
-      return prefix + (BorderRadius.toMozilla[prop] || prop)
-    }
-    return super.prefixed(prop, prefix)
-  }
+	/**
+	 * Change syntax, when add Mozilla prefix
+	 */
+	prefixed(prop, prefix) {
+		if (prefix === "-moz-") {
+			return prefix + (BorderRadius.toMozilla[prop] || prop);
+		}
+		return super.prefixed(prop, prefix);
+	}
 }
 
-BorderRadius.names = ['border-radius']
+BorderRadius.names = ["border-radius"];
 
-BorderRadius.toMozilla = {}
-BorderRadius.toNormal = {}
+BorderRadius.toMozilla = {};
+BorderRadius.toNormal = {};
 
-for (let ver of ['top', 'bottom']) {
-  for (let hor of ['left', 'right']) {
-    let normal = `border-${ver}-${hor}-radius`
-    let mozilla = `border-radius-${ver}${hor}`
+for (const ver of ["top", "bottom"]) {
+	for (const hor of ["left", "right"]) {
+		const normal = `border-${ver}-${hor}-radius`;
+		const mozilla = `border-radius-${ver}${hor}`;
 
-    BorderRadius.names.push(normal)
-    BorderRadius.names.push(mozilla)
+		BorderRadius.names.push(normal);
+		BorderRadius.names.push(mozilla);
 
-    BorderRadius.toMozilla[normal] = mozilla
-    BorderRadius.toNormal[mozilla] = normal
-  }
+		BorderRadius.toMozilla[normal] = mozilla;
+		BorderRadius.toNormal[mozilla] = normal;
+	}
 }
 
-module.exports = BorderRadius
+module.exports = BorderRadius;

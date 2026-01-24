@@ -27,11 +27,11 @@ import { toDate } from "./toDate.js";
  * //=> Wed Dec 31 2014 00:00:00
  */
 export function lastDayOfYear(date, options) {
-  const date_ = toDate(date, options?.in);
-  const year = date_.getFullYear();
-  date_.setFullYear(year + 1, 0, 0);
-  date_.setHours(0, 0, 0, 0);
-  return date_;
+	const date_ = toDate(date, options?.in);
+	const year = date_.getFullYear();
+	date_.setFullYear(year + 1, 0, 0);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
 }
 
 // Fallback for modularized imports:

@@ -41,7 +41,7 @@ console.log(cleanStack(error.stack));
 */
 declare function cleanStack(
 	stack: string,
-	options?: cleanStack.Options
+	options?: cleanStack.Options,
 ): string;
 
 export = cleanStack;

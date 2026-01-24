@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    baseWhile = require('./_baseWhile');
+var baseIteratee = require("./_baseIteratee"),
+	baseWhile = require("./_baseWhile");
 
 /**
  * Creates a slice of `array` with elements taken from the beginning. Elements
@@ -37,9 +37,9 @@ var baseIteratee = require('./_baseIteratee'),
  * // => []
  */
 function takeWhile(array, predicate) {
-  return (array && array.length)
-    ? baseWhile(array, baseIteratee(predicate, 3))
-    : [];
+	return array && array.length
+		? baseWhile(array, baseIteratee(predicate, 3))
+		: [];
 }
 
 module.exports = takeWhile;

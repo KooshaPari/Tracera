@@ -44,23 +44,23 @@ import { toDate } from "./toDate.js";
  * //=> Thu Jul 10 2014 12:30:00
  */
 export function roundToNearestMinutes(date, options) {
-  const nearestTo = options?.nearestTo ?? 1;
+	const nearestTo = options?.nearestTo ?? 1;
 
-  if (nearestTo < 1 || nearestTo > 30) return constructFrom(date, NaN);
+	if (nearestTo < 1 || nearestTo > 30) return constructFrom(date, NaN);
 
-  const date_ = toDate(date, options?.in);
-  const fractionalSeconds = date_.getSeconds() / 60;
-  const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60;
-  const minutes =
-    date_.getMinutes() + fractionalSeconds + fractionalMilliseconds;
+	const date_ = toDate(date, options?.in);
+	const fractionalSeconds = date_.getSeconds() / 60;
+	const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60;
+	const minutes =
+		date_.getMinutes() + fractionalSeconds + fractionalMilliseconds;
 
-  const method = options?.roundingMethod ?? "round";
-  const roundingMethod = getRoundingMethod(method);
+	const method = options?.roundingMethod ?? "round";
+	const roundingMethod = getRoundingMethod(method);
 
-  const roundedMinutes = roundingMethod(minutes / nearestTo) * nearestTo;
+	const roundedMinutes = roundingMethod(minutes / nearestTo) * nearestTo;
 
-  date_.setMinutes(roundedMinutes, 0, 0);
-  return date_;
+	date_.setMinutes(roundedMinutes, 0, 0);
+	return date_;
 }
 
 // Fallback for modularized imports:

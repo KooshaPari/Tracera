@@ -1,16 +1,15 @@
-import { missingRequiredField } from '../utils';
-
-import type { Oas3Rule, Oas2Rule } from '../../visitors';
+import type { Oas2Rule, Oas3Rule } from "../../visitors";
+import { missingRequiredField } from "../utils";
 
 export const InfoContact: Oas3Rule | Oas2Rule = () => {
-  return {
-    Info(info, { report, location }) {
-      if (!info.contact) {
-        report({
-          message: missingRequiredField('Info', 'contact'),
-          location: location.child('contact').key(),
-        });
-      }
-    },
-  };
+	return {
+		Info(info, { report, location }) {
+			if (!info.contact) {
+				report({
+					message: missingRequiredField("Info", "contact"),
+					location: location.child("contact").key(),
+				});
+			}
+		},
+	};
 };

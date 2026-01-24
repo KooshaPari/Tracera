@@ -27,9 +27,9 @@ import { toDate } from "./toDate.js";
  * //=> Mon Dec 01 2014 22:15:00
  */
 export function startOfMinute(date, options) {
-  const date_ = toDate(date, options?.in);
-  date_.setSeconds(0, 0);
-  return date_;
+	const date_ = toDate(date, options?.in);
+	date_.setSeconds(0, 0);
+	return date_;
 }
 
 // Fallback for modularized imports:

@@ -1,60 +1,55 @@
-export { createStartHandler } from './createStartHandler'
-export type { CustomizeStartHandler } from './createStartHandler'
-
+export type { HandlerCallback } from "@tanstack/router-core/ssr/server";
 export {
-  attachRouterServerSsrUtils,
-  createRequestHandler,
-  defineHandlerCallback,
-  transformReadableStreamWithRouter,
-  transformPipeableStreamWithRouter,
-} from '@tanstack/router-core/ssr/server'
-export type { HandlerCallback } from '@tanstack/router-core/ssr/server'
+	attachRouterServerSsrUtils,
+	createRequestHandler,
+	defineHandlerCallback,
+	transformPipeableStreamWithRouter,
+	transformReadableStreamWithRouter,
+} from "@tanstack/router-core/ssr/server";
+export { HEADERS } from "./constants";
+export type { CustomizeStartHandler } from "./createStartHandler";
+export { createStartHandler } from "./createStartHandler";
 
-export { handleServerAction } from './server-functions-handler'
-
-export * from './h3'
-
-export {
-  createServerRoute,
-  createServerFileRoute,
-  createServerRootRoute,
-} from './serverRoute'
+export * from "./h3";
+export { handleServerAction } from "./server-functions-handler";
 export type {
-  CreateServerFileRoute,
-  ServerFileRoutesByPath,
-  ServerRouteOptions,
-  ServerRouteManifest,
-  ServerRouteAddFileChildrenFn,
-  ServerRouteMethodBuilderOptions,
-  AnyServerRouteWithTypes,
-  ServerRouteWithTypes,
-  ServerRouteTypes,
-  ResolveAllServerContext,
-  AnyServerRoute,
-  ServerRoute,
-  ServerRouteMiddleware,
-  ServerRouteAfterMiddleware,
-  ServerRouteMethods,
-  ServerRouteMethodsOptions,
-  ServerRouteMethodsRecord,
-  ServerRouteMethodRecordValue,
-  ServerRouteVerb,
-  ServerRouteMethodHandlerFn,
-  ServerRouteMethodHandlerCtx,
-  MergeMethodMiddlewares,
-  AssignAllMethodContext,
-  AnyRouteMethodsBuilder,
-  ServerRouteMethodBuilder,
-  ServerRouteMethodBuilderWithTypes,
-  ServerRouteMethodBuilderTypes,
-  ServerRouteMethodBuilderMiddleware,
-  ServerRouteMethodBuilderAfterMiddleware,
-  ServerRouteMethodBuilderHandler,
-  ServerRouteMethodBuilderAfterHandler,
-  ServerRouteMethod,
-  ServerRouteAfterMethods,
-} from './serverRoute'
-
-export * from './virtual-modules'
-
-export { HEADERS } from './constants'
+	AnyRouteMethodsBuilder,
+	AnyServerRoute,
+	AnyServerRouteWithTypes,
+	AssignAllMethodContext,
+	CreateServerFileRoute,
+	MergeMethodMiddlewares,
+	ResolveAllServerContext,
+	ServerFileRoutesByPath,
+	ServerRoute,
+	ServerRouteAddFileChildrenFn,
+	ServerRouteAfterMethods,
+	ServerRouteAfterMiddleware,
+	ServerRouteManifest,
+	ServerRouteMethod,
+	ServerRouteMethodBuilder,
+	ServerRouteMethodBuilderAfterHandler,
+	ServerRouteMethodBuilderAfterMiddleware,
+	ServerRouteMethodBuilderHandler,
+	ServerRouteMethodBuilderMiddleware,
+	ServerRouteMethodBuilderOptions,
+	ServerRouteMethodBuilderTypes,
+	ServerRouteMethodBuilderWithTypes,
+	ServerRouteMethodHandlerCtx,
+	ServerRouteMethodHandlerFn,
+	ServerRouteMethodRecordValue,
+	ServerRouteMethods,
+	ServerRouteMethodsOptions,
+	ServerRouteMethodsRecord,
+	ServerRouteMiddleware,
+	ServerRouteOptions,
+	ServerRouteTypes,
+	ServerRouteVerb,
+	ServerRouteWithTypes,
+} from "./serverRoute";
+export {
+	createServerFileRoute,
+	createServerRootRoute,
+	createServerRoute,
+} from "./serverRoute";
+export * from "./virtual-modules";

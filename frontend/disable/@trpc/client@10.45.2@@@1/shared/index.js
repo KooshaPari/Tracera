@@ -1,1 +1,1 @@
-module.exports = require('../dist/shared');
+module.exports = require("../dist/shared");

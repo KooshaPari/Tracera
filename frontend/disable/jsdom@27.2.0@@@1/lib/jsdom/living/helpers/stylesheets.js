@@ -7,56 +7,61 @@ const { invalidateStyleCache } = require("./style-rules");
 // TODO: this should really implement https://html.spec.whatwg.org/multipage/links.html#link-type-stylesheet
 // It (and the things it calls) is nowhere close right now.
 exports.fetchStylesheet = (elementImpl, urlString, importRule) => {
-  const document = elementImpl._ownerDocument;
-  let defaultEncoding = document._encoding;
-  const resourceLoader = document._resourceLoader;
+	const document = elementImpl._ownerDocument;
+	let defaultEncoding = document._encoding;
+	const resourceLoader = document._resourceLoader;
 
-  if (elementImpl.localName === "link" && elementImpl.hasAttributeNS(null, "charset")) {
-    defaultEncoding = whatwgEncoding.labelToName(elementImpl.getAttributeNS(null, "charset"));
-  }
+	if (
+		elementImpl.localName === "link" &&
+		elementImpl.hasAttributeNS(null, "charset")
+	) {
+		defaultEncoding = whatwgEncoding.labelToName(
+			elementImpl.getAttributeNS(null, "charset"),
+		);
+	}
 
-  function onStylesheetLoad(data) {
-    // if the element was detached before the load could finish, don't process the data
-    if (!elementImpl._attached) {
-      return;
-    }
+	function onStylesheetLoad(data) {
+		// if the element was detached before the load could finish, don't process the data
+		if (!elementImpl._attached) {
+			return;
+		}
 
-    const css = whatwgEncoding.decode(data, defaultEncoding);
+		const css = whatwgEncoding.decode(data, defaultEncoding);
 
-    // TODO: MIME type checking?
-    if (!importRule && elementImpl.sheet) {
-      exports.removeStylesheet(elementImpl.sheet, elementImpl);
-    }
+		// TODO: MIME type checking?
+		if (!importRule && elementImpl.sheet) {
+			exports.removeStylesheet(elementImpl.sheet, elementImpl);
+		}
 
-    const createdSheet = exports.createStylesheet(css, elementImpl, urlString);
+		const createdSheet = exports.createStylesheet(css, elementImpl, urlString);
 
-    if (importRule) {
-      // According to the spec, we don't add the stylesheet to the document's
-      // stylesheet list when it's loaded via an @import rule.
-      importRule.styleSheet.cssRules = createdSheet.cssRules;
-    } else {
-      exports.addStylesheet(createdSheet, elementImpl);
-    }
-  }
+		if (importRule) {
+			// According to the spec, we don't add the stylesheet to the document's
+			// stylesheet list when it's loaded via an @import rule.
+			importRule.styleSheet.cssRules = createdSheet.cssRules;
+		} else {
+			exports.addStylesheet(createdSheet, elementImpl);
+		}
+	}
 
-  resourceLoader.fetch(urlString, {
-    element: elementImpl,
-    onLoad: onStylesheetLoad
-  });
+	resourceLoader.fetch(urlString, {
+		element: elementImpl,
+		onLoad: onStylesheetLoad,
+	});
 };
 
 // https://drafts.csswg.org/cssom/#remove-a-css-style-sheet
 exports.removeStylesheet = (sheet, elementImpl) => {
-  const { styleSheets } = elementImpl._ownerDocument;
-  styleSheets._remove(sheet);
+	const { styleSheets } = elementImpl._ownerDocument;
+	styleSheets._remove(sheet);
 
-  // Remove the association explicitly; in the spec it's implicit so this step doesn't exist.
-  elementImpl.sheet = null;
+	// Remove the association explicitly; in the spec it's implicit so this step doesn't exist.
+	elementImpl.sheet = null;
 
-  invalidateStyleCache(elementImpl);
+	invalidateStyleCache(elementImpl);
 
-  // TODO: "Set the CSS style sheet’s parent CSS style sheet, owner node and owner CSS rule to null."
-  // Probably when we have a real CSSOM implementation.
+	// TODO: "Set the CSS style sheet’s parent CSS style sheet, owner node and owner CSS rule to null."
+	// Probably when we have a real CSSOM implementation.
 };
 
 // https://drafts.csswg.org/cssom/#create-a-css-style-sheet kinda:
@@ -67,71 +72,80 @@ exports.removeStylesheet = (sheet, elementImpl) => {
 // - css.parse() now receives a funcion that we can use to handle the error as it's second argument
 // - The import rules stuff seems out of place, and probably should affect the load event...
 exports.createStylesheet = (sheetText, elementImpl, baseURLString) => {
-  const sheet = cssom.parse(sheetText, { globalObject: elementImpl._globalObject }, err => {
-    if (elementImpl._ownerDocument._defaultView) {
-      const error = new Error("Could not parse CSS stylesheet", { cause: err });
-      error.sheetText = sheetText;
-      error.type = "css-parsing";
+	const sheet = cssom.parse(
+		sheetText,
+		{ globalObject: elementImpl._globalObject },
+		(err) => {
+			if (elementImpl._ownerDocument._defaultView) {
+				const error = new Error("Could not parse CSS stylesheet", {
+					cause: err,
+				});
+				error.sheetText = sheetText;
+				error.type = "css-parsing";
 
-      elementImpl._ownerDocument._defaultView._virtualConsole.emit("jsdomError", error);
-    }
-  });
+				elementImpl._ownerDocument._defaultView._virtualConsole.emit(
+					"jsdomError",
+					error,
+				);
+			}
+		},
+	);
 
-  scanForImportRules(elementImpl, sheet.cssRules, baseURLString);
+	scanForImportRules(elementImpl, sheet.cssRules, baseURLString);
 
-  return sheet;
+	return sheet;
 };
 
 // https://drafts.csswg.org/cssom/#add-a-css-style-sheet
 exports.addStylesheet = (sheet, elementImpl) => {
-  elementImpl._ownerDocument.styleSheets._add(sheet);
+	elementImpl._ownerDocument.styleSheets._add(sheet);
 
-  // Set the association explicitly; in the spec it's implicit.
-  elementImpl.sheet = sheet;
+	// Set the association explicitly; in the spec it's implicit.
+	elementImpl.sheet = sheet;
 
-  invalidateStyleCache(elementImpl);
+	invalidateStyleCache(elementImpl);
 
-  // TODO: title and disabled stuff
+	// TODO: title and disabled stuff
 };
 
 // Tracking in https://github.com/jsdom/jsdom/issues/2124
 function scanForImportRules(elementImpl, cssRules, baseURLString) {
-  if (!cssRules) {
-    return;
-  }
+	if (!cssRules) {
+		return;
+	}
 
-  for (let i = 0; i < cssRules.length; ++i) {
-    if (cssRules[i].cssRules) {
-      // @media rule: keep searching inside it.
-      scanForImportRules(elementImpl, cssRules[i].cssRules, baseURLString);
-    } else if (cssRules[i].href) {
-      // @import rule: fetch the resource and evaluate it.
-      // See http://dev.w3.org/csswg/cssom/#css-import-rule
-      //     If loading of the style sheet fails its cssRules list is simply
-      //     empty. I.e. an @import rule always has an associated style sheet.
+	for (let i = 0; i < cssRules.length; ++i) {
+		if (cssRules[i].cssRules) {
+			// @media rule: keep searching inside it.
+			scanForImportRules(elementImpl, cssRules[i].cssRules, baseURLString);
+		} else if (cssRules[i].href) {
+			// @import rule: fetch the resource and evaluate it.
+			// See http://dev.w3.org/csswg/cssom/#css-import-rule
+			//     If loading of the style sheet fails its cssRules list is simply
+			//     empty. I.e. an @import rule always has an associated style sheet.
 
-      // Use whatwgURL.URL instead of whatwgURL.parseURL so that we get an error we can use as the cause if the URL
-      // doesn't parse.
-      let parsed;
-      try {
-        parsed = new whatwgURL.URL(cssRules[i].href, baseURLString);
-      } catch (cause) {
-        const window = elementImpl._ownerDocument._defaultView;
-        if (window) {
-          // Synthetic cause to ensure that all resource loading errors have causes.
-          const error = new Error(
-            `Could not parse CSS @import URL "${cssRules[i].href}" relative to base URL "${baseURLString}"`,
-            { cause }
-          );
-          error.type = "resource-loading";
-          error.url = cssRules[i].href;
-          window._virtualConsole.emit("jsdomError", error);
-        }
-      }
+			// Use whatwgURL.URL instead of whatwgURL.parseURL so that we get an error we can use as the cause if the URL
+			// doesn't parse.
+			let parsed;
+			try {
+				parsed = new whatwgURL.URL(cssRules[i].href, baseURLString);
+			} catch (cause) {
+				const window = elementImpl._ownerDocument._defaultView;
+				if (window) {
+					// Synthetic cause to ensure that all resource loading errors have causes.
+					const error = new Error(
+						`Could not parse CSS @import URL "${cssRules[i].href}" relative to base URL "${baseURLString}"`,
+						{ cause },
+					);
+					error.type = "resource-loading";
+					error.url = cssRules[i].href;
+					window._virtualConsole.emit("jsdomError", error);
+				}
+			}
 
-      if (parsed) {
-        exports.fetchStylesheet(elementImpl, parsed.href, cssRules[i]);
-      }
-    }
-  }
+			if (parsed) {
+				exports.fetchStylesheet(elementImpl, parsed.href, cssRules[i]);
+			}
+		}
+	}
 }

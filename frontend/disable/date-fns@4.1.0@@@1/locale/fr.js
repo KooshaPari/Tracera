@@ -13,16 +13,16 @@ import { match } from "./fr/_lib/match.js";
  * @author François B [@fbonzon](https://github.com/fbonzon)
  */
 export const fr = {
-  code: "fr",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "fr",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

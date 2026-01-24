@@ -1,23 +1,23 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
-const name = 'CDO';
+const name = "CDO";
 const structure = [];
 
 function parse() {
-    const start = this.tokenStart;
+	const start = this.tokenStart;
 
-    this.eat(types.CDO); // <!--
+	this.eat(types.CDO); // <!--
 
-    return {
-        type: 'CDO',
-        loc: this.getLocation(start, this.tokenStart)
-    };
+	return {
+		type: "CDO",
+		loc: this.getLocation(start, this.tokenStart),
+	};
 }
 
 function generate() {
-    this.token(types.CDO, '<!--');
+	this.token(types.CDO, "<!--");
 }
 
 exports.generate = generate;

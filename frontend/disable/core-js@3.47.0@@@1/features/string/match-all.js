@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/match-all');
+"use strict";
+module.exports = require("../../full/string/match-all");

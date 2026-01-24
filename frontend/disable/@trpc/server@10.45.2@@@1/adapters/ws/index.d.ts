@@ -1,1 +1,1 @@
-export * from '../../dist/adapters/ws';
+export * from "../../dist/adapters/ws";

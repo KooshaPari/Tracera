@@ -1,23 +1,26 @@
-// @ts-ignore TS6133
+// @ts-expect-error TS6133
 import { expect, test } from "vitest";
 
 import * as z from "zod/v3";
 import { util } from "../helpers/util.js";
 
 test("generics", () => {
-  async function stripOuter<TData extends z.ZodTypeAny>(schema: TData, data: unknown) {
-    return z
-      .object({
-        nested: schema, // as z.ZodTypeAny,
-      })
-      .transform((data) => {
-        return data.nested!;
-      })
-      .parse({ nested: data });
-  }
+	async function stripOuter<TData extends z.ZodTypeAny>(
+		schema: TData,
+		data: unknown,
+	) {
+		return z
+			.object({
+				nested: schema, // as z.ZodTypeAny,
+			})
+			.transform((data) => {
+				return data.nested!;
+			})
+			.parse({ nested: data });
+	}
 
-  const result = stripOuter(z.object({ a: z.string() }), { a: "asdf" });
-  util.assertEqual<typeof result, Promise<{ a: string }>>(true);
+	const result = stripOuter(z.object({ a: z.string() }), { a: "asdf" });
+	util.assertEqual<typeof result, Promise<{ a: string }>>(true);
 });
 
 // test("assignability", () => {
@@ -40,9 +43,9 @@ test("generics", () => {
 // });
 
 test("nested no undefined", () => {
-  const inner = z.string().or(z.array(z.string()));
-  const outer = z.object({ inner });
-  type outerSchema = z.infer<typeof outer>;
-  z.util.assertEqual<outerSchema, { inner: string | string[] }>(true);
-  expect(outer.safeParse({ inner: undefined }).success).toEqual(false);
+	const inner = z.string().or(z.array(z.string()));
+	const outer = z.object({ inner });
+	type outerSchema = z.infer<typeof outer>;
+	z.util.assertEqual<outerSchema, { inner: string | string[] }>(true);
+	expect(outer.safeParse({ inner: undefined }).success).toEqual(false);
 });

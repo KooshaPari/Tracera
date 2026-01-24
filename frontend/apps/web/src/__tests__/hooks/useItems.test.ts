@@ -2,261 +2,331 @@
  * Tests for useItems hook
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, waitFor } from '@testing-library/react'
-import React from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  useCreateItem,
-  useDeleteItem,
-  useItem,
-  useItems,
-  useUpdateItem,
-} from '../../hooks/useItems'
+	useCreateItem,
+	useDeleteItem,
+	useItem,
+	useItems,
+	useUpdateItem,
+} from "../../hooks/useItems";
 
-// Mock fetch
-const mockFetch = vi.fn()
-global.fetch = mockFetch as unknown as typeof fetch
+// Setup global fetch mock
+const originalFetch = global.fetch;
+const mockFetch = vi.fn();
 
 const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  })
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: { retry: false },
+			mutations: { retry: false },
+		},
+	});
 
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
-}
+	return ({ children }: { children: React.ReactNode }) =>
+		React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
 
-describe('useItems', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+describe("useItems", () => {
+	beforeEach(() => {
+		mockFetch.mockClear();
+		global.fetch = mockFetch as unknown as typeof fetch;
+	});
 
-  it('should fetch items', async () => {
-    const mockItems = [
-      { id: '1', title: 'Item 1', type: 'feature', status: 'todo', priority: 'high' },
-      { id: '2', title: 'Item 2', type: 'bug', status: 'done', priority: 'medium' },
-    ]
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockItems,
-    })
+	it("should fetch items", async () => {
+		const mockItems = [
+			{
+				id: "1",
+				title: "Item 1",
+				type: "feature",
+				status: "todo",
+				priority: "high",
+			},
+			{
+				id: "2",
+				title: "Item 2",
+				type: "bug",
+				status: "done",
+				priority: "medium",
+			},
+		];
 
-    const { result } = renderHook(() => useItems(), {
-      wrapper: createWrapper(),
-    })
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ items: mockItems, total: 2 }),
+		});
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		const { result } = renderHook(() => useItems({ projectId: "p1" }), {
+			wrapper: createWrapper(),
+		});
 
-    expect(result.current.data).toEqual(mockItems)
-    expect(mockFetch).toHaveBeenCalledTimes(1)
-  })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-  it('should fetch items with project filter', async () => {
-    const mockItems = [{ id: '1', title: 'Item 1', projectId: 'project-1' }]
+		expect(result.current.data).toEqual({ items: mockItems, total: 2 });
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+	});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockItems,
-    })
+	it("should fetch items with project filter", async () => {
+		const mockItems = [{ id: "1", title: "Item 1", projectId: "project-1" }];
 
-    const { result } = renderHook(() => useItems({ projectId: 'project-1' }), {
-      wrapper: createWrapper(),
-    })
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ items: mockItems, total: 1 }),
+		});
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		const { result } = renderHook(() => useItems({ projectId: "project-1" }), {
+			wrapper: createWrapper(),
+		});
 
-    expect(result.current.data).toEqual(mockItems)
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('project_id=project-1'))
-  })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-  it('should handle fetch error', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    })
+		expect(result.current.data).toEqual({ items: mockItems, total: 1 });
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("project_id=project-1"),
+			expect.any(Object),
+		);
+	});
 
-    const { result } = renderHook(() => useItems(), {
-      wrapper: createWrapper(),
-    })
+	it("should handle fetch error", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 500,
+		});
 
-    await waitFor(() => expect(result.current.isError).toBe(true))
+		const { result } = renderHook(() => useItems({ projectId: "p1" }), {
+			wrapper: createWrapper(),
+		});
 
-    expect(result.current.error).toBeTruthy()
-  })
-})
+		await waitFor(() => expect(result.current.isError).toBe(true));
 
-describe('useItem', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+		expect(result.current.error).toBeTruthy();
+	});
+});
 
-  it('should fetch a single item', async () => {
-    const mockItem = {
-      id: '1',
-      title: 'Item 1',
-      type: 'feature',
-      status: 'todo',
-      priority: 'high',
-    }
+describe("useItem", () => {
+	beforeEach(() => {
+		mockFetch.mockClear();
+		global.fetch = mockFetch as unknown as typeof fetch;
+	});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockItem,
-    })
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
 
-    const { result } = renderHook(() => useItem('1'), {
-      wrapper: createWrapper(),
-    })
+	it("should fetch a single item", async () => {
+		const mockItem = {
+			id: "1",
+			title: "Item 1",
+			type: "feature",
+			status: "todo",
+			priority: "high",
+		};
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockItem,
+		});
 
-    expect(result.current.data).toEqual(mockItem)
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/v1/items/1'))
-  })
+		const { result } = renderHook(() => useItem("1"), {
+			wrapper: createWrapper(),
+		});
 
-  it('should not fetch when id is empty', () => {
-    const { result } = renderHook(() => useItem(''), {
-      wrapper: createWrapper(),
-    })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.fetchStatus).toBe('idle')
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-})
+		expect(result.current.data).toEqual(mockItem);
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("/api/v1/items/1"),
+		);
+	});
 
-describe('useCreateItem', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+	it("should not fetch when id is empty", () => {
+		const { result } = renderHook(() => useItem(""), {
+			wrapper: createWrapper(),
+		});
 
-  it('should create an item', async () => {
-    const newItem = {
-      projectId: 'project-1',
-      view: 'CODE' as const,
-      type: 'feature',
-      title: 'New Item',
-      status: 'todo' as const,
-      priority: 'high' as const,
-    }
+		expect(result.current.fetchStatus).toBe("idle");
+		expect(mockFetch).not.toHaveBeenCalled();
+	});
+});
 
-    const createdItem = {
-      id: '1',
-      ...newItem,
-    }
+describe("useCreateItem", () => {
+	beforeEach(() => {
+		mockFetch.mockClear();
+		global.fetch = mockFetch as unknown as typeof fetch;
+	});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => createdItem,
-    })
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
 
-    const { result } = renderHook(() => useCreateItem(), {
-      wrapper: createWrapper(),
-    })
+	it("should create an item", async () => {
+		const newItem = {
+			projectId: "project-1",
+			view: "CODE" as const,
+			type: "feature",
+			title: "New Item",
+			status: "todo" as const,
+			priority: "high" as const,
+		};
 
-    result.current.mutate(newItem)
+		const createdItem = {
+			id: "1",
+			...newItem,
+		};
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => createdItem,
+		});
 
-    expect(result.current.data).toEqual(createdItem)
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/items'),
-      expect.objectContaining({
-        method: 'POST',
-      })
-    )
-  })
+		const { result } = renderHook(() => useCreateItem(), {
+			wrapper: createWrapper(),
+		});
 
-  it('should handle create error', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    })
+		await act(async () => {
+			result.current.mutate(newItem);
+		});
 
-    const { result } = renderHook(() => useCreateItem(), {
-      wrapper: createWrapper(),
-    })
+		await waitFor(
+			() => {
+				expect(result.current.isSuccess).toBe(true);
+			},
+			{ timeout: 5000 },
+		);
 
-    const newItem = {
-      projectId: 'project-1',
-      view: 'CODE' as const,
-      type: 'feature',
-      title: 'New Item',
-      status: 'todo' as const,
-      priority: 'high' as const,
-    }
+		expect(result.current.data).toEqual(createdItem);
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("/api/v1/items"),
+			expect.objectContaining({
+				method: "POST",
+			}),
+		);
+	});
 
-    result.current.mutate(newItem)
+	it("should handle create error", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 400,
+		});
 
-    await waitFor(() => expect(result.current.isError).toBe(true))
-  })
-})
+		const { result } = renderHook(() => useCreateItem(), {
+			wrapper: createWrapper(),
+		});
 
-describe('useUpdateItem', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+		const newItem = {
+			projectId: "project-1",
+			view: "CODE" as const,
+			type: "feature",
+			title: "New Item",
+			status: "todo" as const,
+			priority: "high" as const,
+		};
 
-  it('should update an item', async () => {
-    const updatedItem = {
-      id: '1',
-      title: 'Updated Item',
-      status: 'in_progress' as const,
-    }
+		await act(async () => {
+			result.current.mutate(newItem);
+		});
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => updatedItem,
-    })
+		await waitFor(
+			() => {
+				expect(result.current.isError).toBe(true);
+			},
+			{ timeout: 5000 },
+		);
+	});
+});
 
-    const { result } = renderHook(() => useUpdateItem(), {
-      wrapper: createWrapper(),
-    })
+describe("useUpdateItem", () => {
+	beforeEach(() => {
+		mockFetch.mockClear();
+		global.fetch = mockFetch as unknown as typeof fetch;
+	});
 
-    result.current.mutate({
-      id: '1',
-      data: { title: 'Updated Item', status: 'in_progress' as const },
-    })
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+	it("should update an item", async () => {
+		const updatedItem = {
+			id: "1",
+			title: "Updated Item",
+			status: "in_progress" as const,
+		};
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/items/1'),
-      expect.objectContaining({
-        method: 'PATCH',
-      })
-    )
-  })
-})
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => updatedItem,
+		});
 
-describe('useDeleteItem', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+		const { result } = renderHook(() => useUpdateItem(), {
+			wrapper: createWrapper(),
+		});
 
-  it('should delete an item', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    })
+		await act(async () => {
+			result.current.mutate({
+				id: "1",
+				data: { title: "Updated Item", status: "in_progress" as const },
+			});
+		});
 
-    const { result } = renderHook(() => useDeleteItem(), {
-      wrapper: createWrapper(),
-    })
+		await waitFor(
+			() => {
+				expect(result.current.isSuccess).toBe(true);
+			},
+			{ timeout: 5000 },
+		);
 
-    result.current.mutate('1')
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("/api/v1/items/1"),
+			expect.objectContaining({
+				method: "PATCH",
+			}),
+		);
+	});
+});
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+describe("useDeleteItem", () => {
+	beforeEach(() => {
+		mockFetch.mockClear();
+		global.fetch = mockFetch as unknown as typeof fetch;
+	});
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/items/1'),
-      expect.objectContaining({
-        method: 'DELETE',
-      })
-    )
-  })
-})
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
+
+	it("should delete an item", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({}),
+		});
+
+		const { result } = renderHook(() => useDeleteItem(), {
+			wrapper: createWrapper(),
+		});
+
+		await act(async () => {
+			result.current.mutate("1");
+		});
+
+		await waitFor(
+			() => {
+				expect(result.current.isSuccess).toBe(true);
+			},
+			{ timeout: 5000 },
+		);
+
+		expect(mockFetch).toHaveBeenCalledWith(
+			expect.stringContaining("/api/v1/items/1"),
+			expect.objectContaining({
+				method: "DELETE",
+			}),
+		);
+	});
+});

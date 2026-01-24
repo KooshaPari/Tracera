@@ -24,13 +24,13 @@ import { toDate } from "./toDate.js";
  * //=> 29
  */
 export function getDaysInMonth(date, options) {
-  const _date = toDate(date, options?.in);
-  const year = _date.getFullYear();
-  const monthIndex = _date.getMonth();
-  const lastDayOfMonth = constructFrom(_date, 0);
-  lastDayOfMonth.setFullYear(year, monthIndex + 1, 0);
-  lastDayOfMonth.setHours(0, 0, 0, 0);
-  return lastDayOfMonth.getDate();
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
+	const monthIndex = _date.getMonth();
+	const lastDayOfMonth = constructFrom(_date, 0);
+	lastDayOfMonth.setFullYear(year, monthIndex + 1, 0);
+	lastDayOfMonth.setHours(0, 0, 0, 0);
+	return lastDayOfMonth.getDate();
 }
 
 // Fallback for modularized imports:

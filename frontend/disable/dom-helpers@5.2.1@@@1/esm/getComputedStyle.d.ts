@@ -4,4 +4,7 @@
  * @param node the element
  * @param psuedoElement the style property
  */
-export default function getComputedStyle(node: HTMLElement, psuedoElement?: string): CSSStyleDeclaration;
+export default function getComputedStyle(
+	node: HTMLElement,
+	psuedoElement?: string,
+): CSSStyleDeclaration;

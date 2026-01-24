@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/map');
+"use strict";
+module.exports = require("../../full/instance/map");

@@ -1,1 +1,1 @@
-module.exports = require('../dist/rpc');
+module.exports = require("../dist/rpc");

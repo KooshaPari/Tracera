@@ -22,6 +22,6 @@ export interface IsFirstDayOfMonthOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isFirstDayOfMonth(
-  date: DateArg<Date> & {},
-  options?: IsFirstDayOfMonthOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsFirstDayOfMonthOptions | undefined,
 ): boolean;

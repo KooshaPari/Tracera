@@ -29,9 +29,9 @@ var _index = require("./toDate.cjs");
  * //=> Wed Dec 31 2014 00:00:00
  */
 function lastDayOfYear(date, options) {
-  const date_ = (0, _index.toDate)(date, options?.in);
-  const year = date_.getFullYear();
-  date_.setFullYear(year + 1, 0, 0);
-  date_.setHours(0, 0, 0, 0);
-  return date_;
+	const date_ = (0, _index.toDate)(date, options?.in);
+	const year = date_.getFullYear();
+	date_.setFullYear(year + 1, 0, 0);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
 }

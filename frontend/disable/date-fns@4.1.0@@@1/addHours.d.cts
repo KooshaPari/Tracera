@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link addHours} function options.
  */
 export interface AddHoursOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name addHours
  * @category Hour Helpers
@@ -27,10 +27,10 @@ export interface AddHoursOptions<DateType extends Date = Date>
  * //=> Fri Jul 11 2014 01:00:00
  */
 export declare function addHours<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: AddHoursOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: AddHoursOptions<ResultDate> | undefined,
 ): ResultDate;

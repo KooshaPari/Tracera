@@ -4,7 +4,12 @@ import type { AnyNode } from "domhandler";
  *
  * @category Feeds
  */
-export type FeedItemMediaMedium = "image" | "audio" | "video" | "document" | "executable";
+export type FeedItemMediaMedium =
+	| "image"
+	| "audio"
+	| "video"
+	| "document"
+	| "executable";
 /**
  * The type of a media item.
  *
@@ -17,20 +22,20 @@ export type FeedItemMediaExpression = "sample" | "full" | "nonstop";
  * @category Feeds
  */
 export interface FeedItemMedia {
-    medium: FeedItemMediaMedium | undefined;
-    isDefault: boolean;
-    url?: string;
-    fileSize?: number;
-    type?: string;
-    expression?: FeedItemMediaExpression;
-    bitrate?: number;
-    framerate?: number;
-    samplingrate?: number;
-    channels?: number;
-    duration?: number;
-    height?: number;
-    width?: number;
-    lang?: string;
+	medium: FeedItemMediaMedium | undefined;
+	isDefault: boolean;
+	url?: string;
+	fileSize?: number;
+	type?: string;
+	expression?: FeedItemMediaExpression;
+	bitrate?: number;
+	framerate?: number;
+	samplingrate?: number;
+	channels?: number;
+	duration?: number;
+	height?: number;
+	width?: number;
+	lang?: string;
 }
 /**
  * An entry of a feed.
@@ -38,12 +43,12 @@ export interface FeedItemMedia {
  * @category Feeds
  */
 export interface FeedItem {
-    id?: string;
-    title?: string;
-    link?: string;
-    description?: string;
-    pubDate?: Date;
-    media: FeedItemMedia[];
+	id?: string;
+	title?: string;
+	link?: string;
+	description?: string;
+	pubDate?: Date;
+	media: FeedItemMedia[];
 }
 /**
  * The root of a feed.
@@ -51,14 +56,14 @@ export interface FeedItem {
  * @category Feeds
  */
 export interface Feed {
-    type: string;
-    id?: string;
-    title?: string;
-    link?: string;
-    description?: string;
-    updated?: Date;
-    author?: string;
-    items: FeedItem[];
+	type: string;
+	id?: string;
+	title?: string;
+	link?: string;
+	description?: string;
+	updated?: Date;
+	author?: string;
+	items: FeedItem[];
 }
 /**
  * Get the feed object from the root of a DOM tree.

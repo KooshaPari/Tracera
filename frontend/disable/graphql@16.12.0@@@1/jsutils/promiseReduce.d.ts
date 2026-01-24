@@ -1,4 +1,4 @@
-import type { PromiseOrValue } from './PromiseOrValue';
+import type { PromiseOrValue } from "./PromiseOrValue";
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
  * a Promise, in which case reduction will continue after each promise resolves.
@@ -7,7 +7,7 @@ import type { PromiseOrValue } from './PromiseOrValue';
  * return a Promise.
  */
 export declare function promiseReduce<T, U>(
-  values: Iterable<T>,
-  callbackFn: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
-  initialValue: PromiseOrValue<U>,
+	values: Iterable<T>,
+	callbackFn: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
+	initialValue: PromiseOrValue<U>,
 ): PromiseOrValue<U>;

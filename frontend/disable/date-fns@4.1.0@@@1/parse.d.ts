@@ -1,11 +1,11 @@
 import { longFormatters } from "./_lib/format/longFormatters.js";
 import type {
-  AdditionalTokensOptions,
-  ContextOptions,
-  DateArg,
-  FirstWeekContainsDateOptions,
-  LocalizedOptions,
-  WeekOptions,
+	AdditionalTokensOptions,
+	ContextOptions,
+	DateArg,
+	FirstWeekContainsDateOptions,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 import { parsers } from "./parse/_lib/parsers.js";
 export { longFormatters, parsers };
@@ -13,11 +13,11 @@ export { longFormatters, parsers };
  * The {@link parse} function options.
  */
 export interface ParseOptions<DateType extends Date = Date>
-  extends LocalizedOptions<"options" | "match" | "formatLong">,
-    FirstWeekContainsDateOptions,
-    WeekOptions,
-    AdditionalTokensOptions,
-    ContextOptions<DateType> {}
+	extends LocalizedOptions<"options" | "match" | "formatLong">,
+		FirstWeekContainsDateOptions,
+		WeekOptions,
+		AdditionalTokensOptions,
+		ContextOptions<DateType> {}
 /**
  * @name parse
  * @category Common Helpers
@@ -317,11 +317,11 @@ export interface ParseOptions<DateType extends Date = Date>
  * //=> Sun Feb 28 2010 00:00:00
  */
 export declare function parse<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  dateStr: string,
-  formatStr: string,
-  referenceDate: DateArg<DateType>,
-  options?: ParseOptions<ResultDate>,
+	dateStr: string,
+	formatStr: string,
+	referenceDate: DateArg<DateType>,
+	options?: ParseOptions<ResultDate>,
 ): ResultDate;

@@ -42,16 +42,16 @@ var _index3 = require("./constructFrom.cjs");
  * //=> Tue Jan 01 2030 00:00:00
  */
 function closestTo(dateToCompare, dates, options) {
-  const [dateToCompare_, ...dates_] = (0, _index.normalizeDates)(
-    options?.in,
-    dateToCompare,
-    ...dates,
-  );
+	const [dateToCompare_, ...dates_] = (0, _index.normalizeDates)(
+		options?.in,
+		dateToCompare,
+		...dates,
+	);
 
-  const index = (0, _index2.closestIndexTo)(dateToCompare_, dates_);
+	const index = (0, _index2.closestIndexTo)(dateToCompare_, dates_);
 
-  if (typeof index === "number" && isNaN(index))
-    return (0, _index3.constructFrom)(dateToCompare_, NaN);
+	if (typeof index === "number" && isNaN(index))
+		return (0, _index3.constructFrom)(dateToCompare_, NaN);
 
-  if (index !== undefined) return dates_[index];
+	if (index !== undefined) return dates_[index];
 }

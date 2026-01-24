@@ -7,7 +7,7 @@
  * A namespace containing utils for the rest of the lunr library
  * @namespace lunr.utils
  */
-lunr.utils = {}
+lunr.utils = {};
 
 /**
  * Print a warning message to the console.
@@ -16,15 +16,15 @@ lunr.utils = {}
  * @memberOf lunr.utils
  * @function
  */
-lunr.utils.warn = (function (global) {
-  /* eslint-disable no-console */
-  return function (message) {
-    if (global.console && console.warn) {
-      console.warn(message)
-    }
-  }
-  /* eslint-enable no-console */
-})(this)
+lunr.utils.warn = ((global) => {
+	/* eslint-disable no-console */
+	return (message) => {
+		if (global.console && console.warn) {
+			console.warn(message);
+		}
+	};
+	/* eslint-enable no-console */
+})(this);
 
 /**
  * Convert an object to a string.
@@ -37,13 +37,13 @@ lunr.utils.warn = (function (global) {
  * @return {String} string representation of the passed object.
  * @memberOf lunr.utils
  */
-lunr.utils.asString = function (obj) {
-  if (obj === void 0 || obj === null) {
-    return ""
-  } else {
-    return obj.toString()
-  }
-}
+lunr.utils.asString = (obj) => {
+	if (obj === void 0 || obj === null) {
+		return "";
+	} else {
+		return obj.toString();
+	}
+};
 
 /**
  * Clones an object.
@@ -61,32 +61,36 @@ lunr.utils.asString = function (obj) {
  * @throws {TypeError} when a nested object is passed.
  * @memberOf Utils
  */
-lunr.utils.clone = function (obj) {
-  if (obj === null || obj === undefined) {
-    return obj
-  }
+lunr.utils.clone = (obj) => {
+	if (obj === null || obj === undefined) {
+		return obj;
+	}
 
-  var clone = Object.create(null),
-      keys = Object.keys(obj)
+	var clone = Object.create(null),
+		keys = Object.keys(obj);
 
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i],
-        val = obj[key]
+	for (var i = 0; i < keys.length; i++) {
+		var key = keys[i],
+			val = obj[key];
 
-    if (Array.isArray(val)) {
-      clone[key] = val.slice()
-      continue
-    }
+		if (Array.isArray(val)) {
+			clone[key] = val.slice();
+			continue;
+		}
 
-    if (typeof val === 'string' ||
-        typeof val === 'number' ||
-        typeof val === 'boolean') {
-      clone[key] = val
-      continue
-    }
+		if (
+			typeof val === "string" ||
+			typeof val === "number" ||
+			typeof val === "boolean"
+		) {
+			clone[key] = val;
+			continue;
+		}
 
-    throw new TypeError("clone is not deep and does not support nested objects")
-  }
+		throw new TypeError(
+			"clone is not deep and does not support nested objects",
+		);
+	}
 
-  return clone
-}
+	return clone;
+};

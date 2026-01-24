@@ -1,4 +1,5 @@
 import * as mime from "mime";
+import type { AssetManifestType } from "./types";
 import {
 	CacheControl,
 	InternalError,
@@ -6,7 +7,6 @@ import {
 	NotFoundError,
 	Options,
 } from "./types";
-import type { AssetManifestType } from "./types";
 
 const defaultCacheControl: CacheControl = {
 	browserTTL: null,
@@ -75,7 +75,7 @@ const mapRequestToAsset = (request: Request, options?: Partial<Options>) => {
  */
 function serveSinglePageApp(
 	request: Request,
-	options?: Partial<Options>
+	options?: Partial<Options>,
 ): Request {
 	options = assignOptions(options);
 
@@ -91,7 +91,7 @@ function serveSinglePageApp(
 		// If expected HTML file was missing, just return the root index.html (or options.defaultDocument)
 		return new Request(
 			`${parsedUrl.origin}/${options.defaultDocument}`,
-			request
+			request,
 		);
 	} else {
 		// The default handler decided this is not an HTML page. It's probably
@@ -119,14 +119,14 @@ type Evt = {
 
 const getAssetFromKV = async (
 	event: Evt,
-	options?: Partial<Options>
+	options?: Partial<Options>,
 ): Promise<Response> => {
 	options = assignOptions(options);
 
 	const request = event.request;
 	const ASSET_NAMESPACE = options.ASSET_NAMESPACE;
 	const ASSET_MANIFEST = parseStringAsObject<AssetManifestType>(
-		options.ASSET_MANIFEST
+		options.ASSET_MANIFEST,
 	);
 
 	if (typeof ASSET_NAMESPACE === "undefined") {
@@ -149,7 +149,7 @@ const getAssetFromKV = async (
 		const mappedRequest = mapRequestToAsset(request);
 		const mappedRawPathKey = new URL(mappedRequest.url).pathname.replace(
 			/^\/+/,
-			""
+			"",
 		);
 		if (ASSET_MANIFEST[decodeURIComponent(mappedRawPathKey)]) {
 			pathIsEncoded = true;
@@ -163,7 +163,7 @@ const getAssetFromKV = async (
 	const SUPPORTED_METHODS = ["GET", "HEAD"];
 	if (!SUPPORTED_METHODS.includes(requestKey.method)) {
 		throw new MethodNotAllowedError(
-			`${requestKey.method} is not a valid request method`
+			`${requestKey.method} is not a valid request method`,
 		);
 	}
 
@@ -215,7 +215,7 @@ const getAssetFromKV = async (
 	// header is "null". Could be modified in future to base64 encode etc
 	const formatETag = (
 		entityId: string = pathKey,
-		validatorType: string = options.defaultETag
+		validatorType: string = options.defaultETag,
 	) => {
 		if (!entityId) {
 			return "";
@@ -296,7 +296,7 @@ const getAssetFromKV = async (
 		const body = await ASSET_NAMESPACE.get(pathKey, "arrayBuffer");
 		if (body === null) {
 			throw new NotFoundError(
-				`could not find ${pathKey} in your content namespace`
+				`could not find ${pathKey} in your content namespace`,
 			);
 		}
 		response = new Response(body);
@@ -311,7 +311,7 @@ const getAssetFromKV = async (
 			// determine Cloudflare cache behavior
 			response.headers.set(
 				"Cache-Control",
-				`max-age=${options.cacheControl.edgeTTL}`
+				`max-age=${options.cacheControl.edgeTTL}`,
 			);
 			event.waitUntil(cache.put(cacheKey, response.clone()));
 			response.headers.set("CF-Cache-Status", "MISS");
@@ -335,7 +335,7 @@ const getAssetFromKV = async (
 	if (shouldSetBrowserCache) {
 		response.headers.set(
 			"Cache-Control",
-			`max-age=${options.cacheControl.browserTTL}`
+			`max-age=${options.cacheControl.browserTTL}`,
 		);
 	} else {
 		response.headers.delete("Cache-Control");

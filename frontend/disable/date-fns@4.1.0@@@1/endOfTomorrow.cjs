@@ -27,13 +27,13 @@ var _index = require("./constructNow.cjs");
  * //=> Tue Oct 7 2014 23:59:59.999
  */
 function endOfTomorrow(options) {
-  const now = (0, _index.constructNow)(options?.in);
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const day = now.getDate();
+	const now = (0, _index.constructNow)(options?.in);
+	const year = now.getFullYear();
+	const month = now.getMonth();
+	const day = now.getDate();
 
-  const date = (0, _index.constructNow)(options?.in);
-  date.setFullYear(year, month, day + 1);
-  date.setHours(23, 59, 59, 999);
-  return options?.in ? options.in(date) : date;
+	const date = (0, _index.constructNow)(options?.in);
+	date.setFullYear(year, month, day + 1);
+	date.setHours(23, 59, 59, 999);
+	return options?.in ? options.in(date) : date;
 }

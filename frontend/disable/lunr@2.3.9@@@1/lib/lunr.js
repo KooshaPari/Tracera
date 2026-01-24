@@ -29,21 +29,15 @@
  * @see {@link lunr.stemmer}
  * @namespace {function} lunr
  */
-var lunr = function (config) {
-  var builder = new lunr.Builder
+var lunr = (config) => {
+	var builder = new lunr.Builder();
 
-  builder.pipeline.add(
-    lunr.trimmer,
-    lunr.stopWordFilter,
-    lunr.stemmer
-  )
+	builder.pipeline.add(lunr.trimmer, lunr.stopWordFilter, lunr.stemmer);
 
-  builder.searchPipeline.add(
-    lunr.stemmer
-  )
+	builder.searchPipeline.add(lunr.stemmer);
 
-  config.call(builder, builder)
-  return builder.build()
-}
+	config.call(builder, builder);
+	return builder.build();
+};
 
-lunr.version = "@VERSION"
+lunr.version = "@VERSION";

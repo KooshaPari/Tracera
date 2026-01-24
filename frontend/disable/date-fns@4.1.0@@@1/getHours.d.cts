@@ -22,6 +22,6 @@ export interface GetHoursOptions extends ContextOptions<Date> {}
  * //=> 11
  */
 export declare function getHours(
-  date: DateArg<Date> & {},
-  options?: GetHoursOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetHoursOptions | undefined,
 ): number;

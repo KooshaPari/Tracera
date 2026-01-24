@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../full/array/virtual/join');
+"use strict";
+module.exports = require("../../../full/array/virtual/join");

@@ -14,14 +14,14 @@ var _index5 = require("./zh-HK/_lib/match.cjs");
  * @author Gary Ip [@gaplo](https://github.com/gaplo)
  */
 const zhHK = (exports.zhHK = {
-  code: "zh-HK",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "zh-HK",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

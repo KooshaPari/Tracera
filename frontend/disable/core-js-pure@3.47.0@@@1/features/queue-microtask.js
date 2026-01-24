@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/queue-microtask');
+"use strict";
+module.exports = require("../full/queue-microtask");

@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 /**
  * Lone anonymous operation
  *
@@ -9,5 +9,5 @@ import type { ASTValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
  */
 export declare function LoneAnonymousOperationRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

@@ -6,7 +6,7 @@
  */
 
 export {
-  TestPathPatterns,
-  TestPathPatternsExecutor,
-  type TestPathPatternsExecutorOptions,
-} from './TestPathPatterns';
+	TestPathPatterns,
+	TestPathPatternsExecutor,
+	type TestPathPatternsExecutorOptions,
+} from "./TestPathPatterns";

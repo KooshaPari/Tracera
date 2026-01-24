@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/observable');
+"use strict";
+module.exports = require("../../full/observable");

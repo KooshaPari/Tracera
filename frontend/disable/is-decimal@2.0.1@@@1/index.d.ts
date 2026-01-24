@@ -5,4 +5,4 @@
  * @param {string|number} character
  * @returns {boolean} Whether `character` is a decimal
  */
-export function isDecimal(character: string | number): boolean
+export function isDecimal(character: string | number): boolean;

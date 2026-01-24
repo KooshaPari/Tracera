@@ -1,6 +1,4 @@
-'use strict';
-
-var utils = require('./../utils');
+var utils = require("./../utils");
 
 /**
  * Determines whether the payload is an error thrown by Axios
@@ -9,5 +7,5 @@ var utils = require('./../utils');
  * @returns {boolean} True if the payload is an error thrown by Axios, otherwise false
  */
 module.exports = function isAxiosError(payload) {
-  return utils.isObject(payload) && (payload.isAxiosError === true);
+	return utils.isObject(payload) && payload.isAxiosError === true;
 };

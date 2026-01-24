@@ -2,7 +2,6 @@
 var CSSOM = {};
 ///CommonJS
 
-
 /**
  * Parses a CSS string and returns a CSSOM.CSSStyleSheet object representing the parsed stylesheet.
  *
@@ -15,7 +14,8 @@ var CSSOM = {};
  * @returns {CSSOM.CSSStyleSheet} The parsed CSSStyleSheet object.
  */
 CSSOM.parse = function parse(token, opts, errorHandler) {
-	errorHandler = errorHandler === true ? (console && console.error) : errorHandler;
+	errorHandler =
+		errorHandler === true ? console && console.error : errorHandler;
 
 	var i = 0;
 
@@ -37,31 +37,31 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	var valueParenthesisDepth = 0;
 
 	var SIGNIFICANT_WHITESPACE = {
-		"name": true,
+		name: true,
 		"before-name": true,
-		"selector": true,
-		"value": true,
+		selector: true,
+		value: true,
 		"value-parenthesis": true,
-		"atRule": true,
+		atRule: true,
 		"importRule-begin": true,
-		"importRule": true,
+		importRule: true,
 		"namespaceRule-begin": true,
-		"namespaceRule": true,
-		"atBlock": true,
-		"containerBlock": true,
-		"conditionBlock": true,
-		"counterStyleBlock": true,
-		'documentRule-begin': true,
-		"scopeBlock": true,
-		"layerBlock": true,
-		"pageBlock": true
+		namespaceRule: true,
+		atBlock: true,
+		containerBlock: true,
+		conditionBlock: true,
+		counterStyleBlock: true,
+		"documentRule-begin": true,
+		scopeBlock: true,
+		layerBlock: true,
+		pageBlock: true,
 	};
 
 	var styleSheet;
 	if (opts && opts.styleSheet) {
 		styleSheet = opts.styleSheet;
 	} else {
-		styleSheet = new CSSOM.CSSStyleSheet()
+		styleSheet = new CSSOM.CSSStyleSheet();
 	}
 
 	var topScope;
@@ -84,7 +84,25 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	var ancestorRules = [];
 	var prevScope;
 
-	var name, priority="", styleRule, mediaRule, containerRule, counterStyleRule, supportsRule, importRule, fontFaceRule, keyframesRule, documentRule, hostRule, startingStyleRule, scopeRule, pageRule, layerBlockRule, layerStatementRule, nestedSelectorRule, namespaceRule;
+	var name,
+		priority = "",
+		styleRule,
+		mediaRule,
+		containerRule,
+		counterStyleRule,
+		supportsRule,
+		importRule,
+		fontFaceRule,
+		keyframesRule,
+		documentRule,
+		hostRule,
+		startingStyleRule,
+		scopeRule,
+		pageRule,
+		layerBlockRule,
+		layerStatementRule,
+		nestedSelectorRule,
+		namespaceRule;
 
 	// Track defined namespace prefixes for validation
 	var definedNamespacePrefixes = {};
@@ -97,14 +115,15 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	var forwardRuleValidationRegExp = /(?:\s|\/\*|\{|\()/; // Match that the rule is followed by any whitespace, a opening comment, a condition opening parenthesis or a opening brace
 	var forwardImportRuleValidationRegExp = /(?:\s|\/\*|'|")/; // Match that the rule is followed by any whitespace, an opening comment, a single quote or double quote
 	var forwardRuleClosingBraceRegExp = /{[^{}]*}|}/; // Finds the next closing brace of a rule block
-	var forwardRuleSemicolonAndOpeningBraceRegExp = /^.*?({|;)/; // Finds the next semicolon or opening brace after the at-rule	
-	var cssCustomIdentifierRegExp = /^(-?[_a-zA-Z]+(\.[_a-zA-Z]+)*[_a-zA-Z0-9-]*)$/; // Validates a css custom identifier
+	var forwardRuleSemicolonAndOpeningBraceRegExp = /^.*?({|;)/; // Finds the next semicolon or opening brace after the at-rule
+	var cssCustomIdentifierRegExp =
+		/^(-?[_a-zA-Z]+(\.[_a-zA-Z]+)*[_a-zA-Z0-9-]*)$/; // Validates a css custom identifier
 	var startsWithCombinatorRegExp = /^\s*[>+~]/; // Checks if a selector starts with a CSS combinator (>, +, ~)
 	var atPageRuleSelectorRegExp = /^([^\s:]+)?((?::\w+)*)$/;
 
 	/**
-	 * Searches for the first occurrence of a CSS at-rule statement terminator (`;` or `}`) 
-	 * that is not inside a brace block within the given string. Mimics the behavior of a 
+	 * Searches for the first occurrence of a CSS at-rule statement terminator (`;` or `}`)
+	 * that is not inside a brace block within the given string. Mimics the behavior of a
 	 * regular expression match for such terminators, including any trailing whitespace.
 	 * @param {string} str - The string to search for at-rule statement terminators.
 	 * @returns {object | null} {0: string, index: number} or null if no match is found.
@@ -113,10 +132,10 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		for (var i = 0; i < ruleSlice.length; i++) {
 			var char = ruleSlice[i];
 
-			if (char === ';' || char === '}') {
+			if (char === ";" || char === "}") {
 				// Simulate negative lookbehind: check if there is a { before this position
 				var sliceBefore = ruleSlice.substring(0, i);
-				var openBraceIndex = sliceBefore.indexOf('{');
+				var openBraceIndex = sliceBefore.indexOf("{");
 
 				if (openBraceIndex === -1) {
 					// No { found before, so we treat it as a valid match
@@ -148,20 +167,20 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	 */
 	function matchBalancedBlock(str, fromIndex) {
 		fromIndex = fromIndex || 0;
-		var openIndex = str.indexOf('{', fromIndex);
+		var openIndex = str.indexOf("{", fromIndex);
 		if (openIndex === -1) return null;
 		var depth = 0;
 		for (var i = openIndex; i < str.length; i++) {
-			if (str[i] === '{') {
+			if (str[i] === "{") {
 				depth++;
-			} else if (str[i] === '}') {
+			} else if (str[i] === "}") {
 				depth--;
 				if (depth === 0) {
 					var matchedString = str.slice(openIndex, i + 1);
 					return {
 						0: matchedString,
 						index: openIndex,
-						input: str
+						input: str,
 					};
 				}
 			}
@@ -182,14 +201,14 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		var ruleClosingMatch = matchBalancedBlock(str, fromIndex);
 		if (ruleClosingMatch) {
 			var ignoreRange = ruleClosingMatch.index + ruleClosingMatch[0].length;
-			i+= ignoreRange;
-			if (token.charAt(i) === '}') {
+			i += ignoreRange;
+			if (token.charAt(i) === "}") {
 				i -= 1;
 			}
 		} else {
 			i += str.length;
 		}
-		return i;	
+		return i;
 	}
 
 	/**
@@ -199,29 +218,32 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	 */
 	function parseScopePrelude(preludeContent) {
 		var parts = preludeContent.split(/\s*\)\s*to\s+\(/);
-		
+
 		// Restore the parentheses that were consumed by the split
 		if (parts.length === 2) {
-			parts[0] = parts[0] + ')';
-			parts[1] = '(' + parts[1];
+			parts[0] = parts[0] + ")";
+			parts[1] = "(" + parts[1];
 		}
-		
-		var hasStart = parts[0] &&
-			parts[0].charAt(0) === '(' &&
-			parts[0].charAt(parts[0].length - 1) === ')';
-		var hasEnd = parts[1] &&
-			parts[1].charAt(0) === '(' &&
-			parts[1].charAt(parts[1].length - 1) === ')';
-		
+
+		var hasStart =
+			parts[0] &&
+			parts[0].charAt(0) === "(" &&
+			parts[0].charAt(parts[0].length - 1) === ")";
+		var hasEnd =
+			parts[1] &&
+			parts[1].charAt(0) === "(" &&
+			parts[1].charAt(parts[1].length - 1) === ")";
+
 		// Handle case: @scope to (<end>)
-		var hasOnlyEnd = !hasStart &&
+		var hasOnlyEnd =
+			!hasStart &&
 			!hasEnd &&
-			parts[0].indexOf('to (') === 0 &&
-			parts[0].charAt(parts[0].length - 1) === ')';
-		
-		var startSelector = '';
-		var endSelector = '';
-		
+			parts[0].indexOf("to (") === 0 &&
+			parts[0].charAt(parts[0].length - 1) === ")";
+
+		var startSelector = "";
+		var endSelector = "";
+
 		if (hasStart) {
 			startSelector = parts[0].slice(1, -1).trim();
 		}
@@ -231,15 +253,15 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		if (hasOnlyEnd) {
 			endSelector = parts[0].slice(4, -1).trim();
 		}
-		
+
 		return {
 			startSelector: startSelector,
 			endSelector: endSelector,
 			hasStart: hasStart,
 			hasEnd: hasEnd,
-			hasOnlyEnd: hasOnlyEnd
+			hasOnlyEnd: hasOnlyEnd,
 		};
-	};
+	}
 
 	/**
 	 * Checks if a selector contains pseudo-elements.
@@ -250,13 +272,14 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Match only double-colon (::) pseudo-elements
 		// Also match legacy single-colon pseudo-elements: :before, :after, :first-line, :first-letter
 		// These must NOT be followed by alphanumeric characters (to avoid matching :before-x or similar)
-		var pseudoElementRegex = /::[a-zA-Z][\w-]*|:(before|after|first-line|first-letter)(?![a-zA-Z0-9_-])/;
+		var pseudoElementRegex =
+			/::[a-zA-Z][\w-]*|:(before|after|first-line|first-letter)(?![a-zA-Z0-9_-])/;
 		return pseudoElementRegex.test(selector);
-	};
+	}
 
 	/**
 	 * Validates balanced parentheses, brackets, and quotes in a selector.
-	 * 
+	 *
 	 * @param {string} selector - The CSS selector to validate
 	 * @param {boolean} trackAttributes - Whether to track attribute selector context
 	 * @param {boolean} useStack - Whether to use a stack for parentheses (needed for nested validation)
@@ -269,11 +292,11 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		var inDoubleQuote = false;
 		var inAttr = false;
 		var stack = useStack ? [] : null;
-		
+
 		for (var i = 0; i < selector.length; i++) {
 			var char = selector[i];
-			var prevChar = i > 0 ? selector[i - 1] : '';
-			
+			var prevChar = i > 0 ? selector[i - 1] : "";
+
 			if (inSingleQuote) {
 				if (char === "'" && prevChar !== "\\") {
 					inSingleQuote = false;
@@ -297,13 +320,13 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 					inSingleQuote = true;
 				} else if (char === '"') {
 					inDoubleQuote = true;
-				} else if (char === '(') {
+				} else if (char === "(") {
 					if (useStack) {
 						stack.push("(");
 					} else {
 						parenDepth++;
 					}
-				} else if (char === ')') {
+				} else if (char === ")") {
 					if (useStack) {
 						if (!stack.length || stack.pop() !== "(") {
 							return false;
@@ -314,9 +337,9 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 							return false;
 						}
 					}
-				} else if (char === '[') {
+				} else if (char === "[") {
 					bracketDepth++;
-				} else if (char === ']') {
+				} else if (char === "]") {
 					bracketDepth--;
 					if (bracketDepth < 0) {
 						return false;
@@ -324,14 +347,25 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				}
 			}
 		}
-		
+
 		// Check if everything is balanced
 		if (useStack) {
-			return stack.length === 0 && bracketDepth === 0 && !inSingleQuote && !inDoubleQuote && !inAttr;
+			return (
+				stack.length === 0 &&
+				bracketDepth === 0 &&
+				!inSingleQuote &&
+				!inDoubleQuote &&
+				!inAttr
+			);
 		} else {
-			return parenDepth === 0 && bracketDepth === 0 && !inSingleQuote && !inDoubleQuote;
+			return (
+				parenDepth === 0 &&
+				bracketDepth === 0 &&
+				!inSingleQuote &&
+				!inDoubleQuote
+			);
 		}
-	};
+	}
 
 	/**
 	 * Checks for basic syntax errors in selectors (mismatched parentheses, brackets, quotes).
@@ -340,7 +374,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	 */
 	function hasBasicSyntaxError(selector) {
 		return !validateBalancedSyntax(selector, false, false);
-	};
+	}
 
 	/**
 	 * Checks for invalid combinator patterns in selectors.
@@ -357,7 +391,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Check for other invalid consecutive combinator patterns
 		if (/[>+~]\s*[>+~]/.test(selector)) return true;
 		return false;
-	};
+	}
 
 	/**
 	 * Checks for invalid pseudo-like syntax (function calls without proper pseudo prefix).
@@ -369,19 +403,19 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Examples: slotted(div), part(name), cue(selector)
 		// These are ONLY valid as ::slotted(), ::part(), ::cue()
 		var invalidPatterns = [
-			/(?:^|[\s>+~,\[])slotted\s*\(/i,
-			/(?:^|[\s>+~,\[])part\s*\(/i,
-			/(?:^|[\s>+~,\[])cue\s*\(/i,
-			/(?:^|[\s>+~,\[])cue-region\s*\(/i
+			/(?:^|[\s>+~,[])slotted\s*\(/i,
+			/(?:^|[\s>+~,[])part\s*\(/i,
+			/(?:^|[\s>+~,[])cue\s*\(/i,
+			/(?:^|[\s>+~,[])cue-region\s*\(/i,
 		];
-		
+
 		for (var i = 0; i < invalidPatterns.length; i++) {
 			if (invalidPatterns[i].test(selector)) {
 				return true;
 			}
 		}
 		return false;
-	};
+	}
 
 	/**
 	 * Checks for invalid nesting selector (&) usage.
@@ -395,24 +429,36 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Check for & followed directly by a letter (type selector) without any delimiter
 		// This regex matches & followed by a letter (start of type selector) that's not preceded by an escape
 		// We need to exclude valid cases like &.class, &#id, &[attr], &:pseudo, &::pseudo, & (with space), &>
-		var invalidNestingPattern = /&(?![.\#\[:>\+~\s])[a-zA-Z]/;
+		var invalidNestingPattern = /&(?![.#[:>+~\s])[a-zA-Z]/;
 		return invalidNestingPattern.test(selector);
-	};
+	}
 
 	function validateAtRule(atRuleKey, validCallback, cannotBeNested) {
 		var isValid = false;
-		var sourceRuleRegExp = atRuleKey === "@import" ? forwardImportRuleValidationRegExp : forwardRuleValidationRegExp;
-		var ruleRegExp = new RegExp(atRuleKey + sourceRuleRegExp.source, sourceRuleRegExp.flags);
+		var sourceRuleRegExp =
+			atRuleKey === "@import"
+				? forwardImportRuleValidationRegExp
+				: forwardRuleValidationRegExp;
+		var ruleRegExp = new RegExp(
+			atRuleKey + sourceRuleRegExp.source,
+			sourceRuleRegExp.flags,
+		);
 		var ruleSlice = token.slice(i);
 		// Not all rules can be nested, if the rule cannot be nested and is in the root scope, do not perform the check
-		var shouldPerformCheck = cannotBeNested && currentScope !== topScope ? false : true;
+		var shouldPerformCheck =
+			cannotBeNested && currentScope !== topScope ? false : true;
 		// First, check if there is no invalid characters just after the at-rule
 		if (shouldPerformCheck && ruleSlice.search(ruleRegExp) === 0) {
 			// Find the closest allowed character before the at-rule (a opening or closing brace, a semicolon or a comment ending)
 			var beforeSlice = token.slice(0, i);
-			var regexBefore = new RegExp(beforeRulePortionRegExp.source, beforeRulePortionRegExp.flags);
+			var regexBefore = new RegExp(
+				beforeRulePortionRegExp.source,
+				beforeRulePortionRegExp.flags,
+			);
 			var matches = beforeSlice.match(regexBefore);
-			var lastI = matches ? beforeSlice.lastIndexOf(matches[matches.length - 1]) : 0;
+			var lastI = matches
+				? beforeSlice.lastIndexOf(matches[matches.length - 1])
+				: 0;
 			var toCheckSlice = token.slice(lastI, i);
 			// Check if we don't have any invalid in the portion before the `at-rule` and the closest allowed character
 			var checkedSlice = toCheckSlice.search(beforeRuleValidationRegExp);
@@ -420,10 +466,10 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				isValid = true;
 			}
 		}
-		
+
 		// Additional validation for @scope rule
 		if (isValid && atRuleKey === "@scope") {
-			var openBraceIndex = ruleSlice.indexOf('{');
+			var openBraceIndex = ruleSlice.indexOf("{");
 			if (openBraceIndex !== -1) {
 				// Extract the rule prelude (everything between the at-rule and {)
 				var rulePrelude = ruleSlice.slice(0, openBraceIndex).trim();
@@ -439,26 +485,42 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 					var hasStart = parsedScopePrelude.hasStart;
 					var hasEnd = parsedScopePrelude.hasEnd;
 					var hasOnlyEnd = parsedScopePrelude.hasOnlyEnd;
-					
+
 					// Validation rules for @scope:
 					// 1. Empty selectors in parentheses are invalid: @scope () {} or @scope (.a) to () {}
-					if ((hasStart && startSelector === '') || (hasEnd && endSelector === '') || (hasOnlyEnd && endSelector === '')) {
+					if (
+						(hasStart && startSelector === "") ||
+						(hasEnd && endSelector === "") ||
+						(hasOnlyEnd && endSelector === "")
+					) {
 						isValid = false;
 					}
 					// 2. Pseudo-elements are invalid in scope selectors
-					else if ((startSelector && hasPseudoElement(startSelector)) || (endSelector && hasPseudoElement(endSelector))) {
+					else if (
+						(startSelector && hasPseudoElement(startSelector)) ||
+						(endSelector && hasPseudoElement(endSelector))
+					) {
 						isValid = false;
 					}
 					// 3. Basic syntax errors (mismatched parens, brackets, quotes)
-					else if ((startSelector && hasBasicSyntaxError(startSelector)) || (endSelector && hasBasicSyntaxError(endSelector))) {
+					else if (
+						(startSelector && hasBasicSyntaxError(startSelector)) ||
+						(endSelector && hasBasicSyntaxError(endSelector))
+					) {
 						isValid = false;
 					}
 					// 4. Invalid combinator patterns
-					else if ((startSelector && hasInvalidCombinators(startSelector)) || (endSelector && hasInvalidCombinators(endSelector))) {
+					else if (
+						(startSelector && hasInvalidCombinators(startSelector)) ||
+						(endSelector && hasInvalidCombinators(endSelector))
+					) {
 						isValid = false;
 					}
 					// 5. Invalid pseudo-like syntax (function without : or :: prefix)
-					else if ((startSelector && hasInvalidPseudoSyntax(startSelector)) || (endSelector && hasInvalidPseudoSyntax(endSelector))) {
+					else if (
+						(startSelector && hasInvalidPseudoSyntax(startSelector)) ||
+						(endSelector && hasInvalidPseudoSyntax(endSelector))
+					) {
 						isValid = false;
 					}
 					// 6. Invalid structure (no proper parentheses found when prelude is not empty)
@@ -471,19 +533,19 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		}
 
 		if (isValid && atRuleKey === "@page") {
-			var openBraceIndex = ruleSlice.indexOf('{');
+			var openBraceIndex = ruleSlice.indexOf("{");
 			if (openBraceIndex !== -1) {
 				// Extract the rule prelude (everything between the at-rule and {)
 				var rulePrelude = ruleSlice.slice(0, openBraceIndex).trim();
-				
+
 				// Skip past at-rule keyword and whitespace
 				var preludeContent = rulePrelude.slice("@page".length).trim();
 
 				if (preludeContent.length > 0) {
 					var trimmedValue = preludeContent.trim();
-            
+
 					// Empty selector is valid for @page
-					if (trimmedValue !== '') {
+					if (trimmedValue !== "") {
 						// Parse @page selectorText for page name and pseudo-pages
 						// Valid formats:
 						// - (empty - no name, no pseudo-page)
@@ -493,8 +555,8 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 						// - named:first:left (named page with multiple pseudo-pages)
 						var match = trimmedValue.match(atPageRuleSelectorRegExp);
 						if (match) {
-							var pageName = match[1] || '';
-							var pseudoPages = match[2] || '';
+							var pageName = match[1] || "";
+							var pseudoPages = match[2] || "";
 
 							// Validate page name if present
 							if (pageName) {
@@ -505,8 +567,8 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 							// Validate pseudo-pages if present
 							if (pseudoPages) {
-								var pseudos = pseudoPages.split(':').filter(function(p) { return p; });
-								var validPseudos = ['left', 'right', 'first', 'blank'];
+								var pseudos = pseudoPages.split(":").filter((p) => p);
+								var validPseudos = ["left", "right", "first", "blank"];
 								var allValid = true;
 								for (var j = 0; j < pseudos.length; j++) {
 									if (validPseudos.indexOf(pseudos[j].toLowerCase()) === -1) {
@@ -514,7 +576,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 										break;
 									}
 								}
-								
+
 								if (!allValid) {
 									isValid = false;
 								}
@@ -523,15 +585,14 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 							isValid = false;
 						}
 					}
-					
 				}
 			}
 		}
-		
+
 		if (!isValid) {
 			// If it's invalid the browser will simply ignore the entire invalid block
 			// Use regex to find the closing brace of the invalid rule
-			
+
 			// Regex used above is not ES5 compliant. Using alternative.
 			// var ruleStatementMatch = ruleSlice.match(atRulesStatemenRegExp); //
 			var ruleStatementMatch = atRulesStatemenRegExpES5Alternative(ruleSlice);
@@ -545,10 +606,17 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 			// Check if there's a semicolon before the invalid at-rule and the first opening brace
 			if (atRuleKey === "@layer") {
-				var ruleSemicolonAndOpeningBraceMatch = ruleSlice.match(forwardRuleSemicolonAndOpeningBraceRegExp);
-				if (ruleSemicolonAndOpeningBraceMatch && ruleSemicolonAndOpeningBraceMatch[1] === ";" ) {
+				var ruleSemicolonAndOpeningBraceMatch = ruleSlice.match(
+					forwardRuleSemicolonAndOpeningBraceRegExp,
+				);
+				if (
+					ruleSemicolonAndOpeningBraceMatch &&
+					ruleSemicolonAndOpeningBraceMatch[1] === ";"
+				) {
 					// Ignore the rule block until the semicolon
-					i += ruleSemicolonAndOpeningBraceMatch.index + ruleSemicolonAndOpeningBraceMatch[0].length;
+					i +=
+						ruleSemicolonAndOpeningBraceMatch.index +
+						ruleSemicolonAndOpeningBraceMatch[0].length;
 					state = "before-selector";
 					return;
 				}
@@ -564,7 +632,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 	// Helper functions for looseSelectorValidator
 	// Defined outside to avoid recreation on every validation call
-	
+
 	/**
 	 * Check if character is a valid identifier start
 	 * @param {string} c - Character to check
@@ -580,23 +648,23 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	 * @returns {boolean}
 	 */
 	function isIdentChar(c) {
-		return /[a-zA-Z0-9_\u00A0-\uFFFF\-]/.test(c);
+		return /[a-zA-Z0-9_\u00A0-\uFFFF-]/.test(c);
 	}
 
 	/**
 	 * Helper function to validate CSS selector syntax without regex backtracking.
 	 * Iteratively parses the selector string to identify valid components.
-	 * 
+	 *
 	 * Supports:
 	 * - Escaped special characters (e.g., .class\!, #id\@name)
 	 * - Namespace selectors (ns|element, *|element, |element)
 	 * - All standard CSS selectors (class, ID, type, attribute, pseudo, etc.)
 	 * - Combinators (>, +, ~, whitespace)
 	 * - Nesting selector (&)
-	 * 
+	 *
 	 * This approach eliminates exponential backtracking by using explicit character-by-character
 	 * parsing instead of nested quantifiers in regex.
-	 * 
+	 *
 	 * @param {string} selector - The selector to validate
 	 * @returns {boolean} - True if valid selector syntax
 	 */
@@ -611,7 +679,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 		// Helper: Skip escaped character (backslash + any char)
 		function skipEscape() {
-			if (i < len && selector[i] === '\\') {
+			if (i < len && selector[i] === "\\") {
 				i += 2; // Skip backslash and next character
 				return true;
 			}
@@ -623,7 +691,6 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 			var start = i;
 			while (i < len) {
 				if (skipEscape()) {
-					continue;
 				} else if (isIdentChar(selector[i])) {
 					i++;
 				} else {
@@ -636,19 +703,22 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Helper: Parse namespace prefix (optional)
 		function parseNamespace() {
 			var start = i;
-			
+
 			// Match: *| or identifier| or |
-			if (i < len && selector[i] === '*') {
+			if (i < len && selector[i] === "*") {
 				i++;
-			} else if (i < len && (isIdentStart(selector[i]) || selector[i] === '\\')) {
+			} else if (
+				i < len &&
+				(isIdentStart(selector[i]) || selector[i] === "\\")
+			) {
 				parseIdentifier();
 			}
-			
-			if (i < len && selector[i] === '|') {
+
+			if (i < len && selector[i] === "|") {
 				i++;
 				return true;
 			}
-			
+
 			// Rollback if no pipe found
 			i = start;
 			return false;
@@ -656,38 +726,38 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 		// Helper: Parse pseudo-class/element arguments (with balanced parens)
 		function parsePseudoArgs() {
-			if (i >= len || selector[i] !== '(') {
+			if (i >= len || selector[i] !== "(") {
 				return false;
 			}
-			
+
 			i++; // Skip opening paren
 			var depth = 1;
 			var inString = false;
-			var stringChar = '';
-			
+			var stringChar = "";
+
 			while (i < len && depth > 0) {
 				var c = selector[i];
-				
-				if (c === '\\' && i + 1 < len) {
+
+				if (c === "\\" && i + 1 < len) {
 					i += 2; // Skip escaped character
-				} else if (!inString && (c === '"' || c === '\'')) {
+				} else if (!inString && (c === '"' || c === "'")) {
 					inString = true;
 					stringChar = c;
 					i++;
 				} else if (inString && c === stringChar) {
 					inString = false;
 					i++;
-				} else if (!inString && c === '(') {
+				} else if (!inString && c === "(") {
 					depth++;
 					i++;
-				} else if (!inString && c === ')') {
+				} else if (!inString && c === ")") {
 					depth--;
 					i++;
 				} else {
 					i++;
 				}
 			}
-			
+
 			return depth === 0;
 		}
 
@@ -717,13 +787,13 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 			}
 
 			// Match nesting selector: &
-			if (i < len && selector[i] === '&') {
+			if (i < len && selector[i] === "&") {
 				i++;
 				hasMatchedComponent = true;
 				matched = true;
 			}
 			// Match class selector: .identifier
-			else if (i < len && selector[i] === '.') {
+			else if (i < len && selector[i] === ".") {
 				i++;
 				if (parseIdentifier()) {
 					hasMatchedComponent = true;
@@ -731,7 +801,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				}
 			}
 			// Match ID selector: #identifier
-			else if (i < len && selector[i] === '#') {
+			else if (i < len && selector[i] === "#") {
 				i++;
 				if (parseIdentifier()) {
 					hasMatchedComponent = true;
@@ -739,9 +809,9 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				}
 			}
 			// Match pseudo-class/element: :identifier or ::identifier
-			else if (i < len && selector[i] === ':') {
+			else if (i < len && selector[i] === ":") {
 				i++;
-				if (i < len && selector[i] === ':') {
+				if (i < len && selector[i] === ":") {
 					i++; // Pseudo-element
 				}
 				if (parseIdentifier()) {
@@ -751,30 +821,30 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				}
 			}
 			// Match attribute selector: [...]
-			else if (i < len && selector[i] === '[') {
+			else if (i < len && selector[i] === "[") {
 				i++;
 				var depth = 1;
 				while (i < len && depth > 0) {
-					if (selector[i] === '\\') {
+					if (selector[i] === "\\") {
 						i += 2;
-					} else if (selector[i] === '\'') {
+					} else if (selector[i] === "'") {
 						i++;
-						while (i < len && selector[i] !== '\'') {
-							if (selector[i] === '\\') i += 2;
+						while (i < len && selector[i] !== "'") {
+							if (selector[i] === "\\") i += 2;
 							else i++;
 						}
 						if (i < len) i++; // Skip closing quote
 					} else if (selector[i] === '"') {
 						i++;
 						while (i < len && selector[i] !== '"') {
-							if (selector[i] === '\\') i += 2;
+							if (selector[i] === "\\") i += 2;
 							else i++;
 						}
 						if (i < len) i++; // Skip closing quote
-					} else if (selector[i] === '[') {
+					} else if (selector[i] === "[") {
 						depth++;
 						i++;
-					} else if (selector[i] === ']') {
+					} else if (selector[i] === "]") {
 						depth--;
 						i++;
 					} else {
@@ -787,14 +857,23 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				}
 			}
 			// Match type selector with optional namespace: [namespace|]identifier
-			else if (i < len && (isIdentStart(selector[i]) || selector[i] === '\\' || selector[i] === '*' || selector[i] === '|')) {
+			else if (
+				i < len &&
+				(isIdentStart(selector[i]) ||
+					selector[i] === "\\" ||
+					selector[i] === "*" ||
+					selector[i] === "|")
+			) {
 				parseNamespace(); // Optional namespace prefix
-				
-				if (i < len && selector[i] === '*') {
+
+				if (i < len && selector[i] === "*") {
 					i++; // Universal selector
 					hasMatchedComponent = true;
 					matched = true;
-				} else if (i < len && (isIdentStart(selector[i]) || selector[i] === '\\')) {
+				} else if (
+					i < len &&
+					(isIdentStart(selector[i]) || selector[i] === "\\")
+				) {
 					if (parseIdentifier()) {
 						hasMatchedComponent = true;
 						matched = true;
@@ -814,7 +893,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	/**
 	 * Validates a basic CSS selector, allowing for deeply nested balanced parentheses in pseudo-classes.
 	 * This function replaces the previous basicSelectorRegExp.
-	 * 
+	 *
 	 * This function matches:
 	 * - Type selectors (e.g., `div`, `span`)
 	 * - Universal selector (`*`)
@@ -864,58 +943,68 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Check for invalid pseudo-class usage with quoted strings
 		// Pseudo-classes like :lang(), :dir(), :nth-*() should not accept quoted strings
 		// Using iterative parsing instead of regex to avoid exponential backtracking
-		var noQuotesPseudos = ['lang', 'dir', 'nth-child', 'nth-last-child', 'nth-of-type', 'nth-last-of-type'];
-		
+		var noQuotesPseudos = [
+			"lang",
+			"dir",
+			"nth-child",
+			"nth-last-child",
+			"nth-of-type",
+			"nth-last-of-type",
+		];
+
 		for (var idx = 0; idx < selector.length; idx++) {
 			// Look for pseudo-class/element start
-			if (selector[idx] === ':') {
+			if (selector[idx] === ":") {
 				var pseudoStart = idx;
 				idx++;
-				
+
 				// Skip second colon for pseudo-elements
-				if (idx < selector.length && selector[idx] === ':') {
+				if (idx < selector.length && selector[idx] === ":") {
 					idx++;
 				}
-				
+
 				// Extract pseudo name
 				var nameStart = idx;
-				while (idx < selector.length && /[a-zA-Z0-9\-]/.test(selector[idx])) {
+				while (idx < selector.length && /[a-zA-Z0-9-]/.test(selector[idx])) {
 					idx++;
 				}
-				
+
 				if (idx === nameStart) {
 					continue; // No name found
 				}
-				
+
 				var pseudoName = selector.substring(nameStart, idx).toLowerCase();
-				
+
 				// Check if this pseudo has arguments
-				if (idx < selector.length && selector[idx] === '(') {
+				if (idx < selector.length && selector[idx] === "(") {
 					idx++;
 					var contentStart = idx;
 					var depth = 1;
-					
+
 					// Find matching closing paren (handle nesting)
 					while (idx < selector.length && depth > 0) {
-						if (selector[idx] === '\\') {
+						if (selector[idx] === "\\") {
 							idx += 2; // Skip escaped character
-						} else if (selector[idx] === '(') {
+						} else if (selector[idx] === "(") {
 							depth++;
 							idx++;
-						} else if (selector[idx] === ')') {
+						} else if (selector[idx] === ")") {
 							depth--;
 							idx++;
 						} else {
 							idx++;
 						}
 					}
-					
+
 					if (depth === 0) {
 						var pseudoContent = selector.substring(contentStart, idx - 1);
-						
+
 						// Check if this pseudo should not have quoted strings
 						for (var j = 0; j < noQuotesPseudos.length; j++) {
-							if (pseudoName === noQuotesPseudos[j] && /['"]/.test(pseudoContent)) {
+							if (
+								pseudoName === noQuotesPseudos[j] &&
+								/['"]/.test(pseudoContent)
+							) {
 								return false;
 							}
 						}
@@ -927,7 +1016,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		// Use the iterative validator to avoid regex backtracking issues
 		return looseSelectorValidator(selector);
 	}
-	
+
 	/**
 	 * Regular expression to match CSS pseudo-classes with arguments.
 	 *
@@ -946,59 +1035,59 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	 *
 	 * REPLACED WITH FUNCTION to avoid exponential backtracking.
 	 */
-	
+
 	/**
 	 * Extract pseudo-classes with arguments from a selector using iterative parsing.
 	 * Replaces the previous globalPseudoClassRegExp to avoid exponential backtracking.
-	 * 
+	 *
 	 * Handles:
 	 * - Regular content without parentheses or quotes
 	 * - Single-quoted strings
-	 * - Double-quoted strings  
+	 * - Double-quoted strings
 	 * - Nested parentheses (arbitrary depth)
-	 * 
+	 *
 	 * @param {string} selector - The CSS selector to parse
 	 * @returns {Array} Array of matches, each with: [fullMatch, pseudoName, pseudoArgs, startIndex]
 	 */
 	function extractPseudoClasses(selector) {
 		var matches = [];
-		
+
 		for (var i = 0; i < selector.length; i++) {
 			// Look for pseudo-class start (single or double colon)
-			if (selector[i] === ':') {
+			if (selector[i] === ":") {
 				var pseudoStart = i;
 				i++;
-				
+
 				// Skip second colon for pseudo-elements (::)
-				if (i < selector.length && selector[i] === ':') {
+				if (i < selector.length && selector[i] === ":") {
 					i++;
 				}
-				
+
 				// Extract pseudo name
 				var nameStart = i;
-				while (i < selector.length && /[a-zA-Z\-]/.test(selector[i])) {
+				while (i < selector.length && /[a-zA-Z-]/.test(selector[i])) {
 					i++;
 				}
-				
+
 				if (i === nameStart) {
 					continue; // No name found
 				}
-				
+
 				var pseudoName = selector.substring(nameStart, i);
-				
+
 				// Check if this pseudo has arguments
-				if (i < selector.length && selector[i] === '(') {
+				if (i < selector.length && selector[i] === "(") {
 					i++;
 					var argsStart = i;
 					var depth = 1;
 					var inSingleQuote = false;
 					var inDoubleQuote = false;
-					
+
 					// Find matching closing paren (handle nesting and strings)
 					while (i < selector.length && depth > 0) {
 						var ch = selector[i];
-						
-						if (ch === '\\') {
+
+						if (ch === "\\") {
 							i += 2; // Skip escaped character
 						} else if (ch === "'" && !inDoubleQuote) {
 							inSingleQuote = !inSingleQuote;
@@ -1006,31 +1095,31 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 						} else if (ch === '"' && !inSingleQuote) {
 							inDoubleQuote = !inDoubleQuote;
 							i++;
-						} else if (ch === '(' && !inSingleQuote && !inDoubleQuote) {
+						} else if (ch === "(" && !inSingleQuote && !inDoubleQuote) {
 							depth++;
 							i++;
-						} else if (ch === ')' && !inSingleQuote && !inDoubleQuote) {
+						} else if (ch === ")" && !inSingleQuote && !inDoubleQuote) {
 							depth--;
 							i++;
 						} else {
 							i++;
 						}
 					}
-					
+
 					if (depth === 0) {
 						var pseudoArgs = selector.substring(argsStart, i - 1);
 						var fullMatch = selector.substring(pseudoStart, i);
-						
+
 						// Store match in same format as regex: [fullMatch, pseudoName, pseudoArgs, startIndex]
 						matches.push([fullMatch, pseudoName, pseudoArgs, pseudoStart]);
 					}
-					
+
 					// Move back one since loop will increment
 					i--;
 				}
 			}
 		}
-		
+
 		return matches;
 	}
 
@@ -1045,9 +1134,9 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	 * @returns {string[]} An array of selector parts, split by top-level commas, with whitespace trimmed.
 	 */
 	function parseAndSplitNestedSelectors(selector) {
-		var depth = 0;           // Track parenthesis nesting depth
-		var buffer = "";         // Accumulate characters for current selector part
-		var parts = [];          // Array of split selector parts
+		var depth = 0; // Track parenthesis nesting depth
+		var buffer = ""; // Accumulate characters for current selector part
+		var parts = []; // Array of split selector parts
 		var inSingleQuote = false; // Track if we're inside single quotes
 		var inDoubleQuote = false; // Track if we're inside double quotes
 		var i, char;
@@ -1067,15 +1156,15 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 			}
 			// Process characters outside of quoted strings
 			else if (!inSingleQuote && !inDoubleQuote) {
-				if (char === '(') {
+				if (char === "(") {
 					// Entering a nested level (e.g., :is(...))
 					depth++;
 					buffer += char;
-				} else if (char === ')') {
+				} else if (char === ")") {
 					// Exiting a nested level
 					depth--;
 					buffer += char;
-				} else if (char === ',' && depth === 0) {
+				} else if (char === "," && depth === 0) {
 					// Found a top-level comma separator - split here
 					if (buffer.trim()) {
 						parts.push(buffer.trim());
@@ -1116,14 +1205,14 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 	// Only pseudo-classes that accept selector lists should recurse
 	var selectorListPseudoClasses = {
-		'not': true,
-		'is': true,
-		'has': true,
-		'where': true
+		not: true,
+		is: true,
+		has: true,
+		where: true,
 	};
 
 	function validateSelector(selector) {
-		if (validatedSelectorsCache.hasOwnProperty(selector)) {
+		if (Object.hasOwn(validatedSelectorsCache, selector)) {
 			return validatedSelectorsCache[selector];
 		}
 
@@ -1132,11 +1221,13 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 		for (var j = 0; j < pseudoClassMatches.length; j++) {
 			var pseudoClass = pseudoClassMatches[j][1];
-			if (selectorListPseudoClasses.hasOwnProperty(pseudoClass)) {
-				var nestedSelectors = parseAndSplitNestedSelectors(pseudoClassMatches[j][2]);
+			if (Object.hasOwn(selectorListPseudoClasses, pseudoClass)) {
+				var nestedSelectors = parseAndSplitNestedSelectors(
+					pseudoClassMatches[j][2],
+				);
 				for (var i = 0; i < nestedSelectors.length; i++) {
 					var nestedSelector = nestedSelectors[i];
-					if (!validatedSelectorsCache.hasOwnProperty(nestedSelector)) {
+					if (!Object.hasOwn(validatedSelectorsCache, nestedSelector)) {
 						var nestedSelectorValidation = validateSelector(nestedSelector);
 						validatedSelectorsCache[nestedSelector] = nestedSelectorValidation;
 						if (!nestedSelectorValidation) {
@@ -1159,7 +1250,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 
 	/**
 	 * Validates namespace selectors by checking if the namespace prefix is defined.
-	 * 
+	 *
 	 * @param {string} selector - The CSS selector to validate
 	 * @returns {boolean} Returns true if the namespace is valid, false otherwise
 	 */
@@ -1170,10 +1261,10 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		var inAttr = false;
 		var inSingleQuote = false;
 		var inDoubleQuote = false;
-		
+
 		for (var i = 0; i < selector.length; i++) {
 			var char = selector[i];
-			
+
 			if (inSingleQuote) {
 				if (char === "'" && selector[i - 1] !== "\\") {
 					inSingleQuote = false;
@@ -1200,25 +1291,25 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				}
 			}
 		}
-		
+
 		if (pipeIndex === -1) {
 			return true; // No namespace, always valid
 		}
-		
+
 		var namespacePrefix = selector.substring(0, pipeIndex);
-		
+
 		// Universal namespace (*|) and default namespace (|) are always valid
-		if (namespacePrefix === '*' || namespacePrefix === '') {
+		if (namespacePrefix === "*" || namespacePrefix === "") {
 			return true;
 		}
-		
+
 		// Check if the custom namespace prefix is defined
-		return definedNamespacePrefixes.hasOwnProperty(namespacePrefix);
+		return Object.hasOwn(definedNamespacePrefixes, namespacePrefix);
 	}
 
 	/**
-	 * Processes a CSS selector text 
-	 * 
+	 * Processes a CSS selector text
+	 *
 	 * @param {string} selectorText - The CSS selector text to process
 	 * @returns {string} The processed selector text with normalized whitespace
 	 */
@@ -1232,10 +1323,13 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		 * Replaces all newline characters (CRLF, CR, or LF) with spaces while keeping quoted
 		 * strings (single or double quotes) intact, including any escaped characters within them.
 		 */
-		return selectorText.replace(/(['"])(?:\\.|[^\\])*?\1|(\r\n|\r|\n)/g, function(match, _, newline) {
-			if (newline) return " ";
-			return match;
-		});
+		return selectorText.replace(
+			/(['"])(?:\\.|[^\\])*?\1|(\r\n|\r|\n)/g,
+			(match, _, newline) => {
+				if (newline) return " ";
+				return match;
+			},
+		);
 	}
 
 	/**
@@ -1262,7 +1356,10 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 		var selectors = parseAndSplitNestedSelectors(selectorText);
 		for (var i = 0; i < selectors.length; i++) {
 			var processedSelectors = selectors[i].trim();
-			if (!validateSelector(processedSelectors) || !validateNamespaceSelector(processedSelectors)) {
+			if (
+				!validateSelector(processedSelectors) ||
+				!validateNamespaceSelector(processedSelectors)
+			) {
 				return false;
 			}
 		}
@@ -1276,22 +1373,24 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	}
 
 	function parseError(message, isNested) {
-		var lines = token.substring(0, i).split('\n');
+		var lines = token.substring(0, i).split("\n");
 		var lineCount = lines.length;
 		var charCount = lines.pop().length + 1;
-		var error = new Error(message + ' (line ' + lineCount + ', char ' + charCount + ')');
+		var error = new Error(
+			message + " (line " + lineCount + ", char " + charCount + ")",
+		);
 		error.line = lineCount;
 		/* jshint sub : true */
-		error['char'] = charCount;
+		error["char"] = charCount;
 		error.styleSheet = styleSheet;
 		error.isNested = !!isNested;
 		// Print the error but continue parsing the sheet
 		try {
 			throw error;
-		} catch(e) {
+		} catch (e) {
 			errorHandler && errorHandler(e);
 		}
-	};
+	}
 
 	var endingIndex = token.length - 1;
 
@@ -1308,7 +1407,7 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				case "value":
 					if (character !== "}") {
 						if (character === ";") {
-							token += "}"
+							token += "}";
 						} else {
 							token += ";";
 						}
@@ -1318,836 +1417,932 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 				case "name":
 				case "before-name":
 					if (character === "}") {
-						token += " "
+						token += " ";
 					} else {
-						token += "}"
+						token += "}";
 					}
-					endingIndex += 1
+					endingIndex += 1;
 					break;
 				case "before-selector":
 					if (character !== "}" && currentScope !== styleSheet) {
-						token += "}"
-						endingIndex += 1
+						token += "}";
+						endingIndex += 1;
 						break;
 					}
 			}
 		}
-		
+
 		// Handle escape sequences before processing special characters
 		// If we encounter a backslash, add both the backslash and the next character to buffer
 		// and skip the next iteration to prevent the escaped character from being interpreted
-		if (character === '\\' && i + 1 < token.length) {
+		if (character === "\\" && i + 1 < token.length) {
 			buffer += character + token.charAt(i + 1);
 			i++; // Skip the next character
 			continue;
 		}
-		
+
 		switch (character) {
-
-		case " ":
-		case "\t":
-		case "\r":
-		case "\n":
-		case "\f":
-			if (SIGNIFICANT_WHITESPACE[state]) {
-				buffer += character;
-			}
-			break;
-
-		// String
-		case '"':
-			index = i + 1;
-			do {
-				index = token.indexOf('"', index) + 1;
-				if (!index) {
-					parseError('Unmatched "');
+			case " ":
+			case "\t":
+			case "\r":
+			case "\n":
+			case "\f":
+				if (SIGNIFICANT_WHITESPACE[state]) {
+					buffer += character;
 				}
-			} while (token[index - 2] === '\\');
-			if (index === 0) {
 				break;
-			}
-			buffer += token.slice(i, index);
-			i = index - 1;
-			switch (state) {
-				case 'before-value':
-					state = 'value';
-					break;
-				case 'importRule-begin':
-					state = 'importRule';
-					if (i === endingIndex) {
-						token += ';'
-					}
-					break;
-				case 'namespaceRule-begin':
-					state = 'namespaceRule';
-					if (i === endingIndex) {
-						token += ';'
-					}
-					break;
-			}
-			break;
 
-		case "'":
-			index = i + 1;
-			do {
-				index = token.indexOf("'", index) + 1;
-				if (!index) {
-					parseError("Unmatched '");
+			// String
+			case '"':
+				index = i + 1;
+				do {
+					index = token.indexOf('"', index) + 1;
+					if (!index) {
+						parseError('Unmatched "');
+					}
+				} while (token[index - 2] === "\\");
+				if (index === 0) {
+					break;
 				}
-			} while (token[index - 2] === '\\');
-			if (index === 0) {
+				buffer += token.slice(i, index);
+				i = index - 1;
+				switch (state) {
+					case "before-value":
+						state = "value";
+						break;
+					case "importRule-begin":
+						state = "importRule";
+						if (i === endingIndex) {
+							token += ";";
+						}
+						break;
+					case "namespaceRule-begin":
+						state = "namespaceRule";
+						if (i === endingIndex) {
+							token += ";";
+						}
+						break;
+				}
 				break;
-			}
-			buffer += token.slice(i, index);
-			i = index - 1;
-			switch (state) {
-				case 'before-value':
-					state = 'value';
-					break;
-				case 'importRule-begin':
-					state = 'importRule';
-					break;
-				case 'namespaceRule-begin':
-					state = 'namespaceRule';
-					break;
-			}
-			break;
 
-		// Comment
-		case "/":
-			if (token.charAt(i + 1) === "*") {
-				i += 2;
-				index = token.indexOf("*/", i);
-				if (index === -1) {
-					i = token.length - 1;
-					buffer = "";
+			case "'":
+				index = i + 1;
+				do {
+					index = token.indexOf("'", index) + 1;
+					if (!index) {
+						parseError("Unmatched '");
+					}
+				} while (token[index - 2] === "\\");
+				if (index === 0) {
+					break;
+				}
+				buffer += token.slice(i, index);
+				i = index - 1;
+				switch (state) {
+					case "before-value":
+						state = "value";
+						break;
+					case "importRule-begin":
+						state = "importRule";
+						break;
+					case "namespaceRule-begin":
+						state = "namespaceRule";
+						break;
+				}
+				break;
+
+			// Comment
+			case "/":
+				if (token.charAt(i + 1) === "*") {
+					i += 2;
+					index = token.indexOf("*/", i);
+					if (index === -1) {
+						i = token.length - 1;
+						buffer = "";
+					} else {
+						i = index + 1;
+					}
 				} else {
-					i = index + 1;
+					buffer += character;
 				}
-			} else {
-				buffer += character;
-			}
-			if (state === "importRule-begin") {
-				buffer += " ";
-				state = "importRule";
-			}
-			if (state === "namespaceRule-begin") {
-				buffer += " ";
-				state = "namespaceRule";
-			}
-			break;
+				if (state === "importRule-begin") {
+					buffer += " ";
+					state = "importRule";
+				}
+				if (state === "namespaceRule-begin") {
+					buffer += " ";
+					state = "namespaceRule";
+				}
+				break;
 
-		// At-rule
-		case "@":
-			if (nestedSelectorRule) {
-				if (styleRule && styleRule.constructor.name === "CSSNestedDeclarations") {
-					currentScope.cssRules.push(styleRule);
+			// At-rule
+			case "@":
+				if (nestedSelectorRule) {
+					if (
+						styleRule &&
+						styleRule.constructor.name === "CSSNestedDeclarations"
+					) {
+						currentScope.cssRules.push(styleRule);
+					}
+					if (
+						nestedSelectorRule.parentRule.constructor.name === "CSSStyleRule"
+					) {
+						styleRule = nestedSelectorRule.parentRule;
+					}
+					nestedSelectorRule = null;
 				}
-				if (nestedSelectorRule.parentRule.constructor.name === "CSSStyleRule") {
-					styleRule = nestedSelectorRule.parentRule;
-				}
-				nestedSelectorRule = null;
-			}
-			if (token.indexOf("@-moz-document", i) === i) {
-				validateAtRule("@-moz-document", function(){
-					state = "documentRule-begin";
-					documentRule = new CSSOM.CSSDocumentRule();
-					documentRule.__starts = i;
-					i += "-moz-document".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@media", i) === i) {
-				validateAtRule("@media", function(){
-					state = "atBlock";
-					mediaRule = new CSSOM.CSSMediaRule();
-					mediaRule.__starts = i;
-					i += "media".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@container", i) === i) {
-				validateAtRule("@container", function(){
-					state = "containerBlock";
-					containerRule = new CSSOM.CSSContainerRule();
-					containerRule.__starts = i;
-					i += "container".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@counter-style", i) === i) {
-				validateAtRule("@counter-style", function(){
-					state = "counterStyleBlock"
-					counterStyleRule = new CSSOM.CSSCounterStyleRule();
-					counterStyleRule.__starts = i;
-					i += "counter-style".length;
-				}, true);
-				buffer = "";
-				break;
-			} else if (token.indexOf("@scope", i) === i) {
-				validateAtRule("@scope", function(){
-					state = "scopeBlock";
-					scopeRule = new CSSOM.CSSScopeRule();
-					scopeRule.__starts = i;
-					i += "scope".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@layer", i) === i) {
-				validateAtRule("@layer", function(){
-					state = "layerBlock"
-					layerBlockRule = new CSSOM.CSSLayerBlockRule();
-					layerBlockRule.__starts = i;
-					i += "layer".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@page", i) === i) {
-				validateAtRule("@page", function(){
-					state = "pageBlock"
-					pageRule = new CSSOM.CSSPageRule();
-					pageRule.__starts = i;
-					i += "page".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@supports", i) === i) {
-				validateAtRule("@supports", function(){
-					state = "conditionBlock";
-					supportsRule = new CSSOM.CSSSupportsRule();
-					supportsRule.__starts = i;
-					i += "supports".length;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@host", i) === i) {
-				validateAtRule("@host", function(){
-					state = "hostRule-begin";
-					i += "host".length;
-					hostRule = new CSSOM.CSSHostRule();
-					hostRule.__starts = i;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@starting-style", i) === i) {
-				validateAtRule("@starting-style", function(){
-					state = "startingStyleRule-begin";
-					i += "starting-style".length;
-					startingStyleRule = new CSSOM.CSSStartingStyleRule();
-					startingStyleRule.__starts = i;
-				});
-				buffer = "";
-				break;
-			} else if (token.indexOf("@import", i) === i) {
-				buffer = "";
-				validateAtRule("@import", function(){
-					state = "importRule-begin";
-					i += "import".length;
-					buffer += "@import";
-				}, true);
-				break;
-			} else if (token.indexOf("@namespace", i) === i) {
-				buffer = "";
-				validateAtRule("@namespace", function(){
-					state = "namespaceRule-begin";
-					i += "namespace".length;
-					buffer += "@namespace";
-				}, true);
-				break;
-			} else if (token.indexOf("@font-face", i) === i) {
-				buffer = "";
-				validateAtRule("@font-face", function(){
-					state = "fontFaceRule-begin";
-					i += "font-face".length;
-					fontFaceRule = new CSSOM.CSSFontFaceRule();
-					fontFaceRule.__starts = i;
-				}, true);
-				break;
-			} else {
-				atKeyframesRegExp.lastIndex = i;
-				var matchKeyframes = atKeyframesRegExp.exec(token);
-				if (matchKeyframes && matchKeyframes.index === i) {
-					state = "keyframesRule-begin";
-					keyframesRule = new CSSOM.CSSKeyframesRule();
-					keyframesRule.__starts = i;
-					keyframesRule._vendorPrefix = matchKeyframes[1]; // Will come out as undefined if no prefix was found
-					i += matchKeyframes[0].length - 1;
+				if (token.indexOf("@-moz-document", i) === i) {
+					validateAtRule("@-moz-document", () => {
+						state = "documentRule-begin";
+						documentRule = new CSSOM.CSSDocumentRule();
+						documentRule.__starts = i;
+						i += "-moz-document".length;
+					});
 					buffer = "";
 					break;
-				} else if (state === "selector") {
-					state = "atRule";
+				} else if (token.indexOf("@media", i) === i) {
+					validateAtRule("@media", () => {
+						state = "atBlock";
+						mediaRule = new CSSOM.CSSMediaRule();
+						mediaRule.__starts = i;
+						i += "media".length;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@container", i) === i) {
+					validateAtRule("@container", () => {
+						state = "containerBlock";
+						containerRule = new CSSOM.CSSContainerRule();
+						containerRule.__starts = i;
+						i += "container".length;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@counter-style", i) === i) {
+					validateAtRule(
+						"@counter-style",
+						() => {
+							state = "counterStyleBlock";
+							counterStyleRule = new CSSOM.CSSCounterStyleRule();
+							counterStyleRule.__starts = i;
+							i += "counter-style".length;
+						},
+						true,
+					);
+					buffer = "";
+					break;
+				} else if (token.indexOf("@scope", i) === i) {
+					validateAtRule("@scope", () => {
+						state = "scopeBlock";
+						scopeRule = new CSSOM.CSSScopeRule();
+						scopeRule.__starts = i;
+						i += "scope".length;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@layer", i) === i) {
+					validateAtRule("@layer", () => {
+						state = "layerBlock";
+						layerBlockRule = new CSSOM.CSSLayerBlockRule();
+						layerBlockRule.__starts = i;
+						i += "layer".length;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@page", i) === i) {
+					validateAtRule("@page", () => {
+						state = "pageBlock";
+						pageRule = new CSSOM.CSSPageRule();
+						pageRule.__starts = i;
+						i += "page".length;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@supports", i) === i) {
+					validateAtRule("@supports", () => {
+						state = "conditionBlock";
+						supportsRule = new CSSOM.CSSSupportsRule();
+						supportsRule.__starts = i;
+						i += "supports".length;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@host", i) === i) {
+					validateAtRule("@host", () => {
+						state = "hostRule-begin";
+						i += "host".length;
+						hostRule = new CSSOM.CSSHostRule();
+						hostRule.__starts = i;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@starting-style", i) === i) {
+					validateAtRule("@starting-style", () => {
+						state = "startingStyleRule-begin";
+						i += "starting-style".length;
+						startingStyleRule = new CSSOM.CSSStartingStyleRule();
+						startingStyleRule.__starts = i;
+					});
+					buffer = "";
+					break;
+				} else if (token.indexOf("@import", i) === i) {
+					buffer = "";
+					validateAtRule(
+						"@import",
+						() => {
+							state = "importRule-begin";
+							i += "import".length;
+							buffer += "@import";
+						},
+						true,
+					);
+					break;
+				} else if (token.indexOf("@namespace", i) === i) {
+					buffer = "";
+					validateAtRule(
+						"@namespace",
+						() => {
+							state = "namespaceRule-begin";
+							i += "namespace".length;
+							buffer += "@namespace";
+						},
+						true,
+					);
+					break;
+				} else if (token.indexOf("@font-face", i) === i) {
+					buffer = "";
+					validateAtRule(
+						"@font-face",
+						() => {
+							state = "fontFaceRule-begin";
+							i += "font-face".length;
+							fontFaceRule = new CSSOM.CSSFontFaceRule();
+							fontFaceRule.__starts = i;
+						},
+						true,
+					);
+					break;
+				} else {
+					atKeyframesRegExp.lastIndex = i;
+					var matchKeyframes = atKeyframesRegExp.exec(token);
+					if (matchKeyframes && matchKeyframes.index === i) {
+						state = "keyframesRule-begin";
+						keyframesRule = new CSSOM.CSSKeyframesRule();
+						keyframesRule.__starts = i;
+						keyframesRule._vendorPrefix = matchKeyframes[1]; // Will come out as undefined if no prefix was found
+						i += matchKeyframes[0].length - 1;
+						buffer = "";
+						break;
+					} else if (state === "selector") {
+						state = "atRule";
+					}
 				}
-			}
-			buffer += character;
-			break;
-
-		case "{":
-			if (currentScope === topScope) {
-				nestedSelectorRule = null;
-			}
-			if (state === 'before-selector') {
-				parseError("Unexpected {");
-				i = ignoreBalancedBlock(i, token.slice(i));
+				buffer += character;
 				break;
-			}
-			if (state === "selector" || state === "atRule") {
-				if (!nestedSelectorRule && buffer.indexOf(";") !== -1) {
-					var ruleClosingMatch = token.slice(i).match(forwardRuleClosingBraceRegExp);
-					if (ruleClosingMatch) {
-						styleRule = null;
+
+			case "{":
+				if (currentScope === topScope) {
+					nestedSelectorRule = null;
+				}
+				if (state === "before-selector") {
+					parseError("Unexpected {");
+					i = ignoreBalancedBlock(i, token.slice(i));
+					break;
+				}
+				if (state === "selector" || state === "atRule") {
+					if (!nestedSelectorRule && buffer.indexOf(";") !== -1) {
+						var ruleClosingMatch = token
+							.slice(i)
+							.match(forwardRuleClosingBraceRegExp);
+						if (ruleClosingMatch) {
+							styleRule = null;
+							buffer = "";
+							state = "before-selector";
+							i += ruleClosingMatch.index + ruleClosingMatch[0].length;
+							break;
+						}
+					}
+
+					if (parentRule) {
+						styleRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+
+					currentScope = parentRule = styleRule;
+					styleRule.selectorText = processSelectorText(buffer.trim());
+					styleRule.style.__starts = i;
+					styleRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-name";
+				} else if (state === "atBlock") {
+					mediaRule.media.mediaText = buffer.trim();
+
+					if (parentRule) {
+						mediaRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+
+					currentScope = parentRule = mediaRule;
+					mediaRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "containerBlock") {
+					containerRule.__conditionText = buffer.trim();
+
+					if (parentRule) {
+						containerRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+					currentScope = parentRule = containerRule;
+					containerRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "counterStyleBlock") {
+					// TODO: Validate counter-style name. At least that it cannot be empty nor multiple
+					counterStyleRule.name = buffer.trim().replace(/\n/g, "");
+					currentScope = parentRule = counterStyleRule;
+					counterStyleRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+				} else if (state === "conditionBlock") {
+					supportsRule.__conditionText = buffer.trim();
+
+					if (parentRule) {
+						supportsRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+
+					currentScope = parentRule = supportsRule;
+					supportsRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "scopeBlock") {
+					var parsedScopePrelude = parseScopePrelude(buffer.trim());
+
+					if (parsedScopePrelude.hasStart) {
+						scopeRule.__start = parsedScopePrelude.startSelector;
+					}
+					if (parsedScopePrelude.hasEnd) {
+						scopeRule.__end = parsedScopePrelude.endSelector;
+					}
+					if (parsedScopePrelude.hasOnlyEnd) {
+						scopeRule.__end = parsedScopePrelude.endSelector;
+					}
+
+					if (parentRule) {
+						scopeRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+					currentScope = parentRule = scopeRule;
+					scopeRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "layerBlock") {
+					layerBlockRule.name = buffer.trim();
+
+					var isValidName =
+						layerBlockRule.name.length === 0 ||
+						layerBlockRule.name.match(cssCustomIdentifierRegExp) !== null;
+
+					if (isValidName) {
+						if (parentRule) {
+							layerBlockRule.__parentRule = parentRule;
+							pushToAncestorRules(parentRule);
+						}
+
+						currentScope = parentRule = layerBlockRule;
+						layerBlockRule.__parentStyleSheet = styleSheet;
+					}
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "pageBlock") {
+					pageRule.selectorText = buffer.trim();
+
+					if (parentRule) {
+						pageRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+
+					currentScope = parentRule = pageRule;
+					pageRule.__parentStyleSheet = styleSheet;
+					styleRule = pageRule;
+					buffer = "";
+					state = "before-name";
+				} else if (state === "hostRule-begin") {
+					if (parentRule) {
+						pushToAncestorRules(parentRule);
+					}
+
+					currentScope = parentRule = hostRule;
+					hostRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "startingStyleRule-begin") {
+					if (parentRule) {
+						startingStyleRule.__parentRule = parentRule;
+						pushToAncestorRules(parentRule);
+					}
+
+					currentScope = parentRule = startingStyleRule;
+					startingStyleRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "fontFaceRule-begin") {
+					if (parentRule) {
+						fontFaceRule.__parentRule = parentRule;
+					}
+					fontFaceRule.__parentStyleSheet = styleSheet;
+					styleRule = fontFaceRule;
+					buffer = "";
+					state = "before-name";
+				} else if (state === "keyframesRule-begin") {
+					keyframesRule.name = buffer.trim();
+					if (parentRule) {
+						pushToAncestorRules(parentRule);
+						keyframesRule.__parentRule = parentRule;
+					}
+					keyframesRule.__parentStyleSheet = styleSheet;
+					currentScope = parentRule = keyframesRule;
+					buffer = "";
+					state = "keyframeRule-begin";
+				} else if (state === "keyframeRule-begin") {
+					styleRule = new CSSOM.CSSKeyframeRule();
+					styleRule.keyText = buffer.trim();
+					styleRule.__starts = i;
+					buffer = "";
+					state = "before-name";
+				} else if (state === "documentRule-begin") {
+					// FIXME: what if this '{' is in the url text of the match function?
+					documentRule.matcher.matcherText = buffer.trim();
+					if (parentRule) {
+						pushToAncestorRules(parentRule);
+						documentRule.__parentRule = parentRule;
+					}
+					currentScope = parentRule = documentRule;
+					documentRule.__parentStyleSheet = styleSheet;
+					buffer = "";
+					state = "before-selector";
+				} else if (state === "before-name" || state === "name") {
+					if (styleRule.constructor.name === "CSSNestedDeclarations") {
+						if (styleRule.style.length) {
+							parentRule.cssRules.push(styleRule);
+							styleRule.__parentRule = parentRule;
+							styleRule.__parentStyleSheet = styleSheet;
+							pushToAncestorRules(parentRule);
+						} else {
+							// If the styleRule is empty, we can assume that it's a nested selector
+							pushToAncestorRules(parentRule);
+						}
+					} else {
+						currentScope = parentRule = styleRule;
+						pushToAncestorRules(parentRule);
+						styleRule.__parentStyleSheet = styleSheet;
+					}
+
+					styleRule = new CSSOM.CSSStyleRule();
+					var processedSelectorText = processSelectorText(buffer.trim());
+					// In a nested selector, ensure each selector contains '&' at the beginning, except for selectors that already have '&' somewhere
+					if (
+						parentRule.constructor.name === "CSSScopeRule" ||
+						(parentRule.constructor.name !== "CSSStyleRule" &&
+							parentRule.parentRule === null)
+					) {
+						styleRule.selectorText = processedSelectorText;
+					} else {
+						styleRule.selectorText = parseAndSplitNestedSelectors(
+							processedSelectorText,
+						)
+							.map((sel) => {
+								// Add & at the beginning if there's no & in the selector, or if it starts with a combinator
+								return sel.indexOf("&") === -1 ||
+									startsWithCombinatorRegExp.test(sel)
+									? "& " + sel
+									: sel;
+							})
+							.join(", ");
+					}
+					styleRule.style.__starts = i - buffer.length;
+					styleRule.__parentRule = parentRule;
+					nestedSelectorRule = styleRule;
+
+					buffer = "";
+					state = "before-name";
+				}
+				break;
+
+			case ":":
+				if (state === "name") {
+					// It can be a nested selector, let's check
+					var openBraceBeforeMatch = token.slice(i).match(/[{;}]/);
+					var hasOpenBraceBefore =
+						openBraceBeforeMatch && openBraceBeforeMatch[0] === "{";
+					if (hasOpenBraceBefore) {
+						// Is a selector
+						buffer += character;
+					} else {
+						// Is a declaration
+						name = buffer.trim();
+						buffer = "";
+						state = "before-value";
+					}
+				} else {
+					buffer += character;
+				}
+				break;
+
+			case "(":
+				if (state === "value") {
+					// ie css expression mode
+					if (buffer.trim() === "expression") {
+						var info = new CSSOM.CSSValueExpression(token, i).parse();
+
+						if (info.error) {
+							parseError(info.error);
+						} else {
+							buffer += info.expression;
+							i = info.idx;
+						}
+					} else {
+						state = "value-parenthesis";
+						//always ensure this is reset to 1 on transition
+						//from value to value-parenthesis
+						valueParenthesisDepth = 1;
+						buffer += character;
+					}
+				} else if (state === "value-parenthesis") {
+					valueParenthesisDepth++;
+					buffer += character;
+				} else {
+					buffer += character;
+				}
+				break;
+
+			case ")":
+				if (state === "value-parenthesis") {
+					valueParenthesisDepth--;
+					if (valueParenthesisDepth === 0) state = "value";
+				}
+				buffer += character;
+				break;
+
+			case "!":
+				if (state === "value" && token.indexOf("!important", i) === i) {
+					priority = "important";
+					i += "important".length;
+				} else {
+					buffer += character;
+				}
+				break;
+
+			case ";":
+				switch (state) {
+					case "before-value":
+					case "before-name":
+						parseError("Unexpected ;");
+						buffer = "";
+						state = "before-name";
+						break;
+					case "value":
+						styleRule.style.setProperty(
+							name,
+							buffer.trim(),
+							priority,
+							parseError,
+						);
+						priority = "";
+						buffer = "";
+						state = "before-name";
+						break;
+					case "atRule":
 						buffer = "";
 						state = "before-selector";
-						i += ruleClosingMatch.index + ruleClosingMatch[0].length;
 						break;
-					}
-				}
-
-				if (parentRule) {
-					styleRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-
-				currentScope = parentRule = styleRule;
-				styleRule.selectorText = processSelectorText(buffer.trim());
-				styleRule.style.__starts = i;
-				styleRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-name";
-			} else if (state === "atBlock") {
-				mediaRule.media.mediaText = buffer.trim();
-
-				if (parentRule) {
-					mediaRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-
-				currentScope = parentRule = mediaRule;
-				mediaRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "containerBlock") {
-				containerRule.__conditionText = buffer.trim();
-
-				if (parentRule) {
-					containerRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-				currentScope = parentRule = containerRule;
-				containerRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "counterStyleBlock") {
-				// TODO: Validate counter-style name. At least that it cannot be empty nor multiple
-				counterStyleRule.name = buffer.trim().replace(/\n/g, "");
-				currentScope = parentRule = counterStyleRule;
-				counterStyleRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-			} else if (state === "conditionBlock") {
-				supportsRule.__conditionText = buffer.trim();
-
-				if (parentRule) {
-					supportsRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-
-				currentScope = parentRule = supportsRule;
-				supportsRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "scopeBlock") {
-				var parsedScopePrelude = parseScopePrelude(buffer.trim());
-				
-				if (parsedScopePrelude.hasStart) {
-					scopeRule.__start = parsedScopePrelude.startSelector;
-				}
-				if (parsedScopePrelude.hasEnd) {
-					scopeRule.__end = parsedScopePrelude.endSelector;
-				}
-				if (parsedScopePrelude.hasOnlyEnd) {
-					scopeRule.__end = parsedScopePrelude.endSelector;
-				}
-
-				if (parentRule) {
-					scopeRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-				currentScope = parentRule = scopeRule;
-				scopeRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "layerBlock") {
-				layerBlockRule.name = buffer.trim();
-
-				var isValidName = layerBlockRule.name.length === 0 || layerBlockRule.name.match(cssCustomIdentifierRegExp) !== null;
-
-				if (isValidName) {
-					if (parentRule) {
-						layerBlockRule.__parentRule = parentRule;
-						pushToAncestorRules(parentRule);
-					}
-	
-					currentScope = parentRule = layerBlockRule;
-					layerBlockRule.__parentStyleSheet = styleSheet;
-				}
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "pageBlock") {
-				pageRule.selectorText = buffer.trim();
-
-				if (parentRule) {
-					pageRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-
-				currentScope = parentRule = pageRule;
-				pageRule.__parentStyleSheet = styleSheet;
-				styleRule = pageRule;
-				buffer = "";
-				state = "before-name";
-			} else if (state === "hostRule-begin") {
-				if (parentRule) {
-					pushToAncestorRules(parentRule);
-				}
-
-				currentScope = parentRule = hostRule;
-				hostRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "startingStyleRule-begin") {
-				if (parentRule) {
-					startingStyleRule.__parentRule = parentRule;
-					pushToAncestorRules(parentRule);
-				}
-
-				currentScope = parentRule = startingStyleRule;
-				startingStyleRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-
-			} else if (state === "fontFaceRule-begin") {
-				if (parentRule) {
-					fontFaceRule.__parentRule = parentRule;
-				}
-				fontFaceRule.__parentStyleSheet = styleSheet;
-				styleRule = fontFaceRule;
-				buffer = "";
-				state = "before-name";
-			} else if (state === "keyframesRule-begin") {
-				keyframesRule.name = buffer.trim();
-				if (parentRule) {
-					pushToAncestorRules(parentRule);
-					keyframesRule.__parentRule = parentRule;
-				}
-				keyframesRule.__parentStyleSheet = styleSheet;
-				currentScope = parentRule = keyframesRule;
-				buffer = "";
-				state = "keyframeRule-begin";
-			} else if (state === "keyframeRule-begin") {
-				styleRule = new CSSOM.CSSKeyframeRule();
-				styleRule.keyText = buffer.trim();
-				styleRule.__starts = i;
-				buffer = "";
-				state = "before-name";
-			} else if (state === "documentRule-begin") {
-				// FIXME: what if this '{' is in the url text of the match function?
-				documentRule.matcher.matcherText = buffer.trim();
-				if (parentRule) {
-					pushToAncestorRules(parentRule);
-					documentRule.__parentRule = parentRule;
-				}
-				currentScope = parentRule = documentRule;
-				documentRule.__parentStyleSheet = styleSheet;
-				buffer = "";
-				state = "before-selector";
-			} else if (state === "before-name" || state === "name") {
-				if (styleRule.constructor.name === "CSSNestedDeclarations") {
-					if (styleRule.style.length) {
-						parentRule.cssRules.push(styleRule);
-						styleRule.__parentRule = parentRule;
-						styleRule.__parentStyleSheet = styleSheet;
-						pushToAncestorRules(parentRule);
-					} else {
-						// If the styleRule is empty, we can assume that it's a nested selector
-						pushToAncestorRules(parentRule);
-					}
-				} else {
-					currentScope = parentRule = styleRule;
-					pushToAncestorRules(parentRule);
-					styleRule.__parentStyleSheet = styleSheet;
-				}
-				
-				styleRule = new CSSOM.CSSStyleRule();
-				var processedSelectorText = processSelectorText(buffer.trim());
-				// In a nested selector, ensure each selector contains '&' at the beginning, except for selectors that already have '&' somewhere
-				if (parentRule.constructor.name === "CSSScopeRule" || (parentRule.constructor.name !== "CSSStyleRule" && parentRule.parentRule === null)) {
-					styleRule.selectorText = processedSelectorText;
-				} else {
-					styleRule.selectorText = parseAndSplitNestedSelectors(processedSelectorText).map(function(sel) {
-						// Add & at the beginning if there's no & in the selector, or if it starts with a combinator
-						return (sel.indexOf('&') === -1 || startsWithCombinatorRegExp.test(sel)) ? '& ' + sel : sel;
-					}).join(', ');
-				}
-				styleRule.style.__starts = i - buffer.length;
-				styleRule.__parentRule = parentRule;
-				nestedSelectorRule = styleRule;
-
-				buffer = "";
-				state = "before-name";
-			}
-			break;
-
-		case ":":
-			if (state === "name") {
-				// It can be a nested selector, let's check
-				var openBraceBeforeMatch = token.slice(i).match(/[{;}]/);
-				var hasOpenBraceBefore = openBraceBeforeMatch && openBraceBeforeMatch[0] === '{';
-				if (hasOpenBraceBefore) {
-					// Is a selector
-					buffer += character;
-				} else {
-					// Is a declaration
-					name = buffer.trim();
-					buffer = "";
-					state = "before-value";
-				}
-			} else {
-				buffer += character;
-			}
-			break;
-
-		case "(":
-			if (state === 'value') {
-				// ie css expression mode
-				if (buffer.trim() === 'expression') {
-					var info = (new CSSOM.CSSValueExpression(token, i)).parse();
-
-					if (info.error) {
-						parseError(info.error);
-					} else {
-						buffer += info.expression;
-						i = info.idx;
-					}
-				} else {
-					state = 'value-parenthesis';
-					//always ensure this is reset to 1 on transition
-					//from value to value-parenthesis
-					valueParenthesisDepth = 1;
-					buffer += character;
-				}
-			} else if (state === 'value-parenthesis') {
-				valueParenthesisDepth++;
-				buffer += character;
-			} else {
-				buffer += character;
-			}
-			break;
-
-		case ")":
-			if (state === 'value-parenthesis') {
-				valueParenthesisDepth--;
-				if (valueParenthesisDepth === 0) state = 'value';
-			}
-			buffer += character;
-			break;
-
-		case "!":
-			if (state === "value" && token.indexOf("!important", i) === i) {
-				priority = "important";
-				i += "important".length;
-			} else {
-				buffer += character;
-			}
-			break;
-
-		case ";":
-			switch (state) {
-				case "before-value":
-				case "before-name":
-					parseError("Unexpected ;");
-					buffer = "";
-					state = "before-name";
-					break;
-				case "value":
-					styleRule.style.setProperty(name, buffer.trim(), priority, parseError);
-					priority = "";
-					buffer = "";
-					state = "before-name";
-					break;
-				case "atRule":
-					buffer = "";
-					state = "before-selector";
-					break;
-				case "importRule":
-					var isValid = topScope.cssRules.length === 0 || topScope.cssRules.some(function (rule) {
-						return ['CSSImportRule', 'CSSLayerStatementRule'].indexOf(rule.constructor.name) !== -1
-					});
-					if (isValid) {
-						importRule = new CSSOM.CSSImportRule();
-						importRule.__parentStyleSheet = importRule.styleSheet.__parentStyleSheet = styleSheet;
-						importRule.cssText = buffer + character;
-						topScope.cssRules.push(importRule);
-					}
-					buffer = "";
-					state = "before-selector";
-					break;
-				case "namespaceRule":
-					var isValid = topScope.cssRules.length === 0 || topScope.cssRules.every(function (rule) {
-						return ['CSSImportRule','CSSLayerStatementRule','CSSNamespaceRule'].indexOf(rule.constructor.name) !== -1
-					});
-					if (isValid) {
-						try {
-							// Validate namespace syntax before creating the rule
-							var testNamespaceRule = new CSSOM.CSSNamespaceRule();
-							testNamespaceRule.cssText = buffer + character;
-							
-							namespaceRule = testNamespaceRule;
-							namespaceRule.__parentStyleSheet = styleSheet;
-							topScope.cssRules.push(namespaceRule);
-							
-							// Track the namespace prefix for validation
-							if (namespaceRule.prefix) {
-								definedNamespacePrefixes[namespaceRule.prefix] = namespaceRule.namespaceURI;
-							}
-						} catch(e) {
-							parseError(e.message);
+					case "importRule": {
+						var isValid =
+							topScope.cssRules.length === 0 ||
+							topScope.cssRules.some(
+								(rule) =>
+									["CSSImportRule", "CSSLayerStatementRule"].indexOf(
+										rule.constructor.name,
+									) !== -1,
+							);
+						if (isValid) {
+							importRule = new CSSOM.CSSImportRule();
+							importRule.__parentStyleSheet =
+								importRule.styleSheet.__parentStyleSheet = styleSheet;
+							importRule.cssText = buffer + character;
+							topScope.cssRules.push(importRule);
 						}
-					}
-					buffer = "";
-					state = "before-selector";
-					break;
-				case "layerBlock":
-					var nameListStr = buffer.trim().split(",").map(function (name) {
-						return name.trim();
-					});
-					var isInvalid = parentRule !== undefined || nameListStr.some(function (name) {
-						return name.trim().match(cssCustomIdentifierRegExp) === null;
-					});
-
-					if (!isInvalid) {
-						layerStatementRule = new CSSOM.CSSLayerStatementRule();
-						layerStatementRule.__parentStyleSheet = styleSheet;
-						layerStatementRule.__starts = layerBlockRule.__starts;
-						layerStatementRule.__ends = i;
-						layerStatementRule.nameList = nameListStr;
-						topScope.cssRules.push(layerStatementRule);
-					}
-					buffer = "";
-					state = "before-selector";
-					break;
-				default:
-					buffer += character;
-					break;
-			}
-			break;
-
-		case "}":
-			if (state === "counterStyleBlock") {
-				// FIXME : Implement cssText get setter that parses the real implementation
-				counterStyleRule.cssText = "@counter-style " + counterStyleRule.name + " { " + buffer.trim().replace(/\n/g, " ").replace(/(['"])(?:\\.|[^\\])*?\1|(\s{2,})/g, function(match, quote) {
-					return quote ? match : ' ';
-				}) + " }";
-				buffer = "";
-				state = "before-selector";
-			}
-
-			switch (state) {
-				case "value":
-					styleRule.style.setProperty(name, buffer.trim(), priority, parseError);
-					priority = "";
-					/* falls through */
-				case "before-value":
-				case "before-name":
-				case "name":
-					styleRule.__ends = i + 1;
-					
-					if (parentRule === styleRule) {
-						parentRule = ancestorRules.pop()
-					}
-
-					if (parentRule) {
-						styleRule.__parentRule = parentRule;
-					}
-					styleRule.__parentStyleSheet = styleSheet;
-
-					if (currentScope === styleRule) {
-						currentScope = parentRule || topScope;
-					}
-
-					if (styleRule.constructor.name === "CSSStyleRule" && !isValidSelectorText(styleRule.selectorText)) {
-						if (styleRule === nestedSelectorRule) {
-							nestedSelectorRule = null;
-						}
-						parseError('Invalid CSSStyleRule (selectorText = "' + styleRule.selectorText + '")', styleRule.parentRule !== null);
-					} else {
-						if (styleRule.parentRule) {
-							styleRule.parentRule.cssRules.push(styleRule);
-						} else {
-							currentScope.cssRules.push(styleRule);
-						}
-					}
-					buffer = "";
-					if (currentScope.constructor === CSSOM.CSSKeyframesRule) {
-						state = "keyframeRule-begin";
-					} else {
+						buffer = "";
 						state = "before-selector";
-					}
-
-					if (styleRule.constructor.name === "CSSNestedDeclarations") {
-						if (currentScope !== topScope) {
-							nestedSelectorRule = currentScope;
-						}
-						styleRule = null;
-					} else {
-						styleRule = null;
 						break;
 					}
-				case "keyframeRule-begin":
-				case "before-selector":
-				case "selector":
-					// End of media/supports/document rule.
-					if (!parentRule) {
-						parseError("Unexpected }");
-						
-						var hasPreviousStyleRule = currentScope.cssRules.length && currentScope.cssRules[currentScope.cssRules.length - 1].constructor.name === "CSSStyleRule";
-						if (hasPreviousStyleRule) {
-							i = ignoreBalancedBlock(i, token.slice(i), 1);
+					case "namespaceRule": {
+						var isValid =
+							topScope.cssRules.length === 0 ||
+							topScope.cssRules.every(
+								(rule) =>
+									[
+										"CSSImportRule",
+										"CSSLayerStatementRule",
+										"CSSNamespaceRule",
+									].indexOf(rule.constructor.name) !== -1,
+							);
+						if (isValid) {
+							try {
+								// Validate namespace syntax before creating the rule
+								var testNamespaceRule = new CSSOM.CSSNamespaceRule();
+								testNamespaceRule.cssText = buffer + character;
+
+								namespaceRule = testNamespaceRule;
+								namespaceRule.__parentStyleSheet = styleSheet;
+								topScope.cssRules.push(namespaceRule);
+
+								// Track the namespace prefix for validation
+								if (namespaceRule.prefix) {
+									definedNamespacePrefixes[namespaceRule.prefix] =
+										namespaceRule.namespaceURI;
+								}
+							} catch (e) {
+								parseError(e.message);
+							}
 						}
-						
+						buffer = "";
+						state = "before-selector";
 						break;
 					}
+					case "layerBlock": {
+						var nameListStr = buffer
+							.trim()
+							.split(",")
+							.map((name) => name.trim());
+						var isInvalid =
+							parentRule !== undefined ||
+							nameListStr.some(
+								(name) => name.trim().match(cssCustomIdentifierRegExp) === null,
+							);
 
-					while (ancestorRules.length > 0) {
-						parentRule = ancestorRules.pop();
+						if (!isInvalid) {
+							layerStatementRule = new CSSOM.CSSLayerStatementRule();
+							layerStatementRule.__parentStyleSheet = styleSheet;
+							layerStatementRule.__starts = layerBlockRule.__starts;
+							layerStatementRule.__ends = i;
+							layerStatementRule.nameList = nameListStr;
+							topScope.cssRules.push(layerStatementRule);
+						}
+						buffer = "";
+						state = "before-selector";
+						break;
+					}
+					default:
+						buffer += character;
+						break;
+				}
+				break;
+
+			case "}":
+				if (state === "counterStyleBlock") {
+					// FIXME : Implement cssText get setter that parses the real implementation
+					counterStyleRule.cssText =
+						"@counter-style " +
+						counterStyleRule.name +
+						" { " +
+						buffer
+							.trim()
+							.replace(/\n/g, " ")
+							.replace(/(['"])(?:\\.|[^\\])*?\1|(\s{2,})/g, (match, quote) =>
+								quote ? match : " ",
+							) +
+						" }";
+					buffer = "";
+					state = "before-selector";
+				}
+
+				switch (state) {
+					case "value":
+						styleRule.style.setProperty(
+							name,
+							buffer.trim(),
+							priority,
+							parseError,
+						);
+						priority = "";
+					/* falls through */
+					case "before-value":
+					case "before-name":
+					case "name":
+						styleRule.__ends = i + 1;
+
+						if (parentRule === styleRule) {
+							parentRule = ancestorRules.pop();
+						}
+
+						if (parentRule) {
+							styleRule.__parentRule = parentRule;
+						}
+						styleRule.__parentStyleSheet = styleSheet;
+
+						if (currentScope === styleRule) {
+							currentScope = parentRule || topScope;
+						}
 
 						if (
-							parentRule.constructor.name === "CSSStyleRule"
-							|| parentRule.constructor.name === "CSSMediaRule"
-							|| parentRule.constructor.name === "CSSSupportsRule"
-							|| parentRule.constructor.name === "CSSContainerRule"
-							|| parentRule.constructor.name === "CSSScopeRule"
-							|| parentRule.constructor.name === "CSSLayerBlockRule"
-							|| parentRule.constructor.name === "CSSStartingStyleRule"
+							styleRule.constructor.name === "CSSStyleRule" &&
+							!isValidSelectorText(styleRule.selectorText)
 						) {
-							if (nestedSelectorRule) {
-								if (nestedSelectorRule.parentRule) {
-									prevScope = nestedSelectorRule;
-									currentScope = nestedSelectorRule.parentRule;
-									if (currentScope.cssRules.findIndex(function (rule) {
-										return rule === prevScope
-									}) === -1) {
-										currentScope.cssRules.push(prevScope);
-									}
-									nestedSelectorRule = currentScope;
-								}
+							if (styleRule === nestedSelectorRule) {
+								nestedSelectorRule = null;
+							}
+							parseError(
+								'Invalid CSSStyleRule (selectorText = "' +
+									styleRule.selectorText +
+									'")',
+								styleRule.parentRule !== null,
+							);
+						} else {
+							if (styleRule.parentRule) {
+								styleRule.parentRule.cssRules.push(styleRule);
 							} else {
-								prevScope = currentScope;
-								parentRule !== prevScope && parentRule.cssRules.push(prevScope);
-								break;
+								currentScope.cssRules.push(styleRule);
 							}
 						}
-					}
-					
-					if (currentScope.parentRule == null) {
-						currentScope.__ends = i + 1;
-						if (currentScope !== topScope && topScope.cssRules.findIndex(function (rule) {
-							return rule === currentScope
-						}) === -1) {
-							topScope.cssRules.push(currentScope);
+						buffer = "";
+						if (currentScope.constructor === CSSOM.CSSKeyframesRule) {
+							state = "keyframeRule-begin";
+						} else {
+							state = "before-selector";
 						}
-						currentScope = topScope;
-						if (nestedSelectorRule === parentRule) {
-							// Check if this selector is really starting inside another selector
-							var nestedSelectorTokenToCurrentSelectorToken = token.slice(nestedSelectorRule.__starts, i + 1);
-							var openingBraceMatch = nestedSelectorTokenToCurrentSelectorToken.match(/{/g);
-							var closingBraceMatch = nestedSelectorTokenToCurrentSelectorToken.match(/}/g);
-							var openingBraceLen = openingBraceMatch && openingBraceMatch.length;
-							var closingBraceLen = closingBraceMatch && closingBraceMatch.length;
 
-							if (openingBraceLen === closingBraceLen) {
-								// If the number of opening and closing braces are equal, we can assume that the new selector is starting outside the nestedSelectorRule
-								nestedSelectorRule.__ends = i + 1;
-								nestedSelectorRule = null;
+						if (styleRule.constructor.name === "CSSNestedDeclarations") {
+							if (currentScope !== topScope) {
+								nestedSelectorRule = currentScope;
+							}
+							styleRule = null;
+						} else {
+							styleRule = null;
+							break;
+						}
+					case "keyframeRule-begin":
+					case "before-selector":
+					case "selector":
+						// End of media/supports/document rule.
+						if (!parentRule) {
+							parseError("Unexpected }");
+
+							var hasPreviousStyleRule =
+								currentScope.cssRules.length &&
+								currentScope.cssRules[currentScope.cssRules.length - 1]
+									.constructor.name === "CSSStyleRule";
+							if (hasPreviousStyleRule) {
+								i = ignoreBalancedBlock(i, token.slice(i), 1);
+							}
+
+							break;
+						}
+
+						while (ancestorRules.length > 0) {
+							parentRule = ancestorRules.pop();
+
+							if (
+								parentRule.constructor.name === "CSSStyleRule" ||
+								parentRule.constructor.name === "CSSMediaRule" ||
+								parentRule.constructor.name === "CSSSupportsRule" ||
+								parentRule.constructor.name === "CSSContainerRule" ||
+								parentRule.constructor.name === "CSSScopeRule" ||
+								parentRule.constructor.name === "CSSLayerBlockRule" ||
+								parentRule.constructor.name === "CSSStartingStyleRule"
+							) {
+								if (nestedSelectorRule) {
+									if (nestedSelectorRule.parentRule) {
+										prevScope = nestedSelectorRule;
+										currentScope = nestedSelectorRule.parentRule;
+										if (
+											currentScope.cssRules.findIndex(
+												(rule) => rule === prevScope,
+											) === -1
+										) {
+											currentScope.cssRules.push(prevScope);
+										}
+										nestedSelectorRule = currentScope;
+									}
+								} else {
+									prevScope = currentScope;
+									parentRule !== prevScope &&
+										parentRule.cssRules.push(prevScope);
+									break;
+								}
+							}
+						}
+
+						if (currentScope.parentRule == null) {
+							currentScope.__ends = i + 1;
+							if (
+								currentScope !== topScope &&
+								topScope.cssRules.findIndex((rule) => rule === currentScope) ===
+									-1
+							) {
+								topScope.cssRules.push(currentScope);
+							}
+							currentScope = topScope;
+							if (nestedSelectorRule === parentRule) {
+								// Check if this selector is really starting inside another selector
+								var nestedSelectorTokenToCurrentSelectorToken = token.slice(
+									nestedSelectorRule.__starts,
+									i + 1,
+								);
+								var openingBraceMatch =
+									nestedSelectorTokenToCurrentSelectorToken.match(/{/g);
+								var closingBraceMatch =
+									nestedSelectorTokenToCurrentSelectorToken.match(/}/g);
+								var openingBraceLen =
+									openingBraceMatch && openingBraceMatch.length;
+								var closingBraceLen =
+									closingBraceMatch && closingBraceMatch.length;
+
+								if (openingBraceLen === closingBraceLen) {
+									// If the number of opening and closing braces are equal, we can assume that the new selector is starting outside the nestedSelectorRule
+									nestedSelectorRule.__ends = i + 1;
+									nestedSelectorRule = null;
+									parentRule = null;
+								}
+							} else {
 								parentRule = null;
 							}
 						} else {
-							parentRule = null;
-
+							currentScope = parentRule;
 						}
-					} else {
-						currentScope = parentRule;
-					}
 
-					buffer = "";
-					state = "before-selector";
-					break;
-			}
-			break;
+						buffer = "";
+						state = "before-selector";
+						break;
+				}
+				break;
 
-		default:
-			switch (state) {
-				case "before-selector":
-					state = "selector";
-					if ((styleRule || scopeRule) && parentRule) {
-						// Assuming it's a declaration inside Nested Selector OR a Nested Declaration
-						// If Declaration inside Nested Selector let's keep the same styleRule
-						if (
-							parentRule.constructor.name === "CSSStyleRule"
-							|| parentRule.constructor.name === "CSSMediaRule"
-							|| parentRule.constructor.name === "CSSSupportsRule"
-							|| parentRule.constructor.name === "CSSContainerRule"
-							|| parentRule.constructor.name === "CSSScopeRule"
-							|| parentRule.constructor.name === "CSSLayerBlockRule"
-							|| parentRule.constructor.name === "CSSStartingStyleRule"
+			default:
+				switch (state) {
+					case "before-selector":
+						state = "selector";
+						if ((styleRule || scopeRule) && parentRule) {
+							// Assuming it's a declaration inside Nested Selector OR a Nested Declaration
+							// If Declaration inside Nested Selector let's keep the same styleRule
+							if (
+								parentRule.constructor.name === "CSSStyleRule" ||
+								parentRule.constructor.name === "CSSMediaRule" ||
+								parentRule.constructor.name === "CSSSupportsRule" ||
+								parentRule.constructor.name === "CSSContainerRule" ||
+								parentRule.constructor.name === "CSSScopeRule" ||
+								parentRule.constructor.name === "CSSLayerBlockRule" ||
+								parentRule.constructor.name === "CSSStartingStyleRule"
+							) {
+								// parentRule.__parentRule = styleRule;
+								state = "before-name";
+								if (styleRule !== parentRule) {
+									styleRule = new CSSOM.CSSNestedDeclarations();
+									styleRule.__starts = i;
+								}
+							}
+						} else if (
+							nestedSelectorRule &&
+							parentRule &&
+							(parentRule.constructor.name === "CSSStyleRule" ||
+								parentRule.constructor.name === "CSSMediaRule" ||
+								parentRule.constructor.name === "CSSSupportsRule" ||
+								parentRule.constructor.name === "CSSContainerRule" ||
+								parentRule.constructor.name === "CSSLayerBlockRule" ||
+								parentRule.constructor.name === "CSSStartingStyleRule")
 						) {
-							// parentRule.__parentRule = styleRule;
 							state = "before-name";
-							if (styleRule !== parentRule) {
+							if (parentRule.cssRules.length) {
+								currentScope = nestedSelectorRule = parentRule;
 								styleRule = new CSSOM.CSSNestedDeclarations();
-								styleRule.__starts = i;	
-							}
-						}
-						
-					} else if (nestedSelectorRule && parentRule && (
-						parentRule.constructor.name === "CSSStyleRule"
-						|| parentRule.constructor.name === "CSSMediaRule"
-						|| parentRule.constructor.name === "CSSSupportsRule"
-						|| parentRule.constructor.name === "CSSContainerRule"
-						|| parentRule.constructor.name === "CSSLayerBlockRule"
-						|| parentRule.constructor.name === "CSSStartingStyleRule"
-					)) {
-						state = "before-name";
-						if (parentRule.cssRules.length) {
-							currentScope = nestedSelectorRule = parentRule;
-							styleRule = new CSSOM.CSSNestedDeclarations();
-							styleRule.__starts = i;	
-						} else {
-							if (parentRule.constructor.name === "CSSStyleRule") {
-								styleRule = parentRule;
+								styleRule.__starts = i;
 							} else {
-								styleRule = new CSSOM.CSSStyleRule();
-								styleRule.__starts = i;								
+								if (parentRule.constructor.name === "CSSStyleRule") {
+									styleRule = parentRule;
+								} else {
+									styleRule = new CSSOM.CSSStyleRule();
+									styleRule.__starts = i;
+								}
 							}
+						} else {
+							styleRule = new CSSOM.CSSStyleRule();
+							styleRule.__starts = i;
 						}
-					} else {
-						styleRule = new CSSOM.CSSStyleRule();
-						styleRule.__starts = i;
-					}
-					break;
-				case "before-name":
-					state = "name";
-					break;
-				case "before-value":
-					state = "value";
-					break;
-				case "importRule-begin":
-					state = "importRule";
-					break;
-				case "namespaceRule-begin":
-					state = "namespaceRule";
-					break;
-			}
-			buffer += character;
-			break;
+						break;
+					case "before-name":
+						state = "name";
+						break;
+					case "before-value":
+						state = "value";
+						break;
+					case "importRule-begin":
+						state = "importRule";
+						break;
+					case "namespaceRule-begin":
+						state = "namespaceRule";
+						break;
+				}
+				buffer += character;
+				break;
 		}
 	}
 
@@ -2158,32 +2353,36 @@ CSSOM.parse = function parse(token, opts, errorHandler) {
 	return styleSheet;
 };
 
-
 //.CommonJS
 exports.parse = CSSOM.parse;
 // The following modules cannot be included sooner due to the mutual dependency with parse.js
 CSSOM.CSSStyleSheet = require("./CSSStyleSheet").CSSStyleSheet;
 CSSOM.CSSStyleRule = require("./CSSStyleRule").CSSStyleRule;
-CSSOM.CSSNestedDeclarations = require("./CSSNestedDeclarations").CSSNestedDeclarations;
+CSSOM.CSSNestedDeclarations =
+	require("./CSSNestedDeclarations").CSSNestedDeclarations;
 CSSOM.CSSImportRule = require("./CSSImportRule").CSSImportRule;
 CSSOM.CSSNamespaceRule = require("./CSSNamespaceRule").CSSNamespaceRule;
 CSSOM.CSSGroupingRule = require("./CSSGroupingRule").CSSGroupingRule;
 CSSOM.CSSMediaRule = require("./CSSMediaRule").CSSMediaRule;
-CSSOM.CSSCounterStyleRule = require("./CSSCounterStyleRule").CSSCounterStyleRule;
+CSSOM.CSSCounterStyleRule =
+	require("./CSSCounterStyleRule").CSSCounterStyleRule;
 CSSOM.CSSContainerRule = require("./CSSContainerRule").CSSContainerRule;
 CSSOM.CSSConditionRule = require("./CSSConditionRule").CSSConditionRule;
 CSSOM.CSSSupportsRule = require("./CSSSupportsRule").CSSSupportsRule;
 CSSOM.CSSFontFaceRule = require("./CSSFontFaceRule").CSSFontFaceRule;
 CSSOM.CSSHostRule = require("./CSSHostRule").CSSHostRule;
-CSSOM.CSSStartingStyleRule = require("./CSSStartingStyleRule").CSSStartingStyleRule;
-CSSOM.CSSStyleDeclaration = require('./CSSStyleDeclaration').CSSStyleDeclaration;
-CSSOM.CSSKeyframeRule = require('./CSSKeyframeRule').CSSKeyframeRule;
-CSSOM.CSSKeyframesRule = require('./CSSKeyframesRule').CSSKeyframesRule;
-CSSOM.CSSValueExpression = require('./CSSValueExpression').CSSValueExpression;
-CSSOM.CSSDocumentRule = require('./CSSDocumentRule').CSSDocumentRule;
-CSSOM.CSSScopeRule = require('./CSSScopeRule').CSSScopeRule;
+CSSOM.CSSStartingStyleRule =
+	require("./CSSStartingStyleRule").CSSStartingStyleRule;
+CSSOM.CSSStyleDeclaration =
+	require("./CSSStyleDeclaration").CSSStyleDeclaration;
+CSSOM.CSSKeyframeRule = require("./CSSKeyframeRule").CSSKeyframeRule;
+CSSOM.CSSKeyframesRule = require("./CSSKeyframesRule").CSSKeyframesRule;
+CSSOM.CSSValueExpression = require("./CSSValueExpression").CSSValueExpression;
+CSSOM.CSSDocumentRule = require("./CSSDocumentRule").CSSDocumentRule;
+CSSOM.CSSScopeRule = require("./CSSScopeRule").CSSScopeRule;
 CSSOM.CSSLayerBlockRule = require("./CSSLayerBlockRule").CSSLayerBlockRule;
-CSSOM.CSSLayerStatementRule = require("./CSSLayerStatementRule").CSSLayerStatementRule;
+CSSOM.CSSLayerStatementRule =
+	require("./CSSLayerStatementRule").CSSLayerStatementRule;
 CSSOM.CSSPageRule = require("./CSSPageRule").CSSPageRule;
 // Use cssstyle if available
 try {

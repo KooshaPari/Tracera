@@ -6,8 +6,8 @@
  */
 
 const jestPreset = {
-  plugins: [require.resolve('babel-plugin-jest-hoist')],
-  presets: [require.resolve('babel-preset-current-node-syntax')],
+	plugins: [require.resolve("babel-plugin-jest-hoist")],
+	presets: [require.resolve("babel-preset-current-node-syntax")],
 };
 
 // @babel/core requires us to export a function

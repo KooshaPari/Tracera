@@ -1,23 +1,22 @@
-import { Hash } from '../../tokenizer/index.js';
+import { Hash } from "../../tokenizer/index.js";
 
 // '#' ident
-export const xxx = 'XXX';
-export const name = 'Hash';
+export const xxx = "XXX";
+export const name = "Hash";
 export const structure = {
-    value: String
+	value: String,
 };
 export function parse() {
-    const start = this.tokenStart;
+	const start = this.tokenStart;
 
-    this.eat(Hash);
+	this.eat(Hash);
 
-    return {
-        type: 'Hash',
-        loc: this.getLocation(start, this.tokenStart),
-        value: this.substrToCursor(start + 1)
-    };
+	return {
+		type: "Hash",
+		loc: this.getLocation(start, this.tokenStart),
+		value: this.substrToCursor(start + 1),
+	};
 }
 export function generate(node) {
-    this.token(Hash, '#' + node.value);
+	this.token(Hash, "#" + node.value);
 }
-

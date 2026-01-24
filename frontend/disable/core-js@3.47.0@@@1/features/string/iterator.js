@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/iterator');
+"use strict";
+module.exports = require("../../full/string/iterator");

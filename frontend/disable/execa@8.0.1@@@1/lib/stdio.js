@@ -1,49 +1,54 @@
-const aliases = ['stdin', 'stdout', 'stderr'];
+const aliases = ["stdin", "stdout", "stderr"];
 
-const hasAlias = options => aliases.some(alias => options[alias] !== undefined);
+const hasAlias = (options) =>
+	aliases.some((alias) => options[alias] !== undefined);
 
-export const normalizeStdio = options => {
+export const normalizeStdio = (options) => {
 	if (!options) {
 		return;
 	}
 
-	const {stdio} = options;
+	const { stdio } = options;
 
 	if (stdio === undefined) {
-		return aliases.map(alias => options[alias]);
+		return aliases.map((alias) => options[alias]);
 	}
 
 	if (hasAlias(options)) {
-		throw new Error(`It's not possible to provide \`stdio\` in combination with one of ${aliases.map(alias => `\`${alias}\``).join(', ')}`);
+		throw new Error(
+			`It's not possible to provide \`stdio\` in combination with one of ${aliases.map((alias) => `\`${alias}\``).join(", ")}`,
+		);
 	}
 
-	if (typeof stdio === 'string') {
+	if (typeof stdio === "string") {
 		return stdio;
 	}
 
 	if (!Array.isArray(stdio)) {
-		throw new TypeError(`Expected \`stdio\` to be of type \`string\` or \`Array\`, got \`${typeof stdio}\``);
+		throw new TypeError(
+			`Expected \`stdio\` to be of type \`string\` or \`Array\`, got \`${typeof stdio}\``,
+		);
 	}
 
 	const length = Math.max(stdio.length, aliases.length);
-	return Array.from({length}, (value, index) => stdio[index]);
+	return Array.from({ length }, (value, index) => stdio[index]);
 };
 
 // `ipc` is pushed unless it is already present
-export const normalizeStdioNode = options => {
+export const normalizeStdioNode = (options) => {
 	const stdio = normalizeStdio(options);
 
-	if (stdio === 'ipc') {
-		return 'ipc';
+	if (stdio === "ipc") {
+		return "ipc";
 	}
 
-	if (stdio === undefined || typeof stdio === 'string') {
-		return [stdio, stdio, stdio, 'ipc'];
+	if (stdio === undefined || typeof stdio === "string") {
+		return [stdio, stdio, stdio, "ipc"];
 	}
 
-	if (stdio.includes('ipc')) {
+	if (stdio.includes("ipc")) {
 		return stdio;
 	}
 
-	return [...stdio, 'ipc'];
+	return [...stdio, "ipc"];
 };

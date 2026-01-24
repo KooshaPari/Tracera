@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 export declare function MaxIntrospectionDepthRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

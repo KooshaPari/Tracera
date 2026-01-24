@@ -102,19 +102,19 @@ var _index = require("./toDate.cjs");
  */
 
 function intlFormat(date, formatOrLocale, localeOptions) {
-  let formatOptions;
+	let formatOptions;
 
-  if (isFormatOptions(formatOrLocale)) {
-    formatOptions = formatOrLocale;
-  } else {
-    localeOptions = formatOrLocale;
-  }
+	if (isFormatOptions(formatOrLocale)) {
+		formatOptions = formatOrLocale;
+	} else {
+		localeOptions = formatOrLocale;
+	}
 
-  return new Intl.DateTimeFormat(localeOptions?.locale, formatOptions).format(
-    (0, _index.toDate)(date),
-  );
+	return new Intl.DateTimeFormat(localeOptions?.locale, formatOptions).format(
+		(0, _index.toDate)(date),
+	);
 }
 
 function isFormatOptions(opts) {
-  return opts !== undefined && !("locale" in opts);
+	return opts !== undefined && !("locale" in opts);
 }

@@ -1,4 +1,5 @@
 import YamlError from "./YamlError.mjs";
+
 /**
  * @public
  */

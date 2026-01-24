@@ -1,4 +1,5 @@
 import UnsupportedOperationError from "./UnsupportedOperationError.mjs";
+
 /**
  * @public
  */

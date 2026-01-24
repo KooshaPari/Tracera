@@ -12,16 +12,16 @@ import { match } from "./ug/_lib/match.js";
  * @author Abduwaly M. [@abduwaly](https://github.com/abduwaly)
  */
 export const ug = {
-  code: "ug",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ug",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

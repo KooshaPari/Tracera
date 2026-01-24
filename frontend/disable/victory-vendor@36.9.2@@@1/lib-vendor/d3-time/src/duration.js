@@ -1,9 +1,16 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
-exports.durationYear = exports.durationWeek = exports.durationSecond = exports.durationMonth = exports.durationMinute = exports.durationHour = exports.durationDay = void 0;
+exports.durationYear =
+	exports.durationWeek =
+	exports.durationSecond =
+	exports.durationMonth =
+	exports.durationMinute =
+	exports.durationHour =
+	exports.durationDay =
+		void 0;
 const durationSecond = 1000;
 exports.durationSecond = durationSecond;
 const durationMinute = durationSecond * 60;

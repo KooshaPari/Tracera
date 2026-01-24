@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/number/epsilon');
+"use strict";
+module.exports = require("../../full/number/epsilon");

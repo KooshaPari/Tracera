@@ -62,12 +62,45 @@ class ItemRepository:
 
     async def get_by_id(self, item_id: str, project_id: str | None = None) -> Item | None:
         """Get item by ID, optionally scoped to project."""
-        query = select(Item).where(Item.id == item_id, Item.deleted_at.is_(None))
+        # Use raw SQL to avoid model column mismatches with database schema
+        from sqlalchemy import text
+        
+        sql = """
+            SELECT id, project_id, title, description, type, status, priority, 
+                   created_at, updated_at, metadata, deleted_at, parent_id
+            FROM items 
+            WHERE id = :item_id AND deleted_at IS NULL
+        """
+        params = {"item_id": item_id}
+        
         if project_id:
-            query = query.where(Item.project_id == project_id)
-
-        result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+            sql += " AND project_id = :project_id"
+            params["project_id"] = project_id
+        
+        result = await self.session.execute(text(sql), params)
+        row = result.fetchone()
+        if not row:
+            return None
+        
+        # Create an Item-like object that works with the actual schema
+        item = type('Item', (), {})()  # type: ignore
+        item.id = str(row.id)
+        item.project_id = str(row.project_id)
+        item.title = row.title
+        item.description = row.description
+        item.view = row.type  # Map type to view
+        item.item_type = row.type
+        item.type = row.type  # Alias
+        item.status = row.status
+        item.priority = str(row.priority) if row.priority is not None else "medium"
+        item.owner = None  # owner column doesn't exist in database
+        item.parent_id = str(row.parent_id) if row.parent_id else None
+        item.created_at = row.created_at
+        item.updated_at = row.updated_at
+        item.item_metadata = row.metadata if row.metadata else {}
+        item.metadata = item.item_metadata  # Alias
+        item.deleted_at = row.deleted_at
+        return item
 
     async def list_by_view(
         self,
@@ -179,18 +212,46 @@ class ItemRepository:
         offset: int = 0,
     ) -> list[Item]:
         """Get all items in a project, optionally filtered by status."""
-        query = select(Item).where(
-            Item.project_id == project_id,
-            Item.deleted_at.is_(None)
-        )
-
+        # Use raw SQL to avoid model column mismatches with database schema
+        from sqlalchemy import text
+        
+        sql = """
+            SELECT id, project_id, title, description, type, status, priority, 
+                   created_at, updated_at, metadata, deleted_at
+            FROM items 
+            WHERE project_id = :project_id AND deleted_at IS NULL
+        """
+        params = {"project_id": project_id}
+        
         if status:
-            query = query.where(Item.status == status)
-
-        query = query.order_by(Item.created_at.desc()).limit(limit).offset(offset)
-
-        result = await self.session.execute(query)
-        return list(result.scalars().all())
+            sql += " AND status = :status"
+            params["status"] = status
+            
+        sql += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
+        params["limit"] = limit
+        params["offset"] = offset
+        
+        result = await self.session.execute(text(sql), params)
+        items = []
+        for row in result:
+            # Create an Item-like object that works with the actual schema
+            item = type('Item', (), {})()  # type: ignore
+            item.id = str(row.id)
+            item.project_id = str(row.project_id)
+            item.title = row.title
+            item.description = row.description
+            item.view = row.type  # Map type to view
+            item.item_type = row.type
+            item.type = row.type  # Alias
+            item.status = row.status
+            item.priority = str(row.priority) if row.priority is not None else "medium"
+            item.created_at = row.created_at
+            item.updated_at = row.updated_at
+            item.item_metadata = row.metadata if row.metadata else {}
+            item.metadata = item.item_metadata  # Alias
+            item.deleted_at = row.deleted_at
+            items.append(item)
+        return items
 
     async def get_by_view(
         self,

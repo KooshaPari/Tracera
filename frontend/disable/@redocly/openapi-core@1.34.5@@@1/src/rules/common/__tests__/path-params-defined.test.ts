@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 path-params-defined', () => {
-  it('should not report on defined params', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 path-params-defined", () => {
+	it("should not report on defined params", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /pets/{a}/{b}:
@@ -18,21 +22,21 @@ describe('Oas3 path-params-defined', () => {
                  - name: b
                    in: path
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-params-defined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-params-defined": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report on undefined param params', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on undefined param params", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /pets/{a}/{b}:
@@ -46,16 +50,16 @@ describe('Oas3 path-params-defined', () => {
                  - name: b
                    in: query
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-params-defined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-params-defined": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -72,11 +76,11 @@ describe('Oas3 path-params-defined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on undeclared param', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on undeclared param", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /pets/{a}:
@@ -90,16 +94,16 @@ describe('Oas3 path-params-defined', () => {
                  - name: c
                    in: path
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-params-defined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-params-defined": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -129,11 +133,11 @@ describe('Oas3 path-params-defined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should fail cause POST has no parameters', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should fail cause POST has no parameters", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /pets/{a}:
@@ -144,16 +148,16 @@ describe('Oas3 path-params-defined', () => {
               post:
                 description: without parameters
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-params-defined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-params-defined": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -170,11 +174,11 @@ describe('Oas3 path-params-defined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should apply parameters for POST operation from path parameters', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should apply parameters for POST operation from path parameters", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /pets/{a}:
@@ -188,15 +192,15 @@ describe('Oas3 path-params-defined', () => {
               post:
                 description: without parameters
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-params-defined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-params-defined": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

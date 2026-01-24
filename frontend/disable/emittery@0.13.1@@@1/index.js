@@ -1,26 +1,28 @@
-'use strict';
+const { anyMap, producersMap, eventsMap } = require("./maps.js");
 
-const {anyMap, producersMap, eventsMap} = require('./maps.js');
-
-const anyProducer = Symbol('anyProducer');
+const anyProducer = Symbol("anyProducer");
 const resolvedPromise = Promise.resolve();
 
 // Define symbols for "meta" events.
-const listenerAdded = Symbol('listenerAdded');
-const listenerRemoved = Symbol('listenerRemoved');
+const listenerAdded = Symbol("listenerAdded");
+const listenerRemoved = Symbol("listenerRemoved");
 
 let canEmitMetaEvents = false;
 let isGlobalDebugEnabled = false;
 
 function assertEventName(eventName) {
-	if (typeof eventName !== 'string' && typeof eventName !== 'symbol' && typeof eventName !== 'number') {
-		throw new TypeError('`eventName` must be a string, symbol, or number');
+	if (
+		typeof eventName !== "string" &&
+		typeof eventName !== "symbol" &&
+		typeof eventName !== "number"
+	) {
+		throw new TypeError("`eventName` must be a string, symbol, or number");
 	}
 }
 
 function assertListener(listener) {
-	if (typeof listener !== 'function') {
-		throw new TypeError('listener must be a function');
+	if (typeof listener !== "function") {
+		throw new TypeError("listener must be a function");
 	}
 }
 
@@ -34,7 +36,12 @@ function getListeners(instance, eventName) {
 }
 
 function getEventProducers(instance, eventName) {
-	const key = typeof eventName === 'string' || typeof eventName === 'symbol' || typeof eventName === 'number' ? eventName : anyProducer;
+	const key =
+		typeof eventName === "string" ||
+		typeof eventName === "symbol" ||
+		typeof eventName === "number"
+			? eventName
+			: anyProducer;
 	const producers = producersMap.get(instance);
 	if (!producers.has(key)) {
 		return;
@@ -74,7 +81,7 @@ function iterator(instance, eventNames) {
 		finish() {
 			isFinished = true;
 			flush();
-		}
+		},
 	};
 
 	for (const eventName of eventNames) {
@@ -91,7 +98,7 @@ function iterator(instance, eventNames) {
 	return {
 		async next() {
 			if (!queue) {
-				return {done: true};
+				return { done: true };
 			}
 
 			if (queue.length === 0) {
@@ -100,7 +107,7 @@ function iterator(instance, eventNames) {
 					return this.next();
 				}
 
-				await new Promise(resolve => {
+				await new Promise((resolve) => {
 					flush = resolve;
 				});
 
@@ -109,7 +116,7 @@ function iterator(instance, eventNames) {
 
 			return {
 				done: false,
-				value: await queue.shift()
+				value: await queue.shift(),
 			};
 		},
 
@@ -129,14 +136,14 @@ function iterator(instance, eventNames) {
 
 			flush();
 
-			return arguments.length > 0 ?
-				{done: true, value: await value} :
-				{done: true};
+			return arguments.length > 0
+				? { done: true, value: await value }
+				: { done: true };
 		},
 
 		[Symbol.asyncIterator]() {
 			return this;
-		}
+		},
 	};
 }
 
@@ -146,13 +153,13 @@ function defaultMethodNamesOrAssert(methodNames) {
 	}
 
 	if (!Array.isArray(methodNames)) {
-		throw new TypeError('`methodNames` must be an array of strings');
+		throw new TypeError("`methodNames` must be an array of strings");
 	}
 
 	for (const methodName of methodNames) {
 		if (!allEmitteryMethods.includes(methodName)) {
-			if (typeof methodName !== 'string') {
-				throw new TypeError('`methodNames` element must be a string');
+			if (typeof methodName !== "string") {
+				throw new TypeError("`methodNames` element must be a string");
 			}
 
 			throw new Error(`${methodName} is not Emittery method`);
@@ -162,7 +169,8 @@ function defaultMethodNamesOrAssert(methodNames) {
 	return methodNames;
 }
 
-const isMetaEvent = eventName => eventName === listenerAdded || eventName === listenerRemoved;
+const isMetaEvent = (eventName) =>
+	eventName === listenerAdded || eventName === listenerRemoved;
 
 function emitMetaEvent(emitter, eventName, eventData) {
 	if (isMetaEvent(eventName)) {
@@ -178,38 +186,41 @@ function emitMetaEvent(emitter, eventName, eventData) {
 class Emittery {
 	static mixin(emitteryPropertyName, methodNames) {
 		methodNames = defaultMethodNamesOrAssert(methodNames);
-		return target => {
-			if (typeof target !== 'function') {
-				throw new TypeError('`target` must be function');
+		return (target) => {
+			if (typeof target !== "function") {
+				throw new TypeError("`target` must be function");
 			}
 
 			for (const methodName of methodNames) {
 				if (target.prototype[methodName] !== undefined) {
-					throw new Error(`The property \`${methodName}\` already exists on \`target\``);
+					throw new Error(
+						`The property \`${methodName}\` already exists on \`target\``,
+					);
 				}
 			}
 
 			function getEmitteryProperty() {
 				Object.defineProperty(this, emitteryPropertyName, {
 					enumerable: false,
-					value: new Emittery()
+					value: new Emittery(),
 				});
 				return this[emitteryPropertyName];
 			}
 
 			Object.defineProperty(target.prototype, emitteryPropertyName, {
 				enumerable: false,
-				get: getEmitteryProperty
+				get: getEmitteryProperty,
 			});
 
-			const emitteryMethodCaller = methodName => function (...args) {
-				return this[emitteryPropertyName][methodName](...args);
-			};
+			const emitteryMethodCaller = (methodName) =>
+				function (...args) {
+					return this[emitteryPropertyName][methodName](...args);
+				};
 
 			for (const methodName of methodNames) {
 				Object.defineProperty(target.prototype, methodName, {
 					enumerable: false,
-					value: emitteryMethodCaller(methodName)
+					value: emitteryMethodCaller(methodName),
 				});
 			}
 
@@ -218,12 +229,14 @@ class Emittery {
 	}
 
 	static get isDebugEnabled() {
-		if (typeof process !== 'object') {
+		if (typeof process !== "object") {
 			return isGlobalDebugEnabled;
 		}
 
-		const {env} = process || {env: {}};
-		return env.DEBUG === 'emittery' || env.DEBUG === '*' || isGlobalDebugEnabled;
+		const { env } = process || { env: {} };
+		return (
+			env.DEBUG === "emittery" || env.DEBUG === "*" || isGlobalDebugEnabled
+		);
 	}
 
 	static set isDebugEnabled(newValue) {
@@ -249,16 +262,18 @@ class Emittery {
 					// TODO: Use https://github.com/sindresorhus/safe-stringify when the package is more mature. Just copy-paste the code.
 					eventData = JSON.stringify(eventData);
 				} catch {
-					eventData = `Object with the following keys failed to stringify: ${Object.keys(eventData).join(',')}`;
+					eventData = `Object with the following keys failed to stringify: ${Object.keys(eventData).join(",")}`;
 				}
 
-				if (typeof eventName === 'symbol' || typeof eventName === 'number') {
+				if (typeof eventName === "symbol" || typeof eventName === "number") {
 					eventName = eventName.toString();
 				}
 
 				const currentTime = new Date();
 				const logTime = `${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}.${currentTime.getMilliseconds()}`;
-				console.log(`[${logTime}][emittery:${type}][${debugName}] Event Name: ${eventName}\n\tdata: ${eventData}`);
+				console.log(
+					`[${logTime}][emittery:${type}][${debugName}] Event Name: ${eventName}\n\tdata: ${eventData}`,
+				);
 			};
 		}
 	}
@@ -284,10 +299,10 @@ class Emittery {
 
 			set.add(listener);
 
-			this.logIfDebugEnabled('subscribe', eventName, undefined);
+			this.logIfDebugEnabled("subscribe", eventName, undefined);
 
 			if (!isMetaEvent(eventName)) {
-				emitMetaEvent(this, listenerAdded, {eventName, listener});
+				emitMetaEvent(this, listenerAdded, { eventName, listener });
 			}
 		}
 
@@ -309,10 +324,10 @@ class Emittery {
 				}
 			}
 
-			this.logIfDebugEnabled('unsubscribe', eventName, undefined);
+			this.logIfDebugEnabled("unsubscribe", eventName, undefined);
 
 			if (!isMetaEvent(eventName)) {
-				emitMetaEvent(this, listenerRemoved, {eventName, listener});
+				emitMetaEvent(this, listenerRemoved, { eventName, listener });
 			}
 		}
 	}
@@ -320,8 +335,8 @@ class Emittery {
 	once(eventNames) {
 		let off_;
 
-		const promise = new Promise(resolve => {
-			off_ = this.on(eventNames, data => {
+		const promise = new Promise((resolve) => {
+			off_ = this.on(eventNames, (data) => {
 				off_();
 				resolve(data);
 			});
@@ -344,10 +359,12 @@ class Emittery {
 		assertEventName(eventName);
 
 		if (isMetaEvent(eventName) && !canEmitMetaEvents) {
-			throw new TypeError('`eventName` cannot be meta event `listenerAdded` or `listenerRemoved`');
+			throw new TypeError(
+				"`eventName` cannot be meta event `listenerAdded` or `listenerRemoved`",
+			);
 		}
 
-		this.logIfDebugEnabled('emit', eventName, eventData);
+		this.logIfDebugEnabled("emit", eventName, eventData);
 
 		enqueueProducers(this, eventName, eventData);
 
@@ -358,16 +375,16 @@ class Emittery {
 
 		await resolvedPromise;
 		await Promise.all([
-			...staticListeners.map(async listener => {
+			...staticListeners.map(async (listener) => {
 				if (listeners.has(listener)) {
 					return listener(eventData);
 				}
 			}),
-			...staticAnyListeners.map(async listener => {
+			...staticAnyListeners.map(async (listener) => {
 				if (anyListeners.has(listener)) {
 					return listener(eventName, eventData);
 				}
-			})
+			}),
 		]);
 	}
 
@@ -375,10 +392,12 @@ class Emittery {
 		assertEventName(eventName);
 
 		if (isMetaEvent(eventName) && !canEmitMetaEvents) {
-			throw new TypeError('`eventName` cannot be meta event `listenerAdded` or `listenerRemoved`');
+			throw new TypeError(
+				"`eventName` cannot be meta event `listenerAdded` or `listenerRemoved`",
+			);
 		}
 
-		this.logIfDebugEnabled('emitSerial', eventName, eventData);
+		this.logIfDebugEnabled("emitSerial", eventName, eventData);
 
 		const listeners = getListeners(this, eventName) || new Set();
 		const anyListeners = anyMap.get(this);
@@ -404,10 +423,10 @@ class Emittery {
 	onAny(listener) {
 		assertListener(listener);
 
-		this.logIfDebugEnabled('subscribeAny', undefined, undefined);
+		this.logIfDebugEnabled("subscribeAny", undefined, undefined);
 
 		anyMap.get(this).add(listener);
-		emitMetaEvent(this, listenerAdded, {listener});
+		emitMetaEvent(this, listenerAdded, { listener });
 		return this.offAny.bind(this, listener);
 	}
 
@@ -418,9 +437,9 @@ class Emittery {
 	offAny(listener) {
 		assertListener(listener);
 
-		this.logIfDebugEnabled('unsubscribeAny', undefined, undefined);
+		this.logIfDebugEnabled("unsubscribeAny", undefined, undefined);
 
-		emitMetaEvent(this, listenerRemoved, {listener});
+		emitMetaEvent(this, listenerRemoved, { listener });
 		anyMap.get(this).delete(listener);
 	}
 
@@ -428,9 +447,13 @@ class Emittery {
 		eventNames = Array.isArray(eventNames) ? eventNames : [eventNames];
 
 		for (const eventName of eventNames) {
-			this.logIfDebugEnabled('clear', eventName, undefined);
+			this.logIfDebugEnabled("clear", eventName, undefined);
 
-			if (typeof eventName === 'string' || typeof eventName === 'symbol' || typeof eventName === 'number') {
+			if (
+				typeof eventName === "string" ||
+				typeof eventName === "symbol" ||
+				typeof eventName === "number"
+			) {
 				const set = getListeners(this, eventName);
 				if (set) {
 					set.clear();
@@ -469,13 +492,16 @@ class Emittery {
 		let count = 0;
 
 		for (const eventName of eventNames) {
-			if (typeof eventName === 'string') {
-				count += anyMap.get(this).size + (getListeners(this, eventName) || new Set()).size +
-					(getEventProducers(this, eventName) || new Set()).size + (getEventProducers(this) || new Set()).size;
+			if (typeof eventName === "string") {
+				count +=
+					anyMap.get(this).size +
+					(getListeners(this, eventName) || new Set()).size +
+					(getEventProducers(this, eventName) || new Set()).size +
+					(getEventProducers(this) || new Set()).size;
 				continue;
 			}
 
-			if (typeof eventName !== 'undefined') {
+			if (typeof eventName !== "undefined") {
 				assertEventName(eventName);
 			}
 
@@ -494,38 +520,42 @@ class Emittery {
 	}
 
 	bindMethods(target, methodNames) {
-		if (typeof target !== 'object' || target === null) {
-			throw new TypeError('`target` must be an object');
+		if (typeof target !== "object" || target === null) {
+			throw new TypeError("`target` must be an object");
 		}
 
 		methodNames = defaultMethodNamesOrAssert(methodNames);
 
 		for (const methodName of methodNames) {
 			if (target[methodName] !== undefined) {
-				throw new Error(`The property \`${methodName}\` already exists on \`target\``);
+				throw new Error(
+					`The property \`${methodName}\` already exists on \`target\``,
+				);
 			}
 
 			Object.defineProperty(target, methodName, {
 				enumerable: false,
-				value: this[methodName].bind(this)
+				value: this[methodName].bind(this),
 			});
 		}
 	}
 }
 
-const allEmitteryMethods = Object.getOwnPropertyNames(Emittery.prototype).filter(v => v !== 'constructor');
+const allEmitteryMethods = Object.getOwnPropertyNames(
+	Emittery.prototype,
+).filter((v) => v !== "constructor");
 
-Object.defineProperty(Emittery, 'listenerAdded', {
+Object.defineProperty(Emittery, "listenerAdded", {
 	value: listenerAdded,
 	writable: false,
 	enumerable: true,
-	configurable: false
+	configurable: false,
 });
-Object.defineProperty(Emittery, 'listenerRemoved', {
+Object.defineProperty(Emittery, "listenerRemoved", {
 	value: listenerRemoved,
 	writable: false,
 	enumerable: true,
-	configurable: false
+	configurable: false,
 });
 
 module.exports = Emittery;

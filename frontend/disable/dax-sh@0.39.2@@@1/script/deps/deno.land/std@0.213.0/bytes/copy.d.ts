@@ -24,4 +24,8 @@
  * console.log(dst); // [0, 1, 1, 1]
  * ```
  */
-export declare function copy(src: Uint8Array, dst: Uint8Array, off?: number): number;
+export declare function copy(
+	src: Uint8Array,
+	dst: Uint8Array,
+	off?: number,
+): number;

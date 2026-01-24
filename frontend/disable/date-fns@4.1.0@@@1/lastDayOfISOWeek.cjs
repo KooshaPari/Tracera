@@ -31,5 +31,5 @@ var _index = require("./lastDayOfWeek.cjs");
  * //=> Sun Sep 07 2014 00:00:00
  */
 function lastDayOfISOWeek(date, options) {
-  return (0, _index.lastDayOfWeek)(date, { ...options, weekStartsOn: 1 });
+	return (0, _index.lastDayOfWeek)(date, { ...options, weekStartsOn: 1 });
 }

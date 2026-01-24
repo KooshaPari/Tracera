@@ -1,4 +1,3 @@
-
 // `victory-vendor/internmap` (CommonJS)
 // See upstream license: https://github.com/mbostock/internmap/blob/main/LICENSE
 //

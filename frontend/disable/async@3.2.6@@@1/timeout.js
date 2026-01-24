@@ -1,19 +1,19 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = timeout;
 
-var _initialParams = require('./internal/initialParams.js');
+var _initialParams = require("./internal/initialParams.js");
 
 var _initialParams2 = _interopRequireDefault(_initialParams);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Sets a time limit on an asynchronous function. If the function does not call
@@ -57,33 +57,33 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function timeout(asyncFn, milliseconds, info) {
-    var fn = (0, _wrapAsync2.default)(asyncFn);
+	var fn = (0, _wrapAsync2.default)(asyncFn);
 
-    return (0, _initialParams2.default)((args, callback) => {
-        var timedOut = false;
-        var timer;
+	return (0, _initialParams2.default)((args, callback) => {
+		var timedOut = false;
+		var timer;
 
-        function timeoutCallback() {
-            var name = asyncFn.name || 'anonymous';
-            var error = new Error('Callback function "' + name + '" timed out.');
-            error.code = 'ETIMEDOUT';
-            if (info) {
-                error.info = info;
-            }
-            timedOut = true;
-            callback(error);
-        }
+		function timeoutCallback() {
+			var name = asyncFn.name || "anonymous";
+			var error = new Error('Callback function "' + name + '" timed out.');
+			error.code = "ETIMEDOUT";
+			if (info) {
+				error.info = info;
+			}
+			timedOut = true;
+			callback(error);
+		}
 
-        args.push((...cbArgs) => {
-            if (!timedOut) {
-                callback(...cbArgs);
-                clearTimeout(timer);
-            }
-        });
+		args.push((...cbArgs) => {
+			if (!timedOut) {
+				callback(...cbArgs);
+				clearTimeout(timer);
+			}
+		});
 
-        // setup timer and call original function
-        timer = setTimeout(timeoutCallback, milliseconds);
-        fn(...args);
-    });
+		// setup timer and call original function
+		timer = setTimeout(timeoutCallback, milliseconds);
+		fn(...args);
+	});
 }
 module.exports = exports.default;

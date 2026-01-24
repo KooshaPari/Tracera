@@ -15,14 +15,14 @@ var _index5 = require("./bg/_lib/match.cjs");
  * @author Tsvetan Ovedenski [@fintara](https://github.com/fintara)
  */
 const bg = (exports.bg = {
-  code: "bg",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "bg",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 });

@@ -1,10 +1,17 @@
-import { PotentialEventTarget, EventPathItem, EventListenerEntry, EventHandler, Event, EventTarget } from "../dom/interfaces";
+import {
+	PotentialEventTarget,
+	EventPathItem,
+	EventListenerEntry,
+	EventHandler,
+	Event,
+	EventTarget,
+} from "../dom/interfaces";
 import { EventImpl } from "../dom/EventImpl";
 /**
  * Defines a boolean out variable of a function.
  */
 export declare type OutputFlag = {
-    value: boolean;
+	value: boolean;
 };
 /**
  * Sets the canceled flag of an event.
@@ -20,14 +27,22 @@ export declare function event_setTheCanceledFlag(event: Event): void;
  * @param bubbles - whether the event propagates in reverse
  * @param cancelable - whether the event can be cancelled
  */
-export declare function event_initialize(event: Event, type: string, bubbles: boolean, cancelable: boolean): void;
+export declare function event_initialize(
+	event: Event,
+	type: string,
+	bubbles: boolean,
+	cancelable: boolean,
+): void;
 /**
  * Creates a new event.
  *
  * @param eventInterface - event interface
  * @param realm - realm
  */
-export declare function event_createAnEvent(eventInterface: typeof EventImpl, realm?: any | undefined): Event;
+export declare function event_createAnEvent(
+	eventInterface: typeof EventImpl,
+	realm?: any | undefined,
+): Event;
 /**
  * Performs event creation steps.
  *
@@ -37,9 +52,14 @@ export declare function event_createAnEvent(eventInterface: typeof EventImpl, re
  * @param dictionary - event attributes
  *
  */
-export declare function event_innerEventCreationSteps(eventInterface: typeof EventImpl, realm: any, time: Date, dictionary: {
-    [key: string]: any;
-}): Event;
+export declare function event_innerEventCreationSteps(
+	eventInterface: typeof EventImpl,
+	realm: any,
+	time: Date,
+	dictionary: {
+		[key: string]: any;
+	},
+): Event;
 /**
  * Dispatches an event to an event target.
  *
@@ -49,7 +69,12 @@ export declare function event_innerEventCreationSteps(eventInterface: typeof Eve
  * @param legacyOutputDidListenersThrowFlag - legacy output flag that returns
  * whether the event listener's callback threw an exception
  */
-export declare function event_dispatch(event: Event, target: EventTarget, legacyTargetOverrideFlag?: boolean, legacyOutputDidListenersThrowFlag?: OutputFlag): boolean;
+export declare function event_dispatch(
+	event: Event,
+	target: EventTarget,
+	legacyTargetOverrideFlag?: boolean,
+	legacyOutputDidListenersThrowFlag?: OutputFlag,
+): boolean;
 /**
  * Appends a new struct to an event's path.
  *
@@ -60,7 +85,14 @@ export declare function event_dispatch(event: Event, target: EventTarget, legacy
  * @param touchTargets - a list of touch targets
  * @param slotInClosedTree - if the target's parent is a closed shadow root
  */
-export declare function event_appendToAnEventPath(event: Event, invocationTarget: EventTarget, shadowAdjustedTarget: PotentialEventTarget, relatedTarget: PotentialEventTarget, touchTargets: PotentialEventTarget[], slotInClosedTree: boolean): void;
+export declare function event_appendToAnEventPath(
+	event: Event,
+	invocationTarget: EventTarget,
+	shadowAdjustedTarget: PotentialEventTarget,
+	relatedTarget: PotentialEventTarget,
+	touchTargets: PotentialEventTarget[],
+	slotInClosedTree: boolean,
+): void;
 /**
  * Invokes an event.
  *
@@ -70,7 +102,12 @@ export declare function event_appendToAnEventPath(event: Event, invocationTarget
  * @param legacyOutputDidListenersThrowFlag - legacy output flag that returns
  * whether the event listener's callback threw an exception
  */
-export declare function event_invoke(struct: EventPathItem, event: Event, phase: "capturing" | "bubbling", legacyOutputDidListenersThrowFlag?: OutputFlag): void;
+export declare function event_invoke(
+	struct: EventPathItem,
+	event: Event,
+	phase: "capturing" | "bubbling",
+	legacyOutputDidListenersThrowFlag?: OutputFlag,
+): void;
 /**
  * Invokes an event.
  *
@@ -81,7 +118,13 @@ export declare function event_invoke(struct: EventPathItem, event: Event, phase:
  * @param legacyOutputDidListenersThrowFlag - legacy output flag that returns
  * whether the event listener's callback threw an exception
  */
-export declare function event_innerInvoke(event: Event, listeners: EventListenerEntry[], phase: "capturing" | "bubbling", struct: EventPathItem, legacyOutputDidListenersThrowFlag?: OutputFlag): boolean;
+export declare function event_innerInvoke(
+	event: Event,
+	listeners: EventListenerEntry[],
+	phase: "capturing" | "bubbling",
+	struct: EventPathItem,
+	legacyOutputDidListenersThrowFlag?: OutputFlag,
+): boolean;
 /**
  * Fires an event at target.
  * @param e - event name
@@ -92,9 +135,15 @@ export declare function event_innerInvoke(event: Event, listeners: EventListener
  * to be initialized
  * @param legacyTargetOverrideFlag - legacy target override flag
  */
-export declare function event_fireAnEvent(e: string, target: EventTarget, eventConstructor?: typeof EventImpl, idlAttributes?: {
-    [key: string]: any;
-}, legacyTargetOverrideFlag?: boolean): boolean;
+export declare function event_fireAnEvent(
+	e: string,
+	target: EventTarget,
+	eventConstructor?: typeof EventImpl,
+	idlAttributes?: {
+		[key: string]: any;
+	},
+	legacyTargetOverrideFlag?: boolean,
+): boolean;
 /**
  * Creates an event.
  *
@@ -107,7 +156,10 @@ export declare function event_createLegacyEvent(eventInterface: string): Event;
  * @param eventTarget - event target
  * @param name - event name
  */
-export declare function event_getterEventHandlerIDLAttribute(thisObj: EventTarget, name: string): EventHandler;
+export declare function event_getterEventHandlerIDLAttribute(
+	thisObj: EventTarget,
+	name: string,
+): EventHandler;
 /**
  * Setter of an event handler IDL attribute.
  *
@@ -115,32 +167,48 @@ export declare function event_getterEventHandlerIDLAttribute(thisObj: EventTarge
  * @param name - event name
  * @param value - event handler
  */
-export declare function event_setterEventHandlerIDLAttribute(thisObj: EventTarget, name: string, value: EventHandler): void;
+export declare function event_setterEventHandlerIDLAttribute(
+	thisObj: EventTarget,
+	name: string,
+	value: EventHandler,
+): void;
 /**
  * Determines the target of an event handler.
  *
  * @param eventTarget - event target
  * @param name - event name
  */
-export declare function event_determineTheTargetOfAnEventHandler(eventTarget: EventTarget, name: string): EventTarget | null;
+export declare function event_determineTheTargetOfAnEventHandler(
+	eventTarget: EventTarget,
+	name: string,
+): EventTarget | null;
 /**
  * Gets the current value of an event handler.
  *
  * @param eventTarget - event target
  * @param name - event name
  */
-export declare function event_getTheCurrentValueOfAnEventHandler(eventTarget: EventTarget, name: string): EventHandler;
+export declare function event_getTheCurrentValueOfAnEventHandler(
+	eventTarget: EventTarget,
+	name: string,
+): EventHandler;
 /**
  * Activates an event handler.
  *
  * @param eventTarget - event target
  * @param name - event name
  */
-export declare function event_activateAnEventHandler(eventTarget: EventTarget, name: string): void;
+export declare function event_activateAnEventHandler(
+	eventTarget: EventTarget,
+	name: string,
+): void;
 /**
  * Deactivates an event handler.
  *
  * @param eventTarget - event target
  * @param name - event name
  */
-export declare function event_deactivateAnEventHandler(eventTarget: EventTarget, name: string): void;
+export declare function event_deactivateAnEventHandler(
+	eventTarget: EventTarget,
+	name: string,
+): void;

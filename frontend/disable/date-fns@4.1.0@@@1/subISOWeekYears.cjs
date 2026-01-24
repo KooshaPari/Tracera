@@ -31,5 +31,5 @@ var _index = require("./addISOWeekYears.cjs");
  * //=> Mon Aug 31 2009 00:00:00
  */
 function subISOWeekYears(date, amount, options) {
-  return (0, _index.addISOWeekYears)(date, -amount, options);
+	return (0, _index.addISOWeekYears)(date, -amount, options);
 }

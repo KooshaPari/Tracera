@@ -6,5 +6,12 @@ export * from "./legacy.js";
 export * from "./helpers.js";
 export * from "./feeds.js";
 /** @deprecated Use these methods from `domhandler` directly. */
-export { isTag, isCDATA, isText, isComment, isDocument, hasChildren, } from "domhandler";
+export {
+	isTag,
+	isCDATA,
+	isText,
+	isComment,
+	isDocument,
+	hasChildren,
+} from "domhandler";
 //# sourceMappingURL=index.d.ts.map

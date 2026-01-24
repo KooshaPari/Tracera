@@ -7,9 +7,9 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class DefaultContentType extends _apidomCore.StringElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'defaultContentType';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "defaultContentType";
+	}
 }
-var _default = exports.default = DefaultContentType;
+var _default = (exports.default = DefaultContentType);

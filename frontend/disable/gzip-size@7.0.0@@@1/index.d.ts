@@ -1,6 +1,6 @@
-import {Buffer} from 'node:buffer';
-import {PassThrough as PassThroughStream} from 'node:stream';
-import {ZlibOptions} from 'node:zlib';
+import { Buffer } from "node:buffer";
+import { PassThrough as PassThroughStream } from "node:stream";
+import { ZlibOptions } from "node:zlib";
 
 export type Options = ZlibOptions;
 
@@ -10,36 +10,33 @@ export interface GzipSizeStream extends PassThroughStream {
 	*/
 	gzipSize?: number;
 
-	addListener(event: 'gzip-size', listener: (size: number) => void): this;
-	addListener(
-		event: string | symbol,
-		listener: (...args: any[]) => void
-	): this;
-	on(event: 'gzip-size', listener: (size: number) => void): this;
+	addListener(event: "gzip-size", listener: (size: number) => void): this;
+	addListener(event: string | symbol, listener: (...args: any[]) => void): this;
+	on(event: "gzip-size", listener: (size: number) => void): this;
 	on(event: string | symbol, listener: (...args: any[]) => void): this;
-	once(event: 'gzip-size', listener: (size: number) => void): this;
+	once(event: "gzip-size", listener: (size: number) => void): this;
 	once(event: string | symbol, listener: (...args: any[]) => void): this;
-	removeListener(event: 'gzip-size', listener: (size: number) => void): this;
+	removeListener(event: "gzip-size", listener: (size: number) => void): this;
 	removeListener(
 		event: string | symbol,
-		listener: (...args: any[]) => void
+		listener: (...args: any[]) => void,
 	): this;
-	off(event: 'gzip-size', listener: (size: number) => void): this;
+	off(event: "gzip-size", listener: (size: number) => void): this;
 	off(event: string | symbol, listener: (...args: any[]) => void): this;
-	emit(event: 'gzip-size', size: number): boolean;
+	emit(event: "gzip-size", size: number): boolean;
 	emit(event: string | symbol, ...args: any[]): boolean;
-	prependListener(event: 'gzip-size', listener: (size: number) => void): this;
+	prependListener(event: "gzip-size", listener: (size: number) => void): this;
 	prependListener(
 		event: string | symbol,
-		listener: (...args: any[]) => void
+		listener: (...args: any[]) => void,
 	): this;
 	prependOnceListener(
-		event: 'gzip-size',
-		listener: (size: number) => void
+		event: "gzip-size",
+		listener: (size: number) => void,
 	): this;
 	prependOnceListener(
 		event: string | symbol,
-		listener: (...args: any[]) => void
+		listener: (...args: any[]) => void,
 	): this;
 }
 
@@ -61,7 +58,10 @@ console.log(await gzipSize(text));
 //=> 78
 ```
 */
-export function gzipSize(input: string | Buffer, options?: Options): Promise<number>;
+export function gzipSize(
+	input: string | Buffer,
+	options?: Options,
+): Promise<number>;
 
 /**
 Synchronously get the gzipped size of a string or buffer.
@@ -88,14 +88,20 @@ Get the gzipped size of a file.
 
 @returns The size of the file.
 */
-export function gzipSizeFromFile(filePath: string, options?: Options): Promise<number>;
+export function gzipSizeFromFile(
+	filePath: string,
+	options?: Options,
+): Promise<number>;
 
 /**
 Synchronously get the gzipped size of a file.
 
 @returns The size of the file.
 */
-export function gzipSizeFromFileSync(filePath: string, options?: Options): number;
+export function gzipSizeFromFileSync(
+	filePath: string,
+	options?: Options,
+): number;
 
 /**
 @returns A stream that emits a `gzip-size` event and has a `gzipSize` property.

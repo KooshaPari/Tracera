@@ -11,7 +11,7 @@ const _1 = require(".");
  * @returns callback builder
  */
 function createCB(options) {
-    return new _1.XMLBuilderCBImpl(options);
+	return new _1.XMLBuilderCBImpl(options);
 }
 /**
  * Creates an XML builder which serializes the fragment in chunks.
@@ -21,6 +21,6 @@ function createCB(options) {
  * @returns callback builder
  */
 function fragmentCB(options) {
-    return new _1.XMLBuilderCBImpl(options, true);
+	return new _1.XMLBuilderCBImpl(options, true);
 }
 //# sourceMappingURL=BuilderFunctionsCB.js.map

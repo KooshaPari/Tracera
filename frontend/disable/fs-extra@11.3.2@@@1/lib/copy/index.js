@@ -1,7 +1,5 @@
-'use strict'
-
-const u = require('universalify').fromPromise
+const u = require("universalify").fromPromise;
 module.exports = {
-  copy: u(require('./copy')),
-  copySync: require('./copy-sync')
-}
+	copy: u(require("./copy")),
+	copySync: require("./copy-sync"),
+};

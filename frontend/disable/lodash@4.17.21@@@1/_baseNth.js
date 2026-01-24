@@ -1,4 +1,4 @@
-var isIndex = require('./_isIndex');
+var isIndex = require("./_isIndex");
 
 /**
  * The base implementation of `_.nth` which doesn't coerce arguments.
@@ -9,12 +9,12 @@ var isIndex = require('./_isIndex');
  * @returns {*} Returns the nth element of `array`.
  */
 function baseNth(array, n) {
-  var length = array.length;
-  if (!length) {
-    return;
-  }
-  n += n < 0 ? length : 0;
-  return isIndex(n, length) ? array[n] : undefined;
+	var length = array.length;
+	if (!length) {
+		return;
+	}
+	n += n < 0 ? length : 0;
+	return isIndex(n, length) ? array[n] : undefined;
 }
 
 module.exports = baseNth;

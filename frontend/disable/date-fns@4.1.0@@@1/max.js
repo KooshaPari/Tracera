@@ -31,19 +31,19 @@ import { toDate } from "./toDate.js";
  * //=> Sun Jul 02 1995 00:00:00
  */
 export function max(dates, options) {
-  let result;
-  let context = options?.in;
+	let result;
+	let context = options?.in;
 
-  dates.forEach((date) => {
-    // Use the first date object as the context function
-    if (!context && typeof date === "object")
-      context = constructFrom.bind(null, date);
+	dates.forEach((date) => {
+		// Use the first date object as the context function
+		if (!context && typeof date === "object")
+			context = constructFrom.bind(null, date);
 
-    const date_ = toDate(date, context);
-    if (!result || result < date_ || isNaN(+date_)) result = date_;
-  });
+		const date_ = toDate(date, context);
+		if (!result || result < date_ || isNaN(+date_)) result = date_;
+	});
 
-  return constructFrom(context, result || NaN);
+	return constructFrom(context, result || NaN);
 }
 
 // Fallback for modularized imports:

@@ -7,9 +7,9 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class Channels extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'channels';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "channels";
+	}
 }
-var _default = exports.default = Channels;
+var _default = (exports.default = Channels);

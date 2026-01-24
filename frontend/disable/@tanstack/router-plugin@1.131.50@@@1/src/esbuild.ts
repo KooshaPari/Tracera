@@ -1,11 +1,9 @@
-import { createEsbuildPlugin } from 'unplugin'
-
-import { configSchema } from './core/config'
-import { unpluginRouterCodeSplitterFactory } from './core/router-code-splitter-plugin'
-import { unpluginRouterGeneratorFactory } from './core/router-generator-plugin'
-import { unpluginRouterComposedFactory } from './core/router-composed-plugin'
-
-import type { Config } from './core/config'
+import { createEsbuildPlugin } from "unplugin";
+import type { Config } from "./core/config";
+import { configSchema } from "./core/config";
+import { unpluginRouterCodeSplitterFactory } from "./core/router-code-splitter-plugin";
+import { unpluginRouterComposedFactory } from "./core/router-composed-plugin";
+import { unpluginRouterGeneratorFactory } from "./core/router-generator-plugin";
 
 /**
  * @example
@@ -17,8 +15,8 @@ import type { Config } from './core/config'
  * ```
  */
 const TanStackRouterGeneratorEsbuild = createEsbuildPlugin(
-  unpluginRouterGeneratorFactory,
-)
+	unpluginRouterGeneratorFactory,
+);
 
 /**
  * @example
@@ -30,8 +28,8 @@ const TanStackRouterGeneratorEsbuild = createEsbuildPlugin(
  * ```
  */
 const TanStackRouterCodeSplitterEsbuild = createEsbuildPlugin(
-  unpluginRouterCodeSplitterFactory,
-)
+	unpluginRouterCodeSplitterFactory,
+);
 
 /**
  * @example
@@ -42,16 +40,18 @@ const TanStackRouterCodeSplitterEsbuild = createEsbuildPlugin(
  * }
  * ```
  */
-const TanStackRouterEsbuild = createEsbuildPlugin(unpluginRouterComposedFactory)
-const tanstackRouter = TanStackRouterEsbuild
-export default TanStackRouterEsbuild
+const TanStackRouterEsbuild = createEsbuildPlugin(
+	unpluginRouterComposedFactory,
+);
+const tanstackRouter = TanStackRouterEsbuild;
+export default TanStackRouterEsbuild;
 
 export {
-  configSchema,
-  TanStackRouterGeneratorEsbuild,
-  TanStackRouterCodeSplitterEsbuild,
-  TanStackRouterEsbuild,
-  tanstackRouter,
-}
+	configSchema,
+	TanStackRouterGeneratorEsbuild,
+	TanStackRouterCodeSplitterEsbuild,
+	TanStackRouterEsbuild,
+	tanstackRouter,
+};
 
-export type { Config }
+export type { Config };

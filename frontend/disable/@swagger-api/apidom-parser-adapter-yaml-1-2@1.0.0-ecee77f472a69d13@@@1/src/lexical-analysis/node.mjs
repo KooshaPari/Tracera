@@ -1,8 +1,9 @@
-import Parser from 'tree-sitter';
-// @ts-ignore
-import YAMLLanguage from '@tree-sitter-grammars/tree-sitter-yaml';
+// @ts-expect-error
+import YAMLLanguage from "@tree-sitter-grammars/tree-sitter-yaml";
+import Parser from "tree-sitter";
+
 const parser = new Parser();
-// @ts-ignore
+// @ts-expect-error
 parser.setLanguage(YAMLLanguage);
 
 /**
@@ -10,7 +11,7 @@ parser.setLanguage(YAMLLanguage);
  * This is Node.js version of TreeSitters Lexical Analysis.
  * @public
  */
-const analyze = async source => {
-  return parser.parse(source);
+const analyze = async (source) => {
+	return parser.parse(source);
 };
 export default analyze;

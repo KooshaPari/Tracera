@@ -1,4 +1,4 @@
-var createCompounder = require('./_createCompounder');
+var createCompounder = require("./_createCompounder");
 
 /**
  * Converts `string`, as space separated words, to upper case.
@@ -20,8 +20,8 @@ var createCompounder = require('./_createCompounder');
  * _.upperCase('__foo_bar__');
  * // => 'FOO BAR'
  */
-var upperCase = createCompounder(function(result, word, index) {
-  return result + (index ? ' ' : '') + word.toUpperCase();
-});
+var upperCase = createCompounder(
+	(result, word, index) => result + (index ? " " : "") + word.toUpperCase(),
+);
 
 module.exports = upperCase;

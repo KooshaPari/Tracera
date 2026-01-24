@@ -1,39 +1,36 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
-const name = 'SelectorList';
-const walkContext = 'selector';
+const name = "SelectorList";
+const walkContext = "selector";
 const structure = {
-    children: [[
-        'Selector',
-        'Raw'
-    ]]
+	children: [["Selector", "Raw"]],
 };
 
 function parse() {
-    const children = this.createList();
+	const children = this.createList();
 
-    while (!this.eof) {
-        children.push(this.Selector());
+	while (!this.eof) {
+		children.push(this.Selector());
 
-        if (this.tokenType === types.Comma) {
-            this.next();
-            continue;
-        }
+		if (this.tokenType === types.Comma) {
+			this.next();
+			continue;
+		}
 
-        break;
-    }
+		break;
+	}
 
-    return {
-        type: 'SelectorList',
-        loc: this.getLocationFromList(children),
-        children
-    };
+	return {
+		type: "SelectorList",
+		loc: this.getLocationFromList(children),
+		children,
+	};
 }
 
 function generate(node) {
-    this.children(node, () => this.token(types.Comma, ','));
+	this.children(node, () => this.token(types.Comma, ","));
 }
 
 exports.generate = generate;

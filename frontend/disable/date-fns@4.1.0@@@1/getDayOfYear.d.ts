@@ -22,6 +22,6 @@ export interface GetDayOfYearOptions extends ContextOptions<Date> {}
  * //=> 183
  */
 export declare function getDayOfYear(
-  date: DateArg<Date> & {},
-  options?: GetDayOfYearOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetDayOfYearOptions | undefined,
 ): number;

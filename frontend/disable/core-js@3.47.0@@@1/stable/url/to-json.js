@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/web.url.to-json');
+"use strict";
+require("../../modules/web.url.to-json");

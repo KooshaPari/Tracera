@@ -4,8 +4,8 @@
  * @param node the element
  */
 export default function offset(node: HTMLElement): {
-    top: number;
-    left: number;
-    height: number;
-    width: number;
+	top: number;
+	left: number;
+	height: number;
+	width: number;
 };

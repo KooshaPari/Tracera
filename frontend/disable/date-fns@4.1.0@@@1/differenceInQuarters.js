@@ -25,8 +25,8 @@ import { differenceInMonths } from "./differenceInMonths.js";
  * //=> 2
  */
 export function differenceInQuarters(laterDate, earlierDate, options) {
-  const diff = differenceInMonths(laterDate, earlierDate, options) / 3;
-  return getRoundingMethod(options?.roundingMethod)(diff);
+	const diff = differenceInMonths(laterDate, earlierDate, options) / 3;
+	return getRoundingMethod(options?.roundingMethod)(diff);
 }
 
 // Fallback for modularized imports:

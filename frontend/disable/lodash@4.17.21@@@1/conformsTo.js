@@ -1,5 +1,5 @@
-var baseConformsTo = require('./_baseConformsTo'),
-    keys = require('./keys');
+var baseConformsTo = require("./_baseConformsTo"),
+	keys = require("./keys");
 
 /**
  * Checks if `object` conforms to `source` by invoking the predicate
@@ -26,7 +26,7 @@ var baseConformsTo = require('./_baseConformsTo'),
  * // => false
  */
 function conformsTo(object, source) {
-  return source == null || baseConformsTo(object, source, keys(source));
+	return source == null || baseConformsTo(object, source, keys(source));
 }
 
 module.exports = conformsTo;

@@ -4,10 +4,10 @@
  * A substitute for `URL.canParse()` for Node.js 18.
  */
 export function canParseUrl(url: string): boolean {
-  try {
-    new URL(url)
-    return true
-  } catch (_error) {
-    return false
-  }
+	try {
+		new URL(url);
+		return true;
+	} catch (_error) {
+		return false;
+	}
 }

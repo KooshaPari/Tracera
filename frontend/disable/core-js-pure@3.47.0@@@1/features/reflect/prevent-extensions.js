@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/reflect/prevent-extensions');
+"use strict";
+module.exports = require("../../full/reflect/prevent-extensions");

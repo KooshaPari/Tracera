@@ -25,6 +25,6 @@ export interface IsThisISOWeekOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isThisISOWeek(
-  date: DateArg<Date> & {},
-  options?: IsThisISOWeekOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsThisISOWeekOptions | undefined,
 ): boolean;

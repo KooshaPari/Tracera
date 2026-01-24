@@ -23,6 +23,6 @@ export interface IsThisQuarterOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isThisQuarter(
-  date: DateArg<Date> & {},
-  options?: IsThisQuarterOptions,
+	date: DateArg<Date> & {},
+	options?: IsThisQuarterOptions,
 ): boolean;

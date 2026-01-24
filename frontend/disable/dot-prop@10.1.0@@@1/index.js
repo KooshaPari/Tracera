@@ -1,10 +1,10 @@
-const isObject = value => {
+const isObject = (value) => {
 	const type = typeof value;
-	return value !== null && (type === 'object' || type === 'function');
+	return value !== null && (type === "object" || type === "function");
 };
 
 // Optimized empty check without creating an array.
-const isEmptyObject = value => {
+const isEmptyObject = (value) => {
 	if (!isObject(value)) {
 		return false;
 	}
@@ -18,29 +18,27 @@ const isEmptyObject = value => {
 	return true;
 };
 
-const disallowedKeys = new Set([
-	'__proto__',
-	'prototype',
-	'constructor',
-]);
+const disallowedKeys = new Set(["__proto__", "prototype", "constructor"]);
 
 // Maximum allowed array index to prevent DoS via memory exhaustion.
 const MAX_ARRAY_INDEX = 1_000_000;
 
 // Optimized digit check without Set overhead.
-const isDigit = character => character >= '0' && character <= '9';
+const isDigit = (character) => character >= "0" && character <= "9";
 
 // Check if a segment should be coerced to a number.
 function shouldCoerceToNumber(segment) {
 	// Only coerce valid non-negative integers without leading zeros.
-	if (segment === '0') {
+	if (segment === "0") {
 		return true;
 	}
 
 	if (/^[1-9]\d*$/.test(segment)) {
 		const parsedNumber = Number.parseInt(segment, 10);
 		// Check within safe integer range and under MAX_ARRAY_INDEX to prevent DoS.
-		return parsedNumber <= Number.MAX_SAFE_INTEGER && parsedNumber <= MAX_ARRAY_INDEX;
+		return (
+			parsedNumber <= Number.MAX_SAFE_INTEGER && parsedNumber <= MAX_ARRAY_INDEX
+		);
 	}
 
 	return false;
@@ -61,14 +59,15 @@ function processSegment(segment, parts) {
 	return true;
 }
 
-export function parsePath(path) { // eslint-disable-line complexity
-	if (typeof path !== 'string') {
+export function parsePath(path) {
+	// eslint-disable-line complexity
+	if (typeof path !== "string") {
 		throw new TypeError(`Expected a string, got ${typeof path}`);
 	}
 
 	const parts = [];
-	let currentSegment = '';
-	let currentPart = 'start';
+	let currentSegment = "";
+	let currentPart = "start";
 	let isEscaping = false;
 	let position = 0;
 
@@ -83,28 +82,34 @@ export function parsePath(path) { // eslint-disable-line complexity
 		}
 
 		// Handle escape character.
-		if (character === '\\') {
-			if (currentPart === 'index') {
-				throw new Error(`Invalid character '${character}' in an index at position ${position}`);
+		if (character === "\\") {
+			if (currentPart === "index") {
+				throw new Error(
+					`Invalid character '${character}' in an index at position ${position}`,
+				);
 			}
 
-			if (currentPart === 'indexEnd') {
-				throw new Error(`Invalid character '${character}' after an index at position ${position}`);
+			if (currentPart === "indexEnd") {
+				throw new Error(
+					`Invalid character '${character}' after an index at position ${position}`,
+				);
 			}
 
 			isEscaping = true;
-			currentPart = currentPart === 'start' ? 'property' : currentPart;
+			currentPart = currentPart === "start" ? "property" : currentPart;
 			continue;
 		}
 
 		switch (character) {
-			case '.': {
-				if (currentPart === 'index') {
-					throw new Error(`Invalid character '${character}' in an index at position ${position}`);
+			case ".": {
+				if (currentPart === "index") {
+					throw new Error(
+						`Invalid character '${character}' in an index at position ${position}`,
+					);
 				}
 
-				if (currentPart === 'indexEnd') {
-					currentPart = 'property';
+				if (currentPart === "indexEnd") {
+					currentPart = "property";
 					break;
 				}
 
@@ -112,50 +117,56 @@ export function parsePath(path) { // eslint-disable-line complexity
 					return [];
 				}
 
-				currentSegment = '';
-				currentPart = 'property';
+				currentSegment = "";
+				currentPart = "property";
 				break;
 			}
 
-			case '[': {
-				if (currentPart === 'index') {
-					throw new Error(`Invalid character '${character}' in an index at position ${position}`);
+			case "[": {
+				if (currentPart === "index") {
+					throw new Error(
+						`Invalid character '${character}' in an index at position ${position}`,
+					);
 				}
 
-				if (currentPart === 'indexEnd') {
-					currentPart = 'index';
+				if (currentPart === "indexEnd") {
+					currentPart = "index";
 					break;
 				}
 
-				if (currentPart === 'property' || currentPart === 'start') {
+				if (currentPart === "property" || currentPart === "start") {
 					// Only push if we have content OR if we're in 'property' mode (not 'start')
-					if ((currentSegment || currentPart === 'property') && !processSegment(currentSegment, parts)) {
+					if (
+						(currentSegment || currentPart === "property") &&
+						!processSegment(currentSegment, parts)
+					) {
 						return [];
 					}
 
-					currentSegment = '';
+					currentSegment = "";
 				}
 
-				currentPart = 'index';
+				currentPart = "index";
 				break;
 			}
 
-			case ']': {
-				if (currentPart === 'index') {
-					if (currentSegment === '') {
+			case "]": {
+				if (currentPart === "index") {
+					if (currentSegment === "") {
 						// Empty brackets - backtrack and treat as literal
-						const lastSegment = parts.pop() || '';
-						currentSegment = lastSegment + '[]';
-						currentPart = 'property';
+						const lastSegment = parts.pop() || "";
+						currentSegment = lastSegment + "[]";
+						currentPart = "property";
 					} else {
 						// Index must be digits only (enforced by default case)
 						const parsedNumber = Number.parseInt(currentSegment, 10);
-						const isValidInteger = !Number.isNaN(parsedNumber)
-							&& Number.isFinite(parsedNumber)
-							&& parsedNumber >= 0
-							&& parsedNumber <= Number.MAX_SAFE_INTEGER
-							&& parsedNumber <= MAX_ARRAY_INDEX
-							&& currentSegment === String(parsedNumber);
+						const isValidInteger =
+							!Number.isNaN(parsedNumber) &&
+							Number.isFinite(parsedNumber) &&
+							parsedNumber >= 0 &&
+							parsedNumber <= Number.MAX_SAFE_INTEGER &&
+							parsedNumber <= MAX_ARRAY_INDEX &&
+							currentSegment === String(parsedNumber);
 
 						if (isValidInteger) {
 							parts.push(parsedNumber);
@@ -164,15 +175,17 @@ export function parsePath(path) { // eslint-disable-line complexity
 							parts.push(currentSegment);
 						}
 
-						currentSegment = '';
-						currentPart = 'indexEnd';
+						currentSegment = "";
+						currentPart = "indexEnd";
 					}
 
 					break;
 				}
 
-				if (currentPart === 'indexEnd') {
-					throw new Error(`Invalid character '${character}' after an index at position ${position}`);
+				if (currentPart === "indexEnd") {
+					throw new Error(
+						`Invalid character '${character}' after an index at position ${position}`,
+					);
 				}
 
 				// In property context, treat ] as literal character
@@ -181,16 +194,20 @@ export function parsePath(path) { // eslint-disable-line complexity
 			}
 
 			default: {
-				if (currentPart === 'index' && !isDigit(character)) {
-					throw new Error(`Invalid character '${character}' in an index at position ${position}`);
+				if (currentPart === "index" && !isDigit(character)) {
+					throw new Error(
+						`Invalid character '${character}' in an index at position ${position}`,
+					);
 				}
 
-				if (currentPart === 'indexEnd') {
-					throw new Error(`Invalid character '${character}' after an index at position ${position}`);
+				if (currentPart === "indexEnd") {
+					throw new Error(
+						`Invalid character '${character}' after an index at position ${position}`,
+					);
 				}
 
-				if (currentPart === 'start') {
-					currentPart = 'property';
+				if (currentPart === "start") {
+					currentPart = "property";
 				}
 
 				currentSegment += character;
@@ -200,12 +217,12 @@ export function parsePath(path) { // eslint-disable-line complexity
 
 	// Handle unfinished escaping (trailing backslash)
 	if (isEscaping) {
-		currentSegment += '\\';
+		currentSegment += "\\";
 	}
 
 	// Handle end of path
 	switch (currentPart) {
-		case 'property': {
+		case "property": {
 			if (!processSegment(currentSegment, parts)) {
 				return [];
 			}
@@ -213,12 +230,12 @@ export function parsePath(path) { // eslint-disable-line complexity
 			break;
 		}
 
-		case 'index': {
-			throw new Error('Index was not closed');
+		case "index": {
+			throw new Error("Index was not closed");
 		}
 
-		case 'start': {
-			parts.push('');
+		case "start": {
+			parts.push("");
 			break;
 		}
 		// No default
@@ -228,7 +245,7 @@ export function parsePath(path) { // eslint-disable-line complexity
 }
 
 function normalizePath(path) {
-	if (typeof path === 'string') {
+	if (typeof path === "string") {
 		return parsePath(path);
 	}
 
@@ -237,13 +254,17 @@ function normalizePath(path) {
 
 		for (const [index, segment] of path.entries()) {
 			// Type validation.
-			if (typeof segment !== 'string' && typeof segment !== 'number') {
-				throw new TypeError(`Expected a string or number for path segment at index ${index}, got ${typeof segment}`);
+			if (typeof segment !== "string" && typeof segment !== "number") {
+				throw new TypeError(
+					`Expected a string or number for path segment at index ${index}, got ${typeof segment}`,
+				);
 			}
 
 			// Validate numbers are finite (reject NaN, Infinity, -Infinity).
-			if (typeof segment === 'number' && !Number.isFinite(segment)) {
-				throw new TypeError(`Path segment at index ${index} must be a finite number, got ${segment}`);
+			if (typeof segment === "number" && !Number.isFinite(segment)) {
+				throw new TypeError(
+					`Path segment at index ${index} must be a finite number, got ${segment}`,
+				);
 			}
 
 			// Check for disallowed keys.
@@ -253,7 +274,7 @@ function normalizePath(path) {
 
 			// Normalize numeric strings to numbers for simplicity.
 			// This treats ['items', '0'] the same as ['items', 0].
-			if (typeof segment === 'string' && shouldCoerceToNumber(segment)) {
+			if (typeof segment === "string" && shouldCoerceToNumber(segment)) {
 				normalized.push(Number.parseInt(segment, 10));
 			} else {
 				normalized.push(segment);
@@ -267,7 +288,7 @@ function normalizePath(path) {
 }
 
 export function getProperty(object, path, value) {
-	if (!isObject(object) || (typeof path !== 'string' && !Array.isArray(path))) {
+	if (!isObject(object) || (typeof path !== "string" && !Array.isArray(path))) {
 		return value === undefined ? object : value;
 	}
 
@@ -295,7 +316,7 @@ export function getProperty(object, path, value) {
 }
 
 export function setProperty(object, path, value) {
-	if (!isObject(object) || (typeof path !== 'string' && !Array.isArray(path))) {
+	if (!isObject(object) || (typeof path !== "string" && !Array.isArray(path))) {
 		return object;
 	}
 
@@ -314,7 +335,7 @@ export function setProperty(object, path, value) {
 		} else if (!isObject(object[key])) {
 			const nextKey = pathArray[index + 1];
 			// Create arrays for numeric indices, objects for string keys
-			const shouldCreateArray = typeof nextKey === 'number';
+			const shouldCreateArray = typeof nextKey === "number";
 			object[key] = shouldCreateArray ? [] : {};
 		}
 
@@ -325,7 +346,7 @@ export function setProperty(object, path, value) {
 }
 
 export function deleteProperty(object, path) {
-	if (!isObject(object) || (typeof path !== 'string' && !Array.isArray(path))) {
+	if (!isObject(object) || (typeof path !== "string" && !Array.isArray(path))) {
 		return false;
 	}
 
@@ -357,7 +378,7 @@ export function deleteProperty(object, path) {
 }
 
 export function hasProperty(object, path) {
-	if (!isObject(object) || (typeof path !== 'string' && !Array.isArray(path))) {
+	if (!isObject(object) || (typeof path !== "string" && !Array.isArray(path))) {
 		return false;
 	}
 
@@ -378,7 +399,7 @@ export function hasProperty(object, path) {
 }
 
 export function escapePath(path) {
-	if (typeof path !== 'string') {
+	if (typeof path !== "string") {
 		throw new TypeError(`Expected a string, got ${typeof path}`);
 	}
 
@@ -406,16 +427,18 @@ export function stringifyPath(pathSegments, options = {}) {
 		throw new TypeError(`Expected an array, got ${typeof pathSegments}`);
 	}
 
-	const {preferDotForIndices = false} = options;
+	const { preferDotForIndices = false } = options;
 	const parts = [];
 
 	for (const [index, segment] of pathSegments.entries()) {
 		// Validate segment types at runtime
-		if (typeof segment !== 'string' && typeof segment !== 'number') {
-			throw new TypeError(`Expected a string or number for path segment at index ${index}, got ${typeof segment}`);
+		if (typeof segment !== "string" && typeof segment !== "number") {
+			throw new TypeError(
+				`Expected a string or number for path segment at index ${index}, got ${typeof segment}`,
+			);
 		}
 
-		if (typeof segment === 'number') {
+		if (typeof segment === "number") {
 			// Handle numeric indices
 			if (!Number.isInteger(segment) || segment < 0) {
 				// Non-integer or negative numbers are treated as string keys
@@ -426,13 +449,13 @@ export function stringifyPath(pathSegments, options = {}) {
 			} else {
 				parts.push(`[${segment}]`);
 			}
-		} else if (typeof segment === 'string') {
-			if (segment === '') {
+		} else if (typeof segment === "string") {
+			if (segment === "") {
 				// Empty string handling
 				if (index === 0) {
 					// Start with empty string, no prefix needed
 				} else {
-					parts.push('.');
+					parts.push(".");
 				}
 			} else if (shouldCoerceToNumber(segment)) {
 				// Numeric strings are normalized to numbers
@@ -450,10 +473,10 @@ export function stringifyPath(pathSegments, options = {}) {
 		}
 	}
 
-	return parts.join('');
+	return parts.join("");
 }
 
-function * deepKeysIterator(object, currentPath = [], ancestors = new Set()) {
+function* deepKeysIterator(object, currentPath = [], ancestors = new Set()) {
 	if (!isObject(object) || isEmptyObject(object)) {
 		if (currentPath.length > 0) {
 			yield stringifyPath(currentPath);
@@ -473,7 +496,7 @@ function * deepKeysIterator(object, currentPath = [], ancestors = new Set()) {
 	// Reuse currentPath array by push/pop instead of creating new arrays
 	for (const [key, value] of normalizeEntries(object)) {
 		currentPath.push(key);
-		yield * deepKeysIterator(value, currentPath, ancestors);
+		yield* deepKeysIterator(value, currentPath, ancestors);
 		currentPath.pop();
 	}
 

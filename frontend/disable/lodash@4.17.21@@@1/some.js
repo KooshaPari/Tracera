@@ -1,8 +1,8 @@
-var arraySome = require('./_arraySome'),
-    baseIteratee = require('./_baseIteratee'),
-    baseSome = require('./_baseSome'),
-    isArray = require('./isArray'),
-    isIterateeCall = require('./_isIterateeCall');
+var arraySome = require("./_arraySome"),
+	baseIteratee = require("./_baseIteratee"),
+	baseSome = require("./_baseSome"),
+	isArray = require("./isArray"),
+	isIterateeCall = require("./_isIterateeCall");
 
 /**
  * Checks if `predicate` returns truthy for **any** element of `collection`.
@@ -41,11 +41,11 @@ var arraySome = require('./_arraySome'),
  * // => true
  */
 function some(collection, predicate, guard) {
-  var func = isArray(collection) ? arraySome : baseSome;
-  if (guard && isIterateeCall(collection, predicate, guard)) {
-    predicate = undefined;
-  }
-  return func(collection, baseIteratee(predicate, 3));
+	var func = isArray(collection) ? arraySome : baseSome;
+	if (guard && isIterateeCall(collection, predicate, guard)) {
+		predicate = undefined;
+	}
+	return func(collection, baseIteratee(predicate, 3));
 }
 
 module.exports = some;

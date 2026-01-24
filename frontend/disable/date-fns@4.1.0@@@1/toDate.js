@@ -39,8 +39,8 @@ import { constructFrom } from "./constructFrom.js";
  * //=> Tue Feb 11 2014 11:30:30
  */
 export function toDate(argument, context) {
-  // [TODO] Get rid of `toDate` or `constructFrom`?
-  return constructFrom(context || argument, argument);
+	// [TODO] Get rid of `toDate` or `constructFrom`?
+	return constructFrom(context || argument, argument);
 }
 
 // Fallback for modularized imports:

@@ -1,5 +1,5 @@
-var copyObject = require('./_copyObject'),
-    getSymbols = require('./_getSymbols');
+var copyObject = require("./_copyObject"),
+	getSymbols = require("./_getSymbols");
 
 /**
  * Copies own symbols of `source` to `object`.
@@ -10,7 +10,7 @@ var copyObject = require('./_copyObject'),
  * @returns {Object} Returns `object`.
  */
 function copySymbols(source, object) {
-  return copyObject(source, getSymbols(source), object);
+	return copyObject(source, getSymbols(source), object);
 }
 
 module.exports = copySymbols;

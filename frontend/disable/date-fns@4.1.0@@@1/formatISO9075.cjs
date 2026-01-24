@@ -44,42 +44,42 @@ var _index3 = require("./toDate.cjs");
  * //=> '19:00:52'
  */
 function formatISO9075(date, options) {
-  const date_ = (0, _index3.toDate)(date, options?.in);
+	const date_ = (0, _index3.toDate)(date, options?.in);
 
-  if (!(0, _index2.isValid)(date_)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (!(0, _index2.isValid)(date_)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  const format = options?.format ?? "extended";
-  const representation = options?.representation ?? "complete";
+	const format = options?.format ?? "extended";
+	const representation = options?.representation ?? "complete";
 
-  let result = "";
+	let result = "";
 
-  const dateDelimiter = format === "extended" ? "-" : "";
-  const timeDelimiter = format === "extended" ? ":" : "";
+	const dateDelimiter = format === "extended" ? "-" : "";
+	const timeDelimiter = format === "extended" ? ":" : "";
 
-  // Representation is either 'date' or 'complete'
-  if (representation !== "time") {
-    const day = (0, _index.addLeadingZeros)(date_.getDate(), 2);
-    const month = (0, _index.addLeadingZeros)(date_.getMonth() + 1, 2);
-    const year = (0, _index.addLeadingZeros)(date_.getFullYear(), 4);
+	// Representation is either 'date' or 'complete'
+	if (representation !== "time") {
+		const day = (0, _index.addLeadingZeros)(date_.getDate(), 2);
+		const month = (0, _index.addLeadingZeros)(date_.getMonth() + 1, 2);
+		const year = (0, _index.addLeadingZeros)(date_.getFullYear(), 4);
 
-    // yyyyMMdd or yyyy-MM-dd.
-    result = `${year}${dateDelimiter}${month}${dateDelimiter}${day}`;
-  }
+		// yyyyMMdd or yyyy-MM-dd.
+		result = `${year}${dateDelimiter}${month}${dateDelimiter}${day}`;
+	}
 
-  // Representation is either 'time' or 'complete'
-  if (representation !== "date") {
-    const hour = (0, _index.addLeadingZeros)(date_.getHours(), 2);
-    const minute = (0, _index.addLeadingZeros)(date_.getMinutes(), 2);
-    const second = (0, _index.addLeadingZeros)(date_.getSeconds(), 2);
+	// Representation is either 'time' or 'complete'
+	if (representation !== "date") {
+		const hour = (0, _index.addLeadingZeros)(date_.getHours(), 2);
+		const minute = (0, _index.addLeadingZeros)(date_.getMinutes(), 2);
+		const second = (0, _index.addLeadingZeros)(date_.getSeconds(), 2);
 
-    // If there's also date, separate it with time with a space
-    const separator = result === "" ? "" : " ";
+		// If there's also date, separate it with time with a space
+		const separator = result === "" ? "" : " ";
 
-    // HHmmss or HH:mm:ss.
-    result = `${result}${separator}${hour}${timeDelimiter}${minute}${timeDelimiter}${second}`;
-  }
+		// HHmmss or HH:mm:ss.
+		result = `${result}${separator}${hour}${timeDelimiter}${minute}${timeDelimiter}${second}`;
+	}
 
-  return result;
+	return result;
 }

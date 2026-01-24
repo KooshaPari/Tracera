@@ -54,9 +54,8 @@ export function createProdManifest(app) {
 						assets[router.handler] = await this.inputs[router.handler].assets();
 						for (const route of (await router.internals.routes?.getRoutes()) ??
 							[]) {
-							assets[route.filePath] = await this.inputs[
-								route.filePath
-							].assets();
+							assets[route.filePath] =
+								await this.inputs[route.filePath].assets();
 						}
 						return assets;
 					},

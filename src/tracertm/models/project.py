@@ -3,6 +3,7 @@ Project model for TraceRTM.
 """
 
 import uuid
+from typing import Any
 
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -24,7 +25,7 @@ class Project(Base, TimestampMixin):
     """
 
     __tablename__ = "projects"
-    __table_args__ = {"extend_existing": True}
+    __table_args__: dict[str, Any] = {"extend_existing": True}
 
     id: Mapped[str] = mapped_column(
         String(255), primary_key=True, default=generate_uuid
@@ -33,9 +34,22 @@ class Project(Base, TimestampMixin):
         String(255), unique=True, nullable=False, index=True
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    project_metadata: Mapped[dict] = mapped_column(
+    project_metadata: Mapped[dict[str, object]] = mapped_column(
         JSONType, nullable=False, default=dict
     )
+
+    def __getattribute__(self, name: str) -> object:
+        if name == "metadata":
+            return object.__getattribute__(self, "project_metadata")
+        return super().__getattribute__(name)
+
+    def __setattr__(self, name: str, value: object) -> None:
+        if name == "metadata":
+            name = "project_metadata"
+        super().__setattr__(name, value)
+
+    def __getitem__(self, key: str) -> object:
+        return getattr(self, key)
 
     def __repr__(self) -> str:
         return f"<Project(id={self.id!r}, name={self.name!r})>"

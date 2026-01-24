@@ -14,7 +14,11 @@ export declare function element_has(attribute: Attr, element: Element): boolean;
  * @param element - an element node
  * @param value - attribute value
  */
-export declare function element_change(attribute: Attr, element: Element, value: string): void;
+export declare function element_change(
+	attribute: Attr,
+	element: Element,
+	value: string,
+): void;
 /**
  * Appends an attribute to an element node.
  *
@@ -36,14 +40,21 @@ export declare function element_remove(attribute: Attr, element: Element): void;
  * @param newAttr - new attribute
  * @param element - an element to receive the attribute
  */
-export declare function element_replace(oldAttr: Attr, newAttr: Attr, element: Element): void;
+export declare function element_replace(
+	oldAttr: Attr,
+	newAttr: Attr,
+	element: Element,
+): void;
 /**
  * Retrieves an attribute with the given name from an element node.
  *
  * @param qualifiedName - an attribute name
  * @param element - an element to receive the attribute
  */
-export declare function element_getAnAttributeByName(qualifiedName: string, element: Element): Attr | null;
+export declare function element_getAnAttributeByName(
+	qualifiedName: string,
+	element: Element,
+): Attr | null;
 /**
  * Retrieves an attribute with the given namespace and local name from an
  * element node.
@@ -52,7 +63,11 @@ export declare function element_getAnAttributeByName(qualifiedName: string, elem
  * @param localName - an attribute local name
  * @param element - an element to receive the attribute
  */
-export declare function element_getAnAttributeByNamespaceAndLocalName(namespace: string, localName: string, element: Element): Attr | null;
+export declare function element_getAnAttributeByNamespaceAndLocalName(
+	namespace: string,
+	localName: string,
+	element: Element,
+): Attr | null;
 /**
  * Retrieves an attribute's value with the given name namespace and local
  * name from an element node.
@@ -61,14 +76,21 @@ export declare function element_getAnAttributeByNamespaceAndLocalName(namespace:
  * @param localName - an attribute local name
  * @param namespace - an attribute namespace
  */
-export declare function element_getAnAttributeValue(element: Element, localName: string, namespace?: string): string;
+export declare function element_getAnAttributeValue(
+	element: Element,
+	localName: string,
+	namespace?: string,
+): string;
 /**
  * Sets an attribute of an element node.
  *
  * @param attr - an attribute
  * @param element - an element to receive the attribute
  */
-export declare function element_setAnAttribute(attr: Attr, element: Element): Attr | null;
+export declare function element_setAnAttribute(
+	attr: Attr,
+	element: Element,
+): Attr | null;
 /**
  * Sets an attribute's value of an element node.
  *
@@ -78,14 +100,23 @@ export declare function element_setAnAttribute(attr: Attr, element: Element): At
  * @param prefix - an attribute prefix
  * @param namespace - an attribute namespace
  */
-export declare function element_setAnAttributeValue(element: Element, localName: string, value: string, prefix?: string | null, namespace?: string | null): void;
+export declare function element_setAnAttributeValue(
+	element: Element,
+	localName: string,
+	value: string,
+	prefix?: string | null,
+	namespace?: string | null,
+): void;
 /**
  * Removes an attribute with the given name from an element node.
  *
  * @param qualifiedName - an attribute name
  * @param element - an element to receive the attribute
  */
-export declare function element_removeAnAttributeByName(qualifiedName: string, element: Element): Attr | null;
+export declare function element_removeAnAttributeByName(
+	qualifiedName: string,
+	element: Element,
+): Attr | null;
 /**
  * Removes an attribute with the given namespace and local name from an
  * element node.
@@ -94,7 +125,11 @@ export declare function element_removeAnAttributeByName(qualifiedName: string, e
  * @param localName - an attribute local name
  * @param element - an element to receive the attribute
  */
-export declare function element_removeAnAttributeByNamespaceAndLocalName(namespace: string, localName: string, element: Element): Attr | null;
+export declare function element_removeAnAttributeByNamespaceAndLocalName(
+	namespace: string,
+	localName: string,
+	element: Element,
+): Attr | null;
 /**
  * Creates an element node.
  * See: https://dom.spec.whatwg.org/#concept-create-element.
@@ -106,7 +141,14 @@ export declare function element_removeAnAttributeByNamespaceAndLocalName(namespa
  * @param is - the "is" value
  * @param synchronousCustomElementsFlag - synchronous custom elements flag
  */
-export declare function element_createAnElement(document: Document, localName: string, namespace: string | null, prefix?: string | null, is?: string | null, synchronousCustomElementsFlag?: boolean): Element;
+export declare function element_createAnElement(
+	document: Document,
+	localName: string,
+	namespace: string | null,
+	prefix?: string | null,
+	is?: string | null,
+	synchronousCustomElementsFlag?: boolean,
+): Element;
 /**
  * Inserts a new node adjacent to this element.
  *
@@ -118,4 +160,8 @@ export declare function element_createAnElement(document: Document, localName: s
  *   - `afterend` after this element itself.
  * @param node - node to insert
  */
-export declare function element_insertAdjacent(element: Element, where: "beforebegin" | "afterbegin" | "beforeend" | "afterend", node: Node): Node | null;
+export declare function element_insertAdjacent(
+	element: Element,
+	where: "beforebegin" | "afterbegin" | "beforeend" | "afterend",
+	node: Node,
+): Node | null;

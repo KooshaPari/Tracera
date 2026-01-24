@@ -1,1 +1,1 @@
-module.exports = require('../dist/ssg');
+module.exports = require("../dist/ssg");

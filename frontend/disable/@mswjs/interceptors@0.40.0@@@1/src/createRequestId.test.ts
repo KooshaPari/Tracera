@@ -1,7 +1,7 @@
-import { it, expect } from 'vitest'
-import { createRequestId } from './createRequestId'
-import { REQUEST_ID_REGEXP } from '../test/helpers'
+import { expect, it } from "vitest";
+import { REQUEST_ID_REGEXP } from "../test/helpers";
+import { createRequestId } from "./createRequestId";
 
-it('returns a request ID', () => {
-  expect(createRequestId()).toMatch(REQUEST_ID_REGEXP)
-})
+it("returns a request ID", () => {
+	expect(createRequestId()).toMatch(REQUEST_ID_REGEXP);
+});

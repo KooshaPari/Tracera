@@ -25,6 +25,6 @@ var _index = require("./constants.cjs");
  * //=> 2
  */
 function monthsToQuarters(months) {
-  const quarters = months / _index.monthsInQuarter;
-  return Math.trunc(quarters);
+	const quarters = months / _index.monthsInQuarter;
+	return Math.trunc(quarters);
 }

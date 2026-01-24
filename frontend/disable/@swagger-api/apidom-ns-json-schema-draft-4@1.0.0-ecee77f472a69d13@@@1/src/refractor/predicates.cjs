@@ -11,7 +11,7 @@ var _apidomCore = require("@swagger-api/apidom-core");
 /**
  * @public
  */
-const isJSONReferenceLikeElement = element => {
-  return (0, _apidomCore.isObjectElement)(element) && element.hasKey('$ref');
+const isJSONReferenceLikeElement = (element) => {
+	return (0, _apidomCore.isObjectElement)(element) && element.hasKey("$ref");
 };
 exports.isJSONReferenceLikeElement = isJSONReferenceLikeElement;

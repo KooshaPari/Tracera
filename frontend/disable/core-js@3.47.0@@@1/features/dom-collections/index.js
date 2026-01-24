@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/dom-collections');
+"use strict";
+module.exports = require("../../full/dom-collections");

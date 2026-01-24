@@ -26,5 +26,5 @@ var _index = require("./addDays.cjs");
  * //=> Fri Aug 22 2014 00:00:00
  */
 function subDays(date, amount, options) {
-  return (0, _index.addDays)(date, -amount, options);
+	return (0, _index.addDays)(date, -amount, options);
 }

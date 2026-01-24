@@ -1,16 +1,16 @@
-import { outdent } from 'outdent';
+import { outdent } from "outdent";
 import {
-  parseYamlToDocument,
-  replaceSourceWithRef,
-  makeConfig,
-} from '../../../../../__tests__/utils';
-import { lintDocument } from '../../../../lint';
-import { BaseResolver } from '../../../../resolve';
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../../__tests__/utils";
+import { lintDocument } from "../../../../lint";
+import { BaseResolver } from "../../../../resolve";
 
-describe('Referenceable scalars', () => {
-  it('should not report $ref description', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Referenceable scalars", () => {
+	it("should not report $ref description", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         info:
           title: Test
@@ -19,19 +19,19 @@ describe('Referenceable scalars', () => {
             $ref: fixtures/description.md
         paths: {}
       `,
-      __dirname + '/foobar.yaml'
-    );
+			__dirname + "/foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          spec: 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					spec: "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

@@ -1,4 +1,8 @@
-export { wrapCompilerAsTypeGuard, wrapValidatorAsTypeGuard, asConst } from "./utils";
+export {
+	asConst,
+	wrapCompilerAsTypeGuard,
+	wrapValidatorAsTypeGuard,
+} from "./utils";
 /**
  * Unwidened V7 JSON schema (e.g. defined with the `as const` statement)
  */

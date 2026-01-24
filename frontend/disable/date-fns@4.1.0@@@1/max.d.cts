@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link max} function options.
  */
 export interface MaxOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name max
  * @category Common Helpers
@@ -30,9 +30,9 @@ export interface MaxOptions<DateType extends Date = Date>
  * //=> Sun Jul 02 1995 00:00:00
  */
 export declare function max<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  dates: DateArg<DateType>[],
-  options?: MaxOptions<ResultDate> | undefined,
+	dates: DateArg<DateType>[],
+	options?: MaxOptions<ResultDate> | undefined,
 ): ResultDate;

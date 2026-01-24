@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 /**
  * Unique input field names
  *
@@ -9,5 +9,5 @@ import type { ASTValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
  */
 export declare function UniqueInputFieldNamesRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

@@ -1,16 +1,15 @@
-'use strict';
-const {Readable} = require('stream');
+const { Readable } = require("stream");
 
 class IncomingMessage extends Readable {
 	constructor(socket, highWaterMark) {
 		super({
 			highWaterMark,
-			autoDestroy: false
+			autoDestroy: false,
 		});
 
 		this.statusCode = null;
-		this.statusMessage = '';
-		this.httpVersion = '2.0';
+		this.statusMessage = "";
+		this.httpVersion = "2.0";
 		this.httpVersionMajor = 2;
 		this.httpVersionMinor = 0;
 		this.headers = {};
@@ -43,7 +42,7 @@ class IncomingMessage extends Readable {
 		if (!this._dumped) {
 			this._dumped = true;
 
-			this.removeAllListeners('data');
+			this.removeAllListeners("data");
 			this.resume();
 		}
 	}

@@ -39,7 +39,7 @@ var _index3 = require("./startOfMonth.cjs");
  * // ]
  */
 function eachWeekendOfMonth(date, options) {
-  const start = (0, _index3.startOfMonth)(date, options);
-  const end = (0, _index2.endOfMonth)(date, options);
-  return (0, _index.eachWeekendOfInterval)({ start, end }, options);
+	const start = (0, _index3.startOfMonth)(date, options);
+	const end = (0, _index2.endOfMonth)(date, options);
+	return (0, _index.eachWeekendOfInterval)({ start, end }, options);
 }

@@ -43,29 +43,29 @@ import { constructFrom } from "./constructFrom.js";
  * // ]
  */
 export function eachDayOfInterval(interval, options) {
-  const { start, end } = normalizeInterval(options?.in, interval);
+	const { start, end } = normalizeInterval(options?.in, interval);
 
-  let reversed = +start > +end;
-  const endTime = reversed ? +start : +end;
-  const date = reversed ? end : start;
-  date.setHours(0, 0, 0, 0);
+	let reversed = +start > +end;
+	const endTime = reversed ? +start : +end;
+	const date = reversed ? end : start;
+	date.setHours(0, 0, 0, 0);
 
-  let step = options?.step ?? 1;
-  if (!step) return [];
-  if (step < 0) {
-    step = -step;
-    reversed = !reversed;
-  }
+	let step = options?.step ?? 1;
+	if (!step) return [];
+	if (step < 0) {
+		step = -step;
+		reversed = !reversed;
+	}
 
-  const dates = [];
+	const dates = [];
 
-  while (+date <= endTime) {
-    dates.push(constructFrom(start, date));
-    date.setDate(date.getDate() + step);
-    date.setHours(0, 0, 0, 0);
-  }
+	while (+date <= endTime) {
+		dates.push(constructFrom(start, date));
+		date.setDate(date.getDate() + step);
+		date.setHours(0, 0, 0, 0);
+	}
 
-  return reversed ? dates.reverse() : dates;
+	return reversed ? dates.reverse() : dates;
 }
 
 // Fallback for modularized imports:

@@ -1,7 +1,9 @@
-import type { Options } from './types.js';
+import type { Options } from "./types.js";
 type ToStringable = Function & {
-    [Symbol.toStringTag]: string;
+	[Symbol.toStringTag]: string;
 };
-export default function inspectFunction(func: ToStringable, options: Options): string;
-export {};
+export default function inspectFunction(
+	func: ToStringable,
+	options: Options,
+): string;
 //# sourceMappingURL=function.d.ts.map

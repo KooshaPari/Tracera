@@ -6,6 +6,6 @@ import { Document } from "../dom/interfaces";
  * See: https://w3c.github.io/DOM-Parsing/#the-domparser-interface
  */
 export declare class DOMParserImpl implements DOMParser {
-    /** @inheritdoc */
-    parseFromString(source: string, mimeType: MimeType): Document;
+	/** @inheritdoc */
+	parseFromString(source: string, mimeType: MimeType): Document;
 }

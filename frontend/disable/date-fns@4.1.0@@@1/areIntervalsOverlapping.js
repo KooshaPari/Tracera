@@ -52,19 +52,19 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function areIntervalsOverlapping(intervalLeft, intervalRight, options) {
-  const [leftStartTime, leftEndTime] = [
-    +toDate(intervalLeft.start, options?.in),
-    +toDate(intervalLeft.end, options?.in),
-  ].sort((a, b) => a - b);
-  const [rightStartTime, rightEndTime] = [
-    +toDate(intervalRight.start, options?.in),
-    +toDate(intervalRight.end, options?.in),
-  ].sort((a, b) => a - b);
+	const [leftStartTime, leftEndTime] = [
+		+toDate(intervalLeft.start, options?.in),
+		+toDate(intervalLeft.end, options?.in),
+	].sort((a, b) => a - b);
+	const [rightStartTime, rightEndTime] = [
+		+toDate(intervalRight.start, options?.in),
+		+toDate(intervalRight.end, options?.in),
+	].sort((a, b) => a - b);
 
-  if (options?.inclusive)
-    return leftStartTime <= rightEndTime && rightStartTime <= leftEndTime;
+	if (options?.inclusive)
+		return leftStartTime <= rightEndTime && rightStartTime <= leftEndTime;
 
-  return leftStartTime < rightEndTime && rightStartTime < leftEndTime;
+	return leftStartTime < rightEndTime && rightStartTime < leftEndTime;
 }
 
 // Fallback for modularized imports:

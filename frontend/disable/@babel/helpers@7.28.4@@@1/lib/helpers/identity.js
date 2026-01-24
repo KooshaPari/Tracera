@@ -1,11 +1,11 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = _identity;
 function _identity(x) {
-  return x;
+	return x;
 }
 
 //# sourceMappingURL=identity.js.map

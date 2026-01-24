@@ -1,5 +1,5 @@
-var castFunction = require('./_castFunction'),
-    partial = require('./partial');
+var castFunction = require("./_castFunction"),
+	partial = require("./partial");
 
 /**
  * Creates a function that provides `value` to `wrapper` as its first
@@ -24,7 +24,7 @@ var castFunction = require('./_castFunction'),
  * // => '<p>fred, barney, &amp; pebbles</p>'
  */
 function wrap(value, wrapper) {
-  return partial(castFunction(wrapper), value);
+	return partial(castFunction(wrapper), value);
 }
 
 module.exports = wrap;

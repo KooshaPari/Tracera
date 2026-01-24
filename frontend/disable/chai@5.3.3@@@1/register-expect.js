@@ -1,3 +1,3 @@
-import {expect} from './index.js';
+import { expect } from "./index.js";
 
 globalThis.expect = expect;

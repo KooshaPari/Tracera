@@ -27,7 +27,7 @@ import { addMonths } from "./addMonths.js";
  * //=> Mon Sep 01 2014 00:00:00
  */
 export function subMonths(date, amount, options) {
-  return addMonths(date, -amount, options);
+	return addMonths(date, -amount, options);
 }
 
 // Fallback for modularized imports:

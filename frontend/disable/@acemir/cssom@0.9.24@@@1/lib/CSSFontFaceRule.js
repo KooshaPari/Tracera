@@ -1,7 +1,7 @@
 //.CommonJS
 var CSSOM = {
 	CSSStyleDeclaration: require("./CSSStyleDeclaration").CSSStyleDeclaration,
-	CSSRule: require("./CSSRule").CSSRule
+	CSSRule: require("./CSSRule").CSSRule,
 };
 // Use cssstyle if available
 try {
@@ -10,7 +10,6 @@ try {
 	// ignore
 }
 ///CommonJS
-
 
 /**
  * @constructor
@@ -30,25 +29,28 @@ CSSOM.CSSFontFaceRule.prototype.type = 5;
 //CSSOM.CSSFontFaceRule.prototype.deleteRule = CSSStyleSheet.prototype.deleteRule;
 
 Object.defineProperty(CSSOM.CSSFontFaceRule.prototype, "style", {
-	get: function() {
-		return this.__style;	
+	get: function () {
+		return this.__style;
 	},
-	set: function(value) {
+	set: function (value) {
 		if (typeof value === "string") {
 			this.__style.cssText = value;
 		} else {
 			this.__style = value;
 		}
-	}
+	},
 });
 
 // http://www.opensource.apple.com/source/WebCore/WebCore-955.66.1/css/WebKitCSSFontFaceRule.cpp
 Object.defineProperty(CSSOM.CSSFontFaceRule.prototype, "cssText", {
-  get: function() {
-    return "@font-face {" + (this.style.cssText ? " " + this.style.cssText : "") + " }";
-  }
+	get: function () {
+		return (
+			"@font-face {" +
+			(this.style.cssText ? " " + this.style.cssText : "") +
+			" }"
+		);
+	},
 });
-
 
 //.CommonJS
 exports.CSSFontFaceRule = CSSOM.CSSFontFaceRule;

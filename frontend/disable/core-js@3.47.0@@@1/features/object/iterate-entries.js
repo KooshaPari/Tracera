@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/iterate-entries');
+"use strict";
+module.exports = require("../../full/object/iterate-entries");

@@ -1,28 +1,33 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.escapeText = exports.escapeAttribute = exports.escapeUTF8 = exports.escape = exports.encodeXML = exports.getCodePoint = exports.xmlReplacer = void 0;
+exports.escapeText =
+	exports.escapeAttribute =
+	exports.escapeUTF8 =
+	exports.escape =
+	exports.encodeXML =
+	exports.getCodePoint =
+	exports.xmlReplacer =
+		void 0;
 exports.xmlReplacer = /["&'<>$\x80-\uFFFF]/g;
 var xmlCodeMap = new Map([
-    [34, "&quot;"],
-    [38, "&amp;"],
-    [39, "&apos;"],
-    [60, "&lt;"],
-    [62, "&gt;"],
+	[34, "&quot;"],
+	[38, "&amp;"],
+	[39, "&apos;"],
+	[60, "&lt;"],
+	[62, "&gt;"],
 ]);
 // For compatibility with node < 4, we wrap `codePointAt`
-exports.getCodePoint = 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-String.prototype.codePointAt != null
-    ? function (str, index) { return str.codePointAt(index); }
-    : // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
-        function (c, index) {
-            return (c.charCodeAt(index) & 0xfc00) === 0xd800
-                ? (c.charCodeAt(index) - 0xd800) * 0x400 +
-                    c.charCodeAt(index + 1) -
-                    0xdc00 +
-                    0x10000
-                : c.charCodeAt(index);
-        };
+exports.getCodePoint =
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	String.prototype.codePointAt != null
+		? (str, index) => str.codePointAt(index)
+		: // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+			(c, index) =>
+				(c.charCodeAt(index) & 0xfc00) === 0xd800
+					? (c.charCodeAt(index) - 0xd800) * 0x400 +
+						c.charCodeAt(index + 1) -
+						0xdc00 +
+						0x10000
+					: c.charCodeAt(index);
 /**
  * Encodes all non-ASCII characters, as well as characters not valid in XML
  * documents using XML entities.
@@ -31,24 +36,27 @@ String.prototype.codePointAt != null
  * numeric hexadecimal reference (eg. `&#xfc;`) will be used.
  */
 function encodeXML(str) {
-    var ret = "";
-    var lastIdx = 0;
-    var match;
-    while ((match = exports.xmlReplacer.exec(str)) !== null) {
-        var i = match.index;
-        var char = str.charCodeAt(i);
-        var next = xmlCodeMap.get(char);
-        if (next !== undefined) {
-            ret += str.substring(lastIdx, i) + next;
-            lastIdx = i + 1;
-        }
-        else {
-            ret += "".concat(str.substring(lastIdx, i), "&#x").concat((0, exports.getCodePoint)(str, i).toString(16), ";");
-            // Increase by 1 if we have a surrogate pair
-            lastIdx = exports.xmlReplacer.lastIndex += Number((char & 0xfc00) === 0xd800);
-        }
-    }
-    return ret + str.substr(lastIdx);
+	var ret = "";
+	var lastIdx = 0;
+	var match;
+	while ((match = exports.xmlReplacer.exec(str)) !== null) {
+		var i = match.index;
+		var char = str.charCodeAt(i);
+		var next = xmlCodeMap.get(char);
+		if (next !== undefined) {
+			ret += str.substring(lastIdx, i) + next;
+			lastIdx = i + 1;
+		} else {
+			ret += ""
+				.concat(str.substring(lastIdx, i), "&#x")
+				.concat((0, exports.getCodePoint)(str, i).toString(16), ";");
+			// Increase by 1 if we have a surrogate pair
+			lastIdx = exports.xmlReplacer.lastIndex += Number(
+				(char & 0xfc00) === 0xd800,
+			);
+		}
+	}
+	return ret + str.substr(lastIdx);
 }
 exports.encodeXML = encodeXML;
 /**
@@ -72,21 +80,21 @@ exports.escape = encodeXML;
  * expression using the given map of characters to escape to their entities.
  */
 function getEscaper(regex, map) {
-    return function escape(data) {
-        var match;
-        var lastIdx = 0;
-        var result = "";
-        while ((match = regex.exec(data))) {
-            if (lastIdx !== match.index) {
-                result += data.substring(lastIdx, match.index);
-            }
-            // We know that this character will be in the map.
-            result += map.get(match[0].charCodeAt(0));
-            // Every match will be of length 1
-            lastIdx = match.index + 1;
-        }
-        return result + data.substring(lastIdx);
-    };
+	return function escape(data) {
+		var match;
+		var lastIdx = 0;
+		var result = "";
+		while ((match = regex.exec(data))) {
+			if (lastIdx !== match.index) {
+				result += data.substring(lastIdx, match.index);
+			}
+			// We know that this character will be in the map.
+			result += map.get(match[0].charCodeAt(0));
+			// Every match will be of length 1
+			lastIdx = match.index + 1;
+		}
+		return result + data.substring(lastIdx);
+	};
 }
 /**
  * Encodes all characters not valid in XML documents using XML entities.
@@ -102,21 +110,27 @@ exports.escapeUTF8 = getEscaper(/[&<>'"]/g, xmlCodeMap);
  *
  * @param data String to escape.
  */
-exports.escapeAttribute = getEscaper(/["&\u00A0]/g, new Map([
-    [34, "&quot;"],
-    [38, "&amp;"],
-    [160, "&nbsp;"],
-]));
+exports.escapeAttribute = getEscaper(
+	/["&\u00A0]/g,
+	new Map([
+		[34, "&quot;"],
+		[38, "&amp;"],
+		[160, "&nbsp;"],
+	]),
+);
 /**
  * Encodes all characters that have to be escaped in HTML text,
  * following {@link https://html.spec.whatwg.org/multipage/parsing.html#escapingString}.
  *
  * @param data String to escape.
  */
-exports.escapeText = getEscaper(/[&<>\u00A0]/g, new Map([
-    [38, "&amp;"],
-    [60, "&lt;"],
-    [62, "&gt;"],
-    [160, "&nbsp;"],
-]));
+exports.escapeText = getEscaper(
+	/[&<>\u00A0]/g,
+	new Map([
+		[38, "&amp;"],
+		[60, "&lt;"],
+		[62, "&gt;"],
+		[160, "&nbsp;"],
+	]),
+);
 //# sourceMappingURL=escape.js.map

@@ -1,17 +1,17 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = ensureAsync;
 
-var _setImmediate = require('./internal/setImmediate.js');
+var _setImmediate = require("./internal/setImmediate.js");
 
 var _setImmediate2 = _interopRequireDefault(_setImmediate);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Wrap an async function and ensure it calls its callback on a later tick of
@@ -49,19 +49,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * async.mapSeries(args, async.ensureAsync(sometimesAsync), done);
  */
 function ensureAsync(fn) {
-    if ((0, _wrapAsync.isAsync)(fn)) return fn;
-    return function (...args /*, callback*/) {
-        var callback = args.pop();
-        var sync = true;
-        args.push((...innerArgs) => {
-            if (sync) {
-                (0, _setImmediate2.default)(() => callback(...innerArgs));
-            } else {
-                callback(...innerArgs);
-            }
-        });
-        fn.apply(this, args);
-        sync = false;
-    };
+	if ((0, _wrapAsync.isAsync)(fn)) return fn;
+	return function (...args /*, callback*/) {
+		var callback = args.pop();
+		var sync = true;
+		args.push((...innerArgs) => {
+			if (sync) {
+				(0, _setImmediate2.default)(() => callback(...innerArgs));
+			} else {
+				callback(...innerArgs);
+			}
+		});
+		fn.apply(this, args);
+		sync = false;
+	};
 }
 module.exports = exports.default;

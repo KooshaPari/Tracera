@@ -91,7 +91,12 @@ export async function createBuild(app, buildConfig, configFile) {
 	for (const router of app.config.routers) {
 		if (router.type !== "static" && router.build !== false) {
 			await withLogger({ router, requestId: "build" }, async () => {
-				await createRouterBuildInWorker(app, router, buildConfig.mode, configFile);
+				await createRouterBuildInWorker(
+					app,
+					router,
+					buildConfig.mode,
+					configFile,
+				);
 			});
 		}
 	}
@@ -136,8 +141,8 @@ export async function createBuild(app, buildConfig, configFile) {
 				isRelative(plugin)
 					? plugin
 					: isAbsolute(plugin)
-					? plugin
-					: require.resolve(plugin, { paths: [app.config.root] }),
+						? plugin
+						: require.resolve(plugin, { paths: [app.config.root] }),
 			),
 		],
 		buildDir: ".vinxi",
@@ -695,7 +700,7 @@ const routerModePlugin = {
 						},
 					},
 					"http",
-			  ),
+				),
 		spaManifest(),
 		config("appType", {
 			appType: "custom",

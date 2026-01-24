@@ -24,5 +24,5 @@ var _index = require("./toDate.cjs");
  * //=> false
  */
 function isEqual(leftDate, rightDate) {
-  return +(0, _index.toDate)(leftDate) === +(0, _index.toDate)(rightDate);
+	return +(0, _index.toDate)(leftDate) === +(0, _index.toDate)(rightDate);
 }

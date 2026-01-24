@@ -1,0 +1,119 @@
+---
+title: "Go SDK - Working with Artifacts"
+description: "Create, read, update, and delete items using the Go SDK"
+keywords: [go, sdk, items, artifacts, crud]
+---
+
+# Working with Artifacts
+
+The Go SDK provides methods to manage items (artifacts) in your TraceRTM projects.
+
+## Initialize Client
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+client := tracertm.NewClient(
+    tracertm.WithAPIKey("rtm_live_abc123..."),
+)
+```
+
+## Query Items
+
+```go
+// Query by view
+items, err := client.Items.Query(tracertm.QueryItemsRequest{
+    View:  "requirements",
+    Limit: 50,
+})
+
+// Query by status
+items, err := client.Items.Query(tracertm.QueryItemsRequest{
+    Status: "active",
+    Limit:  50,
+})
+```
+
+## Create Item
+
+```go
+item, err := client.Items.Create(tracertm.CreateItemRequest{
+    Title:       "New Requirement",
+    View:        "requirements",
+    Status:      "draft",
+    Description: "Item description",
+    Metadata: map[string]interface{}{
+        "priority":  "high",
+        "component": "api",
+    },
+})
+```
+
+## Get Item
+
+```go
+item, err := client.Items.Get("item_abc123")
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Title: %s\n", item.Title)
+fmt.Printf("Status: %s\n", item.Status)
+```
+
+## Update Item
+
+```go
+updated, err := client.Items.Update("item_abc123", tracertm.UpdateItemRequest{
+    Title:  "Updated Title",
+    Status: "active",
+})
+```
+
+## Delete Item
+
+```go
+err := client.Items.Delete("item_abc123")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## Working with Links
+
+```go
+link, err := client.Links.Create(tracertm.CreateLinkRequest{
+    SourceID: "item_req_001",
+    TargetID: "item_test_001",
+    LinkType: "verified_by",
+    Metadata: map[string]interface{}{
+        "confidence": 0.95,
+    },
+})
+```
+
+## Examples
+
+```go
+// Create requirement and test case
+req, _ := client.Items.Create(tracertm.CreateItemRequest{
+    Title: "User Authentication",
+    View:  "requirements",
+})
+
+test, _ := client.Items.Create(tracertm.CreateItemRequest{
+    Title: "Login Test",
+    View:  "test-cases",
+})
+
+link, _ := client.Links.Create(tracertm.CreateLinkRequest{
+    SourceID: req.ID,
+    TargetID: test.ID,
+    LinkType: "verified_by",
+})
+```
+
+## Related Documentation
+
+- [Workflows](./05-workflows) - Manage workflows
+- [Examples](./06-examples) - More examples

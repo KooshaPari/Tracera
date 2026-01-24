@@ -1,5 +1,5 @@
-var convert = require('./convert'),
-    func = convert('wrap', require('../wrap'));
+var convert = require("./convert"),
+	func = convert("wrap", require("../wrap"));
 
-func.placeholder = require('./placeholder');
+func.placeholder = require("./placeholder");
 module.exports = func;

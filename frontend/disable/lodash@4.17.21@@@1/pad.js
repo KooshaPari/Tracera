@@ -1,11 +1,11 @@
-var createPadding = require('./_createPadding'),
-    stringSize = require('./_stringSize'),
-    toInteger = require('./toInteger'),
-    toString = require('./toString');
+var createPadding = require("./_createPadding"),
+	stringSize = require("./_stringSize"),
+	toInteger = require("./toInteger"),
+	toString = require("./toString");
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeCeil = Math.ceil,
-    nativeFloor = Math.floor;
+	nativeFloor = Math.floor;
 
 /**
  * Pads `string` on the left and right sides if it's shorter than `length`.
@@ -31,19 +31,19 @@ var nativeCeil = Math.ceil,
  * // => 'abc'
  */
 function pad(string, length, chars) {
-  string = toString(string);
-  length = toInteger(length);
+	string = toString(string);
+	length = toInteger(length);
 
-  var strLength = length ? stringSize(string) : 0;
-  if (!length || strLength >= length) {
-    return string;
-  }
-  var mid = (length - strLength) / 2;
-  return (
-    createPadding(nativeFloor(mid), chars) +
-    string +
-    createPadding(nativeCeil(mid), chars)
-  );
+	var strLength = length ? stringSize(string) : 0;
+	if (!length || strLength >= length) {
+		return string;
+	}
+	var mid = (length - strLength) / 2;
+	return (
+		createPadding(nativeFloor(mid), chars) +
+		string +
+		createPadding(nativeCeil(mid), chars)
+	);
 }
 
 module.exports = pad;

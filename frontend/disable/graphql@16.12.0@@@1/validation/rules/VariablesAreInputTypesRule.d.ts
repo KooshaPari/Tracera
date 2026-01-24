@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Variables are input types
  *
@@ -9,5 +9,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Variables-Are-Input-Types
  */
 export declare function VariablesAreInputTypesRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

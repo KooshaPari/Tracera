@@ -30,7 +30,7 @@ export interface IsSameISOWeekOptions extends ContextOptions<Date> {}
  * //=> false
  */
 export declare function isSameISOWeek(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IsSameISOWeekOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IsSameISOWeekOptions | undefined,
 ): boolean;

@@ -18,7 +18,7 @@ import { toDate } from "./toDate.js";
  * //=> 123
  */
 export function getMilliseconds(date) {
-  return toDate(date).getMilliseconds();
+	return toDate(date).getMilliseconds();
 }
 
 // Fallback for modularized imports:

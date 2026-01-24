@@ -1,5 +1,3 @@
-"use strict";
-
 var sort = require("./prototypes/array").sort;
 var slice = require("./prototypes/array").slice;
 
@@ -7,13 +5,13 @@ var slice = require("./prototypes/array").slice;
  * @private
  */
 function comparator(a, b) {
-    // uuid, won't ever be equal
-    var aCall = a.getCall(0);
-    var bCall = b.getCall(0);
-    var aId = (aCall && aCall.callId) || -1;
-    var bId = (bCall && bCall.callId) || -1;
+	// uuid, won't ever be equal
+	var aCall = a.getCall(0);
+	var bCall = b.getCall(0);
+	var aId = (aCall && aCall.callId) || -1;
+	var bId = (bCall && bCall.callId) || -1;
 
-    return aId < bId ? -1 : 1;
+	return aId < bId ? -1 : 1;
 }
 
 /**
@@ -28,7 +26,7 @@ function comparator(a, b) {
  * @returns {SinonProxy[]}
  */
 function orderByFirstCall(spies) {
-    return sort(slice(spies), comparator);
+	return sort(slice(spies), comparator);
 }
 
 module.exports = orderByFirstCall;

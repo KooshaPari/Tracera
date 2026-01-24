@@ -12,16 +12,16 @@ import { match } from "./mn/_lib/match.js";
  * @author Bilguun Ochirbat [@bilguun0203](https://github.com/bilguun0203)
  */
 export const mn = {
-  code: "mn",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "mn",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

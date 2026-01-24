@@ -2,36 +2,36 @@
 // <https://github.com/nodejs/node/blob/7c3dce0/lib/internal/modules/esm/get_format.js>
 // Last checked on: Apr 29, 2024.
 
-import {fileURLToPath} from 'node:url'
-import {getPackageType} from './package-json-reader.js'
-import {codes} from './errors.js'
+import { fileURLToPath } from "node:url";
+import { codes } from "./errors.js";
+import { getPackageType } from "./package-json-reader.js";
 
-const {ERR_UNKNOWN_FILE_EXTENSION} = codes
+const { ERR_UNKNOWN_FILE_EXTENSION } = codes;
 
-const hasOwnProperty = {}.hasOwnProperty
+const hasOwnProperty = {}.hasOwnProperty;
 
 /** @type {Record<string, string>} */
 const extensionFormatMap = {
-  // @ts-expect-error: hush.
-  __proto__: null,
-  '.cjs': 'commonjs',
-  '.js': 'module',
-  '.json': 'json',
-  '.mjs': 'module'
-}
+	// @ts-expect-error: hush.
+	__proto__: null,
+	".cjs": "commonjs",
+	".js": "module",
+	".json": "json",
+	".mjs": "module",
+};
 
 /**
  * @param {string | null} mime
  * @returns {string | null}
  */
 function mimeToFormat(mime) {
-  if (
-    mime &&
-    /\s*(text|application)\/javascript\s*(;\s*charset=utf-?8\s*)?/i.test(mime)
-  )
-    return 'module'
-  if (mime === 'application/json') return 'json'
-  return null
+	if (
+		mime &&
+		/\s*(text|application)\/javascript\s*(;\s*charset=utf-?8\s*)?/i.test(mime)
+	)
+		return "module";
+	if (mime === "application/json") return "json";
+	return null;
 }
 
 /**
@@ -46,25 +46,25 @@ function mimeToFormat(mime) {
  * @type {Record<string, ProtocolHandler>}
  */
 const protocolHandlers = {
-  // @ts-expect-error: hush.
-  __proto__: null,
-  'data:': getDataProtocolModuleFormat,
-  'file:': getFileProtocolModuleFormat,
-  'http:': getHttpProtocolModuleFormat,
-  'https:': getHttpProtocolModuleFormat,
-  'node:'() {
-    return 'builtin'
-  }
-}
+	// @ts-expect-error: hush.
+	__proto__: null,
+	"data:": getDataProtocolModuleFormat,
+	"file:": getFileProtocolModuleFormat,
+	"http:": getHttpProtocolModuleFormat,
+	"https:": getHttpProtocolModuleFormat,
+	"node:"() {
+		return "builtin";
+	},
+};
 
 /**
  * @param {URL} parsed
  */
 function getDataProtocolModuleFormat(parsed) {
-  const {1: mime} = /^([^/]+\/[^;,]+)[^,]*?(;base64)?,/.exec(
-    parsed.pathname
-  ) || [null, null, null]
-  return mimeToFormat(mime)
+	const { 1: mime } = /^([^/]+\/[^;,]+)[^,]*?(;base64)?,/.exec(
+		parsed.pathname,
+	) || [null, null, null];
+	return mimeToFormat(mime);
 }
 
 /**
@@ -78,69 +78,69 @@ function getDataProtocolModuleFormat(parsed) {
  * @returns {string}
  */
 function extname(url) {
-  const pathname = url.pathname
-  let index = pathname.length
+	const pathname = url.pathname;
+	let index = pathname.length;
 
-  while (index--) {
-    const code = pathname.codePointAt(index)
+	while (index--) {
+		const code = pathname.codePointAt(index);
 
-    if (code === 47 /* `/` */) {
-      return ''
-    }
+		if (code === 47 /* `/` */) {
+			return "";
+		}
 
-    if (code === 46 /* `.` */) {
-      return pathname.codePointAt(index - 1) === 47 /* `/` */
-        ? ''
-        : pathname.slice(index)
-    }
-  }
+		if (code === 46 /* `.` */) {
+			return pathname.codePointAt(index - 1) === 47 /* `/` */
+				? ""
+				: pathname.slice(index);
+		}
+	}
 
-  return ''
+	return "";
 }
 
 /**
  * @type {ProtocolHandler}
  */
 function getFileProtocolModuleFormat(url, _context, ignoreErrors) {
-  const value = extname(url)
+	const value = extname(url);
 
-  if (value === '.js') {
-    const packageType = getPackageType(url)
+	if (value === ".js") {
+		const packageType = getPackageType(url);
 
-    if (packageType !== 'none') {
-      return packageType
-    }
+		if (packageType !== "none") {
+			return packageType;
+		}
 
-    return 'commonjs'
-  }
+		return "commonjs";
+	}
 
-  if (value === '') {
-    const packageType = getPackageType(url)
+	if (value === "") {
+		const packageType = getPackageType(url);
 
-    // Legacy behavior
-    if (packageType === 'none' || packageType === 'commonjs') {
-      return 'commonjs'
-    }
+		// Legacy behavior
+		if (packageType === "none" || packageType === "commonjs") {
+			return "commonjs";
+		}
 
-    // Note: we don’t implement WASM, so we don’t need
-    // `getFormatOfExtensionlessFile` from `formats`.
-    return 'module'
-  }
+		// Note: we don’t implement WASM, so we don’t need
+		// `getFormatOfExtensionlessFile` from `formats`.
+		return "module";
+	}
 
-  const format = extensionFormatMap[value]
-  if (format) return format
+	const format = extensionFormatMap[value];
+	if (format) return format;
 
-  // Explicit undefined return indicates load hook should rerun format check
-  if (ignoreErrors) {
-    return undefined
-  }
+	// Explicit undefined return indicates load hook should rerun format check
+	if (ignoreErrors) {
+		return undefined;
+	}
 
-  const filepath = fileURLToPath(url)
-  throw new ERR_UNKNOWN_FILE_EXTENSION(value, filepath)
+	const filepath = fileURLToPath(url);
+	throw new ERR_UNKNOWN_FILE_EXTENSION(value, filepath);
 }
 
 function getHttpProtocolModuleFormat() {
-  // To do: HTTPS imports.
+	// To do: HTTPS imports.
 }
 
 /**
@@ -149,11 +149,11 @@ function getHttpProtocolModuleFormat() {
  * @returns {string | null}
  */
 export function defaultGetFormatWithoutErrors(url, context) {
-  const protocol = url.protocol
+	const protocol = url.protocol;
 
-  if (!hasOwnProperty.call(protocolHandlers, protocol)) {
-    return null
-  }
+	if (!hasOwnProperty.call(protocolHandlers, protocol)) {
+		return null;
+	}
 
-  return protocolHandlers[protocol](url, context, true) || null
+	return protocolHandlers[protocol](url, context, true) || null;
 }

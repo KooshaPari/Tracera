@@ -9,16 +9,18 @@ export = orderByFirstCall;
  * @param  {SinonProxy[] | SinonProxy} spies
  * @returns {SinonProxy[]}
  */
-declare function orderByFirstCall(spies: SinonProxy[] | SinonProxy): SinonProxy[];
+declare function orderByFirstCall(
+	spies: SinonProxy[] | SinonProxy,
+): SinonProxy[];
 declare namespace orderByFirstCall {
-    export { SinonProxy };
+	export { SinonProxy };
 }
 /**
  * A Sinon proxy object (fake, spy, stub)
  */
 type SinonProxy = {
-    /**
-     * - A method that can return the first call
-     */
-    getCall: Function;
+	/**
+	 * - A method that can return the first call
+	 */
+	getCall: Function;
 };

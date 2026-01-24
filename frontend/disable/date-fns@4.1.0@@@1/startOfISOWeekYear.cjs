@@ -34,9 +34,9 @@ var _index3 = require("./startOfISOWeek.cjs");
  * //=> Mon Jan 03 2005 00:00:00
  */
 function startOfISOWeekYear(date, options) {
-  const year = (0, _index2.getISOWeekYear)(date, options);
-  const fourthOfJanuary = (0, _index.constructFrom)(options?.in || date, 0);
-  fourthOfJanuary.setFullYear(year, 0, 4);
-  fourthOfJanuary.setHours(0, 0, 0, 0);
-  return (0, _index3.startOfISOWeek)(fourthOfJanuary);
+	const year = (0, _index2.getISOWeekYear)(date, options);
+	const fourthOfJanuary = (0, _index.constructFrom)(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(year, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
+	return (0, _index3.startOfISOWeek)(fourthOfJanuary);
 }

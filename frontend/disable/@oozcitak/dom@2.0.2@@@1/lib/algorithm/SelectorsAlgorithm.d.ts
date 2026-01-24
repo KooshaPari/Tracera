@@ -5,4 +5,7 @@ import { Element, Node } from "../dom/interfaces";
  * @param selectors - selectors
  * @param node - the node to match against
  */
-export declare function selectors_scopeMatchASelectorsString(selectors: string, node: Node): Element[];
+export declare function selectors_scopeMatchASelectorsString(
+	selectors: string,
+	node: Node,
+): Element[];

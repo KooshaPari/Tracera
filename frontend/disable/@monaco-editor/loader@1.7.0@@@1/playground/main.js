@@ -1,4 +1,4 @@
-import loader from '../src'
+import loader from "../src";
 
 // import * as monaco from 'monaco-editor';
 // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
@@ -26,10 +26,14 @@ import loader from '../src'
 // }
 
 // loader.config({ monaco });
-loader.config({ paths: {
-  vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs',
-} });
-loader.init().then(monaco => monaco.editor.create(document.body, {
-  value: '// some comment',
-  language: 'javascript',
-}));
+loader.config({
+	paths: {
+		vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs",
+	},
+});
+loader.init().then((monaco) =>
+	monaco.editor.create(document.body, {
+		value: "// some comment",
+		language: "javascript",
+	}),
+);

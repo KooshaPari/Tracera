@@ -1,13 +1,13 @@
 export function isNodeLikeError(
-  error: unknown
+	error: unknown,
 ): error is NodeJS.ErrnoException {
-  if (error == null) {
-    return false
-  }
+	if (error == null) {
+		return false;
+	}
 
-  if (!(error instanceof Error)) {
-    return false
-  }
+	if (!(error instanceof Error)) {
+		return false;
+	}
 
-  return 'code' in error && 'errno' in error
+	return "code" in error && "errno" in error;
 }

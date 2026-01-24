@@ -43,18 +43,18 @@ var _index3 = require("./toDate.cjs");
  * //=> Mon Sep 01 2014 12:23:45
  */
 function set(date, values, options) {
-  let _date = (0, _index3.toDate)(date, options?.in);
+	let _date = (0, _index3.toDate)(date, options?.in);
 
-  // Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
-  if (isNaN(+_date)) return (0, _index.constructFrom)(options?.in || date, NaN);
+	// Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
+	if (isNaN(+_date)) return (0, _index.constructFrom)(options?.in || date, NaN);
 
-  if (values.year != null) _date.setFullYear(values.year);
-  if (values.month != null) _date = (0, _index2.setMonth)(_date, values.month);
-  if (values.date != null) _date.setDate(values.date);
-  if (values.hours != null) _date.setHours(values.hours);
-  if (values.minutes != null) _date.setMinutes(values.minutes);
-  if (values.seconds != null) _date.setSeconds(values.seconds);
-  if (values.milliseconds != null) _date.setMilliseconds(values.milliseconds);
+	if (values.year != null) _date.setFullYear(values.year);
+	if (values.month != null) _date = (0, _index2.setMonth)(_date, values.month);
+	if (values.date != null) _date.setDate(values.date);
+	if (values.hours != null) _date.setHours(values.hours);
+	if (values.minutes != null) _date.setMinutes(values.minutes);
+	if (values.seconds != null) _date.setSeconds(values.seconds);
+	if (values.milliseconds != null) _date.setMilliseconds(values.milliseconds);
 
-  return _date;
+	return _date;
 }

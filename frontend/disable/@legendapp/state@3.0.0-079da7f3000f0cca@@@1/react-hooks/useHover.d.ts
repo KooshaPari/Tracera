@@ -1,5 +1,7 @@
-import { Observable } from '@legendapp/state';
+import { Observable } from "@legendapp/state";
 
-declare function useHover<T extends HTMLElement>(ref: React.MutableRefObject<T>): Observable<boolean>;
+declare function useHover<T extends HTMLElement>(
+	ref: React.MutableRefObject<T>,
+): Observable<boolean>;
 
 export { useHover };

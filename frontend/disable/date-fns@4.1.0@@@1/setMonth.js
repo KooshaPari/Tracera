@@ -29,18 +29,18 @@ import { toDate } from "./toDate.js";
  * //=> Sat Feb 01 2014 00:00:00
  */
 export function setMonth(date, month, options) {
-  const _date = toDate(date, options?.in);
-  const year = _date.getFullYear();
-  const day = _date.getDate();
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
+	const day = _date.getDate();
 
-  const midMonth = constructFrom(options?.in || date, 0);
-  midMonth.setFullYear(year, month, 15);
-  midMonth.setHours(0, 0, 0, 0);
-  const daysInMonth = getDaysInMonth(midMonth);
+	const midMonth = constructFrom(options?.in || date, 0);
+	midMonth.setFullYear(year, month, 15);
+	midMonth.setHours(0, 0, 0, 0);
+	const daysInMonth = getDaysInMonth(midMonth);
 
-  // Set the earlier date, allows to wrap Jan 31 to Feb 28
-  _date.setMonth(month, Math.min(day, daysInMonth));
-  return _date;
+	// Set the earlier date, allows to wrap Jan 31 to Feb 28
+	_date.setMonth(month, Math.min(day, daysInMonth));
+	return _date;
 }
 
 // Fallback for modularized imports:

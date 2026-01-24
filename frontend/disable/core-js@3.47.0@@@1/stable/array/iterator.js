@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../es/array/iterator');
+"use strict";
+var parent = require("../../es/array/iterator");
 
 module.exports = parent;

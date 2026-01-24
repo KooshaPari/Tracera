@@ -1,18 +1,18 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _concatLimit = require('./concatLimit.js');
+var _concatLimit = require("./concatLimit.js");
 
 var _concatLimit2 = _interopRequireDefault(_concatLimit);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Applies `iteratee` to each item in `coll`, concatenating the results. Returns
@@ -109,7 +109,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function concat(coll, iteratee, callback) {
-    return (0, _concatLimit2.default)(coll, Infinity, iteratee, callback);
+	return (0, _concatLimit2.default)(coll, Infinity, iteratee, callback);
 }
 exports.default = (0, _awaitify2.default)(concat, 3);
 module.exports = exports.default;

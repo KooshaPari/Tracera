@@ -1,5 +1,3 @@
-import loader from './loader/index.js';
-
-
+import loader from "./loader/index.js";
 
 export { loader as default };

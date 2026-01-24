@@ -6,4 +6,7 @@ import { Node, Document } from "../dom/interfaces";
  * @param nodes - the array of nodes or strings,
  * @param document - owner document
  */
-export declare function parentNode_convertNodesIntoANode(nodes: (Node | string)[], document: Document): Node;
+export declare function parentNode_convertNodesIntoANode(
+	nodes: (Node | string)[],
+	document: Document,
+): Node;

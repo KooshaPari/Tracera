@@ -1,39 +1,37 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
-const name = 'LayerNameList';
+const name = "LayerNameList";
 const structure = {
-    children: [[
-        'MediaQuery'
-    ]]
+	children: [["MediaQuery"]],
 };
 
 function parse() {
-    const children = this.createList();
+	const children = this.createList();
 
-    this.skipSC();
+	this.skipSC();
 
-    while (!this.eof) {
-        children.push(this.LayerName());
+	while (!this.eof) {
+		children.push(this.LayerName());
 
-        if (this.tokenType !== types.Comma) {
-            break;
-        }
+		if (this.tokenType !== types.Comma) {
+			break;
+		}
 
-        this.next();
-        this.skipSC();
-    }
+		this.next();
+		this.skipSC();
+	}
 
-    return {
-        type: 'LayerNameList',
-        loc: this.getLocationFromList(children),
-        children
-    };
+	return {
+		type: "LayerNameList",
+		loc: this.getLocationFromList(children),
+		children,
+	};
 }
 
 function generate(node) {
-    this.children(node, () => this.token(types.Comma, ','));
+	this.children(node, () => this.token(types.Comma, ","));
 }
 
 exports.generate = generate;

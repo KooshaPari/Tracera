@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { SDLValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { SDLValidationContext } from "../ValidationContext";
 /**
  * Unique argument definition names
  *
@@ -7,5 +7,5 @@ import type { SDLValidationContext } from '../ValidationContext';
  * A GraphQL Directive is only valid if all its arguments are uniquely named.
  */
 export declare function UniqueArgumentDefinitionNamesRule(
-  context: SDLValidationContext,
+	context: SDLValidationContext,
 ): ASTVisitor;

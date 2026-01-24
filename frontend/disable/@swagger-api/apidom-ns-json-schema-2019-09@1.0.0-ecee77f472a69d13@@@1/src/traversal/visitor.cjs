@@ -8,8 +8,8 @@ exports.getNodeType = _apidomNsJsonSchemaDraft.getNodeType;
 /**
  * @public
  */
-const keyMap = exports.keyMap = {
-  JSONSchema201909Element: ['content'],
-  LinkDescriptionElement: ['content'],
-  ..._apidomCore.keyMap
-};
+const keyMap = (exports.keyMap = {
+	JSONSchema201909Element: ["content"],
+	LinkDescriptionElement: ["content"],
+	..._apidomCore.keyMap,
+});

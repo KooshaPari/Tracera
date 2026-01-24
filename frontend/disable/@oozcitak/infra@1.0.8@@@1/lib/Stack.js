@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Pushes the given item to the stack.
@@ -7,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @param item - an item
  */
 function push(list, item) {
-    list.push(item);
+	list.push(item);
 }
 exports.push = push;
 /**
@@ -16,7 +15,7 @@ exports.push = push;
  * @param list - a list
  */
 function pop(list) {
-    return list.pop() || null;
+	return list.pop() || null;
 }
 exports.pop = pop;
 //# sourceMappingURL=Stack.js.map

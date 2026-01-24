@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.typed-array.reverse');
+"use strict";
+require("../../modules/es.typed-array.reverse");

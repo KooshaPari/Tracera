@@ -8,9 +8,12 @@ var _apidomNsJsonSchemaDraft = require("@swagger-api/apidom-ns-json-schema-draft
  * @public
  */
 class ItemsVisitor extends _apidomNsJsonSchemaDraft.ItemsVisitor {
-  BooleanElement(booleanElement) {
-    this.element = this.toRefractedElement(['document', 'objects', 'JSONSchema'], booleanElement);
-    return _apidomCore.BREAK;
-  }
+	BooleanElement(booleanElement) {
+		this.element = this.toRefractedElement(
+			["document", "objects", "JSONSchema"],
+			booleanElement,
+		);
+		return _apidomCore.BREAK;
+	}
 }
-var _default = exports.default = ItemsVisitor;
+var _default = (exports.default = ItemsVisitor);

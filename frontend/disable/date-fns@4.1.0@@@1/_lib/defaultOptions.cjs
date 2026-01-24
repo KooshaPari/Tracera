@@ -5,9 +5,9 @@ exports.setDefaultOptions = setDefaultOptions;
 let defaultOptions = {};
 
 function getDefaultOptions() {
-  return defaultOptions;
+	return defaultOptions;
 }
 
 function setDefaultOptions(newOptions) {
-  defaultOptions = newOptions;
+	defaultOptions = newOptions;
 }

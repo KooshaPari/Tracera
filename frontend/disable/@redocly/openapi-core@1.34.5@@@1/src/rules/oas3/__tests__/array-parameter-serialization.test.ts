@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { lintDocument } from '../../../lint';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('oas3 array-parameter-serialization', () => {
-  it('should report on array parameter without style and explode', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("oas3 array-parameter-serialization", () => {
+	it("should report on array parameter without style and explode", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -24,18 +28,18 @@ describe('oas3 array-parameter-serialization', () => {
                 items:
                   type: string     
       `,
-      'foobar.yaml'
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'array-parameter-serialization': { severity: 'error', in: ['query'] },
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			"foobar.yaml",
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"array-parameter-serialization": { severity: "error", in: ["query"] },
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -52,11 +56,11 @@ describe('oas3 array-parameter-serialization', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on array parameter with style but without explode', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on array parameter with style but without explode", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -69,18 +73,18 @@ describe('oas3 array-parameter-serialization', () => {
                 items:
                   type: string
       `,
-      'foobar.yaml'
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'array-parameter-serialization': { severity: 'error', in: ['query'] },
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			"foobar.yaml",
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"array-parameter-serialization": { severity: "error", in: ["query"] },
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -97,11 +101,11 @@ describe('oas3 array-parameter-serialization', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on parameter without type but with items', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on parameter without type but with items", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         paths: 
           /test:
@@ -124,18 +128,18 @@ describe('oas3 array-parameter-serialization', () => {
               prefixItems: # no type or items
                 - type: number    
               `,
-      'foobar.yaml'
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'array-parameter-serialization': { severity: 'error', in: ['query'] },
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			"foobar.yaml",
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"array-parameter-serialization": { severity: "error", in: ["query"] },
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -152,11 +156,11 @@ describe('oas3 array-parameter-serialization', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on array parameter with style and explode', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on array parameter with style and explode", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -170,23 +174,23 @@ describe('oas3 array-parameter-serialization', () => {
                 items:
                   type: string
       `,
-      'foobar.yaml'
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'array-parameter-serialization': { severity: 'error', in: ['query'] },
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+			"foobar.yaml",
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"array-parameter-serialization": { severity: "error", in: ["query"] },
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report non-array parameter without style and explode', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report non-array parameter without style and explode", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -196,23 +200,23 @@ describe('oas3 array-parameter-serialization', () => {
               schema:
                 type: string
       `,
-      'foobar.yaml'
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'array-parameter-serialization': { severity: 'error', in: ['query'] },
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+			"foobar.yaml",
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"array-parameter-serialization": { severity: "error", in: ["query"] },
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it("should report all array parameter without style and explode if property 'in' not defined ", async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report all array parameter without style and explode if property 'in' not defined ", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -230,18 +234,18 @@ describe('oas3 array-parameter-serialization', () => {
                 items:
                   type: string     
       `,
-      'foobar.yaml'
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'array-parameter-serialization': { severity: 'error' },
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			"foobar.yaml",
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"array-parameter-serialization": { severity: "error" },
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -271,5 +275,5 @@ describe('oas3 array-parameter-serialization', () => {
         },
       ]
     `);
-  });
+	});
 });

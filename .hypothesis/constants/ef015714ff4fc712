@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/adapters/storage_adapter.py
+# hypothesis_version: 6.148.7
+
+['blocked', 'conflicts', 'done', 'duration_seconds', 'entities_synced', 'epic', 'error', 'errors', 'in_progress', 'items_by_status', 'items_by_type', 'medium', 'story', 'success', 'task', 'test', 'todo', 'total_items', 'total_links']

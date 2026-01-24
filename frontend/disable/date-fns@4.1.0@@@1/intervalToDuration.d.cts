@@ -25,6 +25,6 @@ export interface IntervalToDurationOptions extends ContextOptions<Date> {}
  * //=> { years: 39, months: 2, days: 20, hours: 7, minutes: 5, seconds: 0 }
  */
 export declare function intervalToDuration(
-  interval: Interval,
-  options?: IntervalToDurationOptions | undefined,
+	interval: Interval,
+	options?: IntervalToDurationOptions | undefined,
 ): Duration;

@@ -12,15 +12,15 @@ declare const detectNewline: {
 	//=> '\n'
 	```
 	*/
-	(string: string): '\r\n' | '\n' | undefined;
+	(string: string): "\r\n" | "\n" | undefined;
 
 	/**
 	Detect the dominant newline character of a string.
 
 	@returns The detected newline or `\n` when no newline character is found or the input is not a string.
 	*/
-	graceful(string: string): '\r\n' | '\n';
-	graceful(string?: unknown): '\n';
+	graceful(string: string): "\r\n" | "\n";
+	graceful(string?: unknown): "\n";
 };
 
 export = detectNewline;

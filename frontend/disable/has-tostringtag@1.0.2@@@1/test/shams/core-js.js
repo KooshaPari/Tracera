@@ -1,9 +1,9 @@
-'use strict';
+
 
 var test = require('tape');
 
 if (typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol') {
-	test('has native Symbol.toStringTag support', function (t) {
+	test('has native Symbol.toStringTag support', (t) => {
 		t.equal(typeof Symbol, 'function');
 		t.equal(typeof Symbol.toStringTag, 'symbol');
 		t.end();
@@ -14,7 +14,7 @@ if (typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol') {
 
 var hasSymbolToStringTag = require('../../shams');
 
-test('polyfilled Symbols', function (t) {
+test('polyfilled Symbols', (t) => {
 	/* eslint-disable global-require */
 	t.equal(hasSymbolToStringTag(), false, 'hasSymbolToStringTag is false before polyfilling');
 	// @ts-expect-error no types defined

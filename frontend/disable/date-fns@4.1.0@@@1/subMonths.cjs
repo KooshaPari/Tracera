@@ -29,5 +29,5 @@ var _index = require("./addMonths.cjs");
  * //=> Mon Sep 01 2014 00:00:00
  */
 function subMonths(date, amount, options) {
-  return (0, _index.addMonths)(date, -amount, options);
+	return (0, _index.addMonths)(date, -amount, options);
 }

@@ -7,16 +7,16 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class MqttMessageBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'mqttMessageBinding';
-    this.classes.push('message-binding');
-  }
-  get bindingVersion() {
-    return this.get('bindingVersion');
-  }
-  set bindingVersion(bindingVersion) {
-    this.set('bindingVersion', bindingVersion);
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "mqttMessageBinding";
+		this.classes.push("message-binding");
+	}
+	get bindingVersion() {
+		return this.get("bindingVersion");
+	}
+	set bindingVersion(bindingVersion) {
+		this.set("bindingVersion", bindingVersion);
+	}
 }
-var _default = exports.default = MqttMessageBinding;
+var _default = (exports.default = MqttMessageBinding);

@@ -1,4 +1,5 @@
-'use strict';
-var userAgent = require('../internals/environment-user-agent');
+"use strict";
+var userAgent = require("../internals/environment-user-agent");
 
-module.exports = /ipad|iphone|ipod/i.test(userAgent) && typeof Pebble != 'undefined';
+module.exports =
+	/ipad|iphone|ipod/i.test(userAgent) && typeof Pebble != "undefined";

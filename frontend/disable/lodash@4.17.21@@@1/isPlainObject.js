@@ -1,13 +1,13 @@
-var baseGetTag = require('./_baseGetTag'),
-    getPrototype = require('./_getPrototype'),
-    isObjectLike = require('./isObjectLike');
+var baseGetTag = require("./_baseGetTag"),
+	getPrototype = require("./_getPrototype"),
+	isObjectLike = require("./isObjectLike");
 
 /** `Object#toString` result references. */
-var objectTag = '[object Object]';
+var objectTag = "[object Object]";
 
 /** Used for built-in method references. */
 var funcProto = Function.prototype,
-    objectProto = Object.prototype;
+	objectProto = Object.prototype;
 
 /** Used to resolve the decompiled source of functions. */
 var funcToString = funcProto.toString;
@@ -47,16 +47,19 @@ var objectCtorString = funcToString.call(Object);
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) || baseGetTag(value) != objectTag) {
-    return false;
-  }
-  var proto = getPrototype(value);
-  if (proto === null) {
-    return true;
-  }
-  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
-  return typeof Ctor == 'function' && Ctor instanceof Ctor &&
-    funcToString.call(Ctor) == objectCtorString;
+	if (!isObjectLike(value) || baseGetTag(value) != objectTag) {
+		return false;
+	}
+	var proto = getPrototype(value);
+	if (proto === null) {
+		return true;
+	}
+	var Ctor = hasOwnProperty.call(proto, "constructor") && proto.constructor;
+	return (
+		typeof Ctor == "function" &&
+		Ctor instanceof Ctor &&
+		funcToString.call(Ctor) == objectCtorString
+	);
 }
 
 module.exports = isPlainObject;

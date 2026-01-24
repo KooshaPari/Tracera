@@ -10,11 +10,9 @@ exports.default = void 0;
  * @public
  */
 class BundleStrategy {
-  name;
-  constructor({
-    name
-  }) {
-    this.name = name;
-  }
+	name;
+	constructor({ name }) {
+		this.name = name;
+	}
 }
-var _default = exports.default = BundleStrategy;
+var _default = (exports.default = BundleStrategy);

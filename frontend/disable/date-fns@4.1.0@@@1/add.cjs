@@ -40,36 +40,36 @@ var _index4 = require("./toDate.cjs");
  * //=> Thu Jun 15 2017 15:29:20
  */
 function add(date, duration, options) {
-  const {
-    years = 0,
-    months = 0,
-    weeks = 0,
-    days = 0,
-    hours = 0,
-    minutes = 0,
-    seconds = 0,
-  } = duration;
+	const {
+		years = 0,
+		months = 0,
+		weeks = 0,
+		days = 0,
+		hours = 0,
+		minutes = 0,
+		seconds = 0,
+	} = duration;
 
-  // Add years and months
-  const _date = (0, _index4.toDate)(date, options?.in);
-  const dateWithMonths =
-    months || years
-      ? (0, _index2.addMonths)(_date, months + years * 12)
-      : _date;
+	// Add years and months
+	const _date = (0, _index4.toDate)(date, options?.in);
+	const dateWithMonths =
+		months || years
+			? (0, _index2.addMonths)(_date, months + years * 12)
+			: _date;
 
-  // Add weeks and days
-  const dateWithDays =
-    days || weeks
-      ? (0, _index.addDays)(dateWithMonths, days + weeks * 7)
-      : dateWithMonths;
+	// Add weeks and days
+	const dateWithDays =
+		days || weeks
+			? (0, _index.addDays)(dateWithMonths, days + weeks * 7)
+			: dateWithMonths;
 
-  // Add days, hours, minutes, and seconds
-  const minutesToAdd = minutes + hours * 60;
-  const secondsToAdd = seconds + minutesToAdd * 60;
-  const msToAdd = secondsToAdd * 1000;
+	// Add days, hours, minutes, and seconds
+	const minutesToAdd = minutes + hours * 60;
+	const secondsToAdd = seconds + minutesToAdd * 60;
+	const msToAdd = secondsToAdd * 1000;
 
-  return (0, _index3.constructFrom)(
-    options?.in || date,
-    +dateWithDays + msToAdd,
-  );
+	return (0, _index3.constructFrom)(
+		options?.in || date,
+		+dateWithDays + msToAdd,
+	);
 }

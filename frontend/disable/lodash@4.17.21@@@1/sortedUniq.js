@@ -1,4 +1,4 @@
-var baseSortedUniq = require('./_baseSortedUniq');
+var baseSortedUniq = require("./_baseSortedUniq");
 
 /**
  * This method is like `_.uniq` except that it's designed and optimized
@@ -16,9 +16,7 @@ var baseSortedUniq = require('./_baseSortedUniq');
  * // => [1, 2]
  */
 function sortedUniq(array) {
-  return (array && array.length)
-    ? baseSortedUniq(array)
-    : [];
+	return array && array.length ? baseSortedUniq(array) : [];
 }
 
 module.exports = sortedUniq;

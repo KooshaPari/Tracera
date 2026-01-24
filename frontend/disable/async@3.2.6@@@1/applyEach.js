@@ -1,18 +1,18 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _applyEach = require('./internal/applyEach.js');
+var _applyEach = require("./internal/applyEach.js");
 
 var _applyEach2 = _interopRequireDefault(_applyEach);
 
-var _map = require('./map.js');
+var _map = require("./map.js");
 
 var _map2 = _interopRequireDefault(_map);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Applies the provided arguments to each function in the array, calling

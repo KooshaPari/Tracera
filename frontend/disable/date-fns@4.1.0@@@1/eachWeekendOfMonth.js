@@ -37,9 +37,9 @@ import { startOfMonth } from "./startOfMonth.js";
  * // ]
  */
 export function eachWeekendOfMonth(date, options) {
-  const start = startOfMonth(date, options);
-  const end = endOfMonth(date, options);
-  return eachWeekendOfInterval({ start, end }, options);
+	const start = startOfMonth(date, options);
+	const end = endOfMonth(date, options);
+	return eachWeekendOfInterval({ start, end }, options);
 }
 
 // Fallback for modularized imports:

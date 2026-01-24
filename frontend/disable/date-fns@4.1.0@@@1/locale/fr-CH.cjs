@@ -18,14 +18,14 @@ var _index5 = require("./fr-CH/_lib/formatRelative.cjs"); // Same as fr
  * @author Alex Hoeing [@dcbn](https://github.com/dcbn)
  */
 const frCH = (exports.frCH = {
-  code: "fr-CH",
-  formatDistance: _index.formatDistance,
-  formatLong: _index4.formatLong,
-  formatRelative: _index5.formatRelative,
-  localize: _index2.localize,
-  match: _index3.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "fr-CH",
+	formatDistance: _index.formatDistance,
+	formatLong: _index4.formatLong,
+	formatRelative: _index5.formatRelative,
+	localize: _index2.localize,
+	match: _index3.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 });

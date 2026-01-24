@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 from rich.console import Console
@@ -566,7 +566,7 @@ def test_matrix(
     sys.exit(0)
 
 
-def _generate_html_matrix(matrix: dict) -> str:
+def _generate_html_matrix(matrix: dict[str, Any]) -> str:
     """Generate HTML traceability matrix."""
     html = """<!DOCTYPE html>
 <html>
@@ -603,7 +603,7 @@ def _generate_html_matrix(matrix: dict) -> str:
     return html.format(generated=matrix["generated"])
 
 
-def _generate_xml_matrix(matrix: dict) -> str:
+def _generate_xml_matrix(matrix: dict[str, Any]) -> str:
     """Generate XML traceability matrix."""
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <traceability_matrix>
@@ -705,7 +705,8 @@ def python(
         from tracertm.cli.commands.test.discover import DOMAIN_MAPPING
 
         if domain in DOMAIN_MAPPING:
-            for pattern in DOMAIN_MAPPING[domain]["python"]:
+            patterns: list[str] = DOMAIN_MAPPING[domain]["python"]  # type: ignore[assignment]
+            for pattern in patterns:
                 cmd.append(pattern.replace("**", "").replace("*", ""))
 
     if verbose:
@@ -763,22 +764,27 @@ def e2e(
 
 
 @app.command()
-def list(
+def list_tests(
     language: Optional[str] = typer.Option(None, "--lang", "-l", help="Filter by language"),
     domain: Optional[str] = typer.Option(None, "--domain", "-d", help="Filter by domain"),
 ) -> None:
     """List all available tests."""
     from tracertm.cli.commands.test.discover import discover_all_tests, _list_tests
 
-    all_tests = discover_all_tests()
+    all_tests_dict = discover_all_tests()
 
-    filtered_tests = all_tests
-    if language:
-        filtered_tests = [t for t in filtered_tests if t.language == language]
-    if domain:
-        filtered_tests = [t for t in filtered_tests if domain in t.domain]
+    # Convert dict to flat list of test dicts
+    filtered_test_results: list[dict[str, str]] = []
+    for lang, tests in all_tests_dict.items():
+        if language and lang != language:
+            continue
+        for test_path in tests:
+            test_dict: dict[str, str] = {"path": test_path, "language": lang}
+            if domain and domain not in test_path:
+                continue
+            filtered_test_results.append(test_dict)
 
-    _list_tests(filtered_tests)
+    _list_tests(filtered_test_results)
 
 
 if __name__ == "__main__":

@@ -3,10 +3,26 @@ export type { Options };
 /**
  * Compiles the query, returns a function.
  */
-export declare const compile: <Node, ElementNode extends Node>(selector: string | import("css-what").Selector[][], options?: Options<Node, ElementNode> | undefined, context?: Node | Node[] | undefined) => CompiledQuery<Node>;
-export declare const _compileUnsafe: <Node, ElementNode extends Node>(selector: string | import("css-what").Selector[][], options?: Options<Node, ElementNode> | undefined, context?: Node | Node[] | undefined) => CompiledQuery<ElementNode>;
-export declare const _compileToken: <Node, ElementNode extends Node>(selector: import("./types.js").InternalSelector[][], options?: Options<Node, ElementNode> | undefined, context?: Node | Node[] | undefined) => CompiledQuery<ElementNode>;
-export declare function prepareContext<Node, ElementNode extends Node>(elems: Node | Node[], adapter: Adapter<Node, ElementNode>, shouldTestNextSiblings?: boolean): Node[];
+export declare const compile: <Node, ElementNode extends Node>(
+	selector: string | import("css-what").Selector[][],
+	options?: Options<Node, ElementNode> | undefined,
+	context?: Node | Node[] | undefined,
+) => CompiledQuery<Node>;
+export declare const _compileUnsafe: <Node, ElementNode extends Node>(
+	selector: string | import("css-what").Selector[][],
+	options?: Options<Node, ElementNode> | undefined,
+	context?: Node | Node[] | undefined,
+) => CompiledQuery<ElementNode>;
+export declare const _compileToken: <Node, ElementNode extends Node>(
+	selector: import("./types.js").InternalSelector[][],
+	options?: Options<Node, ElementNode> | undefined,
+	context?: Node | Node[] | undefined,
+) => CompiledQuery<ElementNode>;
+export declare function prepareContext<Node, ElementNode extends Node>(
+	elems: Node | Node[],
+	adapter: Adapter<Node, ElementNode>,
+	shouldTestNextSiblings?: boolean,
+): Node[];
 /**
  * @template Node The generic Node type for the DOM adapter being used.
  * @template ElementNode The Node type for elements for the DOM adapter being used.
@@ -17,7 +33,11 @@ export declare function prepareContext<Node, ElementNode extends Node>(elems: No
  * @returns All matching elements.
  *
  */
-export declare const selectAll: <Node, ElementNode extends Node>(query: Query<ElementNode>, elements: Node | Node[], options?: Options<Node, ElementNode> | undefined) => ElementNode[];
+export declare const selectAll: <Node, ElementNode extends Node>(
+	query: Query<ElementNode>,
+	elements: Node | Node[],
+	options?: Options<Node, ElementNode> | undefined,
+) => ElementNode[];
 /**
  * @template Node The generic Node type for the DOM adapter being used.
  * @template ElementNode The Node type for elements for the DOM adapter being used.
@@ -27,7 +47,11 @@ export declare const selectAll: <Node, ElementNode extends Node>(query: Query<El
  * @see compile for supported selector queries.
  * @returns the first match, or null if there was no match.
  */
-export declare const selectOne: <Node, ElementNode extends Node>(query: Query<ElementNode>, elements: Node | Node[], options?: Options<Node, ElementNode> | undefined) => ElementNode | null;
+export declare const selectOne: <Node, ElementNode extends Node>(
+	query: Query<ElementNode>,
+	elements: Node | Node[],
+	options?: Options<Node, ElementNode> | undefined,
+) => ElementNode | null;
 /**
  * Tests whether or not an element is matched by query.
  *
@@ -39,7 +63,11 @@ export declare const selectOne: <Node, ElementNode extends Node>(query: Query<El
  * @see compile for supported selector queries.
  * @returns
  */
-export declare function is<Node, ElementNode extends Node>(elem: ElementNode, query: Query<ElementNode>, options?: Options<Node, ElementNode>): boolean;
+export declare function is<Node, ElementNode extends Node>(
+	elem: ElementNode,
+	query: Query<ElementNode>,
+	options?: Options<Node, ElementNode>,
+): boolean;
 /**
  * Alias for selectAll(query, elems, options).
  * @see [compile] for supported selector queries.

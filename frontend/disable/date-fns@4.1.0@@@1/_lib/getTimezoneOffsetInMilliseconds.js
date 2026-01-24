@@ -12,18 +12,18 @@ import { toDate } from "../toDate.js";
  * This function returns the timezone offset in milliseconds that takes seconds in account.
  */
 export function getTimezoneOffsetInMilliseconds(date) {
-  const _date = toDate(date);
-  const utcDate = new Date(
-    Date.UTC(
-      _date.getFullYear(),
-      _date.getMonth(),
-      _date.getDate(),
-      _date.getHours(),
-      _date.getMinutes(),
-      _date.getSeconds(),
-      _date.getMilliseconds(),
-    ),
-  );
-  utcDate.setUTCFullYear(_date.getFullYear());
-  return +date - +utcDate;
+	const _date = toDate(date);
+	const utcDate = new Date(
+		Date.UTC(
+			_date.getFullYear(),
+			_date.getMonth(),
+			_date.getDate(),
+			_date.getHours(),
+			_date.getMinutes(),
+			_date.getSeconds(),
+			_date.getMilliseconds(),
+		),
+	);
+	utcDate.setUTCFullYear(_date.getFullYear());
+	return +date - +utcDate;
 }

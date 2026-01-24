@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Fields on correct type
  *
@@ -9,5 +9,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Field-Selections
  */
 export declare function FieldsOnCorrectTypeRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

@@ -1,1 +1,1 @@
-export const imported = 'imported-value';
+export const imported = "imported-value";

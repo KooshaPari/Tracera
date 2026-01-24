@@ -8,7 +8,7 @@
  */
 
 /** `Object#toString` result references. */
-var objectTag = '[object Object]';
+var objectTag = "[object Object]";
 
 /**
  * Checks if `value` is a host object in IE < 9.
@@ -18,15 +18,15 @@ var objectTag = '[object Object]';
  * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
  */
 function isHostObject(value) {
-  // Many host objects are `Object` objects that can coerce to strings
-  // despite having improperly defined `toString` methods.
-  var result = false;
-  if (value != null && typeof value.toString != 'function') {
-    try {
-      result = !!(value + '');
-    } catch (e) {}
-  }
-  return result;
+	// Many host objects are `Object` objects that can coerce to strings
+	// despite having improperly defined `toString` methods.
+	var result = false;
+	if (value != null && typeof value.toString != "function") {
+		try {
+			result = !!(value + "");
+		} catch (e) {}
+	}
+	return result;
 }
 
 /**
@@ -38,14 +38,12 @@ function isHostObject(value) {
  * @returns {Function} Returns the new function.
  */
 function overArg(func, transform) {
-  return function(arg) {
-    return func(transform(arg));
-  };
+	return (arg) => func(transform(arg));
 }
 
 /** Used for built-in method references. */
 var funcProto = Function.prototype,
-    objectProto = Object.prototype;
+	objectProto = Object.prototype;
 
 /** Used to resolve the decompiled source of functions. */
 var funcToString = funcProto.toString;
@@ -91,7 +89,7 @@ var getPrototype = overArg(Object.getPrototypeOf, Object);
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+	return !!value && typeof value == "object";
 }
 
 /**
@@ -123,17 +121,23 @@ function isObjectLike(value) {
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) ||
-      objectToString.call(value) != objectTag || isHostObject(value)) {
-    return false;
-  }
-  var proto = getPrototype(value);
-  if (proto === null) {
-    return true;
-  }
-  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
-  return (typeof Ctor == 'function' &&
-    Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
+	if (
+		!isObjectLike(value) ||
+		objectToString.call(value) != objectTag ||
+		isHostObject(value)
+	) {
+		return false;
+	}
+	var proto = getPrototype(value);
+	if (proto === null) {
+		return true;
+	}
+	var Ctor = hasOwnProperty.call(proto, "constructor") && proto.constructor;
+	return (
+		typeof Ctor == "function" &&
+		Ctor instanceof Ctor &&
+		funcToString.call(Ctor) == objectCtorString
+	);
 }
 
 module.exports = isPlainObject;

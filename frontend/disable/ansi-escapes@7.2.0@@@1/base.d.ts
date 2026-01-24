@@ -22,7 +22,7 @@ export type ImageOptions = {
 	- `N%`: N percent of the session's width or height.
 	- `auto`: The image's inherent size will be used to determine an appropriate dimension.
 	*/
-	readonly width?: LiteralUnion<'auto', number | string>;
+	readonly width?: LiteralUnion<"auto", number | string>;
 
 	/**
 	The height is given as a number followed by a unit, or the word `'auto'`.
@@ -32,7 +32,7 @@ export type ImageOptions = {
 	- `N%`: N percent of the session's width or height.
 	- `auto`: The image's inherent size will be used to determine an appropriate dimension.
 	*/
-	readonly height?: LiteralUnion<'auto', number | string>;
+	readonly height?: LiteralUnion<"auto", number | string>;
 
 	/**
 	@default true

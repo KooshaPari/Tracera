@@ -1,46 +1,48 @@
-'use strict';
-const fs = require('fs');
-const path = require('path');
-const {promisify} = require('util');
-const semver = require('semver');
+"use strict";
+const fs = require("fs");
+const path = require("path");
+const { promisify } = require("util");
+const semver = require("semver");
 
-const useNativeRecursiveOption = semver.satisfies(process.version, '>=10.12.0');
+const useNativeRecursiveOption = semver.satisfies(process.version, ">=10.12.0");
 
 // https://github.com/nodejs/node/issues/8987
 // https://github.com/libuv/libuv/pull/1088
-const checkPath = pth => {
-	if (process.platform === 'win32') {
-		const pathHasInvalidWinCharacters = /[<>:"|?*]/.test(pth.replace(path.parse(pth).root, ''));
+const checkPath = (pth) => {
+	if (process.platform === "win32") {
+		const pathHasInvalidWinCharacters = /[<>:"|?*]/.test(
+			pth.replace(path.parse(pth).root, ""),
+		);
 
 		if (pathHasInvalidWinCharacters) {
 			const error = new Error(`Path contains invalid characters: ${pth}`);
-			error.code = 'EINVAL';
+			error.code = "EINVAL";
 			throw error;
 		}
 	}
 };
 
-const processOptions = options => {
+const processOptions = (options) => {
 	// https://github.com/sindresorhus/make-dir/issues/18
 	const defaults = {
 		mode: 0o777,
-		fs
+		fs,
 	};
 
 	return {
 		...defaults,
-		...options
+		...options,
 	};
 };
 
-const permissionError = pth => {
+const permissionError = (pth) => {
 	// This replicates the exception of `fs.mkdir` with native the
 	// `recusive` option when run on an invalid drive under Windows.
 	const error = new Error(`operation not permitted, mkdir '${pth}'`);
-	error.code = 'EPERM';
+	error.code = "EPERM";
 	error.errno = -4048;
 	error.path = pth;
-	error.syscall = 'mkdir';
+	error.syscall = "mkdir";
 	return error;
 };
 
@@ -56,28 +58,28 @@ const makeDir = async (input, options) => {
 
 		await mkdir(pth, {
 			mode: options.mode,
-			recursive: true
+			recursive: true,
 		});
 
 		return pth;
 	}
 
-	const make = async pth => {
+	const make = async (pth) => {
 		try {
 			await mkdir(pth, options.mode);
 
 			return pth;
 		} catch (error) {
-			if (error.code === 'EPERM') {
+			if (error.code === "EPERM") {
 				throw error;
 			}
 
-			if (error.code === 'ENOENT') {
+			if (error.code === "ENOENT") {
 				if (path.dirname(pth) === pth) {
 					throw permissionError(pth);
 				}
 
-				if (error.message.includes('null bytes')) {
+				if (error.message.includes("null bytes")) {
 					throw error;
 				}
 
@@ -89,7 +91,7 @@ const makeDir = async (input, options) => {
 			try {
 				const stats = await stat(pth);
 				if (!stats.isDirectory()) {
-					throw new Error('The path is not a directory');
+					throw new Error("The path is not a directory");
 				}
 			} catch (_) {
 				throw error;
@@ -113,26 +115,26 @@ module.exports.sync = (input, options) => {
 
 		fs.mkdirSync(pth, {
 			mode: options.mode,
-			recursive: true
+			recursive: true,
 		});
 
 		return pth;
 	}
 
-	const make = pth => {
+	const make = (pth) => {
 		try {
 			options.fs.mkdirSync(pth, options.mode);
 		} catch (error) {
-			if (error.code === 'EPERM') {
+			if (error.code === "EPERM") {
 				throw error;
 			}
 
-			if (error.code === 'ENOENT') {
+			if (error.code === "ENOENT") {
 				if (path.dirname(pth) === pth) {
 					throw permissionError(pth);
 				}
 
-				if (error.message.includes('null bytes')) {
+				if (error.message.includes("null bytes")) {
 					throw error;
 				}
 
@@ -142,7 +144,7 @@ module.exports.sync = (input, options) => {
 
 			try {
 				if (!options.fs.statSync(pth).isDirectory()) {
-					throw new Error('The path is not a directory');
+					throw new Error("The path is not a directory");
 				}
 			} catch (_) {
 				throw error;

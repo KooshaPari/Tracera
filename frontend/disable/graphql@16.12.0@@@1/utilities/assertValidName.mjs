@@ -1,6 +1,6 @@
-import { devAssert } from '../jsutils/devAssert.mjs';
-import { GraphQLError } from '../error/GraphQLError.mjs';
-import { assertName } from '../type/assertName.mjs';
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { devAssert } from "../jsutils/devAssert.mjs";
+import { assertName } from "../type/assertName.mjs";
 /* c8 ignore start */
 
 /**
@@ -9,13 +9,13 @@ import { assertName } from '../type/assertName.mjs';
  */
 
 export function assertValidName(name) {
-  const error = isValidNameError(name);
+	const error = isValidNameError(name);
 
-  if (error) {
-    throw error;
-  }
+	if (error) {
+		throw error;
+	}
 
-  return name;
+	return name;
 }
 /**
  * Returns an Error if a name is invalid.
@@ -23,18 +23,18 @@ export function assertValidName(name) {
  */
 
 export function isValidNameError(name) {
-  typeof name === 'string' || devAssert(false, 'Expected name to be a string.');
+	typeof name === "string" || devAssert(false, "Expected name to be a string.");
 
-  if (name.startsWith('__')) {
-    return new GraphQLError(
-      `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
-    );
-  }
+	if (name.startsWith("__")) {
+		return new GraphQLError(
+			`Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
+		);
+	}
 
-  try {
-    assertName(name);
-  } catch (error) {
-    return error;
-  }
+	try {
+		assertName(name);
+	} catch (error) {
+		return error;
+	}
 }
 /* c8 ignore stop */

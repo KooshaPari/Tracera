@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/string/match');
+"use strict";
+var parent = require("../../stable/string/match");
 
 module.exports = parent;

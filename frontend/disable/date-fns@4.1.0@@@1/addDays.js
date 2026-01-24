@@ -28,14 +28,14 @@ import { toDate } from "./toDate.js";
  * //=> Thu Sep 11 2014 00:00:00
  */
 export function addDays(date, amount, options) {
-  const _date = toDate(date, options?.in);
-  if (isNaN(amount)) return constructFrom(options?.in || date, NaN);
+	const _date = toDate(date, options?.in);
+	if (isNaN(amount)) return constructFrom(options?.in || date, NaN);
 
-  // If 0 days, no-op to avoid changing times in the hour before end of DST
-  if (!amount) return _date;
+	// If 0 days, no-op to avoid changing times in the hour before end of DST
+	if (!amount) return _date;
 
-  _date.setDate(_date.getDate() + amount);
-  return _date;
+	_date.setDate(_date.getDate() + amount);
+	return _date;
 }
 
 // Fallback for modularized imports:

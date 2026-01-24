@@ -1,8 +1,8 @@
-import { outdent } from 'outdent';
-import { validateDoc } from './utils';
+import { outdent } from "outdent";
+import { validateDoc } from "./utils";
 
-it('should not report if summary field is valid', async () => {
-  const source = outdent`
+it("should not report if summary field is valid", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -20,15 +20,15 @@ it('should not report if summary field is valid', async () => {
               description: example description
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });
 
-it('should report if summary field is not string ', async () => {
-  const source = outdent`
+it("should report if summary field is not string ", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -46,11 +46,11 @@ it('should report if summary field is not string ', async () => {
               description: example description
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`
     [
       {
         "location": "#/paths/~1ping/summary",
@@ -60,8 +60,8 @@ it('should report if summary field is not string ', async () => {
   `);
 });
 
-it('should not report if description field is valid', async () => {
-  const source = outdent`
+it("should not report if description field is valid", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -79,15 +79,15 @@ it('should not report if description field is valid', async () => {
               description: example description
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });
 
-it('should report if description field is not string', async () => {
-  const source = outdent`
+it("should report if description field is not string", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -105,11 +105,11 @@ it('should report if description field is not string', async () => {
               description: example description
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`
     [
       {
         "location": "#/paths/~1ping/description",
@@ -119,8 +119,8 @@ it('should report if description field is not string', async () => {
   `);
 });
 
-it('should not report of a valid GET operation object', async () => {
-  const source = outdent`
+it("should not report of a valid GET operation object", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -137,15 +137,15 @@ it('should not report of a valid GET operation object', async () => {
               description: example description
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });
 
-it('should not report of a valid PUT operation object', async () => {
-  const source = outdent`
+it("should not report of a valid PUT operation object", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -167,15 +167,15 @@ it('should not report of a valid PUT operation object', async () => {
               description: Invalid ID supplied
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });
 
-it('should not report of a valid Post operation object', async () => {
-  const source = outdent`
+it("should not report of a valid Post operation object", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -205,15 +205,15 @@ it('should not report of a valid Post operation object', async () => {
               description: successful operation
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });
 
-it('should not report of a valid delete operation object', async () => {
-  const source = outdent`
+it("should not report of a valid delete operation object", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -245,9 +245,9 @@ it('should not report of a valid delete operation object', async () => {
               description: Invalid ID supplied
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });

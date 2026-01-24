@@ -1,6 +1,6 @@
-var baseExtremum = require('./_baseExtremum'),
-    baseGt = require('./_baseGt'),
-    identity = require('./identity');
+var baseExtremum = require("./_baseExtremum"),
+	baseGt = require("./_baseGt"),
+	identity = require("./identity");
 
 /**
  * Computes the maximum value of `array`. If `array` is empty or falsey,
@@ -21,9 +21,9 @@ var baseExtremum = require('./_baseExtremum'),
  * // => undefined
  */
 function max(array) {
-  return (array && array.length)
-    ? baseExtremum(array, identity, baseGt)
-    : undefined;
+	return array && array.length
+		? baseExtremum(array, identity, baseGt)
+		: undefined;
 }
 
 module.exports = max;

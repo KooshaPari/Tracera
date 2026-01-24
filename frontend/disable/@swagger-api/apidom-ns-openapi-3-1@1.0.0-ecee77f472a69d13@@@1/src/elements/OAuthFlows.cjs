@@ -7,4 +7,4 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class OAuthFlows extends _apidomNsOpenapi.OAuthFlowsElement {}
-var _default = exports.default = OAuthFlows;
+var _default = (exports.default = OAuthFlows);

@@ -19,6 +19,6 @@ export interface IsLastDayOfMonthOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isLastDayOfMonth(
-  date: DateArg<Date> & {},
-  options?: IsLastDayOfMonthOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsLastDayOfMonthOptions | undefined,
 ): boolean;

@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isFirstDayOfMonth(date, options) {
-  return (0, _index.toDate)(date, options?.in).getDate() === 1;
+	return (0, _index.toDate)(date, options?.in).getDate() === 1;
 }

@@ -2,226 +2,230 @@
  * Tests for API utility functions
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock fetch
-const mockFetch = vi.fn()
-global.fetch = mockFetch as unknown as typeof fetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch as unknown as typeof fetch;
 
 // Mock API_URL
-const API_URL = 'http://localhost:8000'
+const API_URL = "http://localhost:8000";
 
-describe('API utilities', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+describe("API utilities", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
-  describe('fetchItems', () => {
-    it('should fetch items without filters', async () => {
-      const mockItems = [
-        { id: '1', title: 'Item 1' },
-        { id: '2', title: 'Item 2' },
-      ]
+	describe("fetchItems", () => {
+		it("should fetch items without filters", async () => {
+			const mockItems = [
+				{ id: "1", title: "Item 1" },
+				{ id: "2", title: "Item 2" },
+			];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockItems,
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockItems,
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/items`)
-      const data = await response.json()
+			const response = await fetch(`${API_URL}/api/v1/items`);
+			const data = await response.json();
 
-      expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/api/v1/items`)
-      expect(data).toEqual(mockItems)
-    })
+			expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/api/v1/items`);
+			expect(data).toEqual(mockItems);
+		});
 
-    it('should fetch items with project filter', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
-      })
+		it("should fetch items with project filter", async () => {
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => [],
+			});
 
-      const params = new URLSearchParams({ project_id: 'project-1' })
-      await fetch(`${API_URL}/api/v1/items?${params}`)
+			const params = new URLSearchParams({ project_id: "project-1" });
+			await fetch(`${API_URL}/api/v1/items?${params}`);
 
-      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('project_id=project-1'))
-    })
+			expect(mockFetch).toHaveBeenCalledWith(
+				expect.stringContaining("project_id=project-1"),
+			);
+		});
 
-    it('should handle fetch errors', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      })
+		it("should handle fetch errors", async () => {
+			mockFetch.mockResolvedValueOnce({
+				ok: false,
+				status: 500,
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/items`)
+			const response = await fetch(`${API_URL}/api/v1/items`);
 
-      expect(response.ok).toBe(false)
-      expect(response.status).toBe(500)
-    })
-  })
+			expect(response.ok).toBe(false);
+			expect(response.status).toBe(500);
+		});
+	});
 
-  describe('createItem', () => {
-    it('should create an item', async () => {
-      const newItem = {
-        project_id: 'project-1',
-        title: 'New Item',
-        type: 'feature',
-        status: 'open',
-        priority: 'high',
-      }
+	describe("createItem", () => {
+		it("should create an item", async () => {
+			const newItem = {
+				project_id: "project-1",
+				title: "New Item",
+				type: "feature",
+				status: "open",
+				priority: "high",
+			};
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '1', ...newItem }),
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ id: "1", ...newItem }),
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItem),
-      })
+			const response = await fetch(`${API_URL}/api/v1/items`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(newItem),
+			});
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        `${API_URL}/api/v1/items`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-          }),
-        })
-      )
+			expect(mockFetch).toHaveBeenCalledWith(
+				`${API_URL}/api/v1/items`,
+				expect.objectContaining({
+					method: "POST",
+					headers: expect.objectContaining({
+						"Content-Type": "application/json",
+					}),
+				}),
+			);
 
-      const data = await response.json()
-      expect(data).toEqual({ id: '1', ...newItem })
-    })
-  })
+			const data = await response.json();
+			expect(data).toEqual({ id: "1", ...newItem });
+		});
+	});
 
-  describe('updateItem', () => {
-    it('should update an item', async () => {
-      const updates = {
-        title: 'Updated Title',
-        status: 'in_progress',
-      }
+	describe("updateItem", () => {
+		it("should update an item", async () => {
+			const updates = {
+				title: "Updated Title",
+				status: "in_progress",
+			};
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '1', ...updates }),
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ id: "1", ...updates }),
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/items/1`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      })
+			const response = await fetch(`${API_URL}/api/v1/items/1`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(updates),
+			});
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        `${API_URL}/api/v1/items/1`,
-        expect.objectContaining({
-          method: 'PATCH',
-        })
-      )
+			expect(mockFetch).toHaveBeenCalledWith(
+				`${API_URL}/api/v1/items/1`,
+				expect.objectContaining({
+					method: "PATCH",
+				}),
+			);
 
-      const data: { title: string } = await response.json()
-      expect(data.title).toBe('Updated Title')
-    })
-  })
+			const data: { title: string } = await response.json();
+			expect(data.title).toBe("Updated Title");
+		});
+	});
 
-  describe('deleteItem', () => {
-    it('should delete an item', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-      })
+	describe("deleteItem", () => {
+		it("should delete an item", async () => {
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/items/1`, {
-        method: 'DELETE',
-      })
+			const response = await fetch(`${API_URL}/api/v1/items/1`, {
+				method: "DELETE",
+			});
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        `${API_URL}/api/v1/items/1`,
-        expect.objectContaining({
-          method: 'DELETE',
-        })
-      )
+			expect(mockFetch).toHaveBeenCalledWith(
+				`${API_URL}/api/v1/items/1`,
+				expect.objectContaining({
+					method: "DELETE",
+				}),
+			);
 
-      expect(response.ok).toBe(true)
-    })
-  })
+			expect(response.ok).toBe(true);
+		});
+	});
 
-  describe('projects API', () => {
-    it('should fetch projects', async () => {
-      const mockProjects = [
-        { id: '1', name: 'Project 1' },
-        { id: '2', name: 'Project 2' },
-      ]
+	describe("projects API", () => {
+		it("should fetch projects", async () => {
+			const mockProjects = [
+				{ id: "1", name: "Project 1" },
+				{ id: "2", name: "Project 2" },
+			];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockProjects,
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockProjects,
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/projects`)
-      const data = await response.json()
+			const response = await fetch(`${API_URL}/api/v1/projects`);
+			const data = await response.json();
 
-      expect(data).toEqual(mockProjects)
-    })
+			expect(data).toEqual(mockProjects);
+		});
 
-    it('should create a project', async () => {
-      const newProject = {
-        name: 'New Project',
-        description: 'Description',
-      }
+		it("should create a project", async () => {
+			const newProject = {
+				name: "New Project",
+				description: "Description",
+			};
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '1', ...newProject }),
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ id: "1", ...newProject }),
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/projects`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProject),
-      })
+			const response = await fetch(`${API_URL}/api/v1/projects`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(newProject),
+			});
 
-      const data: { name: string } = await response.json()
-      expect(data.name).toBe('New Project')
-    })
-  })
+			const data: { name: string } = await response.json();
+			expect(data.name).toBe("New Project");
+		});
+	});
 
-  describe('links API', () => {
-    it('should fetch links', async () => {
-      const mockLinks = [{ id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' }]
+	describe("links API", () => {
+		it("should fetch links", async () => {
+			const mockLinks = [
+				{ id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
+			];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockLinks,
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockLinks,
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/links`)
-      const data = await response.json()
+			const response = await fetch(`${API_URL}/api/v1/links`);
+			const data = await response.json();
 
-      expect(data).toEqual(mockLinks)
-    })
+			expect(data).toEqual(mockLinks);
+		});
 
-    it('should create a link', async () => {
-      const newLink = {
-        source_id: 'item-1',
-        target_id: 'item-2',
-        type: 'depends_on',
-      }
+		it("should create a link", async () => {
+			const newLink = {
+				source_id: "item-1",
+				target_id: "item-2",
+				type: "depends_on",
+			};
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '1', ...newLink }),
-      })
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ id: "1", ...newLink }),
+			});
 
-      const response = await fetch(`${API_URL}/api/v1/links`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newLink),
-      })
+			const response = await fetch(`${API_URL}/api/v1/links`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(newLink),
+			});
 
-      const data: { type: string } = await response.json()
-      expect(data.type).toBe('depends_on')
-    })
-  })
-})
+			const data: { type: string } = await response.json();
+			expect(data.type).toBe("depends_on");
+		});
+	});
+});

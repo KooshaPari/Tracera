@@ -3,40 +3,50 @@
 const conversions = require("webidl-conversions");
 const utils = require("./utils.js");
 
-exports.convert = (globalObject, value, { context = "The provided value" } = {}) => {
-  function invokeTheCallbackFunction(event) {
-    const thisArg = utils.tryWrapperForImpl(this);
-    let callResult;
+exports.convert = (
+	globalObject,
+	value,
+	{ context = "The provided value" } = {},
+) => {
+	function invokeTheCallbackFunction(event) {
+		const thisArg = utils.tryWrapperForImpl(this);
+		let callResult;
 
-    if (typeof value === "function") {
-      event = utils.tryWrapperForImpl(event);
+		if (typeof value === "function") {
+			event = utils.tryWrapperForImpl(event);
 
-      callResult = Reflect.apply(value, thisArg, [event]);
-    }
+			callResult = Reflect.apply(value, thisArg, [event]);
+		}
 
-    if (callResult === null || callResult === undefined) {
-      callResult = null;
-    } else {
-      callResult = conversions["DOMString"](callResult, { context: context, globals: globalObject });
-    }
-    return callResult;
-  }
+		if (callResult === null || callResult === undefined) {
+			callResult = null;
+		} else {
+			callResult = conversions["DOMString"](callResult, {
+				context: context,
+				globals: globalObject,
+			});
+		}
+		return callResult;
+	}
 
-  invokeTheCallbackFunction.construct = event => {
-    event = utils.tryWrapperForImpl(event);
+	invokeTheCallbackFunction.construct = (event) => {
+		event = utils.tryWrapperForImpl(event);
 
-    let callResult = Reflect.construct(value, [event]);
+		let callResult = Reflect.construct(value, [event]);
 
-    if (callResult === null || callResult === undefined) {
-      callResult = null;
-    } else {
-      callResult = conversions["DOMString"](callResult, { context: context, globals: globalObject });
-    }
-    return callResult;
-  };
+		if (callResult === null || callResult === undefined) {
+			callResult = null;
+		} else {
+			callResult = conversions["DOMString"](callResult, {
+				context: context,
+				globals: globalObject,
+			});
+		}
+		return callResult;
+	};
 
-  invokeTheCallbackFunction[utils.wrapperSymbol] = value;
-  invokeTheCallbackFunction.objectReference = value;
+	invokeTheCallbackFunction[utils.wrapperSymbol] = value;
+	invokeTheCallbackFunction.objectReference = value;
 
-  return invokeTheCallbackFunction;
+	return invokeTheCallbackFunction;
 };

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/unshift');
+"use strict";
+module.exports = require("../../full/instance/unshift");

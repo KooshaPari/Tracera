@@ -1,5 +1,3 @@
-'use strict';
-
 /*eslint no-console:0*/
 
 /**
@@ -13,14 +11,19 @@
  * @returns {void}
  */
 export default function deprecatedMethod(method, instead, docs) {
-  try {
-    console.warn(
-      'DEPRECATED method `' + method + '`.' +
-      (instead ? ' Use `' + instead + '` instead.' : '') +
-      ' This method will be removed in a future release.');
+	try {
+		console.warn(
+			"DEPRECATED method `" +
+				method +
+				"`." +
+				(instead ? " Use `" + instead + "` instead." : "") +
+				" This method will be removed in a future release.",
+		);
 
-    if (docs) {
-      console.warn('For more information about usage see ' + docs);
-    }
-  } catch (e) { /* Ignore */ }
+		if (docs) {
+			console.warn("For more information about usage see " + docs);
+		}
+	} catch (e) {
+		/* Ignore */
+	}
 }

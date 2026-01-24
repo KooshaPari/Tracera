@@ -4,29 +4,29 @@ import { type WalkEntry } from "./_create_walk_entry.js";
 export type { GlobOptions };
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
-    /** File path where to expand from. */
-    root?: string;
-    /** List of glob patterns to be excluded from the expansion. */
-    exclude?: string[];
-    /**
-     * Whether to include directories in entries.
-     *
-     * @default {true}
-     */
-    includeDirs?: boolean;
-    /**
-     * Whether to follow symbolic links.
-     *
-     * @default {false}
-     */
-    followSymlinks?: boolean;
-    /**
-     * Indicates whether the followed symlink's path should be canonicalized.
-     * This option works only if `followSymlinks` is not `false`.
-     *
-     * @default {true}
-     */
-    canonicalize?: boolean;
+	/** File path where to expand from. */
+	root?: string;
+	/** List of glob patterns to be excluded from the expansion. */
+	exclude?: string[];
+	/**
+	 * Whether to include directories in entries.
+	 *
+	 * @default {true}
+	 */
+	includeDirs?: boolean;
+	/**
+	 * Whether to follow symbolic links.
+	 *
+	 * @default {false}
+	 */
+	followSymlinks?: boolean;
+	/**
+	 * Indicates whether the followed symlink's path should be canonicalized.
+	 * This option works only if `followSymlinks` is not `false`.
+	 *
+	 * @default {true}
+	 */
+	canonicalize?: boolean;
 }
 /**
  * Expand the glob string from the specified `root` directory and yield each
@@ -43,7 +43,19 @@ export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
  * }
  * ```
  */
-export declare function expandGlob(glob: string | URL, { root, exclude, includeDirs, extended, globstar, caseInsensitive, followSymlinks, canonicalize, }?: ExpandGlobOptions): AsyncIterableIterator<WalkEntry>;
+export declare function expandGlob(
+	glob: string | URL,
+	{
+		root,
+		exclude,
+		includeDirs,
+		extended,
+		globstar,
+		caseInsensitive,
+		followSymlinks,
+		canonicalize,
+	}?: ExpandGlobOptions,
+): AsyncIterableIterator<WalkEntry>;
 /**
  * Synchronous version of `expandGlob()`.
  *
@@ -55,4 +67,16 @@ export declare function expandGlob(glob: string | URL, { root, exclude, includeD
  * }
  * ```
  */
-export declare function expandGlobSync(glob: string | URL, { root, exclude, includeDirs, extended, globstar, caseInsensitive, followSymlinks, canonicalize, }?: ExpandGlobOptions): IterableIterator<WalkEntry>;
+export declare function expandGlobSync(
+	glob: string | URL,
+	{
+		root,
+		exclude,
+		includeDirs,
+		extended,
+		globstar,
+		caseInsensitive,
+		followSymlinks,
+		canonicalize,
+	}?: ExpandGlobOptions,
+): IterableIterator<WalkEntry>;

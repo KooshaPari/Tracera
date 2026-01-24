@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
-const index = require('../node/index.cjs');
+const index = require("../node/index.cjs");
 
 const config = {
-    node: index
+	node: index,
 };
 
 module.exports = config;

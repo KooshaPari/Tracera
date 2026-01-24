@@ -26,7 +26,7 @@ import { previousDay } from "./previousDay.js";
  * //=> Mon June 14 2021 00:00:00
  */
 export function previousMonday(date, options) {
-  return previousDay(date, 1, options);
+	return previousDay(date, 1, options);
 }
 
 // Fallback for modularized imports:

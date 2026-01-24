@@ -26,7 +26,7 @@ import { nextDay } from "./nextDay.js";
  * //=> Tue Mar 24 2020 00:00:00
  */
 export function nextTuesday(date, options) {
-  return nextDay(date, 2, options);
+	return nextDay(date, 2, options);
 }
 
 // Fallback for modularized imports:

@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-voronoi` (ESM)
 // See upstream license: https://github.com/d3/d3-voronoi/blob/main/LICENSE
 //

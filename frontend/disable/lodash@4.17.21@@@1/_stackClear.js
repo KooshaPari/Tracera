@@ -1,4 +1,4 @@
-var ListCache = require('./_ListCache');
+var ListCache = require("./_ListCache");
 
 /**
  * Removes all key-value entries from the stack.
@@ -8,8 +8,8 @@ var ListCache = require('./_ListCache');
  * @memberOf Stack
  */
 function stackClear() {
-  this.__data__ = new ListCache;
-  this.size = 0;
+	this.__data__ = new ListCache();
+	this.size = 0;
 }
 
 module.exports = stackClear;

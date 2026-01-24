@@ -15,14 +15,14 @@ var _index5 = require("./ar/_lib/match.cjs");
  * @author Koussay Haj Kacem [@essana3](https://github.com/essana3)
  */
 const ar = (exports.ar = {
-  code: "ar",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 6 /* Saturday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ar",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 6 /* Saturday */,
+		firstWeekContainsDate: 1,
+	},
 });

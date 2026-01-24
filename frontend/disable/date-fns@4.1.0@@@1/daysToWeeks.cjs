@@ -25,7 +25,7 @@ var _index = require("./constants.cjs");
  * //=> 1
  */
 function daysToWeeks(days) {
-  const result = Math.trunc(days / _index.daysInWeek);
-  // Prevent negative zero
-  return result === 0 ? 0 : result;
+	const result = Math.trunc(days / _index.daysInWeek);
+	// Prevent negative zero
+	return result === 0 ? 0 : result;
 }

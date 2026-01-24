@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Creates a new URL by combining the specified URLs
  *
@@ -8,7 +6,7 @@
  * @returns {string} The combined URL
  */
 module.exports = function combineURLs(baseURL, relativeURL) {
-  return relativeURL
-    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
-    : baseURL;
+	return relativeURL
+		? baseURL.replace(/\/+$/, "") + "/" + relativeURL.replace(/^\/+/, "")
+		: baseURL;
 };

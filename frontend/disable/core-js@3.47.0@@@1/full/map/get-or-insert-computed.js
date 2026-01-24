@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/map/get-or-insert-computed');
+"use strict";
+var parent = require("../../actual/map/get-or-insert-computed");
 
 module.exports = parent;

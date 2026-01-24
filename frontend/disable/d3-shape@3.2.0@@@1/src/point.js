@@ -1,7 +1,7 @@
 export function x(p) {
-  return p[0];
+	return p[0];
 }
 
 export function y(p) {
-  return p[1];
+	return p[1];
 }

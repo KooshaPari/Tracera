@@ -18,6 +18,6 @@ import type { DateArg } from "./types.js";
  * //=> true
  */
 export declare function isAfter(
-  date: DateArg<Date> & {},
-  dateToCompare: DateArg<Date> & {},
+	date: DateArg<Date> & {},
+	dateToCompare: DateArg<Date> & {},
 ): boolean;

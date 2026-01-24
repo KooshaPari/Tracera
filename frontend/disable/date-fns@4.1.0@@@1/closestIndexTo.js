@@ -25,32 +25,32 @@ import { toDate } from "./toDate.js";
  * //=> 1
  */
 export function closestIndexTo(dateToCompare, dates) {
-  // [TODO] It would be better to return -1 here rather than undefined, as this
-  // is how JS behaves, but it would be a breaking change, so we need
-  // to consider it for v4.
-  const timeToCompare = +toDate(dateToCompare);
+	// [TODO] It would be better to return -1 here rather than undefined, as this
+	// is how JS behaves, but it would be a breaking change, so we need
+	// to consider it for v4.
+	const timeToCompare = +toDate(dateToCompare);
 
-  if (isNaN(timeToCompare)) return NaN;
+	if (isNaN(timeToCompare)) return NaN;
 
-  let result;
-  let minDistance;
-  dates.forEach((date, index) => {
-    const date_ = toDate(date);
+	let result;
+	let minDistance;
+	dates.forEach((date, index) => {
+		const date_ = toDate(date);
 
-    if (isNaN(+date_)) {
-      result = NaN;
-      minDistance = NaN;
-      return;
-    }
+		if (isNaN(+date_)) {
+			result = NaN;
+			minDistance = NaN;
+			return;
+		}
 
-    const distance = Math.abs(timeToCompare - +date_);
-    if (result == null || distance < minDistance) {
-      result = index;
-      minDistance = distance;
-    }
-  });
+		const distance = Math.abs(timeToCompare - +date_);
+		if (result == null || distance < minDistance) {
+			result = index;
+			minDistance = distance;
+		}
+	});
 
-  return result;
+	return result;
 }
 
 // Fallback for modularized imports:

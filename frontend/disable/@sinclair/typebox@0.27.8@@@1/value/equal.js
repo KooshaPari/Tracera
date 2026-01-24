@@ -1,4 +1,3 @@
-"use strict";
 /*--------------------------------------------------------------------------
 
 @sinclair/typebox/value
@@ -30,51 +29,54 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValueEqual = void 0;
 const is_1 = require("./is");
 var ValueEqual;
-(function (ValueEqual) {
-    function Object(left, right) {
-        if (!is_1.Is.Object(right))
-            return false;
-        const leftKeys = [...globalThis.Object.keys(left), ...globalThis.Object.getOwnPropertySymbols(left)];
-        const rightKeys = [...globalThis.Object.keys(right), ...globalThis.Object.getOwnPropertySymbols(right)];
-        if (leftKeys.length !== rightKeys.length)
-            return false;
-        return leftKeys.every((key) => Equal(left[key], right[key]));
-    }
-    function Date(left, right) {
-        return is_1.Is.Date(right) && left.getTime() === right.getTime();
-    }
-    function Array(left, right) {
-        if (!is_1.Is.Array(right) || left.length !== right.length)
-            return false;
-        return left.every((value, index) => Equal(value, right[index]));
-    }
-    function TypedArray(left, right) {
-        if (!is_1.Is.TypedArray(right) || left.length !== right.length || globalThis.Object.getPrototypeOf(left).constructor.name !== globalThis.Object.getPrototypeOf(right).constructor.name)
-            return false;
-        return left.every((value, index) => Equal(value, right[index]));
-    }
-    function Value(left, right) {
-        return left === right;
-    }
-    function Equal(left, right) {
-        if (is_1.Is.Object(left)) {
-            return Object(left, right);
-        }
-        else if (is_1.Is.Date(left)) {
-            return Date(left, right);
-        }
-        else if (is_1.Is.TypedArray(left)) {
-            return TypedArray(left, right);
-        }
-        else if (is_1.Is.Array(left)) {
-            return Array(left, right);
-        }
-        else if (is_1.Is.Value(left)) {
-            return Value(left, right);
-        }
-        else {
-            throw new Error('ValueEquals: Unable to compare value');
-        }
-    }
-    ValueEqual.Equal = Equal;
-})(ValueEqual = exports.ValueEqual || (exports.ValueEqual = {}));
+((ValueEqual) => {
+	function Object(left, right) {
+		if (!is_1.Is.Object(right)) return false;
+		const leftKeys = [
+			...globalThis.Object.keys(left),
+			...globalThis.Object.getOwnPropertySymbols(left),
+		];
+		const rightKeys = [
+			...globalThis.Object.keys(right),
+			...globalThis.Object.getOwnPropertySymbols(right),
+		];
+		if (leftKeys.length !== rightKeys.length) return false;
+		return leftKeys.every((key) => Equal(left[key], right[key]));
+	}
+	function Date(left, right) {
+		return is_1.Is.Date(right) && left.getTime() === right.getTime();
+	}
+	function Array(left, right) {
+		if (!is_1.Is.Array(right) || left.length !== right.length) return false;
+		return left.every((value, index) => Equal(value, right[index]));
+	}
+	function TypedArray(left, right) {
+		if (
+			!is_1.Is.TypedArray(right) ||
+			left.length !== right.length ||
+			globalThis.Object.getPrototypeOf(left).constructor.name !==
+				globalThis.Object.getPrototypeOf(right).constructor.name
+		)
+			return false;
+		return left.every((value, index) => Equal(value, right[index]));
+	}
+	function Value(left, right) {
+		return left === right;
+	}
+	function Equal(left, right) {
+		if (is_1.Is.Object(left)) {
+			return Object(left, right);
+		} else if (is_1.Is.Date(left)) {
+			return Date(left, right);
+		} else if (is_1.Is.TypedArray(left)) {
+			return TypedArray(left, right);
+		} else if (is_1.Is.Array(left)) {
+			return Array(left, right);
+		} else if (is_1.Is.Value(left)) {
+			return Value(left, right);
+		} else {
+			throw new Error("ValueEquals: Unable to compare value");
+		}
+	}
+	ValueEqual.Equal = Equal;
+})((ValueEqual = exports.ValueEqual || (exports.ValueEqual = {})));

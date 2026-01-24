@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg, DateValues } from "./types.js";
  * The {@link set} function options.
  */
 export interface SetOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name set
  * @category Common Helpers
@@ -39,10 +39,10 @@ export interface SetOptions<DateType extends Date = Date>
  * //=> Mon Sep 01 2014 12:23:45
  */
 export declare function set<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  values: DateValues,
-  options?: SetOptions<ResultDate>,
+	date: DateArg<DateType>,
+	values: DateValues,
+	options?: SetOptions<ResultDate>,
 ): ResultDate;

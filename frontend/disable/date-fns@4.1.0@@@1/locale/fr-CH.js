@@ -18,16 +18,16 @@ import { formatRelative } from "./fr-CH/_lib/formatRelative.js";
  * @author Alex Hoeing [@dcbn](https://github.com/dcbn)
  */
 export const frCH = {
-  code: "fr-CH",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "fr-CH",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

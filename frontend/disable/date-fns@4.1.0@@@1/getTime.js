@@ -18,7 +18,7 @@ import { toDate } from "./toDate.js";
  * //=> 1330515905123
  */
 export function getTime(date) {
-  return +toDate(date);
+	return +toDate(date);
 }
 
 // Fallback for modularized imports:

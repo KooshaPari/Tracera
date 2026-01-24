@@ -1,11 +1,11 @@
 export class AddressError extends Error {
-  parseMessage?: string;
+	parseMessage?: string;
 
-  constructor(message: string, parseMessage?: string) {
-    super(message);
+	constructor(message: string, parseMessage?: string) {
+		super(message);
 
-    this.name = 'AddressError';
+		this.name = "AddressError";
 
-    this.parseMessage = parseMessage;
-  }
+		this.parseMessage = parseMessage;
+	}
 }

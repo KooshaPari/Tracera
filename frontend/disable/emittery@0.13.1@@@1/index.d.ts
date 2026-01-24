@@ -14,7 +14,10 @@ type DatalessEventNames<EventData> = {
 
 declare const listenerAdded: unique symbol;
 declare const listenerRemoved: unique symbol;
-type _OmnipresentEventData = {[listenerAdded]: Emittery.ListenerChangedData; [listenerRemoved]: Emittery.ListenerChangedData};
+type _OmnipresentEventData = {
+	[listenerAdded]: Emittery.ListenerChangedData;
+	[listenerRemoved]: Emittery.ListenerChangedData;
+};
 
 /**
 Emittery can collect and log debug information.
@@ -23,7 +26,12 @@ To enable this feature set the `DEBUG` environment variable to `emittery` or `*`
 
 See API for more information on how debugging works.
 */
-type DebugLogger<EventData, Name extends keyof EventData> = (type: string, debugName: string, eventName?: Name, eventData?: EventData[Name]) => void;
+type DebugLogger<EventData, Name extends keyof EventData> = (
+	type: string,
+	debugName: string,
+	eventName?: Name,
+	eventData?: EventData[Name],
+) => void;
 
 /**
 Configure debug options of an instance.
@@ -173,7 +181,7 @@ emitter.emit('other');
 declare class Emittery<
 	EventData = Record<EventName, any>,
 	AllEventData = EventData & _OmnipresentEventData,
-	DatalessEvents = DatalessEventNames<EventData>
+	DatalessEvents = DatalessEventNames<EventData>,
 > {
 	/**
 	Toggle debug mode for all instances.
@@ -291,8 +299,8 @@ declare class Emittery<
 	*/
 	static mixin(
 		emitteryPropertyName: string | symbol,
-		methodNames?: readonly string[]
-	): <T extends {new (...arguments_: any[]): any}>(klass: T) => T; // eslint-disable-line @typescript-eslint/prefer-function-type
+		methodNames?: readonly string[],
+	): <T extends { new (...arguments_: any[]): any }>(klass: T) => T; // eslint-disable-line @typescript-eslint/prefer-function-type
 
 	/**
 	Subscribe to one or more events.
@@ -321,7 +329,7 @@ declare class Emittery<
 	*/
 	on<Name extends keyof AllEventData>(
 		eventName: Name | Name[],
-		listener: (eventData: AllEventData[Name]) => void | Promise<void>
+		listener: (eventData: AllEventData[Name]) => void | Promise<void>,
 	): Emittery.UnsubscribeFn;
 
 	/**
@@ -408,7 +416,7 @@ declare class Emittery<
 	```
 	*/
 	events<Name extends keyof EventData>(
-		eventName: Name | Name[]
+		eventName: Name | Name[],
 	): AsyncIterableIterator<EventData[Name]>;
 
 	/**
@@ -436,7 +444,7 @@ declare class Emittery<
 	*/
 	off<Name extends keyof AllEventData>(
 		eventName: Name | Name[],
-		listener: (eventData: AllEventData[Name]) => void | Promise<void>
+		listener: (eventData: AllEventData[Name]) => void | Promise<void>,
 	): void;
 
 	/**
@@ -464,7 +472,9 @@ declare class Emittery<
 	emitter.emit('🐶', '🍖'); // Nothing happens
 	```
 	*/
-	once<Name extends keyof AllEventData>(eventName: Name | Name[]): EmitteryOncePromise<AllEventData[Name]>;
+	once<Name extends keyof AllEventData>(
+		eventName: Name | Name[],
+	): EmitteryOncePromise<AllEventData[Name]>;
 
 	/**
 	Trigger an event asynchronously, optionally with some data. Listeners are called in the order they were added, but executed concurrently.
@@ -474,7 +484,7 @@ declare class Emittery<
 	emit<Name extends DatalessEvents>(eventName: Name): Promise<void>;
 	emit<Name extends keyof EventData>(
 		eventName: Name,
-		eventData: EventData[Name]
+		eventData: EventData[Name],
 	): Promise<void>;
 
 	/**
@@ -487,7 +497,7 @@ declare class Emittery<
 	emitSerial<Name extends DatalessEvents>(eventName: Name): Promise<void>;
 	emitSerial<Name extends keyof EventData>(
 		eventName: Name,
-		eventData: EventData[Name]
+		eventData: EventData[Name],
 	): Promise<void>;
 
 	/**
@@ -498,8 +508,8 @@ declare class Emittery<
 	onAny(
 		listener: (
 			eventName: keyof EventData,
-			eventData: EventData[keyof EventData]
-		) => void | Promise<void>
+			eventData: EventData[keyof EventData],
+		) => void | Promise<void>,
 	): Emittery.UnsubscribeFn;
 
 	/**
@@ -537,7 +547,7 @@ declare class Emittery<
 	```
 	*/
 	anyEvent(): AsyncIterableIterator<
-	[keyof EventData, EventData[keyof EventData]]
+		[keyof EventData, EventData[keyof EventData]]
 	>;
 
 	/**
@@ -546,8 +556,8 @@ declare class Emittery<
 	offAny(
 		listener: (
 			eventName: keyof EventData,
-			eventData: EventData[keyof EventData]
-		) => void | Promise<void>
+			eventData: EventData[keyof EventData],
+		) => void | Promise<void>,
 	): void;
 
 	/**
@@ -560,7 +570,9 @@ declare class Emittery<
 	/**
 	The number of listeners for the `eventName` or all events if not specified.
 	*/
-	listenerCount<Name extends keyof EventData>(eventName?: Name | Name[]): number;
+	listenerCount<Name extends keyof EventData>(
+		eventName?: Name | Name[],
+	): number;
 
 	/**
 	Bind the given `methodNames`, or all `Emittery` methods if `methodNames` is not defined, into the `target` object.
@@ -576,7 +588,10 @@ declare class Emittery<
 	object.emit('event');
 	```
 	*/
-	bindMethods(target: Record<string, unknown>, methodNames?: readonly string[]): void;
+	bindMethods(
+		target: Record<string, unknown>,
+		methodNames?: readonly string[],
+	): void;
 }
 
 declare namespace Emittery {

@@ -7,10 +7,10 @@ var _apidomNsJsonSchemaDraft = require("@swagger-api/apidom-ns-json-schema-draft
  * @public
  */
 class DependentRequiredVisitor extends _apidomNsJsonSchemaDraft.FallbackVisitor {
-  ObjectElement(objectElement) {
-    const result = super.enter(objectElement);
-    this.element.classes.push('json-schema-dependentRequired');
-    return result;
-  }
+	ObjectElement(objectElement) {
+		const result = super.enter(objectElement);
+		this.element.classes.push("json-schema-dependentRequired");
+		return result;
+	}
 }
-var _default = exports.default = DependentRequiredVisitor;
+var _default = (exports.default = DependentRequiredVisitor);

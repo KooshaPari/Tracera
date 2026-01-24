@@ -32,8 +32,8 @@ var _index = require("./startOfMinute.cjs");
  * //=> false
  */
 function isSameMinute(laterDate, earlierDate) {
-  return (
-    +(0, _index.startOfMinute)(laterDate) ===
-    +(0, _index.startOfMinute)(earlierDate)
-  );
+	return (
+		+(0, _index.startOfMinute)(laterDate) ===
+		+(0, _index.startOfMinute)(earlierDate)
+	);
 }

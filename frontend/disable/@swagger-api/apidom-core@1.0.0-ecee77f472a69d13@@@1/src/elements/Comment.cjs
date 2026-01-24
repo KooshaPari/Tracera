@@ -7,9 +7,9 @@ var _minim = require("minim");
  * @public
  */
 class Comment extends _minim.StringElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'comment';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "comment";
+	}
 }
-var _default = exports.default = Comment;
+var _default = (exports.default = Comment);

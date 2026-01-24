@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class Tags extends _apidomCore.ArrayElement {
-  static primaryClass = 'tags';
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.classes.push(Tags.primaryClass);
-  }
+	static primaryClass = "tags";
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.classes.push(Tags.primaryClass);
+	}
 }
-var _default = exports.default = Tags;
+var _default = (exports.default = Tags);

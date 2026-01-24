@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link subMilliseconds} function options.
  */
 export interface SubMillisecondsOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * Subtract the specified number of milliseconds from the given date.
  *
@@ -17,10 +17,10 @@ export interface SubMillisecondsOptions<DateType extends Date = Date>
  * @returns The new date with the milliseconds subtracted
  */
 export declare function subMilliseconds<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: SubMillisecondsOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: SubMillisecondsOptions<ResultDate> | undefined,
 ): ResultDate;

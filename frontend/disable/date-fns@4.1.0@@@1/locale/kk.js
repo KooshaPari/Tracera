@@ -12,16 +12,16 @@ import { match } from "./kk/_lib/match.js";
  * @author Nikita Bayev [@drugoi](https://github.com/drugoi)
  */
 export const kk = {
-  code: "kk",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "kk",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

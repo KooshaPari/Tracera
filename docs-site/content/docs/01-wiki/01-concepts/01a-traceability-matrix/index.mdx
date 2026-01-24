@@ -1,0 +1,108 @@
+---
+title: "Traceability Matrix"
+description: "Understanding traceability matrices in TraceRTM"
+keywords: [traceability matrix, requirements, test cases, coverage]
+---
+
+# Traceability Matrix
+
+A traceability matrix shows the relationships between requirements and their verification (test cases).
+
+## What is a Traceability Matrix?
+
+A traceability matrix is a table that maps:
+- **Requirements** (rows) to **Test Cases** (columns)
+- Shows which requirements are verified by which tests
+- Identifies gaps in test coverage
+
+## Matrix Structure
+
+### Basic Matrix
+
+| Requirement | Test Case 1 | Test Case 2 | Test Case 3 |
+|------------|-------------|-------------|-------------|
+| REQ-001 | ✓ | ✓ | |
+| REQ-002 | | ✓ | ✓ |
+| REQ-003 | ✓ | | ✓ |
+
+### Coverage Analysis
+
+- **✓** = Requirement is verified by test case
+- **Empty** = No verification link
+- **Gaps** = Requirements without tests
+
+## Creating a Matrix
+
+### Using TraceRTM
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Export traceability matrix
+matrix = client.export.traceability_matrix(
+    project_id="proj_123",
+    format="excel"
+)
+```
+
+### Matrix Generation
+
+TraceRTM automatically generates matrices from:
+- Items (requirements, test cases)
+- Links between items
+- Status information
+
+## Benefits
+
+### 1. Coverage Analysis
+
+Identify which requirements lack test coverage:
+
+```python
+coverage = client.analysis.get_coverage(requirement_id)
+if coverage.percentage < 100:
+    print(f"Warning: {coverage.percentage}% coverage")
+```
+
+### 2. Impact Analysis
+
+Find all tests affected by requirement changes:
+
+```python
+impact = client.analysis.get_impact(requirement_id)
+print(f"Affected tests: {len(impact.affected_tests)}")
+```
+
+### 3. Compliance
+
+Generate matrices for audits:
+
+```python
+# Export for compliance review
+matrix = client.export.traceability_matrix(
+    project_id=project_id,
+    format="pdf",
+    include_status=True
+)
+```
+
+## Best Practices
+
+### 1. Maintain Links
+
+Keep links up to date as requirements and tests change.
+
+### 2. Regular Reviews
+
+Review matrices regularly to identify gaps.
+
+### 3. Automated Generation
+
+Use TraceRTM API to generate matrices automatically.
+
+## Related Documentation
+
+- [Requirements Traceability](/docs/concepts/traceability) - Traceability concepts
+- [Export API](/docs/api-reference/rest-api/batch-operations) - Export functionality

@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/array/some');
+"use strict";
+var parent = require("../../actual/array/some");
 
 module.exports = parent;

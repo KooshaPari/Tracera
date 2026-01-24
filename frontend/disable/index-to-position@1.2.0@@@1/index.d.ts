@@ -31,5 +31,5 @@ Convert a string index to its line and column position.
 export default function indexToPosition(
 	text: string,
 	index: number,
-	options?: Options
-): {line: number; column: number};
+	options?: Options,
+): { line: number; column: number };

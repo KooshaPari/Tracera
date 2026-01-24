@@ -1,6 +1,4 @@
-'use strict';
-
-var iconvLite = require('iconv-lite');
+var iconvLite = require("iconv-lite");
 
 // Expose to the world
 module.exports.convert = convert;
@@ -14,36 +12,36 @@ module.exports.convert = convert;
  * @return {Buffer} Encoded string
  */
 function convert(str, to, from) {
-    from = checkEncoding(from || 'UTF-8');
-    to = checkEncoding(to || 'UTF-8');
-    str = str || '';
+	from = checkEncoding(from || "UTF-8");
+	to = checkEncoding(to || "UTF-8");
+	str = str || "";
 
-    var result;
+	var result;
 
-    if (from !== 'UTF-8' && typeof str === 'string') {
-        str = Buffer.from(str, 'binary');
-    }
+	if (from !== "UTF-8" && typeof str === "string") {
+		str = Buffer.from(str, "binary");
+	}
 
-    if (from === to) {
-        if (typeof str === 'string') {
-            result = Buffer.from(str);
-        } else {
-            result = str;
-        }
-    } else {
-        try {
-            result = convertIconvLite(str, to, from);
-        } catch (E) {
-            console.error(E);
-            result = str;
-        }
-    }
+	if (from === to) {
+		if (typeof str === "string") {
+			result = Buffer.from(str);
+		} else {
+			result = str;
+		}
+	} else {
+		try {
+			result = convertIconvLite(str, to, from);
+		} catch (E) {
+			console.error(E);
+			result = str;
+		}
+	}
 
-    if (typeof result === 'string') {
-        result = Buffer.from(result, 'utf-8');
-    }
+	if (typeof result === "string") {
+		result = Buffer.from(result, "utf-8");
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -55,13 +53,13 @@ function convert(str, to, from) {
  * @return {Buffer} Encoded string
  */
 function convertIconvLite(str, to, from) {
-    if (to === 'UTF-8') {
-        return iconvLite.decode(str, from);
-    } else if (from === 'UTF-8') {
-        return iconvLite.encode(str, to);
-    } else {
-        return iconvLite.encode(iconvLite.decode(str, from), to);
-    }
+	if (to === "UTF-8") {
+		return iconvLite.decode(str, from);
+	} else if (from === "UTF-8") {
+		return iconvLite.encode(str, to);
+	} else {
+		return iconvLite.encode(iconvLite.decode(str, from), to);
+	}
 }
 
 /**
@@ -71,13 +69,13 @@ function convertIconvLite(str, to, from) {
  * @return {String} Character set name
  */
 function checkEncoding(name) {
-    return (name || '')
-        .toString()
-        .trim()
-        .replace(/^latin[\-_]?(\d+)$/i, 'ISO-8859-$1')
-        .replace(/^win(?:dows)?[\-_]?(\d+)$/i, 'WINDOWS-$1')
-        .replace(/^utf[\-_]?(\d+)$/i, 'UTF-$1')
-        .replace(/^ks_c_5601\-1987$/i, 'CP949')
-        .replace(/^us[\-_]?ascii$/i, 'ASCII')
-        .toUpperCase();
+	return (name || "")
+		.toString()
+		.trim()
+		.replace(/^latin[-_]?(\d+)$/i, "ISO-8859-$1")
+		.replace(/^win(?:dows)?[-_]?(\d+)$/i, "WINDOWS-$1")
+		.replace(/^utf[-_]?(\d+)$/i, "UTF-$1")
+		.replace(/^ks_c_5601-1987$/i, "CP949")
+		.replace(/^us[-_]?ascii$/i, "ASCII")
+		.toUpperCase();
 }

@@ -15,14 +15,14 @@ var _index5 = require("./en-GB/_lib/formatLong.cjs");
  * @author Tetiana [@tan75](https://github.com/tan75)
  */
 const enIE = (exports.enIE = {
-  code: "en-IE",
-  formatDistance: _index.formatDistance,
-  formatLong: _index5.formatLong,
-  formatRelative: _index2.formatRelative,
-  localize: _index3.localize,
-  match: _index4.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "en-IE",
+	formatDistance: _index.formatDistance,
+	formatLong: _index5.formatLong,
+	formatRelative: _index2.formatRelative,
+	localize: _index3.localize,
+	match: _index4.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 });

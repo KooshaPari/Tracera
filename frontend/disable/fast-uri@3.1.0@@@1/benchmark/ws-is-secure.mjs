@@ -1,65 +1,83 @@
-import { Bench } from 'tinybench'
-import { wsIsSecure } from '../lib/schemes.js'
+import { Bench } from "tinybench";
+import { wsIsSecure } from "../lib/schemes.js";
 
-const benchWsIsSecure = new Bench({ name: 'wsIsSecure' })
+const benchWsIsSecure = new Bench({ name: "wsIsSecure" });
 
 const wsComponentAttributeSecureTrue = {
-  scheme: 'ws',
-  secure: true,
-}
+	scheme: "ws",
+	secure: true,
+};
 
 const wsComponentAttributeSecureFalse = {
-  scheme: 'ws',
-  secure: false,
-}
+	scheme: "ws",
+	secure: false,
+};
 
 const wssComponent = {
-  scheme: 'wss',
-}
+	scheme: "wss",
+};
 
 const wssComponentMixedCase = {
-  scheme: 'Wss',
-}
+	scheme: "Wss",
+};
 
 const wssComponentUpperCase = {
-  scheme: 'WSS',
-}
+	scheme: "WSS",
+};
 
 const httpComponent = {
-  scheme: 'http',
-}
+	scheme: "http",
+};
 
-console.assert(wsIsSecure(wsComponentAttributeSecureTrue) === true, 'wsComponentAttributeSecureTrue should be secure')
-console.assert(wsIsSecure(wsComponentAttributeSecureFalse) === false, 'wsComponentAttributeSecureFalse should not be secure')
-console.assert(wsIsSecure(wssComponent) === true, 'wssComponent should be secure')
-console.assert(wsIsSecure(wssComponentMixedCase) === true, 'wssComponentMixedCase should be secure')
-console.assert(wsIsSecure(wssComponentUpperCase) === true, 'wssComponentUpperCase should be secure')
-console.assert(wsIsSecure(httpComponent) === false, 'httpComponent should not be secure')
+console.assert(
+	wsIsSecure(wsComponentAttributeSecureTrue) === true,
+	"wsComponentAttributeSecureTrue should be secure",
+);
+console.assert(
+	wsIsSecure(wsComponentAttributeSecureFalse) === false,
+	"wsComponentAttributeSecureFalse should not be secure",
+);
+console.assert(
+	wsIsSecure(wssComponent) === true,
+	"wssComponent should be secure",
+);
+console.assert(
+	wsIsSecure(wssComponentMixedCase) === true,
+	"wssComponentMixedCase should be secure",
+);
+console.assert(
+	wsIsSecure(wssComponentUpperCase) === true,
+	"wssComponentUpperCase should be secure",
+);
+console.assert(
+	wsIsSecure(httpComponent) === false,
+	"httpComponent should not be secure",
+);
 
-benchWsIsSecure.add(JSON.stringify(wsComponentAttributeSecureFalse), function () {
-  wsIsSecure(wsComponentAttributeSecureFalse)
-})
+benchWsIsSecure.add(JSON.stringify(wsComponentAttributeSecureFalse), () => {
+	wsIsSecure(wsComponentAttributeSecureFalse);
+});
 
-benchWsIsSecure.add(JSON.stringify(wsComponentAttributeSecureTrue), function () {
-  wsIsSecure(wsComponentAttributeSecureTrue)
-})
+benchWsIsSecure.add(JSON.stringify(wsComponentAttributeSecureTrue), () => {
+	wsIsSecure(wsComponentAttributeSecureTrue);
+});
 
-benchWsIsSecure.add(JSON.stringify(wssComponent), function () {
-  wsIsSecure(wssComponent)
-})
+benchWsIsSecure.add(JSON.stringify(wssComponent), () => {
+	wsIsSecure(wssComponent);
+});
 
-benchWsIsSecure.add(JSON.stringify(wssComponentMixedCase), function () {
-  wsIsSecure(wssComponentMixedCase)
-})
+benchWsIsSecure.add(JSON.stringify(wssComponentMixedCase), () => {
+	wsIsSecure(wssComponentMixedCase);
+});
 
-benchWsIsSecure.add(JSON.stringify(wssComponentUpperCase), function () {
-  wsIsSecure(wssComponentUpperCase)
-})
+benchWsIsSecure.add(JSON.stringify(wssComponentUpperCase), () => {
+	wsIsSecure(wssComponentUpperCase);
+});
 
-benchWsIsSecure.add(JSON.stringify(httpComponent), function () {
-  wsIsSecure(httpComponent)
-})
+benchWsIsSecure.add(JSON.stringify(httpComponent), () => {
+	wsIsSecure(httpComponent);
+});
 
-await benchWsIsSecure.run()
-console.log(benchWsIsSecure.name)
-console.table(benchWsIsSecure.table())
+await benchWsIsSecure.run();
+console.log(benchWsIsSecure.name);
+console.table(benchWsIsSecure.table());

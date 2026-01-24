@@ -5,4 +5,8 @@
  * @param selector the selector to match
  * @param stopAt stop traversing when this element is found
  */
-export default function closest(node: Element, selector: string, stopAt?: Element): Element | null;
+export default function closest(
+	node: Element,
+	selector: string,
+	stopAt?: Element,
+): Element | null;

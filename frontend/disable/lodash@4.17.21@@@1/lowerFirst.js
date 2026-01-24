@@ -1,4 +1,4 @@
-var createCaseFirst = require('./_createCaseFirst');
+var createCaseFirst = require("./_createCaseFirst");
 
 /**
  * Converts the first character of `string` to lower case.
@@ -17,6 +17,6 @@ var createCaseFirst = require('./_createCaseFirst');
  * _.lowerFirst('FRED');
  * // => 'fRED'
  */
-var lowerFirst = createCaseFirst('toLowerCase');
+var lowerFirst = createCaseFirst("toLowerCase");
 
 module.exports = lowerFirst;

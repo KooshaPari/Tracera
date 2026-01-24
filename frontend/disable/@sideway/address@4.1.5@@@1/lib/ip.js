@@ -1,63 +1,79 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
 
-const Assert = require('@hapi/hoek/lib/assert');
-
-const Uri = require('./uri');
-
+const Uri = require("./uri");
 
 const internals = {};
 
+exports.regex = (options = {}) => {
+	// CIDR
 
-exports.regex = function (options = {}) {
+	Assert(
+		options.cidr === undefined || typeof options.cidr === "string",
+		"options.cidr must be a string",
+	);
+	const cidr = options.cidr ? options.cidr.toLowerCase() : "optional";
+	Assert(
+		["required", "optional", "forbidden"].includes(cidr),
+		"options.cidr must be one of required, optional, forbidden",
+	);
 
-    // CIDR
+	// Versions
 
-    Assert(options.cidr === undefined || typeof options.cidr === 'string', 'options.cidr must be a string');
-    const cidr = options.cidr ? options.cidr.toLowerCase() : 'optional';
-    Assert(['required', 'optional', 'forbidden'].includes(cidr), 'options.cidr must be one of required, optional, forbidden');
+	Assert(
+		options.version === undefined ||
+			typeof options.version === "string" ||
+			Array.isArray(options.version),
+		"options.version must be a string or an array of string",
+	);
+	let versions = options.version || ["ipv4", "ipv6", "ipvfuture"];
+	if (!Array.isArray(versions)) {
+		versions = [versions];
+	}
 
-    // Versions
+	Assert(
+		versions.length >= 1,
+		"options.version must have at least 1 version specified",
+	);
 
-    Assert(options.version === undefined || typeof options.version === 'string' || Array.isArray(options.version), 'options.version must be a string or an array of string');
-    let versions = options.version || ['ipv4', 'ipv6', 'ipvfuture'];
-    if (!Array.isArray(versions)) {
-        versions = [versions];
-    }
+	for (let i = 0; i < versions.length; ++i) {
+		Assert(
+			typeof versions[i] === "string",
+			"options.version must only contain strings",
+		);
+		versions[i] = versions[i].toLowerCase();
+		Assert(
+			["ipv4", "ipv6", "ipvfuture"].includes(versions[i]),
+			"options.version contains unknown version " +
+				versions[i] +
+				" - must be one of ipv4, ipv6, ipvfuture",
+		);
+	}
 
-    Assert(versions.length >= 1, 'options.version must have at least 1 version specified');
+	versions = Array.from(new Set(versions));
 
-    for (let i = 0; i < versions.length; ++i) {
-        Assert(typeof versions[i] === 'string', 'options.version must only contain strings');
-        versions[i] = versions[i].toLowerCase();
-        Assert(['ipv4', 'ipv6', 'ipvfuture'].includes(versions[i]), 'options.version contains unknown version ' + versions[i] + ' - must be one of ipv4, ipv6, ipvfuture');
-    }
+	// Regex
 
-    versions = Array.from(new Set(versions));
+	const parts = versions.map((version) => {
+		// Forbidden
 
-    // Regex
+		if (cidr === "forbidden") {
+			return Uri.ip[version];
+		}
 
-    const parts = versions.map((version) => {
+		// Required
 
-        // Forbidden
+		const cidrpart = `\\/${version === "ipv4" ? Uri.ip.v4Cidr : Uri.ip.v6Cidr}`;
 
-        if (cidr === 'forbidden') {
-            return Uri.ip[version];
-        }
+		if (cidr === "required") {
+			return `${Uri.ip[version]}${cidrpart}`;
+		}
 
-        // Required
+		// Optional
 
-        const cidrpart = `\\/${version === 'ipv4' ? Uri.ip.v4Cidr : Uri.ip.v6Cidr}`;
+		return `${Uri.ip[version]}(?:${cidrpart})?`;
+	});
 
-        if (cidr === 'required') {
-            return `${Uri.ip[version]}${cidrpart}`;
-        }
-
-        // Optional
-
-        return `${Uri.ip[version]}(?:${cidrpart})?`;
-    });
-
-    const raw = `(?:${parts.join('|')})`;
-    const regex = new RegExp(`^${raw}$`);
-    return { cidr, versions, regex, raw };
+	const raw = `(?:${parts.join("|")})`;
+	const regex = new RegExp(`^${raw}$`);
+	return { cidr, versions, regex, raw };
 };

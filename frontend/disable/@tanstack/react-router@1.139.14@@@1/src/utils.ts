@@ -1,42 +1,42 @@
-import * as React from 'react'
+import * as React from "react";
 
 export function useStableCallback<T extends (...args: Array<any>) => any>(
-  fn: T,
+	fn: T,
 ): T {
-  const fnRef = React.useRef(fn)
-  fnRef.current = fn
+	const fnRef = React.useRef(fn);
+	fnRef.current = fn;
 
-  const ref = React.useRef((...args: Array<any>) => fnRef.current(...args))
-  return ref.current as T
+	const ref = React.useRef((...args: Array<any>) => fnRef.current(...args));
+	return ref.current as T;
 }
 
 export const useLayoutEffect =
-  typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect
+	typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
 
 /**
  * Taken from https://www.developerway.com/posts/implementing-advanced-use-previous-hook#part3
  */
 export function usePrevious<T>(value: T): T | null {
-  // initialise the ref with previous and current values
-  const ref = React.useRef<{ value: T; prev: T | null }>({
-    value: value,
-    prev: null,
-  })
+	// initialise the ref with previous and current values
+	const ref = React.useRef<{ value: T; prev: T | null }>({
+		value: value,
+		prev: null,
+	});
 
-  const current = ref.current.value
+	const current = ref.current.value;
 
-  // if the value passed into hook doesn't match what we store as "current"
-  // move the "current" to the "previous"
-  // and store the passed value as "current"
-  if (value !== current) {
-    ref.current = {
-      value: value,
-      prev: current,
-    }
-  }
+	// if the value passed into hook doesn't match what we store as "current"
+	// move the "current" to the "previous"
+	// and store the passed value as "current"
+	if (value !== current) {
+		ref.current = {
+			value: value,
+			prev: current,
+		};
+	}
 
-  // return the previous value only
-  return ref.current.prev
+	// return the previous value only
+	return ref.current.prev;
 }
 
 /**
@@ -65,30 +65,30 @@ export function usePrevious<T>(value: T): T | null {
  * ```
  */
 export function useIntersectionObserver<T extends Element>(
-  ref: React.RefObject<T | null>,
-  callback: (entry: IntersectionObserverEntry | undefined) => void,
-  intersectionObserverOptions: IntersectionObserverInit = {},
-  options: { disabled?: boolean } = {},
+	ref: React.RefObject<T | null>,
+	callback: (entry: IntersectionObserverEntry | undefined) => void,
+	intersectionObserverOptions: IntersectionObserverInit = {},
+	options: { disabled?: boolean } = {},
 ) {
-  React.useEffect(() => {
-    if (
-      !ref.current ||
-      options.disabled ||
-      typeof IntersectionObserver !== 'function'
-    ) {
-      return
-    }
+	React.useEffect(() => {
+		if (
+			!ref.current ||
+			options.disabled ||
+			typeof IntersectionObserver !== "function"
+		) {
+			return;
+		}
 
-    const observer = new IntersectionObserver(([entry]) => {
-      callback(entry)
-    }, intersectionObserverOptions)
+		const observer = new IntersectionObserver(([entry]) => {
+			callback(entry);
+		}, intersectionObserverOptions);
 
-    observer.observe(ref.current)
+		observer.observe(ref.current);
 
-    return () => {
-      observer.disconnect()
-    }
-  }, [callback, intersectionObserverOptions, options.disabled, ref])
+		return () => {
+			observer.disconnect();
+		};
+	}, [callback, intersectionObserverOptions, options.disabled, ref]);
 }
 
 /**
@@ -105,7 +105,7 @@ export function useIntersectionObserver<T extends Element>(
  * ```
  */
 export function useForwardedRef<T>(ref?: React.ForwardedRef<T>) {
-  const innerRef = React.useRef<T>(null)
-  React.useImperativeHandle(ref, () => innerRef.current!, [])
-  return innerRef
+	const innerRef = React.useRef<T>(null);
+	React.useImperativeHandle(ref, () => innerRef.current!, []);
+	return innerRef;
 }

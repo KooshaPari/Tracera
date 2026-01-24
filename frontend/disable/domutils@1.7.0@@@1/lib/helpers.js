@@ -1,7 +1,10 @@
 // removeSubsets
 // Given an array of nodes, remove any member that is contained by another.
-exports.removeSubsets = function(nodes) {
-	var idx = nodes.length, node, ancestor, replace;
+exports.removeSubsets = (nodes) => {
+	var idx = nodes.length,
+		node,
+		ancestor,
+		replace;
 
 	// Check if each node (or one of its ancestors) is already contained in the
 	// array.
@@ -36,7 +39,7 @@ var POSITION = {
 	PRECEDING: 2,
 	FOLLOWING: 4,
 	CONTAINS: 8,
-	CONTAINED_BY: 16
+	CONTAINED_BY: 16,
 };
 
 // Compare the position of one node against another node in any other document.
@@ -61,7 +64,7 @@ var POSITION = {
 // @return {Number} A bitmask describing the input nodes' relative position.
 //         See http://dom.spec.whatwg.org/#dom-node-comparedocumentposition for
 //         a description of these values.
-var comparePos = exports.compareDocumentPosition = function(nodeA, nodeB) {
+var comparePos = (exports.compareDocumentPosition = (nodeA, nodeB) => {
 	var aParents = [];
 	var bParents = [];
 	var current, sharedParent, siblings, aSibling, bSibling, idx;
@@ -106,7 +109,7 @@ var comparePos = exports.compareDocumentPosition = function(nodeA, nodeB) {
 		}
 		return POSITION.PRECEDING;
 	}
-};
+});
 
 // Sort an array of nodes based on their relative position in the document and
 // remove any duplicate nodes. If the array contains nodes that do not belong
@@ -115,8 +118,10 @@ var comparePos = exports.compareDocumentPosition = function(nodeA, nodeB) {
 // @argument {Array} nodes Array of DOM nodes
 //
 // @returns {Array} collection of unique nodes, sorted in document order
-exports.uniqueSort = function(nodes) {
-	var idx = nodes.length, node, position;
+exports.uniqueSort = (nodes) => {
+	var idx = nodes.length,
+		node,
+		position;
 
 	nodes = nodes.slice();
 
@@ -127,7 +132,7 @@ exports.uniqueSort = function(nodes) {
 			nodes.splice(idx, 1);
 		}
 	}
-	nodes.sort(function(a, b) {
+	nodes.sort((a, b) => {
 		var relative = comparePos(a, b);
 		if (relative & POSITION.PRECEDING) {
 			return -1;

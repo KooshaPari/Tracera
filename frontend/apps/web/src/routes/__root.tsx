@@ -1,68 +1,102 @@
-import {
-  createRootRoute,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from '@tanstack/react-router'
-import type { ReactNode } from 'react'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-// import { TooltipProvider } from '@tracertm/ui/components/Tooltip'
-// import { Toaster } from '@tracertm/ui/components/Toaster'
-import { CommandPalette } from '@/components/CommandPalette'
-import '@/styles/globals.css'
+import { createRootRoute, Outlet, useRouter } from "@tanstack/react-router";
+import { CommandPalette } from "@/components/CommandPalette";
 
-interface RootComponentProps {
-  children?: ReactNode
+// Not found component for 404 pages
+function NotFoundComponent() {
+	return (
+		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+			<div className="max-w-md text-center space-y-4">
+				<h1 className="text-6xl font-bold text-muted-foreground">404</h1>
+				<h2 className="text-2xl font-semibold">Page Not Found</h2>
+				<p className="text-muted-foreground">
+					The page you're looking for doesn't exist or has been moved.
+				</p>
+				<a
+					href="/"
+					className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+				>
+					Go Home
+				</a>
+			</div>
+		</div>
+	);
 }
 
-const RootComponent = RootComponentProps => {
-  return (
-    <html lang="en" className="dark">
-      <head>
-        <HeadContent />
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-      </head>
-      <body className="font-sans antialiased">
-        <div className="relative flex min-h-screen bg-background">
-          <div className="flex-1">
-            <CommandPalette />
-            <Outlet />
-          </div>
-        </div>
-        <ReactQueryDevtools initialIsOpen={false} />
-        <Scripts />
-      </body>
-    </html>
-  )
+// Root error component to handle uncaught errors
+function RootErrorComponent({ error }: { error: Error }) {
+	const router = useRouter();
+
+	return (
+		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+			<div className="max-w-md text-center space-y-4">
+				<h1 className="text-2xl font-bold text-destructive">
+					Something went wrong
+				</h1>
+				<p className="text-muted-foreground">
+					{error.message === "fetch failed"
+						? "Unable to connect to the API server. Please ensure the backend is running."
+						: error.message}
+				</p>
+				<div className="flex justify-center gap-4">
+					<button
+						type="button"
+						onClick={() => router.invalidate()}
+						className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+					>
+						Retry
+					</button>
+					<button
+						type="button"
+						onClick={() => (window.location.href = "/")}
+						className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90"
+					>
+						Go Home
+					</button>
+				</div>
+			</div>
+		</div>
+	);
 }
+
+const RootComponent = () => {
+	return (
+		<div className="relative flex min-h-screen bg-background">
+			<div className="flex-1">
+				<CommandPalette />
+				<Outlet />
+			</div>
+		</div>
+	);
+};
 
 export const Route = createRootRoute({
-  component: RootComponent,
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'TraceRTM - Multi-View Requirements Traceability System',
-      },
-      {
-        name: 'description',
-        content: 'Enterprise-grade requirements traceability and project management system with 16 professional views and intelligent CRUD operations.',
-      },
-    ],
-    links: [
-      {
-        rel: 'icon',
-        href: '/favicon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-  }),
-})
+	component: RootComponent,
+	errorComponent: RootErrorComponent,
+	notFoundComponent: NotFoundComponent,
+	head: () => ({
+		meta: [
+			{
+				charSet: "utf-8",
+			},
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1",
+			},
+			{
+				title: "TraceRTM - Multi-View Requirements Traceability System",
+			},
+			{
+				name: "description",
+				content:
+					"Enterprise-grade requirements traceability and project management system with 16 professional views and intelligent CRUD operations.",
+			},
+		],
+		links: [
+			{
+				rel: "icon",
+				href: "/favicon.svg",
+				type: "image/svg+xml",
+			},
+		],
+	}),
+});

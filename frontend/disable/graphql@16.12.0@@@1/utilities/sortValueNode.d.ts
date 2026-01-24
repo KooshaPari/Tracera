@@ -1,4 +1,4 @@
-import type { ValueNode } from '../language/ast';
+import type { ValueNode } from "../language/ast";
 /**
  * Sort ValueNode.
  *

@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> 1
  */
 export function getMonth(date, options) {
-  return toDate(date, options?.in).getMonth();
+	return toDate(date, options?.in).getMonth();
 }
 
 // Fallback for modularized imports:

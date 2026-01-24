@@ -11,5 +11,5 @@ import type { DateArg } from "../types.js";
  * This function returns the timezone offset in milliseconds that takes seconds in account.
  */
 export declare function getTimezoneOffsetInMilliseconds(
-  date: DateArg<Date> & {},
+	date: DateArg<Date> & {},
 ): number;

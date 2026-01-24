@@ -1,25 +1,45 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
-exports.utcWednesdays = exports.utcWednesday = exports.utcTuesdays = exports.utcTuesday = exports.utcThursdays = exports.utcThursday = exports.utcSundays = exports.utcSunday = exports.utcSaturdays = exports.utcSaturday = exports.utcMondays = exports.utcMonday = exports.utcFridays = exports.utcFriday = void 0;
+exports.utcWednesdays =
+	exports.utcWednesday =
+	exports.utcTuesdays =
+	exports.utcTuesday =
+	exports.utcThursdays =
+	exports.utcThursday =
+	exports.utcSundays =
+	exports.utcSunday =
+	exports.utcSaturdays =
+	exports.utcSaturday =
+	exports.utcMondays =
+	exports.utcMonday =
+	exports.utcFridays =
+	exports.utcFriday =
+		void 0;
 
 var _interval = _interopRequireDefault(require("./interval.js"));
 
 var _duration = require("./duration.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function utcWeekday(i) {
-  return (0, _interval.default)(function (date) {
-    date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
-    date.setUTCHours(0, 0, 0, 0);
-  }, function (date, step) {
-    date.setUTCDate(date.getUTCDate() + step * 7);
-  }, function (start, end) {
-    return (end - start) / _duration.durationWeek;
-  });
+	return (0, _interval.default)(
+		function (date) {
+			date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 7 - i) % 7));
+			date.setUTCHours(0, 0, 0, 0);
+		},
+		function (date, step) {
+			date.setUTCDate(date.getUTCDate() + step * 7);
+		},
+		function (start, end) {
+			return (end - start) / _duration.durationWeek;
+		},
+	);
 }
 
 var utcSunday = utcWeekday(0);

@@ -1,5 +1,5 @@
-var baseGt = require('./_baseGt'),
-    createRelationalOperation = require('./_createRelationalOperation');
+var baseGt = require("./_baseGt"),
+	createRelationalOperation = require("./_createRelationalOperation");
 
 /**
  * Checks if `value` is greater than `other`.

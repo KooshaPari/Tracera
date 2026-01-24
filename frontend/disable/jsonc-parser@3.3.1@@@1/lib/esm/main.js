@@ -2,45 +2,47 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
-import * as formatter from './impl/format';
-import * as edit from './impl/edit';
-import * as scanner from './impl/scanner';
-import * as parser from './impl/parser';
+
+import * as edit from "./impl/edit";
+import * as formatter from "./impl/format";
+import * as parser from "./impl/parser";
+import * as scanner from "./impl/scanner";
 /**
  * Creates a JSON scanner on the given text.
  * If ignoreTrivia is set, whitespaces or comments are ignored.
  */
 export const createScanner = scanner.createScanner;
 export var ScanError;
-(function (ScanError) {
-    ScanError[ScanError["None"] = 0] = "None";
-    ScanError[ScanError["UnexpectedEndOfComment"] = 1] = "UnexpectedEndOfComment";
-    ScanError[ScanError["UnexpectedEndOfString"] = 2] = "UnexpectedEndOfString";
-    ScanError[ScanError["UnexpectedEndOfNumber"] = 3] = "UnexpectedEndOfNumber";
-    ScanError[ScanError["InvalidUnicode"] = 4] = "InvalidUnicode";
-    ScanError[ScanError["InvalidEscapeCharacter"] = 5] = "InvalidEscapeCharacter";
-    ScanError[ScanError["InvalidCharacter"] = 6] = "InvalidCharacter";
+((ScanError) => {
+	ScanError[(ScanError["None"] = 0)] = "None";
+	ScanError[(ScanError["UnexpectedEndOfComment"] = 1)] =
+		"UnexpectedEndOfComment";
+	ScanError[(ScanError["UnexpectedEndOfString"] = 2)] = "UnexpectedEndOfString";
+	ScanError[(ScanError["UnexpectedEndOfNumber"] = 3)] = "UnexpectedEndOfNumber";
+	ScanError[(ScanError["InvalidUnicode"] = 4)] = "InvalidUnicode";
+	ScanError[(ScanError["InvalidEscapeCharacter"] = 5)] =
+		"InvalidEscapeCharacter";
+	ScanError[(ScanError["InvalidCharacter"] = 6)] = "InvalidCharacter";
 })(ScanError || (ScanError = {}));
 export var SyntaxKind;
-(function (SyntaxKind) {
-    SyntaxKind[SyntaxKind["OpenBraceToken"] = 1] = "OpenBraceToken";
-    SyntaxKind[SyntaxKind["CloseBraceToken"] = 2] = "CloseBraceToken";
-    SyntaxKind[SyntaxKind["OpenBracketToken"] = 3] = "OpenBracketToken";
-    SyntaxKind[SyntaxKind["CloseBracketToken"] = 4] = "CloseBracketToken";
-    SyntaxKind[SyntaxKind["CommaToken"] = 5] = "CommaToken";
-    SyntaxKind[SyntaxKind["ColonToken"] = 6] = "ColonToken";
-    SyntaxKind[SyntaxKind["NullKeyword"] = 7] = "NullKeyword";
-    SyntaxKind[SyntaxKind["TrueKeyword"] = 8] = "TrueKeyword";
-    SyntaxKind[SyntaxKind["FalseKeyword"] = 9] = "FalseKeyword";
-    SyntaxKind[SyntaxKind["StringLiteral"] = 10] = "StringLiteral";
-    SyntaxKind[SyntaxKind["NumericLiteral"] = 11] = "NumericLiteral";
-    SyntaxKind[SyntaxKind["LineCommentTrivia"] = 12] = "LineCommentTrivia";
-    SyntaxKind[SyntaxKind["BlockCommentTrivia"] = 13] = "BlockCommentTrivia";
-    SyntaxKind[SyntaxKind["LineBreakTrivia"] = 14] = "LineBreakTrivia";
-    SyntaxKind[SyntaxKind["Trivia"] = 15] = "Trivia";
-    SyntaxKind[SyntaxKind["Unknown"] = 16] = "Unknown";
-    SyntaxKind[SyntaxKind["EOF"] = 17] = "EOF";
+((SyntaxKind) => {
+	SyntaxKind[(SyntaxKind["OpenBraceToken"] = 1)] = "OpenBraceToken";
+	SyntaxKind[(SyntaxKind["CloseBraceToken"] = 2)] = "CloseBraceToken";
+	SyntaxKind[(SyntaxKind["OpenBracketToken"] = 3)] = "OpenBracketToken";
+	SyntaxKind[(SyntaxKind["CloseBracketToken"] = 4)] = "CloseBracketToken";
+	SyntaxKind[(SyntaxKind["CommaToken"] = 5)] = "CommaToken";
+	SyntaxKind[(SyntaxKind["ColonToken"] = 6)] = "ColonToken";
+	SyntaxKind[(SyntaxKind["NullKeyword"] = 7)] = "NullKeyword";
+	SyntaxKind[(SyntaxKind["TrueKeyword"] = 8)] = "TrueKeyword";
+	SyntaxKind[(SyntaxKind["FalseKeyword"] = 9)] = "FalseKeyword";
+	SyntaxKind[(SyntaxKind["StringLiteral"] = 10)] = "StringLiteral";
+	SyntaxKind[(SyntaxKind["NumericLiteral"] = 11)] = "NumericLiteral";
+	SyntaxKind[(SyntaxKind["LineCommentTrivia"] = 12)] = "LineCommentTrivia";
+	SyntaxKind[(SyntaxKind["BlockCommentTrivia"] = 13)] = "BlockCommentTrivia";
+	SyntaxKind[(SyntaxKind["LineBreakTrivia"] = 14)] = "LineBreakTrivia";
+	SyntaxKind[(SyntaxKind["Trivia"] = 15)] = "Trivia";
+	SyntaxKind[(SyntaxKind["Unknown"] = 16)] = "Unknown";
+	SyntaxKind[(SyntaxKind["EOF"] = 17)] = "EOF";
 })(SyntaxKind || (SyntaxKind = {}));
 /**
  * For a given offset, evaluate the location in the JSON document. Each segment in the location path is either a property name or an array index.
@@ -82,44 +84,71 @@ export const visit = parser.visit;
  */
 export const stripComments = parser.stripComments;
 export var ParseErrorCode;
-(function (ParseErrorCode) {
-    ParseErrorCode[ParseErrorCode["InvalidSymbol"] = 1] = "InvalidSymbol";
-    ParseErrorCode[ParseErrorCode["InvalidNumberFormat"] = 2] = "InvalidNumberFormat";
-    ParseErrorCode[ParseErrorCode["PropertyNameExpected"] = 3] = "PropertyNameExpected";
-    ParseErrorCode[ParseErrorCode["ValueExpected"] = 4] = "ValueExpected";
-    ParseErrorCode[ParseErrorCode["ColonExpected"] = 5] = "ColonExpected";
-    ParseErrorCode[ParseErrorCode["CommaExpected"] = 6] = "CommaExpected";
-    ParseErrorCode[ParseErrorCode["CloseBraceExpected"] = 7] = "CloseBraceExpected";
-    ParseErrorCode[ParseErrorCode["CloseBracketExpected"] = 8] = "CloseBracketExpected";
-    ParseErrorCode[ParseErrorCode["EndOfFileExpected"] = 9] = "EndOfFileExpected";
-    ParseErrorCode[ParseErrorCode["InvalidCommentToken"] = 10] = "InvalidCommentToken";
-    ParseErrorCode[ParseErrorCode["UnexpectedEndOfComment"] = 11] = "UnexpectedEndOfComment";
-    ParseErrorCode[ParseErrorCode["UnexpectedEndOfString"] = 12] = "UnexpectedEndOfString";
-    ParseErrorCode[ParseErrorCode["UnexpectedEndOfNumber"] = 13] = "UnexpectedEndOfNumber";
-    ParseErrorCode[ParseErrorCode["InvalidUnicode"] = 14] = "InvalidUnicode";
-    ParseErrorCode[ParseErrorCode["InvalidEscapeCharacter"] = 15] = "InvalidEscapeCharacter";
-    ParseErrorCode[ParseErrorCode["InvalidCharacter"] = 16] = "InvalidCharacter";
+((ParseErrorCode) => {
+	ParseErrorCode[(ParseErrorCode["InvalidSymbol"] = 1)] = "InvalidSymbol";
+	ParseErrorCode[(ParseErrorCode["InvalidNumberFormat"] = 2)] =
+		"InvalidNumberFormat";
+	ParseErrorCode[(ParseErrorCode["PropertyNameExpected"] = 3)] =
+		"PropertyNameExpected";
+	ParseErrorCode[(ParseErrorCode["ValueExpected"] = 4)] = "ValueExpected";
+	ParseErrorCode[(ParseErrorCode["ColonExpected"] = 5)] = "ColonExpected";
+	ParseErrorCode[(ParseErrorCode["CommaExpected"] = 6)] = "CommaExpected";
+	ParseErrorCode[(ParseErrorCode["CloseBraceExpected"] = 7)] =
+		"CloseBraceExpected";
+	ParseErrorCode[(ParseErrorCode["CloseBracketExpected"] = 8)] =
+		"CloseBracketExpected";
+	ParseErrorCode[(ParseErrorCode["EndOfFileExpected"] = 9)] =
+		"EndOfFileExpected";
+	ParseErrorCode[(ParseErrorCode["InvalidCommentToken"] = 10)] =
+		"InvalidCommentToken";
+	ParseErrorCode[(ParseErrorCode["UnexpectedEndOfComment"] = 11)] =
+		"UnexpectedEndOfComment";
+	ParseErrorCode[(ParseErrorCode["UnexpectedEndOfString"] = 12)] =
+		"UnexpectedEndOfString";
+	ParseErrorCode[(ParseErrorCode["UnexpectedEndOfNumber"] = 13)] =
+		"UnexpectedEndOfNumber";
+	ParseErrorCode[(ParseErrorCode["InvalidUnicode"] = 14)] = "InvalidUnicode";
+	ParseErrorCode[(ParseErrorCode["InvalidEscapeCharacter"] = 15)] =
+		"InvalidEscapeCharacter";
+	ParseErrorCode[(ParseErrorCode["InvalidCharacter"] = 16)] =
+		"InvalidCharacter";
 })(ParseErrorCode || (ParseErrorCode = {}));
 export function printParseErrorCode(code) {
-    switch (code) {
-        case 1 /* ParseErrorCode.InvalidSymbol */: return 'InvalidSymbol';
-        case 2 /* ParseErrorCode.InvalidNumberFormat */: return 'InvalidNumberFormat';
-        case 3 /* ParseErrorCode.PropertyNameExpected */: return 'PropertyNameExpected';
-        case 4 /* ParseErrorCode.ValueExpected */: return 'ValueExpected';
-        case 5 /* ParseErrorCode.ColonExpected */: return 'ColonExpected';
-        case 6 /* ParseErrorCode.CommaExpected */: return 'CommaExpected';
-        case 7 /* ParseErrorCode.CloseBraceExpected */: return 'CloseBraceExpected';
-        case 8 /* ParseErrorCode.CloseBracketExpected */: return 'CloseBracketExpected';
-        case 9 /* ParseErrorCode.EndOfFileExpected */: return 'EndOfFileExpected';
-        case 10 /* ParseErrorCode.InvalidCommentToken */: return 'InvalidCommentToken';
-        case 11 /* ParseErrorCode.UnexpectedEndOfComment */: return 'UnexpectedEndOfComment';
-        case 12 /* ParseErrorCode.UnexpectedEndOfString */: return 'UnexpectedEndOfString';
-        case 13 /* ParseErrorCode.UnexpectedEndOfNumber */: return 'UnexpectedEndOfNumber';
-        case 14 /* ParseErrorCode.InvalidUnicode */: return 'InvalidUnicode';
-        case 15 /* ParseErrorCode.InvalidEscapeCharacter */: return 'InvalidEscapeCharacter';
-        case 16 /* ParseErrorCode.InvalidCharacter */: return 'InvalidCharacter';
-    }
-    return '<unknown ParseErrorCode>';
+	switch (code) {
+		case 1 /* ParseErrorCode.InvalidSymbol */:
+			return "InvalidSymbol";
+		case 2 /* ParseErrorCode.InvalidNumberFormat */:
+			return "InvalidNumberFormat";
+		case 3 /* ParseErrorCode.PropertyNameExpected */:
+			return "PropertyNameExpected";
+		case 4 /* ParseErrorCode.ValueExpected */:
+			return "ValueExpected";
+		case 5 /* ParseErrorCode.ColonExpected */:
+			return "ColonExpected";
+		case 6 /* ParseErrorCode.CommaExpected */:
+			return "CommaExpected";
+		case 7 /* ParseErrorCode.CloseBraceExpected */:
+			return "CloseBraceExpected";
+		case 8 /* ParseErrorCode.CloseBracketExpected */:
+			return "CloseBracketExpected";
+		case 9 /* ParseErrorCode.EndOfFileExpected */:
+			return "EndOfFileExpected";
+		case 10 /* ParseErrorCode.InvalidCommentToken */:
+			return "InvalidCommentToken";
+		case 11 /* ParseErrorCode.UnexpectedEndOfComment */:
+			return "UnexpectedEndOfComment";
+		case 12 /* ParseErrorCode.UnexpectedEndOfString */:
+			return "UnexpectedEndOfString";
+		case 13 /* ParseErrorCode.UnexpectedEndOfNumber */:
+			return "UnexpectedEndOfNumber";
+		case 14 /* ParseErrorCode.InvalidUnicode */:
+			return "InvalidUnicode";
+		case 15 /* ParseErrorCode.InvalidEscapeCharacter */:
+			return "InvalidEscapeCharacter";
+		case 16 /* ParseErrorCode.InvalidCharacter */:
+			return "InvalidCharacter";
+	}
+	return "<unknown ParseErrorCode>";
 }
 /**
  * Computes the edit operations needed to format a JSON document.
@@ -131,7 +160,7 @@ export function printParseErrorCode(code) {
  * To apply the edit operations to the input, use {@linkcode applyEdits}.
  */
 export function format(documentText, range, options) {
-    return formatter.format(documentText, range, options);
+	return formatter.format(documentText, range, options);
 }
 /**
  * Computes the edit operations needed to modify a value in the JSON document.
@@ -146,7 +175,7 @@ export function format(documentText, range, options) {
  * To apply the edit operations to the input, use {@linkcode applyEdits}.
  */
 export function modify(text, path, value, options) {
-    return edit.setProperty(text, path, value, options);
+	return edit.setProperty(text, path, value, options);
 }
 /**
  * Applies edits to an input string.
@@ -156,23 +185,22 @@ export function modify(text, path, value, options) {
  * @throws An error if the edit operations are not well-formed as described in {@linkcode EditResult}.
  */
 export function applyEdits(text, edits) {
-    let sortedEdits = edits.slice(0).sort((a, b) => {
-        const diff = a.offset - b.offset;
-        if (diff === 0) {
-            return a.length - b.length;
-        }
-        return diff;
-    });
-    let lastModifiedOffset = text.length;
-    for (let i = sortedEdits.length - 1; i >= 0; i--) {
-        let e = sortedEdits[i];
-        if (e.offset + e.length <= lastModifiedOffset) {
-            text = edit.applyEdit(text, e);
-        }
-        else {
-            throw new Error('Overlapping edit');
-        }
-        lastModifiedOffset = e.offset;
-    }
-    return text;
+	const sortedEdits = edits.slice(0).sort((a, b) => {
+		const diff = a.offset - b.offset;
+		if (diff === 0) {
+			return a.length - b.length;
+		}
+		return diff;
+	});
+	let lastModifiedOffset = text.length;
+	for (let i = sortedEdits.length - 1; i >= 0; i--) {
+		const e = sortedEdits[i];
+		if (e.offset + e.length <= lastModifiedOffset) {
+			text = edit.applyEdit(text, e);
+		} else {
+			throw new Error("Overlapping edit");
+		}
+		lastModifiedOffset = e.offset;
+	}
+	return text;
 }

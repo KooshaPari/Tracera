@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/date/to-json');
+"use strict";
+module.exports = require("../../full/date/to-json");

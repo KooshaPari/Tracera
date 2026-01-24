@@ -33,17 +33,17 @@ var _index2 = require("./toDate.cjs");
  * //=> Wed Feb 11 1987 00:00:00
  */
 function min(dates, options) {
-  let result;
-  let context = options?.in;
+	let result;
+	let context = options?.in;
 
-  dates.forEach((date) => {
-    // Use the first date object as the context function
-    if (!context && typeof date === "object")
-      context = _index.constructFrom.bind(null, date);
+	dates.forEach((date) => {
+		// Use the first date object as the context function
+		if (!context && typeof date === "object")
+			context = _index.constructFrom.bind(null, date);
 
-    const date_ = (0, _index2.toDate)(date, context);
-    if (!result || result > date_ || isNaN(+date_)) result = date_;
-  });
+		const date_ = (0, _index2.toDate)(date, context);
+		if (!result || result > date_ || isNaN(+date_)) result = date_;
+	});
 
-  return (0, _index.constructFrom)(context, result || NaN);
+	return (0, _index.constructFrom)(context, result || NaN);
 }

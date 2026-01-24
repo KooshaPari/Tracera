@@ -1,1 +1,1 @@
-export const SERVER_PROP = 'server'
+export const SERVER_PROP = "server";

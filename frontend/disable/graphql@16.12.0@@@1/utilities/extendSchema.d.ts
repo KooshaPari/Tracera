@@ -1,16 +1,16 @@
-import type { DocumentNode } from '../language/ast';
+import type { DocumentNode } from "../language/ast";
 import type {
-  GraphQLSchemaNormalizedConfig,
-  GraphQLSchemaValidationOptions,
-} from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
+	GraphQLSchemaNormalizedConfig,
+	GraphQLSchemaValidationOptions,
+} from "../type/schema";
+import { GraphQLSchema } from "../type/schema";
 interface Options extends GraphQLSchemaValidationOptions {
-  /**
-   * Set to true to assume the SDL is valid.
-   *
-   * Default: false
-   */
-  assumeValidSDL?: boolean;
+	/**
+	 * Set to true to assume the SDL is valid.
+	 *
+	 * Default: false
+	 */
+	assumeValidSDL?: boolean;
 }
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -25,16 +25,15 @@ interface Options extends GraphQLSchemaValidationOptions {
  * producing the copy. The original schema remains unaltered.
  */
 export declare function extendSchema(
-  schema: GraphQLSchema,
-  documentAST: DocumentNode,
-  options?: Options,
+	schema: GraphQLSchema,
+	documentAST: DocumentNode,
+	options?: Options,
 ): GraphQLSchema;
 /**
  * @internal
  */
 export declare function extendSchemaImpl(
-  schemaConfig: GraphQLSchemaNormalizedConfig,
-  documentAST: DocumentNode,
-  options?: Options,
+	schemaConfig: GraphQLSchemaNormalizedConfig,
+	documentAST: DocumentNode,
+	options?: Options,
 ): GraphQLSchemaNormalizedConfig;
-export {};

@@ -25,7 +25,7 @@ var _index = require("./toDate.cjs");
  * //=> 3
  */
 function getQuarter(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const quarter = Math.trunc(_date.getMonth() / 3) + 1;
-  return quarter;
+	const _date = (0, _index.toDate)(date, options?.in);
+	const quarter = Math.trunc(_date.getMonth() / 3) + 1;
+	return quarter;
 }

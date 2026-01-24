@@ -29,14 +29,14 @@ var _index3 = require("./startOfISOWeekYear.cjs");
  * //=> 53
  */
 function getISOWeeksInYear(date, options) {
-  const thisYear = (0, _index3.startOfISOWeekYear)(date, options);
-  const nextYear = (0, _index3.startOfISOWeekYear)(
-    (0, _index.addWeeks)(thisYear, 60),
-  );
-  const diff = +nextYear - +thisYear;
+	const thisYear = (0, _index3.startOfISOWeekYear)(date, options);
+	const nextYear = (0, _index3.startOfISOWeekYear)(
+		(0, _index.addWeeks)(thisYear, 60),
+	);
+	const diff = +nextYear - +thisYear;
 
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(diff / _index2.millisecondsInWeek);
+	// Round the number of weeks to the nearest integer because the number of
+	// milliseconds in a week is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round(diff / _index2.millisecondsInWeek);
 }

@@ -1,15 +1,14 @@
-import { createVitePlugin } from 'unplugin'
-
-import { configSchema } from './core/config'
-import { unpluginRouterCodeSplitterFactory } from './core/router-code-splitter-plugin'
-import { unpluginRouterGeneratorFactory } from './core/router-generator-plugin'
-import { unpluginRouterComposedFactory } from './core/router-composed-plugin'
-import { unpluginRouteAutoImportFactory } from './core/route-autoimport-plugin'
-import type { CodeSplittingOptions, Config, getConfig } from './core/config'
+import { createVitePlugin } from "unplugin";
+import type { CodeSplittingOptions, Config, getConfig } from "./core/config";
+import { configSchema } from "./core/config";
+import { unpluginRouteAutoImportFactory } from "./core/route-autoimport-plugin";
+import { unpluginRouterCodeSplitterFactory } from "./core/router-code-splitter-plugin";
+import { unpluginRouterComposedFactory } from "./core/router-composed-plugin";
+import { unpluginRouterGeneratorFactory } from "./core/router-generator-plugin";
 
 const tanstackRouterAutoImport = createVitePlugin(
-  unpluginRouteAutoImportFactory,
-)
+	unpluginRouteAutoImportFactory,
+);
 
 /**
  * @example
@@ -20,7 +19,9 @@ const tanstackRouterAutoImport = createVitePlugin(
  * })
  * ```
  */
-const tanstackRouterGenerator = createVitePlugin(unpluginRouterGeneratorFactory)
+const tanstackRouterGenerator = createVitePlugin(
+	unpluginRouterGeneratorFactory,
+);
 
 /**
  * @example
@@ -32,8 +33,8 @@ const tanstackRouterGenerator = createVitePlugin(unpluginRouterGeneratorFactory)
  * ```
  */
 const tanStackRouterCodeSplitter = createVitePlugin(
-  unpluginRouterCodeSplitterFactory,
-)
+	unpluginRouterCodeSplitterFactory,
+);
 
 /**
  * @example
@@ -44,22 +45,22 @@ const tanStackRouterCodeSplitter = createVitePlugin(
  * })
  * ```
  */
-const tanstackRouter = createVitePlugin(unpluginRouterComposedFactory)
+const tanstackRouter = createVitePlugin(unpluginRouterComposedFactory);
 
 /**
  * @deprecated Use `tanstackRouter` instead.
  */
-const TanStackRouterVite = tanstackRouter
+const TanStackRouterVite = tanstackRouter;
 
-export default tanstackRouter
+export default tanstackRouter;
 export {
-  configSchema,
-  getConfig,
-  tanstackRouterAutoImport,
-  tanStackRouterCodeSplitter,
-  tanstackRouterGenerator,
-  TanStackRouterVite,
-  tanstackRouter,
-}
+	configSchema,
+	type getConfig,
+	tanstackRouterAutoImport,
+	tanStackRouterCodeSplitter,
+	tanstackRouterGenerator,
+	TanStackRouterVite,
+	tanstackRouter,
+};
 
-export type { Config, CodeSplittingOptions }
+export type { Config, CodeSplittingOptions };

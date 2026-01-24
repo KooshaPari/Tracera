@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 /**
  * No unused fragments
  *
@@ -9,5 +9,5 @@ import type { ASTValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
  */
 export declare function NoUnusedFragmentsRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

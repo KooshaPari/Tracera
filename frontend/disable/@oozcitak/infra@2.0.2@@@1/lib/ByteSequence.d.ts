@@ -22,21 +22,30 @@ export declare function byteUppercase(list: Uint8Array): void;
  * @param listA - a byte sequence
  * @param listB - a byte sequence
  */
-export declare function byteCaseInsensitiveMatch(listA: Uint8Array, listB: Uint8Array): boolean;
+export declare function byteCaseInsensitiveMatch(
+	listA: Uint8Array,
+	listB: Uint8Array,
+): boolean;
 /**
  * Determines if `listA` starts with `listB`.
  *
  * @param listA - a byte sequence
  * @param listB - a byte sequence
  */
-export declare function startsWith(listA: Uint8Array, listB: Uint8Array): boolean;
+export declare function startsWith(
+	listA: Uint8Array,
+	listB: Uint8Array,
+): boolean;
 /**
  * Determines if `listA` is less than `listB`.
  *
  * @param listA - a byte sequence
  * @param listB - a byte sequence
  */
-export declare function byteLessThan(listA: Uint8Array, listB: Uint8Array): boolean;
+export declare function byteLessThan(
+	listA: Uint8Array,
+	listB: Uint8Array,
+): boolean;
 /**
  * Decodes a byte sequence into a string.
  *

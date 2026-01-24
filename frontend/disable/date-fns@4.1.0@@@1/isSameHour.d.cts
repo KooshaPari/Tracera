@@ -28,7 +28,7 @@ export interface IsSameHourOptions extends ContextOptions<Date> {}
  * //=> false
  */
 export declare function isSameHour(
-  dateLeft: DateArg<Date> & {},
-  dateRight: DateArg<Date> & {},
-  options?: IsSameHourOptions | undefined,
+	dateLeft: DateArg<Date> & {},
+	dateRight: DateArg<Date> & {},
+	options?: IsSameHourOptions | undefined,
 ): boolean;

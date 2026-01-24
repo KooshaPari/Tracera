@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/to-sorted');
+"use strict";
+module.exports = require("../../full/typed-array/to-sorted");

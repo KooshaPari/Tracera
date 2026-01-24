@@ -1,22 +1,20 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = retry;
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _promiseCallback = require('./internal/promiseCallback.js');
+var _promiseCallback = require("./internal/promiseCallback.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function constant(value) {
-    return function () {
-        return value;
-    };
+	return () => value;
 }
 
 /**
@@ -108,52 +106,59 @@ const DEFAULT_TIMES = 5;
 const DEFAULT_INTERVAL = 0;
 
 function retry(opts, task, callback) {
-    var options = {
-        times: DEFAULT_TIMES,
-        intervalFunc: constant(DEFAULT_INTERVAL)
-    };
+	var options = {
+		times: DEFAULT_TIMES,
+		intervalFunc: constant(DEFAULT_INTERVAL),
+	};
 
-    if (arguments.length < 3 && typeof opts === 'function') {
-        callback = task || (0, _promiseCallback.promiseCallback)();
-        task = opts;
-    } else {
-        parseTimes(options, opts);
-        callback = callback || (0, _promiseCallback.promiseCallback)();
-    }
+	if (arguments.length < 3 && typeof opts === "function") {
+		callback = task || (0, _promiseCallback.promiseCallback)();
+		task = opts;
+	} else {
+		parseTimes(options, opts);
+		callback = callback || (0, _promiseCallback.promiseCallback)();
+	}
 
-    if (typeof task !== 'function') {
-        throw new Error("Invalid arguments for async.retry");
-    }
+	if (typeof task !== "function") {
+		throw new Error("Invalid arguments for async.retry");
+	}
 
-    var _task = (0, _wrapAsync2.default)(task);
+	var _task = (0, _wrapAsync2.default)(task);
 
-    var attempt = 1;
-    function retryAttempt() {
-        _task((err, ...args) => {
-            if (err === false) return;
-            if (err && attempt++ < options.times && (typeof options.errorFilter != 'function' || options.errorFilter(err))) {
-                setTimeout(retryAttempt, options.intervalFunc(attempt - 1));
-            } else {
-                callback(err, ...args);
-            }
-        });
-    }
+	var attempt = 1;
+	function retryAttempt() {
+		_task((err, ...args) => {
+			if (err === false) return;
+			if (
+				err &&
+				attempt++ < options.times &&
+				(typeof options.errorFilter != "function" || options.errorFilter(err))
+			) {
+				setTimeout(retryAttempt, options.intervalFunc(attempt - 1));
+			} else {
+				callback(err, ...args);
+			}
+		});
+	}
 
-    retryAttempt();
-    return callback[_promiseCallback.PROMISE_SYMBOL];
+	retryAttempt();
+	return callback[_promiseCallback.PROMISE_SYMBOL];
 }
 
 function parseTimes(acc, t) {
-    if (typeof t === 'object') {
-        acc.times = +t.times || DEFAULT_TIMES;
+	if (typeof t === "object") {
+		acc.times = +t.times || DEFAULT_TIMES;
 
-        acc.intervalFunc = typeof t.interval === 'function' ? t.interval : constant(+t.interval || DEFAULT_INTERVAL);
+		acc.intervalFunc =
+			typeof t.interval === "function"
+				? t.interval
+				: constant(+t.interval || DEFAULT_INTERVAL);
 
-        acc.errorFilter = t.errorFilter;
-    } else if (typeof t === 'number' || typeof t === 'string') {
-        acc.times = +t || DEFAULT_TIMES;
-    } else {
-        throw new Error("Invalid arguments for async.retry");
-    }
+		acc.errorFilter = t.errorFilter;
+	} else if (typeof t === "number" || typeof t === "string") {
+		acc.times = +t || DEFAULT_TIMES;
+	} else {
+		throw new Error("Invalid arguments for async.retry");
+	}
 }
 module.exports = exports.default;

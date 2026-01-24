@@ -5,7 +5,7 @@ var _index = require("../differenceInQuarters.cjs");
 var _index2 = require("./_lib/convertToFP.cjs"); // This file is generated automatically by `scripts/build/fp.ts`. Please, don't change it.
 
 const differenceInQuartersWithOptions =
-  (exports.differenceInQuartersWithOptions = (0, _index2.convertToFP)(
-    _index.differenceInQuarters,
-    3,
-  ));
+	(exports.differenceInQuartersWithOptions = (0, _index2.convertToFP)(
+		_index.differenceInQuarters,
+		3,
+	));

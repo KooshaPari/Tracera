@@ -29,7 +29,7 @@ import { lastDayOfWeek } from "./lastDayOfWeek.js";
  * //=> Sun Sep 07 2014 00:00:00
  */
 export function lastDayOfISOWeek(date, options) {
-  return lastDayOfWeek(date, { ...options, weekStartsOn: 1 });
+	return lastDayOfWeek(date, { ...options, weekStartsOn: 1 });
 }
 
 // Fallback for modularized imports:

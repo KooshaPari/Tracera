@@ -29,5 +29,5 @@ var _index = require("./addHours.cjs");
  * //=> Thu Jul 10 2014 23:00:00
  */
 function subHours(date, amount, options) {
-  return (0, _index.addHours)(date, -amount, options);
+	return (0, _index.addHours)(date, -amount, options);
 }

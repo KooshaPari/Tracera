@@ -7,9 +7,9 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class Parameters extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'parameters';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "parameters";
+	}
 }
-var _default = exports.default = Parameters;
+var _default = (exports.default = Parameters);

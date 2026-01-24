@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.typed-array.set');
+"use strict";
+require("../../modules/es.typed-array.set");

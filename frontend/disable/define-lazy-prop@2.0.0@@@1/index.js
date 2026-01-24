@@ -1,6 +1,10 @@
-'use strict';
 module.exports = (object, propertyName, fn) => {
-	const define = value => Object.defineProperty(object, propertyName, {value, enumerable: true, writable: true});
+	const define = (value) =>
+		Object.defineProperty(object, propertyName, {
+			value,
+			enumerable: true,
+			writable: true,
+		});
 
 	Object.defineProperty(object, propertyName, {
 		configurable: true,
@@ -12,7 +16,7 @@ module.exports = (object, propertyName, fn) => {
 		},
 		set(value) {
 			define(value);
-		}
+		},
 	});
 
 	return object;

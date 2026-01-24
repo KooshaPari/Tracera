@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/group');
+"use strict";
+module.exports = require("../../full/instance/group");

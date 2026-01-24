@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.idl_defineConst = idl_defineConst;
 /**
@@ -9,6 +8,11 @@ exports.idl_defineConst = idl_defineConst;
  * @param value - property value
  */
 function idl_defineConst(o, name, value) {
-    Object.defineProperty(o, name, { writable: false, enumerable: true, configurable: false, value: value });
+	Object.defineProperty(o, name, {
+		writable: false,
+		enumerable: true,
+		configurable: false,
+		value: value,
+	});
 }
 //# sourceMappingURL=WebIDLAlgorithm.js.map

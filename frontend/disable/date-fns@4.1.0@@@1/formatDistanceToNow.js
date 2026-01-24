@@ -88,7 +88,7 @@ import { formatDistance } from "./formatDistance.js";
  * //=> 'pli ol 1 jaro'
  */
 export function formatDistanceToNow(date, options) {
-  return formatDistance(date, constructNow(date), options);
+	return formatDistance(date, constructNow(date), options);
 }
 
 // Fallback for modularized imports:

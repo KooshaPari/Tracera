@@ -27,7 +27,7 @@ import { addBusinessDays } from "./addBusinessDays.js";
  * //=> Mon Aug 18 2014 00:00:00 (skipped weekend days)
  */
 export function subBusinessDays(date, amount, options) {
-  return addBusinessDays(date, -amount, options);
+	return addBusinessDays(date, -amount, options);
 }
 
 // Fallback for modularized imports:

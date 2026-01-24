@@ -1,13 +1,13 @@
-import { keyMap as keyMapBase, isElement } from '@swagger-api/apidom-core';
+import { isElement, keyMap as keyMapBase } from "@swagger-api/apidom-core";
 
 /**
  * @public
  */
-export const getNodeType = element => {
-  if (!isElement(element)) {
-    return undefined;
-  }
-  return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
+export const getNodeType = (element) => {
+	if (!isElement(element)) {
+		return undefined;
+	}
+	return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
 };
 
 /**
@@ -22,32 +22,32 @@ export const getNodeType = element => {
  */
 
 export const keyMap = {
-  SwaggerElement: ['content'],
-  InfoElement: ['content'],
-  ContactElement: ['content'],
-  LicenseElement: ['content'],
-  PathsElement: ['content'],
-  PathItemElement: ['content'],
-  OperationElement: ['content'],
-  ExternalDocumentationElement: ['content'],
-  ParameterElement: ['content'],
-  ItemsElement: ['content'],
-  ExampleElement: ['content'],
-  ResponsesElement: ['content'],
-  ResponseElement: ['content'],
-  HeadersElement: ['content'],
-  HeaderElement: ['content'],
-  TagElement: ['content'],
-  ReferenceElement: ['content'],
-  JSONReferenceElement: ['content'],
-  SchemaElement: ['content'],
-  XmlElement: ['content'],
-  DefinitionsElement: ['content'],
-  ParametersDefinitionsElement: ['content'],
-  ResponsesDefinitionsElement: ['content'],
-  SecurityDefinitionsElement: ['content'],
-  SecuritySchemeElement: ['content'],
-  ScopesElement: ['content'],
-  SecurityRequirementElement: ['content'],
-  ...keyMapBase
+	SwaggerElement: ["content"],
+	InfoElement: ["content"],
+	ContactElement: ["content"],
+	LicenseElement: ["content"],
+	PathsElement: ["content"],
+	PathItemElement: ["content"],
+	OperationElement: ["content"],
+	ExternalDocumentationElement: ["content"],
+	ParameterElement: ["content"],
+	ItemsElement: ["content"],
+	ExampleElement: ["content"],
+	ResponsesElement: ["content"],
+	ResponseElement: ["content"],
+	HeadersElement: ["content"],
+	HeaderElement: ["content"],
+	TagElement: ["content"],
+	ReferenceElement: ["content"],
+	JSONReferenceElement: ["content"],
+	SchemaElement: ["content"],
+	XmlElement: ["content"],
+	DefinitionsElement: ["content"],
+	ParametersDefinitionsElement: ["content"],
+	ResponsesDefinitionsElement: ["content"],
+	SecurityDefinitionsElement: ["content"],
+	SecuritySchemeElement: ["content"],
+	ScopesElement: ["content"],
+	SecurityRequirementElement: ["content"],
+	...keyMapBase,
 };

@@ -1,8 +1,8 @@
-var arrayFilter = require('./_arrayFilter'),
-    arrayMap = require('./_arrayMap'),
-    baseProperty = require('./_baseProperty'),
-    baseTimes = require('./_baseTimes'),
-    isArrayLikeObject = require('./isArrayLikeObject');
+var arrayFilter = require("./_arrayFilter"),
+	arrayMap = require("./_arrayMap"),
+	baseProperty = require("./_baseProperty"),
+	baseTimes = require("./_baseTimes"),
+	isArrayLikeObject = require("./isArrayLikeObject");
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeMax = Math.max;
@@ -27,19 +27,17 @@ var nativeMax = Math.max;
  * // => [['a', 'b'], [1, 2], [true, false]]
  */
 function unzip(array) {
-  if (!(array && array.length)) {
-    return [];
-  }
-  var length = 0;
-  array = arrayFilter(array, function(group) {
-    if (isArrayLikeObject(group)) {
-      length = nativeMax(group.length, length);
-      return true;
-    }
-  });
-  return baseTimes(length, function(index) {
-    return arrayMap(array, baseProperty(index));
-  });
+	if (!(array && array.length)) {
+		return [];
+	}
+	var length = 0;
+	array = arrayFilter(array, (group) => {
+		if (isArrayLikeObject(group)) {
+			length = nativeMax(group.length, length);
+			return true;
+		}
+	});
+	return baseTimes(length, (index) => arrayMap(array, baseProperty(index)));
 }
 
 module.exports = unzip;

@@ -1,1 +1,1 @@
-export {default as dispatch} from "./dispatch.js";
+export { default as dispatch } from "./dispatch.js";

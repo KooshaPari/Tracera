@@ -1,4 +1,3 @@
-
 /**
  * This is the common logic for both the Node.js and web browser
  * implementations of `debug()`.
@@ -11,38 +10,38 @@ function setup(env) {
 	createDebug.disable = disable;
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
-	createDebug.humanize = require('ms');
+	createDebug.humanize = require("ms");
 	createDebug.destroy = destroy;
 
-	Object.keys(env).forEach(key => {
+	Object.keys(env).forEach((key) => {
 		createDebug[key] = env[key];
 	});
 
 	/**
-	* The currently active debug mode names, and names to skip.
-	*/
+	 * The currently active debug mode names, and names to skip.
+	 */
 
 	createDebug.names = [];
 	createDebug.skips = [];
 
 	/**
-	* Map of special "%n" handling functions, for the debug "format" argument.
-	*
-	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
-	*/
+	 * Map of special "%n" handling functions, for the debug "format" argument.
+	 *
+	 * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+	 */
 	createDebug.formatters = {};
 
 	/**
-	* Selects a color for a debug namespace
-	* @param {String} namespace The namespace string for the debug instance to be colored
-	* @return {Number|String} An ANSI color code for the given namespace
-	* @api private
-	*/
+	 * Selects a color for a debug namespace
+	 * @param {String} namespace The namespace string for the debug instance to be colored
+	 * @return {Number|String} An ANSI color code for the given namespace
+	 * @api private
+	 */
 	function selectColor(namespace) {
 		let hash = 0;
 
 		for (let i = 0; i < namespace.length; i++) {
-			hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
+			hash = (hash << 5) - hash + namespace.charCodeAt(i);
 			hash |= 0; // Convert to 32bit integer
 		}
 
@@ -51,12 +50,12 @@ function setup(env) {
 	createDebug.selectColor = selectColor;
 
 	/**
-	* Create a debugger with the given `namespace`.
-	*
-	* @param {String} namespace
-	* @return {Function}
-	* @api public
-	*/
+	 * Create a debugger with the given `namespace`.
+	 *
+	 * @param {String} namespace
+	 * @return {Function}
+	 * @api public
+	 */
 	function createDebug(namespace) {
 		let prevTime;
 		let enableOverride = null;
@@ -81,21 +80,21 @@ function setup(env) {
 
 			args[0] = createDebug.coerce(args[0]);
 
-			if (typeof args[0] !== 'string') {
+			if (typeof args[0] !== "string") {
 				// Anything else let's inspect with %O
-				args.unshift('%O');
+				args.unshift("%O");
 			}
 
 			// Apply any `formatters` transformations
 			let index = 0;
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
-				if (match === '%%') {
-					return '%';
+				if (match === "%%") {
+					return "%";
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
-				if (typeof formatter === 'function') {
+				if (typeof formatter === "function") {
 					const val = args[index];
 					match = formatter.call(self, val);
 
@@ -119,7 +118,7 @@ function setup(env) {
 		debug.extend = extend;
 		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
 
-		Object.defineProperty(debug, 'enabled', {
+		Object.defineProperty(debug, "enabled", {
 			enumerable: true,
 			configurable: false,
 			get: () => {
@@ -133,13 +132,13 @@ function setup(env) {
 
 				return enabledCache;
 			},
-			set: v => {
+			set: (v) => {
 				enableOverride = v;
-			}
+			},
 		});
 
 		// Env-specific initialization logic for debug instances
-		if (typeof createDebug.init === 'function') {
+		if (typeof createDebug.init === "function") {
 			createDebug.init(debug);
 		}
 
@@ -147,18 +146,22 @@ function setup(env) {
 	}
 
 	function extend(namespace, delimiter) {
-		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		const newDebug = createDebug(
+			this.namespace +
+				(typeof delimiter === "undefined" ? ":" : delimiter) +
+				namespace,
+		);
 		newDebug.log = this.log;
 		return newDebug;
 	}
 
 	/**
-	* Enables a debug mode by namespaces. This can include modes
-	* separated by a colon and wildcards.
-	*
-	* @param {String} namespaces
-	* @api public
-	*/
+	 * Enables a debug mode by namespaces. This can include modes
+	 * separated by a colon and wildcards.
+	 *
+	 * @param {String} namespaces
+	 * @api public
+	 */
 	function enable(namespaces) {
 		createDebug.save(namespaces);
 		createDebug.namespaces = namespaces;
@@ -166,14 +169,14 @@ function setup(env) {
 		createDebug.names = [];
 		createDebug.skips = [];
 
-		const split = (typeof namespaces === 'string' ? namespaces : '')
+		const split = (typeof namespaces === "string" ? namespaces : "")
 			.trim()
-			.replace(/\s+/g, ',')
-			.split(',')
+			.replace(/\s+/g, ",")
+			.split(",")
 			.filter(Boolean);
 
 		for (const ns of split) {
-			if (ns[0] === '-') {
+			if (ns[0] === "-") {
 				createDebug.skips.push(ns.slice(1));
 			} else {
 				createDebug.names.push(ns);
@@ -196,9 +199,13 @@ function setup(env) {
 		let matchIndex = 0;
 
 		while (searchIndex < search.length) {
-			if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === '*')) {
+			if (
+				templateIndex < template.length &&
+				(template[templateIndex] === search[searchIndex] ||
+					template[templateIndex] === "*")
+			) {
 				// Match character or proceed with wildcard
-				if (template[templateIndex] === '*') {
+				if (template[templateIndex] === "*") {
 					starIndex = templateIndex;
 					matchIndex = searchIndex;
 					templateIndex++; // Skip the '*'
@@ -206,7 +213,8 @@ function setup(env) {
 					searchIndex++;
 					templateIndex++;
 				}
-			} else if (starIndex !== -1) { // eslint-disable-line no-negated-condition
+			} else if (starIndex !== -1) {
+				// eslint-disable-line no-negated-condition
 				// Backtrack to the last '*' and try to match more characters
 				templateIndex = starIndex + 1;
 				matchIndex++;
@@ -217,7 +225,7 @@ function setup(env) {
 		}
 
 		// Handle trailing '*' in template
-		while (templateIndex < template.length && template[templateIndex] === '*') {
+		while (templateIndex < template.length && template[templateIndex] === "*") {
 			templateIndex++;
 		}
 
@@ -225,27 +233,27 @@ function setup(env) {
 	}
 
 	/**
-	* Disable debug output.
-	*
-	* @return {String} namespaces
-	* @api public
-	*/
+	 * Disable debug output.
+	 *
+	 * @return {String} namespaces
+	 * @api public
+	 */
 	function disable() {
 		const namespaces = [
 			...createDebug.names,
-			...createDebug.skips.map(namespace => '-' + namespace)
-		].join(',');
-		createDebug.enable('');
+			...createDebug.skips.map((namespace) => "-" + namespace),
+		].join(",");
+		createDebug.enable("");
 		return namespaces;
 	}
 
 	/**
-	* Returns true if the given mode name is enabled, false otherwise.
-	*
-	* @param {String} name
-	* @return {Boolean}
-	* @api public
-	*/
+	 * Returns true if the given mode name is enabled, false otherwise.
+	 *
+	 * @param {String} name
+	 * @return {Boolean}
+	 * @api public
+	 */
 	function enabled(name) {
 		for (const skip of createDebug.skips) {
 			if (matchesTemplate(name, skip)) {
@@ -263,12 +271,12 @@ function setup(env) {
 	}
 
 	/**
-	* Coerce `val`.
-	*
-	* @param {Mixed} val
-	* @return {Mixed}
-	* @api private
-	*/
+	 * Coerce `val`.
+	 *
+	 * @param {Mixed} val
+	 * @return {Mixed}
+	 * @api private
+	 */
 	function coerce(val) {
 		if (val instanceof Error) {
 			return val.stack || val.message;
@@ -277,11 +285,13 @@ function setup(env) {
 	}
 
 	/**
-	* XXX DO NOT USE. This is a temporary stub function.
-	* XXX It WILL be removed in the next major release.
-	*/
+	 * XXX DO NOT USE. This is a temporary stub function.
+	 * XXX It WILL be removed in the next major release.
+	 */
 	function destroy() {
-		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		console.warn(
+			"Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.",
+		);
 	}
 
 	createDebug.enable(createDebug.load());

@@ -7,4 +7,4 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class SecurityScheme extends _apidomNsOpenapi.SecuritySchemeElement {}
-var _default = exports.default = SecurityScheme;
+var _default = (exports.default = SecurityScheme);

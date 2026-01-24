@@ -1,33 +1,22 @@
-import {
-  isFunction
-} from './utils';
-
-import {
-  noop,
-  nextId,
-  PROMISE_ID,
-  initializePromise
-} from './-internal';
-
-import {
-  asap,
-  setAsap,
-  setScheduler
-} from './asap';
-
-import all from './promise/all';
-import race from './promise/race';
-import Resolve from './promise/resolve';
-import Reject from './promise/reject';
-import then from './then';
-
+import { initializePromise, nextId, noop, PROMISE_ID } from "./-internal";
+import { asap, setAsap, setScheduler } from "./asap";
+import all from "./promise/all";
+import race from "./promise/race";
+import Reject from "./promise/reject";
+import Resolve from "./promise/resolve";
+import then from "./then";
+import { isFunction } from "./utils";
 
 function needsResolver() {
-  throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
+	throw new TypeError(
+		"You must pass a resolver function as the first argument to the promise constructor",
+	);
 }
 
 function needsNew() {
-  throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
+	throw new TypeError(
+		"Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.",
+	);
 }
 
 /**
@@ -134,14 +123,14 @@ function needsNew() {
   @constructor
 */
 export default function Promise(resolver) {
-  this[PROMISE_ID] = nextId();
-  this._result = this._state = undefined;
-  this._subscribers = [];
+	this[PROMISE_ID] = nextId();
+	this._result = this._state = undefined;
+	this._subscribers = [];
 
-  if (noop !== resolver) {
-    typeof resolver !== 'function' && needsResolver();
-    this instanceof Promise ? initializePromise(this, resolver) : needsNew();
-  }
+	if (noop !== resolver) {
+		typeof resolver !== "function" && needsResolver();
+		this instanceof Promise ? initializePromise(this, resolver) : needsNew();
+	}
 }
 
 Promise.all = all;
@@ -153,9 +142,9 @@ Promise._setAsap = setAsap;
 Promise._asap = asap;
 
 Promise.prototype = {
-  constructor: Promise,
+	constructor: Promise,
 
-/**
+	/**
   The primary way of interacting with a promise is through its `then` method,
   which registers callbacks to receive either a promise's eventual value or the
   reason why the promise cannot be fulfilled.
@@ -348,9 +337,9 @@ Promise.prototype = {
   Useful for tooling.
   @return {Promise}
 */
-  then: then,
+	then: then,
 
-/**
+	/**
   `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
   as the catch block of a try/catch statement.
 
@@ -377,7 +366,7 @@ Promise.prototype = {
   Useful for tooling.
   @return {Promise}
 */
-  catch(onRejection) {
-    return this.then(null, onRejection);
-  }
+	catch(onRejection) {
+		return this.then(null, onRejection);
+	},
 };

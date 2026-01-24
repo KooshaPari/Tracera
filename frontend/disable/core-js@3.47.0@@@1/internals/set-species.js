@@ -1,18 +1,20 @@
-'use strict';
-var getBuiltIn = require('../internals/get-built-in');
-var defineBuiltInAccessor = require('../internals/define-built-in-accessor');
-var wellKnownSymbol = require('../internals/well-known-symbol');
-var DESCRIPTORS = require('../internals/descriptors');
+"use strict";
+var getBuiltIn = require("../internals/get-built-in");
+var defineBuiltInAccessor = require("../internals/define-built-in-accessor");
+var wellKnownSymbol = require("../internals/well-known-symbol");
+var DESCRIPTORS = require("../internals/descriptors");
 
-var SPECIES = wellKnownSymbol('species');
+var SPECIES = wellKnownSymbol("species");
 
-module.exports = function (CONSTRUCTOR_NAME) {
-  var Constructor = getBuiltIn(CONSTRUCTOR_NAME);
+module.exports = (CONSTRUCTOR_NAME) => {
+	var Constructor = getBuiltIn(CONSTRUCTOR_NAME);
 
-  if (DESCRIPTORS && Constructor && !Constructor[SPECIES]) {
-    defineBuiltInAccessor(Constructor, SPECIES, {
-      configurable: true,
-      get: function () { return this; }
-    });
-  }
+	if (DESCRIPTORS && Constructor && !Constructor[SPECIES]) {
+		defineBuiltInAccessor(Constructor, SPECIES, {
+			configurable: true,
+			get: function () {
+				return this;
+			},
+		});
+	}
 };

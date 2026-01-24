@@ -6,29 +6,33 @@
 // Note: this is not a common behaviour, the order of different options
 // does not usually matter.
 
-import { parseArgs } from '../index.js';
+import { parseArgs } from "../index.js";
 
 function findTokenIndex(tokens, target) {
-  return tokens.findIndex((token) => token.kind === 'option' &&
-    token.name === target
-  );
+	return tokens.findIndex(
+		(token) => token.kind === "option" && token.name === target,
+	);
 }
 
-const experimentalName = 'enable-experimental-options';
-const unstableName = 'some-unstable-option';
+const experimentalName = "enable-experimental-options";
+const unstableName = "some-unstable-option";
 
 const options = {
-  [experimentalName]: { type: 'boolean' },
-  [unstableName]: { type: 'boolean' },
+	[experimentalName]: { type: "boolean" },
+	[unstableName]: { type: "boolean" },
 };
 
 const { values, tokens } = parseArgs({ options, tokens: true });
 
 const experimentalIndex = findTokenIndex(tokens, experimentalName);
 const unstableIndex = findTokenIndex(tokens, unstableName);
-if (unstableIndex !== -1 &&
-  ((experimentalIndex === -1) || (unstableIndex < experimentalIndex))) {
-  throw new Error(`'--${experimentalName}' must be specified before '--${unstableName}'`);
+if (
+	unstableIndex !== -1 &&
+	(experimentalIndex === -1 || unstableIndex < experimentalIndex)
+) {
+	throw new Error(
+		`'--${experimentalName}' must be specified before '--${unstableName}'`,
+	);
 }
 
 console.log(values);

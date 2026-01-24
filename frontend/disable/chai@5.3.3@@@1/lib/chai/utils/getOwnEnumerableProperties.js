@@ -4,7 +4,7 @@
  * MIT Licensed
  */
 
-import {getOwnEnumerablePropertySymbols} from './getOwnEnumerablePropertySymbols.js';
+import { getOwnEnumerablePropertySymbols } from "./getOwnEnumerablePropertySymbols.js";
 
 /**
  * ### .getOwnEnumerableProperties(object)
@@ -20,5 +20,5 @@ import {getOwnEnumerablePropertySymbols} from './getOwnEnumerablePropertySymbols
  * @public
  */
 export function getOwnEnumerableProperties(obj) {
-  return Object.keys(obj).concat(getOwnEnumerablePropertySymbols(obj));
+	return Object.keys(obj).concat(getOwnEnumerablePropertySymbols(obj));
 }

@@ -12,16 +12,16 @@ import { match } from "./ar-EG/_lib/match.js";
  * @author AbdAllah AbdElFattah [@AbdAllahAbdElFattah13](https://github.com/AbdAllahAbdElFattah13)
  */
 export const arEG = {
-  code: "ar-EG",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ar-EG",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

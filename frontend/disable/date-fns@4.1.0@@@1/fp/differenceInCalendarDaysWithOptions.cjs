@@ -5,7 +5,7 @@ var _index = require("../differenceInCalendarDays.cjs");
 var _index2 = require("./_lib/convertToFP.cjs"); // This file is generated automatically by `scripts/build/fp.ts`. Please, don't change it.
 
 const differenceInCalendarDaysWithOptions =
-  (exports.differenceInCalendarDaysWithOptions = (0, _index2.convertToFP)(
-    _index.differenceInCalendarDays,
-    3,
-  ));
+	(exports.differenceInCalendarDaysWithOptions = (0, _index2.convertToFP)(
+		_index.differenceInCalendarDays,
+		3,
+	));

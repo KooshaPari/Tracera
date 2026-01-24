@@ -1,15 +1,18 @@
-import YamlCollection from "./YamlCollection.mjs";
 import { isKeyValuePair } from "./predicates.mjs";
+import YamlCollection from "./YamlCollection.mjs";
+
 /**
  * @public
  */
 class YamlMapping extends YamlCollection {
-  static type = 'mapping';
+	static type = "mapping";
 }
-Object.defineProperty(YamlMapping.prototype, 'content', {
-  get() {
-    return Array.isArray(this.children) ? this.children.filter(isKeyValuePair) : [];
-  },
-  enumerable: true
+Object.defineProperty(YamlMapping.prototype, "content", {
+	get() {
+		return Array.isArray(this.children)
+			? this.children.filter(isKeyValuePair)
+			: [];
+	},
+	enumerable: true,
 });
 export default YamlMapping;

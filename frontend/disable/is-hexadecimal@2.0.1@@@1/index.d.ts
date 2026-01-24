@@ -5,4 +5,4 @@
  * @param {string|number} character
  * @returns {boolean} Whether `character` is hexadecimal
  */
-export function isHexadecimal(character: string | number): boolean
+export function isHexadecimal(character: string | number): boolean;

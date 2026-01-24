@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link lastDayOfYear} function options.
  */
 export interface LastDayOfYearOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name lastDayOfYear
  * @category Year Helpers
@@ -27,9 +27,9 @@ export interface LastDayOfYearOptions<DateType extends Date = Date>
  * //=> Wed Dec 31 2014 00:00:00
  */
 export declare function lastDayOfYear<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: LastDayOfYearOptions<ResultDate>,
+	date: DateArg<DateType>,
+	options?: LastDayOfYearOptions<ResultDate>,
 ): ResultDate;

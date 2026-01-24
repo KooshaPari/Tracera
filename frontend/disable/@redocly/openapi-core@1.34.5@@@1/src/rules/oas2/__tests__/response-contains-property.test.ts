@@ -1,11 +1,11 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import { makeConfig, parseYamlToDocument } from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas2 response-contains-property', () => {
-  it('should report a response object not containing the property', async () => {
-    const document = parseYamlToDocument(outdent`
+describe("Oas2 response-contains-property", () => {
+	it("should report a response object not containing the property", async () => {
+		const document = parseYamlToDocument(outdent`
       swagger: '2.0'
       schemes:
         - https
@@ -31,19 +31,19 @@ describe('Oas2 response-contains-property', () => {
               '404':
                 description: User not found
 			`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { '2xx': ['id'], '4xx': ['id'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { "2xx": ["id"], "4xx": ["id"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -87,10 +87,10 @@ describe('Oas2 response-contains-property', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report a response object containing the expected property', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report a response object containing the expected property", async () => {
+		const document = parseYamlToDocument(outdent`
       swagger: '2.0'
       schemes:
         - https
@@ -115,23 +115,23 @@ describe('Oas2 response-contains-property', () => {
                 description: User not found
                 id: some-id
 			`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { '200': ['id'], '4xx': ['id'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { "200": ["id"], "4xx": ["id"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report a response object when there is no `names` section defined', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report a response object when there is no `names` section defined", async () => {
+		const document = parseYamlToDocument(outdent`
       swagger: '2.0'
       schemes:
         - https
@@ -145,17 +145,17 @@ describe('Oas2 response-contains-property', () => {
               '404':
                 description: User not found
     `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 });

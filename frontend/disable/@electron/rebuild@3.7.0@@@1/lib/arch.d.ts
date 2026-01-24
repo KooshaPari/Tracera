@@ -5,7 +5,7 @@
  */
 export declare function uname(): string;
 export declare type ConfigVariables = {
-    arm_version?: string;
+	arm_version?: string;
 };
 /**
  * Generates an architecture name that would be used in an Electron or Node.js
@@ -13,4 +13,7 @@ export declare type ConfigVariables = {
  *
  * Copied from `@electron/get`.
  */
-export declare function getNodeArch(arch: string, configVariables: ConfigVariables): string;
+export declare function getNodeArch(
+	arch: string,
+	configVariables: ConfigVariables,
+): string;

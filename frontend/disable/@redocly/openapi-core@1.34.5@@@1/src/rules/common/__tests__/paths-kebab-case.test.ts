@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 paths-kebab-case', () => {
-  it('should report on no kebab-case path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 paths-kebab-case", () => {
+	it("should report on no kebab-case path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /someTest:
@@ -16,16 +20,16 @@ describe('Oas3 paths-kebab-case', () => {
               get:
                 summary: Test
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'paths-kebab-case': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "paths-kebab-case": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -42,10 +46,10 @@ describe('Oas3 paths-kebab-case', () => {
         },
       ]
     `);
-  });
-  it('should report when snake_case is used', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	});
+	it("should report when snake_case is used", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /some_test:
@@ -55,16 +59,16 @@ describe('Oas3 paths-kebab-case', () => {
               get:
                 summary: Test
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'paths-kebab-case': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "paths-kebab-case": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -81,30 +85,30 @@ describe('Oas3 paths-kebab-case', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should allow trailing slash in path with "paths-kebab-case" rule', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it('should allow trailing slash in path with "paths-kebab-case" rule', async () => {
+		const document = parseYamlToDocument(
+			outdent`
             openapi: 3.0.0
             paths:
               /some/:
                 get:
                   summary: List all pets
           `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'paths-kebab-case': 'error',
-          'no-path-trailing-slash': 'off',
-        },
-      }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"paths-kebab-case": "error",
+					"no-path-trailing-slash": "off",
+				},
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

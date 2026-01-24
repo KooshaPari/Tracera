@@ -23,8 +23,8 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isWeekend(date, options) {
-  const day = toDate(date, options?.in).getDay();
-  return day === 0 || day === 6;
+	const day = toDate(date, options?.in).getDay();
+	return day === 0 || day === 6;
 }
 
 // Fallback for modularized imports:

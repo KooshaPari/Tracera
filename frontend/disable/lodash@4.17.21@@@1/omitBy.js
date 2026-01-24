@@ -1,6 +1,6 @@
-var baseIteratee = require('./_baseIteratee'),
-    negate = require('./negate'),
-    pickBy = require('./pickBy');
+var baseIteratee = require("./_baseIteratee"),
+	negate = require("./negate"),
+	pickBy = require("./pickBy");
 
 /**
  * The opposite of `_.pickBy`; this method creates an object composed of
@@ -23,7 +23,7 @@ var baseIteratee = require('./_baseIteratee'),
  * // => { 'b': '2' }
  */
 function omitBy(object, predicate) {
-  return pickBy(object, negate(baseIteratee(predicate)));
+	return pickBy(object, negate(baseIteratee(predicate)));
 }
 
 module.exports = omitBy;

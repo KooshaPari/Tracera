@@ -16,5 +16,5 @@
  * @name getActual
  */
 export function getActual(obj, args) {
-  return args.length > 4 ? args[4] : obj._obj;
+	return args.length > 4 ? args[4] : obj._obj;
 }

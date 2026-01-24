@@ -210,7 +210,7 @@ class RateLimitError(ApiError):
     def __init__(
         self,
         message: str,
-        retry_after: int | None = None,
+        retry_after: int | float | None = None,
         status_code: int | None = None,
         response_data: dict[str, Any] | None = None,
     ):
@@ -323,7 +323,11 @@ class ApiClient:
 
                 # Check for rate limiting
                 if response.status_code == 429:
-                    retry_after = int(response.headers.get("Retry-After", "60"))
+                    retry_after_raw = response.headers.get("Retry-After", "60")
+                    try:
+                        retry_after = float(retry_after_raw)
+                    except Exception:
+                        retry_after = 60.0
                     raise RateLimitError(
                         f"Rate limit exceeded. Retry after {retry_after}s",
                         retry_after=retry_after,
@@ -415,9 +419,13 @@ class ApiClient:
         try:
             response = await self._retry_request("GET", "/api/health")
             data = response.json()
-            return data.get("status") == "healthy"
+            status_result: Any = data.get("status")
+            return bool(status_result == "healthy")
         except (ApiError, AuthenticationError, NetworkError, RateLimitError):
             logger.error("Health check failed: API error")
+            return False
+        except Exception:
+            logger.error("Health check failed: unexpected error")
             return False
 
     async def upload_changes(
@@ -451,13 +459,14 @@ class ApiClient:
             return UploadResult.from_dict(data)
         except httpx.HTTPStatusError as exc:
             if exc.response is not None and exc.response.status_code == 409:
-                payload = exc.response.json()
-                conflicts_raw = payload.get("conflicts", [])
-                conflicts = [
+                response_payload = exc.response.json()
+                conflicts_raw: list[Any] = response_payload.get("conflicts", [])
+                conflicts: list[Conflict] = [
                     Conflict.from_dict(c) if isinstance(c, dict) else c
                     for c in conflicts_raw
+                    if isinstance(c, dict) or isinstance(c, Conflict)
                 ]
-                raise ConflictError("Sync conflicts detected", conflicts=conflicts)
+                raise ConflictError("Sync conflicts detected", conflicts=conflicts) from exc
             raise
 
     async def download_changes(
@@ -521,17 +530,18 @@ class ApiClient:
         Raises:
             ApiError: On resolution failure
         """
-        payload = {
+        resolve_payload: dict[str, Any] = {
             "conflict_id": conflict_id,
             "resolution": resolution.value,
         }
 
         if merged_data is not None:
-            payload["merged_data"] = merged_data
+            resolve_payload["merged_data"] = merged_data
 
-        response = await self._retry_request("POST", "/api/sync/resolve", json=payload)
+        response = await self._retry_request("POST", "/api/sync/resolve", json=resolve_payload)
         data = response.json()
-        return data.get("resolved", False)
+        resolved_result: Any = data.get("resolved", False)
+        return bool(resolved_result)
 
     async def get_sync_status(self) -> SyncStatus:
         """

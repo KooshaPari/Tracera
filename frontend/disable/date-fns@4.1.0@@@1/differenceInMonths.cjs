@@ -26,32 +26,32 @@ var _index4 = require("./isLastDayOfMonth.cjs");
  * //=> 7
  */
 function differenceInMonths(laterDate, earlierDate, options) {
-  const [laterDate_, workingLaterDate, earlierDate_] = (0,
-  _index.normalizeDates)(options?.in, laterDate, laterDate, earlierDate);
+	const [laterDate_, workingLaterDate, earlierDate_] = (0,
+	_index.normalizeDates)(options?.in, laterDate, laterDate, earlierDate);
 
-  const sign = (0, _index2.compareAsc)(workingLaterDate, earlierDate_);
-  const difference = Math.abs(
-    (0, _index3.differenceInCalendarMonths)(workingLaterDate, earlierDate_),
-  );
+	const sign = (0, _index2.compareAsc)(workingLaterDate, earlierDate_);
+	const difference = Math.abs(
+		(0, _index3.differenceInCalendarMonths)(workingLaterDate, earlierDate_),
+	);
 
-  if (difference < 1) return 0;
+	if (difference < 1) return 0;
 
-  if (workingLaterDate.getMonth() === 1 && workingLaterDate.getDate() > 27)
-    workingLaterDate.setDate(30);
+	if (workingLaterDate.getMonth() === 1 && workingLaterDate.getDate() > 27)
+		workingLaterDate.setDate(30);
 
-  workingLaterDate.setMonth(workingLaterDate.getMonth() - sign * difference);
+	workingLaterDate.setMonth(workingLaterDate.getMonth() - sign * difference);
 
-  let isLastMonthNotFull =
-    (0, _index2.compareAsc)(workingLaterDate, earlierDate_) === -sign;
+	let isLastMonthNotFull =
+		(0, _index2.compareAsc)(workingLaterDate, earlierDate_) === -sign;
 
-  if (
-    (0, _index4.isLastDayOfMonth)(laterDate_) &&
-    difference === 1 &&
-    (0, _index2.compareAsc)(laterDate_, earlierDate_) === 1
-  ) {
-    isLastMonthNotFull = false;
-  }
+	if (
+		(0, _index4.isLastDayOfMonth)(laterDate_) &&
+		difference === 1 &&
+		(0, _index2.compareAsc)(laterDate_, earlierDate_) === 1
+	) {
+		isLastMonthNotFull = false;
+	}
 
-  const result = sign * (difference - +isLastMonthNotFull);
-  return result === 0 ? 0 : result;
+	const result = sign * (difference - +isLastMonthNotFull);
+	return result === 0 ? 0 : result;
 }

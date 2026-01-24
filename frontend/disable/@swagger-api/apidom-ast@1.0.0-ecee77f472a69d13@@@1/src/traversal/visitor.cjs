@@ -1,7 +1,14 @@
 "use strict";
 
 exports.__esModule = true;
-exports.visit = exports.mergeAll = exports.isNode = exports.getVisitFn = exports.getNodeType = exports.cloneNode = exports.BREAK = void 0;
+exports.visit =
+	exports.mergeAll =
+	exports.isNode =
+	exports.getVisitFn =
+	exports.getNodeType =
+	exports.cloneNode =
+	exports.BREAK =
+		void 0;
 var _apidomError = require("@swagger-api/apidom-error");
 /**
  * SPDX-FileCopyrightText: Copyright (c) GraphQL Contributors
@@ -13,58 +20,64 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 const getVisitFn = (visitor, type, isLeaving) => {
-  // @ts-ignore
-  const typeVisitor = visitor[type];
-  if (typeVisitor != null) {
-    if (!isLeaving && typeof typeVisitor === 'function') {
-      // { Type() {} }
-      return typeVisitor;
-    }
-    const typeSpecificVisitor = isLeaving ? typeVisitor.leave : typeVisitor.enter;
-    if (typeof typeSpecificVisitor === 'function') {
-      // { Type: { enter() {}, leave() {} } }
-      return typeSpecificVisitor;
-    }
-  } else {
-    const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
-    if (specificVisitor != null) {
-      if (typeof specificVisitor === 'function') {
-        // { enter() {}, leave() {} }
-        return specificVisitor;
-      }
-      // @ts-ignore
-      const specificTypeVisitor = specificVisitor[type];
-      if (typeof specificTypeVisitor === 'function') {
-        // { enter: { Type() {} }, leave: { Type() {} } }
-        return specificTypeVisitor;
-      }
-    }
-  }
-  return null;
+	// @ts-ignore
+	const typeVisitor = visitor[type];
+	if (typeVisitor != null) {
+		if (!isLeaving && typeof typeVisitor === "function") {
+			// { Type() {} }
+			return typeVisitor;
+		}
+		const typeSpecificVisitor = isLeaving
+			? typeVisitor.leave
+			: typeVisitor.enter;
+		if (typeof typeSpecificVisitor === "function") {
+			// { Type: { enter() {}, leave() {} } }
+			return typeSpecificVisitor;
+		}
+	} else {
+		const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
+		if (specificVisitor != null) {
+			if (typeof specificVisitor === "function") {
+				// { enter() {}, leave() {} }
+				return specificVisitor;
+			}
+			// @ts-ignore
+			const specificTypeVisitor = specificVisitor[type];
+			if (typeof specificTypeVisitor === "function") {
+				// { enter: { Type() {} }, leave: { Type() {} } }
+				return specificTypeVisitor;
+			}
+		}
+	}
+	return null;
 };
 
 /**
  * @public
  */
 exports.getVisitFn = getVisitFn;
-const BREAK = exports.BREAK = {};
+const BREAK = (exports.BREAK = {});
 
 /**
  * @public
  */
-const getNodeType = node => node == null ? void 0 : node.type;
+const getNodeType = (node) => (node == null ? void 0 : node.type);
 
 /**
  * @public
  */
 exports.getNodeType = getNodeType;
-const isNode = node => typeof getNodeType(node) === 'string';
+const isNode = (node) => typeof getNodeType(node) === "string";
 
 /**
  * @public
  */
 exports.isNode = isNode;
-const cloneNode = node => Object.create(Object.getPrototypeOf(node), Object.getOwnPropertyDescriptors(node));
+const cloneNode = (node) =>
+	Object.create(
+		Object.getPrototypeOf(node),
+		Object.getOwnPropertyDescriptors(node),
+	);
 
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
@@ -82,172 +95,238 @@ exports.cloneNode = cloneNode;
 /**
  * @public
  */
-const mergeAll = (visitors, {
-  visitFnGetter = getVisitFn,
-  nodeTypeGetter = getNodeType,
-  breakSymbol = BREAK,
-  deleteNodeSymbol = null,
-  skipVisitingNodeSymbol = false,
-  exposeEdits = false
-} = {}) => {
-  const skipSymbol = Symbol('skip');
-  const skipping = new Array(visitors.length).fill(skipSymbol);
-  return {
-    enter(node, key, parent, path, ancestors, link) {
-      let currentNode = node;
-      let hasChanged = false;
-      const linkProxy = {
-        ...link,
-        replaceWith(newNode, replacer) {
-          link.replaceWith(newNode, replacer);
-          currentNode = newNode;
-        }
-      };
-      for (let i = 0; i < visitors.length; i += 1) {
-        if (skipping[i] === skipSymbol) {
-          const visitFn = visitFnGetter(visitors[i], nodeTypeGetter(currentNode), false);
-          if (typeof visitFn === 'function') {
-            const result = visitFn.call(visitors[i], currentNode, key, parent, path, ancestors, linkProxy);
+const mergeAll = (
+	visitors,
+	{
+		visitFnGetter = getVisitFn,
+		nodeTypeGetter = getNodeType,
+		breakSymbol = BREAK,
+		deleteNodeSymbol = null,
+		skipVisitingNodeSymbol = false,
+		exposeEdits = false,
+	} = {},
+) => {
+	const skipSymbol = Symbol("skip");
+	const skipping = new Array(visitors.length).fill(skipSymbol);
+	return {
+		enter(node, key, parent, path, ancestors, link) {
+			let currentNode = node;
+			let hasChanged = false;
+			const linkProxy = {
+				...link,
+				replaceWith(newNode, replacer) {
+					link.replaceWith(newNode, replacer);
+					currentNode = newNode;
+				},
+			};
+			for (let i = 0; i < visitors.length; i += 1) {
+				if (skipping[i] === skipSymbol) {
+					const visitFn = visitFnGetter(
+						visitors[i],
+						nodeTypeGetter(currentNode),
+						false,
+					);
+					if (typeof visitFn === "function") {
+						const result = visitFn.call(
+							visitors[i],
+							currentNode,
+							key,
+							parent,
+							path,
+							ancestors,
+							linkProxy,
+						);
 
-            // check if the visitor is async
-            if (typeof (result == null ? void 0 : result.then) === 'function') {
-              throw new _apidomError.ApiDOMStructuredError('Async visitor not supported in sync mode', {
-                visitor: visitors[i],
-                visitFn
-              });
-            }
-            if (result === skipVisitingNodeSymbol) {
-              skipping[i] = currentNode;
-            } else if (result === breakSymbol) {
-              skipping[i] = breakSymbol;
-            } else if (result === deleteNodeSymbol) {
-              return result;
-            } else if (result !== undefined) {
-              if (exposeEdits) {
-                currentNode = result;
-                hasChanged = true;
-              } else {
-                return result;
-              }
-            }
-          }
-        }
-      }
-      return hasChanged ? currentNode : undefined;
-    },
-    leave(node, key, parent, path, ancestors, link) {
-      let currentNode = node;
-      const linkProxy = {
-        ...link,
-        replaceWith(newNode, replacer) {
-          link.replaceWith(newNode, replacer);
-          currentNode = newNode;
-        }
-      };
-      for (let i = 0; i < visitors.length; i += 1) {
-        if (skipping[i] === skipSymbol) {
-          const visitFn = visitFnGetter(visitors[i], nodeTypeGetter(currentNode), true);
-          if (typeof visitFn === 'function') {
-            const result = visitFn.call(visitors[i], currentNode, key, parent, path, ancestors, linkProxy);
+						// check if the visitor is async
+						if (typeof (result == null ? void 0 : result.then) === "function") {
+							throw new _apidomError.ApiDOMStructuredError(
+								"Async visitor not supported in sync mode",
+								{
+									visitor: visitors[i],
+									visitFn,
+								},
+							);
+						}
+						if (result === skipVisitingNodeSymbol) {
+							skipping[i] = currentNode;
+						} else if (result === breakSymbol) {
+							skipping[i] = breakSymbol;
+						} else if (result === deleteNodeSymbol) {
+							return result;
+						} else if (result !== undefined) {
+							if (exposeEdits) {
+								currentNode = result;
+								hasChanged = true;
+							} else {
+								return result;
+							}
+						}
+					}
+				}
+			}
+			return hasChanged ? currentNode : undefined;
+		},
+		leave(node, key, parent, path, ancestors, link) {
+			let currentNode = node;
+			const linkProxy = {
+				...link,
+				replaceWith(newNode, replacer) {
+					link.replaceWith(newNode, replacer);
+					currentNode = newNode;
+				},
+			};
+			for (let i = 0; i < visitors.length; i += 1) {
+				if (skipping[i] === skipSymbol) {
+					const visitFn = visitFnGetter(
+						visitors[i],
+						nodeTypeGetter(currentNode),
+						true,
+					);
+					if (typeof visitFn === "function") {
+						const result = visitFn.call(
+							visitors[i],
+							currentNode,
+							key,
+							parent,
+							path,
+							ancestors,
+							linkProxy,
+						);
 
-            // check if the visitor is async
-            if (typeof (result == null ? void 0 : result.then) === 'function') {
-              throw new _apidomError.ApiDOMStructuredError('Async visitor not supported in sync mode', {
-                visitor: visitors[i],
-                visitFn
-              });
-            }
-            if (result === breakSymbol) {
-              skipping[i] = breakSymbol;
-            } else if (result !== undefined && result !== skipVisitingNodeSymbol) {
-              return result;
-            }
-          }
-        } else if (skipping[i] === currentNode) {
-          skipping[i] = skipSymbol;
-        }
-      }
-      return undefined;
-    }
-  };
+						// check if the visitor is async
+						if (typeof (result == null ? void 0 : result.then) === "function") {
+							throw new _apidomError.ApiDOMStructuredError(
+								"Async visitor not supported in sync mode",
+								{
+									visitor: visitors[i],
+									visitFn,
+								},
+							);
+						}
+						if (result === breakSymbol) {
+							skipping[i] = breakSymbol;
+						} else if (
+							result !== undefined &&
+							result !== skipVisitingNodeSymbol
+						) {
+							return result;
+						}
+					}
+				} else if (skipping[i] === currentNode) {
+					skipping[i] = skipSymbol;
+				}
+			}
+			return undefined;
+		},
+	};
 };
 exports.mergeAll = mergeAll;
-const mergeAllAsync = (visitors, {
-  visitFnGetter = getVisitFn,
-  nodeTypeGetter = getNodeType,
-  breakSymbol = BREAK,
-  deleteNodeSymbol = null,
-  skipVisitingNodeSymbol = false,
-  exposeEdits = false
-} = {}) => {
-  const skipSymbol = Symbol('skip');
-  const skipping = new Array(visitors.length).fill(skipSymbol);
-  return {
-    async enter(node, key, parent, path, ancestors, link) {
-      let currentNode = node;
-      let hasChanged = false;
-      const linkProxy = {
-        ...link,
-        replaceWith(newNode, replacer) {
-          link.replaceWith(newNode, replacer);
-          currentNode = newNode;
-        }
-      };
-      for (let i = 0; i < visitors.length; i += 1) {
-        if (skipping[i] === skipSymbol) {
-          const visitFn = visitFnGetter(visitors[i], nodeTypeGetter(currentNode), false);
-          if (typeof visitFn === 'function') {
-            // eslint-disable-next-line no-await-in-loop
-            const result = await visitFn.call(visitors[i], currentNode, key, parent, path, ancestors, linkProxy);
-            if (result === skipVisitingNodeSymbol) {
-              skipping[i] = currentNode;
-            } else if (result === breakSymbol) {
-              skipping[i] = breakSymbol;
-            } else if (result === deleteNodeSymbol) {
-              return result;
-            } else if (result !== undefined) {
-              if (exposeEdits) {
-                currentNode = result;
-                hasChanged = true;
-              } else {
-                return result;
-              }
-            }
-          }
-        }
-      }
-      return hasChanged ? currentNode : undefined;
-    },
-    async leave(node, key, parent, path, ancestors, link) {
-      let currentNode = node;
-      const linkProxy = {
-        ...link,
-        replaceWith(newNode, replacer) {
-          link.replaceWith(newNode, replacer);
-          currentNode = newNode;
-        }
-      };
-      for (let i = 0; i < visitors.length; i += 1) {
-        if (skipping[i] === skipSymbol) {
-          const visitFn = visitFnGetter(visitors[i], nodeTypeGetter(currentNode), true);
-          if (typeof visitFn === 'function') {
-            // eslint-disable-next-line no-await-in-loop
-            const result = await visitFn.call(visitors[i], currentNode, key, parent, path, ancestors, linkProxy);
-            if (result === breakSymbol) {
-              skipping[i] = breakSymbol;
-            } else if (result !== undefined && result !== skipVisitingNodeSymbol) {
-              return result;
-            }
-          }
-        } else if (skipping[i] === currentNode) {
-          skipping[i] = skipSymbol;
-        }
-      }
-      return undefined;
-    }
-  };
+const mergeAllAsync = (
+	visitors,
+	{
+		visitFnGetter = getVisitFn,
+		nodeTypeGetter = getNodeType,
+		breakSymbol = BREAK,
+		deleteNodeSymbol = null,
+		skipVisitingNodeSymbol = false,
+		exposeEdits = false,
+	} = {},
+) => {
+	const skipSymbol = Symbol("skip");
+	const skipping = new Array(visitors.length).fill(skipSymbol);
+	return {
+		async enter(node, key, parent, path, ancestors, link) {
+			let currentNode = node;
+			let hasChanged = false;
+			const linkProxy = {
+				...link,
+				replaceWith(newNode, replacer) {
+					link.replaceWith(newNode, replacer);
+					currentNode = newNode;
+				},
+			};
+			for (let i = 0; i < visitors.length; i += 1) {
+				if (skipping[i] === skipSymbol) {
+					const visitFn = visitFnGetter(
+						visitors[i],
+						nodeTypeGetter(currentNode),
+						false,
+					);
+					if (typeof visitFn === "function") {
+						// eslint-disable-next-line no-await-in-loop
+						const result = await visitFn.call(
+							visitors[i],
+							currentNode,
+							key,
+							parent,
+							path,
+							ancestors,
+							linkProxy,
+						);
+						if (result === skipVisitingNodeSymbol) {
+							skipping[i] = currentNode;
+						} else if (result === breakSymbol) {
+							skipping[i] = breakSymbol;
+						} else if (result === deleteNodeSymbol) {
+							return result;
+						} else if (result !== undefined) {
+							if (exposeEdits) {
+								currentNode = result;
+								hasChanged = true;
+							} else {
+								return result;
+							}
+						}
+					}
+				}
+			}
+			return hasChanged ? currentNode : undefined;
+		},
+		async leave(node, key, parent, path, ancestors, link) {
+			let currentNode = node;
+			const linkProxy = {
+				...link,
+				replaceWith(newNode, replacer) {
+					link.replaceWith(newNode, replacer);
+					currentNode = newNode;
+				},
+			};
+			for (let i = 0; i < visitors.length; i += 1) {
+				if (skipping[i] === skipSymbol) {
+					const visitFn = visitFnGetter(
+						visitors[i],
+						nodeTypeGetter(currentNode),
+						true,
+					);
+					if (typeof visitFn === "function") {
+						// eslint-disable-next-line no-await-in-loop
+						const result = await visitFn.call(
+							visitors[i],
+							currentNode,
+							key,
+							parent,
+							path,
+							ancestors,
+							linkProxy,
+						);
+						if (result === breakSymbol) {
+							skipping[i] = breakSymbol;
+						} else if (
+							result !== undefined &&
+							result !== skipVisitingNodeSymbol
+						) {
+							return result;
+						}
+					}
+				} else if (skipping[i] === currentNode) {
+					skipping[i] = skipSymbol;
+				}
+			}
+			return undefined;
+		},
+	};
 };
-mergeAll[Symbol.for('nodejs.util.promisify.custom')] = mergeAllAsync;
+mergeAll[Symbol.for("nodejs.util.promisify.custom")] = mergeAllAsync;
 
 /* eslint-disable no-continue, no-param-reassign */
 /**
@@ -345,178 +424,201 @@ mergeAll[Symbol.for('nodejs.util.promisify.custom')] = mergeAllAsync;
  *  @public
  */
 const visit = (
-// @ts-ignore
-root,
-// @ts-ignore
-visitor, {
-  keyMap = null,
-  state = {},
-  breakSymbol = BREAK,
-  deleteNodeSymbol = null,
-  skipVisitingNodeSymbol = false,
-  visitFnGetter = getVisitFn,
-  nodeTypeGetter = getNodeType,
-  nodePredicate = isNode,
-  nodeCloneFn = cloneNode,
-  detectCycles = true,
-  detectCyclesCallback = null
-} = {}) => {
-  const visitorKeys = keyMap || {};
-  let stack;
-  let inArray = Array.isArray(root);
-  let keys = [root];
-  let index = -1;
-  let parent;
-  let edits = [];
-  let node = root;
-  const path = [];
-  // @ts-ignore
-  const ancestors = [];
-  do {
-    index += 1;
-    const isLeaving = index === keys.length;
-    let key;
-    const isEdited = isLeaving && edits.length !== 0;
-    if (isLeaving) {
-      key = ancestors.length === 0 ? undefined : path.pop();
-      node = parent;
-      // @ts-ignore
-      parent = ancestors.pop();
-      if (isEdited) {
-        if (inArray) {
-          // @ts-ignore; creating clone
-          node = node.slice();
-          let editOffset = 0;
-          for (const [editKey, editValue] of edits) {
-            const arrayKey = editKey - editOffset;
-            if (editValue === deleteNodeSymbol) {
-              node.splice(arrayKey, 1);
-              editOffset += 1;
-            } else {
-              node[arrayKey] = editValue;
-            }
-          }
-        } else {
-          // creating clone
-          node = nodeCloneFn(node);
-          for (const [editKey, editValue] of edits) {
-            node[editKey] = editValue;
-          }
-        }
-      }
-      index = stack.index;
-      keys = stack.keys;
-      // @ts-ignore
-      edits = stack.edits;
-      // @ts-ignore
-      inArray = stack.inArray;
-      // @ts-ignore
-      stack = stack.prev;
-    } else if (parent !== deleteNodeSymbol && parent !== undefined) {
-      key = inArray ? index : keys[index];
-      node = parent[key];
-      if (node === deleteNodeSymbol || node === undefined) {
-        continue;
-      }
-      path.push(key);
-    }
-    let result;
-    if (!Array.isArray(node)) {
-      var _result;
-      if (!nodePredicate(node)) {
-        throw new _apidomError.ApiDOMStructuredError(`Invalid AST Node:  ${String(node)}`, {
-          node
-        });
-      }
+	// @ts-ignore
+	root,
+	// @ts-ignore
+	visitor,
+	{
+		keyMap = null,
+		state = {},
+		breakSymbol = BREAK,
+		deleteNodeSymbol = null,
+		skipVisitingNodeSymbol = false,
+		visitFnGetter = getVisitFn,
+		nodeTypeGetter = getNodeType,
+		nodePredicate = isNode,
+		nodeCloneFn = cloneNode,
+		detectCycles = true,
+		detectCyclesCallback = null,
+	} = {},
+) => {
+	const visitorKeys = keyMap || {};
+	let stack;
+	let inArray = Array.isArray(root);
+	let keys = [root];
+	let index = -1;
+	let parent;
+	let edits = [];
+	let node = root;
+	const path = [];
+	// @ts-ignore
+	const ancestors = [];
+	do {
+		index += 1;
+		const isLeaving = index === keys.length;
+		let key;
+		const isEdited = isLeaving && edits.length !== 0;
+		if (isLeaving) {
+			key = ancestors.length === 0 ? undefined : path.pop();
+			node = parent;
+			// @ts-ignore
+			parent = ancestors.pop();
+			if (isEdited) {
+				if (inArray) {
+					// @ts-ignore; creating clone
+					node = node.slice();
+					let editOffset = 0;
+					for (const [editKey, editValue] of edits) {
+						const arrayKey = editKey - editOffset;
+						if (editValue === deleteNodeSymbol) {
+							node.splice(arrayKey, 1);
+							editOffset += 1;
+						} else {
+							node[arrayKey] = editValue;
+						}
+					}
+				} else {
+					// creating clone
+					node = nodeCloneFn(node);
+					for (const [editKey, editValue] of edits) {
+						node[editKey] = editValue;
+					}
+				}
+			}
+			index = stack.index;
+			keys = stack.keys;
+			// @ts-ignore
+			edits = stack.edits;
+			// @ts-ignore
+			inArray = stack.inArray;
+			// @ts-ignore
+			stack = stack.prev;
+		} else if (parent !== deleteNodeSymbol && parent !== undefined) {
+			key = inArray ? index : keys[index];
+			node = parent[key];
+			if (node === deleteNodeSymbol || node === undefined) {
+				continue;
+			}
+			path.push(key);
+		}
+		let result;
+		if (!Array.isArray(node)) {
+			var _result;
+			if (!nodePredicate(node)) {
+				throw new _apidomError.ApiDOMStructuredError(
+					`Invalid AST Node:  ${String(node)}`,
+					{
+						node,
+					},
+				);
+			}
 
-      // cycle detected; skipping over a sub-tree to avoid recursion
-      if (detectCycles && ancestors.includes(node)) {
-        if (typeof detectCyclesCallback === 'function') {
-          // @ts-ignore
-          detectCyclesCallback(node, key, parent, path, ancestors);
-        }
-        path.pop();
-        continue;
-      }
-      // call appropriate visitor function if available
-      const visitFn = visitFnGetter(visitor, nodeTypeGetter(node), isLeaving);
-      if (visitFn) {
-        // assign state
-        for (const [stateKey, stateValue] of Object.entries(state)) {
-          visitor[stateKey] = stateValue;
-        }
-        const link = {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          replaceWith(newNode, replacer) {
-            if (typeof replacer === 'function') {
-              replacer(newNode, node, key, parent, path, ancestors);
-            } else if (parent) {
-              parent[key] = newNode;
-            }
-            if (!isLeaving) {
-              node = newNode;
-            }
-          }
-        };
+			// cycle detected; skipping over a sub-tree to avoid recursion
+			if (detectCycles && ancestors.includes(node)) {
+				if (typeof detectCyclesCallback === "function") {
+					// @ts-ignore
+					detectCyclesCallback(node, key, parent, path, ancestors);
+				}
+				path.pop();
+				continue;
+			}
+			// call appropriate visitor function if available
+			const visitFn = visitFnGetter(visitor, nodeTypeGetter(node), isLeaving);
+			if (visitFn) {
+				// assign state
+				for (const [stateKey, stateValue] of Object.entries(state)) {
+					visitor[stateKey] = stateValue;
+				}
+				const link = {
+					// eslint-disable-next-line @typescript-eslint/no-loop-func
+					replaceWith(newNode, replacer) {
+						if (typeof replacer === "function") {
+							replacer(newNode, node, key, parent, path, ancestors);
+						} else if (parent) {
+							parent[key] = newNode;
+						}
+						if (!isLeaving) {
+							node = newNode;
+						}
+					},
+				};
 
-        // retrieve result
-        result = visitFn.call(visitor, node, key, parent, path, ancestors, link);
-      }
+				// retrieve result
+				result = visitFn.call(
+					visitor,
+					node,
+					key,
+					parent,
+					path,
+					ancestors,
+					link,
+				);
+			}
 
-      // check if the visitor is async
-      if (typeof ((_result = result) == null ? void 0 : _result.then) === 'function') {
-        throw new _apidomError.ApiDOMStructuredError('Async visitor not supported in sync mode', {
-          visitor,
-          visitFn
-        });
-      }
-      if (result === breakSymbol) {
-        break;
-      }
-      if (result === skipVisitingNodeSymbol) {
-        if (!isLeaving) {
-          path.pop();
-          continue;
-        }
-      } else if (result !== undefined) {
-        edits.push([key, result]);
-        if (!isLeaving) {
-          if (nodePredicate(result)) {
-            node = result;
-          } else {
-            path.pop();
-            continue;
-          }
-        }
-      }
-    }
-    if (result === undefined && isEdited) {
-      edits.push([key, node]);
-    }
-    if (!isLeaving) {
-      var _visitorKeys$nodeType;
-      stack = {
-        inArray,
-        index,
-        keys,
-        edits,
-        prev: stack
-      };
-      inArray = Array.isArray(node);
-      // @ts-ignore
-      keys = inArray ? node : (_visitorKeys$nodeType = visitorKeys[nodeTypeGetter(node)]) != null ? _visitorKeys$nodeType : [];
-      index = -1;
-      edits = [];
-      if (parent !== deleteNodeSymbol && parent !== undefined) {
-        ancestors.push(parent);
-      }
-      parent = node;
-    }
-  } while (stack !== undefined);
-  if (edits.length !== 0) {
-    return edits[edits.length - 1][1]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
-  }
-  return root;
+			// check if the visitor is async
+			if (
+				typeof ((_result = result) == null ? void 0 : _result.then) ===
+				"function"
+			) {
+				throw new _apidomError.ApiDOMStructuredError(
+					"Async visitor not supported in sync mode",
+					{
+						visitor,
+						visitFn,
+					},
+				);
+			}
+			if (result === breakSymbol) {
+				break;
+			}
+			if (result === skipVisitingNodeSymbol) {
+				if (!isLeaving) {
+					path.pop();
+					continue;
+				}
+			} else if (result !== undefined) {
+				edits.push([key, result]);
+				if (!isLeaving) {
+					if (nodePredicate(result)) {
+						node = result;
+					} else {
+						path.pop();
+						continue;
+					}
+				}
+			}
+		}
+		if (result === undefined && isEdited) {
+			edits.push([key, node]);
+		}
+		if (!isLeaving) {
+			var _visitorKeys$nodeType;
+			stack = {
+				inArray,
+				index,
+				keys,
+				edits,
+				prev: stack,
+			};
+			inArray = Array.isArray(node);
+			// @ts-ignore
+			keys = inArray
+				? node
+				: (_visitorKeys$nodeType = visitorKeys[nodeTypeGetter(node)]) != null
+					? _visitorKeys$nodeType
+					: [];
+			index = -1;
+			edits = [];
+			if (parent !== deleteNodeSymbol && parent !== undefined) {
+				ancestors.push(parent);
+			}
+			parent = node;
+		}
+	} while (stack !== undefined);
+	if (edits.length !== 0) {
+		return edits[edits.length - 1][1]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
+	}
+	return root;
 };
 
 /**
@@ -524,169 +626,186 @@ visitor, {
  */
 // @ts-ignore
 exports.visit = visit;
-visit[Symbol.for('nodejs.util.promisify.custom')] = async (
-// @ts-ignore
-root,
-// @ts-ignore
-visitor, {
-  keyMap = null,
-  state = {},
-  breakSymbol = BREAK,
-  deleteNodeSymbol = null,
-  skipVisitingNodeSymbol = false,
-  visitFnGetter = getVisitFn,
-  nodeTypeGetter = getNodeType,
-  nodePredicate = isNode,
-  nodeCloneFn = cloneNode,
-  detectCycles = true,
-  detectCyclesCallback = null
-} = {}) => {
-  const visitorKeys = keyMap || {};
-  let stack;
-  let inArray = Array.isArray(root);
-  let keys = [root];
-  let index = -1;
-  let parent;
-  let edits = [];
-  let node = root;
-  const path = [];
-  // @ts-ignore
-  const ancestors = [];
-  do {
-    index += 1;
-    const isLeaving = index === keys.length;
-    let key;
-    const isEdited = isLeaving && edits.length !== 0;
-    if (isLeaving) {
-      key = ancestors.length === 0 ? undefined : path.pop();
-      node = parent;
-      // @ts-ignore
-      parent = ancestors.pop();
-      if (isEdited) {
-        if (inArray) {
-          // @ts-ignore; creating clone
-          node = node.slice();
-          let editOffset = 0;
-          for (const [editKey, editValue] of edits) {
-            const arrayKey = editKey - editOffset;
-            if (editValue === deleteNodeSymbol) {
-              node.splice(arrayKey, 1);
-              editOffset += 1;
-            } else {
-              node[arrayKey] = editValue;
-            }
-          }
-        } else {
-          // creating clone
-          node = nodeCloneFn(node);
-          for (const [editKey, editValue] of edits) {
-            node[editKey] = editValue;
-          }
-        }
-      }
-      index = stack.index;
-      keys = stack.keys;
-      // @ts-ignore
-      edits = stack.edits;
-      // @ts-ignore
-      inArray = stack.inArray;
-      // @ts-ignore
-      stack = stack.prev;
-    } else if (parent !== deleteNodeSymbol && parent !== undefined) {
-      key = inArray ? index : keys[index];
-      node = parent[key];
-      if (node === deleteNodeSymbol || node === undefined) {
-        continue;
-      }
-      path.push(key);
-    }
-    let result;
-    if (!Array.isArray(node)) {
-      if (!nodePredicate(node)) {
-        throw new _apidomError.ApiDOMStructuredError(`Invalid AST Node: ${String(node)}`, {
-          node
-        });
-      }
+visit[Symbol.for("nodejs.util.promisify.custom")] = async (
+	// @ts-ignore
+	root,
+	// @ts-ignore
+	visitor,
+	{
+		keyMap = null,
+		state = {},
+		breakSymbol = BREAK,
+		deleteNodeSymbol = null,
+		skipVisitingNodeSymbol = false,
+		visitFnGetter = getVisitFn,
+		nodeTypeGetter = getNodeType,
+		nodePredicate = isNode,
+		nodeCloneFn = cloneNode,
+		detectCycles = true,
+		detectCyclesCallback = null,
+	} = {},
+) => {
+	const visitorKeys = keyMap || {};
+	let stack;
+	let inArray = Array.isArray(root);
+	let keys = [root];
+	let index = -1;
+	let parent;
+	let edits = [];
+	let node = root;
+	const path = [];
+	// @ts-ignore
+	const ancestors = [];
+	do {
+		index += 1;
+		const isLeaving = index === keys.length;
+		let key;
+		const isEdited = isLeaving && edits.length !== 0;
+		if (isLeaving) {
+			key = ancestors.length === 0 ? undefined : path.pop();
+			node = parent;
+			// @ts-ignore
+			parent = ancestors.pop();
+			if (isEdited) {
+				if (inArray) {
+					// @ts-ignore; creating clone
+					node = node.slice();
+					let editOffset = 0;
+					for (const [editKey, editValue] of edits) {
+						const arrayKey = editKey - editOffset;
+						if (editValue === deleteNodeSymbol) {
+							node.splice(arrayKey, 1);
+							editOffset += 1;
+						} else {
+							node[arrayKey] = editValue;
+						}
+					}
+				} else {
+					// creating clone
+					node = nodeCloneFn(node);
+					for (const [editKey, editValue] of edits) {
+						node[editKey] = editValue;
+					}
+				}
+			}
+			index = stack.index;
+			keys = stack.keys;
+			// @ts-ignore
+			edits = stack.edits;
+			// @ts-ignore
+			inArray = stack.inArray;
+			// @ts-ignore
+			stack = stack.prev;
+		} else if (parent !== deleteNodeSymbol && parent !== undefined) {
+			key = inArray ? index : keys[index];
+			node = parent[key];
+			if (node === deleteNodeSymbol || node === undefined) {
+				continue;
+			}
+			path.push(key);
+		}
+		let result;
+		if (!Array.isArray(node)) {
+			if (!nodePredicate(node)) {
+				throw new _apidomError.ApiDOMStructuredError(
+					`Invalid AST Node: ${String(node)}`,
+					{
+						node,
+					},
+				);
+			}
 
-      // cycle detected; skipping over a sub-tree to avoid recursion
-      if (detectCycles && ancestors.includes(node)) {
-        if (typeof detectCyclesCallback === 'function') {
-          // @ts-ignore
-          detectCyclesCallback(node, key, parent, path, ancestors);
-        }
-        path.pop();
-        continue;
-      }
-      const visitFn = visitFnGetter(visitor, nodeTypeGetter(node), isLeaving);
-      if (visitFn) {
-        // assign state
-        for (const [stateKey, stateValue] of Object.entries(state)) {
-          visitor[stateKey] = stateValue;
-        }
-        const link = {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          replaceWith(newNode, replacer) {
-            if (typeof replacer === 'function') {
-              replacer(newNode, node, key, parent, path, ancestors);
-            } else if (parent) {
-              parent[key] = newNode;
-            }
-            if (!isLeaving) {
-              node = newNode;
-            }
-          }
-        };
+			// cycle detected; skipping over a sub-tree to avoid recursion
+			if (detectCycles && ancestors.includes(node)) {
+				if (typeof detectCyclesCallback === "function") {
+					// @ts-ignore
+					detectCyclesCallback(node, key, parent, path, ancestors);
+				}
+				path.pop();
+				continue;
+			}
+			const visitFn = visitFnGetter(visitor, nodeTypeGetter(node), isLeaving);
+			if (visitFn) {
+				// assign state
+				for (const [stateKey, stateValue] of Object.entries(state)) {
+					visitor[stateKey] = stateValue;
+				}
+				const link = {
+					// eslint-disable-next-line @typescript-eslint/no-loop-func
+					replaceWith(newNode, replacer) {
+						if (typeof replacer === "function") {
+							replacer(newNode, node, key, parent, path, ancestors);
+						} else if (parent) {
+							parent[key] = newNode;
+						}
+						if (!isLeaving) {
+							node = newNode;
+						}
+					},
+				};
 
-        // retrieve result
-        result = await visitFn.call(visitor, node, key, parent, path, ancestors, link); // eslint-disable-line no-await-in-loop
-      }
-      if (result === breakSymbol) {
-        break;
-      }
-      if (result === skipVisitingNodeSymbol) {
-        if (!isLeaving) {
-          path.pop();
-          continue;
-        }
-      } else if (result !== undefined) {
-        edits.push([key, result]);
-        if (!isLeaving) {
-          if (nodePredicate(result)) {
-            node = result;
-          } else {
-            path.pop();
-            continue;
-          }
-        }
-      }
-    }
-    if (result === undefined && isEdited) {
-      edits.push([key, node]);
-    }
-    if (!isLeaving) {
-      var _visitorKeys$nodeType2;
-      stack = {
-        inArray,
-        index,
-        keys,
-        edits,
-        prev: stack
-      };
-      inArray = Array.isArray(node);
-      // @ts-ignore
-      keys = inArray ? node : (_visitorKeys$nodeType2 = visitorKeys[nodeTypeGetter(node)]) != null ? _visitorKeys$nodeType2 : [];
-      index = -1;
-      edits = [];
-      if (parent !== deleteNodeSymbol && parent !== undefined) {
-        ancestors.push(parent);
-      }
-      parent = node;
-    }
-  } while (stack !== undefined);
-  if (edits.length !== 0) {
-    return edits[edits.length - 1][1]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
-  }
-  return root;
+				// retrieve result
+				result = await visitFn.call(
+					visitor,
+					node,
+					key,
+					parent,
+					path,
+					ancestors,
+					link,
+				); // eslint-disable-line no-await-in-loop
+			}
+			if (result === breakSymbol) {
+				break;
+			}
+			if (result === skipVisitingNodeSymbol) {
+				if (!isLeaving) {
+					path.pop();
+					continue;
+				}
+			} else if (result !== undefined) {
+				edits.push([key, result]);
+				if (!isLeaving) {
+					if (nodePredicate(result)) {
+						node = result;
+					} else {
+						path.pop();
+						continue;
+					}
+				}
+			}
+		}
+		if (result === undefined && isEdited) {
+			edits.push([key, node]);
+		}
+		if (!isLeaving) {
+			var _visitorKeys$nodeType2;
+			stack = {
+				inArray,
+				index,
+				keys,
+				edits,
+				prev: stack,
+			};
+			inArray = Array.isArray(node);
+			// @ts-ignore
+			keys = inArray
+				? node
+				: (_visitorKeys$nodeType2 = visitorKeys[nodeTypeGetter(node)]) != null
+					? _visitorKeys$nodeType2
+					: [];
+			index = -1;
+			edits = [];
+			if (parent !== deleteNodeSymbol && parent !== undefined) {
+				ancestors.push(parent);
+			}
+			parent = node;
+		}
+	} while (stack !== undefined);
+	if (edits.length !== 0) {
+		return edits[edits.length - 1][1]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
+	}
+	return root;
 };
 
 /* eslint-enable */

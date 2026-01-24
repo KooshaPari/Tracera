@@ -1,5 +1,5 @@
-var assignValue = require('./_assignValue'),
-    baseZipObject = require('./_baseZipObject');
+var assignValue = require("./_assignValue"),
+	baseZipObject = require("./_baseZipObject");
 
 /**
  * This method is like `_.fromPairs` except that it accepts two arrays,
@@ -18,7 +18,7 @@ var assignValue = require('./_assignValue'),
  * // => { 'a': 1, 'b': 2 }
  */
 function zipObject(props, values) {
-  return baseZipObject(props || [], values || [], assignValue);
+	return baseZipObject(props || [], values || [], assignValue);
 }
 
 module.exports = zipObject;

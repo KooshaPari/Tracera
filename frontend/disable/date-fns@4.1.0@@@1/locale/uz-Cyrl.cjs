@@ -14,14 +14,14 @@ var _index5 = require("./uz-Cyrl/_lib/match.cjs");
  * @author Kamronbek Shodmonov [@kamronbek28](https://github.com/kamronbek28)
  */
 const uzCyrl = (exports.uzCyrl = {
-  code: "uz-Cyrl",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "uz-Cyrl",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 });

@@ -7,38 +7,38 @@ exports.FILTER_REJECT = 2; // NodeFilter.FILTER_REJECT
 exports.FILTER_SKIP = 3; // NodeFilter.FILTER_SKIP
 
 exports.filter = (nodeIteratorOrTreeWalkerImpl, nodeImpl) => {
-  if (nodeIteratorOrTreeWalkerImpl._active) {
-    throw DOMException.create(nodeIteratorOrTreeWalkerImpl._globalObject, [
-      "Recursive node filtering",
-      "InvalidStateError"
-    ]);
-  }
+	if (nodeIteratorOrTreeWalkerImpl._active) {
+		throw DOMException.create(nodeIteratorOrTreeWalkerImpl._globalObject, [
+			"Recursive node filtering",
+			"InvalidStateError",
+		]);
+	}
 
-  const n = nodeImpl.nodeType - 1;
+	const n = nodeImpl.nodeType - 1;
 
-  if (!((1 << n) & nodeIteratorOrTreeWalkerImpl.whatToShow)) {
-    return exports.FILTER_SKIP;
-  }
+	if (!((1 << n) & nodeIteratorOrTreeWalkerImpl.whatToShow)) {
+		return exports.FILTER_SKIP;
+	}
 
-  // Saving in a variable is important so we don't accidentally call it as a method later.
-  const { filter } = nodeIteratorOrTreeWalkerImpl;
+	// Saving in a variable is important so we don't accidentally call it as a method later.
+	const { filter } = nodeIteratorOrTreeWalkerImpl;
 
-  if (filter === null) {
-    return exports.FILTER_ACCEPT;
-  }
+	if (filter === null) {
+		return exports.FILTER_ACCEPT;
+	}
 
-  nodeIteratorOrTreeWalkerImpl._active = true;
+	nodeIteratorOrTreeWalkerImpl._active = true;
 
-  let result;
+	let result;
 
-  // https://github.com/whatwg/dom/issues/494
-  try {
-    result = filter(nodeImpl);
-  } finally {
-    nodeIteratorOrTreeWalkerImpl._active = false;
-  }
+	// https://github.com/whatwg/dom/issues/494
+	try {
+		result = filter(nodeImpl);
+	} finally {
+		nodeIteratorOrTreeWalkerImpl._active = false;
+	}
 
-  result = conversions["unsigned short"](result);
+	result = conversions["unsigned short"](result);
 
-  return result;
+	return result;
 };

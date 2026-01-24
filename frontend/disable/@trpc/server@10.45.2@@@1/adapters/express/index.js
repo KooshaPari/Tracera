@@ -1,1 +1,1 @@
-module.exports = require('../../dist/adapters/express');
+module.exports = require("../../dist/adapters/express");

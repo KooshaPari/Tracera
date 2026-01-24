@@ -1,4 +1,4 @@
-var getMapData = require('./_getMapData');
+var getMapData = require("./_getMapData");
 
 /**
  * Gets the map value for `key`.
@@ -10,7 +10,7 @@ var getMapData = require('./_getMapData');
  * @returns {*} Returns the entry value.
  */
 function mapCacheGet(key) {
-  return getMapData(this, key).get(key);
+	return getMapData(this, key).get(key);
 }
 
 module.exports = mapCacheGet;

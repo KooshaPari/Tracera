@@ -25,11 +25,11 @@ import { constructNow } from "./constructNow.js";
  * //=> Sun Oct 5 2014 23:59:59.999
  */
 export function endOfYesterday(options) {
-  const now = constructNow(options?.in);
-  const date = constructFrom(options?.in, 0);
-  date.setFullYear(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  date.setHours(23, 59, 59, 999);
-  return date;
+	const now = constructNow(options?.in);
+	const date = constructFrom(options?.in, 0);
+	date.setFullYear(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+	date.setHours(23, 59, 59, 999);
+	return date;
 }
 
 // Fallback for modularized imports:

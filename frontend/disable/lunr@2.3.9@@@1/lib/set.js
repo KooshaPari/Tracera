@@ -9,18 +9,18 @@
  * @constructor
  */
 lunr.Set = function (elements) {
-  this.elements = Object.create(null)
+	this.elements = Object.create(null);
 
-  if (elements) {
-    this.length = elements.length
+	if (elements) {
+		this.length = elements.length;
 
-    for (var i = 0; i < this.length; i++) {
-      this.elements[elements[i]] = true
-    }
-  } else {
-    this.length = 0
-  }
-}
+		for (var i = 0; i < this.length; i++) {
+			this.elements[elements[i]] = true;
+		}
+	} else {
+		this.length = 0;
+	}
+};
 
 /**
  * A complete set that contains all elements.
@@ -30,18 +30,14 @@ lunr.Set = function (elements) {
  * @type {lunr.Set}
  */
 lunr.Set.complete = {
-  intersect: function (other) {
-    return other
-  },
+	intersect: (other) => other,
 
-  union: function () {
-    return this
-  },
+	union: function () {
+		return this;
+	},
 
-  contains: function () {
-    return true
-  }
-}
+	contains: () => true,
+};
 
 /**
  * An empty set that contains no elements.
@@ -51,18 +47,14 @@ lunr.Set.complete = {
  * @type {lunr.Set}
  */
 lunr.Set.empty = {
-  intersect: function () {
-    return this
-  },
+	intersect: function () {
+		return this;
+	},
 
-  union: function (other) {
-    return other
-  },
+	union: (other) => other,
 
-  contains: function () {
-    return false
-  }
-}
+	contains: () => false,
+};
 
 /**
  * Returns true if this set contains the specified object.
@@ -71,8 +63,8 @@ lunr.Set.empty = {
  * @returns {boolean} - True if this set contains the specified object.
  */
 lunr.Set.prototype.contains = function (object) {
-  return !!this.elements[object]
-}
+	return !!this.elements[object];
+};
 
 /**
  * Returns a new set containing only the elements that are present in both
@@ -83,35 +75,38 @@ lunr.Set.prototype.contains = function (object) {
  */
 
 lunr.Set.prototype.intersect = function (other) {
-  var a, b, elements, intersection = []
+	var a,
+		b,
+		elements,
+		intersection = [];
 
-  if (other === lunr.Set.complete) {
-    return this
-  }
+	if (other === lunr.Set.complete) {
+		return this;
+	}
 
-  if (other === lunr.Set.empty) {
-    return other
-  }
+	if (other === lunr.Set.empty) {
+		return other;
+	}
 
-  if (this.length < other.length) {
-    a = this
-    b = other
-  } else {
-    a = other
-    b = this
-  }
+	if (this.length < other.length) {
+		a = this;
+		b = other;
+	} else {
+		a = other;
+		b = this;
+	}
 
-  elements = Object.keys(a.elements)
+	elements = Object.keys(a.elements);
 
-  for (var i = 0; i < elements.length; i++) {
-    var element = elements[i]
-    if (element in b.elements) {
-      intersection.push(element)
-    }
-  }
+	for (var i = 0; i < elements.length; i++) {
+		var element = elements[i];
+		if (element in b.elements) {
+			intersection.push(element);
+		}
+	}
 
-  return new lunr.Set (intersection)
-}
+	return new lunr.Set(intersection);
+};
 
 /**
  * Returns a new set combining the elements of this and the specified set.
@@ -121,13 +116,15 @@ lunr.Set.prototype.intersect = function (other) {
  */
 
 lunr.Set.prototype.union = function (other) {
-  if (other === lunr.Set.complete) {
-    return lunr.Set.complete
-  }
+	if (other === lunr.Set.complete) {
+		return lunr.Set.complete;
+	}
 
-  if (other === lunr.Set.empty) {
-    return this
-  }
+	if (other === lunr.Set.empty) {
+		return this;
+	}
 
-  return new lunr.Set(Object.keys(this.elements).concat(Object.keys(other.elements)))
-}
+	return new lunr.Set(
+		Object.keys(this.elements).concat(Object.keys(other.elements)),
+	);
+};

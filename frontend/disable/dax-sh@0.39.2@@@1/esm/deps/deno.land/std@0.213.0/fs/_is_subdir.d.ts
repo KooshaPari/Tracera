@@ -5,4 +5,8 @@
  * @param dest dest file path
  * @param sep path separator
  */
-export declare function isSubdir(src: string | URL, dest: string | URL, sep?: "\\" | "/"): boolean;
+export declare function isSubdir(
+	src: string | URL,
+	dest: string | URL,
+	sep?: "\\" | "/",
+): boolean;

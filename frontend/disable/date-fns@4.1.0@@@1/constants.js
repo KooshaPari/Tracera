@@ -51,7 +51,7 @@ export const daysInYear = 365.2425;
  * new Date(8640000000000001);
  * //=> Invalid Date
  */
-export const maxTime = Math.pow(10, 8) * 24 * 60 * 60 * 1000;
+export const maxTime = 10 ** 8 * 24 * 60 * 60 * 1000;
 
 /**
  * @constant

@@ -1,0 +1,498 @@
+---
+title: "History"
+description: "Complete audit trails and change logs for all artifacts"
+---
+
+# History
+
+TraceRTM maintains comprehensive change history for all artifacts, providing complete audit trails for compliance, debugging, and understanding how artifacts evolved over time.
+
+## Viewing History
+
+### Item History
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Get complete history for an item
+history = client.get_history("FEAT-001")
+
+for entry in history:
+    print(f"v{entry.version} - {entry.timestamp}")
+    print(f"  User: {entry.user}")
+    print(f"  Action: {entry.action}")
+    for field, change in entry.changes.items():
+        print(f"  {field}: {change['old']} → {change['new']}")
+```
+
+### CLI History
+
+```bash
+# View item history
+tracertm history FEAT-001
+
+# Output:
+# History for FEAT-001: User Authentication
+# ════════════════════════════════════════════════════════════
+#
+# v5  2024-12-10 14:30:22  admin@example.com
+#     status: review → done
+#     metadata.completion_percentage: 90 → 100
+#
+# v4  2024-12-08 11:15:03  developer@example.com
+#     status: in_progress → review
+#     Added link: verified_by → TEST-001
+#
+# v3  2024-12-05 09:20:45  developer@example.com
+#     description: (updated)
+#     metadata.story_points: 5 → 13
+#
+# v2  2024-12-02 16:45:10  pm@example.com
+#     status: draft → in_progress
+#     assignee: (none) → developer@example.com
+#
+# v1  2024-12-01 10:00:00  pm@example.com
+#     Created
+#     title: User Authentication
+#     item_type: feature
+#     status: draft
+
+# Compact view
+tracertm history FEAT-001 --compact
+
+# Output:
+# v5  2024-12-10  admin        status → done
+# v4  2024-12-08  developer    status → review, +link
+# v3  2024-12-05  developer    description, story_points
+# v2  2024-12-02  pm           status → in_progress
+# v1  2024-12-01  pm           Created
+```
+
+## History Details
+
+### Change Entry Structure
+
+```python
+# Each history entry contains:
+entry = history[0]
+
+print(entry.version)        # Version number
+print(entry.timestamp)      # When the change occurred
+print(entry.user)           # Who made the change
+print(entry.action)         # create, update, delete, link, unlink
+print(entry.changes)        # Dictionary of field changes
+print(entry.metadata)       # Additional context
+print(entry.branch)         # Branch where change occurred
+print(entry.change_set_id)  # If part of a change set
+print(entry.signature)      # Digital signature (if enabled)
+```
+
+### Field Change Details
+
+```python
+# Detailed field changes
+for field, change in entry.changes.items():
+    print(f"Field: {field}")
+    print(f"  Old value: {change.get('old', '(none)')}")
+    print(f"  New value: {change.get('new', '(none)')}")
+    print(f"  Changed at: {change.get('path', field)}")  # For nested fields
+```
+
+## Filtering History
+
+### By Date Range
+
+```python
+from datetime import datetime, timedelta
+
+# Last 7 days
+history = client.get_history(
+    "FEAT-001",
+    since=datetime.now() - timedelta(days=7)
+)
+
+# Specific date range
+history = client.get_history(
+    "FEAT-001",
+    since="2024-12-01",
+    until="2024-12-31"
+)
+```
+
+```bash
+# CLI date filters
+tracertm history FEAT-001 --since "2024-12-01"
+tracertm history FEAT-001 --since "7 days ago"
+tracertm history FEAT-001 --since "2024-12-01" --until "2024-12-15"
+```
+
+### By User
+
+```python
+# Changes by specific user
+history = client.get_history(
+    "FEAT-001",
+    user="developer@example.com"
+)
+```
+
+```bash
+tracertm history FEAT-001 --user developer@example.com
+```
+
+### By Field
+
+```python
+# Changes to specific field
+history = client.get_history(
+    "FEAT-001",
+    fields=["status", "description"]
+)
+```
+
+```bash
+tracertm history FEAT-001 --field status
+tracertm history FEAT-001 --fields "status,description"
+```
+
+### By Action Type
+
+```python
+# Only status changes
+history = client.get_history(
+    "FEAT-001",
+    actions=["status_change"]
+)
+
+# Only link changes
+history = client.get_history(
+    "FEAT-001",
+    actions=["link_created", "link_deleted"]
+)
+```
+
+```bash
+tracertm history FEAT-001 --action status_change
+tracertm history FEAT-001 --action link_created
+```
+
+## Project-Wide History
+
+### Activity Feed
+
+```python
+# Recent activity across all items
+activity = client.get_activity(
+    project_id="PROJ-001",
+    limit=50
+)
+
+for event in activity:
+    print(f"{event.timestamp}: {event.user}")
+    print(f"  {event.action} {event.item_id}")
+```
+
+```bash
+# Project activity
+tracertm activity --project PROJ-001
+
+# Output:
+# Project Activity
+# ════════════════════════════════════════
+# 2024-12-10 14:30  admin
+#   Updated FEAT-001 (status → done)
+#
+# 2024-12-10 14:25  developer
+#   Created TEST-025 (OAuth2 integration test)
+#
+# 2024-12-10 14:20  developer
+#   Linked CODE-015 → FEAT-001 (implements)
+```
+
+### Changes by Type
+
+```python
+# All feature changes
+feature_changes = client.get_history_by_type(
+    item_type="feature",
+    since="2024-12-01"
+)
+
+# Group changes by item
+by_item = {}
+for change in feature_changes:
+    by_item.setdefault(change.item_id, []).append(change)
+```
+
+## Comparing Versions
+
+### Side-by-Side Comparison
+
+```python
+# Compare two versions
+diff = client.compare_versions(
+    item_id="FEAT-001",
+    from_version=2,
+    to_version=5
+)
+
+print(f"Changes from v2 to v5:")
+for field, values in diff.items():
+    print(f"  {field}:")
+    print(f"    Before: {values['old']}")
+    print(f"    After: {values['new']}")
+```
+
+```bash
+# CLI comparison
+tracertm diff FEAT-001 --from 2 --to 5
+
+# Output:
+# FEAT-001: v2 → v5
+# ════════════════════════════════════════
+#
+# status:
+#   - in_progress
+#   + done
+#
+# description:
+#   - Basic authentication
+#   + OAuth2 authentication with SSO support
+#
+# metadata.story_points:
+#   - 5
+#   + 13
+```
+
+### View Specific Version
+
+```python
+# Get item at a specific version
+item_v2 = client.get_item_at_version("FEAT-001", version=2)
+
+print(f"Status at v2: {item_v2.status}")
+print(f"Description at v2: {item_v2.description}")
+```
+
+```bash
+# CLI version view
+tracertm get FEAT-001 --version 2
+```
+
+## Audit Trail
+
+### Compliance Logging
+
+```yaml
+# .tracertm/config.yaml
+history:
+  audit:
+    enabled: true
+
+    # What to log
+    log_fields:
+      - all  # Or specific fields
+
+    # Include metadata
+    include:
+      - user_ip
+      - user_agent
+      - session_id
+
+    # Digital signatures
+    sign_changes: true
+    signature_algorithm: SHA256
+```
+
+### Audit Report
+
+```python
+# Generate audit report
+report = client.generate_audit_report(
+    item_id="FEAT-001",
+    format="pdf"
+)
+
+report.save("audit_report_FEAT-001.pdf")
+```
+
+```bash
+# CLI audit report
+tracertm audit FEAT-001 --output audit_report.pdf
+
+# Audit report for compliance
+tracertm audit --type compliance --since "2024-01-01" --output compliance_report.pdf
+```
+
+### Signed History
+
+```python
+# Verify history signature
+history = client.get_history("FEAT-001")
+
+for entry in history:
+    is_valid = client.verify_signature(entry)
+    print(f"v{entry.version}: {'✓' if is_valid else '✗'} {entry.signature[:16]}...")
+```
+
+## History Export
+
+### Export Formats
+
+```python
+# Export to JSON
+history = client.get_history("FEAT-001")
+history.export_json("feat_001_history.json")
+
+# Export to CSV
+history.export_csv("feat_001_history.csv")
+
+# Export to audit format
+history.export_audit("feat_001_audit.pdf")
+```
+
+```bash
+# CLI export
+tracertm history FEAT-001 --format json --output history.json
+tracertm history FEAT-001 --format csv --output history.csv
+tracertm history FEAT-001 --format audit --output history.pdf
+```
+
+### Bulk Export
+
+```bash
+# Export all history for a project
+tracertm history --all --project PROJ-001 --format json --output project_history.json
+
+# Export with date range
+tracertm history --all --since "2024-01-01" --format csv --output year_history.csv
+```
+
+## History Configuration
+
+### Retention Settings
+
+```yaml
+history:
+  retention:
+    # Keep all history
+    enabled: true
+
+    # Or set retention period
+    retention_days: 365  # Keep 1 year
+
+    # Archive old history
+    archive_after_days: 90
+    archive_location: "s3://bucket/history-archive/"
+
+    # Never delete these
+    never_delete:
+      - status_changes
+      - link_changes
+```
+
+### Storage Options
+
+```yaml
+history:
+  storage:
+    # Local database
+    type: database
+
+    # Or external service
+    type: external
+    provider: elasticsearch
+    endpoint: "https://es.example.com"
+    index: "tracertm-history"
+```
+
+## Searching History
+
+### Full-Text Search
+
+```python
+# Search history
+results = client.search_history(
+    query="OAuth",
+    item_types=["feature", "code"],
+    since="2024-12-01"
+)
+
+for result in results:
+    print(f"{result.item_id} v{result.version}: {result.match_context}")
+```
+
+```bash
+# CLI search
+tracertm history search "OAuth" --type feature
+
+# Output:
+# History Search Results for "OAuth"
+# ════════════════════════════════════════
+# FEAT-001 v3: description changed to "OAuth2 authentication..."
+# CODE-015 v1: Created "OAuth2 Token Handler"
+# TEST-022 v1: Created "test_oauth2_flow"
+```
+
+### Find Specific Changes
+
+```python
+# Find when a field was changed
+changes = client.find_changes(
+    item_id="FEAT-001",
+    field="status",
+    value="done"
+)
+
+if changes:
+    print(f"Status set to 'done' at {changes[0].timestamp}")
+    print(f"By: {changes[0].user}")
+```
+
+## Best Practices
+
+### 1. Use Meaningful Change Messages
+
+```python
+# Good: Include context
+with client.change_context("Updating based on security review feedback"):
+    client.update_item("FEAT-001", ...)
+
+# History will show the context
+```
+
+### 2. Review History Before Major Changes
+
+```python
+# Check recent history before updating
+history = client.get_history("FEAT-001", limit=5)
+print(f"Last modified: {history[0].timestamp} by {history[0].user}")
+```
+
+### 3. Set Up Audit Compliance Early
+
+```yaml
+# Enable from project start
+history:
+  audit:
+    enabled: true
+    sign_changes: true
+    log_fields: all
+```
+
+### 4. Regular History Exports
+
+```bash
+# Schedule regular exports
+tracertm history --all --format json --output "history_$(date +%Y%m%d).json"
+```
+
+## Related Topics
+
+- [Strategies](/docs/wiki/concepts/versioning/strategies) - Versioning approaches
+- [Branching](/docs/wiki/concepts/versioning/branching) - Branch workflows
+- [Rollback](/docs/wiki/concepts/versioning/rollback) - Reverting changes
+- [Reports](/docs/getting-started/first-project/reports) - Audit reports
+

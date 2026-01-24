@@ -31,16 +31,16 @@ var _index3 = require("./toDate.cjs");
  * //=> Sat Feb 01 2014 00:00:00
  */
 function setMonth(date, month, options) {
-  const _date = (0, _index3.toDate)(date, options?.in);
-  const year = _date.getFullYear();
-  const day = _date.getDate();
+	const _date = (0, _index3.toDate)(date, options?.in);
+	const year = _date.getFullYear();
+	const day = _date.getDate();
 
-  const midMonth = (0, _index.constructFrom)(options?.in || date, 0);
-  midMonth.setFullYear(year, month, 15);
-  midMonth.setHours(0, 0, 0, 0);
-  const daysInMonth = (0, _index2.getDaysInMonth)(midMonth);
+	const midMonth = (0, _index.constructFrom)(options?.in || date, 0);
+	midMonth.setFullYear(year, month, 15);
+	midMonth.setHours(0, 0, 0, 0);
+	const daysInMonth = (0, _index2.getDaysInMonth)(midMonth);
 
-  // Set the earlier date, allows to wrap Jan 31 to Feb 28
-  _date.setMonth(month, Math.min(day, daysInMonth));
-  return _date;
+	// Set the earlier date, allows to wrap Jan 31 to Feb 28
+	_date.setMonth(month, Math.min(day, daysInMonth));
+	return _date;
 }

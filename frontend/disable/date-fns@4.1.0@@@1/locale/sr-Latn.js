@@ -12,16 +12,16 @@ import { match } from "./sr-Latn/_lib/match.js";
  * @author Igor Radivojević [@rogyvoje](https://github.com/rogyvoje)
  */
 export const srLatn = {
-  code: "sr-Latn",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "sr-Latn",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

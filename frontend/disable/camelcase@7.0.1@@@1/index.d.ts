@@ -98,5 +98,5 @@ camelCase('lorem-ipsum', {locale: 'en-US'});
 */
 export default function camelcase(
 	input: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): string;

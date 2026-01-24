@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Overlapping fields can be merged
  *
@@ -10,5 +10,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
  */
 export declare function OverlappingFieldsCanBeMergedRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

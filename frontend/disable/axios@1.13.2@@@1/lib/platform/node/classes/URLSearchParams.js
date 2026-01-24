@@ -1,4 +1,2 @@
-'use strict';
-
-import url from 'url';
+import url from "url";
 export default url.URLSearchParams;

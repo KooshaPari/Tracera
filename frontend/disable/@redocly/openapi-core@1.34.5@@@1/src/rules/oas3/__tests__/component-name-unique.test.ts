@@ -1,12 +1,15 @@
-import { outdent } from 'outdent';
-import { parseYamlToDocument, replaceSourceWithRef } from '../../../../__tests__/utils';
-import { lintDocumentForTest } from './utils/lint-document-for-test';
+import { outdent } from "outdent";
+import {
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocumentForTest } from "./utils/lint-document-for-test";
 
-describe('Oas3 component-name-unique', () => {
-  describe('schema', () => {
-    it('should report on multiple schemas with same name', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+describe("Oas3 component-name-unique", () => {
+	describe("schema", () => {
+		it("should report on multiple schemas with same name", async () => {
+			const document = parseYamlToDocument(
+				outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -18,28 +21,28 @@ describe('Oas3 component-name-unique', () => {
                   there:
                     $ref: '/test.yaml#/components/schemas/SomeSchema'
         `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
           openapi: 3.0.0
           components:
             schemas:
               SomeSchema:
                 type: object
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -71,11 +74,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should report on multiple schemas with same name - filename', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should report on multiple schemas with same name - filename", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -87,27 +90,27 @@ describe('Oas3 component-name-unique', () => {
                 there:
                   $ref: '/SomeSchema.yaml'
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/SomeSchema.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/SomeSchema.yaml",
+					body: outdent`
           type: object
           properties:
             test:
               type: number
       `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -139,11 +142,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should not report on multiple schemas with different names', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should not report on multiple schemas with different names", async () => {
+			const document = parseYamlToDocument(
+				outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -155,35 +158,35 @@ describe('Oas3 component-name-unique', () => {
                   there:
                     $ref: '/test.yaml#/components/schemas/OtherSchema'
         `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
           openapi: 3.0.0
           components:
             schemas:
               OtherSchema:
                 type: object
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-    });
-  });
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+		});
+	});
 
-  describe('parameter', () => {
-    it('should report if multiple parameters have same component name', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+	describe("parameter", () => {
+		it("should report if multiple parameters have same component name", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -199,12 +202,12 @@ describe('Oas3 component-name-unique', () => {
               schema:
                 type: integer
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
         openapi: 3.0.0
         components:
           parameters:
@@ -214,16 +217,16 @@ describe('Oas3 component-name-unique', () => {
               schema:
                 type: integer
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -255,11 +258,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should report on multiple parameters with same component name - filename', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should report on multiple parameters with same component name - filename", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -275,27 +278,27 @@ describe('Oas3 component-name-unique', () => {
               schema:
                 type: integer
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/ParameterOne.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/ParameterOne.yaml",
+					body: outdent`
           name: oneParameter
           in: query
           schema:
             type: integer
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -327,11 +330,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should not report on multiple parameters with different component names', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should not report on multiple parameters with different component names", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -347,12 +350,12 @@ describe('Oas3 component-name-unique', () => {
               schema:
                 type: integer
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
         openapi: 3.0.0
         components:
           parameters:
@@ -362,23 +365,23 @@ describe('Oas3 component-name-unique', () => {
               schema:
                 type: integer
       `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-    });
-  });
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+		});
+	});
 
-  describe('response', () => {
-    it('should report if multiple responses have same component name', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+	describe("response", () => {
+		it("should report if multiple responses have same component name", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -400,12 +403,12 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
         openapi: 3.0.0
         components:
           responses:
@@ -416,16 +419,16 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -457,11 +460,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should report on multiple responses with same component name - filename', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should report on multiple responses with same component name - filename", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -483,28 +486,28 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/SuccessResponse.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/SuccessResponse.yaml",
+					body: outdent`
           description: Successful response
           content:
             application/json:
               schema:
                 type: string
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -536,11 +539,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should not report on multiple responses with different component names', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should not report on multiple responses with different component names", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -562,12 +565,12 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
         openapi: 3.0.0
         components:
           responses:
@@ -578,23 +581,23 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-    });
-  });
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+		});
+	});
 
-  describe('request-body', () => {
-    it('should report if multiple request bodies have same component name', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+	describe("request-body", () => {
+		it("should report if multiple request bodies have same component name", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -614,12 +617,12 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
         components:
           requestBodies:
             MyRequestBody:
@@ -629,16 +632,16 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -670,11 +673,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should report on multiple responses with same component name - filename', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should report on multiple responses with same component name - filename", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -694,12 +697,12 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/MyRequestBody.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/MyRequestBody.yaml",
+					body: outdent`
           components:
             requestBodies:
               MyRequestBody:
@@ -709,16 +712,16 @@ describe('Oas3 component-name-unique', () => {
                     schema:
                       type: string
         `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -750,11 +753,11 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should not report on multiple responses with different component names', async () => {
-      const document = parseYamlToDocument(
-        outdent`
+		it("should not report on multiple responses with different component names", async () => {
+			const document = parseYamlToDocument(
+				outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -774,12 +777,12 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        '/foobar.yaml'
-      );
-      const additionalDocuments = [
-        {
-          absoluteRef: '/test.yaml',
-          body: outdent`
+				"/foobar.yaml",
+			);
+			const additionalDocuments = [
+				{
+					absoluteRef: "/test.yaml",
+					body: outdent`
         components:
           requestBodies:
             Test2RequestBody:
@@ -789,22 +792,22 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-        },
-      ];
+				},
+			];
 
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-    });
-  });
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+		});
+	});
 
-  describe('different severities', () => {
-    const document = parseYamlToDocument(
-      outdent`
+	describe("different severities", () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /test:
@@ -832,12 +835,12 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
       `,
-      '/foobar.yaml'
-    );
-    const additionalDocuments = [
-      {
-        absoluteRef: '/test.yaml',
-        body: outdent`
+			"/foobar.yaml",
+		);
+		const additionalDocuments = [
+			{
+				absoluteRef: "/test.yaml",
+				body: outdent`
         components:
           schemas:
             SomeSchema:
@@ -850,17 +853,17 @@ describe('Oas3 component-name-unique', () => {
                   schema:
                     type: string
         `,
-      },
-    ];
+			},
+		];
 
-    it('should report both schema and request body', async () => {
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': 'error' },
-        document,
-        additionalDocuments
-      );
+		it("should report both schema and request body", async () => {
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": "error" },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -920,16 +923,16 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
+		});
 
-    it('should not report if severity is off for specific component type', async () => {
-      const results = await lintDocumentForTest(
-        { 'component-name-unique': { severity: 'error', schemas: 'off' } },
-        document,
-        additionalDocuments
-      );
+		it("should not report if severity is off for specific component type", async () => {
+			const results = await lintDocumentForTest(
+				{ "component-name-unique": { severity: "error", schemas: "off" } },
+				document,
+				additionalDocuments,
+			);
 
-      expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+			expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
         [
           {
             "location": [
@@ -961,6 +964,6 @@ describe('Oas3 component-name-unique', () => {
           },
         ]
       `);
-    });
-  });
+		});
+	});
 });

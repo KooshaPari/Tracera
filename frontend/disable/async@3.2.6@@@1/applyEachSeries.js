@@ -1,18 +1,18 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _applyEach = require('./internal/applyEach.js');
+var _applyEach = require("./internal/applyEach.js");
 
 var _applyEach2 = _interopRequireDefault(_applyEach);
 
-var _mapSeries = require('./mapSeries.js');
+var _mapSeries = require("./mapSeries.js");
 
 var _mapSeries2 = _interopRequireDefault(_mapSeries);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`applyEach`]{@link module:ControlFlow.applyEach} but runs only a single async operation at a time.

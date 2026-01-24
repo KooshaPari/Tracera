@@ -1,21 +1,30 @@
 export as namespace stylis;
 
 export interface Element {
-    parent: Element | null;
-    children: Element[] | string;
-    root: Element | null;
-    type: string;
-    props: string[] | string;
-    value: string;
-    length: number;
-    return: string;
-    line: number;
-    column: number;
+	parent: Element | null;
+	children: Element[] | string;
+	root: Element | null;
+	type: string;
+	props: string[] | string;
+	value: string;
+	length: number;
+	return: string;
+	line: number;
+	column: number;
 }
 
-export type ArrayMapCallback = (value: string, index: number, array: string[]) => string;
+export type ArrayMapCallback = (
+	value: string,
+	index: number,
+	array: string[],
+) => string;
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export type Middleware = (element: Element, index: number, children: Element[], callback: Middleware) => string | void;
+export type Middleware = (
+	element: Element,
+	index: number,
+	children: Element[],
+	callback: Middleware,
+) => string | void;
 
 // Enum.js
 
@@ -44,7 +53,11 @@ export const LAYER = "@layer";
 export function hash(value: string, length: number): number;
 export function trim(value: string): string;
 export function match(value: string, pattern: RegExp): string | null;
-export function replace(value: string, pattern: string | RegExp, replacement: string): string;
+export function replace(
+	value: string,
+	pattern: string | RegExp,
+	replacement: string,
+): string;
 export function indexof(value: string, search: unknown): number;
 export function charat(value: string, index: number): number;
 export function substr(value: string, begin: number, end: number): string;
@@ -60,33 +73,42 @@ export function from(...codes: number[]): string;
 export function compile(value: string): Element[];
 
 export function parse(
-    value: string,
-    root: Element,
-    parent: Element | null,
-    rule: Element | string[],
-    rules: string[],
-    rulesets: Element[],
-    pseudo: number,
-    points: number[],
-    declarations: string[],
+	value: string,
+	root: Element,
+	parent: Element | null,
+	rule: Element | string[],
+	rules: string[],
+	rulesets: Element[],
+	pseudo: number,
+	points: number[],
+	declarations: string[],
 ): Element[];
 
 export function ruleset(
-    value: string,
-    root: Element,
-    parent: Element | null,
-    index: number,
-    offset: number,
-    rules: string[],
-    points: number[],
-    type: string,
-    props: string[],
-    children: Element[],
-    length: number,
+	value: string,
+	root: Element,
+	parent: Element | null,
+	index: number,
+	offset: number,
+	rules: string[],
+	points: number[],
+	type: string,
+	props: string[],
+	children: Element[],
+	length: number,
 ): Element;
 
-export function comment(value: string, root: Element, parent: Element | null): Element;
-export function declaration(value: string, root: Element, parent: Element | null, length: number): Element;
+export function comment(
+	value: string,
+	root: Element,
+	parent: Element | null,
+): Element;
+export function declaration(
+	value: string,
+	root: Element,
+	parent: Element | null,
+	length: number,
+): Element;
 
 // Prefixer.js
 
@@ -102,13 +124,13 @@ export let character: number;
 export let characters: string;
 
 export function node(
-    value: string,
-    root: Element,
-    parent: Element | null,
-    type: string,
-    props: string[],
-    children: Element[],
-    length: number,
+	value: string,
+	root: Element,
+	parent: Element | null,
+	type: string,
+	props: string[],
+	children: Element[],
+	length: number,
 ): Element;
 
 export function copy(value: string, root: Element, type: string): Element;
@@ -133,7 +155,12 @@ export function identifier(index: number): string;
 export function serialize(children: Element[], callback: Middleware): string;
 
 // @type {Middleware}
-export function stringify(element: Element, index: number, children: Element[], callback: Middleware): string;
+export function stringify(
+	element: Element,
+	index: number,
+	children: Element[],
+	callback: Middleware,
+): string;
 
 // Middleware.js
 
@@ -142,7 +169,12 @@ export function rulesheet(callback: (ret: string) => void): Middleware;
 
 // @type {Middleware}
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export function prefixer(element: Element, index: number, children: Element[], callback: Middleware): string | void;
+export function prefixer(
+	element: Element,
+	index: number,
+	children: Element[],
+	callback: Middleware,
+): string | void;
 // @type {Middleware}
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export function namespace(element: Element): string | void;

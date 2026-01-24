@@ -28,12 +28,12 @@ import type { ContextFn, GenericDateConstructor } from "./types.js";
  * //=> 'Sun Jul 10 2022 00:00:00 GMT+0000 (Coordinated Universal Time)'
  */
 export declare function transpose<
-  InputDate extends Date,
-  ResultDate extends Date,
+	InputDate extends Date,
+	ResultDate extends Date,
 >(
-  date: InputDate,
-  constructor:
-    | ResultDate
-    | GenericDateConstructor<ResultDate>
-    | ContextFn<ResultDate>,
+	date: InputDate,
+	constructor:
+		| ResultDate
+		| GenericDateConstructor<ResultDate>
+		| ContextFn<ResultDate>,
 ): ResultDate;

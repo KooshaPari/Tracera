@@ -11,9 +11,9 @@ var _apidomNsJsonSchema = require("@swagger-api/apidom-ns-json-schema-2020-12");
  * @public
  */
 class $defsVisitor extends _apidomNsJsonSchema.$defsVisitor {
-  constructor(options) {
-    super(options);
-    this.passingOptionsNames.push('parent');
-  }
+	constructor(options) {
+		super(options);
+		this.passingOptionsNames.push("parent");
+	}
 }
-var _default = exports.default = $defsVisitor;
+var _default = (exports.default = $defsVisitor);

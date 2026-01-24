@@ -4,10 +4,13 @@ var _bindInstanceProperty = require("core-js-pure/features/instance/bind.js");
 var isNativeReflectConstruct = require("./isNativeReflectConstruct.js");
 var setPrototypeOf = require("./setPrototypeOf.js");
 function _construct(t, e, r) {
-  if (isNativeReflectConstruct()) return _Reflect$construct.apply(null, arguments);
-  var o = [null];
-  _pushInstanceProperty(o).apply(o, e);
-  var p = new (_bindInstanceProperty(t).apply(t, o))();
-  return r && setPrototypeOf(p, r.prototype), p;
+	if (isNativeReflectConstruct())
+		return _Reflect$construct.apply(null, arguments);
+	var o = [null];
+	_pushInstanceProperty(o).apply(o, e);
+	var p = new (_bindInstanceProperty(t).apply(t, o))();
+	return r && setPrototypeOf(p, r.prototype), p;
 }
-module.exports = _construct, module.exports.__esModule = true, module.exports["default"] = module.exports;
+(module.exports = _construct),
+	(module.exports.__esModule = true),
+	(module.exports["default"] = module.exports);

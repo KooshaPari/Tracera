@@ -27,7 +27,7 @@ var _index2 = require("./differenceInMonths.cjs");
  * //=> 2
  */
 function differenceInQuarters(laterDate, earlierDate, options) {
-  const diff =
-    (0, _index2.differenceInMonths)(laterDate, earlierDate, options) / 3;
-  return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
+	const diff =
+		(0, _index2.differenceInMonths)(laterDate, earlierDate, options) / 3;
+	return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
 }

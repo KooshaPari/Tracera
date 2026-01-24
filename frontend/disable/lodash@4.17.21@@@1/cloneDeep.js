@@ -1,8 +1,8 @@
-var baseClone = require('./_baseClone');
+var baseClone = require("./_baseClone");
 
 /** Used to compose bitmasks for cloning. */
 var CLONE_DEEP_FLAG = 1,
-    CLONE_SYMBOLS_FLAG = 4;
+	CLONE_SYMBOLS_FLAG = 4;
 
 /**
  * This method is like `_.clone` except that it recursively clones `value`.
@@ -23,7 +23,7 @@ var CLONE_DEEP_FLAG = 1,
  * // => false
  */
 function cloneDeep(value) {
-  return baseClone(value, CLONE_DEEP_FLAG | CLONE_SYMBOLS_FLAG);
+	return baseClone(value, CLONE_DEEP_FLAG | CLONE_SYMBOLS_FLAG);
 }
 
 module.exports = cloneDeep;

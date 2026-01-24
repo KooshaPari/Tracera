@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/is-sealed');
+"use strict";
+module.exports = require("../../full/object/is-sealed");

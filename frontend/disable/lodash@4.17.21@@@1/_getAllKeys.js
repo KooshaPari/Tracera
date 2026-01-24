@@ -1,6 +1,6 @@
-var baseGetAllKeys = require('./_baseGetAllKeys'),
-    getSymbols = require('./_getSymbols'),
-    keys = require('./keys');
+var baseGetAllKeys = require("./_baseGetAllKeys"),
+	getSymbols = require("./_getSymbols"),
+	keys = require("./keys");
 
 /**
  * Creates an array of own enumerable property names and symbols of `object`.
@@ -10,7 +10,7 @@ var baseGetAllKeys = require('./_baseGetAllKeys'),
  * @returns {Array} Returns the array of property names and symbols.
  */
 function getAllKeys(object) {
-  return baseGetAllKeys(object, keys, getSymbols);
+	return baseGetAllKeys(object, keys, getSymbols);
 }
 
 module.exports = getAllKeys;

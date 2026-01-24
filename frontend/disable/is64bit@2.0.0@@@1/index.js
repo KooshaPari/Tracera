@@ -1,11 +1,9 @@
-import {systemArchitecture, systemArchitectureSync} from 'system-architecture';
+import {
+	systemArchitecture,
+	systemArchitectureSync,
+} from "system-architecture";
 
-const archtectures64bit = new Set([
-	'arm64',
-	'x64',
-	'ppc64',
-	'riscv64',
-]);
+const archtectures64bit = new Set(["arm64", "x64", "ppc64", "riscv64"]);
 
 export async function is64bit() {
 	return archtectures64bit.has(await systemArchitecture());

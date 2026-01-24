@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/set-timeout');
+"use strict";
+module.exports = require("../full/set-timeout");

@@ -3,4 +3,4 @@
  *
  * @type {Record<number, string>}
  */
-export const characterReferenceInvalid: Record<number, string>
+export const characterReferenceInvalid: Record<number, string>;

@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 scalar-property-missing-example', () => {
-  it('should report on a scalar property missing example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 scalar-property-missing-example", () => {
+	it("should report on a scalar property missing example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -18,16 +22,18 @@ describe('Oas3 scalar-property-missing-example', () => {
                   type: string
                   format: email
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -44,13 +50,13 @@ describe('Oas3 scalar-property-missing-example', () => {
         },
       ]
     `);
-  });
+	});
 });
 
-describe('Oas3.1 scalar-property-missing-example', () => {
-  it('should report on a scalar property missing example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3.1 scalar-property-missing-example", () => {
+	it("should report on a scalar property missing example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         components:
           schemas:
@@ -62,16 +68,18 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                   type: string
                   format: email
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -88,11 +96,11 @@ describe('Oas3.1 scalar-property-missing-example', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on a scalar property with an example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on a scalar property with an example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         components:
           schemas:
@@ -105,21 +113,23 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                   format: email
                   example: john.smith@example.com
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on a scalar property with an examples', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on a scalar property with an examples", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         components:
           schemas:
@@ -134,21 +144,23 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                   - john.smith@example.com
                   - other@example.com
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on a non-scalar property missing an example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on a non-scalar property missing an example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         components:
           schemas:
@@ -168,21 +180,23 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                     type: string
                     format: url
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on a scalar property of binary format missing an example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on a scalar property of binary format missing an example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         components:
           schemas:
@@ -193,21 +207,23 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                   type: string
                   format: binary
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on a scalar property of falsy values', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on a scalar property of falsy values", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -224,21 +240,23 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                   type: number
                   example: 0
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on a nullable scalar property values', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on a nullable scalar property values", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -250,15 +268,17 @@ describe('Oas3.1 scalar-property-missing-example', () => {
                   nullable: true
                   example: null
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'scalar-property-missing-example': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "scalar-property-missing-example": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

@@ -1,7 +1,5 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.isObjectLike = isObjectLike;
 
@@ -10,5 +8,5 @@ exports.isObjectLike = isObjectLike;
  * `null` and has a `typeof` result of "object".
  */
 function isObjectLike(value) {
-  return typeof value == 'object' && value !== null;
+	return typeof value == "object" && value !== null;
 }

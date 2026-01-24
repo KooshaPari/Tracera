@@ -672,7 +672,7 @@ const routerModePlugin = {
 						},
 					},
 					"http",
-			  ),
+				),
 		spaManifest(),
 		config("appType", {
 			appType: "custom",

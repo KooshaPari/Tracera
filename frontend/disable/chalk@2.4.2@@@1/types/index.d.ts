@@ -1,11 +1,11 @@
 // Type definitions for Chalk
 // Definitions by: Thomas Sauer <https://github.com/t-sauer>
 
-export const enum Level {
+export enum Level {
 	None = 0,
 	Basic = 1,
 	Ansi256 = 2,
-	TrueColor = 3
+	TrueColor = 3,
 }
 
 export interface ChalkOptions {
@@ -94,4 +94,4 @@ export interface Chalk {
 
 declare const chalk: Chalk & { supportsColor: ColorSupport };
 
-export default chalk
+export default chalk;

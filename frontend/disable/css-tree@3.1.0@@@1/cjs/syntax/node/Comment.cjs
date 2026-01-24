@@ -1,37 +1,38 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
-const ASTERISK = 0x002A;        // U+002A ASTERISK (*)
-const SOLIDUS = 0x002F;         // U+002F SOLIDUS (/)
+const ASTERISK = 0x002a; // U+002A ASTERISK (*)
+const SOLIDUS = 0x002f; // U+002F SOLIDUS (/)
 
-
-const name = 'Comment';
+const name = "Comment";
 const structure = {
-    value: String
+	value: String,
 };
 
 function parse() {
-    const start = this.tokenStart;
-    let end = this.tokenEnd;
+	const start = this.tokenStart;
+	let end = this.tokenEnd;
 
-    this.eat(types.Comment);
+	this.eat(types.Comment);
 
-    if ((end - start + 2) >= 2 &&
-        this.charCodeAt(end - 2) === ASTERISK &&
-        this.charCodeAt(end - 1) === SOLIDUS) {
-        end -= 2;
-    }
+	if (
+		end - start + 2 >= 2 &&
+		this.charCodeAt(end - 2) === ASTERISK &&
+		this.charCodeAt(end - 1) === SOLIDUS
+	) {
+		end -= 2;
+	}
 
-    return {
-        type: 'Comment',
-        loc: this.getLocation(start, this.tokenStart),
-        value: this.substring(start + 2, end)
-    };
+	return {
+		type: "Comment",
+		loc: this.getLocation(start, this.tokenStart),
+		value: this.substring(start + 2, end),
+	};
 }
 
 function generate(node) {
-    this.token(types.Comment, '/*' + node.value + '*/');
+	this.token(types.Comment, "/*" + node.value + "*/");
 }
 
 exports.generate = generate;

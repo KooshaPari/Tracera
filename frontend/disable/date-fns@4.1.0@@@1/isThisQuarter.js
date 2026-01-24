@@ -26,10 +26,10 @@ import { isSameQuarter } from "./isSameQuarter.js";
  * //=> true
  */
 export function isThisQuarter(date, options) {
-  return isSameQuarter(
-    constructFrom(options?.in || date, date),
-    constructNow(options?.in || date),
-  );
+	return isSameQuarter(
+		constructFrom(options?.in || date, date),
+		constructNow(options?.in || date),
+	);
 }
 
 // Fallback for modularized imports:

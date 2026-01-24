@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 typed enum', () => {
-  it('should not report on enum object if all items match type', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 typed enum", () => {
+	it("should not report on enum object if all items match type", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /some:
@@ -23,21 +27,21 @@ describe('Oas3 typed enum', () => {
                             - 2
                             - 3
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-enum-type-mismatch': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "no-enum-type-mismatch": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on enum object if all items match type and enum is nullable', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on enum object if all items match type and enum is nullable", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /some:
@@ -56,21 +60,21 @@ describe('Oas3 typed enum', () => {
                             - C
                             - null
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-enum-type-mismatch': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "no-enum-type-mismatch": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report on enum object if not all items match type', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on enum object if not all items match type", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             /some:
@@ -86,16 +90,16 @@ describe('Oas3 typed enum', () => {
                             - string
                             - 3
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-enum-type-mismatch': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "no-enum-type-mismatch": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -112,11 +116,11 @@ describe('Oas3 typed enum', () => {
         },
       ]
     `);
-  });
+	});
 
-  it("should report on enum object, 'string' value in enum does not have allowed types", async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on enum object, 'string' value in enum does not have allowed types", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.1.0
           paths:
             /some:
@@ -134,16 +138,16 @@ describe('Oas3 typed enum', () => {
                             - string
                             - 3
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-enum-type-mismatch': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "no-enum-type-mismatch": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -160,11 +164,11 @@ describe('Oas3 typed enum', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not crash on null schema when there is spec rule', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not crash on null schema when there is spec rule", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           info:
             title: test
@@ -179,16 +183,18 @@ describe('Oas3 typed enum', () => {
                       application/json:
                         schema: null
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { spec: 'error', 'no-enum-type-mismatch': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { spec: "error", "no-enum-type-mismatch": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -206,5 +212,5 @@ describe('Oas3 typed enum', () => {
         },
       ]
     `);
-  });
+	});
 });

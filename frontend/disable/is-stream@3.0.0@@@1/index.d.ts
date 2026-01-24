@@ -4,7 +4,7 @@ import {
 	Readable as ReadableStream,
 	Duplex as DuplexStream,
 	Transform as TransformStream,
-} from 'node:stream';
+} from "node:stream";
 
 /**
 @returns Whether `stream` is a [`Stream`](https://nodejs.org/api/stream.html#stream_stream).

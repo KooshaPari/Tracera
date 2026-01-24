@@ -5,7 +5,7 @@ var _index = require("../lastDayOfISOWeekYear.cjs");
 var _index2 = require("./_lib/convertToFP.cjs"); // This file is generated automatically by `scripts/build/fp.ts`. Please, don't change it.
 
 const lastDayOfISOWeekYearWithOptions =
-  (exports.lastDayOfISOWeekYearWithOptions = (0, _index2.convertToFP)(
-    _index.lastDayOfISOWeekYear,
-    2,
-  ));
+	(exports.lastDayOfISOWeekYearWithOptions = (0, _index2.convertToFP)(
+		_index.lastDayOfISOWeekYear,
+		2,
+	));

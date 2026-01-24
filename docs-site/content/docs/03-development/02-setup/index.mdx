@@ -1,0 +1,478 @@
+---
+title: "Setup"
+description: "Complete guide to setting up your TraceRTM development environment"
+---
+
+# Development Setup
+
+This guide walks you through setting up a complete TraceRTM development environment. Follow these steps to get the backend, frontend, and all dependencies running locally.
+
+## Prerequisites
+
+Before starting, ensure you have the following installed:
+
+### Required Software
+
+| Software | Minimum Version | Recommended | Purpose |
+|----------|-----------------|-------------|---------|
+| **Python** | 3.11 | 3.12+ | Backend runtime |
+| **Node.js** | 18 LTS | 20 LTS | Frontend build tools |
+| **PostgreSQL** | 14 | 16+ | Primary database |
+| **Git** | 2.30 | Latest | Version control |
+| **Docker** | 20.10 | Latest | Container runtime (optional) |
+
+### Recommended Tools
+
+```bash
+# UV - Fast Python package manager (highly recommended)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# pnpm - Fast Node.js package manager
+npm install -g pnpm
+```
+
+## Quick Setup (Docker)
+
+The fastest way to get started is using Docker Compose:
+
+```bash
+# Clone the repository
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+
+# Start all services (PostgreSQL, Neo4j, Redis, API)
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# The API will be available at http://localhost:8000
+# The web UI will be available at http://localhost:3000
+```
+
+## Manual Setup
+
+For development, you'll want to run services natively for faster iteration.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+```
+
+### 2. Python Environment
+
+Set up the Python backend:
+
+```bash
+# Create virtual environment (using UV - recommended)
+uv venv
+source .venv/bin/activate  # Linux/macOS
+# .venv\Scripts\activate   # Windows
+
+# Install dependencies with all development tools
+uv pip install -e ".[dev,test]"
+
+# Verify installation
+python -c "import tracertm; print(tracertm.__version__)"
+rtm --version
+```
+
+**Alternative with pip:**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev,test]"
+```
+
+### 3. Database Setup
+
+#### PostgreSQL
+
+```bash
+# macOS (Homebrew)
+brew install postgresql@16
+brew services start postgresql@16
+
+# Ubuntu/Debian
+sudo apt-get install postgresql-16
+sudo systemctl start postgresql
+
+# Create database and user
+createuser -s tracertm
+createdb tracertm -O tracertm
+
+# Or use psql
+psql -c "CREATE USER tracertm WITH PASSWORD 'tracertm';"
+psql -c "CREATE DATABASE tracertm OWNER tracertm;"
+```
+
+#### Neo4j (Optional - for graph features)
+
+```bash
+# macOS (Homebrew)
+brew install neo4j
+brew services start neo4j
+
+# Ubuntu/Debian (using Docker)
+docker run -d \
+  --name neo4j \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/tracertm \
+  neo4j:5
+
+# Access Neo4j Browser at http://localhost:7474
+```
+
+#### Redis (Optional - for caching)
+
+```bash
+# macOS (Homebrew)
+brew install redis
+brew services start redis
+
+# Ubuntu/Debian
+sudo apt-get install redis-server
+sudo systemctl start redis
+
+# Docker
+docker run -d --name redis -p 6379:6379 redis:7-alpine
+```
+
+### 4. Environment Configuration
+
+Create your local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your local settings:
+
+```bash
+# Database
+DATABASE_URL=postgresql+asyncpg://tracertm:tracertm@localhost:5432/tracertm
+
+# Neo4j (optional)
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=tracertm
+
+# Redis (optional)
+REDIS_URL=redis://localhost:6379/0
+
+# API Settings
+API_HOST=0.0.0.0
+API_PORT=8000
+DEBUG=true
+
+# Authentication (optional for local dev)
+# WORKOS_API_KEY=your_workos_api_key
+# WORKOS_CLIENT_ID=your_workos_client_id
+
+# Storage
+STORAGE_PATH=~/.tracertm/storage
+```
+
+### 5. Database Migrations
+
+Run migrations to set up the database schema:
+
+```bash
+# Apply all migrations
+alembic upgrade head
+
+# Check migration status
+alembic current
+
+# Create new migration (after model changes)
+alembic revision --autogenerate -m "description of changes"
+```
+
+### 6. Start the Backend
+
+```bash
+# Development server with auto-reload
+uvicorn tracertm.api.main:app --reload --port 8000
+
+# Or using the CLI
+rtm serve --reload
+
+# The API is now available at http://localhost:8000
+# API docs at http://localhost:8000/docs (Swagger UI)
+# Alternative docs at http://localhost:8000/redoc
+```
+
+### 7. Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend/apps/web
+
+# Install dependencies
+npm install
+# Or with pnpm (faster)
+pnpm install
+
+# Start development server
+npm run dev
+
+# The web UI is now available at http://localhost:3000
+```
+
+## Verification
+
+Verify your setup is working correctly:
+
+### Backend Health Check
+
+```bash
+# API health endpoint
+curl http://localhost:8000/health
+
+# Expected response:
+# {"status": "healthy", "version": "0.1.0"}
+
+# Test database connection
+curl http://localhost:8000/api/v1/projects
+```
+
+### CLI Verification
+
+```bash
+# Check CLI installation
+rtm --version
+
+# Initialize a test project
+rtm init my-test-project
+
+# List projects
+rtm project list
+```
+
+### TUI Verification
+
+```bash
+# Launch Terminal UI
+rtm tui
+
+# Or dashboard
+rtm dashboard
+```
+
+## Development Workflow
+
+### Running Tests
+
+```bash
+# All tests
+pytest
+
+# With coverage
+pytest --cov=src/tracertm --cov-report=html
+
+# Specific test files
+pytest tests/unit/test_services.py
+
+# Watch mode (re-run on changes)
+pytest-watch
+
+# Integration tests (requires database)
+pytest tests/integration/ --database-url=$DATABASE_URL
+```
+
+### Code Quality
+
+```bash
+# Format code
+poe format
+
+# Lint
+poe lint
+
+# Type check
+poe type-check
+
+# Run all quality checks
+poe quality
+
+# Full pipeline (quality + tests)
+poe all
+```
+
+### Frontend Development
+
+```bash
+cd frontend/apps/web
+
+# Development with hot reload
+npm run dev
+
+# Type checking
+npm run typecheck
+
+# Linting
+npm run lint
+
+# Build for production
+npm run build
+```
+
+## IDE Setup
+
+### VS Code
+
+Recommended extensions (`.vscode/extensions.json`):
+
+```json
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "biomejs.biome"
+  ]
+}
+```
+
+Settings (`.vscode/settings.json`):
+
+```json
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.analysis.typeCheckingMode": "basic",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  }
+}
+```
+
+### PyCharm / IntelliJ
+
+1. Open the project directory
+2. Configure Python interpreter: `.venv/bin/python`
+3. Mark `src` as Sources Root
+4. Mark `tests` as Tests Root
+5. Enable Ruff for formatting/linting
+
+### Neovim
+
+With lazy.nvim:
+
+```lua
+{
+  "neovim/nvim-lspconfig",
+  config = function()
+    require("lspconfig").pyright.setup({})
+    require("lspconfig").ruff.setup({})
+    require("lspconfig").ts_ls.setup({})
+  end,
+}
+```
+
+## Troubleshooting
+
+### Database Connection Issues
+
+```bash
+# Check PostgreSQL is running
+pg_isready
+
+# Check connection
+psql -U tracertm -d tracertm -c "SELECT 1"
+
+# Reset database
+dropdb tracertm
+createdb tracertm -O tracertm
+alembic upgrade head
+```
+
+### Port Already in Use
+
+```bash
+# Find process using port
+lsof -i :8000
+
+# Kill process
+kill -9 <PID>
+
+# Or use different port
+uvicorn tracertm.api.main:app --port 8001
+```
+
+### Import Errors
+
+```bash
+# Ensure virtual environment is active
+which python  # Should show .venv/bin/python
+
+# Reinstall in editable mode
+uv pip install -e ".[dev]"
+
+# Verify PYTHONPATH
+echo $PYTHONPATH
+```
+
+### Frontend Build Issues
+
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear Vite cache
+rm -rf node_modules/.vite
+
+# Check Node version
+node --version  # Should be >= 18
+```
+
+### Docker Issues
+
+```bash
+# Rebuild containers
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+
+# Check logs
+docker compose logs api
+
+# Reset volumes
+docker compose down -v
+docker compose up -d
+```
+
+## Platform-Specific Guides
+
+For detailed platform-specific instructions:
+
+- [macOS Setup](/docs/development/setup/macos-setup) - Homebrew-based setup
+- [Linux Setup](/docs/development/setup/linux-setup) - Ubuntu/Debian/Fedora
+- [Windows Setup](/docs/development/setup/windows-setup) - WSL2 and native options
+
+## Next Steps
+
+Once your environment is set up:
+
+1. [Run the tests](/docs/development/contributing/testing) to verify everything works
+2. [Read the architecture guide](/docs/development/architecture) to understand the codebase
+3. [Check the contributing guide](/docs/development/contributing) before making changes
+4. [Explore the API docs](http://localhost:8000/docs) to understand the endpoints
+

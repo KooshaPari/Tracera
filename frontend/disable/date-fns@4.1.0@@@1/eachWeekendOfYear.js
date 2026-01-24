@@ -34,9 +34,9 @@ import { startOfYear } from "./startOfYear.js";
  * ]
  */
 export function eachWeekendOfYear(date, options) {
-  const start = startOfYear(date, options);
-  const end = endOfYear(date, options);
-  return eachWeekendOfInterval({ start, end }, options);
+	const start = startOfYear(date, options);
+	const end = endOfYear(date, options);
+	return eachWeekendOfInterval({ start, end }, options);
 }
 
 // Fallback for modularized imports:

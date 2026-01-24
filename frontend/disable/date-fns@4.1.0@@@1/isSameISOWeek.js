@@ -31,7 +31,7 @@ import { isSameWeek } from "./isSameWeek.js";
  * //=> false
  */
 export function isSameISOWeek(laterDate, earlierDate, options) {
-  return isSameWeek(laterDate, earlierDate, { ...options, weekStartsOn: 1 });
+	return isSameWeek(laterDate, earlierDate, { ...options, weekStartsOn: 1 });
 }
 
 // Fallback for modularized imports:

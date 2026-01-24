@@ -1,4 +1,3 @@
-"use strict";
 /*--------------------------------------------------------------------------
 
 @sinclair/typebox/value
@@ -30,42 +29,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValueClone = void 0;
 const is_1 = require("./is");
 var ValueClone;
-(function (ValueClone) {
-    function Array(value) {
-        return value.map((element) => Clone(element));
-    }
-    function Date(value) {
-        return new globalThis.Date(value.toISOString());
-    }
-    function Object(value) {
-        const keys = [...globalThis.Object.keys(value), ...globalThis.Object.getOwnPropertySymbols(value)];
-        return keys.reduce((acc, key) => ({ ...acc, [key]: Clone(value[key]) }), {});
-    }
-    function TypedArray(value) {
-        return value.slice();
-    }
-    function Value(value) {
-        return value;
-    }
-    function Clone(value) {
-        if (is_1.Is.Date(value)) {
-            return Date(value);
-        }
-        else if (is_1.Is.Object(value)) {
-            return Object(value);
-        }
-        else if (is_1.Is.Array(value)) {
-            return Array(value);
-        }
-        else if (is_1.Is.TypedArray(value)) {
-            return TypedArray(value);
-        }
-        else if (is_1.Is.Value(value)) {
-            return Value(value);
-        }
-        else {
-            throw new Error('ValueClone: Unable to clone value');
-        }
-    }
-    ValueClone.Clone = Clone;
-})(ValueClone = exports.ValueClone || (exports.ValueClone = {}));
+((ValueClone) => {
+	function Array(value) {
+		return value.map((element) => Clone(element));
+	}
+	function Date(value) {
+		return new globalThis.Date(value.toISOString());
+	}
+	function Object(value) {
+		const keys = [
+			...globalThis.Object.keys(value),
+			...globalThis.Object.getOwnPropertySymbols(value),
+		];
+		return keys.reduce(
+			(acc, key) => ({ ...acc, [key]: Clone(value[key]) }),
+			{},
+		);
+	}
+	function TypedArray(value) {
+		return value.slice();
+	}
+	function Value(value) {
+		return value;
+	}
+	function Clone(value) {
+		if (is_1.Is.Date(value)) {
+			return Date(value);
+		} else if (is_1.Is.Object(value)) {
+			return Object(value);
+		} else if (is_1.Is.Array(value)) {
+			return Array(value);
+		} else if (is_1.Is.TypedArray(value)) {
+			return TypedArray(value);
+		} else if (is_1.Is.Value(value)) {
+			return Value(value);
+		} else {
+			throw new Error("ValueClone: Unable to clone value");
+		}
+	}
+	ValueClone.Clone = Clone;
+})((ValueClone = exports.ValueClone || (exports.ValueClone = {})));

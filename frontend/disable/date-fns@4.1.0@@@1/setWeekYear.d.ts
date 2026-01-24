@@ -1,18 +1,18 @@
 import type {
-  ContextOptions,
-  DateArg,
-  FirstWeekContainsDateOptions,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	FirstWeekContainsDateOptions,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link setWeekYear} function options.
  */
 export interface SetWeekYearOptions<DateType extends Date = Date>
-  extends LocalizedOptions<"options">,
-    WeekOptions,
-    FirstWeekContainsDateOptions,
-    ContextOptions<DateType> {}
+	extends LocalizedOptions<"options">,
+		WeekOptions,
+		FirstWeekContainsDateOptions,
+		ContextOptions<DateType> {}
 /**
  * @name setWeekYear
  * @category Week-Numbering Year Helpers
@@ -53,10 +53,10 @@ export interface SetWeekYearOptions<DateType extends Date = Date>
  * //=> Sat Jan 01 2005 00:00:00
  */
 export declare function setWeekYear<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  weekYear: number,
-  options?: SetWeekYearOptions<ResultDate>,
+	date: DateArg<DateType>,
+	weekYear: number,
+	options?: SetWeekYearOptions<ResultDate>,
 ): ResultDate;

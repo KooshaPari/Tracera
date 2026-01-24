@@ -14,15 +14,15 @@ var _index5 = require("./ar-MA/_lib/match.cjs");
  * @author Achraf Rrami [@rramiachraf](https://github.com/rramiachraf)
  */
 const arMA = (exports.arMA = {
-  code: "ar-MA",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    // Monday is 1
-    weekStartsOn: 1,
-    firstWeekContainsDate: 1,
-  },
+	code: "ar-MA",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		// Monday is 1
+		weekStartsOn: 1,
+		firstWeekContainsDate: 1,
+	},
 });

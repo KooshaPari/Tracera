@@ -18,10 +18,7 @@
  * @returns {lunr.Token}
  * @see lunr.Pipeline
  */
-lunr.trimmer = function (token) {
-  return token.update(function (s) {
-    return s.replace(/^\W+/, '').replace(/\W+$/, '')
-  })
-}
+lunr.trimmer = (token) =>
+	token.update((s) => s.replace(/^\W+/, "").replace(/\W+$/, ""));
 
-lunr.Pipeline.registerFunction(lunr.trimmer, 'trimmer')
+lunr.Pipeline.registerFunction(lunr.trimmer, "trimmer");

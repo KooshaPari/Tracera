@@ -10,28 +10,42 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-1");
  */
 
 const visitorOptions = {
-  keyMap: _apidomNsOpenapi.keyMap,
-  nodeTypeGetter: _apidomNsOpenapi.getNodeType
+	keyMap: _apidomNsOpenapi.keyMap,
+	nodeTypeGetter: _apidomNsOpenapi.getNodeType,
 };
 const select = (openAPIElement, standardIdentifier) => {
-  const selected = [];
-  const visitor = {
-    OperationElement(element) {
-      if (!element.meta.hasKey('ads-s-standard-identifier')) return;
-      const standardIdentifiers = (0, _apidomCore.toValue)(element.meta.get('ads-s-standard-identifier'));
-      if ((0, _ramda.includes)((0, _apidomCore.toValue)(standardIdentifier), standardIdentifiers)) {
-        selected.push(element);
-      }
-    },
-    ResponseElement(element) {
-      if (!element.meta.hasKey('ads-s-standard-identifier')) return;
-      const standardIdentifiers = (0, _apidomCore.toValue)(element.meta.get('ads-s-standard-identifier'));
-      if ((0, _ramda.includes)((0, _apidomCore.toValue)(standardIdentifier), standardIdentifiers)) {
-        selected.push(element);
-      }
-    }
-  };
-  (0, _apidomCore.visit)(openAPIElement, visitor, visitorOptions);
-  return selected;
+	const selected = [];
+	const visitor = {
+		OperationElement(element) {
+			if (!element.meta.hasKey("ads-s-standard-identifier")) return;
+			const standardIdentifiers = (0, _apidomCore.toValue)(
+				element.meta.get("ads-s-standard-identifier"),
+			);
+			if (
+				(0, _ramda.includes)(
+					(0, _apidomCore.toValue)(standardIdentifier),
+					standardIdentifiers,
+				)
+			) {
+				selected.push(element);
+			}
+		},
+		ResponseElement(element) {
+			if (!element.meta.hasKey("ads-s-standard-identifier")) return;
+			const standardIdentifiers = (0, _apidomCore.toValue)(
+				element.meta.get("ads-s-standard-identifier"),
+			);
+			if (
+				(0, _ramda.includes)(
+					(0, _apidomCore.toValue)(standardIdentifier),
+					standardIdentifiers,
+				)
+			) {
+				selected.push(element);
+			}
+		},
+	};
+	(0, _apidomCore.visit)(openAPIElement, visitor, visitorOptions);
+	return selected;
 };
-var _default = exports.default = select;
+var _default = (exports.default = select);

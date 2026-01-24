@@ -1,5 +1,5 @@
-'use strict';
-require('../stable');
-require('../stage/3');
+"use strict";
+require("../stable");
+require("../stage/3");
 
-module.exports = require('../internals/path');
+module.exports = require("../internals/path");

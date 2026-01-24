@@ -1,24 +1,44 @@
-'use strict';
-const path = require('path');
-const childProcess = require('child_process');
-const crossSpawn = require('cross-spawn');
-const stripFinalNewline = require('strip-final-newline');
-const npmRunPath = require('npm-run-path');
-const onetime = require('onetime');
-const makeError = require('./lib/error');
-const normalizeStdio = require('./lib/stdio');
-const {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} = require('./lib/kill');
-const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream');
-const {mergePromise, getSpawnedPromise} = require('./lib/promise');
-const {joinCommand, parseCommand, getEscapedCommand} = require('./lib/command');
+const path = require("path");
+const childProcess = require("child_process");
+const crossSpawn = require("cross-spawn");
+const stripFinalNewline = require("strip-final-newline");
+const npmRunPath = require("npm-run-path");
+const onetime = require("onetime");
+const makeError = require("./lib/error");
+const normalizeStdio = require("./lib/stdio");
+const {
+	spawnedKill,
+	spawnedCancel,
+	setupTimeout,
+	validateTimeout,
+	setExitHandler,
+} = require("./lib/kill");
+const {
+	handleInput,
+	getSpawnedResult,
+	makeAllStream,
+	validateInputSync,
+} = require("./lib/stream");
+const { mergePromise, getSpawnedPromise } = require("./lib/promise");
+const {
+	joinCommand,
+	parseCommand,
+	getEscapedCommand,
+} = require("./lib/command");
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
-const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) => {
-	const env = extendEnv ? {...process.env, ...envOption} : envOption;
+const getEnv = ({
+	env: envOption,
+	extendEnv,
+	preferLocal,
+	localDir,
+	execPath,
+}) => {
+	const env = extendEnv ? { ...process.env, ...envOption } : envOption;
 
 	if (preferLocal) {
-		return npmRunPath.env({env, cwd: localDir, execPath});
+		return npmRunPath.env({ env, cwd: localDir, execPath });
 	}
 
 	return env;
@@ -38,30 +58,30 @@ const handleArguments = (file, args, options = {}) => {
 		preferLocal: false,
 		localDir: options.cwd || process.cwd(),
 		execPath: process.execPath,
-		encoding: 'utf8',
+		encoding: "utf8",
 		reject: true,
 		cleanup: true,
 		all: false,
 		windowsHide: true,
-		...options
+		...options,
 	};
 
 	options.env = getEnv(options);
 
 	options.stdio = normalizeStdio(options);
 
-	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
+	if (process.platform === "win32" && path.basename(file, ".exe") === "cmd") {
 		// #116
-		args.unshift('/q');
+		args.unshift("/q");
 	}
 
-	return {file, args, options, parsed};
+	return { file, args, options, parsed };
 };
 
 const handleOutput = (options, value, error) => {
-	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
+	if (typeof value !== "string" && !Buffer.isBuffer(value)) {
 		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
-		return error === undefined ? undefined : '';
+		return error === undefined ? undefined : "";
 	}
 
 	if (options.stripFinalNewline) {
@@ -84,18 +104,20 @@ const execa = (file, args, options) => {
 	} catch (error) {
 		// Ensure the returned error is always both a promise and a child process
 		const dummySpawned = new childProcess.ChildProcess();
-		const errorPromise = Promise.reject(makeError({
-			error,
-			stdout: '',
-			stderr: '',
-			all: '',
-			command,
-			escapedCommand,
-			parsed,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		}));
+		const errorPromise = Promise.reject(
+			makeError({
+				error,
+				stdout: "",
+				stderr: "",
+				all: "",
+				command,
+				escapedCommand,
+				parsed,
+				timedOut: false,
+				isCanceled: false,
+				killed: false,
+			}),
+		);
 		return mergePromise(dummySpawned, errorPromise);
 	}
 
@@ -103,13 +125,18 @@ const execa = (file, args, options) => {
 	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
 	const processDone = setExitHandler(spawned, parsed.options, timedPromise);
 
-	const context = {isCanceled: false};
+	const context = { isCanceled: false };
 
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
 	const handlePromise = async () => {
-		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
+		const [
+			{ error, exitCode, signal, timedOut },
+			stdoutResult,
+			stderrResult,
+			allResult,
+		] = await getSpawnedResult(spawned, parsed.options, processDone);
 		const stdout = handleOutput(parsed.options, stdoutResult);
 		const stderr = handleOutput(parsed.options, stderrResult);
 		const all = handleOutput(parsed.options, allResult);
@@ -127,7 +154,7 @@ const execa = (file, args, options) => {
 				parsed,
 				timedOut,
 				isCanceled: context.isCanceled,
-				killed: spawned.killed
+				killed: spawned.killed,
 			});
 
 			if (!parsed.options.reject) {
@@ -147,7 +174,7 @@ const execa = (file, args, options) => {
 			failed: false,
 			timedOut: false,
 			isCanceled: false,
-			killed: false
+			killed: false,
 		};
 	};
 
@@ -175,15 +202,15 @@ module.exports.sync = (file, args, options) => {
 	} catch (error) {
 		throw makeError({
 			error,
-			stdout: '',
-			stderr: '',
-			all: '',
+			stdout: "",
+			stderr: "",
+			all: "",
 			command,
 			escapedCommand,
 			parsed,
 			timedOut: false,
 			isCanceled: false,
-			killed: false
+			killed: false,
 		});
 	}
 
@@ -200,9 +227,9 @@ module.exports.sync = (file, args, options) => {
 			command,
 			escapedCommand,
 			parsed,
-			timedOut: result.error && result.error.code === 'ETIMEDOUT',
+			timedOut: result.error && result.error.code === "ETIMEDOUT",
 			isCanceled: false,
-			killed: result.signal !== null
+			killed: result.signal !== null,
 		});
 
 		if (!parsed.options.reject) {
@@ -221,7 +248,7 @@ module.exports.sync = (file, args, options) => {
 		failed: false,
 		timedOut: false,
 		isCanceled: false,
-		killed: false
+		killed: false,
 	};
 };
 
@@ -236,33 +263,29 @@ module.exports.commandSync = (command, options) => {
 };
 
 module.exports.node = (scriptPath, args, options = {}) => {
-	if (args && !Array.isArray(args) && typeof args === 'object') {
+	if (args && !Array.isArray(args) && typeof args === "object") {
 		options = args;
 		args = [];
 	}
 
 	const stdio = normalizeStdio.node(options);
-	const defaultExecArgv = process.execArgv.filter(arg => !arg.startsWith('--inspect'));
+	const defaultExecArgv = process.execArgv.filter(
+		(arg) => !arg.startsWith("--inspect"),
+	);
 
-	const {
-		nodePath = process.execPath,
-		nodeOptions = defaultExecArgv
-	} = options;
+	const { nodePath = process.execPath, nodeOptions = defaultExecArgv } =
+		options;
 
 	return execa(
 		nodePath,
-		[
-			...nodeOptions,
-			scriptPath,
-			...(Array.isArray(args) ? args : [])
-		],
+		[...nodeOptions, scriptPath, ...(Array.isArray(args) ? args : [])],
 		{
 			...options,
 			stdin: undefined,
 			stdout: undefined,
 			stderr: undefined,
 			stdio,
-			shell: false
-		}
+			shell: false,
+		},
 	);
 };

@@ -1,1 +1,1 @@
-export * from './types/pure'
+export * from "./types/pure";

@@ -1,33 +1,4 @@
 import { createMemoryHistory } from '@tanstack/history'
-import {
-  flattenMiddlewares,
-  json,
-  mergeHeaders,
-} from '@tanstack/start-client-core'
-import {
-  executeRewriteInput,
-  isRedirect,
-  isResolvedRedirect,
-} from '@tanstack/router-core'
-import {
-  attachRouterServerSsrUtils,
-  getOrigin,
-} from '@tanstack/router-core/ssr/server'
-import { runWithStartContext } from '@tanstack/start-storage-context'
-import { requestHandler } from './request-response'
-import { getStartManifest } from './router-manifest'
-import { handleServerAction } from './server-functions-handler'
-
-import { HEADERS } from './constants'
-import { ServerFunctionSerializationAdapter } from './serializer/ServerFunctionSerializationAdapter'
-import type {
-  AnyStartInstanceOptions,
-  RouteMethod,
-  RouteMethodHandlerFn,
-  RouterEntry,
-  StartEntry,
-} from '@tanstack/start-client-core'
-import type { RequestHandler } from './request-handler'
 import type {
   AnyRoute,
   AnyRouter,
@@ -35,7 +6,36 @@ import type {
   Manifest,
   Register,
 } from '@tanstack/router-core'
+import {
+  executeRewriteInput,
+  isRedirect,
+  isResolvedRedirect,
+} from '@tanstack/router-core'
 import type { HandlerCallback } from '@tanstack/router-core/ssr/server'
+import {
+  attachRouterServerSsrUtils,
+  getOrigin,
+} from '@tanstack/router-core/ssr/server'
+import type {
+  AnyStartInstanceOptions,
+  RouteMethod,
+  RouteMethodHandlerFn,
+  RouterEntry,
+  StartEntry,
+} from '@tanstack/start-client-core'
+import {
+  flattenMiddlewares,
+  json,
+  mergeHeaders,
+} from '@tanstack/start-client-core'
+import { runWithStartContext } from '@tanstack/start-storage-context'
+
+import { HEADERS } from './constants'
+import type { RequestHandler } from './request-handler'
+import { requestHandler } from './request-response'
+import { getStartManifest } from './router-manifest'
+import { ServerFunctionSerializationAdapter } from './serializer/ServerFunctionSerializationAdapter'
+import { handleServerAction } from './server-functions-handler'
 
 type TODO = any
 
@@ -63,11 +63,11 @@ export function createStartHandler<TRegister = Register>(
     routerEntry: RouterEntry
   }> => {
     if (routerEntry === null) {
-      // @ts-ignore when building, we currently don't respect tsconfig.ts' `include` so we are not picking up the .d.ts from start-client-core
+      // @ts-expect-error when building, we currently don't respect tsconfig.ts' `include` so we are not picking up the .d.ts from start-client-core
       routerEntry = await import('#tanstack-router-entry')
     }
     if (startEntry === null) {
-      // @ts-ignore when building, we currently don't respect tsconfig.ts' `include` so we are not picking up the .d.ts from start-client-core
+      // @ts-expect-error when building, we currently don't respect tsconfig.ts' `include` so we are not picking up the .d.ts from start-client-core
       startEntry = await import('#tanstack-start-entry')
     }
     return {

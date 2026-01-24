@@ -13,74 +13,74 @@ import Cluster from "./index";
  * to support this feature.
  */
 export default class ClusterSubscriberGroup {
-    private cluster;
-    private shardedSubscribers;
-    private clusterSlots;
-    private subscriberToSlotsIndex;
-    private channels;
-    /**
-     * Register callbacks
-     *
-     * @param cluster
-     */
-    constructor(cluster: Cluster, refreshSlotsCacheCallback: () => void);
-    /**
-     * Get the responsible subscriber.
-     *
-     * Returns null if no subscriber was found
-     *
-     * @param slot
-     */
-    getResponsibleSubscriber(slot: number): ClusterSubscriber;
-    /**
-     * Adds a channel for which this subscriber group is responsible
-     *
-     * @param channels
-     */
-    addChannels(channels: (string | Buffer)[]): number;
-    /**
-     * Removes channels for which the subscriber group is responsible by optionally unsubscribing
-     * @param channels
-     */
-    removeChannels(channels: (string | Buffer)[]): number;
-    /**
-     * Disconnect all subscribers
-     */
-    stop(): void;
-    /**
-     * Start all not yet started subscribers
-     */
-    start(): void;
-    /**
-     * Add a subscriber to the group of subscribers
-     *
-     * @param redis
-     */
-    private _addSubscriber;
-    /**
-     * Removes a subscriber from the group
-     * @param redis
-     */
-    private _removeSubscriber;
-    /**
-     * Refreshes the subscriber-related slot ranges
-     *
-     * Returns false if no refresh was needed
-     *
-     * @param cluster
-     */
-    private _refreshSlots;
-    /**
-     * Resubscribes to the previous channels
-     *
-     * @private
-     */
-    private _resubscribe;
-    /**
-     * Deep equality of the cluster slots objects
-     *
-     * @param other
-     * @private
-     */
-    private _slotsAreEqual;
+	private cluster;
+	private shardedSubscribers;
+	private clusterSlots;
+	private subscriberToSlotsIndex;
+	private channels;
+	/**
+	 * Register callbacks
+	 *
+	 * @param cluster
+	 */
+	constructor(cluster: Cluster, refreshSlotsCacheCallback: () => void);
+	/**
+	 * Get the responsible subscriber.
+	 *
+	 * Returns null if no subscriber was found
+	 *
+	 * @param slot
+	 */
+	getResponsibleSubscriber(slot: number): ClusterSubscriber;
+	/**
+	 * Adds a channel for which this subscriber group is responsible
+	 *
+	 * @param channels
+	 */
+	addChannels(channels: (string | Buffer)[]): number;
+	/**
+	 * Removes channels for which the subscriber group is responsible by optionally unsubscribing
+	 * @param channels
+	 */
+	removeChannels(channels: (string | Buffer)[]): number;
+	/**
+	 * Disconnect all subscribers
+	 */
+	stop(): void;
+	/**
+	 * Start all not yet started subscribers
+	 */
+	start(): void;
+	/**
+	 * Add a subscriber to the group of subscribers
+	 *
+	 * @param redis
+	 */
+	private _addSubscriber;
+	/**
+	 * Removes a subscriber from the group
+	 * @param redis
+	 */
+	private _removeSubscriber;
+	/**
+	 * Refreshes the subscriber-related slot ranges
+	 *
+	 * Returns false if no refresh was needed
+	 *
+	 * @param cluster
+	 */
+	private _refreshSlots;
+	/**
+	 * Resubscribes to the previous channels
+	 *
+	 * @private
+	 */
+	private _resubscribe;
+	/**
+	 * Deep equality of the cluster slots objects
+	 *
+	 * @param other
+	 * @private
+	 */
+	private _slotsAreEqual;
 }

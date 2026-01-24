@@ -1,379 +1,475 @@
-import type { Project } from '@tracertm/types'
-import { Alert } from '@tracertm/ui/components/Alert'
-import { Button } from '@tracertm/ui/components/Button'
-import { Card } from '@tracertm/ui/components/Card'
-import { Dialog } from '@tracertm/ui/components/Dialog'
-import { Input } from '@tracertm/ui/components/Input'
-import { Skeleton } from '@tracertm/ui/components/Skeleton'
-import { useMemo, useState } from 'react'
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
-import { useItems } from '../hooks/useItems'
-import { useCreateProject, useDeleteProject, useProjects } from '../hooks/useProjects'
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import type { Project } from "@tracertm/types";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@tracertm/ui";
+import { Alert } from "@tracertm/ui/components/Alert";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Dialog } from "@tracertm/ui/components/Dialog";
+import { Input } from "@tracertm/ui/components/Input";
+import { Label } from "@tracertm/ui/components/Label";
+import { Separator } from "@tracertm/ui/components/Separator";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
+import { Textarea } from "@tracertm/ui/components/Textarea";
+import { ClipboardList, Folder } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useCreateProject, useProjects } from "../hooks/useProjects";
 
 interface ProjectCardProps {
-  project: Project
-  itemCount: number
-  onDelete: () => void
+	project: Project;
+	itemCount: number;
 }
 
-function ProjectCard({ project, itemCount, onDelete }: ProjectCardProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+function ProjectCard({ project, itemCount }: ProjectCardProps) {
+	return (
+		<Card className="p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50">
+			<div className="flex items-start justify-between mb-4">
+				<Link to={`/projects/${project.id}`} className="flex-1 group">
+					<h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+						{project.name}
+					</h3>
+				</Link>
+			</div>
 
-  return (
-    <>
-      <Card className="p-6 hover:shadow-lg transition-shadow">
-        <div className="flex items-start justify-between mb-4">
-          <Link to={`/projects/${project.id}`} className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-              {project.name}
-            </h3>
-          </Link>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault()
-                setShowDeleteDialog(true)
-              }}
-            >
-              🗑️
-            </Button>
-          </div>
-        </div>
+			{project.description && (
+				<p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+					{project.description}
+				</p>
+			)}
 
-        {project.description && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-            {project.description}
-          </p>
-        )}
+			<Separator className="my-4" />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center space-x-1">
-              <span>📋</span>
-              <span>{itemCount} items</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span>📅</span>
-              <span>{new Date(project.createdAt).toLocaleDateString()}</span>
-            </div>
-          </div>
-          <Link to={`/projects/${project.id}`}>
-            <Button variant="outline" size="sm">
-              View
-            </Button>
-          </Link>
-        </div>
-      </Card>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Delete Project</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Are you sure you want to delete "{project.name}"? This action cannot be undone.
-          </p>
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                onDelete()
-                setShowDeleteDialog(false)
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        </div>
-      </Dialog>
-    </>
-  )
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-4 text-sm text-muted-foreground">
+					<div className="flex items-center gap-1.5">
+						<ClipboardList className="h-4 w-4" />
+						<span>{itemCount} items</span>
+					</div>
+					<div className="flex items-center gap-1.5">
+						<span className="text-lg">📅</span>
+						<span>
+							{project.createdAt
+								? new Date(project.createdAt).toLocaleDateString()
+								: "N/A"}
+						</span>
+					</div>
+				</div>
+				<Link to={`/projects/${project.id}`}>
+					<Button variant="outline" size="sm">
+						View
+					</Button>
+				</Link>
+			</div>
+		</Card>
+	);
 }
 
 function CreateProjectDialog({
-  open,
-  onOpenChange,
+	open,
+	onOpenChange,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
 }) {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const createProject = useCreateProject()
-  const navigate = useNavigate()
+	const [name, setName] = useState("");
+	const [description, setDescription] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const createProject = useCreateProject();
+	const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError(null);
 
-    if (!name.trim()) {
-      setError('Project name is required')
-      return
-    }
+		if (!name.trim()) {
+			setError("Project name is required");
+			return;
+		}
 
-    try {
-      const project = await createProject.mutateAsync({
-        name: name.trim(),
-        description: description.trim() || undefined,
-      })
-      setName('')
-      setDescription('')
-      onOpenChange(false)
-      navigate(`/projects/${project.id}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create project')
-    }
-  }
+		try {
+			const project = await createProject.mutateAsync({
+				name: name.trim(),
+				description: description.trim() || undefined,
+			});
+			setName("");
+			setDescription("");
+			onOpenChange(false);
+			navigate({ to: `/projects/${project.id}` });
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Failed to create project");
+		}
+	};
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <div className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Create New Project</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <Alert variant="destructive">{error}</Alert>}
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<div className="p-6">
+				<h2 className="text-xl font-semibold mb-6">Create New Project</h2>
+				<form onSubmit={handleSubmit} className="space-y-6">
+					{error && <Alert variant="destructive">{error}</Alert>}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Project Name *
-            </label>
-            <Input
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setName((e.currentTarget as HTMLInputElement).value)
-              }
-              placeholder="Enter project name"
-              autoFocus
-            />
-          </div>
+					<div className="space-y-2">
+						<Label htmlFor="project-name">
+							Project Name <span className="text-destructive">*</span>
+						</Label>
+						<Input
+							id="project-name"
+							value={name}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+								setName((e.currentTarget as HTMLInputElement).value)
+							}
+							placeholder="Enter project name"
+							autoFocus
+						/>
+					</div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setDescription((e.currentTarget as HTMLTextAreaElement).value)
-              }
-              placeholder="Enter project description (optional)"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-              rows={4}
-            />
-          </div>
+					<div className="space-y-2">
+						<Label htmlFor="project-description">Description</Label>
+						<Textarea
+							id="project-description"
+							value={description}
+							onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+								setDescription((e.currentTarget as HTMLTextAreaElement).value)
+							}
+							placeholder="Enter project description (optional)"
+							rows={4}
+						/>
+					</div>
 
-          <div className="flex justify-end space-x-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={createProject.isPending}>
-              {createProject.isPending ? 'Creating...' : 'Create Project'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Dialog>
-  )
+					<Separator />
+
+					<div className="flex justify-end gap-3">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+						>
+							Cancel
+						</Button>
+						<Button type="submit" disabled={createProject.isPending}>
+							{createProject.isPending ? "Creating..." : "Create Project"}
+						</Button>
+					</div>
+				</form>
+			</div>
+		</Dialog>
+	);
 }
 
 export function ProjectsListView() {
-  const navigate = useNavigate()
-  const searchParams = useSearch({ strict: false }) as any
-  const { data: projects, isLoading: projectsLoading, error: projectsError } = useProjects()
-  const { data: items } = useItems()
-  const deleteProject = useDeleteProject()
+	const navigate = useNavigate();
+	const searchParams = useSearch({ strict: false }) as any;
+	const {
+		data: projects,
+		isLoading: projectsLoading,
+		error: projectsError,
+	} = useProjects();
+	const [projectItemCounts, setProjectItemCounts] = useState<
+		Record<string, number>
+	>({});
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'items'>('date')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+	const [searchQuery, setSearchQuery] = useState("");
+	const [sortBy, setSortBy] = useState<"name" | "date" | "items">("date");
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  const showCreateDialog = searchParams?.action === 'create'
+	const showCreateDialog = searchParams?.action === "create";
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      navigate({
-        search: (prev: any) => ({
-          ...prev,
-          action: undefined,
-        }),
-      })
-    }
-  }
+	const handleOpenChange = (open: boolean) => {
+		if (!open) {
+			navigate({
+				search: (prev: any) => {
+					const newSearch = { ...(prev || {}), action: undefined };
+					return newSearch as any;
+				},
+			} as any);
+		}
+	};
 
-  // Filter and sort projects
-  const filteredAndSortedProjects = useMemo(() => {
-    if (!projects) return []
+	// Ensure projects is always an array
+	const projectsArray = Array.isArray(projects) ? projects : [];
 
-    const filtered = projects.filter((project) => {
-      if (!searchQuery) return true
-      const query = searchQuery.toLowerCase()
-      return (
-        project.name.toLowerCase().includes(query) ||
-        project.description?.toLowerCase().includes(query)
-      )
-    })
+	// Fetch item counts for each project (with throttling to avoid rate limits)
+	useEffect(() => {
+		if (projectsArray.length === 0) return;
 
-    // Count items per project
-    const projectsWithCounts = filtered.map((project) => ({
-      project,
-      itemCount: items?.filter((item) => item.projectId === project.id).length || 0,
-    }))
+		const fetchCounts = async () => {
+			const counts: Record<string, number> = {};
+			const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-    // Sort
-    projectsWithCounts.sort((a, b) => {
-      let comparison = 0
+			// Fetch counts sequentially with small delays to avoid rate limiting
+			for (const project of projectsArray) {
+				try {
+					// Small delay between requests to avoid rate limiting
+					await new Promise((resolve) => setTimeout(resolve, 100));
 
-      switch (sortBy) {
-        case 'name':
-          comparison = a.project.name.localeCompare(b.project.name)
-          break
-        case 'date':
-          comparison =
-            new Date(a.project.createdAt).getTime() - new Date(b.project.createdAt).getTime()
-          break
-        case 'items':
-          comparison = a.itemCount - b.itemCount
-          break
-      }
+					const res = await fetch(
+						`${apiUrl}/api/v1/items?project_id=${project.id}&limit=1`,
+						{
+							headers: {
+								"X-Bulk-Operation": "true", // Request to skip rate limiting
+							},
+						},
+					);
 
-      return sortOrder === 'asc' ? comparison : -comparison
-    })
+					if (res.ok) {
+						const data = await res.json();
+						// Handle both { total, items } and direct array responses
+						if (data.total !== undefined) {
+							counts[project.id] = data.total;
+						} else if (Array.isArray(data)) {
+							counts[project.id] = data.length;
+						} else if (data.items && Array.isArray(data.items)) {
+							counts[project.id] = data.items.length;
+						} else {
+							counts[project.id] = 0;
+						}
+					} else {
+						// If rate limited, wait and retry once
+						if (res.status === 429) {
+							await new Promise((resolve) => setTimeout(resolve, 1000));
+							const retryRes = await fetch(
+								`${apiUrl}/api/v1/items?project_id=${project.id}&limit=1`,
+								{
+									headers: {
+										"X-Bulk-Operation": "true",
+									},
+								},
+							);
+							if (retryRes.ok) {
+								const retryData = await retryRes.json();
+								counts[project.id] = retryData.total || 0;
+							} else {
+								counts[project.id] = 0;
+							}
+						} else {
+							counts[project.id] = 0;
+						}
+					}
+				} catch (error) {
+					console.error(
+						`Error fetching items for project ${project.id}:`,
+						error,
+					);
+					counts[project.id] = 0;
+				}
+			}
 
-    return projectsWithCounts
-  }, [projects, items, searchQuery, sortBy, sortOrder])
+			setProjectItemCounts(counts);
+		};
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteProject.mutateAsync(id)
-    } catch (err) {
-      console.error('Failed to delete project:', err)
-    }
-  }
+		fetchCounts();
+	}, [projectsArray]);
 
-  if (projectsLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-12 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-48" />
-          ))}
-        </div>
-      </div>
-    )
-  }
+	// Filter and sort projects
+	const filteredAndSortedProjects = useMemo(() => {
+		if (!projectsArray || projectsArray.length === 0) return [];
 
-  if (projectsError) {
-    return <Alert variant="destructive">Failed to load projects: {projectsError.message}</Alert>
-  }
+		const filtered = projectsArray.filter((project) => {
+			if (!searchQuery) return true;
+			const query = searchQuery.toLowerCase();
+			return (
+				project.name.toLowerCase().includes(query) ||
+				project.description?.toLowerCase().includes(query)
+			);
+		});
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Projects</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Manage your traceability projects</p>
-        </div>
-        <Button onClick={() => navigate({ search: { action: 'create' } })}>+ New Project</Button>
-      </div>
+		// Map projects with item counts
+		const projectsWithCounts = filtered.map((project) => ({
+			project,
+			itemCount: projectItemCounts[project.id] || 0,
+		}));
 
-      {/* Filters and Search */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <Input
-              type="search"
-              placeholder="Search projects..."
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchQuery((e.currentTarget as HTMLInputElement).value)
-              }
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={sortBy}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setSortBy((e.currentTarget as HTMLSelectElement).value as 'name' | 'date' | 'items')
-              }
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-            >
-              <option value="date">Sort by Date</option>
-              <option value="name">Sort by Name</option>
-              <option value="items">Sort by Items</option>
-            </select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            >
-              {sortOrder === 'asc' ? '↑' : '↓'}
-            </Button>
-          </div>
-        </div>
-      </Card>
+		// Sort
+		projectsWithCounts.sort((a, b) => {
+			let comparison = 0;
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Projects</div>
-          <div className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
-            {projects?.length || 0}
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Items</div>
-          <div className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
-            {items?.length || 0}
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            Avg Items/Project
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
-            {projects?.length ? Math.round((items?.length || 0) / projects.length) : 0}
-          </div>
-        </Card>
-      </div>
+			switch (sortBy) {
+				case "name":
+					comparison = a.project.name.localeCompare(b.project.name);
+					break;
+				case "date": {
+					const dateA = a.project.createdAt
+						? new Date(a.project.createdAt).getTime()
+						: 0;
+					const dateB = b.project.createdAt
+						? new Date(b.project.createdAt).getTime()
+						: 0;
+					comparison = dateA - dateB;
+					break;
+				}
+				case "items":
+					comparison = a.itemCount - b.itemCount;
+					break;
+			}
 
-      {/* Projects Grid */}
-      {filteredAndSortedProjects.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAndSortedProjects.map(({ project, itemCount }) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              itemCount={itemCount}
-              onDelete={() => handleDelete(project.id)}
-            />
-          ))}
-        </div>
-      ) : (
-        <Card className="p-12">
-          <div className="text-center">
-            <div className="text-6xl mb-4">📁</div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {searchQuery ? 'No projects found' : 'No projects yet'}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {searchQuery
-                ? 'Try adjusting your search criteria'
-                : 'Get started by creating your first project'}
-            </p>
-            {!searchQuery && (
-              <Button onClick={() => navigate({ search: { action: 'create' } })}>Create Project</Button>
-            )}
-          </div>
-        </Card>
-      )}
+			return sortOrder === "asc" ? comparison : -comparison;
+		});
 
-      {/* Create Dialog */}
-      <CreateProjectDialog open={showCreateDialog} onOpenChange={handleOpenChange} />
-    </div>
-  )
+		return projectsWithCounts;
+	}, [
+		projectsArray,
+		searchQuery,
+		sortBy,
+		sortOrder,
+		projectItemCounts[project.id],
+	]);
+
+	if (projectsLoading) {
+		return (
+			<div className="space-y-6">
+				<Skeleton className="h-12 w-full" />
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{[...Array(6)].map((_, i) => (
+						<Skeleton key={i} className="h-48" />
+					))}
+				</div>
+			</div>
+		);
+	}
+
+	if (projectsError) {
+		return (
+			<Alert variant="destructive">
+				Failed to load projects: {projectsError.message}
+			</Alert>
+		);
+	}
+
+	return (
+		<div className="space-y-6 p-6">
+			{/* Header */}
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+					<p className="mt-2 text-muted-foreground">
+						Manage your traceability projects
+					</p>
+				</div>
+				<Button
+					onClick={() => navigate({ search: { action: "create" } as any })}
+				>
+					+ New Project
+				</Button>
+			</div>
+
+			{/* Filters and Search */}
+			<Card className="p-4">
+				<div className="flex flex-col md:flex-row gap-4">
+					<div className="flex-1">
+						<Input
+							type="search"
+							placeholder="Search projects..."
+							value={searchQuery}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+								setSearchQuery((e.currentTarget as HTMLInputElement).value)
+							}
+						/>
+					</div>
+					<div className="flex items-center gap-2">
+						<Select
+							value={sortBy}
+							onValueChange={(value) =>
+								setSortBy(value as "name" | "date" | "items")
+							}
+						>
+							<SelectTrigger className="w-[180px]">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="date">Sort by Date</SelectItem>
+								<SelectItem value="name">Sort by Name</SelectItem>
+								<SelectItem value="items">Sort by Items</SelectItem>
+							</SelectContent>
+						</Select>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+						>
+							{sortOrder === "asc" ? "↑" : "↓"}
+						</Button>
+					</div>
+				</div>
+			</Card>
+
+			{/* Stats */}
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+				<Card className="p-6 hover:shadow-md transition-shadow">
+					<div className="text-sm font-medium text-muted-foreground">
+						Total Projects
+					</div>
+					<div className="mt-2 text-3xl font-bold tracking-tight">
+						{projectsArray.length || 0}
+					</div>
+				</Card>
+				<Card className="p-6 hover:shadow-md transition-shadow">
+					<div className="text-sm font-medium text-muted-foreground">
+						Total Items
+					</div>
+					<div className="mt-2 text-3xl font-bold tracking-tight">
+						{Object.values(projectItemCounts).reduce((a, b) => a + b, 0)}
+					</div>
+				</Card>
+				<Card className="p-6 hover:shadow-md transition-shadow">
+					<div className="text-sm font-medium text-muted-foreground">
+						Avg Items/Project
+					</div>
+					<div className="mt-2 text-3xl font-bold tracking-tight">
+						{projectsArray.length > 0
+							? Math.round(
+									Object.values(projectItemCounts).reduce((a, b) => a + b, 0) /
+										Math.max(projectsArray.length, 1),
+								)
+							: 0}
+					</div>
+				</Card>
+			</div>
+
+			{/* Projects Grid */}
+			{filteredAndSortedProjects.length > 0 ? (
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{filteredAndSortedProjects.map(({ project, itemCount }) => (
+						<ProjectCard
+							key={project.id}
+							project={project}
+							itemCount={itemCount}
+						/>
+					))}
+				</div>
+			) : (
+				<Card className="p-12">
+					<div className="text-center">
+						<Folder className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+						<h3 className="text-xl font-semibold mb-2">
+							{searchQuery ? "No projects found" : "No projects yet"}
+						</h3>
+						<p className="text-muted-foreground mb-6">
+							{searchQuery
+								? "Try adjusting your search criteria"
+								: "Get started by creating your first project"}
+						</p>
+						{!searchQuery && (
+							<Button
+								onClick={() =>
+									navigate({ search: { action: "create" } as any })
+								}
+							>
+								Create Project
+							</Button>
+						)}
+					</div>
+				</Card>
+			)}
+
+			{/* Create Dialog */}
+			<CreateProjectDialog
+				open={showCreateDialog}
+				onOpenChange={handleOpenChange}
+			/>
+		</div>
+	);
 }

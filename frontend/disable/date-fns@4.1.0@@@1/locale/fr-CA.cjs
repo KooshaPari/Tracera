@@ -17,16 +17,16 @@ var _index5 = require("./fr-CA/_lib/formatLong.cjs"); // Same as fr
  * @author Gabriele Petrioli [@gpetrioli](https://github.com/gpetrioli)
  */
 const frCA = (exports.frCA = {
-  code: "fr-CA",
-  formatDistance: _index.formatDistance,
-  formatLong: _index5.formatLong,
-  formatRelative: _index2.formatRelative,
-  localize: _index3.localize,
-  match: _index4.match,
+	code: "fr-CA",
+	formatDistance: _index.formatDistance,
+	formatLong: _index5.formatLong,
+	formatRelative: _index2.formatRelative,
+	localize: _index3.localize,
+	match: _index4.match,
 
-  // Unique for fr-CA
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	// Unique for fr-CA
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

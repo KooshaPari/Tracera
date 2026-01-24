@@ -1,3 +1,3 @@
 export type ScorecardsConfig = {
-    test: boolean;
+	test: boolean;
 };

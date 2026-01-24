@@ -24,5 +24,5 @@ var _index2 = require("./isSameMinute.cjs");
  */
 
 function isThisMinute(date) {
-  return (0, _index2.isSameMinute)(date, (0, _index.constructNow)(date));
+	return (0, _index2.isSameMinute)(date, (0, _index.constructNow)(date));
 }

@@ -10,6 +10,7 @@ import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import typer
 import yaml
@@ -26,7 +27,7 @@ console = Console()
 
 
 # YAML structure for designs.yaml
-DESIGNS_YAML_TEMPLATE = {
+DESIGNS_YAML_TEMPLATE: dict[str, Any] = {
     "figma": {
         "file_key": "",
         "access_token": "",
@@ -41,7 +42,7 @@ DESIGNS_YAML_TEMPLATE = {
 }
 
 # YAML structure for components.yaml
-COMPONENTS_YAML_TEMPLATE = {
+COMPONENTS_YAML_TEMPLATE: dict[str, Any] = {
     "components": [],
     "metadata": {
         "created_at": None,
@@ -90,7 +91,7 @@ def _get_meta_dir(trace_dir: Path) -> Path:
     return meta_dir
 
 
-def _load_designs_config(trace_dir: Path) -> dict:
+def _load_designs_config(trace_dir: Path) -> dict[Any, Any]:
     """
     Load designs.yaml configuration.
 
@@ -111,10 +112,11 @@ def _load_designs_config(trace_dir: Path) -> dict:
         console.print("[dim]Run 'rtm design init' to initialize design integration[/dim]")
         raise typer.Exit(code=1)
 
-    return yaml.safe_load(designs_path.read_text(encoding="utf-8"))
+    loaded = yaml.safe_load(designs_path.read_text(encoding="utf-8"))
+    return loaded if isinstance(loaded, dict) else {}
 
 
-def _save_designs_config(trace_dir: Path, config: dict) -> None:
+def _save_designs_config(trace_dir: Path, config: dict[Any, Any]) -> None:
     """
     Save designs.yaml configuration.
 
@@ -130,7 +132,7 @@ def _save_designs_config(trace_dir: Path, config: dict) -> None:
     )
 
 
-def _load_components_config(trace_dir: Path) -> dict:
+def _load_components_config(trace_dir: Path) -> dict[Any, Any]:
     """
     Load components.yaml registry.
 
@@ -146,10 +148,11 @@ def _load_components_config(trace_dir: Path) -> dict:
     if not components_path.exists():
         return dict(COMPONENTS_YAML_TEMPLATE)
 
-    return yaml.safe_load(components_path.read_text(encoding="utf-8"))
+    loaded = yaml.safe_load(components_path.read_text(encoding="utf-8"))
+    return loaded if isinstance(loaded, dict) else {}
 
 
-def _save_components_config(trace_dir: Path, config: dict) -> None:
+def _save_components_config(trace_dir: Path, config: dict[Any, Any]) -> None:
     """
     Save components.yaml registry.
 
@@ -161,8 +164,10 @@ def _save_components_config(trace_dir: Path, config: dict) -> None:
     components_path = meta_dir / "components.yaml"
 
     # Update metadata
-    config["metadata"]["last_updated"] = datetime.now().isoformat()
-    config["metadata"]["total_components"] = len(config.get("components", []))
+    metadata = config.get("metadata")
+    if isinstance(metadata, dict):
+        metadata["last_updated"] = datetime.now().isoformat()
+        metadata["total_components"] = len(config.get("components", []))
 
     components_path.write_text(
         yaml.dump(config, default_flow_style=False, sort_keys=False),
@@ -253,15 +258,19 @@ def init_design_integration(
 
     # Create designs.yaml
     designs_config = dict(DESIGNS_YAML_TEMPLATE)
-    designs_config["figma"]["file_key"] = figma_file_key
-    designs_config["figma"]["access_token"] = figma_token
+    figma_config = designs_config.get("figma")
+    if isinstance(figma_config, dict):
+        figma_config["file_key"] = figma_file_key
+        figma_config["access_token"] = figma_token
 
     _save_designs_config(trace_dir, designs_config)
     console.print(f"[green]✓[/green] Created {designs_path}")
 
     # Create components.yaml
     components_config = dict(COMPONENTS_YAML_TEMPLATE)
-    components_config["metadata"]["created_at"] = datetime.now().isoformat()
+    metadata = components_config.get("metadata")
+    if isinstance(metadata, dict):
+        metadata["created_at"] = datetime.now().isoformat()
 
     _save_components_config(trace_dir, components_config)
     components_path = meta_dir / "components.yaml"

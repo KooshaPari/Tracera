@@ -1,10 +1,10 @@
 import {
-    Delim,
-    Number as NumberToken,
-    Function as FunctionToken
-} from '../../tokenizer/index.js';
+	Delim,
+	Function as FunctionToken,
+	Number as NumberToken,
+} from "../../tokenizer/index.js";
 
-const SOLIDUS = 0x002F;  // U+002F SOLIDUS (/)
+const SOLIDUS = 0x002f; // U+002F SOLIDUS (/)
 
 // Media Queries Level 3 defines terms of <ratio> as a positive (not zero or negative)
 // integers (see https://drafts.csswg.org/mediaqueries-3/#values)
@@ -17,52 +17,52 @@ const SOLIDUS = 0x002F;  // U+002F SOLIDUS (/)
 // in any way to make possible for linting and fixing them by the tools using CSSTree.
 // An additional syntax examination may be applied by a lexer.
 function consumeTerm() {
-    this.skipSC();
+	this.skipSC();
 
-    switch (this.tokenType) {
-        case NumberToken:
-            return this.Number();
+	switch (this.tokenType) {
+		case NumberToken:
+			return this.Number();
 
-        case FunctionToken:
-            return this.Function(this.readSequence, this.scope.Value);
+		case FunctionToken:
+			return this.Function(this.readSequence, this.scope.Value);
 
-        default:
-            this.error('Number of function is expected');
-    }
+		default:
+			this.error("Number of function is expected");
+	}
 }
 
-export const name = 'Ratio';
+export const name = "Ratio";
 export const structure = {
-    left: ['Number', 'Function'],
-    right: ['Number', 'Function', null]
+	left: ["Number", "Function"],
+	right: ["Number", "Function", null],
 };
 
 // <number [0,∞]> [ / <number [0,∞]> ]?
 export function parse() {
-    const start = this.tokenStart;
-    const left = consumeTerm.call(this);
-    let right = null;
+	const start = this.tokenStart;
+	const left = consumeTerm.call(this);
+	let right = null;
 
-    this.skipSC();
-    if (this.isDelim(SOLIDUS)) {
-        this.eatDelim(SOLIDUS);
-        right = consumeTerm.call(this);
-    }
+	this.skipSC();
+	if (this.isDelim(SOLIDUS)) {
+		this.eatDelim(SOLIDUS);
+		right = consumeTerm.call(this);
+	}
 
-    return {
-        type: 'Ratio',
-        loc: this.getLocation(start, this.tokenStart),
-        left,
-        right
-    };
+	return {
+		type: "Ratio",
+		loc: this.getLocation(start, this.tokenStart),
+		left,
+		right,
+	};
 }
 
 export function generate(node) {
-    this.node(node.left);
-    this.token(Delim, '/');
-    if (node.right) {
-        this.node(node.right);
-    } else {
-        this.node(NumberToken, 1);
-    }
+	this.node(node.left);
+	this.token(Delim, "/");
+	if (node.right) {
+		this.node(node.right);
+	} else {
+		this.node(NumberToken, 1);
+	}
 }

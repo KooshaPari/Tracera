@@ -27,12 +27,12 @@ import { toDate } from "./toDate.js";
  * //=> Tue Sep 30 2014 00:00:00
  */
 export function lastDayOfQuarter(date, options) {
-  const date_ = toDate(date, options?.in);
-  const currentMonth = date_.getMonth();
-  const month = currentMonth - (currentMonth % 3) + 3;
-  date_.setMonth(month, 0);
-  date_.setHours(0, 0, 0, 0);
-  return date_;
+	const date_ = toDate(date, options?.in);
+	const currentMonth = date_.getMonth();
+	const month = currentMonth - (currentMonth % 3) + 3;
+	date_.setMonth(month, 0);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
 }
 
 // Fallback for modularized imports:

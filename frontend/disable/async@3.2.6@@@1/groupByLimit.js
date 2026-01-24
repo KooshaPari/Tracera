@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _mapLimit = require('./mapLimit.js');
+var _mapLimit = require("./mapLimit.js");
 
 var _mapLimit2 = _interopRequireDefault(_mapLimit);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`groupBy`]{@link module:Collections.groupBy} but runs a maximum of `limit` async operations at a time.
@@ -39,32 +39,37 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback is passed
  */
 function groupByLimit(coll, limit, iteratee, callback) {
-    var _iteratee = (0, _wrapAsync2.default)(iteratee);
-    return (0, _mapLimit2.default)(coll, limit, (val, iterCb) => {
-        _iteratee(val, (err, key) => {
-            if (err) return iterCb(err);
-            return iterCb(err, { key, val });
-        });
-    }, (err, mapResults) => {
-        var result = {};
-        // from MDN, handle object having an `hasOwnProperty` prop
-        var { hasOwnProperty } = Object.prototype;
+	var _iteratee = (0, _wrapAsync2.default)(iteratee);
+	return (0, _mapLimit2.default)(
+		coll,
+		limit,
+		(val, iterCb) => {
+			_iteratee(val, (err, key) => {
+				if (err) return iterCb(err);
+				return iterCb(err, { key, val });
+			});
+		},
+		(err, mapResults) => {
+			var result = {};
+			// from MDN, handle object having an `hasOwnProperty` prop
+			var { hasOwnProperty } = Object.prototype;
 
-        for (var i = 0; i < mapResults.length; i++) {
-            if (mapResults[i]) {
-                var { key } = mapResults[i];
-                var { val } = mapResults[i];
+			for (var i = 0; i < mapResults.length; i++) {
+				if (mapResults[i]) {
+					var { key } = mapResults[i];
+					var { val } = mapResults[i];
 
-                if (hasOwnProperty.call(result, key)) {
-                    result[key].push(val);
-                } else {
-                    result[key] = [val];
-                }
-            }
-        }
+					if (hasOwnProperty.call(result, key)) {
+						result[key].push(val);
+					} else {
+						result[key] = [val];
+					}
+				}
+			}
 
-        return callback(err, result);
-    });
+			return callback(err, result);
+		},
+	);
 }
 
 exports.default = (0, _awaitify2.default)(groupByLimit, 4);

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/cosh');
+"use strict";
+module.exports = require("../../full/math/cosh");

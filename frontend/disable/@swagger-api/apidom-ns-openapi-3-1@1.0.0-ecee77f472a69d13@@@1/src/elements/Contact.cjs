@@ -7,4 +7,4 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class Contact extends _apidomNsOpenapi.ContactElement {}
-var _default = exports.default = Contact;
+var _default = (exports.default = Contact);

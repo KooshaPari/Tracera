@@ -1,4 +1,4 @@
-var eq = require('./eq');
+var eq = require("./eq");
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -19,11 +19,13 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * @returns {*} Returns the value to assign.
  */
 function customDefaultsAssignIn(objValue, srcValue, key, object) {
-  if (objValue === undefined ||
-      (eq(objValue, objectProto[key]) && !hasOwnProperty.call(object, key))) {
-    return srcValue;
-  }
-  return objValue;
+	if (
+		objValue === undefined ||
+		(eq(objValue, objectProto[key]) && !hasOwnProperty.call(object, key))
+	) {
+		return srcValue;
+	}
+	return objValue;
 }
 
 module.exports = customDefaultsAssignIn;

@@ -1,24 +1,23 @@
-'use strict';
 /*
  Copyright 2012-2015, Yahoo Inc.
  Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
  */
-const fs = require('fs');
-const path = require('path');
-const html = require('html-escaper');
-const { ReportBase } = require('istanbul-lib-report');
-const annotator = require('./annotator');
+const fs = require("fs");
+const path = require("path");
+const html = require("html-escaper");
+const { ReportBase } = require("istanbul-lib-report");
+const annotator = require("./annotator");
 
 function htmlHead(details) {
-    return `
+	return `
 <head>
     <title>Code coverage report for ${html.escape(details.entity)}</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="${html.escape(details.prettify.css)}" />
     <link rel="stylesheet" href="${html.escape(details.base.css)}" />
     <link rel="shortcut icon" type="image/x-icon" href="${html.escape(
-        details.favicon
-    )}" />
+			details.favicon,
+		)}" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
@@ -30,42 +29,42 @@ function htmlHead(details) {
 }
 
 function headerTemplate(details) {
-    function metricsTemplate({ pct, covered, total }, kind) {
-        return `
+	function metricsTemplate({ pct, covered, total }, kind) {
+		return `
             <div class='fl pad1y space-right2'>
                 <span class="strong">${pct}% </span>
                 <span class="quiet">${kind}</span>
                 <span class='fraction'>${covered}/${total}</span>
             </div>
         `;
-    }
+	}
 
-    function skipTemplate(metrics) {
-        const statements = metrics.statements.skipped;
-        const branches = metrics.branches.skipped;
-        const functions = metrics.functions.skipped;
+	function skipTemplate(metrics) {
+		const statements = metrics.statements.skipped;
+		const branches = metrics.branches.skipped;
+		const functions = metrics.functions.skipped;
 
-        const countLabel = (c, label, plural) =>
-            c === 0 ? [] : `${c} ${label}${c === 1 ? '' : plural}`;
-        const skips = [].concat(
-            countLabel(statements, 'statement', 's'),
-            countLabel(functions, 'function', 's'),
-            countLabel(branches, 'branch', 'es')
-        );
+		const countLabel = (c, label, plural) =>
+			c === 0 ? [] : `${c} ${label}${c === 1 ? "" : plural}`;
+		const skips = [].concat(
+			countLabel(statements, "statement", "s"),
+			countLabel(functions, "function", "s"),
+			countLabel(branches, "branch", "es"),
+		);
 
-        if (skips.length === 0) {
-            return '';
-        }
+		if (skips.length === 0) {
+			return "";
+		}
 
-        return `
+		return `
             <div class='fl pad1y'>
-                <span class="strong">${skips.join(', ')}</span>
+                <span class="strong">${skips.join(", ")}</span>
                 <span class="quiet">Ignored</span>  &nbsp;&nbsp;&nbsp;&nbsp;
             </div>
         `;
-    }
+	}
 
-    return `
+	return `
 <!doctype html>
 <html lang="en">
 ${htmlHead(details)}
@@ -74,10 +73,10 @@ ${htmlHead(details)}
     <div class='pad1'>
         <h1>${details.pathHtml}</h1>
         <div class='clearfix'>
-            ${metricsTemplate(details.metrics.statements, 'Statements')}
-            ${metricsTemplate(details.metrics.branches, 'Branches')}
-            ${metricsTemplate(details.metrics.functions, 'Functions')}
-            ${metricsTemplate(details.metrics.lines, 'Lines')}
+            ${metricsTemplate(details.metrics.statements, "Statements")}
+            ${metricsTemplate(details.metrics.branches, "Branches")}
+            ${metricsTemplate(details.metrics.functions, "Functions")}
+            ${metricsTemplate(details.metrics.lines, "Lines")}
             ${skipTemplate(details.metrics)}
         </div>
         <p class="quiet">
@@ -95,7 +94,7 @@ ${htmlHead(details)}
 }
 
 function footerTemplate(details) {
-    return `
+	return `
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
@@ -117,305 +116,293 @@ function footerTemplate(details) {
 }
 
 function detailTemplate(data) {
-    const lineNumbers = new Array(data.maxLines).fill().map((_, i) => i + 1);
-    const lineLink = num =>
-        `<a name='L${num}'></a><a href='#L${num}'>${num}</a>`;
-    const lineCount = line =>
-        `<span class="cline-any cline-${line.covered}">${line.hits}</span>`;
+	const lineNumbers = new Array(data.maxLines).fill().map((_, i) => i + 1);
+	const lineLink = (num) =>
+		`<a name='L${num}'></a><a href='#L${num}'>${num}</a>`;
+	const lineCount = (line) =>
+		`<span class="cline-any cline-${line.covered}">${line.hits}</span>`;
 
-    /* This is rendered in a `<pre>`, need control of all whitespace. */
-    return [
-        '<tr>',
-        `<td class="line-count quiet">${lineNumbers
-            .map(lineLink)
-            .join('\n')}</td>`,
-        `<td class="line-coverage quiet">${data.lineCoverage
-            .map(lineCount)
-            .join('\n')}</td>`,
-        `<td class="text"><pre class="prettyprint lang-js">${data.annotatedCode.join(
-            '\n'
-        )}</pre></td>`,
-        '</tr>'
-    ].join('');
+	/* This is rendered in a `<pre>`, need control of all whitespace. */
+	return [
+		"<tr>",
+		`<td class="line-count quiet">${lineNumbers.map(lineLink).join("\n")}</td>`,
+		`<td class="line-coverage quiet">${data.lineCoverage
+			.map(lineCount)
+			.join("\n")}</td>`,
+		`<td class="text"><pre class="prettyprint lang-js">${data.annotatedCode.join(
+			"\n",
+		)}</pre></td>`,
+		"</tr>",
+	].join("");
 }
 const summaryTableHeader = [
-    '<div class="pad1">',
-    '<table class="coverage-summary">',
-    '<thead>',
-    '<tr>',
-    '   <th data-col="file" data-fmt="html" data-html="true" class="file">File</th>',
-    '   <th data-col="pic" data-type="number" data-fmt="html" data-html="true" class="pic"></th>',
-    '   <th data-col="statements" data-type="number" data-fmt="pct" class="pct">Statements</th>',
-    '   <th data-col="statements_raw" data-type="number" data-fmt="html" class="abs"></th>',
-    '   <th data-col="branches" data-type="number" data-fmt="pct" class="pct">Branches</th>',
-    '   <th data-col="branches_raw" data-type="number" data-fmt="html" class="abs"></th>',
-    '   <th data-col="functions" data-type="number" data-fmt="pct" class="pct">Functions</th>',
-    '   <th data-col="functions_raw" data-type="number" data-fmt="html" class="abs"></th>',
-    '   <th data-col="lines" data-type="number" data-fmt="pct" class="pct">Lines</th>',
-    '   <th data-col="lines_raw" data-type="number" data-fmt="html" class="abs"></th>',
-    '</tr>',
-    '</thead>',
-    '<tbody>'
-].join('\n');
+	'<div class="pad1">',
+	'<table class="coverage-summary">',
+	"<thead>",
+	"<tr>",
+	'   <th data-col="file" data-fmt="html" data-html="true" class="file">File</th>',
+	'   <th data-col="pic" data-type="number" data-fmt="html" data-html="true" class="pic"></th>',
+	'   <th data-col="statements" data-type="number" data-fmt="pct" class="pct">Statements</th>',
+	'   <th data-col="statements_raw" data-type="number" data-fmt="html" class="abs"></th>',
+	'   <th data-col="branches" data-type="number" data-fmt="pct" class="pct">Branches</th>',
+	'   <th data-col="branches_raw" data-type="number" data-fmt="html" class="abs"></th>',
+	'   <th data-col="functions" data-type="number" data-fmt="pct" class="pct">Functions</th>',
+	'   <th data-col="functions_raw" data-type="number" data-fmt="html" class="abs"></th>',
+	'   <th data-col="lines" data-type="number" data-fmt="pct" class="pct">Lines</th>',
+	'   <th data-col="lines_raw" data-type="number" data-fmt="html" class="abs"></th>',
+	"</tr>",
+	"</thead>",
+	"<tbody>",
+].join("\n");
 
 function summaryLineTemplate(details) {
-    const { reportClasses, metrics, file, output } = details;
-    const percentGraph = pct => {
-        if (!isFinite(pct)) {
-            return '';
-        }
+	const { reportClasses, metrics, file, output } = details;
+	const percentGraph = (pct) => {
+		if (!isFinite(pct)) {
+			return "";
+		}
 
-        const cls = ['cover-fill'];
-        if (pct === 100) {
-            cls.push('cover-full');
-        }
+		const cls = ["cover-fill"];
+		if (pct === 100) {
+			cls.push("cover-full");
+		}
 
-        pct = Math.floor(pct);
-        return [
-            `<div class="${cls.join(' ')}" style="width: ${pct}%"></div>`,
-            `<div class="cover-empty" style="width: ${100 - pct}%"></div>`
-        ].join('');
-    };
-    const summaryType = (type, showGraph = false) => {
-        const info = metrics[type];
-        const reportClass = reportClasses[type];
-        const result = [
-            `<td data-value="${info.pct}" class="pct ${reportClass}">${info.pct}%</td>`,
-            `<td data-value="${info.total}" class="abs ${reportClass}">${info.covered}/${info.total}</td>`
-        ];
-        if (showGraph) {
-            result.unshift(
-                `<td data-value="${info.pct}" class="pic ${reportClass}">`,
-                `<div class="chart">${percentGraph(info.pct)}</div>`,
-                `</td>`
-            );
-        }
+		pct = Math.floor(pct);
+		return [
+			`<div class="${cls.join(" ")}" style="width: ${pct}%"></div>`,
+			`<div class="cover-empty" style="width: ${100 - pct}%"></div>`,
+		].join("");
+	};
+	const summaryType = (type, showGraph = false) => {
+		const info = metrics[type];
+		const reportClass = reportClasses[type];
+		const result = [
+			`<td data-value="${info.pct}" class="pct ${reportClass}">${info.pct}%</td>`,
+			`<td data-value="${info.total}" class="abs ${reportClass}">${info.covered}/${info.total}</td>`,
+		];
+		if (showGraph) {
+			result.unshift(
+				`<td data-value="${info.pct}" class="pic ${reportClass}">`,
+				`<div class="chart">${percentGraph(info.pct)}</div>`,
+				`</td>`,
+			);
+		}
 
-        return result;
-    };
+		return result;
+	};
 
-    return []
-        .concat(
-            '<tr>',
-            `<td class="file ${
-                reportClasses.statements
-            }" data-value="${html.escape(file)}"><a href="${html.escape(
-                output
-            )}">${html.escape(file)}</a></td>`,
-            summaryType('statements', true),
-            summaryType('branches'),
-            summaryType('functions'),
-            summaryType('lines'),
-            '</tr>\n'
-        )
-        .join('\n\t');
+	return []
+		.concat(
+			"<tr>",
+			`<td class="file ${
+				reportClasses.statements
+			}" data-value="${html.escape(file)}"><a href="${html.escape(
+				output,
+			)}">${html.escape(file)}</a></td>`,
+			summaryType("statements", true),
+			summaryType("branches"),
+			summaryType("functions"),
+			summaryType("lines"),
+			"</tr>\n",
+		)
+		.join("\n\t");
 }
 
-const summaryTableFooter = ['</tbody>', '</table>', '</div>'].join('\n');
+const summaryTableFooter = ["</tbody>", "</table>", "</div>"].join("\n");
 const emptyClasses = {
-    statements: 'empty',
-    lines: 'empty',
-    functions: 'empty',
-    branches: 'empty'
+	statements: "empty",
+	lines: "empty",
+	functions: "empty",
+	branches: "empty",
 };
 
 const standardLinkMapper = {
-    getPath(node) {
-        if (typeof node === 'string') {
-            return node;
-        }
-        let filePath = node.getQualifiedName();
-        if (node.isSummary()) {
-            if (filePath !== '') {
-                filePath += '/index.html';
-            } else {
-                filePath = 'index.html';
-            }
-        } else {
-            filePath += '.html';
-        }
-        return filePath;
-    },
+	getPath(node) {
+		if (typeof node === "string") {
+			return node;
+		}
+		let filePath = node.getQualifiedName();
+		if (node.isSummary()) {
+			if (filePath !== "") {
+				filePath += "/index.html";
+			} else {
+				filePath = "index.html";
+			}
+		} else {
+			filePath += ".html";
+		}
+		return filePath;
+	},
 
-    relativePath(source, target) {
-        const targetPath = this.getPath(target);
-        const sourcePath = path.dirname(this.getPath(source));
-        return path.posix.relative(sourcePath, targetPath);
-    },
+	relativePath(source, target) {
+		const targetPath = this.getPath(target);
+		const sourcePath = path.dirname(this.getPath(source));
+		return path.posix.relative(sourcePath, targetPath);
+	},
 
-    assetPath(node, name) {
-        return this.relativePath(this.getPath(node), name);
-    }
+	assetPath(node, name) {
+		return this.relativePath(this.getPath(node), name);
+	},
 };
 
 function fixPct(metrics) {
-    Object.keys(emptyClasses).forEach(key => {
-        metrics[key].pct = 0;
-    });
-    return metrics;
+	Object.keys(emptyClasses).forEach((key) => {
+		metrics[key].pct = 0;
+	});
+	return metrics;
 }
 
 class HtmlReport extends ReportBase {
-    constructor(opts) {
-        super();
+	constructor(opts) {
+		super();
 
-        this.verbose = opts.verbose;
-        this.linkMapper = opts.linkMapper || standardLinkMapper;
-        this.subdir = opts.subdir || '';
-        this.date = new Date().toISOString();
-        this.skipEmpty = opts.skipEmpty;
-    }
+		this.verbose = opts.verbose;
+		this.linkMapper = opts.linkMapper || standardLinkMapper;
+		this.subdir = opts.subdir || "";
+		this.date = new Date().toISOString();
+		this.skipEmpty = opts.skipEmpty;
+	}
 
-    getBreadcrumbHtml(node) {
-        let parent = node.getParent();
-        const nodePath = [];
+	getBreadcrumbHtml(node) {
+		let parent = node.getParent();
+		const nodePath = [];
 
-        while (parent) {
-            nodePath.push(parent);
-            parent = parent.getParent();
-        }
+		while (parent) {
+			nodePath.push(parent);
+			parent = parent.getParent();
+		}
 
-        const linkPath = nodePath.map(ancestor => {
-            const target = this.linkMapper.relativePath(node, ancestor);
-            const name = ancestor.getRelativeName() || 'All files';
-            return '<a href="' + target + '">' + name + '</a>';
-        });
+		const linkPath = nodePath.map((ancestor) => {
+			const target = this.linkMapper.relativePath(node, ancestor);
+			const name = ancestor.getRelativeName() || "All files";
+			return '<a href="' + target + '">' + name + "</a>";
+		});
 
-        linkPath.reverse();
-        return linkPath.length > 0
-            ? linkPath.join(' / ') + ' ' + node.getRelativeName()
-            : 'All files';
-    }
+		linkPath.reverse();
+		return linkPath.length > 0
+			? linkPath.join(" / ") + " " + node.getRelativeName()
+			: "All files";
+	}
 
-    fillTemplate(node, templateData, context) {
-        const linkMapper = this.linkMapper;
-        const summary = node.getCoverageSummary();
-        templateData.entity = node.getQualifiedName() || 'All files';
-        templateData.metrics = summary;
-        templateData.reportClass = context.classForPercent(
-            'statements',
-            summary.statements.pct
-        );
-        templateData.pathHtml = this.getBreadcrumbHtml(node);
-        templateData.base = {
-            css: linkMapper.assetPath(node, 'base.css')
-        };
-        templateData.sorter = {
-            js: linkMapper.assetPath(node, 'sorter.js'),
-            image: linkMapper.assetPath(node, 'sort-arrow-sprite.png')
-        };
-        templateData.blockNavigation = {
-            js: linkMapper.assetPath(node, 'block-navigation.js')
-        };
-        templateData.prettify = {
-            js: linkMapper.assetPath(node, 'prettify.js'),
-            css: linkMapper.assetPath(node, 'prettify.css')
-        };
-        templateData.favicon = linkMapper.assetPath(node, 'favicon.png');
-    }
+	fillTemplate(node, templateData, context) {
+		const linkMapper = this.linkMapper;
+		const summary = node.getCoverageSummary();
+		templateData.entity = node.getQualifiedName() || "All files";
+		templateData.metrics = summary;
+		templateData.reportClass = context.classForPercent(
+			"statements",
+			summary.statements.pct,
+		);
+		templateData.pathHtml = this.getBreadcrumbHtml(node);
+		templateData.base = {
+			css: linkMapper.assetPath(node, "base.css"),
+		};
+		templateData.sorter = {
+			js: linkMapper.assetPath(node, "sorter.js"),
+			image: linkMapper.assetPath(node, "sort-arrow-sprite.png"),
+		};
+		templateData.blockNavigation = {
+			js: linkMapper.assetPath(node, "block-navigation.js"),
+		};
+		templateData.prettify = {
+			js: linkMapper.assetPath(node, "prettify.js"),
+			css: linkMapper.assetPath(node, "prettify.css"),
+		};
+		templateData.favicon = linkMapper.assetPath(node, "favicon.png");
+	}
 
-    getTemplateData() {
-        return { datetime: this.date };
-    }
+	getTemplateData() {
+		return { datetime: this.date };
+	}
 
-    getWriter(context) {
-        if (!this.subdir) {
-            return context.writer;
-        }
-        return context.writer.writerForDir(this.subdir);
-    }
+	getWriter(context) {
+		if (!this.subdir) {
+			return context.writer;
+		}
+		return context.writer.writerForDir(this.subdir);
+	}
 
-    onStart(root, context) {
-        const assetHeaders = {
-            '.js': '/* eslint-disable */\n'
-        };
+	onStart(root, context) {
+		const assetHeaders = {
+			".js": "/* eslint-disable */\n",
+		};
 
-        ['.', 'vendor'].forEach(subdir => {
-            const writer = this.getWriter(context);
-            const srcDir = path.resolve(__dirname, 'assets', subdir);
-            fs.readdirSync(srcDir).forEach(f => {
-                const resolvedSource = path.resolve(srcDir, f);
-                const resolvedDestination = '.';
-                const stat = fs.statSync(resolvedSource);
-                let dest;
+		[".", "vendor"].forEach((subdir) => {
+			const writer = this.getWriter(context);
+			const srcDir = path.resolve(__dirname, "assets", subdir);
+			fs.readdirSync(srcDir).forEach((f) => {
+				const resolvedSource = path.resolve(srcDir, f);
+				const resolvedDestination = ".";
+				const stat = fs.statSync(resolvedSource);
+				let dest;
 
-                if (stat.isFile()) {
-                    dest = resolvedDestination + '/' + f;
-                    if (this.verbose) {
-                        console.log('Write asset: ' + dest);
-                    }
-                    writer.copyFile(
-                        resolvedSource,
-                        dest,
-                        assetHeaders[path.extname(f)]
-                    );
-                }
-            });
-        });
-    }
+				if (stat.isFile()) {
+					dest = resolvedDestination + "/" + f;
+					if (this.verbose) {
+						console.log("Write asset: " + dest);
+					}
+					writer.copyFile(resolvedSource, dest, assetHeaders[path.extname(f)]);
+				}
+			});
+		});
+	}
 
-    onSummary(node, context) {
-        const linkMapper = this.linkMapper;
-        const templateData = this.getTemplateData();
-        const children = node.getChildren();
-        const skipEmpty = this.skipEmpty;
+	onSummary(node, context) {
+		const linkMapper = this.linkMapper;
+		const templateData = this.getTemplateData();
+		const children = node.getChildren();
+		const skipEmpty = this.skipEmpty;
 
-        this.fillTemplate(node, templateData, context);
-        const cw = this.getWriter(context).writeFile(linkMapper.getPath(node));
-        cw.write(headerTemplate(templateData));
-        cw.write(summaryTableHeader);
-        children.forEach(child => {
-            const metrics = child.getCoverageSummary();
-            const isEmpty = metrics.isEmpty();
-            if (skipEmpty && isEmpty) {
-                return;
-            }
-            const reportClasses = isEmpty
-                ? emptyClasses
-                : {
-                      statements: context.classForPercent(
-                          'statements',
-                          metrics.statements.pct
-                      ),
-                      lines: context.classForPercent(
-                          'lines',
-                          metrics.lines.pct
-                      ),
-                      functions: context.classForPercent(
-                          'functions',
-                          metrics.functions.pct
-                      ),
-                      branches: context.classForPercent(
-                          'branches',
-                          metrics.branches.pct
-                      )
-                  };
-            const data = {
-                metrics: isEmpty ? fixPct(metrics) : metrics,
-                reportClasses,
-                file: child.getRelativeName(),
-                output: linkMapper.relativePath(node, child)
-            };
-            cw.write(summaryLineTemplate(data) + '\n');
-        });
-        cw.write(summaryTableFooter);
-        cw.write(footerTemplate(templateData));
-        cw.close();
-    }
+		this.fillTemplate(node, templateData, context);
+		const cw = this.getWriter(context).writeFile(linkMapper.getPath(node));
+		cw.write(headerTemplate(templateData));
+		cw.write(summaryTableHeader);
+		children.forEach((child) => {
+			const metrics = child.getCoverageSummary();
+			const isEmpty = metrics.isEmpty();
+			if (skipEmpty && isEmpty) {
+				return;
+			}
+			const reportClasses = isEmpty
+				? emptyClasses
+				: {
+						statements: context.classForPercent(
+							"statements",
+							metrics.statements.pct,
+						),
+						lines: context.classForPercent("lines", metrics.lines.pct),
+						functions: context.classForPercent(
+							"functions",
+							metrics.functions.pct,
+						),
+						branches: context.classForPercent("branches", metrics.branches.pct),
+					};
+			const data = {
+				metrics: isEmpty ? fixPct(metrics) : metrics,
+				reportClasses,
+				file: child.getRelativeName(),
+				output: linkMapper.relativePath(node, child),
+			};
+			cw.write(summaryLineTemplate(data) + "\n");
+		});
+		cw.write(summaryTableFooter);
+		cw.write(footerTemplate(templateData));
+		cw.close();
+	}
 
-    onDetail(node, context) {
-        const linkMapper = this.linkMapper;
-        const templateData = this.getTemplateData();
+	onDetail(node, context) {
+		const linkMapper = this.linkMapper;
+		const templateData = this.getTemplateData();
 
-        this.fillTemplate(node, templateData, context);
-        const cw = this.getWriter(context).writeFile(linkMapper.getPath(node));
-        cw.write(headerTemplate(templateData));
-        cw.write('<pre><table class="coverage">\n');
-        cw.write(detailTemplate(annotator(node.getFileCoverage(), context)));
-        cw.write('</table></pre>\n');
-        cw.write(footerTemplate(templateData));
-        cw.close();
-    }
+		this.fillTemplate(node, templateData, context);
+		const cw = this.getWriter(context).writeFile(linkMapper.getPath(node));
+		cw.write(headerTemplate(templateData));
+		cw.write('<pre><table class="coverage">\n');
+		cw.write(detailTemplate(annotator(node.getFileCoverage(), context)));
+		cw.write("</table></pre>\n");
+		cw.write(footerTemplate(templateData));
+		cw.close();
+	}
 }
 
 module.exports = HtmlReport;

@@ -11,51 +11,51 @@ import { mapValue, normalizeTwoDigitYear, parseNDigits } from "../utils.js";
 // | AD 1234  |  1234 | 34 |  1234 |  1234 | 01234 |
 // | AD 12345 | 12345 | 45 | 12345 | 12345 | 12345 |
 export class YearParser extends Parser {
-  priority = 130;
-  incompatibleTokens = ["Y", "R", "u", "w", "I", "i", "e", "c", "t", "T"];
+	priority = 130;
+	incompatibleTokens = ["Y", "R", "u", "w", "I", "i", "e", "c", "t", "T"];
 
-  parse(dateString, token, match) {
-    const valueCallback = (year) => ({
-      year,
-      isTwoDigitYear: token === "yy",
-    });
+	parse(dateString, token, match) {
+		const valueCallback = (year) => ({
+			year,
+			isTwoDigitYear: token === "yy",
+		});
 
-    switch (token) {
-      case "y":
-        return mapValue(parseNDigits(4, dateString), valueCallback);
-      case "yo":
-        return mapValue(
-          match.ordinalNumber(dateString, {
-            unit: "year",
-          }),
-          valueCallback,
-        );
-      default:
-        return mapValue(parseNDigits(token.length, dateString), valueCallback);
-    }
-  }
+		switch (token) {
+			case "y":
+				return mapValue(parseNDigits(4, dateString), valueCallback);
+			case "yo":
+				return mapValue(
+					match.ordinalNumber(dateString, {
+						unit: "year",
+					}),
+					valueCallback,
+				);
+			default:
+				return mapValue(parseNDigits(token.length, dateString), valueCallback);
+		}
+	}
 
-  validate(_date, value) {
-    return value.isTwoDigitYear || value.year > 0;
-  }
+	validate(_date, value) {
+		return value.isTwoDigitYear || value.year > 0;
+	}
 
-  set(date, flags, value) {
-    const currentYear = date.getFullYear();
+	set(date, flags, value) {
+		const currentYear = date.getFullYear();
 
-    if (value.isTwoDigitYear) {
-      const normalizedTwoDigitYear = normalizeTwoDigitYear(
-        value.year,
-        currentYear,
-      );
-      date.setFullYear(normalizedTwoDigitYear, 0, 1);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
+		if (value.isTwoDigitYear) {
+			const normalizedTwoDigitYear = normalizeTwoDigitYear(
+				value.year,
+				currentYear,
+			);
+			date.setFullYear(normalizedTwoDigitYear, 0, 1);
+			date.setHours(0, 0, 0, 0);
+			return date;
+		}
 
-    const year =
-      !("era" in flags) || flags.era === 1 ? value.year : 1 - value.year;
-    date.setFullYear(year, 0, 1);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  }
+		const year =
+			!("era" in flags) || flags.era === 1 ? value.year : 1 - value.year;
+		date.setFullYear(year, 0, 1);
+		date.setHours(0, 0, 0, 0);
+		return date;
+	}
 }

@@ -11,10 +11,16 @@
  * }} walker
  * @returns {Node | null}
  */
-export function walk(ast: Node, { enter, leave }: {
-    enter?: SyncHandler;
-    leave?: SyncHandler;
-}): Node | null;
+export function walk(
+	ast: Node,
+	{
+		enter,
+		leave,
+	}: {
+		enter?: SyncHandler;
+		leave?: SyncHandler;
+	},
+): Node | null;
 /**
  * @param {Node} ast
  * @param {{
@@ -23,10 +29,16 @@ export function walk(ast: Node, { enter, leave }: {
  * }} walker
  * @returns {Promise<Node | null>}
  */
-export function asyncWalk(ast: Node, { enter, leave }: {
-    enter?: AsyncHandler;
-    leave?: AsyncHandler;
-}): Promise<Node | null>;
-export type Node = import('estree').Node;
-export type SyncHandler = import('./sync.js').SyncHandler;
-export type AsyncHandler = import('./async.js').AsyncHandler;
+export function asyncWalk(
+	ast: Node,
+	{
+		enter,
+		leave,
+	}: {
+		enter?: AsyncHandler;
+		leave?: AsyncHandler;
+	},
+): Promise<Node | null>;
+export type Node = import("estree").Node;
+export type SyncHandler = import("./sync.js").SyncHandler;
+export type AsyncHandler = import("./async.js").AsyncHandler;

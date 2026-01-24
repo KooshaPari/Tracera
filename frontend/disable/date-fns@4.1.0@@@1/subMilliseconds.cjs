@@ -19,5 +19,5 @@ var _index = require("./addMilliseconds.cjs");
  * @returns The new date with the milliseconds subtracted
  */
 function subMilliseconds(date, amount, options) {
-  return (0, _index.addMilliseconds)(date, -amount, options);
+	return (0, _index.addMilliseconds)(date, -amount, options);
 }

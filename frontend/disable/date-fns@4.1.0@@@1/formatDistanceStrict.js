@@ -5,10 +5,10 @@ import { getTimezoneOffsetInMilliseconds } from "./_lib/getTimezoneOffsetInMilli
 import { normalizeDates } from "./_lib/normalizeDates.js";
 import { compareAsc } from "./compareAsc.js";
 import {
-  millisecondsInMinute,
-  minutesInDay,
-  minutesInMonth,
-  minutesInYear,
+	millisecondsInMinute,
+	minutesInDay,
+	minutesInMonth,
+	minutesInYear,
 } from "./constants.js";
 
 /**
@@ -98,91 +98,91 @@ import {
  */
 
 export function formatDistanceStrict(laterDate, earlierDate, options) {
-  const defaultOptions = getDefaultOptions();
-  const locale = options?.locale ?? defaultOptions.locale ?? defaultLocale;
+	const defaultOptions = getDefaultOptions();
+	const locale = options?.locale ?? defaultOptions.locale ?? defaultLocale;
 
-  const comparison = compareAsc(laterDate, earlierDate);
+	const comparison = compareAsc(laterDate, earlierDate);
 
-  if (isNaN(comparison)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (isNaN(comparison)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  const localizeOptions = Object.assign({}, options, {
-    addSuffix: options?.addSuffix,
-    comparison: comparison,
-  });
+	const localizeOptions = Object.assign({}, options, {
+		addSuffix: options?.addSuffix,
+		comparison: comparison,
+	});
 
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    ...(comparison > 0 ? [earlierDate, laterDate] : [laterDate, earlierDate]),
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		...(comparison > 0 ? [earlierDate, laterDate] : [laterDate, earlierDate]),
+	);
 
-  const roundingMethod = getRoundingMethod(options?.roundingMethod ?? "round");
+	const roundingMethod = getRoundingMethod(options?.roundingMethod ?? "round");
 
-  const milliseconds = earlierDate_.getTime() - laterDate_.getTime();
-  const minutes = milliseconds / millisecondsInMinute;
+	const milliseconds = earlierDate_.getTime() - laterDate_.getTime();
+	const minutes = milliseconds / millisecondsInMinute;
 
-  const timezoneOffset =
-    getTimezoneOffsetInMilliseconds(earlierDate_) -
-    getTimezoneOffsetInMilliseconds(laterDate_);
+	const timezoneOffset =
+		getTimezoneOffsetInMilliseconds(earlierDate_) -
+		getTimezoneOffsetInMilliseconds(laterDate_);
 
-  // Use DST-normalized difference in minutes for years, months and days;
-  // use regular difference in minutes for hours, minutes and seconds.
-  const dstNormalizedMinutes =
-    (milliseconds - timezoneOffset) / millisecondsInMinute;
+	// Use DST-normalized difference in minutes for years, months and days;
+	// use regular difference in minutes for hours, minutes and seconds.
+	const dstNormalizedMinutes =
+		(milliseconds - timezoneOffset) / millisecondsInMinute;
 
-  const defaultUnit = options?.unit;
-  let unit;
-  if (!defaultUnit) {
-    if (minutes < 1) {
-      unit = "second";
-    } else if (minutes < 60) {
-      unit = "minute";
-    } else if (minutes < minutesInDay) {
-      unit = "hour";
-    } else if (dstNormalizedMinutes < minutesInMonth) {
-      unit = "day";
-    } else if (dstNormalizedMinutes < minutesInYear) {
-      unit = "month";
-    } else {
-      unit = "year";
-    }
-  } else {
-    unit = defaultUnit;
-  }
+	const defaultUnit = options?.unit;
+	let unit;
+	if (!defaultUnit) {
+		if (minutes < 1) {
+			unit = "second";
+		} else if (minutes < 60) {
+			unit = "minute";
+		} else if (minutes < minutesInDay) {
+			unit = "hour";
+		} else if (dstNormalizedMinutes < minutesInMonth) {
+			unit = "day";
+		} else if (dstNormalizedMinutes < minutesInYear) {
+			unit = "month";
+		} else {
+			unit = "year";
+		}
+	} else {
+		unit = defaultUnit;
+	}
 
-  // 0 up to 60 seconds
-  if (unit === "second") {
-    const seconds = roundingMethod(milliseconds / 1000);
-    return locale.formatDistance("xSeconds", seconds, localizeOptions);
+	// 0 up to 60 seconds
+	if (unit === "second") {
+		const seconds = roundingMethod(milliseconds / 1000);
+		return locale.formatDistance("xSeconds", seconds, localizeOptions);
 
-    // 1 up to 60 mins
-  } else if (unit === "minute") {
-    const roundedMinutes = roundingMethod(minutes);
-    return locale.formatDistance("xMinutes", roundedMinutes, localizeOptions);
+		// 1 up to 60 mins
+	} else if (unit === "minute") {
+		const roundedMinutes = roundingMethod(minutes);
+		return locale.formatDistance("xMinutes", roundedMinutes, localizeOptions);
 
-    // 1 up to 24 hours
-  } else if (unit === "hour") {
-    const hours = roundingMethod(minutes / 60);
-    return locale.formatDistance("xHours", hours, localizeOptions);
+		// 1 up to 24 hours
+	} else if (unit === "hour") {
+		const hours = roundingMethod(minutes / 60);
+		return locale.formatDistance("xHours", hours, localizeOptions);
 
-    // 1 up to 30 days
-  } else if (unit === "day") {
-    const days = roundingMethod(dstNormalizedMinutes / minutesInDay);
-    return locale.formatDistance("xDays", days, localizeOptions);
+		// 1 up to 30 days
+	} else if (unit === "day") {
+		const days = roundingMethod(dstNormalizedMinutes / minutesInDay);
+		return locale.formatDistance("xDays", days, localizeOptions);
 
-    // 1 up to 12 months
-  } else if (unit === "month") {
-    const months = roundingMethod(dstNormalizedMinutes / minutesInMonth);
-    return months === 12 && defaultUnit !== "month"
-      ? locale.formatDistance("xYears", 1, localizeOptions)
-      : locale.formatDistance("xMonths", months, localizeOptions);
+		// 1 up to 12 months
+	} else if (unit === "month") {
+		const months = roundingMethod(dstNormalizedMinutes / minutesInMonth);
+		return months === 12 && defaultUnit !== "month"
+			? locale.formatDistance("xYears", 1, localizeOptions)
+			: locale.formatDistance("xMonths", months, localizeOptions);
 
-    // 1 year up to max Date
-  } else {
-    const years = roundingMethod(dstNormalizedMinutes / minutesInYear);
-    return locale.formatDistance("xYears", years, localizeOptions);
-  }
+		// 1 year up to max Date
+	} else {
+		const years = roundingMethod(dstNormalizedMinutes / minutesInYear);
+		return locale.formatDistance("xYears", years, localizeOptions);
+	}
 }
 
 // Fallback for modularized imports:

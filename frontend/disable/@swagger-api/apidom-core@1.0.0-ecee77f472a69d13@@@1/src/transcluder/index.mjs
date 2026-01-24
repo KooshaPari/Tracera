@@ -5,9 +5,9 @@ import Transcluder from "./Transcluder.mjs";
  * @public
  */
 export const transclude = (search, replace, element) => {
-  const transcluder = new Transcluder({
-    element
-  });
-  return transcluder.transclude(search, replace);
+	const transcluder = new Transcluder({
+		element,
+	});
+	return transcluder.transclude(search, replace);
 };
 export default Transcluder;

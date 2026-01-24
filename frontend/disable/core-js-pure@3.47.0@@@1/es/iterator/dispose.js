@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.iterator.dispose');
+"use strict";
+require("../../modules/es.iterator.dispose");

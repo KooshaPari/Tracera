@@ -28,5 +28,5 @@ var _index = require("./endOfDay.cjs");
  * //=> Mon Oct 6 2014 23:59:59.999
  */
 function endOfToday(options) {
-  return (0, _index.endOfDay)(Date.now(), options);
+	return (0, _index.endOfDay)(Date.now(), options);
 }

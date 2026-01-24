@@ -71,18 +71,18 @@ export function easeCubicInOut(normalizedTime: number): number;
  * Polynomial easing function factory
  */
 export interface PolynomialEasingFactory {
-    /**
-     * Calculate eased time.
-     * @param normalizedTime Normalized time typically in the range [0, 1]
-     */
-    (normalizedTime: number): number;
-    /**
-     * Returns a new polynomial easing with the specified exponent e.
-     * If the exponent is not specified, it defaults to 3, equivalent to cubic.
-     *
-     * @param e Exponent for polynomial easing.
-     */
-    exponent(e: number): PolynomialEasingFactory;
+	/**
+	 * Calculate eased time.
+	 * @param normalizedTime Normalized time typically in the range [0, 1]
+	 */
+	(normalizedTime: number): number;
+	/**
+	 * Returns a new polynomial easing with the specified exponent e.
+	 * If the exponent is not specified, it defaults to 3, equivalent to cubic.
+	 *
+	 * @param e Exponent for polynomial easing.
+	 */
+	exponent(e: number): PolynomialEasingFactory;
 }
 
 /**
@@ -224,18 +224,18 @@ export function easeBounceInOut(normalizedTime: number): number;
  * Anticipatory easing function factory
  */
 export interface BackEasingFactory {
-    /**
-     * Calculate eased time.
-     * @param normalizedTime Normalized time typically in the range [0, 1]
-     */
-    (normalizedTime: number): number;
-    /**
-     * Returns a new back easing with the specified overshoot s.
-     * The degree of overshoot is configurable; if not specified, it defaults to 1.70158.
-     *
-     * @param s Overshoot parameter
-     */
-    overshoot(s: number): BackEasingFactory;
+	/**
+	 * Calculate eased time.
+	 * @param normalizedTime Normalized time typically in the range [0, 1]
+	 */
+	(normalizedTime: number): number;
+	/**
+	 * Returns a new back easing with the specified overshoot s.
+	 * The degree of overshoot is configurable; if not specified, it defaults to 1.70158.
+	 *
+	 * @param s Overshoot parameter
+	 */
+	overshoot(s: number): BackEasingFactory;
 }
 
 /**
@@ -266,25 +266,25 @@ export const easeBackInOut: BackEasingFactory;
  * Elastic easing function factory
  */
 export interface ElasticEasingFactory {
-    /**
-     * Calculate eased time.
-     * @param normalizedTime Normalized time typically in the range [0, 1]
-     */
-    (normalizedTime: number): number;
-    /**
-     * Returns a new elastic easing with the specified amplitude a.
-     * Defaults to 1,if not specified.
-     *
-     * @param a Amplitude for elastic easing.
-     */
-    amplitude(a: number): ElasticEasingFactory;
-    /**
-     * Returns a new elastic easing with the specified amplitude a.
-     * Defaults to 0.3,if not specified.
-     *
-     * @param p Period for elastic easing.
-     */
-    period(p: number): ElasticEasingFactory;
+	/**
+	 * Calculate eased time.
+	 * @param normalizedTime Normalized time typically in the range [0, 1]
+	 */
+	(normalizedTime: number): number;
+	/**
+	 * Returns a new elastic easing with the specified amplitude a.
+	 * Defaults to 1,if not specified.
+	 *
+	 * @param a Amplitude for elastic easing.
+	 */
+	amplitude(a: number): ElasticEasingFactory;
+	/**
+	 * Returns a new elastic easing with the specified amplitude a.
+	 * Defaults to 0.3,if not specified.
+	 *
+	 * @param p Period for elastic easing.
+	 */
+	period(p: number): ElasticEasingFactory;
 }
 
 /**

@@ -7,4 +7,4 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 class DereferenceError extends _apidomError.ApiDOMError {}
-var _default = exports.default = DereferenceError;
+var _default = (exports.default = DereferenceError);

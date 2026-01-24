@@ -1,25 +1,23 @@
-'use strict';
-
-var bind = require('./helpers/bind');
+var bind = require("./helpers/bind");
 
 // utils is a library of generic helper functions non-specific to axios
 
 var toString = Object.prototype.toString;
 
 // eslint-disable-next-line func-names
-var kindOf = (function(cache) {
-  // eslint-disable-next-line func-names
-  return function(thing) {
-    var str = toString.call(thing);
-    return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
-  };
+var kindOf = ((cache) => {
+	// eslint-disable-next-line func-names
+	return (thing) => {
+		var str = toString.call(thing);
+		return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
+	};
 })(Object.create(null));
 
 function kindOfTest(type) {
-  type = type.toLowerCase();
-  return function isKindOf(thing) {
-    return kindOf(thing) === type;
-  };
+	type = type.toLowerCase();
+	return function isKindOf(thing) {
+		return kindOf(thing) === type;
+	};
 }
 
 /**
@@ -29,7 +27,7 @@ function kindOfTest(type) {
  * @returns {boolean} True if value is an Array, otherwise false
  */
 function isArray(val) {
-  return Array.isArray(val);
+	return Array.isArray(val);
 }
 
 /**
@@ -39,7 +37,7 @@ function isArray(val) {
  * @returns {boolean} True if the value is undefined, otherwise false
  */
 function isUndefined(val) {
-  return typeof val === 'undefined';
+	return typeof val === "undefined";
 }
 
 /**
@@ -49,8 +47,14 @@ function isUndefined(val) {
  * @returns {boolean} True if value is a Buffer, otherwise false
  */
 function isBuffer(val) {
-  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor)
-    && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);
+	return (
+		val !== null &&
+		!isUndefined(val) &&
+		val.constructor !== null &&
+		!isUndefined(val.constructor) &&
+		typeof val.constructor.isBuffer === "function" &&
+		val.constructor.isBuffer(val)
+	);
 }
 
 /**
@@ -60,8 +64,7 @@ function isBuffer(val) {
  * @param {Object} val The value to test
  * @returns {boolean} True if value is an ArrayBuffer, otherwise false
  */
-var isArrayBuffer = kindOfTest('ArrayBuffer');
-
+var isArrayBuffer = kindOfTest("ArrayBuffer");
 
 /**
  * Determine if a value is a view on an ArrayBuffer
@@ -70,13 +73,13 @@ var isArrayBuffer = kindOfTest('ArrayBuffer');
  * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
  */
 function isArrayBufferView(val) {
-  var result;
-  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
-    result = ArrayBuffer.isView(val);
-  } else {
-    result = (val) && (val.buffer) && (isArrayBuffer(val.buffer));
-  }
-  return result;
+	var result;
+	if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView) {
+		result = ArrayBuffer.isView(val);
+	} else {
+		result = val && val.buffer && isArrayBuffer(val.buffer);
+	}
+	return result;
 }
 
 /**
@@ -86,7 +89,7 @@ function isArrayBufferView(val) {
  * @returns {boolean} True if value is a String, otherwise false
  */
 function isString(val) {
-  return typeof val === 'string';
+	return typeof val === "string";
 }
 
 /**
@@ -96,7 +99,7 @@ function isString(val) {
  * @returns {boolean} True if value is a Number, otherwise false
  */
 function isNumber(val) {
-  return typeof val === 'number';
+	return typeof val === "number";
 }
 
 /**
@@ -106,7 +109,7 @@ function isNumber(val) {
  * @returns {boolean} True if value is an Object, otherwise false
  */
 function isObject(val) {
-  return val !== null && typeof val === 'object';
+	return val !== null && typeof val === "object";
 }
 
 /**
@@ -116,12 +119,12 @@ function isObject(val) {
  * @return {boolean} True if value is a plain Object, otherwise false
  */
 function isPlainObject(val) {
-  if (kindOf(val) !== 'object') {
-    return false;
-  }
+	if (kindOf(val) !== "object") {
+		return false;
+	}
 
-  var prototype = Object.getPrototypeOf(val);
-  return prototype === null || prototype === Object.prototype;
+	var prototype = Object.getPrototypeOf(val);
+	return prototype === null || prototype === Object.prototype;
 }
 
 /**
@@ -131,7 +134,7 @@ function isPlainObject(val) {
  * @param {Object} val The value to test
  * @returns {boolean} True if value is a Date, otherwise false
  */
-var isDate = kindOfTest('Date');
+var isDate = kindOfTest("Date");
 
 /**
  * Determine if a value is a File
@@ -140,7 +143,7 @@ var isDate = kindOfTest('Date');
  * @param {Object} val The value to test
  * @returns {boolean} True if value is a File, otherwise false
  */
-var isFile = kindOfTest('File');
+var isFile = kindOfTest("File");
 
 /**
  * Determine if a value is a Blob
@@ -149,7 +152,7 @@ var isFile = kindOfTest('File');
  * @param {Object} val The value to test
  * @returns {boolean} True if value is a Blob, otherwise false
  */
-var isBlob = kindOfTest('Blob');
+var isBlob = kindOfTest("Blob");
 
 /**
  * Determine if a value is a FileList
@@ -158,7 +161,7 @@ var isBlob = kindOfTest('Blob');
  * @param {Object} val The value to test
  * @returns {boolean} True if value is a File, otherwise false
  */
-var isFileList = kindOfTest('FileList');
+var isFileList = kindOfTest("FileList");
 
 /**
  * Determine if a value is a Function
@@ -167,7 +170,7 @@ var isFileList = kindOfTest('FileList');
  * @returns {boolean} True if value is a Function, otherwise false
  */
 function isFunction(val) {
-  return toString.call(val) === '[object Function]';
+	return toString.call(val) === "[object Function]";
 }
 
 /**
@@ -177,7 +180,7 @@ function isFunction(val) {
  * @returns {boolean} True if value is a Stream, otherwise false
  */
 function isStream(val) {
-  return isObject(val) && isFunction(val.pipe);
+	return isObject(val) && isFunction(val.pipe);
 }
 
 /**
@@ -187,12 +190,13 @@ function isStream(val) {
  * @returns {boolean} True if value is an FormData, otherwise false
  */
 function isFormData(thing) {
-  var pattern = '[object FormData]';
-  return thing && (
-    (typeof FormData === 'function' && thing instanceof FormData) ||
-    toString.call(thing) === pattern ||
-    (isFunction(thing.toString) && thing.toString() === pattern)
-  );
+	var pattern = "[object FormData]";
+	return (
+		thing &&
+		((typeof FormData === "function" && thing instanceof FormData) ||
+			toString.call(thing) === pattern ||
+			(isFunction(thing.toString) && thing.toString() === pattern))
+	);
 }
 
 /**
@@ -201,7 +205,7 @@ function isFormData(thing) {
  * @param {Object} val The value to test
  * @returns {boolean} True if value is a URLSearchParams object, otherwise false
  */
-var isURLSearchParams = kindOfTest('URLSearchParams');
+var isURLSearchParams = kindOfTest("URLSearchParams");
 
 /**
  * Trim excess whitespace off the beginning and end of a string
@@ -210,7 +214,7 @@ var isURLSearchParams = kindOfTest('URLSearchParams');
  * @returns {String} The String freed of excess whitespace
  */
 function trim(str) {
-  return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
+	return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, "");
 }
 
 /**
@@ -229,15 +233,15 @@ function trim(str) {
  *  navigator.product -> 'NativeScript' or 'NS'
  */
 function isStandardBrowserEnv() {
-  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' ||
-                                           navigator.product === 'NativeScript' ||
-                                           navigator.product === 'NS')) {
-    return false;
-  }
-  return (
-    typeof window !== 'undefined' &&
-    typeof document !== 'undefined'
-  );
+	if (
+		typeof navigator !== "undefined" &&
+		(navigator.product === "ReactNative" ||
+			navigator.product === "NativeScript" ||
+			navigator.product === "NS")
+	) {
+		return false;
+	}
+	return typeof window !== "undefined" && typeof document !== "undefined";
 }
 
 /**
@@ -253,30 +257,30 @@ function isStandardBrowserEnv() {
  * @param {Function} fn The callback to invoke for each item
  */
 function forEach(obj, fn) {
-  // Don't bother if no value provided
-  if (obj === null || typeof obj === 'undefined') {
-    return;
-  }
+	// Don't bother if no value provided
+	if (obj === null || typeof obj === "undefined") {
+		return;
+	}
 
-  // Force an array if not already something iterable
-  if (typeof obj !== 'object') {
-    /*eslint no-param-reassign:0*/
-    obj = [obj];
-  }
+	// Force an array if not already something iterable
+	if (typeof obj !== "object") {
+		/*eslint no-param-reassign:0*/
+		obj = [obj];
+	}
 
-  if (isArray(obj)) {
-    // Iterate over array values
-    for (var i = 0, l = obj.length; i < l; i++) {
-      fn.call(null, obj[i], i, obj);
-    }
-  } else {
-    // Iterate over object keys
-    for (var key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        fn.call(null, obj[key], key, obj);
-      }
-    }
-  }
+	if (isArray(obj)) {
+		// Iterate over array values
+		for (var i = 0, l = obj.length; i < l; i++) {
+			fn.call(null, obj[i], i, obj);
+		}
+	} else {
+		// Iterate over object keys
+		for (var key in obj) {
+			if (Object.hasOwn(obj, key)) {
+				fn.call(null, obj[key], key, obj);
+			}
+		}
+	}
 }
 
 /**
@@ -297,23 +301,23 @@ function forEach(obj, fn) {
  * @returns {Object} Result of all merge properties
  */
 function merge(/* obj1, obj2, obj3, ... */) {
-  var result = {};
-  function assignValue(val, key) {
-    if (isPlainObject(result[key]) && isPlainObject(val)) {
-      result[key] = merge(result[key], val);
-    } else if (isPlainObject(val)) {
-      result[key] = merge({}, val);
-    } else if (isArray(val)) {
-      result[key] = val.slice();
-    } else {
-      result[key] = val;
-    }
-  }
+	var result = {};
+	function assignValue(val, key) {
+		if (isPlainObject(result[key]) && isPlainObject(val)) {
+			result[key] = merge(result[key], val);
+		} else if (isPlainObject(val)) {
+			result[key] = merge({}, val);
+		} else if (isArray(val)) {
+			result[key] = val.slice();
+		} else {
+			result[key] = val;
+		}
+	}
 
-  for (var i = 0, l = arguments.length; i < l; i++) {
-    forEach(arguments[i], assignValue);
-  }
-  return result;
+	for (var i = 0, l = arguments.length; i < l; i++) {
+		forEach(arguments[i], assignValue);
+	}
+	return result;
 }
 
 /**
@@ -325,14 +329,14 @@ function merge(/* obj1, obj2, obj3, ... */) {
  * @return {Object} The resulting value of object a
  */
 function extend(a, b, thisArg) {
-  forEach(b, function assignValue(val, key) {
-    if (thisArg && typeof val === 'function') {
-      a[key] = bind(val, thisArg);
-    } else {
-      a[key] = val;
-    }
-  });
-  return a;
+	forEach(b, function assignValue(val, key) {
+		if (thisArg && typeof val === "function") {
+			a[key] = bind(val, thisArg);
+		} else {
+			a[key] = val;
+		}
+	});
+	return a;
 }
 
 /**
@@ -342,10 +346,10 @@ function extend(a, b, thisArg) {
  * @return {string} content value without BOM
  */
 function stripBOM(content) {
-  if (content.charCodeAt(0) === 0xFEFF) {
-    content = content.slice(1);
-  }
-  return content;
+	if (content.charCodeAt(0) === 0xfeff) {
+		content = content.slice(1);
+	}
+	return content;
 }
 
 /**
@@ -357,9 +361,12 @@ function stripBOM(content) {
  */
 
 function inherits(constructor, superConstructor, props, descriptors) {
-  constructor.prototype = Object.create(superConstructor.prototype, descriptors);
-  constructor.prototype.constructor = constructor;
-  props && Object.assign(constructor.prototype, props);
+	constructor.prototype = Object.create(
+		superConstructor.prototype,
+		descriptors,
+	);
+	constructor.prototype.constructor = constructor;
+	props && Object.assign(constructor.prototype, props);
 }
 
 /**
@@ -371,27 +378,31 @@ function inherits(constructor, superConstructor, props, descriptors) {
  */
 
 function toFlatObject(sourceObj, destObj, filter) {
-  var props;
-  var i;
-  var prop;
-  var merged = {};
+	var props;
+	var i;
+	var prop;
+	var merged = {};
 
-  destObj = destObj || {};
+	destObj = destObj || {};
 
-  do {
-    props = Object.getOwnPropertyNames(sourceObj);
-    i = props.length;
-    while (i-- > 0) {
-      prop = props[i];
-      if (!merged[prop]) {
-        destObj[prop] = sourceObj[prop];
-        merged[prop] = true;
-      }
-    }
-    sourceObj = Object.getPrototypeOf(sourceObj);
-  } while (sourceObj && (!filter || filter(sourceObj, destObj)) && sourceObj !== Object.prototype);
+	do {
+		props = Object.getOwnPropertyNames(sourceObj);
+		i = props.length;
+		while (i-- > 0) {
+			prop = props[i];
+			if (!merged[prop]) {
+				destObj[prop] = sourceObj[prop];
+				merged[prop] = true;
+			}
+		}
+		sourceObj = Object.getPrototypeOf(sourceObj);
+	} while (
+		sourceObj &&
+		(!filter || filter(sourceObj, destObj)) &&
+		sourceObj !== Object.prototype
+	);
 
-  return destObj;
+	return destObj;
 }
 
 /*
@@ -402,15 +413,14 @@ function toFlatObject(sourceObj, destObj, filter) {
  * @returns {boolean}
  */
 function endsWith(str, searchString, position) {
-  str = String(str);
-  if (position === undefined || position > str.length) {
-    position = str.length;
-  }
-  position -= searchString.length;
-  var lastIndex = str.indexOf(searchString, position);
-  return lastIndex !== -1 && lastIndex === position;
+	str = String(str);
+	if (position === undefined || position > str.length) {
+		position = str.length;
+	}
+	position -= searchString.length;
+	var lastIndex = str.indexOf(searchString, position);
+	return lastIndex !== -1 && lastIndex === position;
 }
-
 
 /**
  * Returns new array from array like object
@@ -418,53 +428,51 @@ function endsWith(str, searchString, position) {
  * @returns {Array}
  */
 function toArray(thing) {
-  if (!thing) return null;
-  var i = thing.length;
-  if (isUndefined(i)) return null;
-  var arr = new Array(i);
-  while (i-- > 0) {
-    arr[i] = thing[i];
-  }
-  return arr;
+	if (!thing) return null;
+	var i = thing.length;
+	if (isUndefined(i)) return null;
+	var arr = new Array(i);
+	while (i-- > 0) {
+		arr[i] = thing[i];
+	}
+	return arr;
 }
 
 // eslint-disable-next-line func-names
-var isTypedArray = (function(TypedArray) {
-  // eslint-disable-next-line func-names
-  return function(thing) {
-    return TypedArray && thing instanceof TypedArray;
-  };
-})(typeof Uint8Array !== 'undefined' && Object.getPrototypeOf(Uint8Array));
+var isTypedArray = ((TypedArray) => {
+	// eslint-disable-next-line func-names
+	return (thing) => TypedArray && thing instanceof TypedArray;
+})(typeof Uint8Array !== "undefined" && Object.getPrototypeOf(Uint8Array));
 
 module.exports = {
-  isArray: isArray,
-  isArrayBuffer: isArrayBuffer,
-  isBuffer: isBuffer,
-  isFormData: isFormData,
-  isArrayBufferView: isArrayBufferView,
-  isString: isString,
-  isNumber: isNumber,
-  isObject: isObject,
-  isPlainObject: isPlainObject,
-  isUndefined: isUndefined,
-  isDate: isDate,
-  isFile: isFile,
-  isBlob: isBlob,
-  isFunction: isFunction,
-  isStream: isStream,
-  isURLSearchParams: isURLSearchParams,
-  isStandardBrowserEnv: isStandardBrowserEnv,
-  forEach: forEach,
-  merge: merge,
-  extend: extend,
-  trim: trim,
-  stripBOM: stripBOM,
-  inherits: inherits,
-  toFlatObject: toFlatObject,
-  kindOf: kindOf,
-  kindOfTest: kindOfTest,
-  endsWith: endsWith,
-  toArray: toArray,
-  isTypedArray: isTypedArray,
-  isFileList: isFileList
+	isArray: isArray,
+	isArrayBuffer: isArrayBuffer,
+	isBuffer: isBuffer,
+	isFormData: isFormData,
+	isArrayBufferView: isArrayBufferView,
+	isString: isString,
+	isNumber: isNumber,
+	isObject: isObject,
+	isPlainObject: isPlainObject,
+	isUndefined: isUndefined,
+	isDate: isDate,
+	isFile: isFile,
+	isBlob: isBlob,
+	isFunction: isFunction,
+	isStream: isStream,
+	isURLSearchParams: isURLSearchParams,
+	isStandardBrowserEnv: isStandardBrowserEnv,
+	forEach: forEach,
+	merge: merge,
+	extend: extend,
+	trim: trim,
+	stripBOM: stripBOM,
+	inherits: inherits,
+	toFlatObject: toFlatObject,
+	kindOf: kindOf,
+	kindOfTest: kindOfTest,
+	endsWith: endsWith,
+	toArray: toArray,
+	isTypedArray: isTypedArray,
+	isFileList: isFileList,
 };

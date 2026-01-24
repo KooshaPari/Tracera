@@ -28,7 +28,7 @@ export interface IsSameQuarterOptions extends ContextOptions<Date> {}
  * //=> false
  */
 export declare function isSameQuarter(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IsSameQuarterOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IsSameQuarterOptions | undefined,
 ): boolean;

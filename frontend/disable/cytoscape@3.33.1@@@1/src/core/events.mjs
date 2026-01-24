@@ -1,102 +1,105 @@
-import Emitter from '../emitter.mjs';
-import define from '../define/index.mjs';
-import * as is from '../is.mjs';
-import Selector from '../selector/index.mjs';
+import define from "../define/index.mjs";
+import Emitter from "../emitter.mjs";
+import * as is from "../is.mjs";
+import Selector from "../selector/index.mjs";
 
-let emitterOptions = {
-  qualifierCompare: function( selector1, selector2 ){
-    if( selector1 == null || selector2 == null ){
-      return selector1 == null && selector2 == null;
-    } else {
-      return selector1.sameText( selector2 );
-    }
-  },
-  eventMatches: function( cy, listener, eventObj ){
-    let selector = listener.qualifier;
+const emitterOptions = {
+	qualifierCompare: (selector1, selector2) => {
+		if (selector1 == null || selector2 == null) {
+			return selector1 == null && selector2 == null;
+		} else {
+			return selector1.sameText(selector2);
+		}
+	},
+	eventMatches: (cy, listener, eventObj) => {
+		const selector = listener.qualifier;
 
-    if( selector != null ){
-      return cy !== eventObj.target && is.element( eventObj.target ) && selector.matches( eventObj.target );
-    }
+		if (selector != null) {
+			return (
+				cy !== eventObj.target &&
+				is.element(eventObj.target) &&
+				selector.matches(eventObj.target)
+			);
+		}
 
-    return true;
-  },
-  addEventFields: function( cy, evt ){
-    evt.cy = cy;
-    evt.target = cy;
-  },
-  callbackContext: function( cy, listener, eventObj ){
-    return listener.qualifier != null ? eventObj.target : cy;
-  }
+		return true;
+	},
+	addEventFields: (cy, evt) => {
+		evt.cy = cy;
+		evt.target = cy;
+	},
+	callbackContext: (cy, listener, eventObj) =>
+		listener.qualifier != null ? eventObj.target : cy,
 };
 
-let argSelector = function( arg ){
-  if( is.string(arg) ){
-    return new Selector( arg );
-  } else {
-    return arg;
-  }
+const argSelector = (arg) => {
+	if (is.string(arg)) {
+		return new Selector(arg);
+	} else {
+		return arg;
+	}
 };
 
-let elesfn = ({
-  createEmitter: function(){
-    let _p = this._private;
+const elesfn = {
+	createEmitter: function () {
+		const _p = this._private;
 
-    if( !_p.emitter ){
-      _p.emitter = new Emitter( emitterOptions, this );
-    }
+		if (!_p.emitter) {
+			_p.emitter = new Emitter(emitterOptions, this);
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  emitter: function(){
-    return this._private.emitter;
-  },
+	emitter: function () {
+		return this._private.emitter;
+	},
 
-  on: function( events, selector, callback ){
-    this.emitter().on( events, argSelector(selector), callback );
+	on: function (events, selector, callback) {
+		this.emitter().on(events, argSelector(selector), callback);
 
-    return this;
-  },
+		return this;
+	},
 
-  removeListener: function( events, selector, callback ){
-    this.emitter().removeListener( events, argSelector(selector), callback );
+	removeListener: function (events, selector, callback) {
+		this.emitter().removeListener(events, argSelector(selector), callback);
 
-    return this;
-  },
+		return this;
+	},
 
-  removeAllListeners: function(){
-    this.emitter().removeAllListeners();
+	removeAllListeners: function () {
+		this.emitter().removeAllListeners();
 
-    return this;
-  },
+		return this;
+	},
 
-  one: function( events, selector, callback ){
-    this.emitter().one( events, argSelector(selector), callback );
+	one: function (events, selector, callback) {
+		this.emitter().one(events, argSelector(selector), callback);
 
-    return this;
-  },
+		return this;
+	},
 
-  once: function( events, selector, callback ){
-    this.emitter().one( events, argSelector(selector), callback );
+	once: function (events, selector, callback) {
+		this.emitter().one(events, argSelector(selector), callback);
 
-    return this;
-  },
+		return this;
+	},
 
-  emit: function( events, extraParams ){
-    this.emitter().emit( events, extraParams );
+	emit: function (events, extraParams) {
+		this.emitter().emit(events, extraParams);
 
-    return this;
-  },
+		return this;
+	},
 
-  emitAndNotify: function( event, eles ){
-    this.emit( event );
+	emitAndNotify: function (event, eles) {
+		this.emit(event);
 
-    this.notify( event, eles );
+		this.notify(event, eles);
 
-    return this;
-  }
-});
+		return this;
+	},
+};
 
-define.eventAliasesOn( elesfn );
+define.eventAliasesOn(elesfn);
 
 export default elesfn;

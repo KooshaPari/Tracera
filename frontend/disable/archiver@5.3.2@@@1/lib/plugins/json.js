@@ -5,31 +5,31 @@
  * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
-var inherits = require('util').inherits;
-var Transform = require('readable-stream').Transform;
+var inherits = require("util").inherits;
+var Transform = require("readable-stream").Transform;
 
-var crc32 = require('buffer-crc32');
-var util = require('archiver-utils');
+var crc32 = require("buffer-crc32");
+var util = require("archiver-utils");
 
 /**
  * @constructor
  * @param {(JsonOptions|TransformOptions)} options
  */
-var Json = function(options) {
-  if (!(this instanceof Json)) {
-    return new Json(options);
-  }
+var Json = function (options) {
+	if (!(this instanceof Json)) {
+		return new Json(options);
+	}
 
-  options = this.options = util.defaults(options, {});
+	options = this.options = util.defaults(options, {});
 
-  Transform.call(this, options);
+	Transform.call(this, options);
 
-  this.supports = {
-    directory: true,
-    symlink: true
-  };
+	this.supports = {
+		directory: true,
+		symlink: true,
+	};
 
-  this.files = [];
+	this.files = [];
 };
 
 inherits(Json, Transform);
@@ -43,8 +43,8 @@ inherits(Json, Transform);
  * @param  {Function} callback
  * @return void
  */
-Json.prototype._transform = function(chunk, encoding, callback) {
-  callback(null, chunk);
+Json.prototype._transform = (chunk, encoding, callback) => {
+	callback(null, chunk);
 };
 
 /**
@@ -53,9 +53,9 @@ Json.prototype._transform = function(chunk, encoding, callback) {
  * @private
  * @return void
  */
-Json.prototype._writeStringified = function() {
-  var fileString = JSON.stringify(this.files);
-  this.write(fileString);
+Json.prototype._writeStringified = function () {
+	var fileString = JSON.stringify(this.files);
+	this.write(fileString);
 };
 
 /**
@@ -66,30 +66,30 @@ Json.prototype._writeStringified = function() {
  * @param  {Function} callback
  * @return void
  */
-Json.prototype.append = function(source, data, callback) {
-  var self = this;
+Json.prototype.append = function (source, data, callback) {
+	var self = this;
 
-  data.crc32 = 0;
+	data.crc32 = 0;
 
-  function onend(err, sourceBuffer) {
-    if (err) {
-      callback(err);
-      return;
-    }
+	function onend(err, sourceBuffer) {
+		if (err) {
+			callback(err);
+			return;
+		}
 
-    data.size = sourceBuffer.length || 0;
-    data.crc32 = crc32.unsigned(sourceBuffer);
+		data.size = sourceBuffer.length || 0;
+		data.crc32 = crc32.unsigned(sourceBuffer);
 
-    self.files.push(data);
+		self.files.push(data);
 
-    callback(null, data);
-  }
+		callback(null, data);
+	}
 
-  if (data.sourceType === 'buffer') {
-    onend(null, source);
-  } else if (data.sourceType === 'stream') {
-    util.collectStream(source, onend);
-  }
+	if (data.sourceType === "buffer") {
+		onend(null, source);
+	} else if (data.sourceType === "stream") {
+		util.collectStream(source, onend);
+	}
 };
 
 /**
@@ -97,9 +97,9 @@ Json.prototype.append = function(source, data, callback) {
  *
  * @return void
  */
-Json.prototype.finalize = function() {
-  this._writeStringified();
-  this.end();
+Json.prototype.finalize = function () {
+	this._writeStringified();
+	this.end();
 };
 
 module.exports = Json;

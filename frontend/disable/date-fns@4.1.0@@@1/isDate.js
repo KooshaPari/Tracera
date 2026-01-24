@@ -31,11 +31,11 @@
  * //=> false
  */
 export function isDate(value) {
-  return (
-    value instanceof Date ||
-    (typeof value === "object" &&
-      Object.prototype.toString.call(value) === "[object Date]")
-  );
+	return (
+		value instanceof Date ||
+		(typeof value === "object" &&
+			Object.prototype.toString.call(value) === "[object Date]")
+	);
 }
 
 // Fallback for modularized imports:

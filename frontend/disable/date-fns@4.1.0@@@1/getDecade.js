@@ -23,13 +23,13 @@ import { toDate } from "./toDate.js";
  * //=> 1940
  */
 export function getDecade(date, options) {
-  // TODO: Switch to more technical definition in of decades that start with 1
-  // end with 0. I.e. 2001-2010 instead of current 2000-2009. It's a breaking
-  // change, so it can only be done in 4.0.
-  const _date = toDate(date, options?.in);
-  const year = _date.getFullYear();
-  const decade = Math.floor(year / 10) * 10;
-  return decade;
+	// TODO: Switch to more technical definition in of decades that start with 1
+	// end with 0. I.e. 2001-2010 instead of current 2000-2009. It's a breaking
+	// change, so it can only be done in 4.0.
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
+	const decade = Math.floor(year / 10) * 10;
+	return decade;
 }
 
 // Fallback for modularized imports:

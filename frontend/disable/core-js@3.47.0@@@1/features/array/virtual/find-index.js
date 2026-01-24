@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../full/array/virtual/find-index');
+"use strict";
+module.exports = require("../../../full/array/virtual/find-index");

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/reduce-right');
+"use strict";
+module.exports = require("../../full/instance/reduce-right");

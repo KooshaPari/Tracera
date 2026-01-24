@@ -151,31 +151,37 @@ export function createDevManifest(app) {
 									const postHooks = [];
 
 									for (const plugin of plugins) {
-										const hook = plugin.transformIndexHtml
-										if (!hook) continue
+										const hook = plugin.transformIndexHtml;
+										if (!hook) continue;
 
-										if (typeof hook === 'function') {
-											normalHooks.push(hook)
+										if (typeof hook === "function") {
+											normalHooks.push(hook);
 										} else {
 											// `enforce` had only two possible values for the `transformIndexHtml` hook
 											// `'pre'` and `'post'` (the default). `order` now works with three values
 											// to align with other hooks (`'pre'`, normal, and `'post'`). We map
 											// both `enforce: 'post'` to `order: undefined` to avoid a breaking change
-											const order = hook.order ?? (hook.enforce === 'pre' ? 'pre' : undefined)
+											const order =
+												hook.order ??
+												(hook.enforce === "pre" ? "pre" : undefined);
 											// @ts-expect-error union type
-											const handler = hook.handler ?? hook.transform
-											if (order === 'pre') {
-												preHooks.push(handler)
-											} else if (order === 'post') {
-												postHooks.push(handler)
+											const handler = hook.handler ?? hook.transform;
+											if (order === "pre") {
+												preHooks.push(handler);
+											} else if (order === "post") {
+												postHooks.push(handler);
 											} else {
-												normalHooks.push(handler)
+												normalHooks.push(handler);
 											}
 										}
 									}
 
 									// @ts-ignore
-									const indexHtmlTransformers = [preHooks, normalHooks, postHooks].flat();
+									const indexHtmlTransformers = [
+										preHooks,
+										normalHooks,
+										postHooks,
+									].flat();
 
 									let pluginAssets = [];
 									// @ts-ignore
@@ -222,10 +228,10 @@ export function createDevManifest(app) {
 																],
 																false,
 															)
-													  ).filter(
+														).filter(
 															(asset) =>
 																!asset.attrs.key.includes("vinxi-devtools"),
-													  )
+														)
 													: []),
 												...(isHandler
 													? [
@@ -238,7 +244,7 @@ export function createDevManifest(app) {
 																	src: join(base, "@vite", "client"),
 																},
 															},
-													  ]
+														]
 													: []),
 											].filter(Boolean);
 										},
@@ -259,7 +265,7 @@ export function createDevManifest(app) {
 													? (await viteAssets([input], true)).filter(
 															(asset) =>
 																!asset.attrs.key.includes("vinxi-devtools"),
-													  )
+														)
 													: []),
 											];
 										},

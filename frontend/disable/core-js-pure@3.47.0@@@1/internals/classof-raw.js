@@ -1,9 +1,7 @@
-'use strict';
-var uncurryThis = require('../internals/function-uncurry-this');
+"use strict";
+var uncurryThis = require("../internals/function-uncurry-this");
 
 var toString = uncurryThis({}.toString);
-var stringSlice = uncurryThis(''.slice);
+var stringSlice = uncurryThis("".slice);
 
-module.exports = function (it) {
-  return stringSlice(toString(it), 8, -1);
-};
+module.exports = (it) => stringSlice(toString(it), 8, -1);

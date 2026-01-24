@@ -1,1 +1,1 @@
-export * from './dist/snapshot.js'
+export * from "./dist/snapshot.js";

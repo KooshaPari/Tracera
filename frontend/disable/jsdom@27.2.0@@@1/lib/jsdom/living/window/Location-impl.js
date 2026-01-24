@@ -7,221 +7,239 @@ const { navigate } = require("./navigation");
 // use the document base URL. The difference matters in the case of cross-frame calls.
 
 exports.implementation = class LocationImpl {
-  constructor(globalObject, args, privateData) {
-    this._relevantDocument = privateData.relevantDocument;
-    this.url = null;
+	constructor(globalObject, args, privateData) {
+		this._relevantDocument = privateData.relevantDocument;
+		this.url = null;
 
-    this._globalObject = globalObject;
-  }
+		this._globalObject = globalObject;
+	}
 
-  get _url() {
-    return this._relevantDocument._URL;
-  }
+	get _url() {
+		return this._relevantDocument._URL;
+	}
 
-  _locationObjectSetterNavigate(url) {
-    // Not implemented: extra steps here to determine replacement flag.
+	_locationObjectSetterNavigate(url) {
+		// Not implemented: extra steps here to determine replacement flag.
 
-    return this._locationObjectNavigate(url);
-  }
+		return this._locationObjectNavigate(url);
+	}
 
-  _locationObjectNavigate(url, { replacement = false } = {}) {
-    // Not implemented: the setup for calling navigate, which doesn't apply to our stub navigate anyway.
+	_locationObjectNavigate(url, { replacement = false } = {}) {
+		// Not implemented: the setup for calling navigate, which doesn't apply to our stub navigate anyway.
 
-    navigate(this._relevantDocument._defaultView, url, { replacement, exceptionsEnabled: true });
-  }
+		navigate(this._relevantDocument._defaultView, url, {
+			replacement,
+			exceptionsEnabled: true,
+		});
+	}
 
-  toString() {
-    return this.href;
-  }
+	toString() {
+		return this.href;
+	}
 
-  get href() {
-    return whatwgURL.serializeURL(this._url);
-  }
-  set href(v) {
-    const newURL = whatwgURL.parseURL(v, { baseURL: this._relevantDocument.baseURL() });
-    if (newURL === null) {
-      throw new TypeError(`Could not parse "${v}" as a URL`);
-    }
+	get href() {
+		return whatwgURL.serializeURL(this._url);
+	}
+	set href(v) {
+		const newURL = whatwgURL.parseURL(v, {
+			baseURL: this._relevantDocument.baseURL(),
+		});
+		if (newURL === null) {
+			throw new TypeError(`Could not parse "${v}" as a URL`);
+		}
 
-    this._locationObjectSetterNavigate(newURL);
-  }
+		this._locationObjectSetterNavigate(newURL);
+	}
 
-  get origin() {
-    return whatwgURL.serializeURLOrigin(this._url);
-  }
+	get origin() {
+		return whatwgURL.serializeURLOrigin(this._url);
+	}
 
-  get protocol() {
-    return this._url.scheme + ":";
-  }
-  set protocol(v) {
-    const copyURL = { ...this._url };
+	get protocol() {
+		return this._url.scheme + ":";
+	}
+	set protocol(v) {
+		const copyURL = { ...this._url };
 
-    const possibleFailure = whatwgURL.basicURLParse(v + ":", { url: copyURL, stateOverride: "scheme start" });
-    if (possibleFailure === null) {
-      throw new TypeError(`Could not parse the URL after setting the procol to "${v}"`);
-    }
+		const possibleFailure = whatwgURL.basicURLParse(v + ":", {
+			url: copyURL,
+			stateOverride: "scheme start",
+		});
+		if (possibleFailure === null) {
+			throw new TypeError(
+				`Could not parse the URL after setting the procol to "${v}"`,
+			);
+		}
 
-    if (copyURL.scheme !== "http" && copyURL.scheme !== "https") {
-      return;
-    }
+		if (copyURL.scheme !== "http" && copyURL.scheme !== "https") {
+			return;
+		}
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  get host() {
-    const url = this._url;
+	get host() {
+		const url = this._url;
 
-    if (url.host === null) {
-      return "";
-    }
-    if (url.port === null) {
-      return whatwgURL.serializeHost(url.host);
-    }
+		if (url.host === null) {
+			return "";
+		}
+		if (url.port === null) {
+			return whatwgURL.serializeHost(url.host);
+		}
 
-    return whatwgURL.serializeHost(url.host) + ":" + whatwgURL.serializeInteger(url.port);
-  }
-  set host(v) {
-    const copyURL = { ...this._url };
+		return (
+			whatwgURL.serializeHost(url.host) +
+			":" +
+			whatwgURL.serializeInteger(url.port)
+		);
+	}
+	set host(v) {
+		const copyURL = { ...this._url };
 
-    if (whatwgURL.hasAnOpaquePath(copyURL)) {
-      return;
-    }
+		if (whatwgURL.hasAnOpaquePath(copyURL)) {
+			return;
+		}
 
-    whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "host" });
+		whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "host" });
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  get hostname() {
-    if (this._url.host === null) {
-      return "";
-    }
+	get hostname() {
+		if (this._url.host === null) {
+			return "";
+		}
 
-    return whatwgURL.serializeHost(this._url.host);
-  }
-  set hostname(v) {
-    const copyURL = { ...this._url };
+		return whatwgURL.serializeHost(this._url.host);
+	}
+	set hostname(v) {
+		const copyURL = { ...this._url };
 
-    if (whatwgURL.hasAnOpaquePath(copyURL)) {
-      return;
-    }
+		if (whatwgURL.hasAnOpaquePath(copyURL)) {
+			return;
+		}
 
-    whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "hostname" });
+		whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "hostname" });
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  get port() {
-    if (this._url.port === null) {
-      return "";
-    }
+	get port() {
+		if (this._url.port === null) {
+			return "";
+		}
 
-    return whatwgURL.serializeInteger(this._url.port);
-  }
-  set port(v) {
-    const copyURL = { ...this._url };
+		return whatwgURL.serializeInteger(this._url.port);
+	}
+	set port(v) {
+		const copyURL = { ...this._url };
 
-    if (whatwgURL.cannotHaveAUsernamePasswordPort(copyURL)) {
-      return;
-    }
+		if (whatwgURL.cannotHaveAUsernamePasswordPort(copyURL)) {
+			return;
+		}
 
-    whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "port" });
+		whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "port" });
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  get pathname() {
-    return whatwgURL.serializePath(this._url);
-  }
-  set pathname(v) {
-    const copyURL = { ...this._url };
+	get pathname() {
+		return whatwgURL.serializePath(this._url);
+	}
+	set pathname(v) {
+		const copyURL = { ...this._url };
 
-    if (whatwgURL.hasAnOpaquePath(copyURL)) {
-      return;
-    }
+		if (whatwgURL.hasAnOpaquePath(copyURL)) {
+			return;
+		}
 
-    copyURL.path = [];
-    whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "path start" });
+		copyURL.path = [];
+		whatwgURL.basicURLParse(v, { url: copyURL, stateOverride: "path start" });
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  get search() {
-    if (this._url.query === null || this._url.query === "") {
-      return "";
-    }
+	get search() {
+		if (this._url.query === null || this._url.query === "") {
+			return "";
+		}
 
-    return "?" + this._url.query;
-  }
-  set search(v) {
-    const copyURL = { ...this._url };
+		return "?" + this._url.query;
+	}
+	set search(v) {
+		const copyURL = { ...this._url };
 
-    if (v === "") {
-      copyURL.query = null;
-    } else {
-      const input = v[0] === "?" ? v.substring(1) : v;
-      copyURL.query = "";
-      whatwgURL.basicURLParse(input, {
-        url: copyURL,
-        stateOverride: "query",
-        encodingOverride: this._relevantDocument.charset
-      });
-    }
+		if (v === "") {
+			copyURL.query = null;
+		} else {
+			const input = v[0] === "?" ? v.substring(1) : v;
+			copyURL.query = "";
+			whatwgURL.basicURLParse(input, {
+				url: copyURL,
+				stateOverride: "query",
+				encodingOverride: this._relevantDocument.charset,
+			});
+		}
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  get hash() {
-    if (this._url.fragment === null || this._url.fragment === "") {
-      return "";
-    }
+	get hash() {
+		if (this._url.fragment === null || this._url.fragment === "") {
+			return "";
+		}
 
-    return "#" + this._url.fragment;
-  }
-  set hash(v) {
-    const copyURL = { ...this._url };
+		return "#" + this._url.fragment;
+	}
+	set hash(v) {
+		const copyURL = { ...this._url };
 
-    const input = v[0] === "#" ? v.substring(1) : v;
-    copyURL.fragment = "";
-    whatwgURL.basicURLParse(input, { url: copyURL, stateOverride: "fragment" });
+		const input = v[0] === "#" ? v.substring(1) : v;
+		copyURL.fragment = "";
+		whatwgURL.basicURLParse(input, { url: copyURL, stateOverride: "fragment" });
 
-    if (copyURL.fragment === this._url.fragment) {
-      return;
-    }
+		if (copyURL.fragment === this._url.fragment) {
+			return;
+		}
 
-    this._locationObjectSetterNavigate(copyURL);
-  }
+		this._locationObjectSetterNavigate(copyURL);
+	}
 
-  assign(url) {
-    // Should be entry settings object; oh well
-    const parsedURL = this._relevantDocument.encodingParseAURL(url);
+	assign(url) {
+		// Should be entry settings object; oh well
+		const parsedURL = this._relevantDocument.encodingParseAURL(url);
 
-    if (parsedURL === null) {
-      throw DOMException.create(this._globalObject, [
-        `Could not resolve the given string "${url}" relative to the base URL "${this._relevantDocument.URL}"`,
-        "SyntaxError"
-      ]);
-    }
+		if (parsedURL === null) {
+			throw DOMException.create(this._globalObject, [
+				`Could not resolve the given string "${url}" relative to the base URL "${this._relevantDocument.URL}"`,
+				"SyntaxError",
+			]);
+		}
 
-    this._locationObjectNavigate(parsedURL);
-  }
+		this._locationObjectNavigate(parsedURL);
+	}
 
-  replace(url) {
-    // Should be entry settings object; oh well
-    const parsedURL = this._relevantDocument.encodingParseAURL(url);
+	replace(url) {
+		// Should be entry settings object; oh well
+		const parsedURL = this._relevantDocument.encodingParseAURL(url);
 
-    if (parsedURL === null) {
-      throw DOMException.create(this._globalObject, [
-        `Could not resolve the given string "${url}" relative to the base URL "${this._relevantDocument.URL}"`,
-        "SyntaxError"
-      ]);
-    }
+		if (parsedURL === null) {
+			throw DOMException.create(this._globalObject, [
+				`Could not resolve the given string "${url}" relative to the base URL "${this._relevantDocument.URL}"`,
+				"SyntaxError",
+			]);
+		}
 
-    this._locationObjectNavigate(parsedURL, { replacement: true });
-  }
+		this._locationObjectNavigate(parsedURL, { replacement: true });
+	}
 
-  reload() {
-    const flags = { replace: true, reloadTriggered: true, exceptionsEnabled: true };
-    navigate(this._relevantDocument._defaultView, this._url, flags);
-  }
+	reload() {
+		const flags = {
+			replace: true,
+			reloadTriggered: true,
+			exceptionsEnabled: true,
+		};
+		navigate(this._relevantDocument._defaultView, this._url, flags);
+	}
 };

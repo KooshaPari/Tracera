@@ -30,13 +30,13 @@ var _index4 = require("./toDate.cjs");
  * //=> 53
  */
 function getISOWeek(date, options) {
-  const _date = (0, _index4.toDate)(date, options?.in);
-  const diff =
-    +(0, _index2.startOfISOWeek)(_date) -
-    +(0, _index3.startOfISOWeekYear)(_date);
+	const _date = (0, _index4.toDate)(date, options?.in);
+	const diff =
+		+(0, _index2.startOfISOWeek)(_date) -
+		+(0, _index3.startOfISOWeekYear)(_date);
 
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(diff / _index.millisecondsInWeek) + 1;
+	// Round the number of weeks to the nearest integer because the number of
+	// milliseconds in a week is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round(diff / _index.millisecondsInWeek) + 1;
 }

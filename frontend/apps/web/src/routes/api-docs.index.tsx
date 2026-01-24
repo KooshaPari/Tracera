@@ -1,226 +1,222 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { Book, FileCode, ExternalLink, Download } from 'lucide-react';
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Book, Download, ExternalLink, FileCode } from "lucide-react";
 
-export const Route = createFileRoute('/api-docs/')({
-  component: ApiDocsIndex,
-  head: () => ({
-    meta: [
-      {
-        title: 'API Documentation | TraceRTM',
-      },
-      {
-        name: 'description',
-        content:
-          'Choose your preferred API documentation format: interactive Swagger UI or comprehensive ReDoc reference.',
-      },
-    ],
-  }),
+export const Route = createFileRoute("/api-docs/")({
+	component: ApiDocsIndex,
+	head: () => ({
+		meta: [
+			{
+				title: "API Documentation | TraceRTM",
+			},
+			{
+				name: "description",
+				content:
+					"Choose your preferred API documentation format: interactive Swagger UI or comprehensive ReDoc reference.",
+			},
+		],
+	}),
 });
 
 function ApiDocsIndex() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      <div className="mx-auto max-w-6xl px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-slate-900 dark:text-slate-50 mb-4">
-            TraceRTM API Documentation
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
-            Comprehensive API documentation for the TraceRTM platform. Choose
-            your preferred format to explore our REST API endpoints, schemas,
-            and examples.
-          </p>
-        </div>
+	return (
+		<div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+			<div className="mx-auto max-w-6xl px-4 py-16">
+				<div className="text-center mb-16">
+					<h1 className="text-5xl font-bold text-slate-900 dark:text-slate-50 mb-4">
+						TraceRTM API Documentation
+					</h1>
+					<p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
+						Comprehensive API documentation for the TraceRTM platform. Choose
+						your preferred format to explore our REST API endpoints, schemas,
+						and examples.
+					</p>
+				</div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <Link to="/api-docs/swagger" className="doc-card-link">
-            <div className="doc-card group">
-              <div className="flex items-start justify-between mb-6">
-                <div className="doc-icon swagger-icon">
-                  <FileCode size={32} />
-                </div>
-                <ExternalLink
-                  size={20}
-                  className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
-                />
-              </div>
+				<div className="grid md:grid-cols-2 gap-8 mb-12">
+					<Link to="/api-docs/swagger" className="doc-card-link">
+						<div className="doc-card group">
+							<div className="flex items-start justify-between mb-6">
+								<div className="doc-icon swagger-icon">
+									<FileCode size={32} />
+								</div>
+								<ExternalLink
+									size={20}
+									className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
+								/>
+							</div>
 
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-3">
-                Swagger UI
-              </h2>
+							<h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-3">
+								Swagger UI
+							</h2>
 
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
-                Interactive API documentation with try-it-out functionality.
-                Perfect for testing endpoints and exploring API capabilities in
-                real-time.
-              </p>
+							<p className="text-slate-600 dark:text-slate-400 mb-6">
+								Interactive API documentation with try-it-out functionality.
+								Perfect for testing endpoints and exploring API capabilities in
+								real-time.
+							</p>
 
-              <div className="doc-features">
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Try API calls directly</span>
-                </div>
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Request/response examples</span>
-                </div>
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Authentication testing</span>
-                </div>
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Schema validation</span>
-                </div>
-              </div>
+							<div className="doc-features">
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Try API calls directly</span>
+								</div>
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Request/response examples</span>
+								</div>
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Authentication testing</span>
+								</div>
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Schema validation</span>
+								</div>
+							</div>
 
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <span className="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:underline">
-                  Open Swagger UI →
-                </span>
-              </div>
-            </div>
-          </Link>
+							<div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+								<span className="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:underline">
+									Open Swagger UI →
+								</span>
+							</div>
+						</div>
+					</Link>
 
-          <Link to="/api-docs/redoc" className="doc-card-link">
-            <div className="doc-card group">
-              <div className="flex items-start justify-between mb-6">
-                <div className="doc-icon redoc-icon">
-                  <Book size={32} />
-                </div>
-                <ExternalLink
-                  size={20}
-                  className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
-                />
-              </div>
+					<Link to="/api-docs/redoc" className="doc-card-link">
+						<div className="doc-card group">
+							<div className="flex items-start justify-between mb-6">
+								<div className="doc-icon redoc-icon">
+									<Book size={32} />
+								</div>
+								<ExternalLink
+									size={20}
+									className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
+								/>
+							</div>
 
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-3">
-                ReDoc Reference
-              </h2>
+							<h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-3">
+								ReDoc Reference
+							</h2>
 
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
-                Clean, responsive API reference documentation. Ideal for
-                browsing endpoints, understanding schemas, and reviewing the
-                complete API structure.
-              </p>
+							<p className="text-slate-600 dark:text-slate-400 mb-6">
+								Clean, responsive API reference documentation. Ideal for
+								browsing endpoints, understanding schemas, and reviewing the
+								complete API structure.
+							</p>
 
-              <div className="doc-features">
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Clean, readable layout</span>
-                </div>
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Three-panel design</span>
-                </div>
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Deep linking support</span>
-                </div>
-                <div className="doc-feature">
-                  <div className="feature-dot" />
-                  <span>Code examples</span>
-                </div>
-              </div>
+							<div className="doc-features">
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Clean, readable layout</span>
+								</div>
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Three-panel design</span>
+								</div>
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Deep linking support</span>
+								</div>
+								<div className="doc-feature">
+									<div className="feature-dot" />
+									<span>Code examples</span>
+								</div>
+							</div>
 
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 group-hover:underline">
-                  Open ReDoc →
-                </span>
-              </div>
-            </div>
-          </Link>
-        </div>
+							<div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+								<span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 group-hover:underline">
+									Open ReDoc →
+								</span>
+							</div>
+						</div>
+					</Link>
+				</div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-6">
-            Quick Links
-          </h3>
+				<div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
+					<h3 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-6">
+						Quick Links
+					</h3>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <a
-              href="/specs/openapi.json"
-              download
-              className="quick-link-btn"
-            >
-              <Download size={20} />
-              <span>Download OpenAPI Spec</span>
-            </a>
+					<div className="grid sm:grid-cols-2 gap-4">
+						<a href="/specs/openapi.json" download className="quick-link-btn">
+							<Download size={20} />
+							<span>Download OpenAPI Spec</span>
+						</a>
 
-            <a
-              href="/specs/openapi.json"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="quick-link-btn"
-            >
-              <FileCode size={20} />
-              <span>View Raw Spec</span>
-            </a>
-          </div>
+						<a
+							href="/specs/openapi.json"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="quick-link-btn"
+						>
+							<FileCode size={20} />
+							<span>View Raw Spec</span>
+						</a>
+					</div>
 
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700">
-            <h4 className="font-semibold text-slate-900 dark:text-slate-50 mb-4">
-              API Information
-            </h4>
-            <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-slate-600 dark:text-slate-400">
-                  Version:
-                </span>{' '}
-                <span className="font-medium text-slate-900 dark:text-slate-50">
-                  1.0.0
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-600 dark:text-slate-400">
-                  Base URL:
-                </span>{' '}
-                <code className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">
-                  http://localhost:8000
-                </code>
-              </div>
-              <div>
-                <span className="text-slate-600 dark:text-slate-400">
-                  Format:
-                </span>{' '}
-                <span className="font-medium text-slate-900 dark:text-slate-50">
-                  OpenAPI 3.1.0
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-600 dark:text-slate-400">
-                  Authentication:
-                </span>{' '}
-                <span className="font-medium text-slate-900 dark:text-slate-50">
-                  Bearer Token / API Key
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+					<div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700">
+						<h4 className="font-semibold text-slate-900 dark:text-slate-50 mb-4">
+							API Information
+						</h4>
+						<div className="grid sm:grid-cols-2 gap-4 text-sm">
+							<div>
+								<span className="text-slate-600 dark:text-slate-400">
+									Version:
+								</span>{" "}
+								<span className="font-medium text-slate-900 dark:text-slate-50">
+									1.0.0
+								</span>
+							</div>
+							<div>
+								<span className="text-slate-600 dark:text-slate-400">
+									Base URL:
+								</span>{" "}
+								<code className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">
+									http://localhost:8000
+								</code>
+							</div>
+							<div>
+								<span className="text-slate-600 dark:text-slate-400">
+									Format:
+								</span>{" "}
+								<span className="font-medium text-slate-900 dark:text-slate-50">
+									OpenAPI 3.1.0
+								</span>
+							</div>
+							<div>
+								<span className="text-slate-600 dark:text-slate-400">
+									Authentication:
+								</span>{" "}
+								<span className="font-medium text-slate-900 dark:text-slate-50">
+									Bearer Token / API Key
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
 
-        <div className="mt-12 text-center">
-          <p className="text-sm text-slate-500 dark:text-slate-500">
-            Need help? Check out our{' '}
-            <a
-              href="https://docs.tracertm.com"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              documentation
-            </a>{' '}
-            or{' '}
-            <a
-              href="https://github.com/tracertm/tracertm"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              contribute on GitHub
-            </a>
-            .
-          </p>
-        </div>
-      </div>
+				<div className="mt-12 text-center">
+					<p className="text-sm text-slate-500 dark:text-slate-500">
+						Need help? Check out our{" "}
+						<a
+							href="https://docs.tracertm.com"
+							className="text-blue-600 dark:text-blue-400 hover:underline"
+						>
+							documentation
+						</a>{" "}
+						or{" "}
+						<a
+							href="https://github.com/tracertm/tracertm"
+							className="text-blue-600 dark:text-blue-400 hover:underline"
+						>
+							contribute on GitHub
+						</a>
+						.
+					</p>
+				</div>
+			</div>
 
-      <style>{`
+			<style>{`
         .doc-card-link {
           text-decoration: none;
         }
@@ -337,6 +333,6 @@ function ApiDocsIndex() {
           border-color: rgb(71 85 105);
         }
       `}</style>
-    </div>
-  );
+		</div>
+	);
 }

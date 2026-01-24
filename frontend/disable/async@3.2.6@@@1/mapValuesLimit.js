@@ -1,26 +1,26 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _eachOfLimit = require('./internal/eachOfLimit.js');
+var _eachOfLimit = require("./internal/eachOfLimit.js");
 
 var _eachOfLimit2 = _interopRequireDefault(_eachOfLimit);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-var _once = require('./internal/once.js');
+var _once = require("./internal/once.js");
 
 var _once2 = _interopRequireDefault(_once);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`mapValues`]{@link module:Collections.mapValues} but runs a maximum of `limit` async operations at a
@@ -45,16 +45,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback is passed
  */
 function mapValuesLimit(obj, limit, iteratee, callback) {
-    callback = (0, _once2.default)(callback);
-    var newObj = {};
-    var _iteratee = (0, _wrapAsync2.default)(iteratee);
-    return (0, _eachOfLimit2.default)(limit)(obj, (val, key, next) => {
-        _iteratee(val, key, (err, result) => {
-            if (err) return next(err);
-            newObj[key] = result;
-            next(err);
-        });
-    }, err => callback(err, newObj));
+	callback = (0, _once2.default)(callback);
+	var newObj = {};
+	var _iteratee = (0, _wrapAsync2.default)(iteratee);
+	return (0, _eachOfLimit2.default)(limit)(
+		obj,
+		(val, key, next) => {
+			_iteratee(val, key, (err, result) => {
+				if (err) return next(err);
+				newObj[key] = result;
+				next(err);
+			});
+		},
+		(err) => callback(err, newObj),
+	);
 }
 
 exports.default = (0, _awaitify2.default)(mapValuesLimit, 4);

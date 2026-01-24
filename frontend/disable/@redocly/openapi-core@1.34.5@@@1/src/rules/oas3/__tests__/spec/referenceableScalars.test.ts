@@ -1,14 +1,17 @@
-import { outdent } from 'outdent';
-import { parseYamlToDocument, replaceSourceWithRef } from '../../../../../__tests__/utils';
-import { lintDocument } from '../../../../lint';
-import { StyleguideConfig } from '../../../..';
-import { BaseResolver } from '../../../../resolve';
-import { resolveStyleguideConfig } from '../../../../config';
+import { outdent } from "outdent";
+import {
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../../__tests__/utils";
+import { StyleguideConfig } from "../../../..";
+import { resolveStyleguideConfig } from "../../../../config";
+import { lintDocument } from "../../../../lint";
+import { BaseResolver } from "../../../../resolve";
 
-describe('Referenceable scalars', () => {
-  it('should not report $ref description', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Referenceable scalars", () => {
+	it("should not report $ref description", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           info:
             title: Test
@@ -17,30 +20,30 @@ describe('Referenceable scalars', () => {
               $ref: fixtures/description.md
           paths: {}
         `,
-      __dirname + '/foobar.yaml'
-    );
+			__dirname + "/foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: new StyleguideConfig(
-        await resolveStyleguideConfig({
-          styleguideConfig: {
-            extends: [],
-            rules: {
-              spec: 'error',
-              'no-unresolved-refs': 'error',
-            },
-          },
-        })
-      ),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: new StyleguideConfig(
+				await resolveStyleguideConfig({
+					styleguideConfig: {
+						extends: [],
+						rules: {
+							spec: "error",
+							"no-unresolved-refs": "error",
+						},
+					},
+				}),
+			),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report invalid $ref on example with doNotResolveExamples', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report invalid $ref on example with doNotResolveExamples", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           info:
             title: Test
@@ -54,24 +57,24 @@ describe('Referenceable scalars', () => {
                     example:
                       $ref: not $ref, example
         `,
-      __dirname + '/foobar.yaml'
-    );
+			__dirname + "/foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: new StyleguideConfig(
-        await resolveStyleguideConfig({
-          styleguideConfig: {
-            extends: [],
-            rules: {
-              'no-unresolved-refs': 'error',
-            },
-            doNotResolveExamples: true,
-          },
-        })
-      ),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: new StyleguideConfig(
+				await resolveStyleguideConfig({
+					styleguideConfig: {
+						extends: [],
+						rules: {
+							"no-unresolved-refs": "error",
+						},
+						doNotResolveExamples: true,
+					},
+				}),
+			),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

@@ -1,0 +1,609 @@
+---
+title: "Channels"
+description: "Using channels effectively with the TraceRTM Go SDK"
+---
+
+# Channels
+
+Best practices for using channels with the TraceRTM Go SDK for concurrent operations.
+
+## Basic Channel Patterns
+
+### Unbuffered Channel
+
+```go
+resultCh := make(chan *tracertm.Item)
+
+go func() {
+    item, err := client.Items.Get(ctx, itemID)
+    if err != nil {
+        close(resultCh)
+        return
+    }
+    resultCh <- item
+}()
+
+item := <-resultCh
+if item != nil {
+    fmt.Printf("Got item: %s\n", item.Title)
+}
+```
+
+### Buffered Channel
+
+```go
+// Buffer for batch processing
+itemsCh := make(chan *tracertm.Item, 100)
+
+go func() {
+    defer close(itemsCh)
+    iter := client.Items.Iterate(ctx, projectID, nil)
+    for iter.Next() {
+        itemsCh <- iter.Item()
+    }
+}()
+
+// Process items as they arrive
+for item := range itemsCh {
+    fmt.Printf("Processing: %s\n", item.Key)
+}
+```
+
+---
+
+## Result and Error Channels
+
+### Separate Channels
+
+```go
+type FetchResult struct {
+    Item  *tracertm.Item
+    Error error
+}
+
+resultCh := make(chan FetchResult)
+
+go func() {
+    item, err := client.Items.Get(ctx, itemID)
+    resultCh <- FetchResult{Item: item, Error: err}
+}()
+
+result := <-resultCh
+if result.Error != nil {
+    log.Printf("Error: %v", result.Error)
+} else {
+    fmt.Printf("Item: %s\n", result.Item.Title)
+}
+```
+
+### Combined Result Type
+
+```go
+type Result[T any] struct {
+    Value T
+    Error error
+}
+
+func fetchItem(ctx context.Context, client *tracertm.Client, id string) <-chan Result[*tracertm.Item] {
+    ch := make(chan Result[*tracertm.Item], 1)
+    go func() {
+        item, err := client.Items.Get(ctx, id)
+        ch <- Result[*tracertm.Item]{Value: item, Error: err}
+        close(ch)
+    }()
+    return ch
+}
+
+// Usage
+result := <-fetchItem(ctx, client, "item_abc123")
+if result.Error != nil {
+    log.Fatal(result.Error)
+}
+fmt.Println(result.Value.Title)
+```
+
+---
+
+## Fan-Out Pattern
+
+Distribute work across multiple workers:
+
+```go
+func processItems(ctx context.Context, client *tracertm.Client, projectID string, workers int) error {
+    // Create job channel
+    jobs := make(chan string, 100)
+
+    // Create result channel
+    results := make(chan error, 100)
+
+    // Start workers (fan-out)
+    var wg sync.WaitGroup
+    for i := 0; i < workers; i++ {
+        wg.Add(1)
+        go func(workerID int) {
+            defer wg.Done()
+            for id := range jobs {
+                item, err := client.Items.Get(ctx, id)
+                if err != nil {
+                    results <- err
+                    continue
+                }
+                fmt.Printf("Worker %d: processed %s\n", workerID, item.Key)
+                results <- nil
+            }
+        }(i)
+    }
+
+    // Send jobs
+    go func() {
+        iter := client.Items.Iterate(ctx, projectID, nil)
+        for iter.Next() {
+            jobs <- iter.Item().ID
+        }
+        close(jobs)
+    }()
+
+    // Close results when workers done
+    go func() {
+        wg.Wait()
+        close(results)
+    }()
+
+    // Collect errors
+    var errs []error
+    for err := range results {
+        if err != nil {
+            errs = append(errs, err)
+        }
+    }
+
+    if len(errs) > 0 {
+        return fmt.Errorf("%d errors occurred", len(errs))
+    }
+    return nil
+}
+```
+
+---
+
+## Fan-In Pattern
+
+Merge multiple channels into one:
+
+```go
+func fanIn[T any](channels ...<-chan T) <-chan T {
+    var wg sync.WaitGroup
+    merged := make(chan T)
+
+    output := func(ch <-chan T) {
+        defer wg.Done()
+        for item := range ch {
+            merged <- item
+        }
+    }
+
+    wg.Add(len(channels))
+    for _, ch := range channels {
+        go output(ch)
+    }
+
+    go func() {
+        wg.Wait()
+        close(merged)
+    }()
+
+    return merged
+}
+
+func fetchFromMultipleSources(ctx context.Context, client *tracertm.Client, projectIDs []string) <-chan *tracertm.Item {
+    var channels []<-chan *tracertm.Item
+
+    for _, projectID := range projectIDs {
+        ch := make(chan *tracertm.Item)
+        channels = append(channels, ch)
+
+        go func(pid string, out chan<- *tracertm.Item) {
+            defer close(out)
+            iter := client.Items.Iterate(ctx, pid, nil)
+            for iter.Next() {
+                out <- iter.Item()
+            }
+        }(projectID, ch)
+    }
+
+    return fanIn(channels...)
+}
+```
+
+---
+
+## Pipeline Pattern
+
+Build processing pipelines:
+
+```go
+// Stage 1: Source - fetch items
+func fetchItems(ctx context.Context, client *tracertm.Client, projectID string) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        iter := client.Items.Iterate(ctx, projectID, nil)
+        for iter.Next() {
+            select {
+            case <-ctx.Done():
+                return
+            case out <- iter.Item():
+            }
+        }
+    }()
+    return out
+}
+
+// Stage 2: Filter - only requirements
+func filterRequirements(ctx context.Context, in <-chan *tracertm.Item) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        for item := range in {
+            if item.Type == "requirement" {
+                select {
+                case <-ctx.Done():
+                    return
+                case out <- item:
+                }
+            }
+        }
+    }()
+    return out
+}
+
+// Stage 3: Enrich - fetch full details
+func enrichItems(ctx context.Context, client *tracertm.Client, in <-chan *tracertm.Item) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        for item := range in {
+            full, err := client.Items.Get(ctx, item.ID)
+            if err != nil {
+                continue
+            }
+            select {
+            case <-ctx.Done():
+                return
+            case out <- full:
+            }
+        }
+    }()
+    return out
+}
+
+// Stage 4: Sink - process results
+func processResults(ctx context.Context, in <-chan *tracertm.Item) {
+    for item := range in {
+        fmt.Printf("Processed: %s - %s\n", item.Key, item.Title)
+    }
+}
+
+// Run pipeline
+func runPipeline(ctx context.Context, client *tracertm.Client, projectID string) {
+    items := fetchItems(ctx, client, projectID)
+    requirements := filterRequirements(ctx, items)
+    enriched := enrichItems(ctx, client, requirements)
+    processResults(ctx, enriched)
+}
+```
+
+---
+
+## Select Statement Patterns
+
+### Multiple Channel Operations
+
+```go
+func fetchWithTimeout(ctx context.Context, client *tracertm.Client, id string, timeout time.Duration) (*tracertm.Item, error) {
+    resultCh := make(chan *tracertm.Item, 1)
+    errCh := make(chan error, 1)
+
+    go func() {
+        item, err := client.Items.Get(ctx, id)
+        if err != nil {
+            errCh <- err
+            return
+        }
+        resultCh <- item
+    }()
+
+    select {
+    case item := <-resultCh:
+        return item, nil
+    case err := <-errCh:
+        return nil, err
+    case <-time.After(timeout):
+        return nil, fmt.Errorf("timeout after %v", timeout)
+    case <-ctx.Done():
+        return nil, ctx.Err()
+    }
+}
+```
+
+### Non-Blocking Operations
+
+```go
+func trySend(ch chan<- *tracertm.Item, item *tracertm.Item) bool {
+    select {
+    case ch <- item:
+        return true
+    default:
+        return false // Channel full or closed
+    }
+}
+
+func tryReceive(ch <-chan *tracertm.Item) (*tracertm.Item, bool) {
+    select {
+    case item, ok := <-ch:
+        return item, ok
+    default:
+        return nil, false // No item available
+    }
+}
+```
+
+### Priority Select
+
+```go
+func processPrioritized(ctx context.Context, highPriority, lowPriority <-chan *tracertm.Item) {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case item := <-highPriority:
+            processHighPriority(item)
+        default:
+            select {
+            case <-ctx.Done():
+                return
+            case item := <-highPriority:
+                processHighPriority(item)
+            case item := <-lowPriority:
+                processLowPriority(item)
+            }
+        }
+    }
+}
+```
+
+---
+
+## Channel Closure Patterns
+
+### Signal Completion
+
+```go
+func fetchAll(ctx context.Context, client *tracertm.Client, projectID string) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+
+    go func() {
+        defer close(out) // Signal completion
+        iter := client.Items.Iterate(ctx, projectID, nil)
+        for iter.Next() {
+            select {
+            case <-ctx.Done():
+                return
+            case out <- iter.Item():
+            }
+        }
+    }()
+
+    return out
+}
+
+// Consumer knows when all items received
+for item := range fetchAll(ctx, client, projectID) {
+    process(item)
+}
+fmt.Println("All items processed")
+```
+
+### Broadcast Cancellation
+
+```go
+func runWithCancellation(ctx context.Context) {
+    done := make(chan struct{})
+
+    // Worker 1
+    go func() {
+        for {
+            select {
+            case <-done:
+                fmt.Println("Worker 1 stopped")
+                return
+            default:
+                // Work
+            }
+        }
+    }()
+
+    // Worker 2
+    go func() {
+        for {
+            select {
+            case <-done:
+                fmt.Println("Worker 2 stopped")
+                return
+            default:
+                // Work
+            }
+        }
+    }()
+
+    // Stop all workers
+    time.Sleep(5 * time.Second)
+    close(done) // Broadcasts to all workers
+}
+```
+
+---
+
+## Bidirectional Communication
+
+```go
+type Request struct {
+    ID       string
+    Response chan<- *tracertm.Item
+}
+
+func worker(ctx context.Context, client *tracertm.Client, requests <-chan Request) {
+    for req := range requests {
+        item, err := client.Items.Get(ctx, req.ID)
+        if err != nil {
+            close(req.Response)
+            continue
+        }
+        req.Response <- item
+        close(req.Response)
+    }
+}
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+    ctx := context.Background()
+
+    requests := make(chan Request)
+
+    // Start worker
+    go worker(ctx, client, requests)
+
+    // Make request
+    response := make(chan *tracertm.Item, 1)
+    requests <- Request{ID: "item_abc123", Response: response}
+
+    item := <-response
+    if item != nil {
+        fmt.Println(item.Title)
+    }
+}
+```
+
+---
+
+## Rate Limiting with Channels
+
+```go
+func rateLimitedFetch(ctx context.Context, client *tracertm.Client, ids []string, rps int) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    ticker := time.NewTicker(time.Second / time.Duration(rps))
+
+    go func() {
+        defer close(out)
+        defer ticker.Stop()
+
+        for _, id := range ids {
+            select {
+            case <-ctx.Done():
+                return
+            case <-ticker.C:
+                item, err := client.Items.Get(ctx, id)
+                if err != nil {
+                    continue
+                }
+                select {
+                case <-ctx.Done():
+                    return
+                case out <- item:
+                }
+            }
+        }
+    }()
+
+    return out
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Always Close Channels from Sender
+
+```go
+// Good - sender closes
+func produce() <-chan int {
+    ch := make(chan int)
+    go func() {
+        defer close(ch)
+        for i := 0; i < 10; i++ {
+            ch <- i
+        }
+    }()
+    return ch
+}
+
+// Bad - receiver closes (can panic)
+func consume(ch chan int) {
+    for range ch {}
+    close(ch) // Don't do this!
+}
+```
+
+### 2. Use Buffered Channels Appropriately
+
+```go
+// Good for known batch size
+results := make(chan *tracertm.Item, len(ids))
+
+// Good for flow control
+jobs := make(chan Job, 100)
+
+// Unbuffered for synchronization
+done := make(chan struct{})
+```
+
+### 3. Handle Channel Closure
+
+```go
+// Good - check if closed
+for item := range ch {
+    process(item)
+}
+
+// Good - explicit check
+item, ok := <-ch
+if !ok {
+    fmt.Println("Channel closed")
+}
+```
+
+### 4. Prevent Goroutine Leaks
+
+```go
+// Good - use context for cancellation
+func fetch(ctx context.Context) <-chan *tracertm.Item {
+    ch := make(chan *tracertm.Item)
+    go func() {
+        defer close(ch)
+        select {
+        case <-ctx.Done():
+            return
+        case ch <- item:
+        }
+    }()
+    return ch
+}
+
+// Bad - may block forever
+func fetch() <-chan *tracertm.Item {
+    ch := make(chan *tracertm.Item)
+    go func() {
+        ch <- item // May block forever if not read
+    }()
+    return ch
+}
+```
+
+---
+
+## Related Documentation
+
+- [Goroutines](/docs/api-reference/sdks/go/goroutines) - Goroutine patterns
+- [Concurrency](/docs/api-reference/sdks/go/concurrency) - Concurrency overview
+- [Advanced Examples](/docs/api-reference/sdks/go/advanced-examples) - Complex examples

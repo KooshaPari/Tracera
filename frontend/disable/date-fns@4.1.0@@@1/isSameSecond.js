@@ -38,7 +38,7 @@ import { startOfSecond } from "./startOfSecond.js";
  * //=> false
  */
 export function isSameSecond(laterDate, earlierDate) {
-  return +startOfSecond(laterDate) === +startOfSecond(earlierDate);
+	return +startOfSecond(laterDate) === +startOfSecond(earlierDate);
 }
 
 // Fallback for modularized imports:

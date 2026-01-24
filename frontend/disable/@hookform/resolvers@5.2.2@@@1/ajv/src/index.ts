@@ -1,2 +1,2 @@
-export * from './ajv';
-export * from './types';
+export * from "./ajv";
+export * from "./types";

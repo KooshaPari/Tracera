@@ -32,14 +32,14 @@ import { toDate } from "./toDate.js";
  * //=> 6
  */
 export function getWeeksInMonth(date, options) {
-  const contextDate = toDate(date, options?.in);
-  return (
-    differenceInCalendarWeeks(
-      lastDayOfMonth(contextDate, options),
-      startOfMonth(contextDate, options),
-      options,
-    ) + 1
-  );
+	const contextDate = toDate(date, options?.in);
+	return (
+		differenceInCalendarWeeks(
+			lastDayOfMonth(contextDate, options),
+			startOfMonth(contextDate, options),
+			options,
+		) + 1
+	);
 }
 
 // Fallback for modularized imports:

@@ -1,3 +1,3 @@
-export default function() {
-  return Array.from(this);
+export default function () {
+	return Array.from(this);
 }

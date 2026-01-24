@@ -14,8 +14,8 @@ export type IntlFormatFormatOptions = Intl.DateTimeFormatOptions;
  * The locale options.
  */
 export interface IntlFormatLocaleOptions {
-  /** The locales to use (see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#locales_argument) */
-  locale: MaybeArray<Intl.ResolvedDateTimeFormatOptions["locale"]>;
+	/** The locales to use (see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#locales_argument) */
+	locale: MaybeArray<Intl.ResolvedDateTimeFormatOptions["locale"]>;
 }
 /**
  * @name intlFormat
@@ -58,8 +58,8 @@ export declare function intlFormat(date: DateArg<Date> & {}): string;
  * //=> 2019. 10. 4.
  */
 export declare function intlFormat(
-  date: DateArg<Date> & {},
-  localeOptions: IntlFormatLocaleOptions,
+	date: DateArg<Date> & {},
+	localeOptions: IntlFormatLocaleOptions,
 ): string;
 /**
  * @param date - The date to format
@@ -81,8 +81,8 @@ export declare function intlFormat(
  * //=> 10/4/2019, 12 PM
  */
 export declare function intlFormat(
-  date: DateArg<Date> & {},
-  formatOptions: IntlFormatFormatOptions,
+	date: DateArg<Date> & {},
+	formatOptions: IntlFormatFormatOptions,
 ): string;
 /**
  * @param date - The date to format
@@ -107,7 +107,7 @@ export declare function intlFormat(
  * //=> Freitag, 4. Oktober 2019
  */
 export declare function intlFormat(
-  date: DateArg<Date> & {},
-  formatOptions: IntlFormatFormatOptions,
-  localeOptions: IntlFormatLocaleOptions,
+	date: DateArg<Date> & {},
+	formatOptions: IntlFormatFormatOptions,
+	localeOptions: IntlFormatLocaleOptions,
 ): string;

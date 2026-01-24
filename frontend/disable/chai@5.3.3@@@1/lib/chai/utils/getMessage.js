@@ -4,9 +4,9 @@
  * MIT Licensed
  */
 
-import {flag} from './flag.js';
-import {getActual} from './getActual.js';
-import {objDisplay} from './objDisplay.js';
+import { flag } from "./flag.js";
+import { getActual } from "./getActual.js";
+import { objDisplay } from "./objDisplay.js";
 
 /**
  * ### .getMessage(object, message, negateMessage)
@@ -28,25 +28,19 @@ import {objDisplay} from './objDisplay.js';
  * @public
  */
 export function getMessage(obj, args) {
-  let negate = flag(obj, 'negate');
-  let val = flag(obj, 'object');
-  let expected = args[3];
-  let actual = getActual(obj, args);
-  let msg = negate ? args[2] : args[1];
-  let flagMsg = flag(obj, 'message');
+	const negate = flag(obj, "negate");
+	const val = flag(obj, "object");
+	const expected = args[3];
+	const actual = getActual(obj, args);
+	let msg = negate ? args[2] : args[1];
+	const flagMsg = flag(obj, "message");
 
-  if (typeof msg === 'function') msg = msg();
-  msg = msg || '';
-  msg = msg
-    .replace(/#\{this\}/g, function () {
-      return objDisplay(val);
-    })
-    .replace(/#\{act\}/g, function () {
-      return objDisplay(actual);
-    })
-    .replace(/#\{exp\}/g, function () {
-      return objDisplay(expected);
-    });
+	if (typeof msg === "function") msg = msg();
+	msg = msg || "";
+	msg = msg
+		.replace(/#\{this\}/g, () => objDisplay(val))
+		.replace(/#\{act\}/g, () => objDisplay(actual))
+		.replace(/#\{exp\}/g, () => objDisplay(expected));
 
-  return flagMsg ? flagMsg + ': ' + msg : msg;
+	return flagMsg ? flagMsg + ": " + msg : msg;
 }

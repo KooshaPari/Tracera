@@ -22,4 +22,6 @@ import type { Writer } from "../io/types.js";
  *
  * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
  */
-export declare function writerFromStreamWriter(streamWriter: dntShim.WritableStreamDefaultWriter<Uint8Array>): Writer;
+export declare function writerFromStreamWriter(
+	streamWriter: dntShim.WritableStreamDefaultWriter<Uint8Array>,
+): Writer;

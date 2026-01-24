@@ -4,4 +4,7 @@
  * @param element the element
  * @param selector the selector
  */
-export default function qsa(element: HTMLElement | Document, selector: string): HTMLElement[];
+export default function qsa(
+	element: HTMLElement | Document,
+	selector: string,
+): HTMLElement[];

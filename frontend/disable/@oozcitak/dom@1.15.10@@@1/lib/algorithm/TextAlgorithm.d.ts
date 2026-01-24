@@ -5,14 +5,20 @@ import { Node, Text } from "../dom/interfaces";
  * @param node - a node
  * @param self - whether to include node itself
  */
-export declare function text_contiguousTextNodes(node: Text, self?: boolean): Iterable<Text>;
+export declare function text_contiguousTextNodes(
+	node: Text,
+	self?: boolean,
+): Iterable<Text>;
 /**
  * Returns node with its adjacent text node siblings.
  *
  * @param node - a node
  * @param self - whether to include node itself
  */
-export declare function text_contiguousExclusiveTextNodes(node: Text, self?: boolean): Iterable<Text>;
+export declare function text_contiguousExclusiveTextNodes(
+	node: Text,
+	self?: boolean,
+): Iterable<Text>;
 /**
  * Returns the concatenation of the data of all the Text node descendants of
  * node, in tree order.

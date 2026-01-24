@@ -35,8 +35,8 @@ var _index2 = require("./subDays.cjs");
  * //=> Tue Mar 17 2020 00:00:00
  */
 function previousDay(date, day, options) {
-  let delta = (0, _index.getDay)(date, options) - day;
-  if (delta <= 0) delta += 7;
+	let delta = (0, _index.getDay)(date, options) - day;
+	if (delta <= 0) delta += 7;
 
-  return (0, _index2.subDays)(date, delta, options);
+	return (0, _index2.subDays)(date, delta, options);
 }

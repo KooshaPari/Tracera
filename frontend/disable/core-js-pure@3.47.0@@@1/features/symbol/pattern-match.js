@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/symbol/pattern-match');
+"use strict";
+module.exports = require("../../full/symbol/pattern-match");

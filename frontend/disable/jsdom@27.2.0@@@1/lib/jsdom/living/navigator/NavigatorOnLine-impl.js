@@ -1,7 +1,7 @@
 "use strict";
 
 exports.implementation = class NavigatorOnLineImpl {
-  get onLine() {
-    return true;
-  }
+	get onLine() {
+		return true;
+	}
 };

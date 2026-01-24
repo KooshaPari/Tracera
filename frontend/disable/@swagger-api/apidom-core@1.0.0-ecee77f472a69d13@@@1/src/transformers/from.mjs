@@ -1,6 +1,7 @@
-import { has } from 'ramda';
-import { isPlainObject, isString } from 'ramda-adjunct';
+import { has } from "ramda";
+import { isPlainObject, isString } from "ramda-adjunct";
 import defaultNamespaceInstance from "../namespace.mjs";
+
 /**
  * Transforms data to an Element from a particular namespace.
  *
@@ -12,18 +13,18 @@ import defaultNamespaceInstance from "../namespace.mjs";
  * @public
  */
 const fromFn = (data, namespace = defaultNamespaceInstance) => {
-  if (isString(data)) {
-    // JSON serialized refract
-    try {
-      return namespace.fromRefract(JSON.parse(data));
-    } catch {
-      // noop
-    }
-  }
-  if (isPlainObject(data) && has('element', data)) {
-    // refract javascript structure
-    return namespace.fromRefract(data);
-  }
-  return namespace.toElement(data);
+	if (isString(data)) {
+		// JSON serialized refract
+		try {
+			return namespace.fromRefract(JSON.parse(data));
+		} catch {
+			// noop
+		}
+	}
+	if (isPlainObject(data) && has("element", data)) {
+		// refract javascript structure
+		return namespace.fromRefract(data);
+	}
+	return namespace.toElement(data);
 };
 export default fromFn;

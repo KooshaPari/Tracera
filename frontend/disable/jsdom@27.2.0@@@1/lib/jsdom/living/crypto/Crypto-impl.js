@@ -5,43 +5,47 @@ const DOMException = require("../generated/DOMException");
 
 // https://w3c.github.io/webcrypto/#crypto-interface
 class CryptoImpl {
-  constructor(globalObject) {
-    this._globalObject = globalObject;
-  }
+	constructor(globalObject) {
+		this._globalObject = globalObject;
+	}
 
-  // https://w3c.github.io/webcrypto/#Crypto-method-getRandomValues
-  getRandomValues(array) {
-    const typeName = getTypedArrayTypeName(array);
-    if (!(typeName === "Int8Array" ||
-        typeName === "Uint8Array" ||
-        typeName === "Uint8ClampedArray" ||
-        typeName === "Int16Array" ||
-        typeName === "Uint16Array" ||
-        typeName === "Int32Array" ||
-        typeName === "Uint32Array" ||
-        typeName === "BigInt64Array" ||
-        typeName === "BigUint64Array")) {
-      throw DOMException.create(this._globalObject, [
-        `getRandomValues() only accepts integer typed arrays`,
-        "TypeMismatchError"
-      ]);
-    }
+	// https://w3c.github.io/webcrypto/#Crypto-method-getRandomValues
+	getRandomValues(array) {
+		const typeName = getTypedArrayTypeName(array);
+		if (
+			!(
+				typeName === "Int8Array" ||
+				typeName === "Uint8Array" ||
+				typeName === "Uint8ClampedArray" ||
+				typeName === "Int16Array" ||
+				typeName === "Uint16Array" ||
+				typeName === "Int32Array" ||
+				typeName === "Uint32Array" ||
+				typeName === "BigInt64Array" ||
+				typeName === "BigUint64Array"
+			)
+		) {
+			throw DOMException.create(this._globalObject, [
+				`getRandomValues() only accepts integer typed arrays`,
+				"TypeMismatchError",
+			]);
+		}
 
-    if (array.byteLength > 65536) {
-      throw DOMException.create(this._globalObject, [
-        `getRandomValues() cannot generate more than 65536 bytes of random values; ` +
-        `${array.byteLength} bytes were requested`,
-        "QuotaExceededError"
-      ]);
-    }
-    nodeCrypto.randomFillSync(array);
-    return array;
-  }
+		if (array.byteLength > 65536) {
+			throw DOMException.create(this._globalObject, [
+				`getRandomValues() cannot generate more than 65536 bytes of random values; ` +
+					`${array.byteLength} bytes were requested`,
+				"QuotaExceededError",
+			]);
+		}
+		nodeCrypto.randomFillSync(array);
+		return array;
+	}
 
-  // https://w3c.github.io/webcrypto/#Crypto-method-randomUUID
-  randomUUID() {
-    return nodeCrypto.randomUUID();
-  }
+	// https://w3c.github.io/webcrypto/#Crypto-method-randomUUID
+	randomUUID() {
+		return nodeCrypto.randomUUID();
+	}
 }
 
 exports.implementation = CryptoImpl;
@@ -52,17 +56,17 @@ exports.implementation = CryptoImpl;
 // solution, we imitate the behavior of instanceof by walking the proottype
 // chain.
 function getTypedArrayTypeName(array) {
-  const target = array.constructor;
-  const chain = [target.name];
-  let proto = Object.getPrototypeOf(target);
-  while (proto) {
-    chain.push(proto.name);
-    proto = Object.getPrototypeOf(proto);
-  }
+	const target = array.constructor;
+	const chain = [target.name];
+	let proto = Object.getPrototypeOf(target);
+	while (proto) {
+		chain.push(proto.name);
+		proto = Object.getPrototypeOf(proto);
+	}
 
-  while (chain.length > 0 && chain[chain.length - 1] !== "TypedArray") {
-    chain.pop();
-  }
-  chain.reverse();
-  return chain[1];
+	while (chain.length > 0 && chain[chain.length - 1] !== "TypedArray") {
+		chain.pop();
+	}
+	chain.reverse();
+	return chain[1];
 }

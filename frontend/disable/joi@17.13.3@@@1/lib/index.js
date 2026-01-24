@@ -1,283 +1,298 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
+const Clone = require("@hapi/hoek/lib/clone");
 
-const Assert = require('@hapi/hoek/lib/assert');
-const Clone = require('@hapi/hoek/lib/clone');
-
-const Cache = require('./cache');
-const Common = require('./common');
-const Compile = require('./compile');
-const Errors = require('./errors');
-const Extend = require('./extend');
-const Manifest = require('./manifest');
-const Ref = require('./ref');
-const Template = require('./template');
-const Trace = require('./trace');
+const Cache = require("./cache");
+const Common = require("./common");
+const Compile = require("./compile");
+const Errors = require("./errors");
+const Extend = require("./extend");
+const Manifest = require("./manifest");
+const Ref = require("./ref");
+const Template = require("./template");
+const Trace = require("./trace");
 
 let Schemas;
 
-
 const internals = {
-    types: {
-        alternatives: require('./types/alternatives'),
-        any: require('./types/any'),
-        array: require('./types/array'),
-        boolean: require('./types/boolean'),
-        date: require('./types/date'),
-        function: require('./types/function'),
-        link: require('./types/link'),
-        number: require('./types/number'),
-        object: require('./types/object'),
-        string: require('./types/string'),
-        symbol: require('./types/symbol')
-    },
-    aliases: {
-        alt: 'alternatives',
-        bool: 'boolean',
-        func: 'function'
-    }
+	types: {
+		alternatives: require("./types/alternatives"),
+		any: require("./types/any"),
+		array: require("./types/array"),
+		boolean: require("./types/boolean"),
+		date: require("./types/date"),
+		function: require("./types/function"),
+		link: require("./types/link"),
+		number: require("./types/number"),
+		object: require("./types/object"),
+		string: require("./types/string"),
+		symbol: require("./types/symbol"),
+	},
+	aliases: {
+		alt: "alternatives",
+		bool: "boolean",
+		func: "function",
+	},
 };
 
-
-if (Buffer) {                                                           // $lab:coverage:ignore$
-    internals.types.binary = require('./types/binary');
+if (Buffer) {
+	// $lab:coverage:ignore$
+	internals.types.binary = require("./types/binary");
 }
 
+internals.root = () => {
+	const root = {
+		_types: new Set(Object.keys(internals.types)),
+	};
 
-internals.root = function () {
+	// Types
 
-    const root = {
-        _types: new Set(Object.keys(internals.types))
-    };
+	for (const type of root._types) {
+		root[type] = function (...args) {
+			Assert(
+				!args.length || ["alternatives", "link", "object"].includes(type),
+				"The",
+				type,
+				"type does not allow arguments",
+			);
+			return internals.generate(this, internals.types[type], args);
+		};
+	}
 
-    // Types
+	// Shortcuts
 
-    for (const type of root._types) {
-        root[type] = function (...args) {
+	for (const method of [
+		"allow",
+		"custom",
+		"disallow",
+		"equal",
+		"exist",
+		"forbidden",
+		"invalid",
+		"not",
+		"only",
+		"optional",
+		"options",
+		"prefs",
+		"preferences",
+		"required",
+		"strip",
+		"valid",
+		"when",
+	]) {
+		root[method] = function (...args) {
+			return this.any()[method](...args);
+		};
+	}
 
-            Assert(!args.length || ['alternatives', 'link', 'object'].includes(type), 'The', type, 'type does not allow arguments');
-            return internals.generate(this, internals.types[type], args);
-        };
-    }
+	// Methods
 
-    // Shortcuts
+	Object.assign(root, internals.methods);
 
-    for (const method of ['allow', 'custom', 'disallow', 'equal', 'exist', 'forbidden', 'invalid', 'not', 'only', 'optional', 'options', 'prefs', 'preferences', 'required', 'strip', 'valid', 'when']) {
-        root[method] = function (...args) {
+	// Aliases
 
-            return this.any()[method](...args);
-        };
-    }
+	for (const alias in internals.aliases) {
+		const target = internals.aliases[alias];
+		root[alias] = root[target];
+	}
 
-    // Methods
+	root.x = root.expression;
 
-    Object.assign(root, internals.methods);
+	// Trace
 
-    // Aliases
+	if (Trace.setup) {
+		// $lab:coverage:ignore$
+		Trace.setup(root);
+	}
 
-    for (const alias in internals.aliases) {
-        const target = internals.aliases[alias];
-        root[alias] = root[target];
-    }
-
-    root.x = root.expression;
-
-    // Trace
-
-    if (Trace.setup) {                                          // $lab:coverage:ignore$
-        Trace.setup(root);
-    }
-
-    return root;
+	return root;
 };
-
 
 internals.methods = {
+	ValidationError: Errors.ValidationError,
+	version: Common.version,
+	cache: Cache.provider,
 
-    ValidationError: Errors.ValidationError,
-    version: Common.version,
-    cache: Cache.provider,
+	assert(value, schema, ...args /* [message], [options] */) {
+		internals.assert(value, schema, true, args);
+	},
 
-    assert(value, schema, ...args /* [message], [options] */) {
+	attempt(value, schema, ...args /* [message], [options] */) {
+		return internals.assert(value, schema, false, args);
+	},
 
-        internals.assert(value, schema, true, args);
-    },
+	build(desc) {
+		Assert(
+			typeof Manifest.build === "function",
+			"Manifest functionality disabled",
+		);
+		return Manifest.build(this, desc);
+	},
 
-    attempt(value, schema, ...args /* [message], [options] */) {
+	checkPreferences(prefs) {
+		Common.checkPreferences(prefs);
+	},
 
-        return internals.assert(value, schema, false, args);
-    },
+	compile(schema, options) {
+		return Compile.compile(this, schema, options);
+	},
 
-    build(desc) {
+	defaults(modifier) {
+		Assert(typeof modifier === "function", "modifier must be a function");
 
-        Assert(typeof Manifest.build === 'function', 'Manifest functionality disabled');
-        return Manifest.build(this, desc);
-    },
+		const joi = Object.assign({}, this);
+		for (const type of joi._types) {
+			const schema = modifier(joi[type]());
+			Assert(
+				Common.isSchema(schema),
+				"modifier must return a valid schema object",
+			);
 
-    checkPreferences(prefs) {
+			joi[type] = function (...args) {
+				return internals.generate(this, schema, args);
+			};
+		}
 
-        Common.checkPreferences(prefs);
-    },
+		return joi;
+	},
 
-    compile(schema, options) {
+	expression(...args) {
+		return new Template(...args);
+	},
 
-        return Compile.compile(this, schema, options);
-    },
+	extend(...extensions) {
+		Common.verifyFlat(extensions, "extend");
 
-    defaults(modifier) {
+		Schemas = Schemas || require("./schemas");
 
-        Assert(typeof modifier === 'function', 'modifier must be a function');
+		Assert(extensions.length, "You need to provide at least one extension");
+		this.assert(extensions, Schemas.extensions);
 
-        const joi = Object.assign({}, this);
-        for (const type of joi._types) {
-            const schema = modifier(joi[type]());
-            Assert(Common.isSchema(schema), 'modifier must return a valid schema object');
+		const joi = Object.assign({}, this);
+		joi._types = new Set(joi._types);
 
-            joi[type] = function (...args) {
+		for (let extension of extensions) {
+			if (typeof extension === "function") {
+				extension = extension(joi);
+			}
 
-                return internals.generate(this, schema, args);
-            };
-        }
+			this.assert(extension, Schemas.extension);
 
-        return joi;
-    },
+			const expanded = internals.expandExtension(extension, joi);
+			for (const item of expanded) {
+				Assert(
+					joi[item.type] === undefined || joi._types.has(item.type),
+					"Cannot override name",
+					item.type,
+				);
 
-    expression(...args) {
+				const base = item.base || this.any();
+				const schema = Extend.type(base, item);
 
-        return new Template(...args);
-    },
+				joi._types.add(item.type);
+				joi[item.type] = function (...args) {
+					return internals.generate(this, schema, args);
+				};
+			}
+		}
 
-    extend(...extensions) {
+		return joi;
+	},
 
-        Common.verifyFlat(extensions, 'extend');
+	isError: Errors.ValidationError.isError,
+	isExpression: Template.isTemplate,
+	isRef: Ref.isRef,
+	isSchema: Common.isSchema,
 
-        Schemas = Schemas || require('./schemas');
+	in(...args) {
+		return Ref.in(...args);
+	},
 
-        Assert(extensions.length, 'You need to provide at least one extension');
-        this.assert(extensions, Schemas.extensions);
+	override: Common.symbols.override,
 
-        const joi = Object.assign({}, this);
-        joi._types = new Set(joi._types);
+	ref(...args) {
+		return Ref.create(...args);
+	},
 
-        for (let extension of extensions) {
-            if (typeof extension === 'function') {
-                extension = extension(joi);
-            }
+	types() {
+		const types = {};
+		for (const type of this._types) {
+			types[type] = this[type]();
+		}
 
-            this.assert(extension, Schemas.extension);
+		for (const target in internals.aliases) {
+			types[target] = this[target]();
+		}
 
-            const expanded = internals.expandExtension(extension, joi);
-            for (const item of expanded) {
-                Assert(joi[item.type] === undefined || joi._types.has(item.type), 'Cannot override name', item.type);
-
-                const base = item.base || this.any();
-                const schema = Extend.type(base, item);
-
-                joi._types.add(item.type);
-                joi[item.type] = function (...args) {
-
-                    return internals.generate(this, schema, args);
-                };
-            }
-        }
-
-        return joi;
-    },
-
-    isError: Errors.ValidationError.isError,
-    isExpression: Template.isTemplate,
-    isRef: Ref.isRef,
-    isSchema: Common.isSchema,
-
-    in(...args) {
-
-        return Ref.in(...args);
-    },
-
-    override: Common.symbols.override,
-
-    ref(...args) {
-
-        return Ref.create(...args);
-    },
-
-    types() {
-
-        const types = {};
-        for (const type of this._types) {
-            types[type] = this[type]();
-        }
-
-        for (const target in internals.aliases) {
-            types[target] = this[target]();
-        }
-
-        return types;
-    }
+		return types;
+	},
 };
-
 
 // Helpers
 
-internals.assert = function (value, schema, annotate, args /* [message], [options] */) {
+internals.assert = (
+	value,
+	schema,
+	annotate,
+	args /* [message], [options] */,
+) => {
+	const message =
+		args[0] instanceof Error || typeof args[0] === "string" ? args[0] : null;
+	const options = message !== null ? args[1] : args[0];
+	const result = schema.validate(
+		value,
+		Common.preferences({ errors: { stack: true } }, options || {}),
+	);
 
-    const message = args[0] instanceof Error || typeof args[0] === 'string' ? args[0] : null;
-    const options = message !== null ? args[1] : args[0];
-    const result = schema.validate(value, Common.preferences({ errors: { stack: true } }, options || {}));
+	let error = result.error;
+	if (!error) {
+		return result.value;
+	}
 
-    let error = result.error;
-    if (!error) {
-        return result.value;
-    }
+	if (message instanceof Error) {
+		throw message;
+	}
 
-    if (message instanceof Error) {
-        throw message;
-    }
+	const display =
+		annotate && typeof error.annotate === "function"
+			? error.annotate()
+			: error.message;
 
-    const display = annotate && typeof error.annotate === 'function' ? error.annotate() : error.message;
+	if (error instanceof Errors.ValidationError === false) {
+		error = Clone(error);
+	}
 
-    if (error instanceof Errors.ValidationError === false) {
-        error = Clone(error);
-    }
-
-    error.message = message ? `${message} ${display}` : display;
-    throw error;
+	error.message = message ? `${message} ${display}` : display;
+	throw error;
 };
 
+internals.generate = (root, schema, args) => {
+	Assert(root, "Must be invoked on a Joi instance.");
 
-internals.generate = function (root, schema, args) {
+	schema.$_root = root;
 
-    Assert(root, 'Must be invoked on a Joi instance.');
+	if (!schema._definition.args || !args.length) {
+		return schema;
+	}
 
-    schema.$_root = root;
-
-    if (!schema._definition.args ||
-        !args.length) {
-
-        return schema;
-    }
-
-    return schema._definition.args(schema, ...args);
+	return schema._definition.args(schema, ...args);
 };
 
+internals.expandExtension = (extension, joi) => {
+	if (typeof extension.type === "string") {
+		return [extension];
+	}
 
-internals.expandExtension = function (extension, joi) {
+	const extended = [];
+	for (const type of joi._types) {
+		if (extension.type.test(type)) {
+			const item = Object.assign({}, extension);
+			item.type = type;
+			item.base = joi[type]();
+			extended.push(item);
+		}
+	}
 
-    if (typeof extension.type === 'string') {
-        return [extension];
-    }
-
-    const extended = [];
-    for (const type of joi._types) {
-        if (extension.type.test(type)) {
-            const item = Object.assign({}, extension);
-            item.type = type;
-            item.base = joi[type]();
-            extended.push(item);
-        }
-    }
-
-    return extended;
+	return extended;
 };
-
 
 module.exports = internals.root();

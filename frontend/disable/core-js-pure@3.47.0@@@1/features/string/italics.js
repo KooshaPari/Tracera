@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/italics');
+"use strict";
+module.exports = require("../../full/string/italics");

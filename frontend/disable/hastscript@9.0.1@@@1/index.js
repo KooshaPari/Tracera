@@ -4,4 +4,4 @@
  * @typedef {import('./lib/create-h.js').Result} Result
  */
 
-export {h, s} from './lib/index.js'
+export { h, s } from "./lib/index.js";

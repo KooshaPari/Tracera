@@ -1,4 +1,4 @@
-import type { NodeType } from '.';
+import type { NodeType } from ".";
 export declare const Tag: NodeType;
 export declare const ExternalDocs: NodeType;
 export declare const ServerMap: NodeType;

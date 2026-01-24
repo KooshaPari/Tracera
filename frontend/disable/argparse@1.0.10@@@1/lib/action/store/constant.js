@@ -8,25 +8,26 @@
  *
  * This class inherited from [[Action]]
  **/
-'use strict';
 
-var util = require('util');
+var util = require("util");
 
-var Action = require('../../action');
+var Action = require("../../action");
 
 /*:nodoc:*
  * new ActionStoreConstant(options)
  * - options (object): options hash see [[Action.new]]
  *
  **/
-var ActionStoreConstant = module.exports = function ActionStoreConstant(options) {
-  options = options || {};
-  options.nargs = 0;
-  if (typeof options.constant === 'undefined') {
-    throw new Error('constant option is required for storeAction');
-  }
-  Action.call(this, options);
-};
+var ActionStoreConstant = (module.exports = function ActionStoreConstant(
+	options,
+) {
+	options = options || {};
+	options.nargs = 0;
+	if (typeof options.constant === "undefined") {
+		throw new Error("constant option is required for storeAction");
+	}
+	Action.call(this, options);
+});
 util.inherits(ActionStoreConstant, Action);
 
 /*:nodoc:*
@@ -39,5 +40,5 @@ util.inherits(ActionStoreConstant, Action);
  * Call the action. Save result in namespace object
  **/
 ActionStoreConstant.prototype.call = function (parser, namespace) {
-  namespace.set(this.dest, this.constant);
+	namespace.set(this.dest, this.constant);
 };

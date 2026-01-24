@@ -1,4 +1,4 @@
-var LodashWrapper = require('./_LodashWrapper');
+var LodashWrapper = require("./_LodashWrapper");
 
 /**
  * Executes the chain sequence and returns the wrapped result.
@@ -27,7 +27,7 @@ var LodashWrapper = require('./_LodashWrapper');
  * // => [1, 2, 3]
  */
 function wrapperCommit() {
-  return new LodashWrapper(this.value(), this.__chain__);
+	return new LodashWrapper(this.value(), this.__chain__);
 }
 
 module.exports = wrapperCommit;

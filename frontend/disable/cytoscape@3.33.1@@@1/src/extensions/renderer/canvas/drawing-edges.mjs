@@ -1,431 +1,509 @@
 /* global Path2D */
 
-import * as util from '../../../util/index.mjs';
-import {drawPreparedRoundCorner} from "../../../round.mjs";
+import { drawPreparedRoundCorner } from "../../../round.mjs";
+import * as util from "../../../util/index.mjs";
 
-let CRp = {};
+const CRp = {};
 
-CRp.drawEdge = function( context, edge, shiftToOriginWithBb, drawLabel = true, shouldDrawOverlay = true, shouldDrawOpacity = true ){
-  let r = this;
-  let rs = edge._private.rscratch;
+CRp.drawEdge = function (
+	context,
+	edge,
+	shiftToOriginWithBb,
+	drawLabel = true,
+	shouldDrawOverlay = true,
+	shouldDrawOpacity = true,
+) {
+	const rs = edge._private.rscratch;
 
-  if( shouldDrawOpacity && !edge.visible() ){ return; }
+	if (shouldDrawOpacity && !edge.visible()) {
+		return;
+	}
 
-  // if bezier ctrl pts can not be calculated, then die
-  if( rs.badLine || rs.allpts == null || isNaN(rs.allpts[0]) ){ // isNaN in case edge is impossible and browser bugs (e.g. safari)
-    return;
-  }
+	// if bezier ctrl pts can not be calculated, then die
+	if (rs.badLine || rs.allpts == null || isNaN(rs.allpts[0])) {
+		// isNaN in case edge is impossible and browser bugs (e.g. safari)
+		return;
+	}
 
-  let bb;
-  if( shiftToOriginWithBb ){
-    bb = shiftToOriginWithBb;
+	let bb;
+	if (shiftToOriginWithBb) {
+		bb = shiftToOriginWithBb;
 
-    context.translate( -bb.x1, -bb.y1 );
-  }
+		context.translate(-bb.x1, -bb.y1);
+	}
 
-  let opacity = shouldDrawOpacity ? edge.pstyle('opacity').value : 1;
-  let lineOpacity = shouldDrawOpacity ? edge.pstyle('line-opacity').value : 1;
-  
-  let curveStyle = edge.pstyle('curve-style').value;
-  let lineStyle = edge.pstyle('line-style').value;
-  let edgeWidth = edge.pstyle('width').pfValue;
-  let lineCap = edge.pstyle('line-cap').value;
-  let lineOutlineWidth = edge.pstyle('line-outline-width').value;
-  let lineOutlineColor = edge.pstyle('line-outline-color').value;
-  
-  let effectiveLineOpacity = opacity * lineOpacity;
-  // separate arrow opacity would require arrow-opacity property
-  let effectiveArrowOpacity = opacity * lineOpacity;
+	const opacity = shouldDrawOpacity ? edge.pstyle("opacity").value : 1;
+	const lineOpacity = shouldDrawOpacity ? edge.pstyle("line-opacity").value : 1;
 
-  let drawLine = ( strokeOpacity = effectiveLineOpacity) => {
-    if (curveStyle === 'straight-triangle') {
-      r.eleStrokeStyle( context, edge, strokeOpacity );
-      r.drawEdgeTrianglePath(
-        edge,
-        context,
-        rs.allpts
-      );
-    } else {
-      context.lineWidth = edgeWidth;
-      context.lineCap = lineCap;
-  
-      r.eleStrokeStyle( context, edge, strokeOpacity );
-      r.drawEdgePath(
-        edge,
-        context,
-        rs.allpts,
-        lineStyle
-      );
-  
-      context.lineCap = 'butt'; // reset for other drawing functions
-    }
-  };
+	const curveStyle = edge.pstyle("curve-style").value;
+	const lineStyle = edge.pstyle("line-style").value;
+	const edgeWidth = edge.pstyle("width").pfValue;
+	const lineCap = edge.pstyle("line-cap").value;
+	const lineOutlineWidth = edge.pstyle("line-outline-width").value;
+	const lineOutlineColor = edge.pstyle("line-outline-color").value;
 
-  let drawLineOutline = ( strokeOpacity = effectiveLineOpacity) => {
-    context.lineWidth = edgeWidth + lineOutlineWidth;
-    context.lineCap = lineCap;
+	const effectiveLineOpacity = opacity * lineOpacity;
+	// separate arrow opacity would require arrow-opacity property
+	const effectiveArrowOpacity = opacity * lineOpacity;
 
-    if (lineOutlineWidth > 0) {
-      r.colorStrokeStyle( context, lineOutlineColor[0], lineOutlineColor[1], lineOutlineColor[2], strokeOpacity );
-    } else {
-      // do not draw any lineOutline
-      context.lineCap = 'butt'; // reset for other drawing functions
-      return;
-    }
+	const drawLine = (strokeOpacity = effectiveLineOpacity) => {
+		if (curveStyle === "straight-triangle") {
+			this.eleStrokeStyle(context, edge, strokeOpacity);
+			this.drawEdgeTrianglePath(edge, context, rs.allpts);
+		} else {
+			context.lineWidth = edgeWidth;
+			context.lineCap = lineCap;
 
-    if (curveStyle === 'straight-triangle') {
-      r.drawEdgeTrianglePath(
-        edge,
-        context,
-        rs.allpts
-      );
-    } else { 
-      r.drawEdgePath(
-        edge,
-        context,
-        rs.allpts,
-        lineStyle
-      );
-  
-      context.lineCap = 'butt'; // reset for other drawing functions
-    }
-  };
+			this.eleStrokeStyle(context, edge, strokeOpacity);
+			this.drawEdgePath(edge, context, rs.allpts, lineStyle);
 
-  let drawOverlay = () => {
-    if( !shouldDrawOverlay ){ return; }
+			context.lineCap = "butt"; // reset for other drawing functions
+		}
+	};
 
-    r.drawEdgeOverlay( context, edge );
-  };
+	const drawLineOutline = (strokeOpacity = effectiveLineOpacity) => {
+		context.lineWidth = edgeWidth + lineOutlineWidth;
+		context.lineCap = lineCap;
 
-  let drawUnderlay = () => {
-    if( !shouldDrawOverlay ){ return; }
+		if (lineOutlineWidth > 0) {
+			this.colorStrokeStyle(
+				context,
+				lineOutlineColor[0],
+				lineOutlineColor[1],
+				lineOutlineColor[2],
+				strokeOpacity,
+			);
+		} else {
+			// do not draw any lineOutline
+			context.lineCap = "butt"; // reset for other drawing functions
+			return;
+		}
 
-    r.drawEdgeUnderlay( context, edge );
-  };
+		if (curveStyle === "straight-triangle") {
+			this.drawEdgeTrianglePath(edge, context, rs.allpts);
+		} else {
+			this.drawEdgePath(edge, context, rs.allpts, lineStyle);
 
-  let drawArrows = ( arrowOpacity = effectiveArrowOpacity) => {
-    r.drawArrowheads( context, edge, arrowOpacity );
-  };
+			context.lineCap = "butt"; // reset for other drawing functions
+		}
+	};
 
-  let drawText = () => {
-    r.drawElementText( context, edge, null, drawLabel );
-  };
+	const drawOverlay = () => {
+		if (!shouldDrawOverlay) {
+			return;
+		}
 
-  context.lineJoin = 'round';
+		this.drawEdgeOverlay(context, edge);
+	};
 
-  let ghost = edge.pstyle('ghost').value === 'yes';
+	const drawUnderlay = () => {
+		if (!shouldDrawOverlay) {
+			return;
+		}
 
-  if( ghost ){
-    let gx = edge.pstyle('ghost-offset-x').pfValue;
-    let gy = edge.pstyle('ghost-offset-y').pfValue;
-    let ghostOpacity = edge.pstyle('ghost-opacity').value;
-    let effectiveGhostOpacity = effectiveLineOpacity * ghostOpacity;
+		this.drawEdgeUnderlay(context, edge);
+	};
 
-    context.translate( gx, gy );
+	const drawArrows = (arrowOpacity = effectiveArrowOpacity) => {
+		this.drawArrowheads(context, edge, arrowOpacity);
+	};
 
-    drawLine( effectiveGhostOpacity );
-    drawArrows( effectiveGhostOpacity );
+	const drawText = () => {
+		this.drawElementText(context, edge, null, drawLabel);
+	};
 
-    context.translate( -gx, -gy );
-  } else {
-    drawLineOutline();
-  }
+	context.lineJoin = "round";
 
-  drawUnderlay();
-  drawLine();
-  drawArrows();
-  drawOverlay();
-  drawText();
+	const ghost = edge.pstyle("ghost").value === "yes";
 
-  if( shiftToOriginWithBb ){
-    context.translate( bb.x1, bb.y1 );
-  }
+	if (ghost) {
+		const gx = edge.pstyle("ghost-offset-x").pfValue;
+		const gy = edge.pstyle("ghost-offset-y").pfValue;
+		const ghostOpacity = edge.pstyle("ghost-opacity").value;
+		const effectiveGhostOpacity = effectiveLineOpacity * ghostOpacity;
+
+		context.translate(gx, gy);
+
+		drawLine(effectiveGhostOpacity);
+		drawArrows(effectiveGhostOpacity);
+
+		context.translate(-gx, -gy);
+	} else {
+		drawLineOutline();
+	}
+
+	drawUnderlay();
+	drawLine();
+	drawArrows();
+	drawOverlay();
+	drawText();
+
+	if (shiftToOriginWithBb) {
+		context.translate(bb.x1, bb.y1);
+	}
 };
 
-const drawEdgeOverlayUnderlay = function( overlayOrUnderlay ) {
-  if (!['overlay', 'underlay'].includes(overlayOrUnderlay)) {
-    throw new Error('Invalid state');
-  }
+const drawEdgeOverlayUnderlay = (overlayOrUnderlay) => {
+	if (!["overlay", "underlay"].includes(overlayOrUnderlay)) {
+		throw new Error("Invalid state");
+	}
 
-  return function( context, edge ){
-    if( !edge.visible() ){ return; }
-  
-    let opacity = edge.pstyle(`${overlayOrUnderlay}-opacity`).value;
-  
-    if( opacity === 0 ){ return; }
-  
-    let r = this;
-    let usePaths = r.usePaths();
-    let rs = edge._private.rscratch;
-  
-    let padding = edge.pstyle(`${overlayOrUnderlay}-padding`).pfValue;
-    let width = 2 * padding;
-    let color = edge.pstyle(`${overlayOrUnderlay}-color`).value;
-  
-    context.lineWidth = width;
-  
-    if( rs.edgeType === 'self' && !usePaths ){
-      context.lineCap = 'butt';
-    } else {
-      context.lineCap = 'round';
-    }
-  
-    r.colorStrokeStyle( context, color[0], color[1], color[2], opacity );
-  
-    r.drawEdgePath(
-      edge,
-      context,
-      rs.allpts,
-      'solid'
-    );
-  };
+	return function (context, edge) {
+		if (!edge.visible()) {
+			return;
+		}
+
+		const opacity = edge.pstyle(`${overlayOrUnderlay}-opacity`).value;
+
+		if (opacity === 0) {
+			return;
+		}
+		const usePaths = this.usePaths();
+		const rs = edge._private.rscratch;
+
+		const padding = edge.pstyle(`${overlayOrUnderlay}-padding`).pfValue;
+		const width = 2 * padding;
+		const color = edge.pstyle(`${overlayOrUnderlay}-color`).value;
+
+		context.lineWidth = width;
+
+		if (rs.edgeType === "self" && !usePaths) {
+			context.lineCap = "butt";
+		} else {
+			context.lineCap = "round";
+		}
+
+		this.colorStrokeStyle(context, color[0], color[1], color[2], opacity);
+
+		this.drawEdgePath(edge, context, rs.allpts, "solid");
+	};
 };
 
-CRp.drawEdgeOverlay = drawEdgeOverlayUnderlay('overlay');
+CRp.drawEdgeOverlay = drawEdgeOverlayUnderlay("overlay");
 
-CRp.drawEdgeUnderlay = drawEdgeOverlayUnderlay('underlay');
+CRp.drawEdgeUnderlay = drawEdgeOverlayUnderlay("underlay");
 
+CRp.drawEdgePath = function (edge, context, pts, type) {
+	const rs = edge._private.rscratch;
+	const canvasCxt = context;
+	let path;
+	let pathCacheHit = false;
+	const usePaths = this.usePaths();
+	const lineDashPattern = edge.pstyle("line-dash-pattern").pfValue;
+	const lineDashOffset = edge.pstyle("line-dash-offset").pfValue;
 
-CRp.drawEdgePath = function( edge, context, pts, type ){
-  let rs = edge._private.rscratch;
-  let canvasCxt = context;
-  let path;
-  let pathCacheHit = false;
-  let usePaths = this.usePaths();
-  let lineDashPattern = edge.pstyle('line-dash-pattern').pfValue;
-  let lineDashOffset = edge.pstyle('line-dash-offset').pfValue;
+	if (usePaths) {
+		const pathCacheKey = pts.join("$");
+		const keyMatches = rs.pathCacheKey && rs.pathCacheKey === pathCacheKey;
 
-  if( usePaths ){
-    let pathCacheKey = pts.join( '$' );
-    let keyMatches = rs.pathCacheKey && rs.pathCacheKey === pathCacheKey;
+		if (keyMatches) {
+			path = context = rs.pathCache;
+			pathCacheHit = true;
+		} else {
+			path = context = new Path2D();
+			rs.pathCacheKey = pathCacheKey;
+			rs.pathCache = path;
+		}
+	}
 
-    if( keyMatches ){
-      path = context = rs.pathCache;
-      pathCacheHit = true;
-    } else {
-      path = context = new Path2D();
-      rs.pathCacheKey = pathCacheKey;
-      rs.pathCache = path;
-    }
-  }
+	if (canvasCxt.setLineDash) {
+		// for very outofdate browsers
+		switch (type) {
+			case "dotted":
+				canvasCxt.setLineDash([1, 1]);
+				break;
 
-  if( canvasCxt.setLineDash ){ // for very outofdate browsers
-    switch( type ){
-      case 'dotted':
-        canvasCxt.setLineDash( [ 1, 1 ] );
-        break;
+			case "dashed":
+				canvasCxt.setLineDash(lineDashPattern);
+				canvasCxt.lineDashOffset = lineDashOffset;
+				break;
 
-      case 'dashed':
-        canvasCxt.setLineDash( lineDashPattern );
-        canvasCxt.lineDashOffset = lineDashOffset;
-        break;
+			case "solid":
+				canvasCxt.setLineDash([]);
+				break;
+		}
+	}
 
-      case 'solid':
-        canvasCxt.setLineDash( [ ] );
-        break;
-    }
-  }
+	if (!pathCacheHit && !rs.badLine) {
+		if (context.beginPath) {
+			context.beginPath();
+		}
+		context.moveTo(pts[0], pts[1]);
 
-  if( !pathCacheHit && !rs.badLine ){
-    if( context.beginPath ){ context.beginPath(); }
-    context.moveTo( pts[0], pts[1] );
+		switch (rs.edgeType) {
+			case "bezier":
+			case "self":
+			case "compound":
+			case "multibezier":
+				for (let i = 2; i + 3 < pts.length; i += 4) {
+					context.quadraticCurveTo(pts[i], pts[i + 1], pts[i + 2], pts[i + 3]);
+				}
+				break;
 
-    switch( rs.edgeType ){
-      case 'bezier':
-      case 'self':
-      case 'compound':
-      case 'multibezier':
-        for( let i = 2; i + 3 < pts.length; i += 4 ){
-          context.quadraticCurveTo( pts[ i ], pts[ i + 1], pts[ i + 2], pts[ i + 3] );
-        }
-        break;
+			case "straight":
+			case "haystack":
+				for (let i = 2; i + 1 < pts.length; i += 2) {
+					context.lineTo(pts[i], pts[i + 1]);
+				}
+				break;
+			case "segments":
+				if (rs.isRound) {
+					for (const corner of rs.roundCorners) {
+						drawPreparedRoundCorner(context, corner);
+					}
+					context.lineTo(pts[pts.length - 2], pts[pts.length - 1]);
+				} else {
+					for (let i = 2; i + 1 < pts.length; i += 2) {
+						context.lineTo(pts[i], pts[i + 1]);
+					}
+				}
+				break;
+		}
+	}
 
-      case 'straight':
-      case 'haystack':
-        for( let i = 2; i + 1 < pts.length; i += 2 ) {
-          context.lineTo( pts[ i ], pts[ i + 1] );
-        }
-        break;
-      case 'segments':
-        if (rs.isRound) {
-          for( let corner of rs.roundCorners ){
-            drawPreparedRoundCorner(context, corner);
-          }
-          context.lineTo( pts[ pts.length - 2 ], pts[ pts.length - 1] );
-        } else {
-          for( let i = 2; i + 1 < pts.length; i += 2 ) {
-            context.lineTo( pts[ i ], pts[ i + 1] );
-          }
-        }
-        break;
-    }
-  }
+	context = canvasCxt;
+	if (usePaths) {
+		context.stroke(path);
+	} else {
+		context.stroke();
+	}
 
-  context = canvasCxt;
-  if( usePaths ){
-    context.stroke( path );
-  } else {
-    context.stroke();
-  }
-
-  // reset any line dashes
-  if( context.setLineDash ){ // for very outofdate browsers
-    context.setLineDash( [ ] );
-  }
-
+	// reset any line dashes
+	if (context.setLineDash) {
+		// for very outofdate browsers
+		context.setLineDash([]);
+	}
 };
 
+CRp.drawEdgeTrianglePath = (edge, context, pts) => {
+	// use line stroke style for triangle fill style
+	context.fillStyle = context.strokeStyle;
 
-CRp.drawEdgeTrianglePath = function( edge, context, pts ){
-  // use line stroke style for triangle fill style
-  context.fillStyle = context.strokeStyle;
+	const edgeWidth = edge.pstyle("width").pfValue;
 
-  let edgeWidth = edge.pstyle('width').pfValue;
+	for (let i = 0; i + 1 < pts.length; i += 2) {
+		const vector = [pts[i + 2] - pts[i], pts[i + 3] - pts[i + 1]];
+		const length = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
+		const normal = [vector[1] / length, -vector[0] / length];
+		const triangleHead = [
+			(normal[0] * edgeWidth) / 2,
+			(normal[1] * edgeWidth) / 2,
+		];
 
-  for( let i = 0; i + 1 < pts.length; i += 2 ){
-    const vector = [ pts[ i + 2 ] - pts[ i ], pts[ i + 3 ] - pts[ i + 1 ] ];
-    const length = Math.sqrt( vector[0] * vector[0] + vector[1] * vector[1] );
-    const normal = [ vector[1] / length, -vector[0] / length ];
-    const triangleHead = [ normal[0] * edgeWidth / 2, normal[1] * edgeWidth / 2 ];
-
-    context.beginPath();
-    context.moveTo( pts[ i ] - triangleHead[0], pts[ i + 1 ] - triangleHead[1] );
-    context.lineTo( pts[ i ] + triangleHead[0], pts[ i + 1 ] + triangleHead[1] );
-    context.lineTo( pts[ i + 2 ], pts[ i + 3 ] );
-    context.closePath();
-    context.fill();
-  }
+		context.beginPath();
+		context.moveTo(pts[i] - triangleHead[0], pts[i + 1] - triangleHead[1]);
+		context.lineTo(pts[i] + triangleHead[0], pts[i + 1] + triangleHead[1]);
+		context.lineTo(pts[i + 2], pts[i + 3]);
+		context.closePath();
+		context.fill();
+	}
 };
 
-CRp.drawArrowheads = function( context, edge, opacity ){
-  let rs = edge._private.rscratch;
-  let isHaystack = rs.edgeType === 'haystack';
+CRp.drawArrowheads = function (context, edge, opacity) {
+	const rs = edge._private.rscratch;
+	const isHaystack = rs.edgeType === "haystack";
 
-  if( !isHaystack ){
-    this.drawArrowhead( context, edge, 'source', rs.arrowStartX, rs.arrowStartY, rs.srcArrowAngle, opacity );
-  }
+	if (!isHaystack) {
+		this.drawArrowhead(
+			context,
+			edge,
+			"source",
+			rs.arrowStartX,
+			rs.arrowStartY,
+			rs.srcArrowAngle,
+			opacity,
+		);
+	}
 
-  this.drawArrowhead( context, edge, 'mid-target', rs.midX, rs.midY, rs.midtgtArrowAngle, opacity );
+	this.drawArrowhead(
+		context,
+		edge,
+		"mid-target",
+		rs.midX,
+		rs.midY,
+		rs.midtgtArrowAngle,
+		opacity,
+	);
 
-  this.drawArrowhead( context, edge, 'mid-source', rs.midX, rs.midY, rs.midsrcArrowAngle, opacity );
+	this.drawArrowhead(
+		context,
+		edge,
+		"mid-source",
+		rs.midX,
+		rs.midY,
+		rs.midsrcArrowAngle,
+		opacity,
+	);
 
-  if( !isHaystack ){
-    this.drawArrowhead( context, edge, 'target', rs.arrowEndX, rs.arrowEndY, rs.tgtArrowAngle, opacity );
-  }
+	if (!isHaystack) {
+		this.drawArrowhead(
+			context,
+			edge,
+			"target",
+			rs.arrowEndX,
+			rs.arrowEndY,
+			rs.tgtArrowAngle,
+			opacity,
+		);
+	}
 };
 
-CRp.drawArrowhead = function( context, edge, prefix, x, y, angle, opacity ){
-  if( isNaN( x ) || x == null || isNaN( y ) || y == null || isNaN( angle ) || angle == null ){ return; }
+CRp.drawArrowhead = function (context, edge, prefix, x, y, angle, opacity) {
+	if (
+		isNaN(x) ||
+		x == null ||
+		isNaN(y) ||
+		y == null ||
+		isNaN(angle) ||
+		angle == null
+	) {
+		return;
+	}
+	const arrowShape = edge.pstyle(prefix + "-arrow-shape").value;
+	if (arrowShape === "none") {
+		return;
+	}
 
-  let self = this;
-  let arrowShape = edge.pstyle( prefix + '-arrow-shape' ).value;
-  if( arrowShape === 'none' ) { return; }
+	const arrowClearFill =
+		edge.pstyle(prefix + "-arrow-fill").value === "hollow" ? "both" : "filled";
+	const arrowFill = edge.pstyle(prefix + "-arrow-fill").value;
+	const edgeWidth = edge.pstyle("width").pfValue;
 
-  let arrowClearFill = edge.pstyle( prefix + '-arrow-fill' ).value === 'hollow' ? 'both' : 'filled';
-  let arrowFill = edge.pstyle( prefix + '-arrow-fill' ).value;
-  let edgeWidth = edge.pstyle( 'width' ).pfValue;
+	const pArrowWidth = edge.pstyle(prefix + "-arrow-width");
+	let arrowWidth =
+		pArrowWidth.value === "match-line" ? edgeWidth : pArrowWidth.pfValue;
+	if (pArrowWidth.units === "%") arrowWidth *= edgeWidth;
 
-  let pArrowWidth = edge.pstyle( prefix + '-arrow-width' );
-  let arrowWidth = pArrowWidth.value === 'match-line' ? edgeWidth : pArrowWidth.pfValue;
-  if (pArrowWidth.units === '%') arrowWidth *= edgeWidth;
+	const edgeOpacity = edge.pstyle("opacity").value;
 
-  let edgeOpacity = edge.pstyle( 'opacity' ).value;
+	if (opacity === undefined) {
+		opacity = edgeOpacity;
+	}
 
-  if( opacity === undefined ){
-    opacity = edgeOpacity;
-  }
+	const gco = context.globalCompositeOperation;
 
-  let gco = context.globalCompositeOperation;
+	if (opacity !== 1 || arrowFill === "hollow") {
+		// then extra clear is needed
+		context.globalCompositeOperation = "destination-out";
 
-  if( opacity !== 1 || arrowFill === 'hollow' ){ // then extra clear is needed
-    context.globalCompositeOperation = 'destination-out';
+		this.colorFillStyle(context, 255, 255, 255, 1);
+		this.colorStrokeStyle(context, 255, 255, 255, 1);
 
-    self.colorFillStyle( context, 255, 255, 255, 1 );
-    self.colorStrokeStyle( context, 255, 255, 255, 1 );
+		this.drawArrowShape(
+			edge,
+			context,
+			arrowClearFill,
+			edgeWidth,
+			arrowShape,
+			arrowWidth,
+			x,
+			y,
+			angle,
+		);
 
-    self.drawArrowShape( edge, context,
-      arrowClearFill, edgeWidth, arrowShape, arrowWidth, x, y, angle
-    );
+		context.globalCompositeOperation = gco;
+	} // otherwise, the opaque arrow clears it for free :)
 
-    context.globalCompositeOperation = gco;
-  } // otherwise, the opaque arrow clears it for free :)
+	const color = edge.pstyle(prefix + "-arrow-color").value;
+	this.colorFillStyle(context, color[0], color[1], color[2], opacity);
+	this.colorStrokeStyle(context, color[0], color[1], color[2], opacity);
 
-  let color = edge.pstyle( prefix + '-arrow-color' ).value;
-  self.colorFillStyle( context, color[0], color[1], color[2], opacity );
-  self.colorStrokeStyle( context, color[0], color[1], color[2], opacity );
-
-  self.drawArrowShape( edge, context,
-    arrowFill, edgeWidth, arrowShape, arrowWidth, x, y, angle
-  );
+	this.drawArrowShape(
+		edge,
+		context,
+		arrowFill,
+		edgeWidth,
+		arrowShape,
+		arrowWidth,
+		x,
+		y,
+		angle,
+	);
 };
 
-CRp.drawArrowShape = function( edge, context, fill, edgeWidth, shape, shapeWidth, x, y, angle ){
-  let r = this;
-  let usePaths = this.usePaths() && shape !== 'triangle-cross';
-  let pathCacheHit = false;
-  let path;
-  let canvasContext = context;
-  let translation = { x, y };
-  let scale = edge.pstyle( 'arrow-scale' ).value;
-  let size = this.getArrowWidth( edgeWidth, scale );
-  let shapeImpl = r.arrowShapes[ shape ];
+CRp.drawArrowShape = function (
+	edge,
+	context,
+	fill,
+	edgeWidth,
+	shape,
+	shapeWidth,
+	x,
+	y,
+	angle,
+) {
+	const usePaths = this.usePaths() && shape !== "triangle-cross";
+	let pathCacheHit = false;
+	let path;
+	const canvasContext = context;
+	const translation = { x, y };
+	const scale = edge.pstyle("arrow-scale").value;
+	const size = this.getArrowWidth(edgeWidth, scale);
+	const shapeImpl = this.arrowShapes[shape];
 
-  if( usePaths ){
-    let cache = r.arrowPathCache = r.arrowPathCache || [];
-    let key = util.hashString(shape);
-    let cachedPath = cache[ key ];
+	if (usePaths) {
+		const cache = (this.arrowPathCache = this.arrowPathCache || []);
+		const key = util.hashString(shape);
+		const cachedPath = cache[key];
 
-    if( cachedPath != null ){
-      path = context = cachedPath;
-      pathCacheHit = true;
-    } else {
-      path = context = new Path2D();
-      cache[ key ] = path;
-    }
-  }
+		if (cachedPath != null) {
+			path = context = cachedPath;
+			pathCacheHit = true;
+		} else {
+			path = context = new Path2D();
+			cache[key] = path;
+		}
+	}
 
-  if( !pathCacheHit ){
-    if( context.beginPath ){ context.beginPath(); }
-    if( usePaths ){ // store in the path cache with values easily manipulated later
-      shapeImpl.draw( context, 1, 0, { x: 0, y: 0 }, 1 );
-    } else {
-      shapeImpl.draw( context, size, angle, translation, edgeWidth );
-    }
-    if( context.closePath ){ context.closePath(); }
-  }
+	if (!pathCacheHit) {
+		if (context.beginPath) {
+			context.beginPath();
+		}
+		if (usePaths) {
+			// store in the path cache with values easily manipulated later
+			shapeImpl.draw(context, 1, 0, { x: 0, y: 0 }, 1);
+		} else {
+			shapeImpl.draw(context, size, angle, translation, edgeWidth);
+		}
+		if (context.closePath) {
+			context.closePath();
+		}
+	}
 
-  context = canvasContext;
+	context = canvasContext;
 
-  if( usePaths ){ // set transform to arrow position/orientation
-    context.translate( x, y );
-    context.rotate( angle );
-    context.scale( size, size );
-  }
+	if (usePaths) {
+		// set transform to arrow position/orientation
+		context.translate(x, y);
+		context.rotate(angle);
+		context.scale(size, size);
+	}
 
-  if( fill === 'filled' || fill === 'both' ){
-    if( usePaths ){
-      context.fill( path );
-    } else {
-      context.fill();
-    }
-  }
+	if (fill === "filled" || fill === "both") {
+		if (usePaths) {
+			context.fill(path);
+		} else {
+			context.fill();
+		}
+	}
 
-  if( fill === 'hollow' || fill === 'both' ){
-    context.lineWidth = shapeWidth / (usePaths ? size : 1);
-    context.lineJoin = 'miter';
+	if (fill === "hollow" || fill === "both") {
+		context.lineWidth = shapeWidth / (usePaths ? size : 1);
+		context.lineJoin = "miter";
 
-    if( usePaths ){
-      context.stroke( path );
-    } else {
-      context.stroke();
-    }
-  }
+		if (usePaths) {
+			context.stroke(path);
+		} else {
+			context.stroke();
+		}
+	}
 
-  if( usePaths ){ // reset transform by applying inverse
-    context.scale( 1/size, 1/size );
-    context.rotate( -angle );
-    context.translate( -x, -y );
-  }
+	if (usePaths) {
+		// reset transform by applying inverse
+		context.scale(1 / size, 1 / size);
+		context.rotate(-angle);
+		context.translate(-x, -y);
+	}
 };
 
 export default CRp;

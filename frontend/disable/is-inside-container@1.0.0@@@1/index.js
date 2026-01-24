@@ -1,12 +1,12 @@
-import fs from 'node:fs';
-import isDocker from 'is-docker';
+import fs from "node:fs";
+import isDocker from "is-docker";
 
 let cachedResult;
 
 // Podman detection
 const hasContainerEnv = () => {
 	try {
-		fs.statSync('/run/.containerenv');
+		fs.statSync("/run/.containerenv");
 		return true;
 	} catch {
 		return false;

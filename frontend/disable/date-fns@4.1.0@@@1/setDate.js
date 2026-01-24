@@ -27,9 +27,9 @@ import { toDate } from "./toDate.js";
  * //=> Tue Sep 30 2014 00:00:00
  */
 export function setDate(date, dayOfMonth, options) {
-  const _date = toDate(date, options?.in);
-  _date.setDate(dayOfMonth);
-  return _date;
+	const _date = toDate(date, options?.in);
+	_date.setDate(dayOfMonth);
+	return _date;
 }
 
 // Fallback for modularized imports:

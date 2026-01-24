@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.object.proto');
+"use strict";
+require("../../modules/es.object.proto");

@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = reflectAll;
 
-var _reflect = require('./reflect.js');
+var _reflect = require("./reflect.js");
 
 var _reflect2 = _interopRequireDefault(_reflect);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * A helper function that wraps an array or an object of functions with `reflect`.
@@ -79,15 +79,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function reflectAll(tasks) {
-    var results;
-    if (Array.isArray(tasks)) {
-        results = tasks.map(_reflect2.default);
-    } else {
-        results = {};
-        Object.keys(tasks).forEach(key => {
-            results[key] = _reflect2.default.call(this, tasks[key]);
-        });
-    }
-    return results;
+	var results;
+	if (Array.isArray(tasks)) {
+		results = tasks.map(_reflect2.default);
+	} else {
+		results = {};
+		Object.keys(tasks).forEach((key) => {
+			results[key] = _reflect2.default.call(this, tasks[key]);
+		});
+	}
+	return results;
 }
 module.exports = exports.default;

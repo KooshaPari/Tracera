@@ -1,0 +1,189 @@
+---
+title: "Query Optimization"
+description: "Advanced techniques for optimizing database queries"
+keywords: [optimization, queries, performance, database, sqlalchemy]
+---
+
+# Query Optimization
+
+Advanced techniques for optimizing database queries in TraceRTM.
+
+## Performance Analysis
+
+### Query Timing
+
+```python
+import time
+from sqlalchemy import event
+
+@event.listens_for(Engine, "before_cursor_execute")
+def receive_before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault('query_start_time', []).append(time.time())
+
+@event.listens_for(Engine, "after_cursor_execute")
+def receive_after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    total = time.time() - conn.info['query_start_time'].pop(-1)
+    if total > 0.1:  # Log slow queries
+        logger.warning(f"Slow query ({total:.2f}s): {statement}")
+```
+
+## Indexing Strategy
+
+### Composite Indexes
+
+```python
+# Create composite index for common query patterns
+CREATE INDEX idx_items_project_status_view 
+ON items(project_id, status, view);
+
+# Query uses index
+SELECT * FROM items 
+WHERE project_id = 'proj_123' 
+  AND status = 'active' 
+  AND view = 'requirements';
+```
+
+### Partial Indexes
+
+```python
+# Index only active items
+CREATE INDEX idx_items_active 
+ON items(project_id, created_at) 
+WHERE status = 'active';
+```
+
+## Query Patterns
+
+### Avoid SELECT *
+
+```python
+# Bad - selects all columns
+stmt = select(Item)
+
+# Good - select only needed columns
+stmt = select(Item.id, Item.title, Item.status)
+```
+
+### Use EXISTS Instead of COUNT
+
+```python
+# Bad - counts all rows
+count = await session.scalar(
+    select(func.count(Item.id)).where(Item.project_id == project_id)
+)
+
+# Good - stops at first match
+exists = await session.scalar(
+    select(1).where(
+        select(Item.id).where(Item.project_id == project_id).exists()
+    )
+)
+```
+
+### Limit Early
+
+```python
+# Bad - processes all, then limits
+items = await session.execute(select(Item))
+return items.scalars().all()[:10]
+
+# Good - database limits
+stmt = select(Item).limit(10)
+items = await session.execute(stmt)
+return items.scalars().all()
+```
+
+## Eager Loading
+
+### Selectinload
+
+```python
+from sqlalchemy.orm import selectinload
+
+# Load related items efficiently
+stmt = (
+    select(Item)
+    .options(selectinload(Item.links))
+    .where(Item.project_id == project_id)
+)
+```
+
+### Joinedload
+
+```python
+from sqlalchemy.orm import joinedload
+
+# Join related data
+stmt = (
+    select(Item)
+    .options(joinedload(Item.project))
+    .where(Item.id == item_id)
+)
+```
+
+## Materialized Views
+
+### Create Materialized View
+
+```sql
+CREATE MATERIALIZED VIEW item_statistics AS
+SELECT 
+    project_id,
+    view,
+    status,
+    COUNT(*) as count
+FROM items
+GROUP BY project_id, view, status;
+
+CREATE UNIQUE INDEX ON item_statistics(project_id, view, status);
+```
+
+### Refresh View
+
+```python
+async def refresh_statistics(session: AsyncSession):
+    """Refresh materialized view."""
+    await session.execute(text("REFRESH MATERIALIZED VIEW item_statistics"))
+    await session.commit()
+```
+
+## Connection Pooling
+
+### Configure Pool
+
+```python
+from sqlalchemy import create_engine
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=10,
+    pool_pre_ping=True,
+    pool_recycle=3600
+)
+```
+
+## Query Caching
+
+### Cache Results
+
+```python
+from functools import lru_cache
+import hashlib
+
+def cache_key(*args, **kwargs):
+    """Generate cache key from arguments."""
+    key_str = f"{args}{kwargs}"
+    return hashlib.md5(key_str.encode()).hexdigest()
+
+@lru_cache(maxsize=100)
+async def get_cached_items(project_id: str, status: str):
+    """Get items with caching."""
+    # Query database
+    pass
+```
+
+## Related Documentation
+
+- [Database Queries](./03-database-queries) - Query basics
+- [Caching](./06-caching) - Caching strategies

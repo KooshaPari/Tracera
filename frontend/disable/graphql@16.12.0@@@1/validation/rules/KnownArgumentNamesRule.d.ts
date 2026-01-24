@@ -1,8 +1,8 @@
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from "../../language/visitor";
 import type {
-  SDLValidationContext,
-  ValidationContext,
-} from '../ValidationContext';
+	SDLValidationContext,
+	ValidationContext,
+} from "../ValidationContext";
 /**
  * Known argument names
  *
@@ -13,11 +13,11 @@ import type {
  * See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
  */
 export declare function KnownArgumentNamesRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;
 /**
  * @internal
  */
 export declare function KnownArgumentNamesOnDirectivesRule(
-  context: ValidationContext | SDLValidationContext,
+	context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

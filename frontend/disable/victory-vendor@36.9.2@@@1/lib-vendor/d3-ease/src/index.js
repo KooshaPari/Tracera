@@ -1,229 +1,229 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 Object.defineProperty(exports, "easeBack", {
-  enumerable: true,
-  get: function () {
-    return _back.backInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _back.backInOut;
+	},
 });
 Object.defineProperty(exports, "easeBackIn", {
-  enumerable: true,
-  get: function () {
-    return _back.backIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _back.backIn;
+	},
 });
 Object.defineProperty(exports, "easeBackInOut", {
-  enumerable: true,
-  get: function () {
-    return _back.backInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _back.backInOut;
+	},
 });
 Object.defineProperty(exports, "easeBackOut", {
-  enumerable: true,
-  get: function () {
-    return _back.backOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _back.backOut;
+	},
 });
 Object.defineProperty(exports, "easeBounce", {
-  enumerable: true,
-  get: function () {
-    return _bounce.bounceOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _bounce.bounceOut;
+	},
 });
 Object.defineProperty(exports, "easeBounceIn", {
-  enumerable: true,
-  get: function () {
-    return _bounce.bounceIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _bounce.bounceIn;
+	},
 });
 Object.defineProperty(exports, "easeBounceInOut", {
-  enumerable: true,
-  get: function () {
-    return _bounce.bounceInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _bounce.bounceInOut;
+	},
 });
 Object.defineProperty(exports, "easeBounceOut", {
-  enumerable: true,
-  get: function () {
-    return _bounce.bounceOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _bounce.bounceOut;
+	},
 });
 Object.defineProperty(exports, "easeCircle", {
-  enumerable: true,
-  get: function () {
-    return _circle.circleInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _circle.circleInOut;
+	},
 });
 Object.defineProperty(exports, "easeCircleIn", {
-  enumerable: true,
-  get: function () {
-    return _circle.circleIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _circle.circleIn;
+	},
 });
 Object.defineProperty(exports, "easeCircleInOut", {
-  enumerable: true,
-  get: function () {
-    return _circle.circleInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _circle.circleInOut;
+	},
 });
 Object.defineProperty(exports, "easeCircleOut", {
-  enumerable: true,
-  get: function () {
-    return _circle.circleOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _circle.circleOut;
+	},
 });
 Object.defineProperty(exports, "easeCubic", {
-  enumerable: true,
-  get: function () {
-    return _cubic.cubicInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _cubic.cubicInOut;
+	},
 });
 Object.defineProperty(exports, "easeCubicIn", {
-  enumerable: true,
-  get: function () {
-    return _cubic.cubicIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _cubic.cubicIn;
+	},
 });
 Object.defineProperty(exports, "easeCubicInOut", {
-  enumerable: true,
-  get: function () {
-    return _cubic.cubicInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _cubic.cubicInOut;
+	},
 });
 Object.defineProperty(exports, "easeCubicOut", {
-  enumerable: true,
-  get: function () {
-    return _cubic.cubicOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _cubic.cubicOut;
+	},
 });
 Object.defineProperty(exports, "easeElastic", {
-  enumerable: true,
-  get: function () {
-    return _elastic.elasticOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _elastic.elasticOut;
+	},
 });
 Object.defineProperty(exports, "easeElasticIn", {
-  enumerable: true,
-  get: function () {
-    return _elastic.elasticIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _elastic.elasticIn;
+	},
 });
 Object.defineProperty(exports, "easeElasticInOut", {
-  enumerable: true,
-  get: function () {
-    return _elastic.elasticInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _elastic.elasticInOut;
+	},
 });
 Object.defineProperty(exports, "easeElasticOut", {
-  enumerable: true,
-  get: function () {
-    return _elastic.elasticOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _elastic.elasticOut;
+	},
 });
 Object.defineProperty(exports, "easeExp", {
-  enumerable: true,
-  get: function () {
-    return _exp.expInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _exp.expInOut;
+	},
 });
 Object.defineProperty(exports, "easeExpIn", {
-  enumerable: true,
-  get: function () {
-    return _exp.expIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _exp.expIn;
+	},
 });
 Object.defineProperty(exports, "easeExpInOut", {
-  enumerable: true,
-  get: function () {
-    return _exp.expInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _exp.expInOut;
+	},
 });
 Object.defineProperty(exports, "easeExpOut", {
-  enumerable: true,
-  get: function () {
-    return _exp.expOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _exp.expOut;
+	},
 });
 Object.defineProperty(exports, "easeLinear", {
-  enumerable: true,
-  get: function () {
-    return _linear.linear;
-  }
+	enumerable: true,
+	get: function () {
+		return _linear.linear;
+	},
 });
 Object.defineProperty(exports, "easePoly", {
-  enumerable: true,
-  get: function () {
-    return _poly.polyInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _poly.polyInOut;
+	},
 });
 Object.defineProperty(exports, "easePolyIn", {
-  enumerable: true,
-  get: function () {
-    return _poly.polyIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _poly.polyIn;
+	},
 });
 Object.defineProperty(exports, "easePolyInOut", {
-  enumerable: true,
-  get: function () {
-    return _poly.polyInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _poly.polyInOut;
+	},
 });
 Object.defineProperty(exports, "easePolyOut", {
-  enumerable: true,
-  get: function () {
-    return _poly.polyOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _poly.polyOut;
+	},
 });
 Object.defineProperty(exports, "easeQuad", {
-  enumerable: true,
-  get: function () {
-    return _quad.quadInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _quad.quadInOut;
+	},
 });
 Object.defineProperty(exports, "easeQuadIn", {
-  enumerable: true,
-  get: function () {
-    return _quad.quadIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _quad.quadIn;
+	},
 });
 Object.defineProperty(exports, "easeQuadInOut", {
-  enumerable: true,
-  get: function () {
-    return _quad.quadInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _quad.quadInOut;
+	},
 });
 Object.defineProperty(exports, "easeQuadOut", {
-  enumerable: true,
-  get: function () {
-    return _quad.quadOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _quad.quadOut;
+	},
 });
 Object.defineProperty(exports, "easeSin", {
-  enumerable: true,
-  get: function () {
-    return _sin.sinInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _sin.sinInOut;
+	},
 });
 Object.defineProperty(exports, "easeSinIn", {
-  enumerable: true,
-  get: function () {
-    return _sin.sinIn;
-  }
+	enumerable: true,
+	get: function () {
+		return _sin.sinIn;
+	},
 });
 Object.defineProperty(exports, "easeSinInOut", {
-  enumerable: true,
-  get: function () {
-    return _sin.sinInOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _sin.sinInOut;
+	},
 });
 Object.defineProperty(exports, "easeSinOut", {
-  enumerable: true,
-  get: function () {
-    return _sin.sinOut;
-  }
+	enumerable: true,
+	get: function () {
+		return _sin.sinOut;
+	},
 });
 
 var _linear = require("./linear.js");

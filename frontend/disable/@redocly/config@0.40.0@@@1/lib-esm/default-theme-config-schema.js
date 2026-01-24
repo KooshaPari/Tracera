@@ -1,50 +1,72 @@
-import { graphqlConfigSchema } from './graphql-config-schema';
-import { feedbackConfigSchema } from './feedback-config-schema';
-import { logoConfigSchema, analyticsConfigSchema, breadcrumbsConfigSchema, catalogsConfigSchema, codeSnippetConfigSchema, colorModeConfigSchema, footerConfigSchema, linksConfigSchema, markdownConfigSchema, navbarConfigSchema, navigationConfigSchema, openapiConfigSchema, productsConfigSchema, scorecardConfigSchema, scriptsConfigSchema, searchConfigSchema, aiAssistantSchema, sidebarConfigSchema, userMenuConfigSchema, versionPickerConfigSchema, scorecardsConfigSchema, } from './ex-theme-config-schemas';
-import { entitiesCatalogConfigSchema } from './entities-catalog-config-schema';
+import { entitiesCatalogConfigSchema } from "./entities-catalog-config-schema";
+import {
+	aiAssistantSchema,
+	analyticsConfigSchema,
+	breadcrumbsConfigSchema,
+	catalogsConfigSchema,
+	codeSnippetConfigSchema,
+	colorModeConfigSchema,
+	footerConfigSchema,
+	linksConfigSchema,
+	logoConfigSchema,
+	markdownConfigSchema,
+	navbarConfigSchema,
+	navigationConfigSchema,
+	openapiConfigSchema,
+	productsConfigSchema,
+	scorecardConfigSchema,
+	scorecardsConfigSchema,
+	scriptsConfigSchema,
+	searchConfigSchema,
+	sidebarConfigSchema,
+	userMenuConfigSchema,
+	versionPickerConfigSchema,
+} from "./ex-theme-config-schemas";
+import { feedbackConfigSchema } from "./feedback-config-schema";
+import { graphqlConfigSchema } from "./graphql-config-schema";
 export const themeConfigSchema = {
-    type: 'object',
-    properties: {
-        /**
-         * @deprecated Should use `plugins` instead
-         */
-        imports: {
-            type: 'array',
-            items: { type: 'string' },
-        },
-        logo: logoConfigSchema,
-        navbar: navbarConfigSchema,
-        products: productsConfigSchema,
-        footer: footerConfigSchema,
-        sidebar: sidebarConfigSchema,
-        scripts: scriptsConfigSchema,
-        links: linksConfigSchema,
-        feedback: feedbackConfigSchema,
-        search: searchConfigSchema,
-        aiAssistant: aiAssistantSchema,
-        colorMode: colorModeConfigSchema,
-        navigation: navigationConfigSchema,
-        codeSnippet: codeSnippetConfigSchema,
-        markdown: markdownConfigSchema,
-        openapi: openapiConfigSchema,
-        graphql: graphqlConfigSchema,
-        analytics: analyticsConfigSchema,
-        userMenu: userMenuConfigSchema,
-        versionPicker: versionPickerConfigSchema,
-        breadcrumbs: breadcrumbsConfigSchema,
-        /**
-         * @deprecated Should use `catalogClassic` instead
-         */
-        catalog: catalogsConfigSchema,
-        entitiesCatalog: entitiesCatalogConfigSchema,
-        catalogClassic: catalogsConfigSchema,
-        /**
-         * @deprecated Should use `scorecardClassic` instead
-         */
-        scorecard: scorecardConfigSchema,
-        scorecards: scorecardsConfigSchema,
-        scorecardClassic: scorecardConfigSchema,
-    },
-    additionalProperties: true,
+	type: "object",
+	properties: {
+		/**
+		 * @deprecated Should use `plugins` instead
+		 */
+		imports: {
+			type: "array",
+			items: { type: "string" },
+		},
+		logo: logoConfigSchema,
+		navbar: navbarConfigSchema,
+		products: productsConfigSchema,
+		footer: footerConfigSchema,
+		sidebar: sidebarConfigSchema,
+		scripts: scriptsConfigSchema,
+		links: linksConfigSchema,
+		feedback: feedbackConfigSchema,
+		search: searchConfigSchema,
+		aiAssistant: aiAssistantSchema,
+		colorMode: colorModeConfigSchema,
+		navigation: navigationConfigSchema,
+		codeSnippet: codeSnippetConfigSchema,
+		markdown: markdownConfigSchema,
+		openapi: openapiConfigSchema,
+		graphql: graphqlConfigSchema,
+		analytics: analyticsConfigSchema,
+		userMenu: userMenuConfigSchema,
+		versionPicker: versionPickerConfigSchema,
+		breadcrumbs: breadcrumbsConfigSchema,
+		/**
+		 * @deprecated Should use `catalogClassic` instead
+		 */
+		catalog: catalogsConfigSchema,
+		entitiesCatalog: entitiesCatalogConfigSchema,
+		catalogClassic: catalogsConfigSchema,
+		/**
+		 * @deprecated Should use `scorecardClassic` instead
+		 */
+		scorecard: scorecardConfigSchema,
+		scorecards: scorecardsConfigSchema,
+		scorecardClassic: scorecardConfigSchema,
+	},
+	additionalProperties: true,
 };
 //# sourceMappingURL=default-theme-config-schema.js.map

@@ -1,33 +1,30 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = superset;
 
 function superset(values, other) {
-  const iterator = values[Symbol.iterator](),
-        set = new Set();
+	const iterator = values[Symbol.iterator](),
+		set = new Set();
 
-  for (const o of other) {
-    const io = intern(o);
-    if (set.has(io)) continue;
-    let value, done;
+	for (const o of other) {
+		const io = intern(o);
+		if (set.has(io)) continue;
+		let value, done;
 
-    while (({
-      value,
-      done
-    } = iterator.next())) {
-      if (done) return false;
-      const ivalue = intern(value);
-      set.add(ivalue);
-      if (Object.is(io, ivalue)) break;
-    }
-  }
+		while (({ value, done } = iterator.next())) {
+			if (done) return false;
+			const ivalue = intern(value);
+			set.add(ivalue);
+			if (Object.is(io, ivalue)) break;
+		}
+	}
 
-  return true;
+	return true;
 }
 
 function intern(value) {
-  return value !== null && typeof value === "object" ? value.valueOf() : value;
+	return value !== null && typeof value === "object" ? value.valueOf() : value;
 }

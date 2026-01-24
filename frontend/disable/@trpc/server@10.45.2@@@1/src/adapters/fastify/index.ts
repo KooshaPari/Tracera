@@ -1,2 +1,2 @@
-export * from './fastifyRequestHandler';
-export * from './fastifyTRPCPlugin';
+export * from "./fastifyRequestHandler";
+export * from "./fastifyTRPCPlugin";

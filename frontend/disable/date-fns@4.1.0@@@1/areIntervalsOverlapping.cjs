@@ -54,17 +54,17 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function areIntervalsOverlapping(intervalLeft, intervalRight, options) {
-  const [leftStartTime, leftEndTime] = [
-    +(0, _index.toDate)(intervalLeft.start, options?.in),
-    +(0, _index.toDate)(intervalLeft.end, options?.in),
-  ].sort((a, b) => a - b);
-  const [rightStartTime, rightEndTime] = [
-    +(0, _index.toDate)(intervalRight.start, options?.in),
-    +(0, _index.toDate)(intervalRight.end, options?.in),
-  ].sort((a, b) => a - b);
+	const [leftStartTime, leftEndTime] = [
+		+(0, _index.toDate)(intervalLeft.start, options?.in),
+		+(0, _index.toDate)(intervalLeft.end, options?.in),
+	].sort((a, b) => a - b);
+	const [rightStartTime, rightEndTime] = [
+		+(0, _index.toDate)(intervalRight.start, options?.in),
+		+(0, _index.toDate)(intervalRight.end, options?.in),
+	].sort((a, b) => a - b);
 
-  if (options?.inclusive)
-    return leftStartTime <= rightEndTime && rightStartTime <= leftEndTime;
+	if (options?.inclusive)
+		return leftStartTime <= rightEndTime && rightStartTime <= leftEndTime;
 
-  return leftStartTime < rightEndTime && rightStartTime < leftEndTime;
+	return leftStartTime < rightEndTime && rightStartTime < leftEndTime;
 }

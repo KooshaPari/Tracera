@@ -24,5 +24,5 @@ var _index = require("./addSeconds.cjs");
  * //=> Thu Jul 10 2014 12:44:30
  */
 function subSeconds(date, amount, options) {
-  return (0, _index.addSeconds)(date, -amount, options);
+	return (0, _index.addSeconds)(date, -amount, options);
 }

@@ -1,1 +1,4 @@
-export declare function stripTrailingSeparators(segment: string, isSep: (char: number) => boolean): string;
+export declare function stripTrailingSeparators(
+	segment: string,
+	isSep: (char: number) => boolean,
+): string;

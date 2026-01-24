@@ -1,6 +1,4 @@
-'use strict';
-
-import utils from '../utils.js';
+import utils from "../utils.js";
 
 /**
  * It takes a string like `foo[x][y][z]` and returns an array like `['foo', 'x', 'y', 'z']
@@ -10,13 +8,13 @@ import utils from '../utils.js';
  * @returns An array of strings.
  */
 function parsePropPath(name) {
-  // foo[x][y][z]
-  // foo.x.y.z
-  // foo-x-y-z
-  // foo x y z
-  return utils.matchAll(/\w+|\[(\w*)]/g, name).map(match => {
-    return match[0] === '[]' ? '' : match[1] || match[0];
-  });
+	// foo[x][y][z]
+	// foo.x.y.z
+	// foo-x-y-z
+	// foo x y z
+	return utils.matchAll(/\w+|\[(\w*)]/g, name).map((match) => {
+		return match[0] === "[]" ? "" : match[1] || match[0];
+	});
 }
 
 /**
@@ -27,16 +25,16 @@ function parsePropPath(name) {
  * @returns An object with the same keys and values as the array.
  */
 function arrayToObject(arr) {
-  const obj = {};
-  const keys = Object.keys(arr);
-  let i;
-  const len = keys.length;
-  let key;
-  for (i = 0; i < len; i++) {
-    key = keys[i];
-    obj[key] = arr[key];
-  }
-  return obj;
+	const obj = {};
+	const keys = Object.keys(arr);
+	let i;
+	const len = keys.length;
+	let key;
+	for (i = 0; i < len; i++) {
+		key = keys[i];
+		obj[key] = arr[key];
+	}
+	return obj;
 }
 
 /**
@@ -47,49 +45,49 @@ function arrayToObject(arr) {
  * @returns {Object<string, any> | null} The converted object.
  */
 function formDataToJSON(formData) {
-  function buildPath(path, value, target, index) {
-    let name = path[index++];
+	function buildPath(path, value, target, index) {
+		let name = path[index++];
 
-    if (name === '__proto__') return true;
+		if (name === "__proto__") return true;
 
-    const isNumericKey = Number.isFinite(+name);
-    const isLast = index >= path.length;
-    name = !name && utils.isArray(target) ? target.length : name;
+		const isNumericKey = Number.isFinite(+name);
+		const isLast = index >= path.length;
+		name = !name && utils.isArray(target) ? target.length : name;
 
-    if (isLast) {
-      if (utils.hasOwnProp(target, name)) {
-        target[name] = [target[name], value];
-      } else {
-        target[name] = value;
-      }
+		if (isLast) {
+			if (utils.hasOwnProp(target, name)) {
+				target[name] = [target[name], value];
+			} else {
+				target[name] = value;
+			}
 
-      return !isNumericKey;
-    }
+			return !isNumericKey;
+		}
 
-    if (!target[name] || !utils.isObject(target[name])) {
-      target[name] = [];
-    }
+		if (!target[name] || !utils.isObject(target[name])) {
+			target[name] = [];
+		}
 
-    const result = buildPath(path, value, target[name], index);
+		const result = buildPath(path, value, target[name], index);
 
-    if (result && utils.isArray(target[name])) {
-      target[name] = arrayToObject(target[name]);
-    }
+		if (result && utils.isArray(target[name])) {
+			target[name] = arrayToObject(target[name]);
+		}
 
-    return !isNumericKey;
-  }
+		return !isNumericKey;
+	}
 
-  if (utils.isFormData(formData) && utils.isFunction(formData.entries)) {
-    const obj = {};
+	if (utils.isFormData(formData) && utils.isFunction(formData.entries)) {
+		const obj = {};
 
-    utils.forEachEntry(formData, (name, value) => {
-      buildPath(parsePropPath(name), value, obj, 0);
-    });
+		utils.forEachEntry(formData, (name, value) => {
+			buildPath(parsePropPath(name), value, obj, 0);
+		});
 
-    return obj;
-  }
+		return obj;
+	}
 
-  return null;
+	return null;
 }
 
 export default formDataToJSON;

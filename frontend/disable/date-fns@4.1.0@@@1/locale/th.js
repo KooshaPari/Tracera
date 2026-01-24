@@ -14,16 +14,16 @@ import { match } from "./th/_lib/match.js";
  * @author  Jirawat I. [@nodtem66](https://github.com/nodtem66)
  */
 export const th = {
-  code: "th",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "th",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

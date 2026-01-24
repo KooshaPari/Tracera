@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link differenceInCalendarISOWeeks} function options.
  */
 export interface DifferenceInCalendarISOWeeksOptions
-  extends ContextOptions<Date> {}
+	extends ContextOptions<Date> {}
 /**
  * @name differenceInCalendarISOWeeks
  * @category ISO Week Helpers
@@ -29,7 +29,7 @@ export interface DifferenceInCalendarISOWeeksOptions
  * //=> 3
  */
 export declare function differenceInCalendarISOWeeks(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInCalendarISOWeeksOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInCalendarISOWeeksOptions | undefined,
 ): number;

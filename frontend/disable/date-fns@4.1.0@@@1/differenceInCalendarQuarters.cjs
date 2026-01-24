@@ -30,15 +30,15 @@ var _index2 = require("./getQuarter.cjs");
  * //=> 3
  */
 function differenceInCalendarQuarters(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
-  const quartersDiff =
-    (0, _index2.getQuarter)(laterDate_) - (0, _index2.getQuarter)(earlierDate_);
+	const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
+	const quartersDiff =
+		(0, _index2.getQuarter)(laterDate_) - (0, _index2.getQuarter)(earlierDate_);
 
-  return yearsDiff * 4 + quartersDiff;
+	return yearsDiff * 4 + quartersDiff;
 }

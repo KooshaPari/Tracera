@@ -1,9 +1,9 @@
-var baseRepeat = require('./_baseRepeat'),
-    baseToString = require('./_baseToString'),
-    castSlice = require('./_castSlice'),
-    hasUnicode = require('./_hasUnicode'),
-    stringSize = require('./_stringSize'),
-    stringToArray = require('./_stringToArray');
+var baseRepeat = require("./_baseRepeat"),
+	baseToString = require("./_baseToString"),
+	castSlice = require("./_castSlice"),
+	hasUnicode = require("./_hasUnicode"),
+	stringSize = require("./_stringSize"),
+	stringToArray = require("./_stringToArray");
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeCeil = Math.ceil;
@@ -18,16 +18,16 @@ var nativeCeil = Math.ceil;
  * @returns {string} Returns the padding for `string`.
  */
 function createPadding(length, chars) {
-  chars = chars === undefined ? ' ' : baseToString(chars);
+	chars = chars === undefined ? " " : baseToString(chars);
 
-  var charsLength = chars.length;
-  if (charsLength < 2) {
-    return charsLength ? baseRepeat(chars, length) : chars;
-  }
-  var result = baseRepeat(chars, nativeCeil(length / stringSize(chars)));
-  return hasUnicode(chars)
-    ? castSlice(stringToArray(result), 0, length).join('')
-    : result.slice(0, length);
+	var charsLength = chars.length;
+	if (charsLength < 2) {
+		return charsLength ? baseRepeat(chars, length) : chars;
+	}
+	var result = baseRepeat(chars, nativeCeil(length / stringSize(chars)));
+	return hasUnicode(chars)
+		? castSlice(stringToArray(result), 0, length).join("")
+		: result.slice(0, length);
 }
 
 module.exports = createPadding;

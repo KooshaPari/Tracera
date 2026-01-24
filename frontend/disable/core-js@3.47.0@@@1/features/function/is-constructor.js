@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/function/is-constructor');
+"use strict";
+module.exports = require("../../full/function/is-constructor");

@@ -32,13 +32,13 @@ var _index2 = require("./getISOWeekYear.cjs");
  * //=> 2
  */
 function differenceInCalendarISOWeekYears(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    (0, _index2.getISOWeekYear)(laterDate_, options) -
-    (0, _index2.getISOWeekYear)(earlierDate_, options)
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		(0, _index2.getISOWeekYear)(laterDate_, options) -
+		(0, _index2.getISOWeekYear)(earlierDate_, options)
+	);
 }

@@ -7,7 +7,10 @@ import { DomSerializerOptions } from "dom-serializer";
  * @param options Options for serialization.
  * @returns `node`'s outer HTML.
  */
-export declare function getOuterHTML(node: AnyNode | ArrayLike<AnyNode>, options?: DomSerializerOptions): string;
+export declare function getOuterHTML(
+	node: AnyNode | ArrayLike<AnyNode>,
+	options?: DomSerializerOptions,
+): string;
 /**
  * @category Stringify
  * @deprecated Use the `dom-serializer` module directly.
@@ -15,7 +18,10 @@ export declare function getOuterHTML(node: AnyNode | ArrayLike<AnyNode>, options
  * @param options Options for serialization.
  * @returns `node`'s inner HTML.
  */
-export declare function getInnerHTML(node: AnyNode, options?: DomSerializerOptions): string;
+export declare function getInnerHTML(
+	node: AnyNode,
+	options?: DomSerializerOptions,
+): string;
 /**
  * Get a node's inner text. Same as `textContent`, but inserts newlines for `<br>` tags. Ignores comments.
  *

@@ -23,9 +23,9 @@ import { daysInWeek } from "./constants.js";
  * //=> 1
  */
 export function daysToWeeks(days) {
-  const result = Math.trunc(days / daysInWeek);
-  // Prevent negative zero
-  return result === 0 ? 0 : result;
+	const result = Math.trunc(days / daysInWeek);
+	// Prevent negative zero
+	return result === 0 ? 0 : result;
 }
 
 // Fallback for modularized imports:

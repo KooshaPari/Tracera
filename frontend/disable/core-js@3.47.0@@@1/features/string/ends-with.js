@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/ends-with');
+"use strict";
+module.exports = require("../../full/string/ends-with");

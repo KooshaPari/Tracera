@@ -1,4 +1,4 @@
-const conversions = require('./conversions');
+const conversions = require("./conversions");
 
 /*
 	This function routes a model to all other models.
@@ -21,7 +21,7 @@ function buildGraph() {
 			// http://jsperf.com/1-vs-infinity
 			// micro-opt, but this is simple.
 			distance: -1,
-			parent: null
+			parent: null,
 		};
 	}
 
@@ -55,9 +55,7 @@ function deriveBFS(fromModel) {
 }
 
 function link(from, to) {
-	return function (args) {
-		return to(from(args));
-	};
+	return (args) => to(from(args));
 }
 
 function wrapConversion(toModel, graph) {
@@ -75,7 +73,7 @@ function wrapConversion(toModel, graph) {
 	return fn;
 }
 
-module.exports = function (fromModel) {
+module.exports = (fromModel) => {
 	const graph = deriveBFS(fromModel);
 	const conversion = {};
 
@@ -94,4 +92,3 @@ module.exports = function (fromModel) {
 
 	return conversion;
 };
-

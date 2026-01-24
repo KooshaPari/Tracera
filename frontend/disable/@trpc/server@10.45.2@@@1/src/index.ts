@@ -1,6 +1,6 @@
-export * from './transformer';
-export * from './error/TRPCError';
-export * from './types';
-export { router } from './deprecated/router';
-export * from './core';
-export * from './internals';
+export * from "./core";
+export { router } from "./deprecated/router";
+export * from "./error/TRPCError";
+export * from "./internals";
+export * from "./transformer";
+export * from "./types";

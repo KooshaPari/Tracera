@@ -8,4 +8,4 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @deprecated
  */
 class JsonPointerError extends _apidomError.ApiDOMStructuredError {}
-var _default = exports.default = JsonPointerError;
+var _default = (exports.default = JsonPointerError);

@@ -1,4 +1,4 @@
-var createRange = require('./_createRange');
+var createRange = require("./_createRange");
 
 /**
  * Creates an array of numbers (positive and/or negative) progressing from

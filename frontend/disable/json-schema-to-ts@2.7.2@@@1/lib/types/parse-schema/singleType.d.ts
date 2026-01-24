@@ -5,16 +5,33 @@ import type { ParseArraySchema, ArraySchema } from "./array";
 import type { ParseSchemaOptions } from "./index";
 import type { ParseObjectSchema, ObjectSchema } from "./object";
 export declare type SingleTypeSchema = JSONSchema7 & {
-    type: JSONSchema7TypeName;
+	type: JSONSchema7TypeName;
 };
-export declare type ParseSingleTypeSchema<S extends SingleTypeSchema, O extends ParseSchemaOptions> = S extends {
-    type: "null";
-} ? M.Primitive<null> : S extends {
-    type: "boolean";
-} ? M.Primitive<boolean> : S extends {
-    type: "integer";
-} ? M.Primitive<number> : S extends {
-    type: "number";
-} ? M.Primitive<number> : S extends {
-    type: "string";
-} ? M.Primitive<string> : S extends ArraySchema ? ParseArraySchema<S, O> : S extends ObjectSchema ? ParseObjectSchema<S, O> : M.Never;
+export declare type ParseSingleTypeSchema<
+	S extends SingleTypeSchema,
+	O extends ParseSchemaOptions,
+> = S extends {
+	type: "null";
+}
+	? M.Primitive<null>
+	: S extends {
+				type: "boolean";
+			}
+		? M.Primitive<boolean>
+		: S extends {
+					type: "integer";
+				}
+			? M.Primitive<number>
+			: S extends {
+						type: "number";
+					}
+				? M.Primitive<number>
+				: S extends {
+							type: "string";
+						}
+					? M.Primitive<string>
+					: S extends ArraySchema
+						? ParseArraySchema<S, O>
+						: S extends ObjectSchema
+							? ParseObjectSchema<S, O>
+							: M.Never;

@@ -3,21 +3,21 @@ import type { ContextOptions, Interval } from "./types.js";
  * The {@link eachWeekendOfInterval} function options.
  */
 export interface EachWeekendOfIntervalOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * The {@link eachWeekendOfInterval} function result type.
  */
 export type EachWeekendOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachWeekendOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachWeekendOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachWeekendOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachWeekendOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachWeekendOfInterval
@@ -49,9 +49,9 @@ export type EachWeekendOfIntervalResult<
  * // ]
  */
 export declare function eachWeekendOfInterval<
-  IntervalType extends Interval,
-  Options extends EachWeekendOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachWeekendOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachWeekendOfIntervalResult<IntervalType, Options>;

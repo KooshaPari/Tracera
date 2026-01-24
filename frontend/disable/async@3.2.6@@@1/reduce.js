@@ -1,26 +1,26 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _eachOfSeries = require('./eachOfSeries.js');
+var _eachOfSeries = require("./eachOfSeries.js");
 
 var _eachOfSeries2 = _interopRequireDefault(_eachOfSeries);
 
-var _once = require('./internal/once.js');
+var _once = require("./internal/once.js");
 
 var _once2 = _interopRequireDefault(_once);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Reduces `coll` into a single value using an async `iteratee` to return each
@@ -140,14 +140,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function reduce(coll, memo, iteratee, callback) {
-    callback = (0, _once2.default)(callback);
-    var _iteratee = (0, _wrapAsync2.default)(iteratee);
-    return (0, _eachOfSeries2.default)(coll, (x, i, iterCb) => {
-        _iteratee(memo, x, (err, v) => {
-            memo = v;
-            iterCb(err);
-        });
-    }, err => callback(err, memo));
+	callback = (0, _once2.default)(callback);
+	var _iteratee = (0, _wrapAsync2.default)(iteratee);
+	return (0, _eachOfSeries2.default)(
+		coll,
+		(x, i, iterCb) => {
+			_iteratee(memo, x, (err, v) => {
+				memo = v;
+				iterCb(err);
+			});
+		},
+		(err) => callback(err, memo),
+	);
 }
 exports.default = (0, _awaitify2.default)(reduce, 4);
 module.exports = exports.default;

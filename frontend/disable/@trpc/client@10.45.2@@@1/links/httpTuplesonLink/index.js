@@ -1,1 +1,1 @@
-module.exports = require('../../dist/links/httpTuplesonLink');
+module.exports = require("../../dist/links/httpTuplesonLink");

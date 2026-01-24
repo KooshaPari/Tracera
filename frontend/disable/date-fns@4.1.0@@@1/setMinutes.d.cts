@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setMinutes} function options.
  */
 export interface SetMinutesOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setMinutes
  * @category Minute Helpers
@@ -27,10 +27,10 @@ export interface SetMinutesOptions<DateType extends Date = Date>
  * //=> Mon Sep 01 2014 11:45:40
  */
 export declare function setMinutes<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  minutes: number,
-  options?: SetMinutesOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	minutes: number,
+	options?: SetMinutesOptions<ResultDate> | undefined,
 ): ResultDate;

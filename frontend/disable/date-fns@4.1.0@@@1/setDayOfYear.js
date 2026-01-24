@@ -27,10 +27,10 @@ import { toDate } from "./toDate.js";
  * //=> Thu Jan 02 2014 00:00:00
  */
 export function setDayOfYear(date, dayOfYear, options) {
-  const date_ = toDate(date, options?.in);
-  date_.setMonth(0);
-  date_.setDate(dayOfYear);
-  return date_;
+	const date_ = toDate(date, options?.in);
+	date_.setMonth(0);
+	date_.setDate(dayOfYear);
+	return date_;
 }
 
 // Fallback for modularized imports:

@@ -14,18 +14,18 @@ var _index = require("../toDate.cjs");
  * This function returns the timezone offset in milliseconds that takes seconds in account.
  */
 function getTimezoneOffsetInMilliseconds(date) {
-  const _date = (0, _index.toDate)(date);
-  const utcDate = new Date(
-    Date.UTC(
-      _date.getFullYear(),
-      _date.getMonth(),
-      _date.getDate(),
-      _date.getHours(),
-      _date.getMinutes(),
-      _date.getSeconds(),
-      _date.getMilliseconds(),
-    ),
-  );
-  utcDate.setUTCFullYear(_date.getFullYear());
-  return +date - +utcDate;
+	const _date = (0, _index.toDate)(date);
+	const utcDate = new Date(
+		Date.UTC(
+			_date.getFullYear(),
+			_date.getMonth(),
+			_date.getDate(),
+			_date.getHours(),
+			_date.getMinutes(),
+			_date.getSeconds(),
+			_date.getMilliseconds(),
+		),
+	);
+	utcDate.setUTCFullYear(_date.getFullYear());
+	return +date - +utcDate;
 }

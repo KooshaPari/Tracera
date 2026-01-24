@@ -1,9 +1,10 @@
 // @flow
 
-import Logger from '../Logger';
 import {
   createGlobalProxyAgent,
 } from '../factories';
+import Logger from '../Logger';
+
 import type {
   ProxyAgentConfigurationInputType,
 } from '../types';

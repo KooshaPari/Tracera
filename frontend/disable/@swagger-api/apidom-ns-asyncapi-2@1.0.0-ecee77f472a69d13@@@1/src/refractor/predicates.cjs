@@ -11,15 +11,18 @@ var _apidomCore = require("@swagger-api/apidom-core");
 /**
  * @public
  */
-const isReferenceLikeElement = element => {
-  return (0, _apidomCore.isObjectElement)(element) && element.hasKey('$ref');
+const isReferenceLikeElement = (element) => {
+	return (0, _apidomCore.isObjectElement)(element) && element.hasKey("$ref");
 };
 
 /**
  * @public
  */
 exports.isReferenceLikeElement = isReferenceLikeElement;
-const isAsyncApiExtension = element => {
-  return (0, _apidomCore.isStringElement)(element.key) && (0, _ramda.startsWith)('x-', (0, _apidomCore.toValue)(element.key));
+const isAsyncApiExtension = (element) => {
+	return (
+		(0, _apidomCore.isStringElement)(element.key) &&
+		(0, _ramda.startsWith)("x-", (0, _apidomCore.toValue)(element.key))
+	);
 };
 exports.isAsyncApiExtension = isAsyncApiExtension;

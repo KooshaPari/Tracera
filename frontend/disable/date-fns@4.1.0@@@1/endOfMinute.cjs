@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Mon Dec 01 2014 22:15:59.999
  */
 function endOfMinute(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setSeconds(59, 999);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setSeconds(59, 999);
+	return _date;
 }

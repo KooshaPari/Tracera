@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isTuesday(date, options) {
-  return toDate(date, options?.in).getDay() === 2;
+	return toDate(date, options?.in).getDay() === 2;
 }
 
 // Fallback for modularized imports:

@@ -7,9 +7,9 @@
  * @param {object} [metadata={}] - Metadata associated with this token.
  */
 lunr.Token = function (str, metadata) {
-  this.str = str || ""
-  this.metadata = metadata || {}
-}
+	this.str = str || "";
+	this.metadata = metadata || {};
+};
 
 /**
  * Returns the token string that is being wrapped by this object.
@@ -17,8 +17,8 @@ lunr.Token = function (str, metadata) {
  * @returns {string}
  */
 lunr.Token.prototype.toString = function () {
-  return this.str
-}
+	return this.str;
+};
 
 /**
  * A token update function is used when updating or optionally
@@ -41,9 +41,9 @@ lunr.Token.prototype.toString = function () {
  * @returns {lunr.Token}
  */
 lunr.Token.prototype.update = function (fn) {
-  this.str = fn(this.str, this.metadata)
-  return this
-}
+	this.str = fn(this.str, this.metadata);
+	return this;
+};
 
 /**
  * Creates a clone of this token. Optionally a function can be
@@ -53,6 +53,6 @@ lunr.Token.prototype.update = function (fn) {
  * @returns {lunr.Token}
  */
 lunr.Token.prototype.clone = function (fn) {
-  fn = fn || function (s) { return s }
-  return new lunr.Token (fn(this.str, this.metadata), this.metadata)
-}
+	fn = fn || ((s) => s);
+	return new lunr.Token(fn(this.str, this.metadata), this.metadata);
+};

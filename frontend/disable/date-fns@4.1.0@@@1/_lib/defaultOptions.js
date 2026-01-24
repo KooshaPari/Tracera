@@ -1,9 +1,9 @@
 let defaultOptions = {};
 
 export function getDefaultOptions() {
-  return defaultOptions;
+	return defaultOptions;
 }
 
 export function setDefaultOptions(newOptions) {
-  defaultOptions = newOptions;
+	defaultOptions = newOptions;
 }

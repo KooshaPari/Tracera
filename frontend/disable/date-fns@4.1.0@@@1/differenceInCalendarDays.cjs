@@ -41,26 +41,26 @@ var _index4 = require("./startOfDay.cjs");
  * //=> 1
  */
 function differenceInCalendarDays(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const laterStartOfDay = (0, _index4.startOfDay)(laterDate_);
-  const earlierStartOfDay = (0, _index4.startOfDay)(earlierDate_);
+	const laterStartOfDay = (0, _index4.startOfDay)(laterDate_);
+	const earlierStartOfDay = (0, _index4.startOfDay)(earlierDate_);
 
-  const laterTimestamp =
-    +laterStartOfDay -
-    (0, _index.getTimezoneOffsetInMilliseconds)(laterStartOfDay);
-  const earlierTimestamp =
-    +earlierStartOfDay -
-    (0, _index.getTimezoneOffsetInMilliseconds)(earlierStartOfDay);
+	const laterTimestamp =
+		+laterStartOfDay -
+		(0, _index.getTimezoneOffsetInMilliseconds)(laterStartOfDay);
+	const earlierTimestamp =
+		+earlierStartOfDay -
+		(0, _index.getTimezoneOffsetInMilliseconds)(earlierStartOfDay);
 
-  // Round the number of days to the nearest integer because the number of
-  // milliseconds in a day is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(
-    (laterTimestamp - earlierTimestamp) / _index3.millisecondsInDay,
-  );
+	// Round the number of days to the nearest integer because the number of
+	// milliseconds in a day is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round(
+		(laterTimestamp - earlierTimestamp) / _index3.millisecondsInDay,
+	);
 }

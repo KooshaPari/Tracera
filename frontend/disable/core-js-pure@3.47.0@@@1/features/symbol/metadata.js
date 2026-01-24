@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/symbol/metadata');
+"use strict";
+module.exports = require("../../full/symbol/metadata");

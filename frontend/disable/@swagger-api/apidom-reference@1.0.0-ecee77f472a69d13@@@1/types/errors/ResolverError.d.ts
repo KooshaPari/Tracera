@@ -1,7 +1,6 @@
-import ResolveError from './ResolveError.ts';
+import ResolveError from "./ResolveError.ts";
 /**
  * @public
  */
-declare class ResolverError extends ResolveError {
-}
+declare class ResolverError extends ResolveError {}
 export default ResolverError;

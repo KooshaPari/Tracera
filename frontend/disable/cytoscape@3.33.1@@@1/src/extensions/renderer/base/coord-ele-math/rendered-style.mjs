@@ -1,164 +1,182 @@
-let BRp = {};
+const BRp = {};
 
-BRp.registerCalculationListeners = function(){
-  let cy = this.cy;
-  let elesToUpdate = cy.collection();
-  let r = this;
+BRp.registerCalculationListeners = function () {
+	const cy = this.cy;
+	let elesToUpdate = cy.collection();
 
-  let enqueue = function( eles, dirtyStyleCaches = true ){
-    elesToUpdate.merge( eles );
+	const enqueue = (eles, dirtyStyleCaches = true) => {
+		elesToUpdate.merge(eles);
 
-    if( dirtyStyleCaches ){
-      for( let i = 0; i < eles.length; i++ ){
-        let ele = eles[i];
-        let _p = ele._private;
-        let rstyle = _p.rstyle;
+		if (dirtyStyleCaches) {
+			for (let i = 0; i < eles.length; i++) {
+				const ele = eles[i];
+				const _p = ele._private;
+				const rstyle = _p.rstyle;
 
-        rstyle.clean = false;
-        rstyle.cleanConnected = false;
-      }
-    }
-  };
+				rstyle.clean = false;
+				rstyle.cleanConnected = false;
+			}
+		}
+	};
 
-  r.binder( cy )
-    .on('bounds.* dirty.*', function onDirtyBounds( e ){
-      let ele = e.target;
+	this.binder(cy)
+		.on("bounds.* dirty.*", function onDirtyBounds(e) {
+			const ele = e.target;
 
-      enqueue( ele );
-    })
+			enqueue(ele);
+		})
 
-    .on('style.* background.*', function onDirtyStyle( e ){
-      let ele = e.target;
+		.on("style.* background.*", function onDirtyStyle(e) {
+			const ele = e.target;
 
-      enqueue( ele, false );
-    })
-  ;
+			enqueue(ele, false);
+		});
 
-  let updateEleCalcs = function( willDraw ){
-    if( willDraw ){
-      let fns = r.onUpdateEleCalcsFns;
+	const updateEleCalcs = (willDraw) => {
+		if (willDraw) {
+			const fns = this.onUpdateEleCalcsFns;
 
-      // because we need to have up-to-date style (e.g. stylesheet mappers)
-      // before calculating rendered style (and pstyle might not be called yet)
-      elesToUpdate.cleanStyle();
+			// because we need to have up-to-date style (e.g. stylesheet mappers)
+			// before calculating rendered style (and pstyle might not be called yet)
+			elesToUpdate.cleanStyle();
 
-      for( let i = 0; i < elesToUpdate.length; i++ ){
-        let ele = elesToUpdate[i];
-        let rstyle = ele._private.rstyle;
+			for (let i = 0; i < elesToUpdate.length; i++) {
+				const ele = elesToUpdate[i];
+				const rstyle = ele._private.rstyle;
 
-        if( ele.isNode() && !rstyle.cleanConnected ){
-          enqueue( ele.connectedEdges() );
+				if (ele.isNode() && !rstyle.cleanConnected) {
+					enqueue(ele.connectedEdges());
 
-          rstyle.cleanConnected = true;
-        }
-      }
+					rstyle.cleanConnected = true;
+				}
+			}
 
-      if( fns ){ for( let i = 0; i < fns.length; i++ ){
-        let fn = fns[i];
+			if (fns) {
+				for (let i = 0; i < fns.length; i++) {
+					const fn = fns[i];
 
-        fn( willDraw, elesToUpdate );
-      } }
+					fn(willDraw, elesToUpdate);
+				}
+			}
 
-      r.recalculateRenderedStyle( elesToUpdate );
+			this.recalculateRenderedStyle(elesToUpdate);
 
-      elesToUpdate = cy.collection();
-    }
-  };
+			elesToUpdate = cy.collection();
+		}
+	};
 
-  r.flushRenderedStyleQueue = function(){
-    updateEleCalcs(true);
-  };
+	this.flushRenderedStyleQueue = () => {
+		updateEleCalcs(true);
+	};
 
-  r.beforeRender( updateEleCalcs, r.beforeRenderPriorities.eleCalcs );
+	this.beforeRender(updateEleCalcs, this.beforeRenderPriorities.eleCalcs);
 };
 
-BRp.onUpdateEleCalcs = function( fn ){
-  let fns = this.onUpdateEleCalcsFns = this.onUpdateEleCalcsFns || [];
+BRp.onUpdateEleCalcs = function (fn) {
+	const fns = (this.onUpdateEleCalcsFns = this.onUpdateEleCalcsFns || []);
 
-  fns.push( fn );
+	fns.push(fn);
 };
 
-BRp.recalculateRenderedStyle = function( eles, useCache ){
-  let isCleanConnected = ele => ele._private.rstyle.cleanConnected;
+BRp.recalculateRenderedStyle = function (eles, useCache) {
+	const isCleanConnected = (ele) => ele._private.rstyle.cleanConnected;
 
-  if (eles.length === 0) { return; }
+	if (eles.length === 0) {
+		return;
+	}
 
-  let edges = [];
-  let nodes = [];
+	const edges = [];
+	const nodes = [];
 
-  // the renderer can't be used for calcs when destroyed, e.g. ele.boundingBox()
-  if( this.destroyed ){ return; }
+	// the renderer can't be used for calcs when destroyed, e.g. ele.boundingBox()
+	if (this.destroyed) {
+		return;
+	}
 
-  // use cache by default for perf
-  if( useCache === undefined ){ useCache = true; }
+	// use cache by default for perf
+	if (useCache === undefined) {
+		useCache = true;
+	}
 
-  for( let i = 0; i < eles.length; i++ ){
-    let ele = eles[ i ];
-    let _p = ele._private;
-    let rstyle = _p.rstyle;
+	for (let i = 0; i < eles.length; i++) {
+		const ele = eles[i];
+		const _p = ele._private;
+		const rstyle = _p.rstyle;
 
-    // an edge may be implicitly dirty b/c of one of its connected nodes
-    // (and a request for recalc may come in between frames)
-    if( ele.isEdge() && (!isCleanConnected(ele.source()) || !isCleanConnected(ele.target())) ){
-      rstyle.clean = false;
-    }
+		// an edge may be implicitly dirty b/c of one of its connected nodes
+		// (and a request for recalc may come in between frames)
+		if (
+			ele.isEdge() &&
+			(!isCleanConnected(ele.source()) || !isCleanConnected(ele.target()))
+		) {
+			rstyle.clean = false;
+		}
 
-    if (ele.isEdge() && ele.isBundledBezier()) {
-      if (ele.parallelEdges().some(ele => !ele._private.rstyle.clean && ele.isBundledBezier())) {
-        rstyle.clean = false;
-      }
-    }
+		if (ele.isEdge() && ele.isBundledBezier()) {
+			if (
+				ele
+					.parallelEdges()
+					.some((ele) => !ele._private.rstyle.clean && ele.isBundledBezier())
+			) {
+				rstyle.clean = false;
+			}
+		}
 
-    // only update if dirty and in graph
-    if( (useCache && rstyle.clean) || ele.removed() ){ continue; }
+		// only update if dirty and in graph
+		if ((useCache && rstyle.clean) || ele.removed()) {
+			continue;
+		}
 
-    // only update if not display: none
-    if( ele.pstyle('display').value === 'none' ){ continue; }
+		// only update if not display: none
+		if (ele.pstyle("display").value === "none") {
+			continue;
+		}
 
-    if( _p.group === 'nodes' ){
-      nodes.push( ele );
-    } else { // edges
-      edges.push( ele );
-    }
+		if (_p.group === "nodes") {
+			nodes.push(ele);
+		} else {
+			// edges
+			edges.push(ele);
+		}
 
-    rstyle.clean = true;
-  }
+		rstyle.clean = true;
+	}
 
-  // update node data from projections
-  for( let i = 0; i < nodes.length; i++ ){
-    let ele = nodes[i];
-    let _p = ele._private;
-    let rstyle = _p.rstyle;
-    let pos = ele.position();
+	// update node data from projections
+	for (let i = 0; i < nodes.length; i++) {
+		const ele = nodes[i];
+		const _p = ele._private;
+		const rstyle = _p.rstyle;
+		const pos = ele.position();
 
-    this.recalculateNodeLabelProjection( ele );
+		this.recalculateNodeLabelProjection(ele);
 
-    rstyle.nodeX = pos.x;
-    rstyle.nodeY = pos.y;
-    rstyle.nodeW = ele.pstyle( 'width' ).pfValue;
-    rstyle.nodeH = ele.pstyle( 'height' ).pfValue;
-  }
+		rstyle.nodeX = pos.x;
+		rstyle.nodeY = pos.y;
+		rstyle.nodeW = ele.pstyle("width").pfValue;
+		rstyle.nodeH = ele.pstyle("height").pfValue;
+	}
 
-  this.recalculateEdgeProjections( edges );
+	this.recalculateEdgeProjections(edges);
 
-  // update edge data from projections
-  for( let i = 0; i < edges.length; i++ ){
-    let ele = edges[ i ];
-    let _p = ele._private;
-    let rstyle = _p.rstyle;
-    let rs = _p.rscratch;
+	// update edge data from projections
+	for (let i = 0; i < edges.length; i++) {
+		const ele = edges[i];
+		const _p = ele._private;
+		const rstyle = _p.rstyle;
+		const rs = _p.rscratch;
 
-    // update rstyle positions
-    rstyle.srcX = rs.arrowStartX;
-    rstyle.srcY = rs.arrowStartY;
-    rstyle.tgtX = rs.arrowEndX;
-    rstyle.tgtY = rs.arrowEndY;
-    rstyle.midX = rs.midX;
-    rstyle.midY = rs.midY;
-    rstyle.labelAngle = rs.labelAngle;
-    rstyle.sourceLabelAngle = rs.sourceLabelAngle;
-    rstyle.targetLabelAngle = rs.targetLabelAngle;
-  }
+		// update rstyle positions
+		rstyle.srcX = rs.arrowStartX;
+		rstyle.srcY = rs.arrowStartY;
+		rstyle.tgtX = rs.arrowEndX;
+		rstyle.tgtY = rs.arrowEndY;
+		rstyle.midX = rs.midX;
+		rstyle.midY = rs.midY;
+		rstyle.labelAngle = rs.labelAngle;
+		rstyle.sourceLabelAngle = rs.sourceLabelAngle;
+		rstyle.targetLabelAngle = rs.targetLabelAngle;
+	}
 };
 
 export default BRp;

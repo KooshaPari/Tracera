@@ -1,4 +1,4 @@
-import { shallow } from './vanilla/shallow';
+import { shallow } from "./vanilla/shallow";
 /**
  * @deprecated Use `import { shallow } from 'zustand/shallow'`
  */

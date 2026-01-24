@@ -25,11 +25,11 @@ var _index = require("./toDate.cjs");
  * //=> 1940
  */
 function getDecade(date, options) {
-  // TODO: Switch to more technical definition in of decades that start with 1
-  // end with 0. I.e. 2001-2010 instead of current 2000-2009. It's a breaking
-  // change, so it can only be done in 4.0.
-  const _date = (0, _index.toDate)(date, options?.in);
-  const year = _date.getFullYear();
-  const decade = Math.floor(year / 10) * 10;
-  return decade;
+	// TODO: Switch to more technical definition in of decades that start with 1
+	// end with 0. I.e. 2001-2010 instead of current 2000-2009. It's a breaking
+	// change, so it can only be done in 4.0.
+	const _date = (0, _index.toDate)(date, options?.in);
+	const year = _date.getFullYear();
+	const decade = Math.floor(year / 10) * 10;
+	return decade;
 }

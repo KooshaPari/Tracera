@@ -1,5 +1,5 @@
-var castPath = require('./_castPath'),
-    toKey = require('./_toKey');
+var castPath = require("./_castPath"),
+	toKey = require("./_toKey");
 
 /**
  * The base implementation of `_.get` without support for default values.
@@ -10,15 +10,15 @@ var castPath = require('./_castPath'),
  * @returns {*} Returns the resolved value.
  */
 function baseGet(object, path) {
-  path = castPath(path, object);
+	path = castPath(path, object);
 
-  var index = 0,
-      length = path.length;
+	var index = 0,
+		length = path.length;
 
-  while (object != null && index < length) {
-    object = object[toKey(path[index++])];
-  }
-  return (index && index == length) ? object : undefined;
+	while (object != null && index < length) {
+		object = object[toKey(path[index++])];
+	}
+	return index && index == length ? object : undefined;
 }
 
 module.exports = baseGet;

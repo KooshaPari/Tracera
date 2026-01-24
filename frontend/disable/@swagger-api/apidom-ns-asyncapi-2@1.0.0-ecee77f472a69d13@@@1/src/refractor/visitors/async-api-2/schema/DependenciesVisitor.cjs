@@ -7,20 +7,26 @@ var _predicates = require("../../../../predicates.cjs");
 /**
  * @public
  */
-const JSONSchemaDependenciesVisitor = exports.JSONSchemaDependenciesVisitor = _apidomNsJsonSchemaDraft.specificationObj.visitors.document.objects.JSONSchema.fixedFields.dependencies;
+const JSONSchemaDependenciesVisitor = (exports.JSONSchemaDependenciesVisitor =
+	_apidomNsJsonSchemaDraft.specificationObj.visitors.document.objects.JSONSchema.fixedFields.dependencies);
 
 /**
  * @public
  */
 class DependenciesVisitor extends JSONSchemaDependenciesVisitor {
-  ObjectElement(objectElement) {
-    const result = JSONSchemaDependenciesVisitor.prototype.ObjectElement.call(this, objectElement);
+	ObjectElement(objectElement) {
+		const result = JSONSchemaDependenciesVisitor.prototype.ObjectElement.call(
+			this,
+			objectElement,
+		);
 
-    // @ts-ignore
-    this.element.filter(_predicates.isReferenceElement).forEach(referenceElement => {
-      referenceElement.setMetaProperty('referenced-element', 'schema');
-    });
-    return result;
-  }
+		// @ts-ignore
+		this.element
+			.filter(_predicates.isReferenceElement)
+			.forEach((referenceElement) => {
+				referenceElement.setMetaProperty("referenced-element", "schema");
+			});
+		return result;
+	}
 }
-var _default = exports.default = DependenciesVisitor;
+var _default = (exports.default = DependenciesVisitor);

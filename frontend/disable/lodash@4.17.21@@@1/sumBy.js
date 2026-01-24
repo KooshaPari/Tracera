@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    baseSum = require('./_baseSum');
+var baseIteratee = require("./_baseIteratee"),
+	baseSum = require("./_baseSum");
 
 /**
  * This method is like `_.sum` except that it accepts `iteratee` which is
@@ -25,9 +25,7 @@ var baseIteratee = require('./_baseIteratee'),
  * // => 20
  */
 function sumBy(array, iteratee) {
-  return (array && array.length)
-    ? baseSum(array, baseIteratee(iteratee, 2))
-    : 0;
+	return array && array.length ? baseSum(array, baseIteratee(iteratee, 2)) : 0;
 }
 
 module.exports = sumBy;

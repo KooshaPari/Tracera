@@ -1,1 +1,1 @@
-module.exports = require('../../dist/adapters/standalone');
+module.exports = require("../../dist/adapters/standalone");

@@ -15,14 +15,14 @@ var _index5 = require("./en-ZA/_lib/formatLong.cjs");
  * @author Shaila Kavrakova [@shaykav](https://github.com/shaykav)
  */
 const enZA = (exports.enZA = {
-  code: "en-ZA",
-  formatDistance: _index.formatDistance,
-  formatLong: _index5.formatLong,
-  formatRelative: _index2.formatRelative,
-  localize: _index3.localize,
-  match: _index4.match,
-  options: {
-    weekStartsOn: 0, // Sunday is the first day of the week.
-    firstWeekContainsDate: 1, // The week that contains Jan 1st is the first week of the year.
-  },
+	code: "en-ZA",
+	formatDistance: _index.formatDistance,
+	formatLong: _index5.formatLong,
+	formatRelative: _index2.formatRelative,
+	localize: _index3.localize,
+	match: _index4.match,
+	options: {
+		weekStartsOn: 0, // Sunday is the first day of the week.
+		firstWeekContainsDate: 1, // The week that contains Jan 1st is the first week of the year.
+	},
 });

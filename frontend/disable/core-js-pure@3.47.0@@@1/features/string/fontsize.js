@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/fontsize');
+"use strict";
+module.exports = require("../../full/string/fontsize");

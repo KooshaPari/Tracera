@@ -29,13 +29,13 @@ import { millisecondsInHour } from "./constants.js";
  * //=> 12
  */
 export function differenceInHours(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  const diff = (+laterDate_ - +earlierDate_) / millisecondsInHour;
-  return getRoundingMethod(options?.roundingMethod)(diff);
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	const diff = (+laterDate_ - +earlierDate_) / millisecondsInHour;
+	return getRoundingMethod(options?.roundingMethod)(diff);
 }
 
 // Fallback for modularized imports:

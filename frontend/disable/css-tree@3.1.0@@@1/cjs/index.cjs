@@ -1,37 +1,37 @@
-'use strict';
+"use strict";
 
-const index$1 = require('./syntax/index.cjs');
-const version = require('./version.cjs');
-const create = require('./syntax/create.cjs');
-const List = require('./utils/List.cjs');
-const Lexer = require('./lexer/Lexer.cjs');
-const index = require('./definition-syntax/index.cjs');
-const clone = require('./utils/clone.cjs');
-const names$1 = require('./utils/names.cjs');
-const ident = require('./utils/ident.cjs');
-const string = require('./utils/string.cjs');
-const url = require('./utils/url.cjs');
-const types = require('./tokenizer/types.cjs');
-const names = require('./tokenizer/names.cjs');
-const TokenStream = require('./tokenizer/TokenStream.cjs');
-const OffsetToLocation = require('./tokenizer/OffsetToLocation.cjs');
+const index$1 = require("./syntax/index.cjs");
+const version = require("./version.cjs");
+const create = require("./syntax/create.cjs");
+const List = require("./utils/List.cjs");
+const Lexer = require("./lexer/Lexer.cjs");
+const index = require("./definition-syntax/index.cjs");
+const clone = require("./utils/clone.cjs");
+const names$1 = require("./utils/names.cjs");
+const ident = require("./utils/ident.cjs");
+const string = require("./utils/string.cjs");
+const url = require("./utils/url.cjs");
+const types = require("./tokenizer/types.cjs");
+const names = require("./tokenizer/names.cjs");
+const TokenStream = require("./tokenizer/TokenStream.cjs");
+const OffsetToLocation = require("./tokenizer/OffsetToLocation.cjs");
 
 const {
-    tokenize,
-    parse,
-    generate,
-    lexer,
-    createLexer,
+	tokenize,
+	parse,
+	generate,
+	lexer,
+	createLexer,
 
-    walk,
-    find,
-    findLast,
-    findAll,
+	walk,
+	find,
+	findLast,
+	findAll,
 
-    toPlainObject,
-    fromPlainObject,
+	toPlainObject,
+	fromPlainObject,
 
-    fork
+	fork,
 } = index$1;
 
 exports.version = version.version;

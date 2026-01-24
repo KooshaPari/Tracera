@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/esnext.iterator.dispose');
+"use strict";
+require("../../modules/esnext.iterator.dispose");

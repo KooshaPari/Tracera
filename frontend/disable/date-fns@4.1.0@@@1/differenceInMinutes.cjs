@@ -39,8 +39,8 @@ var _index3 = require("./differenceInMilliseconds.cjs");
  * //=> -1
  */
 function differenceInMinutes(dateLeft, dateRight, options) {
-  const diff =
-    (0, _index3.differenceInMilliseconds)(dateLeft, dateRight) /
-    _index2.millisecondsInMinute;
-  return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
+	const diff =
+		(0, _index3.differenceInMilliseconds)(dateLeft, dateRight) /
+		_index2.millisecondsInMinute;
+	return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
 }

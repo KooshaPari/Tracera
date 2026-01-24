@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.function.name');
+"use strict";
+require("../../modules/es.function.name");

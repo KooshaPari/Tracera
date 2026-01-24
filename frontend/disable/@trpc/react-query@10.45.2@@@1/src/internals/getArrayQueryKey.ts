@@ -1,15 +1,15 @@
-import type { GetQueryProcedureInput } from './getQueryKey';
+import type { GetQueryProcedureInput } from "./getQueryKey";
 
-export type QueryType = 'any' | 'infinite' | 'query';
+export type QueryType = "any" | "infinite" | "query";
 
 export type QueryKey = [
-  string[],
-  { input?: unknown; type?: Exclude<QueryType, 'any'> }?,
+	string[],
+	{ input?: unknown; type?: Exclude<QueryType, "any"> }?,
 ];
 
-export type QueryKeyKnown<TInput, TType extends Exclude<QueryType, 'any'>> = [
-  string[],
-  { input?: GetQueryProcedureInput<TInput>; type: TType }?,
+export type QueryKeyKnown<TInput, TType extends Exclude<QueryType, "any">> = [
+	string[],
+	{ input?: GetQueryProcedureInput<TInput>; type: TType }?,
 ];
 
 /**
@@ -20,27 +20,27 @@ export type QueryKeyKnown<TInput, TType extends Exclude<QueryType, 'any'>> = [
  * https://github.com/trpc/trpc/issues/2611
  **/
 export function getArrayQueryKey(
-  queryKey: unknown[] | string | [string, ...unknown[]] | [string],
-  type: QueryType,
+	queryKey: unknown[] | string | [string, ...unknown[]] | [string],
+	type: QueryType,
 ): QueryKey {
-  const queryKeyArrayed = Array.isArray(queryKey) ? queryKey : [queryKey];
-  const [path, input] = queryKeyArrayed;
+	const queryKeyArrayed = Array.isArray(queryKey) ? queryKey : [queryKey];
+	const [path, input] = queryKeyArrayed;
 
-  const arrayPath =
-    typeof path !== 'string' || path === '' ? [] : path.split('.');
+	const arrayPath =
+		typeof path !== "string" || path === "" ? [] : path.split(".");
 
-  // Construct a query key that is easy to destructure and flexible for
-  // partial selecting etc.
-  // https://github.com/trpc/trpc/issues/3128
-  if (!input && (!type || type === 'any'))
-    // for `utils.invalidate()` to match all queries (including vanilla react-query)
-    // we don't want nested array if path is empty, i.e. `[]` instead of `[[]]`
-    return arrayPath.length ? [arrayPath] : ([] as unknown as QueryKey);
-  return [
-    arrayPath,
-    {
-      ...(typeof input !== 'undefined' && { input: input }),
-      ...(type && type !== 'any' && { type: type }),
-    },
-  ];
+	// Construct a query key that is easy to destructure and flexible for
+	// partial selecting etc.
+	// https://github.com/trpc/trpc/issues/3128
+	if (!input && (!type || type === "any"))
+		// for `utils.invalidate()` to match all queries (including vanilla react-query)
+		// we don't want nested array if path is empty, i.e. `[]` instead of `[[]]`
+		return arrayPath.length ? [arrayPath] : ([] as unknown as QueryKey);
+	return [
+		arrayPath,
+		{
+			...(typeof input !== "undefined" && { input: input }),
+			...(type && type !== "any" && { type: type }),
+		},
+	];
 }

@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = times;
 
-var _timesLimit = require('./timesLimit.js');
+var _timesLimit = require("./timesLimit.js");
 
 var _timesLimit2 = _interopRequireDefault(_timesLimit);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Calls the `iteratee` function `n` times, and accumulates results in the same
@@ -45,6 +45,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function times(n, iteratee, callback) {
-    return (0, _timesLimit2.default)(n, Infinity, iteratee, callback);
+	return (0, _timesLimit2.default)(n, Infinity, iteratee, callback);
 }
 module.exports = exports.default;

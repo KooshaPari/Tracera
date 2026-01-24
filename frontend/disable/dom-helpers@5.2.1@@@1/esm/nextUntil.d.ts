@@ -4,4 +4,7 @@
  * @param node the referene node
  * @param selector the selector to match
  */
-export default function nextUntil(node: Element | null, selector: string): Element[];
+export default function nextUntil(
+	node: Element | null,
+	selector: string,
+): Element[];

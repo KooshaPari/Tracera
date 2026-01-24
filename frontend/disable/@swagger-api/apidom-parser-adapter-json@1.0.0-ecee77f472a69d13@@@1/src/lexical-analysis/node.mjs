@@ -1,6 +1,7 @@
-import Parser from 'tree-sitter';
-// @ts-ignore
-import JSONLanguage from 'tree-sitter-json';
+import Parser from "tree-sitter";
+// @ts-expect-error
+import JSONLanguage from "tree-sitter-json";
+
 const parser = new Parser();
 parser.setLanguage(JSONLanguage);
 
@@ -9,7 +10,7 @@ parser.setLanguage(JSONLanguage);
  * This is Node.js version of TreeSitters Lexical Analysis.
  * @public
  */
-const analyze = async source => {
-  return parser.parse(source);
+const analyze = async (source) => {
+	return parser.parse(source);
 };
 export default analyze;

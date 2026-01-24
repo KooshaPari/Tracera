@@ -1,6 +1,6 @@
-var Set = require('./_Set'),
-    noop = require('./noop'),
-    setToArray = require('./_setToArray');
+var Set = require("./_Set"),
+	noop = require("./noop"),
+	setToArray = require("./_setToArray");
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -12,8 +12,8 @@ var INFINITY = 1 / 0;
  * @param {Array} values The values to add to the set.
  * @returns {Object} Returns the new set.
  */
-var createSet = !(Set && (1 / setToArray(new Set([,-0]))[1]) == INFINITY) ? noop : function(values) {
-  return new Set(values);
-};
+var createSet = !(Set && 1 / setToArray(new Set([, -0]))[1] == INFINITY)
+	? noop
+	: (values) => new Set(values);
 
 module.exports = createSet;

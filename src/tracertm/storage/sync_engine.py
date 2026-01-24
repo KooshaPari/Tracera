@@ -20,11 +20,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from sqlalchemy import text
 
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
+
+if TYPE_CHECKING:
+    from tracertm.storage.local_storage import LocalStorageManager
+    from tracertm.api.client import TraceRTMClient
+    from tracertm.database.connection import DatabaseConnection
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +151,7 @@ class ChangeDetector:
         Returns:
             List of (path, new_hash) tuples for changed files
         """
-        changes = []
+        changes: list[tuple[Path, str]] = []
 
         if not directory.exists():
             return changes
@@ -173,7 +178,7 @@ class ChangeDetector:
 class SyncQueue:
     """Manages the sync queue table in SQLite."""
 
-    def __init__(self, db_connection):
+    def __init__(self, db_connection: "DatabaseConnection") -> None:
         """
         Initialize sync queue manager.
 
@@ -183,9 +188,16 @@ class SyncQueue:
         self.db = db_connection
         self._ensure_tables()
 
+    @property
+    def engine(self):  # type: ignore[no-untyped-def]
+        """Get database engine, ensuring it's not None."""
+        if self.db.engine is None:
+            raise RuntimeError("Database engine not initialized")
+        return self.db.engine
+
     def _ensure_tables(self) -> None:
         """Ensure sync tables exist."""
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             # Create sync_queue table
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS sync_queue (
@@ -231,7 +243,7 @@ class SyncQueue:
         Returns:
             Queue entry ID
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             # Use INSERT OR REPLACE to handle uniqueness constraint
             result = conn.execute(
                 text("""
@@ -255,7 +267,10 @@ class SyncQueue:
                 }
             )
             conn.commit()
-            return result.lastrowid
+            lastrowid = result.lastrowid
+            if lastrowid is None:
+                raise RuntimeError("Failed to insert sync queue entry")
+            return int(lastrowid)
 
     def get_pending(self, limit: int = 100) -> list[QueuedChange]:
         """
@@ -267,7 +282,7 @@ class SyncQueue:
         Returns:
             List of queued changes
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             result = conn.execute(
                 text("""
                 SELECT id, entity_type, entity_id, operation, payload,
@@ -301,7 +316,7 @@ class SyncQueue:
         Args:
             queue_id: Queue entry ID
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             conn.execute(
                 text("DELETE FROM sync_queue WHERE id = :queue_id"),
                 {"queue_id": queue_id}
@@ -316,7 +331,7 @@ class SyncQueue:
             queue_id: Queue entry ID
             error: Error message
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             conn.execute(
                 text("""
                 UPDATE sync_queue
@@ -330,7 +345,7 @@ class SyncQueue:
 
     def clear(self) -> None:
         """Clear all entries from the queue."""
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             conn.execute(text("DELETE FROM sync_queue"))
             conn.commit()
 
@@ -341,9 +356,10 @@ class SyncQueue:
         Returns:
             Number of pending changes
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             result = conn.execute(text("SELECT COUNT(*) FROM sync_queue"))
-            return result.scalar()
+            count = result.scalar()
+            return int(count) if count is not None else 0
 
 
 # ============================================================================
@@ -354,7 +370,7 @@ class SyncQueue:
 class SyncStateManager:
     """Manages sync state metadata."""
 
-    def __init__(self, db_connection):
+    def __init__(self, db_connection: "DatabaseConnection") -> None:
         """
         Initialize sync state manager.
 
@@ -364,9 +380,16 @@ class SyncStateManager:
         self.db = db_connection
         self._ensure_tables()
 
+    @property
+    def engine(self):  # type: ignore[no-untyped-def]
+        """Get database engine, ensuring it's not None."""
+        if self.db.engine is None:
+            raise RuntimeError("Database engine not initialized")
+        return self.db.engine
+
     def _ensure_tables(self) -> None:
         """Ensure sync_state table exists."""
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS sync_state (
                     key TEXT PRIMARY KEY,
@@ -383,7 +406,7 @@ class SyncStateManager:
         Returns:
             SyncState object
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             # Get last_sync timestamp
             result = conn.execute(
                 text("SELECT value FROM sync_state WHERE key = 'last_sync'")
@@ -393,7 +416,8 @@ class SyncStateManager:
 
             # Get pending changes count
             result = conn.execute(text("SELECT COUNT(*) FROM sync_queue"))
-            pending_changes = result.scalar()
+            pending_changes_raw = result.scalar()
+            pending_changes: int = int(pending_changes_raw) if pending_changes_raw is not None else 0
 
             # Get status
             result = conn.execute(
@@ -426,7 +450,7 @@ class SyncStateManager:
         if timestamp is None:
             timestamp = datetime.utcnow()
 
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             conn.execute(
                 text("""
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
@@ -447,7 +471,7 @@ class SyncStateManager:
         Args:
             status: New status
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             conn.execute(
                 text("""
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
@@ -468,7 +492,7 @@ class SyncStateManager:
         Args:
             error: Error message (None to clear)
         """
-        with self.db.engine.connect() as conn:
+        with self.engine.connect() as conn:
             if error is None:
                 conn.execute(text("DELETE FROM sync_state WHERE key = 'last_error'"))
             else:
@@ -501,13 +525,13 @@ class SyncEngine:
 
     def __init__(
         self,
-        db_connection,
-        api_client,
-        storage_manager,
+        db_connection: "DatabaseConnection",
+        api_client: "TraceRTMClient",
+        storage_manager: "LocalStorageManager",
         conflict_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS,
         max_retries: int = 3,
         retry_delay: float = 1.0
-    ):
+    ) -> None:
         """
         Initialize sync engine.
 
@@ -519,19 +543,26 @@ class SyncEngine:
             max_retries: Maximum retry attempts for failed syncs
             retry_delay: Initial delay between retries (seconds)
         """
-        self.db = db_connection
-        self.api = api_client
-        self.storage = storage_manager
-        self.conflict_strategy = conflict_strategy
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
+        self.db: "DatabaseConnection" = db_connection
+        self.api: "TraceRTMClient" = api_client
+        self.storage: "LocalStorageManager" = storage_manager
+        self.conflict_strategy: ConflictStrategy = conflict_strategy
+        self.max_retries: int = max_retries
+        self.retry_delay: float = retry_delay
 
-        self.queue = SyncQueue(db_connection)
-        self.state_manager = SyncStateManager(db_connection)
-        self.change_detector = ChangeDetector()
+        self.queue: SyncQueue = SyncQueue(db_connection)
+        self.state_manager: SyncStateManager = SyncStateManager(db_connection)
+        self.change_detector: ChangeDetector = ChangeDetector()
 
-        self._syncing = False
-        self._sync_lock = asyncio.Lock()
+        self._syncing: bool = False
+        self._sync_lock: asyncio.Lock = asyncio.Lock()
+
+    @property
+    def engine(self):  # type: ignore[no-untyped-def]
+        """Get database engine, ensuring it's not None."""
+        if self.db.engine is None:
+            raise RuntimeError("Database engine not initialized")
+        return self.db.engine
 
     # ========================================================================
     # Public API
@@ -618,7 +649,7 @@ class SyncEngine:
 
         try:
             # Get all local items from database
-            with self.db.engine.connect() as conn:
+            with self.engine.connect() as conn:
                 # Get all items
                 result = conn.execute(
                     text("SELECT id, content, updated_at FROM item")
@@ -631,7 +662,6 @@ class SyncEngine:
 
                 for item_id, item_data in local_items.items():
                     content = str(item_data.get("content", ""))
-                    current_hash = self.change_detector.compute_hash(content)
                     stored_hash = stored_hashes.get(item_id)
 
                     if self.change_detector.has_changed(content, stored_hash):
@@ -839,7 +869,7 @@ class SyncEngine:
 
             logger.debug(f"Applying remote change: {entity_type.value} {entity_id} {operation.value}")
 
-            with self.db.engine.begin() as conn:
+            with self.engine.begin() as conn:
                 if operation == OperationType.CREATE:
                     # Insert new entity
                     conn.execute(
@@ -1043,10 +1073,10 @@ async def exponential_backoff(
 
 
 def create_sync_engine(
-    db_connection,
-    api_client,
-    storage_manager,
-    **kwargs
+    db_connection: "DatabaseConnection",
+    api_client: "TraceRTMClient",
+    storage_manager: "LocalStorageManager",
+    **kwargs: Any
 ) -> SyncEngine:
     """
     Factory function to create a configured sync engine.

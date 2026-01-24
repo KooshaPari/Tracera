@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link differenceInCalendarMonths} function options.
  */
 export interface DifferenceInCalendarMonthsOptions
-  extends ContextOptions<Date> {}
+	extends ContextOptions<Date> {}
 /**
  * @name differenceInCalendarMonths
  * @category Month Helpers
@@ -27,7 +27,7 @@ export interface DifferenceInCalendarMonthsOptions
  * //=> 8
  */
 export declare function differenceInCalendarMonths(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInCalendarMonthsOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInCalendarMonthsOptions | undefined,
 ): number;

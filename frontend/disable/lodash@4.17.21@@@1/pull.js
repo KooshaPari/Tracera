@@ -1,5 +1,5 @@
-var baseRest = require('./_baseRest'),
-    pullAll = require('./pullAll');
+var baseRest = require("./_baseRest"),
+	pullAll = require("./pullAll");
 
 /**
  * Removes all given values from `array` using

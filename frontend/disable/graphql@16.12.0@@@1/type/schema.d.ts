@@ -1,18 +1,18 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { GraphQLError } from '../error/GraphQLError';
+import type { Maybe } from "../jsutils/Maybe";
+import type { ObjMap } from "../jsutils/ObjMap";
+import type { GraphQLError } from "../error/GraphQLError";
 import type {
-  SchemaDefinitionNode,
-  SchemaExtensionNode,
-} from '../language/ast';
-import { OperationTypeNode } from '../language/ast';
+	SchemaDefinitionNode,
+	SchemaExtensionNode,
+} from "../language/ast";
+import { OperationTypeNode } from "../language/ast";
 import type {
-  GraphQLAbstractType,
-  GraphQLInterfaceType,
-  GraphQLNamedType,
-  GraphQLObjectType,
-} from './definition';
-import type { GraphQLDirective } from './directives';
+	GraphQLAbstractType,
+	GraphQLInterfaceType,
+	GraphQLNamedType,
+	GraphQLObjectType,
+} from "./definition";
+import type { GraphQLDirective } from "./directives";
 /**
  * Test if the given value is a GraphQL schema.
  */
@@ -28,7 +28,7 @@ export declare function assertSchema(schema: unknown): GraphQLSchema;
  * an object which can contain all the values you need.
  */
 export interface GraphQLSchemaExtensions {
-  [attributeName: string]: unknown;
+	[attributeName: string]: unknown;
 }
 /**
  * Schema Definition
@@ -99,72 +99,71 @@ export interface GraphQLSchemaExtensions {
  * ```
  */
 export declare class GraphQLSchema {
-  description: Maybe<string>;
-  extensions: Readonly<GraphQLSchemaExtensions>;
-  astNode: Maybe<SchemaDefinitionNode>;
-  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
-  __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
-  private _queryType;
-  private _mutationType;
-  private _subscriptionType;
-  private _directives;
-  private _typeMap;
-  private _subTypeMap;
-  private _implementationsMap;
-  constructor(config: Readonly<GraphQLSchemaConfig>);
-  get [Symbol.toStringTag](): string;
-  getQueryType(): Maybe<GraphQLObjectType>;
-  getMutationType(): Maybe<GraphQLObjectType>;
-  getSubscriptionType(): Maybe<GraphQLObjectType>;
-  getRootType(operation: OperationTypeNode): Maybe<GraphQLObjectType>;
-  getTypeMap(): TypeMap;
-  getType(name: string): GraphQLNamedType | undefined;
-  getPossibleTypes(
-    abstractType: GraphQLAbstractType,
-  ): ReadonlyArray<GraphQLObjectType>;
-  getImplementations(interfaceType: GraphQLInterfaceType): {
-    objects: ReadonlyArray<GraphQLObjectType>;
-    interfaces: ReadonlyArray<GraphQLInterfaceType>;
-  };
-  isSubType(
-    abstractType: GraphQLAbstractType,
-    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
-  ): boolean;
-  getDirectives(): ReadonlyArray<GraphQLDirective>;
-  getDirective(name: string): Maybe<GraphQLDirective>;
-  toConfig(): GraphQLSchemaNormalizedConfig;
+	description: Maybe<string>;
+	extensions: Readonly<GraphQLSchemaExtensions>;
+	astNode: Maybe<SchemaDefinitionNode>;
+	extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+	__validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
+	private _queryType;
+	private _mutationType;
+	private _subscriptionType;
+	private _directives;
+	private _typeMap;
+	private _subTypeMap;
+	private _implementationsMap;
+	constructor(config: Readonly<GraphQLSchemaConfig>);
+	get [Symbol.toStringTag](): string;
+	getQueryType(): Maybe<GraphQLObjectType>;
+	getMutationType(): Maybe<GraphQLObjectType>;
+	getSubscriptionType(): Maybe<GraphQLObjectType>;
+	getRootType(operation: OperationTypeNode): Maybe<GraphQLObjectType>;
+	getTypeMap(): TypeMap;
+	getType(name: string): GraphQLNamedType | undefined;
+	getPossibleTypes(
+		abstractType: GraphQLAbstractType,
+	): ReadonlyArray<GraphQLObjectType>;
+	getImplementations(interfaceType: GraphQLInterfaceType): {
+		objects: ReadonlyArray<GraphQLObjectType>;
+		interfaces: ReadonlyArray<GraphQLInterfaceType>;
+	};
+	isSubType(
+		abstractType: GraphQLAbstractType,
+		maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
+	): boolean;
+	getDirectives(): ReadonlyArray<GraphQLDirective>;
+	getDirective(name: string): Maybe<GraphQLDirective>;
+	toConfig(): GraphQLSchemaNormalizedConfig;
 }
 declare type TypeMap = ObjMap<GraphQLNamedType>;
 export interface GraphQLSchemaValidationOptions {
-  /**
-   * When building a schema from a GraphQL service's introspection result, it
-   * might be safe to assume the schema is valid. Set to true to assume the
-   * produced schema is valid.
-   *
-   * Default: false
-   */
-  assumeValid?: boolean;
+	/**
+	 * When building a schema from a GraphQL service's introspection result, it
+	 * might be safe to assume the schema is valid. Set to true to assume the
+	 * produced schema is valid.
+	 *
+	 * Default: false
+	 */
+	assumeValid?: boolean;
 }
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
-  description?: Maybe<string>;
-  query?: Maybe<GraphQLObjectType>;
-  mutation?: Maybe<GraphQLObjectType>;
-  subscription?: Maybe<GraphQLObjectType>;
-  types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
-  directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
-  extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
-  astNode?: Maybe<SchemaDefinitionNode>;
-  extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
+	description?: Maybe<string>;
+	query?: Maybe<GraphQLObjectType>;
+	mutation?: Maybe<GraphQLObjectType>;
+	subscription?: Maybe<GraphQLObjectType>;
+	types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
+	directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
+	extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
+	astNode?: Maybe<SchemaDefinitionNode>;
+	extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
 /**
  * @internal
  */
 export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
-  description: Maybe<string>;
-  types: ReadonlyArray<GraphQLNamedType>;
-  directives: ReadonlyArray<GraphQLDirective>;
-  extensions: Readonly<GraphQLSchemaExtensions>;
-  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
-  assumeValid: boolean;
+	description: Maybe<string>;
+	types: ReadonlyArray<GraphQLNamedType>;
+	directives: ReadonlyArray<GraphQLDirective>;
+	extensions: Readonly<GraphQLSchemaExtensions>;
+	extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+	assumeValid: boolean;
 }
-export {};

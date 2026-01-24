@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    baseSortedIndexBy = require('./_baseSortedIndexBy');
+var baseIteratee = require("./_baseIteratee"),
+	baseSortedIndexBy = require("./_baseSortedIndexBy");
 
 /**
  * This method is like `_.sortedIndex` except that it accepts `iteratee`
@@ -27,7 +27,7 @@ var baseIteratee = require('./_baseIteratee'),
  * // => 0
  */
 function sortedIndexBy(array, value, iteratee) {
-  return baseSortedIndexBy(array, value, baseIteratee(iteratee, 2));
+	return baseSortedIndexBy(array, value, baseIteratee(iteratee, 2));
 }
 
 module.exports = sortedIndexBy;

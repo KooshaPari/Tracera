@@ -2,181 +2,187 @@
  * Tests for useWebSocketHook - Real-time WebSocket connection management
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import type { RealtimeEvent } from '../../api/websocket'
-import { useWebSocketStore } from '../../stores/websocketStore'
+import { beforeEach, describe, expect, it } from "vitest";
+import type { RealtimeEvent } from "../../api/websocket";
+import { useWebSocketStore } from "../../stores/websocketStore";
 
-describe('WebSocket Hooks and Store', () => {
-  const mockRealtimeEvent: RealtimeEvent = {
-    type: 'created',
-    table: 'items',
-    schema: 'public',
-    record: { id: '1', title: 'Test Item' },
-    timestamp: Date.now(),
-  }
+describe("WebSocket Hooks and Store", () => {
+	const mockRealtimeEvent: RealtimeEvent = {
+		type: "created",
+		table: "items",
+		schema: "public",
+		record: { id: "1", title: "Test Item" },
+		timestamp: Date.now(),
+	};
 
-  beforeEach(() => {
-    // Reset WebSocket store before each test
-    useWebSocketStore.getState().clearEvents()
-  })
+	beforeEach(() => {
+		// Reset WebSocket store before each test
+		useWebSocketStore.getState().clearEvents();
+	});
 
-  describe('useWebSocketStore - connection management', () => {
-    it('should initialize with disconnected state', () => {
-      const state = useWebSocketStore.getState()
-      expect(typeof state.isConnected).toBe('boolean')
-      expect(state.reconnectAttempts).toBe(0)
-    })
+	describe("useWebSocketStore - connection management", () => {
+		it("should initialize with disconnected state", () => {
+			const state = useWebSocketStore.getState();
+			expect(typeof state.isConnected).toBe("boolean");
+			expect(state.reconnectAttempts).toBe(0);
+		});
 
-    it('should have connect method', () => {
-      const state = useWebSocketStore.getState()
-      expect(typeof state.connect).toBe('function')
-    })
+		it("should have connect method", () => {
+			const state = useWebSocketStore.getState();
+			expect(typeof state.connect).toBe("function");
+		});
 
-    it('should have disconnect method', () => {
-      const state = useWebSocketStore.getState()
-      expect(typeof state.disconnect).toBe('function')
-    })
+		it("should have disconnect method", () => {
+			const state = useWebSocketStore.getState();
+			expect(typeof state.disconnect).toBe("function");
+		});
 
-    it('should have subscribe method available', () => {
-      const state = useWebSocketStore.getState()
-      expect(typeof state.subscribe).toBe('function')
-    })
-  })
+		it("should have subscribe method available", () => {
+			const state = useWebSocketStore.getState();
+			expect(typeof state.subscribe).toBe("function");
+		});
+	});
 
-  describe('useWebSocketStore - event management', () => {
-    it('should add events to store', () => {
-      const state = useWebSocketStore.getState()
-      state.addEvent(mockRealtimeEvent)
+	describe("useWebSocketStore - event management", () => {
+		it("should add events to store", () => {
+			const state = useWebSocketStore.getState();
+			state.addEvent(mockRealtimeEvent);
 
-      const updated = useWebSocketStore.getState()
-      expect(updated.events).toContain(mockRealtimeEvent)
-      expect(updated.lastEvent).toEqual(mockRealtimeEvent)
-    })
+			const updated = useWebSocketStore.getState();
+			expect(updated.events).toContain(mockRealtimeEvent);
+			expect(updated.lastEvent).toEqual(mockRealtimeEvent);
+		});
 
-    it('should maintain event order (newest first)', () => {
-      const event1: RealtimeEvent = { ...mockRealtimeEvent, record: { id: '1' } }
-      const event2: RealtimeEvent = {
-        ...mockRealtimeEvent,
-        record: { id: '2' },
-        timestamp: Date.now() + 1000,
-      }
+		it("should maintain event order (newest first)", () => {
+			const event1: RealtimeEvent = {
+				...mockRealtimeEvent,
+				record: { id: "1" },
+			};
+			const event2: RealtimeEvent = {
+				...mockRealtimeEvent,
+				record: { id: "2" },
+				timestamp: Date.now() + 1000,
+			};
 
-      const state = useWebSocketStore.getState()
-      state.addEvent(event1)
-      state.addEvent(event2)
+			const state = useWebSocketStore.getState();
+			state.addEvent(event1);
+			state.addEvent(event2);
 
-      const updated = useWebSocketStore.getState()
-      expect(updated.events[0]).toEqual(event2)
-      expect(updated.events[1]).toEqual(event1)
-    })
+			const updated = useWebSocketStore.getState();
+			expect(updated.events[0]).toEqual(event2);
+			expect(updated.events[1]).toEqual(event1);
+		});
 
-    it('should limit events to last 100', () => {
-      const state = useWebSocketStore.getState()
+		it("should limit events to last 100", () => {
+			const state = useWebSocketStore.getState();
 
-      for (let i = 0; i < 150; i++) {
-        state.addEvent({
-          ...mockRealtimeEvent,
-          record: { id: `${i}` },
-          timestamp: Date.now() + i,
-        })
-      }
+			for (let i = 0; i < 150; i++) {
+				state.addEvent({
+					...mockRealtimeEvent,
+					record: { id: `${i}` },
+					timestamp: Date.now() + i,
+				});
+			}
 
-      const updated = useWebSocketStore.getState()
-      expect(updated.events).toHaveLength(100)
-    })
+			const updated = useWebSocketStore.getState();
+			expect(updated.events).toHaveLength(100);
+		});
 
-    it('should clear events', () => {
-      const state = useWebSocketStore.getState()
-      state.addEvent(mockRealtimeEvent)
-      expect(useWebSocketStore.getState().events).toHaveLength(1)
+		it("should clear events", () => {
+			const state = useWebSocketStore.getState();
+			state.addEvent(mockRealtimeEvent);
+			expect(useWebSocketStore.getState().events).toHaveLength(1);
 
-      state.clearEvents()
-      expect(useWebSocketStore.getState().events).toHaveLength(0)
-      expect(useWebSocketStore.getState().lastEvent).toBeNull()
-    })
-  })
+			state.clearEvents();
+			expect(useWebSocketStore.getState().events).toHaveLength(0);
+			expect(useWebSocketStore.getState().lastEvent).toBeNull();
+		});
+	});
 
-  describe('useWebSocketStore - channel subscriptions', () => {
-    it('should initialize with empty active channels', () => {
-      const state = useWebSocketStore.getState()
-      expect(state.activeChannels instanceof Set).toBe(true)
-      expect(state.activeChannels.size).toBe(0)
-    })
-  })
+	describe("useWebSocketStore - channel subscriptions", () => {
+		it("should initialize with empty active channels", () => {
+			const state = useWebSocketStore.getState();
+			expect(state.activeChannels instanceof Set).toBe(true);
+			expect(state.activeChannels.size).toBe(0);
+		});
+	});
 
-  describe('useWebSocketStore - connection status', () => {
-    it('should set connection status', () => {
-      const state = useWebSocketStore.getState()
-      state.setConnectionStatus(true)
+	describe("useWebSocketStore - connection status", () => {
+		it("should set connection status", () => {
+			const state = useWebSocketStore.getState();
+			state.setConnectionStatus(true);
 
-      expect(useWebSocketStore.getState().isConnected).toBe(true)
+			expect(useWebSocketStore.getState().isConnected).toBe(true);
 
-      state.setConnectionStatus(false)
-      expect(useWebSocketStore.getState().isConnected).toBe(false)
-    })
+			state.setConnectionStatus(false);
+			expect(useWebSocketStore.getState().isConnected).toBe(false);
+		});
 
-    it('should handle multiple status transitions', () => {
-      const state = useWebSocketStore.getState()
+		it("should handle multiple status transitions", () => {
+			const state = useWebSocketStore.getState();
 
-      state.setConnectionStatus(true)
-      expect(useWebSocketStore.getState().isConnected).toBe(true)
+			state.setConnectionStatus(true);
+			expect(useWebSocketStore.getState().isConnected).toBe(true);
 
-      state.setConnectionStatus(false)
-      expect(useWebSocketStore.getState().isConnected).toBe(false)
+			state.setConnectionStatus(false);
+			expect(useWebSocketStore.getState().isConnected).toBe(false);
 
-      state.setConnectionStatus(true)
-      expect(useWebSocketStore.getState().isConnected).toBe(true)
-    })
-  })
+			state.setConnectionStatus(true);
+			expect(useWebSocketStore.getState().isConnected).toBe(true);
+		});
+	});
 
-  describe('useWebSocketStore - integration scenarios', () => {
-    it('should maintain event state with connection transitions', () => {
-      const state = useWebSocketStore.getState()
+	describe("useWebSocketStore - integration scenarios", () => {
+		it("should maintain event state with connection transitions", () => {
+			const state = useWebSocketStore.getState();
 
-      state.setConnectionStatus(true)
-      state.addEvent(mockRealtimeEvent)
+			state.setConnectionStatus(true);
+			state.addEvent(mockRealtimeEvent);
 
-      let current = useWebSocketStore.getState()
-      expect(current.isConnected).toBe(true)
-      expect(current.events).toHaveLength(1)
-      expect(current.lastEvent).toEqual(mockRealtimeEvent)
+			let current = useWebSocketStore.getState();
+			expect(current.isConnected).toBe(true);
+			expect(current.events).toHaveLength(1);
+			expect(current.lastEvent).toEqual(mockRealtimeEvent);
 
-      state.setConnectionStatus(false)
-      current = useWebSocketStore.getState()
-      expect(current.isConnected).toBe(false)
-      expect(current.events).toHaveLength(1) // Events persist
-    })
+			state.setConnectionStatus(false);
+			current = useWebSocketStore.getState();
+			expect(current.isConnected).toBe(false);
+			expect(current.events).toHaveLength(1); // Events persist
+		});
 
-    it('should handle reconnection and event accumulation', () => {
-      const event1: RealtimeEvent = { ...mockRealtimeEvent, record: { id: '1' } }
-      const event2: RealtimeEvent = {
-        ...mockRealtimeEvent,
-        record: { id: '2' },
-        timestamp: Date.now() + 1000,
-      }
+		it("should handle reconnection and event accumulation", () => {
+			const event1: RealtimeEvent = {
+				...mockRealtimeEvent,
+				record: { id: "1" },
+			};
+			const event2: RealtimeEvent = {
+				...mockRealtimeEvent,
+				record: { id: "2" },
+				timestamp: Date.now() + 1000,
+			};
 
-      const state = useWebSocketStore.getState()
+			const state = useWebSocketStore.getState();
 
-      // Initial connection and events
-      state.setConnectionStatus(true)
-      state.addEvent(event1)
+			// Initial connection and events
+			state.setConnectionStatus(true);
+			state.addEvent(event1);
 
-      let current = useWebSocketStore.getState()
-      expect(current.events).toHaveLength(1)
+			let current = useWebSocketStore.getState();
+			expect(current.events).toHaveLength(1);
 
-      // Simulate disconnection
-      state.setConnectionStatus(false)
-      current = useWebSocketStore.getState()
-      expect(current.isConnected).toBe(false)
+			// Simulate disconnection
+			state.setConnectionStatus(false);
+			current = useWebSocketStore.getState();
+			expect(current.isConnected).toBe(false);
 
-      // Reconnect and add more events
-      state.setConnectionStatus(true)
-      state.addEvent(event2)
+			// Reconnect and add more events
+			state.setConnectionStatus(true);
+			state.addEvent(event2);
 
-      current = useWebSocketStore.getState()
-      expect(current.isConnected).toBe(true)
-      expect(current.events).toHaveLength(2)
-      expect(current.lastEvent).toEqual(event2)
-    })
-  })
-})
+			current = useWebSocketStore.getState();
+			expect(current.isConnected).toBe(true);
+			expect(current.events).toHaveLength(2);
+			expect(current.lastEvent).toEqual(event2);
+		});
+	});
+});

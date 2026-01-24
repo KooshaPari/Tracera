@@ -1,7 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __importDefault =
+	(this && this.__importDefault) ||
+	((mod) => (mod && mod.__esModule ? mod : { default: mod }));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOuterHTML = getOuterHTML;
 exports.getInnerHTML = getInnerHTML;
@@ -19,7 +18,7 @@ var domelementtype_1 = require("domelementtype");
  * @returns `node`'s outer HTML.
  */
 function getOuterHTML(node, options) {
-    return (0, dom_serializer_1.default)(node, options);
+	return (0, dom_serializer_1.default)(node, options);
 }
 /**
  * @category Stringify
@@ -29,9 +28,9 @@ function getOuterHTML(node, options) {
  * @returns `node`'s inner HTML.
  */
 function getInnerHTML(node, options) {
-    return (0, domhandler_1.hasChildren)(node)
-        ? node.children.map(function (node) { return getOuterHTML(node, options); }).join("")
-        : "";
+	return (0, domhandler_1.hasChildren)(node)
+		? node.children.map((node) => getOuterHTML(node, options)).join("")
+		: "";
 }
 /**
  * Get a node's inner text. Same as `textContent`, but inserts newlines for `<br>` tags. Ignores comments.
@@ -42,15 +41,12 @@ function getInnerHTML(node, options) {
  * @returns `node`'s inner text.
  */
 function getText(node) {
-    if (Array.isArray(node))
-        return node.map(getText).join("");
-    if ((0, domhandler_1.isTag)(node))
-        return node.name === "br" ? "\n" : getText(node.children);
-    if ((0, domhandler_1.isCDATA)(node))
-        return getText(node.children);
-    if ((0, domhandler_1.isText)(node))
-        return node.data;
-    return "";
+	if (Array.isArray(node)) return node.map(getText).join("");
+	if ((0, domhandler_1.isTag)(node))
+		return node.name === "br" ? "\n" : getText(node.children);
+	if ((0, domhandler_1.isCDATA)(node)) return getText(node.children);
+	if ((0, domhandler_1.isText)(node)) return node.data;
+	return "";
 }
 /**
  * Get a node's text content. Ignores comments.
@@ -61,14 +57,15 @@ function getText(node) {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent}
  */
 function textContent(node) {
-    if (Array.isArray(node))
-        return node.map(textContent).join("");
-    if ((0, domhandler_1.hasChildren)(node) && !(0, domhandler_1.isComment)(node)) {
-        return textContent(node.children);
-    }
-    if ((0, domhandler_1.isText)(node))
-        return node.data;
-    return "";
+	if (Array.isArray(node)) return node.map(textContent).join("");
+	if (
+		(0, domhandler_1.hasChildren)(node) &&
+		!(0, domhandler_1.isComment)(node)
+	) {
+		return textContent(node.children);
+	}
+	if ((0, domhandler_1.isText)(node)) return node.data;
+	return "";
 }
 /**
  * Get a node's inner text, ignoring `<script>` and `<style>` tags. Ignores comments.
@@ -79,13 +76,15 @@ function textContent(node) {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Node/innerText}
  */
 function innerText(node) {
-    if (Array.isArray(node))
-        return node.map(innerText).join("");
-    if ((0, domhandler_1.hasChildren)(node) && (node.type === domelementtype_1.ElementType.Tag || (0, domhandler_1.isCDATA)(node))) {
-        return innerText(node.children);
-    }
-    if ((0, domhandler_1.isText)(node))
-        return node.data;
-    return "";
+	if (Array.isArray(node)) return node.map(innerText).join("");
+	if (
+		(0, domhandler_1.hasChildren)(node) &&
+		(node.type === domelementtype_1.ElementType.Tag ||
+			(0, domhandler_1.isCDATA)(node))
+	) {
+		return innerText(node.children);
+	}
+	if ((0, domhandler_1.isText)(node)) return node.data;
+	return "";
 }
 //# sourceMappingURL=stringify.js.map

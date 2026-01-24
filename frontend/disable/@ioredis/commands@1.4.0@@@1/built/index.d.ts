@@ -24,6 +24,10 @@ export declare function hasFlag(commandName: string, flag: string): boolean;
  * getKeyIndexes('mget', ['key1', 'key2']) // [0, 1]
  * ```
  */
-export declare function getKeyIndexes(commandName: string, args: (string | Buffer | number)[], options?: {
-    parseExternalKey: boolean;
-}): number[];
+export declare function getKeyIndexes(
+	commandName: string,
+	args: (string | Buffer | number)[],
+	options?: {
+		parseExternalKey: boolean;
+	},
+): number[];

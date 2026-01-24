@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../full/function/virtual/bind');
+"use strict";
+module.exports = require("../../../full/function/virtual/bind");

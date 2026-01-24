@@ -1,5 +1,5 @@
-var isObjectLike = require('./isObjectLike'),
-    isPlainObject = require('./isPlainObject');
+var isObjectLike = require("./isObjectLike"),
+	isPlainObject = require("./isPlainObject");
 
 /**
  * Checks if `value` is likely a DOM element.
@@ -19,7 +19,7 @@ var isObjectLike = require('./isObjectLike'),
  * // => false
  */
 function isElement(value) {
-  return isObjectLike(value) && value.nodeType === 1 && !isPlainObject(value);
+	return isObjectLike(value) && value.nodeType === 1 && !isPlainObject(value);
 }
 
 module.exports = isElement;

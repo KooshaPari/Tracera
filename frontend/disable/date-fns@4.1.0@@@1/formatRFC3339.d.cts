@@ -3,8 +3,8 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link formatRFC3339} function options.
  */
 export interface FormatRFC3339Options extends ContextOptions<Date> {
-  /** The number of digits after the decimal point after seconds, defaults to 0 */
-  fractionDigits?: 0 | 1 | 2 | 3;
+	/** The number of digits after the decimal point after seconds, defaults to 0 */
+	fractionDigits?: 0 | 1 | 2 | 3;
 }
 /**
  * @name formatRFC3339
@@ -34,6 +34,6 @@ export interface FormatRFC3339Options extends ContextOptions<Date> {
  * //=> '2019-09-18T19:00:52.234Z'
  */
 export declare function formatRFC3339(
-  date: DateArg<Date> & {},
-  options?: FormatRFC3339Options,
+	date: DateArg<Date> & {},
+	options?: FormatRFC3339Options,
 ): string;

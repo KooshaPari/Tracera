@@ -1,1 +1,1 @@
-export * from './typanion';
+export * from "./typanion";

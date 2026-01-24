@@ -1,1 +1,1 @@
-export * from './fluentvalidation-ts';
+export * from "./fluentvalidation-ts";

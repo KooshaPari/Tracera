@@ -1,5 +1,6 @@
-import { mergeRight } from 'ramda';
+import { mergeRight } from "ramda";
 import Node from "../../Node.mjs";
+
 /**
  * @public
  */
@@ -10,23 +11,22 @@ import Node from "../../Node.mjs";
  * @public
  */
 class YamlDirective extends Node {
-  static type = 'directive';
-  name;
-  parameters;
-  constructor({
-    name,
-    parameters,
-    ...rest
-  }) {
-    super({
-      ...rest
-    });
-    this.name = name;
-    this.parameters = mergeRight({
-      version: undefined,
-      handle: undefined,
-      prefix: undefined
-    }, parameters);
-  }
+	static type = "directive";
+	name;
+	parameters;
+	constructor({ name, parameters, ...rest }) {
+		super({
+			...rest,
+		});
+		this.name = name;
+		this.parameters = mergeRight(
+			{
+				version: undefined,
+				handle: undefined,
+				prefix: undefined,
+			},
+			parameters,
+		);
+	}
 }
 export default YamlDirective;

@@ -13,16 +13,16 @@ import { match } from "./bn/_lib/match.js";
  * @author Farhad Yasir [@nutboltu](https://github.com/nutboltu)
  */
 export const bn = {
-  code: "bn",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "bn",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

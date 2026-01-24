@@ -1,6 +1,6 @@
 export declare const CONFIG_FILE_NAME = "redocly.yaml";
 export declare const DEFAULT_CONFIG: {
-    extends: string[];
+	extends: string[];
 };
 export declare const IGNORE_FILE = ".redocly.lint-ignore.yaml";
 export declare const IGNORE_BANNER: string;

@@ -1,4 +1,4 @@
-const tty = require('node:tty'); // eslint-disable-line unicorn/prefer-module
+const tty = require("node:tty"); // eslint-disable-line unicorn/prefer-module
 
 // eslint-disable-next-line no-warning-comments
 // TODO: Use a better method when it's added to Node.js (https://github.com/nodejs/node/pull/40240)
@@ -7,14 +7,14 @@ const hasColors = tty?.WriteStream?.prototype?.hasColors?.() ?? false;
 
 const format = (open, close) => {
 	if (!hasColors) {
-		return input => input;
+		return (input) => input;
 	}
 
 	const openCode = `\u001B[${open}m`;
 	const closeCode = `\u001B[${close}m`;
 
-	return input => {
-		const string = input + ''; // eslint-disable-line no-implicit-coercion -- This is faster.
+	return (input) => {
+		const string = input + ""; // eslint-disable-line no-implicit-coercion -- This is faster.
 		let index = string.indexOf(closeCode);
 
 		if (index === -1) {
@@ -33,7 +33,7 @@ const format = (open, close) => {
 		// SGR 22 resets both bold (1) and dim (2). When we encounter a nested
 		// close for styles that use 22, we need to re-open the outer style.
 		const reopenOnNestedClose = close === 22;
-		const replaceCode = (reopenOnNestedClose ? closeCode : '') + openCode;
+		const replaceCode = (reopenOnNestedClose ? closeCode : "") + openCode;
 
 		while (index !== -1) {
 			result += string.slice(lastIndex, index) + replaceCode;

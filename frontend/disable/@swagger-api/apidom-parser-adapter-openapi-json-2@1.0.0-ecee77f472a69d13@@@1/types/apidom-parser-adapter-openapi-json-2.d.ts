@@ -1,6 +1,6 @@
-import { Namespace } from '@swagger-api/apidom-core';
-import { OpenAPIMediaTypes } from '@swagger-api/apidom-ns-openapi-2';
-import { ParseResultElement } from '@swagger-api/apidom-core';
+import { Namespace } from "@swagger-api/apidom-core";
+import { OpenAPIMediaTypes } from "@swagger-api/apidom-ns-openapi-2";
+import { ParseResultElement } from "@swagger-api/apidom-core";
 
 /**
  * @public
@@ -25,6 +25,7 @@ export declare const namespace: Namespace;
 /**
  * @public
  */
-export declare const parse: (source: string, options?: Record<string, unknown>) => Promise<ParseResultElement>;
-
-export { }
+export declare const parse: (
+	source: string,
+	options?: Record<string, unknown>,
+) => Promise<ParseResultElement>;

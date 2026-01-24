@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.append = append;
 exports.extend = extend;
@@ -22,7 +21,7 @@ const util_1 = require("@oozcitak/util");
  * @param item - an item
  */
 function append(list, item) {
-    list.push(item);
+	list.push(item);
 }
 /**
  * Extends a list by appending all items from another list.
@@ -31,7 +30,7 @@ function append(list, item) {
  * @param listB - a list containing items to append to `listA`
  */
 function extend(listA, listB) {
-    listA.push(...listB);
+	listA.push(...listB);
 }
 /**
  * Inserts the given item to the start of the list.
@@ -40,7 +39,7 @@ function extend(listA, listB) {
  * @param item - an item
  */
 function prepend(list, item) {
-    list.unshift(item);
+	list.unshift(item);
 }
 /**
  * Replaces the given item or all items matching condition with a new item.
@@ -51,19 +50,18 @@ function prepend(list, item) {
  * @param item - an item
  */
 function replace(list, conditionOrItem, newItem) {
-    let i = 0;
-    for (const oldItem of list) {
-        if ((0, util_1.isFunction)(conditionOrItem)) {
-            if (!!conditionOrItem.call(null, oldItem)) {
-                list[i] = newItem;
-            }
-        }
-        else if (oldItem === conditionOrItem) {
-            list[i] = newItem;
-            return;
-        }
-        i++;
-    }
+	let i = 0;
+	for (const oldItem of list) {
+		if ((0, util_1.isFunction)(conditionOrItem)) {
+			if (conditionOrItem.call(null, oldItem)) {
+				list[i] = newItem;
+			}
+		} else if (oldItem === conditionOrItem) {
+			list[i] = newItem;
+			return;
+		}
+		i++;
+	}
 }
 /**
  * Inserts the given item before the given index.
@@ -72,7 +70,7 @@ function replace(list, conditionOrItem, newItem) {
  * @param item - an item
  */
 function insert(list, item, index) {
-    list.splice(index, 0, item);
+	list.splice(index, 0, item);
 }
 /**
  * Removes the given item or all items matching condition.
@@ -82,25 +80,24 @@ function insert(list, item, index) {
  * to remove
  */
 function remove(list, conditionOrItem) {
-    let i = list.length;
-    while (i--) {
-        const oldItem = list[i];
-        if ((0, util_1.isFunction)(conditionOrItem)) {
-            if (!!conditionOrItem.call(null, oldItem)) {
-                list.splice(i, 1);
-            }
-        }
-        else if (oldItem === conditionOrItem) {
-            list.splice(i, 1);
-            return;
-        }
-    }
+	let i = list.length;
+	while (i--) {
+		const oldItem = list[i];
+		if ((0, util_1.isFunction)(conditionOrItem)) {
+			if (conditionOrItem.call(null, oldItem)) {
+				list.splice(i, 1);
+			}
+		} else if (oldItem === conditionOrItem) {
+			list.splice(i, 1);
+			return;
+		}
+	}
 }
 /**
  * Removes all items from the list.
  */
 function empty(list) {
-    list.length = 0;
+	list.length = 0;
 }
 /**
  * Determines if the list contains the given item or any items matching
@@ -110,17 +107,16 @@ function empty(list) {
  * @param conditionOrItem - an item to a condition to match
  */
 function contains(list, conditionOrItem) {
-    for (const oldItem of list) {
-        if ((0, util_1.isFunction)(conditionOrItem)) {
-            if (!!conditionOrItem.call(null, oldItem)) {
-                return true;
-            }
-        }
-        else if (oldItem === conditionOrItem) {
-            return true;
-        }
-    }
-    return false;
+	for (const oldItem of list) {
+		if ((0, util_1.isFunction)(conditionOrItem)) {
+			if (conditionOrItem.call(null, oldItem)) {
+				return true;
+			}
+		} else if (oldItem === conditionOrItem) {
+			return true;
+		}
+	}
+	return false;
 }
 /**
  * Returns the count of items in the list matching the given condition.
@@ -129,18 +125,17 @@ function contains(list, conditionOrItem) {
  * @param condition - an optional condition to match
  */
 function size(list, condition) {
-    if (condition === undefined) {
-        return list.length;
-    }
-    else {
-        let count = 0;
-        for (const item of list) {
-            if (!!condition.call(null, item)) {
-                count++;
-            }
-        }
-        return count;
-    }
+	if (condition === undefined) {
+		return list.length;
+	} else {
+		let count = 0;
+		for (const item of list) {
+			if (condition.call(null, item)) {
+				count++;
+			}
+		}
+		return count;
+	}
 }
 /**
  * Determines if the list is empty.
@@ -148,7 +143,7 @@ function size(list, condition) {
  * @param list - a list
  */
 function isEmpty(list) {
-    return list.length === 0;
+	return list.length === 0;
 }
 /**
  * Returns an iterator for the items of the list.
@@ -157,16 +152,15 @@ function isEmpty(list) {
  * @param condition - an optional condition to match
  */
 function* forEach(list, condition) {
-    if (condition === undefined) {
-        yield* list;
-    }
-    else {
-        for (const item of list) {
-            if (!!condition.call(null, item)) {
-                yield item;
-            }
-        }
-    }
+	if (condition === undefined) {
+		yield* list;
+	} else {
+		for (const item of list) {
+			if (condition.call(null, item)) {
+				yield item;
+			}
+		}
+	}
 }
 /**
  * Creates and returns a shallow clone of list.
@@ -174,7 +168,7 @@ function* forEach(list, condition) {
  * @param list - a list
  */
 function clone(list) {
-    return new Array(...list);
+	return [...list];
 }
 /**
  * Returns a new list containing items from the list sorted in ascending
@@ -185,7 +179,9 @@ function clone(list) {
  * is less than its second argument, and `false` otherwise.
  */
 function sortInAscendingOrder(list, lessThanAlgo) {
-    return list.sort((itemA, itemB) => lessThanAlgo.call(null, itemA, itemB) ? -1 : 1);
+	return list.sort((itemA, itemB) =>
+		lessThanAlgo.call(null, itemA, itemB) ? -1 : 1,
+	);
 }
 /**
  * Returns a new list containing items from the list sorted in descending
@@ -196,6 +192,8 @@ function sortInAscendingOrder(list, lessThanAlgo) {
  * is less than its second argument, and `false` otherwise.
  */
 function sortInDescendingOrder(list, lessThanAlgo) {
-    return list.sort((itemA, itemB) => lessThanAlgo.call(null, itemA, itemB) ? 1 : -1);
+	return list.sort((itemA, itemB) =>
+		lessThanAlgo.call(null, itemA, itemB) ? 1 : -1,
+	);
 }
 //# sourceMappingURL=List.js.map

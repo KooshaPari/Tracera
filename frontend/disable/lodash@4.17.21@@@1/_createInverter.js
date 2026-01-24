@@ -1,4 +1,4 @@
-var baseInverter = require('./_baseInverter');
+var baseInverter = require("./_baseInverter");
 
 /**
  * Creates a function like `_.invertBy`.
@@ -9,9 +9,8 @@ var baseInverter = require('./_baseInverter');
  * @returns {Function} Returns the new inverter function.
  */
 function createInverter(setter, toIteratee) {
-  return function(object, iteratee) {
-    return baseInverter(object, setter, toIteratee(iteratee), {});
-  };
+	return (object, iteratee) =>
+		baseInverter(object, setter, toIteratee(iteratee), {});
 }
 
 module.exports = createInverter;

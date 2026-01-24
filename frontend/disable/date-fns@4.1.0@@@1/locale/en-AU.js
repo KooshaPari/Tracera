@@ -1,5 +1,5 @@
-import { formatDistance } from "./en-US/_lib/formatDistance.js";
 import { formatLong } from "./en-AU/_lib/formatLong.js";
+import { formatDistance } from "./en-US/_lib/formatDistance.js";
 import { formatRelative } from "./en-US/_lib/formatRelative.js";
 import { localize } from "./en-US/_lib/localize.js";
 import { match } from "./en-US/_lib/match.js";
@@ -12,16 +12,16 @@ import { match } from "./en-US/_lib/match.js";
  * @author Julien Malige [@JulienMalige](https://github.com/JulienMalige)
  */
 export const enAU = {
-  code: "en-AU",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "en-AU",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 };
 
 // Fallback for modularized imports:

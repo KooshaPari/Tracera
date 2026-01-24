@@ -33,17 +33,17 @@ import { toDate } from "./toDate.js";
  * //=> Mon Jan 01 2007 00:00:00
  */
 export function setISOWeekYear(date, weekYear, options) {
-  let _date = toDate(date, options?.in);
-  const diff = differenceInCalendarDays(
-    _date,
-    startOfISOWeekYear(_date, options),
-  );
-  const fourthOfJanuary = constructFrom(options?.in || date, 0);
-  fourthOfJanuary.setFullYear(weekYear, 0, 4);
-  fourthOfJanuary.setHours(0, 0, 0, 0);
-  _date = startOfISOWeekYear(fourthOfJanuary);
-  _date.setDate(_date.getDate() + diff);
-  return _date;
+	let _date = toDate(date, options?.in);
+	const diff = differenceInCalendarDays(
+		_date,
+		startOfISOWeekYear(_date, options),
+	);
+	const fourthOfJanuary = constructFrom(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(weekYear, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
+	_date = startOfISOWeekYear(fourthOfJanuary);
+	_date.setDate(_date.getDate() + diff);
+	return _date;
 }
 
 // Fallback for modularized imports:

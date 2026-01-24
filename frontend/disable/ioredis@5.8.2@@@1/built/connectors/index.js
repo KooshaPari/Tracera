@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SentinelConnector = exports.StandaloneConnector = void 0;
 const StandaloneConnector_1 = require("./StandaloneConnector");

@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isMonday(date, options) {
-  return (0, _index.toDate)(date, options?.in).getDay() === 1;
+	return (0, _index.toDate)(date, options?.in).getDay() === 1;
 }

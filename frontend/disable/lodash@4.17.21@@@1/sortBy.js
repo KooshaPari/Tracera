@@ -1,7 +1,7 @@
-var baseFlatten = require('./_baseFlatten'),
-    baseOrderBy = require('./_baseOrderBy'),
-    baseRest = require('./_baseRest'),
-    isIterateeCall = require('./_isIterateeCall');
+var baseFlatten = require("./_baseFlatten"),
+	baseOrderBy = require("./_baseOrderBy"),
+	baseRest = require("./_baseRest"),
+	isIterateeCall = require("./_isIterateeCall");
 
 /**
  * Creates an array of elements, sorted in ascending order by the results of
@@ -32,17 +32,20 @@ var baseFlatten = require('./_baseFlatten'),
  * _.sortBy(users, ['user', 'age']);
  * // => objects for [['barney', 34], ['barney', 36], ['fred', 30], ['fred', 48]]
  */
-var sortBy = baseRest(function(collection, iteratees) {
-  if (collection == null) {
-    return [];
-  }
-  var length = iteratees.length;
-  if (length > 1 && isIterateeCall(collection, iteratees[0], iteratees[1])) {
-    iteratees = [];
-  } else if (length > 2 && isIterateeCall(iteratees[0], iteratees[1], iteratees[2])) {
-    iteratees = [iteratees[0]];
-  }
-  return baseOrderBy(collection, baseFlatten(iteratees, 1), []);
+var sortBy = baseRest((collection, iteratees) => {
+	if (collection == null) {
+		return [];
+	}
+	var length = iteratees.length;
+	if (length > 1 && isIterateeCall(collection, iteratees[0], iteratees[1])) {
+		iteratees = [];
+	} else if (
+		length > 2 &&
+		isIterateeCall(iteratees[0], iteratees[1], iteratees[2])
+	) {
+		iteratees = [iteratees[0]];
+	}
+	return baseOrderBy(collection, baseFlatten(iteratees, 1), []);
 });
 
 module.exports = sortBy;

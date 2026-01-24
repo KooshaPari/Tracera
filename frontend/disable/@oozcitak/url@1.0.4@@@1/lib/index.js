@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var URLImpl_1 = require("./URLImpl");
 exports.URL = URLImpl_1.URLImpl;

@@ -38,9 +38,9 @@ import type { ConstructableDate, ContextFn, DateArg } from "./types.js";
  * //=> Tue Feb 11 2014 11:30:30
  */
 export declare function toDate<
-  DateType extends Date | ConstructableDate,
-  ResultDate extends Date = DateType,
+	DateType extends Date | ConstructableDate,
+	ResultDate extends Date = DateType,
 >(
-  argument: DateArg<DateType>,
-  context?: ContextFn<ResultDate> | undefined,
+	argument: DateArg<DateType>,
+	context?: ContextFn<ResultDate> | undefined,
 ): ResultDate;

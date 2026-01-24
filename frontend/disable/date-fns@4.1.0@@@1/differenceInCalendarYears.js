@@ -27,12 +27,12 @@ import { normalizeDates } from "./_lib/normalizeDates.js";
  * //=> 2
  */
 export function differenceInCalendarYears(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return laterDate_.getFullYear() - earlierDate_.getFullYear();
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return laterDate_.getFullYear() - earlierDate_.getFullYear();
 }
 
 // Fallback for modularized imports:

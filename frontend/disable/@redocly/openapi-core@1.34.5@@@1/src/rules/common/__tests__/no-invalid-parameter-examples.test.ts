@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('no-invalid-parameter-examples', () => {
-  it('should report on invalid falsy example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-invalid-parameter-examples", () => {
+	it("should report on invalid falsy example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         paths:
           /results:
@@ -19,16 +23,18 @@ describe('no-invalid-parameter-examples', () => {
                     maxLength: 15
                   example: false
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-parameter-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-parameter-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -49,5 +55,5 @@ describe('no-invalid-parameter-examples', () => {
         },
       ]
     `);
-  });
+	});
 });

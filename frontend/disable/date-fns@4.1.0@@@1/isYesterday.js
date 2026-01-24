@@ -27,10 +27,10 @@ import { subDays } from "./subDays.js";
  * //=> true
  */
 export function isYesterday(date, options) {
-  return isSameDay(
-    constructFrom(options?.in || date, date),
-    subDays(constructNow(options?.in || date), 1),
-  );
+	return isSameDay(
+		constructFrom(options?.in || date, date),
+		subDays(constructNow(options?.in || date), 1),
+	);
 }
 
 // Fallback for modularized imports:

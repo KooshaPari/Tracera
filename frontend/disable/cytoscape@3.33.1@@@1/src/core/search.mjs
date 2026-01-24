@@ -1,70 +1,61 @@
-import * as is from '../is.mjs';
-import Collection from '../collection/index.mjs';
+import Collection from "../collection/index.mjs";
+import * as is from "../is.mjs";
 
-let corefn = ({
+const corefn = {
+	// get a collection
+	// - empty collection on no args
+	// - collection of elements in the graph on selector arg
+	// - guarantee a returned collection when elements or collection specified
+	collection: function (eles, opts) {
+		if (is.string(eles)) {
+			return this.$(eles);
+		} else if (is.elementOrCollection(eles)) {
+			return eles.collection();
+		} else if (is.array(eles)) {
+			if (!opts) {
+				opts = {};
+			}
+			return new Collection(this, eles, opts.unique, opts.removed);
+		}
 
-  // get a collection
-  // - empty collection on no args
-  // - collection of elements in the graph on selector arg
-  // - guarantee a returned collection when elements or collection specified
-  collection: function( eles, opts ){
+		return new Collection(this);
+	},
 
-    if( is.string( eles ) ){
-      return this.$( eles );
+	nodes: function (selector) {
+		const nodes = this.$((ele) => ele.isNode());
 
-    } else if( is.elementOrCollection( eles ) ){
-      return eles.collection();
+		if (selector) {
+			return nodes.filter(selector);
+		}
 
-    } else if( is.array( eles ) ){
-      if (!opts) {
-        opts = {};
-      }
-      return new Collection( this, eles, opts.unique, opts.removed );
-    }
+		return nodes;
+	},
 
-    return new Collection( this );
-  },
+	edges: function (selector) {
+		const edges = this.$((ele) => ele.isEdge());
 
-  nodes: function( selector ){
-    let nodes = this.$( function( ele ){
-      return ele.isNode();
-    } );
+		if (selector) {
+			return edges.filter(selector);
+		}
 
-    if( selector ){
-      return nodes.filter( selector );
-    }
+		return edges;
+	},
 
-    return nodes;
-  },
+	// search the graph like jQuery
+	$: function (selector) {
+		const eles = this._private.elements;
 
-  edges: function( selector ){
-    let edges = this.$( function( ele ){
-      return ele.isEdge();
-    } );
+		if (selector) {
+			return eles.filter(selector);
+		} else {
+			return eles.spawnSelf();
+		}
+	},
 
-    if( selector ){
-      return edges.filter( selector );
-    }
-
-    return edges;
-  },
-
-  // search the graph like jQuery
-  $: function( selector ){
-    let eles = this._private.elements;
-
-    if( selector ){
-      return eles.filter( selector );
-    } else {
-      return eles.spawnSelf();
-    }
-  },
-
-  mutableElements: function(){
-    return this._private.elements;
-  }
-
-});
+	mutableElements: function () {
+		return this._private.elements;
+	},
+};
 
 // aliases
 corefn.elements = corefn.filter = corefn.$;

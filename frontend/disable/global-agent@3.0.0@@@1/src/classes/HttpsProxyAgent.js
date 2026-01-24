@@ -2,10 +2,12 @@
 
 import net from 'net';
 import tls from 'tls';
+
 import type {
   ConnectionCallbackType,
   ConnectionConfigurationType,
 } from '../types';
+
 import Agent from './Agent';
 
 class HttpsProxyAgent extends Agent {

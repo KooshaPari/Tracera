@@ -1,5 +1,5 @@
-import type { AnyNode } from 'domhandler';
-import type { Cheerio } from './cheerio.js';
+import type { AnyNode } from "domhandler";
+import type { Cheerio } from "./cheerio.js";
 
 /**
  * Checks if an object is a Cheerio instance.
@@ -9,9 +9,9 @@ import type { Cheerio } from './cheerio.js';
  * @returns Whether the object is a Cheerio instance.
  */
 export function isCheerio<T>(
-  maybeCheerio: unknown,
+	maybeCheerio: unknown,
 ): maybeCheerio is Cheerio<T> {
-  return (maybeCheerio as Cheerio<T>).cheerio != null;
+	return (maybeCheerio as Cheerio<T>).cheerio != null;
 }
 
 /**
@@ -23,7 +23,7 @@ export function isCheerio<T>(
  * @returns String in camel case notation.
  */
 export function camelCase(str: string): string {
-  return str.replace(/[._-](\w|$)/g, (_, x) => (x as string).toUpperCase());
+	return str.replace(/[._-](\w|$)/g, (_, x) => (x as string).toUpperCase());
 }
 
 /**
@@ -36,7 +36,7 @@ export function camelCase(str: string): string {
  * @returns String in "CSS case".
  */
 export function cssCase(str: string): string {
-  return str.replace(/[A-Z]/g, '-$&').toLowerCase();
+	return str.replace(/[A-Z]/g, "-$&").toLowerCase();
 }
 
 /**
@@ -52,20 +52,20 @@ export function cssCase(str: string): string {
  * @returns The original instance.
  */
 export function domEach<
-  T extends AnyNode,
-  Arr extends ArrayLike<T> = Cheerio<T>,
+	T extends AnyNode,
+	Arr extends ArrayLike<T> = Cheerio<T>,
 >(array: Arr, fn: (elem: T, index: number) => void): Arr {
-  const len = array.length;
-  for (let i = 0; i < len; i++) fn(array[i], i);
-  return array;
+	const len = array.length;
+	for (let i = 0; i < len; i++) fn(array[i], i);
+	return array;
 }
 
-const enum CharacterCode {
-  LowerA = 97,
-  LowerZ = 122,
-  UpperA = 65,
-  UpperZ = 90,
-  Exclamation = 33,
+enum CharacterCode {
+	LowerA = 97,
+	LowerZ = 122,
+	UpperA = 65,
+	UpperZ = 90,
+	Exclamation = 33,
 }
 
 /**
@@ -80,16 +80,16 @@ const enum CharacterCode {
  * @returns Indicates if `str` is HTML.
  */
 export function isHtml(str: string): boolean {
-  const tagStart = str.indexOf('<');
+	const tagStart = str.indexOf("<");
 
-  if (tagStart === -1 || tagStart > str.length - 3) return false;
+	if (tagStart === -1 || tagStart > str.length - 3) return false;
 
-  const tagChar = str.charCodeAt(tagStart + 1) as CharacterCode;
+	const tagChar = str.charCodeAt(tagStart + 1) as CharacterCode;
 
-  return (
-    ((tagChar >= CharacterCode.LowerA && tagChar <= CharacterCode.LowerZ) ||
-      (tagChar >= CharacterCode.UpperA && tagChar <= CharacterCode.UpperZ) ||
-      tagChar === CharacterCode.Exclamation) &&
-    str.includes('>', tagStart + 2)
-  );
+	return (
+		((tagChar >= CharacterCode.LowerA && tagChar <= CharacterCode.LowerZ) ||
+			(tagChar >= CharacterCode.UpperA && tagChar <= CharacterCode.UpperZ) ||
+			tagChar === CharacterCode.Exclamation) &&
+		str.includes(">", tagStart + 2)
+	);
 }

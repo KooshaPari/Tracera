@@ -7,4 +7,4 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 class YamlError extends _apidomError.ApiDOMStructuredError {}
-var _default = exports.default = YamlError;
+var _default = (exports.default = YamlError);

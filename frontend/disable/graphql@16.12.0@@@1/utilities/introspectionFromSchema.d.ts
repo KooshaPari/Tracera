@@ -1,8 +1,8 @@
-import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from "../type/schema";
 import type {
-  IntrospectionOptions,
-  IntrospectionQuery,
-} from './getIntrospectionQuery';
+	IntrospectionOptions,
+	IntrospectionQuery,
+} from "./getIntrospectionQuery";
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *
@@ -13,6 +13,6 @@ import type {
  * of the server context, for instance when doing schema comparisons.
  */
 export declare function introspectionFromSchema(
-  schema: GraphQLSchema,
-  options?: IntrospectionOptions,
+	schema: GraphQLSchema,
+	options?: IntrospectionOptions,
 ): IntrospectionQuery;

@@ -1,19 +1,19 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = doUntil;
 
-var _doWhilst = require('./doWhilst.js');
+var _doWhilst = require("./doWhilst.js");
 
 var _doWhilst2 = _interopRequireDefault(_doWhilst);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Like ['doWhilst']{@link module:ControlFlow.doWhilst}, except the `test` is inverted. Note the
@@ -37,10 +37,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback is passed
  */
 function doUntil(iteratee, test, callback) {
-    const _test = (0, _wrapAsync2.default)(test);
-    return (0, _doWhilst2.default)(iteratee, (...args) => {
-        const cb = args.pop();
-        _test(...args, (err, truth) => cb(err, !truth));
-    }, callback);
+	const _test = (0, _wrapAsync2.default)(test);
+	return (0, _doWhilst2.default)(
+		iteratee,
+		(...args) => {
+			const cb = args.pop();
+			_test(...args, (err, truth) => cb(err, !truth));
+		},
+		callback,
+	);
 }
 module.exports = exports.default;

@@ -11,6 +11,8 @@ lowercaseKeys({FOO: true, bAr: false});
 //=> {foo: true, bar: false}
 ```
 */
-declare function lowercaseKeys<T extends unknown>(object: {[key: string]: T}): {[key: string]: T};
+declare function lowercaseKeys<T>(object: { [key: string]: T }): {
+	[key: string]: T;
+};
 
 export = lowercaseKeys;

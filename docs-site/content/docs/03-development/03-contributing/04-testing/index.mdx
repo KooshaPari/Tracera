@@ -1,0 +1,288 @@
+---
+title: "Testing"
+description: "Testing guidelines and best practices for TraceRTM"
+keywords: [testing, pytest, unit tests, integration tests]
+---
+
+# Testing
+
+Testing guidelines and best practices for TraceRTM development.
+
+## Test Structure
+
+### Directory Layout
+
+```
+tests/
+├── unit/              # Unit tests
+│   ├── test_items.py
+│   └── test_links.py
+├── integration/       # Integration tests
+│   ├── test_api.py
+│   └── test_database.py
+└── fixtures/          # Test fixtures
+    └── conftest.py
+```
+
+## Running Tests
+
+### Run All Tests
+
+```bash
+# Run all tests
+pytest
+
+# Verbose output
+pytest -v
+
+# Show print statements
+pytest -s
+```
+
+### Run Specific Tests
+
+```bash
+# Run specific file
+pytest tests/test_items.py
+
+# Run specific test
+pytest tests/test_items.py::test_create_item
+
+# Run by keyword
+pytest -k "create"
+```
+
+### With Coverage
+
+```bash
+# Run with coverage
+pytest --cov=tracertm --cov-report=html
+
+# View coverage report
+open htmlcov/index.html
+```
+
+## Writing Tests
+
+### Unit Tests
+
+Test individual functions and methods:
+
+```python
+import pytest
+from tracertm.services.item_service import ItemService
+
+def test_create_item():
+    service = ItemService()
+    item = service.create(
+        title="Test Item",
+        view="requirements"
+    )
+    assert item["title"] == "Test Item"
+    assert item["view"] == "requirements"
+    assert "id" in item
+```
+
+### Integration Tests
+
+Test API endpoints:
+
+```python
+from fastapi.testclient import TestClient
+from tracertm.api.main import app
+
+client = TestClient(app)
+
+def test_create_item_endpoint():
+    response = client.post(
+        "/api/v1/items",
+        json={
+            "title": "Test Item",
+            "view": "requirements"
+        }
+    )
+    assert response.status_code == 201
+    assert response.json()["title"] == "Test Item"
+```
+
+### Fixtures
+
+Use pytest fixtures for test data:
+
+```python
+import pytest
+from tracertm.database import get_db
+
+@pytest.fixture
+def db_session():
+    """Create test database session."""
+    # Setup
+    session = get_test_db()
+    yield session
+    # Teardown
+    session.close()
+
+@pytest.fixture
+def sample_item(db_session):
+    """Create sample item for testing."""
+    return create_test_item(db_session, title="Sample Item")
+```
+
+## Test Best Practices
+
+### 1. Test Naming
+
+```python
+# Good - descriptive
+def test_create_item_with_valid_data():
+    pass
+
+def test_create_item_fails_with_empty_title():
+    pass
+
+# Bad - vague
+def test_item():
+    pass
+```
+
+### 2. Arrange-Act-Assert
+
+```python
+def test_update_item():
+    # Arrange
+    item = create_item(title="Original")
+    
+    # Act
+    updated = update_item(item["id"], title="Updated")
+    
+    # Assert
+    assert updated["title"] == "Updated"
+```
+
+### 3. Test Isolation
+
+Each test should be independent:
+
+```python
+# Good - isolated
+def test_create_item():
+    item = create_item(title="Test")
+    assert item["title"] == "Test"
+
+# Bad - depends on previous test
+def test_update_item():
+    # Assumes item from previous test exists
+    update_item(existing_item_id, ...)
+```
+
+### 4. Use Fixtures
+
+```python
+@pytest.fixture
+def test_project():
+    return create_test_project()
+
+def test_list_items(test_project):
+    items = list_items(test_project["id"])
+    assert len(items) >= 0
+```
+
+## Test Types
+
+### Unit Tests
+
+Test individual components:
+
+```python
+def test_item_validation():
+    validator = ItemValidator()
+    assert validator.validate_title("Valid Title")
+    assert not validator.validate_title("")
+```
+
+### Integration Tests
+
+Test component interactions:
+
+```python
+def test_item_creation_flow():
+    # Create item
+    item = create_item(...)
+    # Create link
+    link = create_link(item["id"], ...)
+    # Verify relationship
+    assert link["source_id"] == item["id"]
+```
+
+### End-to-End Tests
+
+Test complete workflows:
+
+```python
+def test_requirement_to_test_traceability():
+    # Create requirement
+    req = create_item(view="requirements", ...)
+    # Create test case
+    test = create_item(view="test-cases", ...)
+    # Create link
+    link = create_link(req["id"], test["id"], "verified_by")
+    # Verify traceability
+    assert is_traced(req["id"], test["id"])
+```
+
+## Mocking
+
+### Mock External Services
+
+```python
+from unittest.mock import patch, MagicMock
+
+@patch('tracertm.services.email_service.send_email')
+def test_notify_on_item_creation(mock_send):
+    create_item(title="Test")
+    mock_send.assert_called_once()
+```
+
+### Mock Database
+
+```python
+@pytest.fixture
+def mock_db():
+    return MagicMock()
+
+def test_get_item(mock_db):
+    mock_db.query.return_value.filter.return_value.first.return_value = test_item
+    result = get_item("item_123", db=mock_db)
+    assert result == test_item
+```
+
+## Test Coverage
+
+### Target Coverage
+
+- **Unit tests**: 90%+ coverage
+- **Integration tests**: Critical paths covered
+- **E2E tests**: Main user workflows
+
+### Check Coverage
+
+```bash
+# Generate coverage report
+pytest --cov=tracertm --cov-report=term-missing
+
+# HTML report
+pytest --cov=tracertm --cov-report=html
+```
+
+## Continuous Integration
+
+Tests run automatically on:
+- Pull requests
+- Commits to main branch
+- Scheduled runs
+
+## Related Documentation
+
+- [Unit Tests](./04a-unit-tests) - Unit testing details
+- [Integration Tests](./04b-integration-tests) - Integration testing
+- [E2E Tests](./04c-e2e-tests) - End-to-end testing

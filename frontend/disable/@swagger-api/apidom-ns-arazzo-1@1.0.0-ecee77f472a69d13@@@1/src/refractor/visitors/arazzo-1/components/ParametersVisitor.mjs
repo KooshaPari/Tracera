@@ -1,8 +1,9 @@
-import { Mixin } from 'ts-mixer';
-import { always } from 'ramda';
+import { always } from "ramda";
+import { Mixin } from "ts-mixer";
 import ComponentsParametersElement from "../../../../elements/nces/ComponentsParameters.mjs";
 import FallbackVisitor from "../../FallbackVisitor.mjs";
 import MapVisitor from "../../generics/MapVisitor.mjs";
+
 /**
  * @public
  */
@@ -10,10 +11,10 @@ import MapVisitor from "../../generics/MapVisitor.mjs";
  * @public
  */
 class ParametersVisitor extends Mixin(MapVisitor, FallbackVisitor) {
-  constructor(options) {
-    super(options);
-    this.element = new ComponentsParametersElement();
-    this.specPath = always(['document', 'objects', 'Parameter']);
-  }
+	constructor(options) {
+		super(options);
+		this.element = new ComponentsParametersElement();
+		this.specPath = always(["document", "objects", "Parameter"]);
+	}
 }
 export default ParametersVisitor;

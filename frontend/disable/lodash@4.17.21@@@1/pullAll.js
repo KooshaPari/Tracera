@@ -1,4 +1,4 @@
-var basePullAll = require('./_basePullAll');
+var basePullAll = require("./_basePullAll");
 
 /**
  * This method is like `_.pull` except that it accepts an array of values to remove.
@@ -21,9 +21,9 @@ var basePullAll = require('./_basePullAll');
  * // => ['b', 'b']
  */
 function pullAll(array, values) {
-  return (array && array.length && values && values.length)
-    ? basePullAll(array, values)
-    : array;
+	return array && array.length && values && values.length
+		? basePullAll(array, values)
+		: array;
 }
 
 module.exports = pullAll;

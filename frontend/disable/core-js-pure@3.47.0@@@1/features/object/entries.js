@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/entries');
+"use strict";
+module.exports = require("../../full/object/entries");

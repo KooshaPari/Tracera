@@ -27,7 +27,7 @@ import { addMinutes } from "./addMinutes.js";
  * //=> Thu Jul 10 2014 11:30:00
  */
 export function subMinutes(date, amount, options) {
-  return addMinutes(date, -amount, options);
+	return addMinutes(date, -amount, options);
 }
 
 // Fallback for modularized imports:

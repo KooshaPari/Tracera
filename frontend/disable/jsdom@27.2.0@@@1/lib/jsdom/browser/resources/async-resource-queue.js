@@ -1,13 +1,13 @@
 "use strict";
 
 class QueueItem {
-  constructor(onLoad, onError, dependentItem) {
-    this.onLoad = onLoad;
-    this.onError = onError;
-    this.data = null;
-    this.error = null;
-    this.dependentItem = dependentItem;
-  }
+	constructor(onLoad, onError, dependentItem) {
+		this.onLoad = onLoad;
+		this.onError = onError;
+		this.data = null;
+		this.error = null;
+		this.dependentItem = dependentItem;
+	}
 }
 
 /**
@@ -15,100 +15,97 @@ class QueueItem {
  * and notify when they finish.
  */
 module.exports = class AsyncResourceQueue {
-  constructor() {
-    this.items = new Set();
-    this.dependentItems = new Set();
-  }
+	constructor() {
+		this.items = new Set();
+		this.dependentItems = new Set();
+	}
 
-  count() {
-    return this.items.size + this.dependentItems.size;
-  }
+	count() {
+		return this.items.size + this.dependentItems.size;
+	}
 
-  _notify() {
-    if (this._listener) {
-      this._listener();
-    }
-  }
+	_notify() {
+		if (this._listener) {
+			this._listener();
+		}
+	}
 
-  _check(item) {
-    let promise;
+	_check(item) {
+		let promise;
 
-    if (item.onError && item.error) {
-      promise = item.onError(item.error);
-    } else if (item.onLoad && item.data) {
-      promise = item.onLoad(item.data);
-    }
+		if (item.onError && item.error) {
+			promise = item.onError(item.error);
+		} else if (item.onLoad && item.data) {
+			promise = item.onLoad(item.data);
+		}
 
-    promise
-      .then(() => {
-        this.items.delete(item);
-        this.dependentItems.delete(item);
+		promise.then(() => {
+			this.items.delete(item);
+			this.dependentItems.delete(item);
 
-        if (this.count() === 0) {
-          this._notify();
-        }
-      });
-  }
+			if (this.count() === 0) {
+				this._notify();
+			}
+		});
+	}
 
-  setListener(listener) {
-    this._listener = listener;
-  }
+	setListener(listener) {
+		this._listener = listener;
+	}
 
-  push(request, onLoad, onError, dependentItem) {
-    const q = this;
+	push(request, onLoad, onError, dependentItem) {
+		const item = new QueueItem(onLoad, onError, dependentItem);
 
-    const item = new QueueItem(onLoad, onError, dependentItem);
+		this.items.add(item);
 
-    q.items.add(item);
+		return request
+			.then((data) => {
+				item.data = data;
 
-    return request
-      .then(data => {
-        item.data = data;
+				if (dependentItem && !dependentItem.finished) {
+					this.dependentItems.add(item);
+					return this.items.delete(item);
+				}
 
-        if (dependentItem && !dependentItem.finished) {
-          q.dependentItems.add(item);
-          return q.items.delete(item);
-        }
+				if (onLoad) {
+					return this._check(item);
+				}
 
-        if (onLoad) {
-          return q._check(item);
-        }
+				this.items.delete(item);
 
-        q.items.delete(item);
+				if (this.count() === 0) {
+					this._notify();
+				}
 
-        if (q.count() === 0) {
-          q._notify();
-        }
+				return null;
+			})
+			.catch((err) => {
+				item.error = err;
 
-        return null;
-      })
-      .catch(err => {
-        item.error = err;
+				if (dependentItem && !dependentItem.finished) {
+					this.dependentItems.add(item);
+					return this.items.delete(item);
+				}
 
-        if (dependentItem && !dependentItem.finished) {
-          q.dependentItems.add(item);
-          return q.items.delete(item);
-        }
+				if (onError) {
+					return this._check(item);
+				}
 
-        if (onError) {
-          return q._check(item);
-        }
+				this.items.delete(item);
 
-        q.items.delete(item);
+				if (this.count() === 0) {
+					this._notify();
+				}
 
-        if (q.count() === 0) {
-          q._notify();
-        }
+				return null;
+			});
+	}
 
-        return null;
-      });
-  }
-
-  notifyItem(syncItem) {
-    for (const item of this.dependentItems) {
-      if (item.dependentItem === syncItem) {
-        this._check(item);
-      }
-    }
-  }
+	notifyItem(syncItem) {
+		for (const item of this.dependentItems) {
+			if (item.dependentItem === syncItem) {
+				this._check(item);
+			}
+		}
+	}
 };

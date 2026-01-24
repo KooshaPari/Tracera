@@ -1,77 +1,90 @@
+import common = require("./common");
 
-'use strict';
+class Mark {
+	constructor(
+		public name: string,
+		public buffer: string,
+		public position: number,
+		public line: number,
+		public column: number,
+	) {}
 
+	filePath: string;
 
-import common = require('./common');
+	toLineEnd: boolean;
 
-class Mark{
+	getSnippet(indent: number = 0, maxLength: number = 75) {
+		var head, start, tail, end, snippet;
 
-  constructor(public name:string, public buffer:string, public position:number, public line:number, public column:number) {
-  }
+		if (!this.buffer) {
+			return null;
+		}
 
-  filePath: string;
+		indent = indent || 4;
+		maxLength = maxLength || 75;
 
-  toLineEnd:boolean;
+		head = "";
+		start = this.position;
 
-  getSnippet(indent:number=0, maxLength:number=75) {
-  var head, start, tail, end, snippet;
+		while (
+			start > 0 &&
+			-1 === "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(start - 1))
+		) {
+			start -= 1;
+			if (this.position - start > maxLength / 2 - 1) {
+				head = " ... ";
+				start += 5;
+				break;
+			}
+		}
 
-  if (!this.buffer) {
-    return null;
-  }
+		tail = "";
+		end = this.position;
 
-  indent = indent || 4;
-  maxLength = maxLength || 75;
+		while (
+			end < this.buffer.length &&
+			-1 === "\x00\r\n\x85\u2028\u2029".indexOf(this.buffer.charAt(end))
+		) {
+			end += 1;
+			if (end - this.position > maxLength / 2 - 1) {
+				tail = " ... ";
+				end -= 5;
+				break;
+			}
+		}
 
-  head = '';
-  start = this.position;
+		snippet = this.buffer.slice(start, end);
 
-  while (start > 0 && -1 === '\x00\r\n\x85\u2028\u2029'.indexOf(this.buffer.charAt(start - 1))) {
-    start -= 1;
-    if (this.position - start > (maxLength / 2 - 1)) {
-      head = ' ... ';
-      start += 5;
-      break;
-    }
-  }
+		return (
+			common.repeat(" ", indent) +
+			head +
+			snippet +
+			tail +
+			"\n" +
+			common.repeat(" ", indent + this.position - start + head.length) +
+			"^"
+		);
+	}
 
-  tail = '';
-  end = this.position;
+	toString(compact: boolean = true) {
+		var snippet,
+			where = "";
 
-  while (end < this.buffer.length && -1 === '\x00\r\n\x85\u2028\u2029'.indexOf(this.buffer.charAt(end))) {
-    end += 1;
-    if (end - this.position > (maxLength / 2 - 1)) {
-      tail = ' ... ';
-      end -= 5;
-      break;
-    }
-  }
+		if (this.name) {
+			where += 'in "' + this.name + '" ';
+		}
 
-  snippet = this.buffer.slice(start, end);
+		where += "at line " + (this.line + 1) + ", column " + (this.column + 1);
 
-  return common.repeat(' ', indent) + head + snippet + tail + '\n' +
-      common.repeat(' ', indent + this.position - start + head.length) + '^';
-  }
+		if (!compact) {
+			snippet = this.getSnippet();
 
-  toString (compact:boolean=true) {
-  var snippet, where = '';
+			if (snippet) {
+				where += ":\n" + snippet;
+			}
+		}
 
-  if (this.name) {
-    where += 'in "' + this.name + '" ';
-  }
-
-  where += 'at line ' + (this.line + 1) + ', column ' + (this.column + 1);
-
-  if (!compact) {
-    snippet = this.getSnippet();
-
-    if (snippet) {
-      where += ':\n' + snippet;
-    }
-  }
-
-  return where;
+		return where;
+	}
 }
-
-}
-export = Mark
+export = Mark;

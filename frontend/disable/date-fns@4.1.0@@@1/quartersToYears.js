@@ -23,8 +23,8 @@ import { quartersInYear } from "./constants.js";
  * //=> 2
  */
 export function quartersToYears(quarters) {
-  const years = quarters / quartersInYear;
-  return Math.trunc(years);
+	const years = quarters / quartersInYear;
+	return Math.trunc(years);
 }
 
 // Fallback for modularized imports:

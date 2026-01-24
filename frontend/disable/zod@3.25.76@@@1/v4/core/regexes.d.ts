@@ -26,7 +26,8 @@ export declare const rfc5322Email: RegExp;
 /** A loose regex that allows Unicode characters, enforces length limits, and that's about it. */
 export declare const unicodeEmail: RegExp;
 export declare const browserEmail: RegExp;
-export declare const _emoji = "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$";
+export declare const _emoji =
+	"^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$";
 export declare function emoji(): RegExp;
 export declare const ipv4: RegExp;
 export declare const ipv6: RegExp;
@@ -38,17 +39,15 @@ export declare const hostname: RegExp;
 export declare const domain: RegExp;
 export declare const e164: RegExp;
 export declare const date: RegExp;
-export declare function time(args: {
-    precision?: number | null;
-}): RegExp;
+export declare function time(args: { precision?: number | null }): RegExp;
 export declare function datetime(args: {
-    precision?: number | null;
-    offset?: boolean;
-    local?: boolean;
+	precision?: number | null;
+	offset?: boolean;
+	local?: boolean;
 }): RegExp;
 export declare const string: (params?: {
-    minimum?: number | undefined;
-    maximum?: number | undefined;
+	minimum?: number | undefined;
+	maximum?: number | undefined;
 }) => RegExp;
 export declare const bigint: RegExp;
 export declare const integer: RegExp;

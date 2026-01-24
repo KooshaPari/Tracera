@@ -86,9 +86,9 @@ export function routes() {
 									: `_$(() => { const id = '${relative(
 											root,
 											buildId,
-									  )}'; return import(/* @vite-ignore */ import.meta.env.MANIFEST['${
+										)}'; return import(/* @vite-ignore */ import.meta.env.MANIFEST['${
 											router.name
-									  }'].inputs[id].output.path) })$_`,
+										}'].inputs[id].output.path) })$_`,
 						};
 					}
 					return v;
@@ -159,7 +159,7 @@ function jsCode() {
 						imports.get(i).default
 							? `${imports.get(i).default}${
 									Object.keys(imports.get(i)).length > 1 ? ", " : ""
-							  }`
+								}`
 							: ""
 					} ${getNamedExport(i)} from '${i}';`,
 			)

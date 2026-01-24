@@ -1,267 +1,298 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
 
-const Assert = require('@hapi/hoek/lib/assert');
-
-const Common = require('./common');
-const Ref = require('./ref');
-
+const Common = require("./common");
+const Ref = require("./ref");
 
 const internals = {};
 
-
-
 exports.Ids = internals.Ids = class {
+	constructor() {
+		this._byId = new Map();
+		this._byKey = new Map();
+		this._schemaChain = false;
+	}
 
-    constructor() {
+	clone() {
+		const clone = new internals.Ids();
+		clone._byId = new Map(this._byId);
+		clone._byKey = new Map(this._byKey);
+		clone._schemaChain = this._schemaChain;
+		return clone;
+	}
 
-        this._byId = new Map();
-        this._byKey = new Map();
-        this._schemaChain = false;
-    }
+	concat(source) {
+		if (source._schemaChain) {
+			this._schemaChain = true;
+		}
 
-    clone() {
+		for (const [id, value] of source._byId.entries()) {
+			Assert(
+				!this._byKey.has(id),
+				"Schema id conflicts with existing key:",
+				id,
+			);
+			this._byId.set(id, value);
+		}
 
-        const clone = new internals.Ids();
-        clone._byId = new Map(this._byId);
-        clone._byKey = new Map(this._byKey);
-        clone._schemaChain = this._schemaChain;
-        return clone;
-    }
+		for (const [key, value] of source._byKey.entries()) {
+			Assert(
+				!this._byId.has(key),
+				"Schema key conflicts with existing id:",
+				key,
+			);
+			this._byKey.set(key, value);
+		}
+	}
 
-    concat(source) {
+	fork(path, adjuster, root) {
+		const chain = this._collect(path);
+		chain.push({ schema: root });
+		const tail = chain.shift();
+		let adjusted = { id: tail.id, schema: adjuster(tail.schema) };
 
-        if (source._schemaChain) {
-            this._schemaChain = true;
-        }
+		Assert(
+			Common.isSchema(adjusted.schema),
+			"adjuster function failed to return a joi schema type",
+		);
 
-        for (const [id, value] of source._byId.entries()) {
-            Assert(!this._byKey.has(id), 'Schema id conflicts with existing key:', id);
-            this._byId.set(id, value);
-        }
+		for (const node of chain) {
+			adjusted = {
+				id: node.id,
+				schema: internals.fork(node.schema, adjusted.id, adjusted.schema),
+			};
+		}
 
-        for (const [key, value] of source._byKey.entries()) {
-            Assert(!this._byId.has(key), 'Schema key conflicts with existing id:', key);
-            this._byKey.set(key, value);
-        }
-    }
+		return adjusted.schema;
+	}
 
-    fork(path, adjuster, root) {
+	labels(path, behind = []) {
+		const current = path[0];
+		const node = this._get(current);
+		if (!node) {
+			return [...behind, ...path].join(".");
+		}
 
-        const chain = this._collect(path);
-        chain.push({ schema: root });
-        const tail = chain.shift();
-        let adjusted = { id: tail.id, schema: adjuster(tail.schema) };
+		const forward = path.slice(1);
+		behind = [...behind, node.schema._flags.label || current];
+		if (!forward.length) {
+			return behind.join(".");
+		}
 
-        Assert(Common.isSchema(adjusted.schema), 'adjuster function failed to return a joi schema type');
+		return node.schema._ids.labels(forward, behind);
+	}
 
-        for (const node of chain) {
-            adjusted = { id: node.id, schema: internals.fork(node.schema, adjusted.id, adjusted.schema) };
-        }
+	reach(path, behind = []) {
+		const current = path[0];
+		const node = this._get(current);
+		Assert(
+			node,
+			"Schema does not contain path",
+			[...behind, ...path].join("."),
+		);
 
-        return adjusted.schema;
-    }
+		const forward = path.slice(1);
+		if (!forward.length) {
+			return node.schema;
+		}
 
-    labels(path, behind = []) {
+		return node.schema._ids.reach(forward, [...behind, current]);
+	}
 
-        const current = path[0];
-        const node = this._get(current);
-        if (!node) {
-            return [...behind, ...path].join('.');
-        }
+	register(schema, { key } = {}) {
+		if (!schema || !Common.isSchema(schema)) {
+			return;
+		}
 
-        const forward = path.slice(1);
-        behind = [...behind, node.schema._flags.label || current];
-        if (!forward.length) {
-            return behind.join('.');
-        }
+		if (schema.$_property("schemaChain") || schema._ids._schemaChain) {
+			this._schemaChain = true;
+		}
 
-        return node.schema._ids.labels(forward, behind);
-    }
+		const id = schema._flags.id;
+		if (id) {
+			const existing = this._byId.get(id);
+			Assert(
+				!existing || existing.schema === schema,
+				"Cannot add different schemas with the same id:",
+				id,
+			);
+			Assert(
+				!this._byKey.has(id),
+				"Schema id conflicts with existing key:",
+				id,
+			);
 
-    reach(path, behind = []) {
+			this._byId.set(id, { schema, id });
+		}
 
-        const current = path[0];
-        const node = this._get(current);
-        Assert(node, 'Schema does not contain path', [...behind, ...path].join('.'));
+		if (key) {
+			Assert(!this._byKey.has(key), "Schema already contains key:", key);
+			Assert(
+				!this._byId.has(key),
+				"Schema key conflicts with existing id:",
+				key,
+			);
 
-        const forward = path.slice(1);
-        if (!forward.length) {
-            return node.schema;
-        }
+			this._byKey.set(key, { schema, id: key });
+		}
+	}
 
-        return node.schema._ids.reach(forward, [...behind, current]);
-    }
+	reset() {
+		this._byId = new Map();
+		this._byKey = new Map();
+		this._schemaChain = false;
+	}
 
-    register(schema, { key } = {}) {
+	_collect(path, behind = [], nodes = []) {
+		const current = path[0];
+		const node = this._get(current);
+		Assert(
+			node,
+			"Schema does not contain path",
+			[...behind, ...path].join("."),
+		);
 
-        if (!schema ||
-            !Common.isSchema(schema)) {
+		nodes = [node, ...nodes];
 
-            return;
-        }
+		const forward = path.slice(1);
+		if (!forward.length) {
+			return nodes;
+		}
 
-        if (schema.$_property('schemaChain') ||
-            schema._ids._schemaChain) {
+		return node.schema._ids._collect(forward, [...behind, current], nodes);
+	}
 
-            this._schemaChain = true;
-        }
-
-        const id = schema._flags.id;
-        if (id) {
-            const existing = this._byId.get(id);
-            Assert(!existing || existing.schema === schema, 'Cannot add different schemas with the same id:', id);
-            Assert(!this._byKey.has(id), 'Schema id conflicts with existing key:', id);
-
-            this._byId.set(id, { schema, id });
-        }
-
-        if (key) {
-            Assert(!this._byKey.has(key), 'Schema already contains key:', key);
-            Assert(!this._byId.has(key), 'Schema key conflicts with existing id:', key);
-
-            this._byKey.set(key, { schema, id: key });
-        }
-    }
-
-    reset() {
-
-        this._byId = new Map();
-        this._byKey = new Map();
-        this._schemaChain = false;
-    }
-
-    _collect(path, behind = [], nodes = []) {
-
-        const current = path[0];
-        const node = this._get(current);
-        Assert(node, 'Schema does not contain path', [...behind, ...path].join('.'));
-
-        nodes = [node, ...nodes];
-
-        const forward = path.slice(1);
-        if (!forward.length) {
-            return nodes;
-        }
-
-        return node.schema._ids._collect(forward, [...behind, current], nodes);
-    }
-
-    _get(id) {
-
-        return this._byId.get(id) || this._byKey.get(id);
-    }
+	_get(id) {
+		return this._byId.get(id) || this._byKey.get(id);
+	}
 };
 
+internals.fork = (schema, id, replacement) => {
+	const each = (item, { key }) => {
+		if (id === (item._flags.id || key)) {
+			return replacement;
+		}
+	};
 
-internals.fork = function (schema, id, replacement) {
-
-    const each = (item, { key }) => {
-
-        if (id === (item._flags.id || key)) {
-            return replacement;
-        }
-    };
-
-    const obj = exports.schema(schema, { each, ref: false });
-    return obj ? obj.$_mutateRebuild() : schema;
+	const obj = exports.schema(schema, { each, ref: false });
+	return obj ? obj.$_mutateRebuild() : schema;
 };
 
+exports.schema = (schema, options) => {
+	let obj;
 
-exports.schema = function (schema, options) {
+	for (const name in schema._flags) {
+		if (name[0] === "_") {
+			continue;
+		}
 
-    let obj;
+		const result = internals.scan(
+			schema._flags[name],
+			{ source: "flags", name },
+			options,
+		);
+		if (result !== undefined) {
+			obj = obj || schema.clone();
+			obj._flags[name] = result;
+		}
+	}
 
-    for (const name in schema._flags) {
-        if (name[0] === '_') {
-            continue;
-        }
+	for (let i = 0; i < schema._rules.length; ++i) {
+		const rule = schema._rules[i];
+		const result = internals.scan(
+			rule.args,
+			{ source: "rules", name: rule.name },
+			options,
+		);
+		if (result !== undefined) {
+			obj = obj || schema.clone();
+			const clone = Object.assign({}, rule);
+			clone.args = result;
+			obj._rules[i] = clone;
 
-        const result = internals.scan(schema._flags[name], { source: 'flags', name }, options);
-        if (result !== undefined) {
-            obj = obj || schema.clone();
-            obj._flags[name] = result;
-        }
-    }
+			const existingUnique = obj._singleRules.get(rule.name);
+			if (existingUnique === rule) {
+				obj._singleRules.set(rule.name, clone);
+			}
+		}
+	}
 
-    for (let i = 0; i < schema._rules.length; ++i) {
-        const rule = schema._rules[i];
-        const result = internals.scan(rule.args, { source: 'rules', name: rule.name }, options);
-        if (result !== undefined) {
-            obj = obj || schema.clone();
-            const clone = Object.assign({}, rule);
-            clone.args = result;
-            obj._rules[i] = clone;
+	for (const name in schema.$_terms) {
+		if (name[0] === "_") {
+			continue;
+		}
 
-            const existingUnique = obj._singleRules.get(rule.name);
-            if (existingUnique === rule) {
-                obj._singleRules.set(rule.name, clone);
-            }
-        }
-    }
+		const result = internals.scan(
+			schema.$_terms[name],
+			{ source: "terms", name },
+			options,
+		);
+		if (result !== undefined) {
+			obj = obj || schema.clone();
+			obj.$_terms[name] = result;
+		}
+	}
 
-    for (const name in schema.$_terms) {
-        if (name[0] === '_') {
-            continue;
-        }
-
-        const result = internals.scan(schema.$_terms[name], { source: 'terms', name }, options);
-        if (result !== undefined) {
-            obj = obj || schema.clone();
-            obj.$_terms[name] = result;
-        }
-    }
-
-    return obj;
+	return obj;
 };
 
+internals.scan = (item, source, options, _path, _key) => {
+	const path = _path || [];
 
-internals.scan = function (item, source, options, _path, _key) {
+	if (item === null || typeof item !== "object") {
+		return;
+	}
 
-    const path = _path || [];
+	let clone;
 
-    if (item === null ||
-        typeof item !== 'object') {
+	if (Array.isArray(item)) {
+		for (let i = 0; i < item.length; ++i) {
+			const key =
+				source.source === "terms" && source.name === "keys" && item[i].key;
+			const result = internals.scan(
+				item[i],
+				source,
+				options,
+				[i, ...path],
+				key,
+			);
+			if (result !== undefined) {
+				clone = clone || item.slice();
+				clone[i] = result;
+			}
+		}
 
-        return;
-    }
+		return clone;
+	}
 
-    let clone;
+	if (
+		(options.schema !== false && Common.isSchema(item)) ||
+		(options.ref !== false && Ref.isRef(item))
+	) {
+		const result = options.each(item, { ...source, path, key: _key });
+		if (result === item) {
+			return;
+		}
 
-    if (Array.isArray(item)) {
-        for (let i = 0; i < item.length; ++i) {
-            const key = source.source === 'terms' && source.name === 'keys' && item[i].key;
-            const result = internals.scan(item[i], source, options, [i, ...path], key);
-            if (result !== undefined) {
-                clone = clone || item.slice();
-                clone[i] = result;
-            }
-        }
+		return result;
+	}
 
-        return clone;
-    }
+	for (const key in item) {
+		if (key[0] === "_") {
+			continue;
+		}
 
-    if (options.schema !== false && Common.isSchema(item) ||
-        options.ref !== false && Ref.isRef(item)) {
+		const result = internals.scan(
+			item[key],
+			source,
+			options,
+			[key, ...path],
+			_key,
+		);
+		if (result !== undefined) {
+			clone = clone || Object.assign({}, item);
+			clone[key] = result;
+		}
+	}
 
-        const result = options.each(item, { ...source, path, key: _key });
-        if (result === item) {
-            return;
-        }
-
-        return result;
-    }
-
-    for (const key in item) {
-        if (key[0] === '_') {
-            continue;
-        }
-
-        const result = internals.scan(item[key], source, options, [key, ...path], _key);
-        if (result !== undefined) {
-            clone = clone || Object.assign({}, item);
-            clone[key] = result;
-        }
-    }
-
-    return clone;
+	return clone;
 };

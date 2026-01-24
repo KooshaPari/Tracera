@@ -20,5 +20,5 @@ var _index = require("./constants.cjs");
  * //=> 24
  */
 function yearsToMonths(years) {
-  return Math.trunc(years * _index.monthsInYear);
+	return Math.trunc(years * _index.monthsInYear);
 }

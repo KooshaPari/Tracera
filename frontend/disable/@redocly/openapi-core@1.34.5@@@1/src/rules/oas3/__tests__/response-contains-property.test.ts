@@ -1,11 +1,11 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import { makeConfig, parseYamlToDocument } from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 response-contains-property', () => {
-  it('should report a response object not containing the property', async () => {
-    const document = parseYamlToDocument(outdent`
+describe("Oas3 response-contains-property", () => {
+	it("should report a response object not containing the property", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -23,19 +23,19 @@ describe('Oas3 response-contains-property', () => {
                           type: string
                           example: AAA-123-BBB-456
 		`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { 201: ['id'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { 201: ["id"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -71,10 +71,10 @@ describe('Oas3 response-contains-property', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report response objects not containing props for a subset of status codes', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should report response objects not containing props for a subset of status codes", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -101,19 +101,19 @@ describe('Oas3 response-contains-property', () => {
                           type: integer
                 description: error
       `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { '2xx': ['id'], '400': ['error'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { "2xx": ["id"], "400": ["error"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -199,10 +199,10 @@ describe('Oas3 response-contains-property', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report response objects containing specified properties', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report response objects containing specified properties", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -231,23 +231,23 @@ describe('Oas3 response-contains-property', () => {
                         error:
                           type: string
       `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { '2xx': ['id'], '400': ['error'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { "2xx": ["id"], "400": ["error"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report a response object when schema type is not object', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report a response object when schema type is not object", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -261,23 +261,23 @@ describe('Oas3 response-contains-property', () => {
                     schema:
                       type: string
       `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { 201: ['id'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { 201: ["id"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report response objects when there is no `names` field specified', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report response objects when there is no `names` field specified", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -304,22 +304,22 @@ describe('Oas3 response-contains-property', () => {
                           type: integer
                 description: error
       `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report response objects for 204 status code', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report response objects for 204 status code", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -337,23 +337,23 @@ describe('Oas3 response-contains-property', () => {
                           type: string
                           example: AAA-123-BBB-456                  
       `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { '2xx': ['id'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { "2xx": ["id"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report response objects when there are no properties', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should report response objects when there are no properties", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -368,19 +368,19 @@ describe('Oas3 response-contains-property', () => {
                       type: object
                                       
       `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-property': {
-            severity: 'error',
-            names: { '2xx': ['id'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-property": {
+						severity: "error",
+						names: { "2xx": ["id"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -413,5 +413,5 @@ describe('Oas3 response-contains-property', () => {
         },
       ]
     `);
-  });
+	});
 });

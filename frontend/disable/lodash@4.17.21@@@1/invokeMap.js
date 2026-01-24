@@ -1,8 +1,8 @@
-var apply = require('./_apply'),
-    baseEach = require('./_baseEach'),
-    baseInvoke = require('./_baseInvoke'),
-    baseRest = require('./_baseRest'),
-    isArrayLike = require('./isArrayLike');
+var apply = require("./_apply"),
+	baseEach = require("./_baseEach"),
+	baseInvoke = require("./_baseInvoke"),
+	baseRest = require("./_baseRest"),
+	isArrayLike = require("./isArrayLike");
 
 /**
  * Invokes the method at `path` of each element in `collection`, returning
@@ -27,15 +27,17 @@ var apply = require('./_apply'),
  * _.invokeMap([123, 456], String.prototype.split, '');
  * // => [['1', '2', '3'], ['4', '5', '6']]
  */
-var invokeMap = baseRest(function(collection, path, args) {
-  var index = -1,
-      isFunc = typeof path == 'function',
-      result = isArrayLike(collection) ? Array(collection.length) : [];
+var invokeMap = baseRest((collection, path, args) => {
+	var index = -1,
+		isFunc = typeof path == "function",
+		result = isArrayLike(collection) ? Array(collection.length) : [];
 
-  baseEach(collection, function(value) {
-    result[++index] = isFunc ? apply(path, value, args) : baseInvoke(value, path, args);
-  });
-  return result;
+	baseEach(collection, (value) => {
+		result[++index] = isFunc
+			? apply(path, value, args)
+			: baseInvoke(value, path, args);
+	});
+	return result;
 });
 
 module.exports = invokeMap;

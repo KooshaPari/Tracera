@@ -32,6 +32,6 @@ import type { DateArg } from "./types.js";
  * // ]
  */
 export declare function compareAsc(
-  dateLeft: DateArg<Date> & {},
-  dateRight: DateArg<Date> & {},
+	dateLeft: DateArg<Date> & {},
+	dateRight: DateArg<Date> & {},
 ): number;

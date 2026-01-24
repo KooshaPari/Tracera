@@ -13,7 +13,10 @@ export declare function removeElement(elem: ChildNode): void;
  * @param elem The element to be replaced
  * @param replacement The element to be added
  */
-export declare function replaceElement(elem: ChildNode, replacement: ChildNode): void;
+export declare function replaceElement(
+	elem: ChildNode,
+	replacement: ChildNode,
+): void;
 /**
  * Append a child to an element.
  *
@@ -37,7 +40,10 @@ export declare function append(elem: ChildNode, next: ChildNode): void;
  * @param parent The element to prepend before.
  * @param child The element to be added as a child.
  */
-export declare function prependChild(parent: ParentNode, child: ChildNode): void;
+export declare function prependChild(
+	parent: ParentNode,
+	child: ChildNode,
+): void;
 /**
  * Prepend an element before another.
  *

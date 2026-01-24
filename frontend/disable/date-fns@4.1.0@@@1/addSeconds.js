@@ -27,7 +27,7 @@ import { addMilliseconds } from "./addMilliseconds.js";
  * //=> Thu Jul 10 2014 12:45:30
  */
 export function addSeconds(date, amount, options) {
-  return addMilliseconds(date, amount * 1000, options);
+	return addMilliseconds(date, amount * 1000, options);
 }
 
 // Fallback for modularized imports:

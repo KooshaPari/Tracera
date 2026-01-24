@@ -3,8 +3,8 @@ import type { ContextOptions, DateArg, RoundingOptions } from "./types.js";
  * The {@link differenceInQuarters} function options.
  */
 export interface DifferenceInQuartersOptions
-  extends RoundingOptions,
-    ContextOptions<Date> {}
+	extends RoundingOptions,
+		ContextOptions<Date> {}
 /**
  * @name differenceInQuarters
  * @category Quarter Helpers
@@ -25,7 +25,7 @@ export interface DifferenceInQuartersOptions
  * //=> 2
  */
 export declare function differenceInQuarters(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInQuartersOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInQuartersOptions | undefined,
 ): number;

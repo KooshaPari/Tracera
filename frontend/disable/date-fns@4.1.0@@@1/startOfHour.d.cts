@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link startOfHour} function options.
  */
 export interface StartOfHourOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name startOfHour
  * @category Hour Helpers
@@ -27,9 +27,9 @@ export interface StartOfHourOptions<DateType extends Date = Date>
  * //=> Tue Sep 02 2014 11:00:00
  */
 export declare function startOfHour<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: StartOfHourOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: StartOfHourOptions<ResultDate> | undefined,
 ): ResultDate;

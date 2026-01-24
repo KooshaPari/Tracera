@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/self');
+"use strict";
+module.exports = require("../full/self");

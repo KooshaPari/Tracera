@@ -8,19 +8,15 @@ Licensed under the MIT license.
 
 // This example generates a list of angles with human readable radians
 
-var Fraction = require('fraction.js');
+var Fraction = require("fraction.js");
 
 var tab = [];
 for (var d = 1; d <= 360; d++) {
+	var pi = Fraction(2, 360).mul(d);
+	var tau = Fraction(1, 360).mul(d);
 
-   var pi = Fraction(2, 360).mul(d);
-   var tau = Fraction(1, 360).mul(d);
-
-   if (pi.d <= 6n && pi.d != 5n)
-      tab.push([
-         d,
-         pi.toFraction() + "pi",
-         tau.toFraction() + "tau"]);
+	if (pi.d <= 6n && pi.d != 5n)
+		tab.push([d, pi.toFraction() + "pi", tau.toFraction() + "tau"]);
 }
 
 console.table(tab);

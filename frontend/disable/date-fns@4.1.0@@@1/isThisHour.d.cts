@@ -24,6 +24,6 @@ export interface IsThisHourOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isThisHour(
-  date: DateArg<Date> & {},
-  options?: IsThisHourOptions,
+	date: DateArg<Date> & {},
+	options?: IsThisHourOptions,
 ): boolean;

@@ -6,15 +6,16 @@ var _apidomNsJsonSchemaDraft = require("@swagger-api/apidom-ns-json-schema-draft
 /**
  * @public
  */
-const JSONSchemaTypeVisitor = exports.JSONSchemaTypeVisitor = _apidomNsJsonSchemaDraft.specificationObj.visitors.document.objects.JSONSchema.fixedFields.type;
+const JSONSchemaTypeVisitor = (exports.JSONSchemaTypeVisitor =
+	_apidomNsJsonSchemaDraft.specificationObj.visitors.document.objects.JSONSchema.fixedFields.type);
 
 /**
  * @public
  */
 class TypeVisitor extends JSONSchemaTypeVisitor {
-  ArrayElement(arrayElement) {
-    const result = this.enter(arrayElement);
-    return result;
-  }
+	ArrayElement(arrayElement) {
+		const result = this.enter(arrayElement);
+		return result;
+	}
 }
-var _default = exports.default = TypeVisitor;
+var _default = (exports.default = TypeVisitor);

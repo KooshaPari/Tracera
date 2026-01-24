@@ -1,10 +1,9 @@
-import { createWebpackPlugin } from 'unplugin'
-
-import { configSchema } from './core/config'
-import { unpluginRouterCodeSplitterFactory } from './core/router-code-splitter-plugin'
-import { unpluginRouterGeneratorFactory } from './core/router-generator-plugin'
-import { unpluginRouterComposedFactory } from './core/router-composed-plugin'
-import type { CodeSplittingOptions, Config } from './core/config'
+import { createWebpackPlugin } from "unplugin";
+import type { CodeSplittingOptions, Config } from "./core/config";
+import { configSchema } from "./core/config";
+import { unpluginRouterCodeSplitterFactory } from "./core/router-code-splitter-plugin";
+import { unpluginRouterComposedFactory } from "./core/router-composed-plugin";
+import { unpluginRouterGeneratorFactory } from "./core/router-generator-plugin";
 
 /**
  * @example
@@ -16,8 +15,8 @@ import type { CodeSplittingOptions, Config } from './core/config'
  * ```
  */
 const TanStackRouterGeneratorWebpack = /* #__PURE__ */ createWebpackPlugin(
-  unpluginRouterGeneratorFactory,
-)
+	unpluginRouterGeneratorFactory,
+);
 
 /**
  * @example
@@ -29,8 +28,8 @@ const TanStackRouterGeneratorWebpack = /* #__PURE__ */ createWebpackPlugin(
  * ```
  */
 const TanStackRouterCodeSplitterWebpack = /* #__PURE__ */ createWebpackPlugin(
-  unpluginRouterCodeSplitterFactory,
-)
+	unpluginRouterCodeSplitterFactory,
+);
 
 /**
  * @example
@@ -42,16 +41,16 @@ const TanStackRouterCodeSplitterWebpack = /* #__PURE__ */ createWebpackPlugin(
  * ```
  */
 const TanStackRouterWebpack = /* #__PURE__ */ createWebpackPlugin(
-  unpluginRouterComposedFactory,
-)
+	unpluginRouterComposedFactory,
+);
 
-const tanstackRouter = TanStackRouterWebpack
-export default TanStackRouterWebpack
+const tanstackRouter = TanStackRouterWebpack;
+export default TanStackRouterWebpack;
 export {
-  configSchema,
-  TanStackRouterWebpack,
-  TanStackRouterGeneratorWebpack,
-  TanStackRouterCodeSplitterWebpack,
-  tanstackRouter,
-}
-export type { Config, CodeSplittingOptions }
+	configSchema,
+	TanStackRouterWebpack,
+	TanStackRouterGeneratorWebpack,
+	TanStackRouterCodeSplitterWebpack,
+	tanstackRouter,
+};
+export type { Config, CodeSplittingOptions };

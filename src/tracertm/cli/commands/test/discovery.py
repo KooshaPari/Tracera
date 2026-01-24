@@ -1,16 +1,11 @@
 """Test discovery module for scanning test files across multiple languages."""
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
+from tracertm.cli.commands.test.runner import TestFile
 
-@dataclass
-class TestFile:
-    """Represents a discovered test file."""
-    path: str
-    language: str  # "python", "go", "typescript"
-    file_path: Path
+__all__ = ["TestDiscovery", "TestFile"]
 
 
 class TestDiscovery:
@@ -58,7 +53,6 @@ class TestDiscovery:
             TestFile(
                 path=str(f.relative_to(self.project_root)),
                 language="python",
-                file_path=f,
             )
             for f in test_dir.glob(pattern) if f.is_file()
         ]
@@ -74,7 +68,7 @@ class TestDiscovery:
             TestFile(
                 path=str(f.relative_to(self.project_root)),
                 language="go",
-                file_path=f,
+                package=str(f.parent.relative_to(self.project_root)),
             )
             for f in test_dir.glob(pattern) if f.is_file()
         ]
@@ -96,7 +90,6 @@ class TestDiscovery:
                 TestFile(
                     path=str(f.relative_to(self.project_root)),
                     language="typescript",
-                    file_path=f,
                 )
                 for f in test_dir.glob(pattern) if f.is_file()
             ])

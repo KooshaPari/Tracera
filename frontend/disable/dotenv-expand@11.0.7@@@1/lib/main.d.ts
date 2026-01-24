@@ -2,40 +2,40 @@
 /// <reference types="node" />
 
 export interface DotenvPopulateInput {
-  [name: string]: string;
+	[name: string]: string;
 }
 
 export interface DotenvParseInput {
-  [name: string]: string;
+	[name: string]: string;
 }
 
 export interface DotenvParseOutput {
-  [name: string]: string;
+	[name: string]: string;
 }
 
 export interface DotenvExpandOptions {
-  error?: Error;
+	error?: Error;
 
-  /**
-   * Default: `process.env`
-   *
-   * Specify an object to write your secrets to. Defaults to process.env environment variables.
-   *
-   * example: `const processEnv = {}; require('dotenv').config({ processEnv: processEnv })`
-   */
-  processEnv?: DotenvPopulateInput;
+	/**
+	 * Default: `process.env`
+	 *
+	 * Specify an object to write your secrets to. Defaults to process.env environment variables.
+	 *
+	 * example: `const processEnv = {}; require('dotenv').config({ processEnv: processEnv })`
+	 */
+	processEnv?: DotenvPopulateInput;
 
-  /**
-   * Default: `object`
-   *
-   * Object coming from dotenv's parsed result.
-   */
-  parsed?: DotenvParseInput;
+	/**
+	 * Default: `object`
+	 *
+	 * Object coming from dotenv's parsed result.
+	 */
+	parsed?: DotenvParseInput;
 }
 
 export interface DotenvExpandOutput {
-  error?: Error;
-  parsed?: DotenvParseOutput;
+	error?: Error;
+	parsed?: DotenvParseOutput;
 }
 
 /**
@@ -47,4 +47,4 @@ export interface DotenvExpandOutput {
  * @returns an object with a `parsed` key if successful or `error` key if an error occurred. example: { parsed: { KEY: 'value' } }
  *
  */
-export function expand(options?: DotenvExpandOptions): DotenvExpandOutput
+export function expand(options?: DotenvExpandOptions): DotenvExpandOutput;

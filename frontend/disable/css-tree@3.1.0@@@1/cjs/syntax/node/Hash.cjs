@@ -1,26 +1,26 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
 // '#' ident
-const xxx = 'XXX';
-const name = 'Hash';
+const xxx = "XXX";
+const name = "Hash";
 const structure = {
-    value: String
+	value: String,
 };
 function parse() {
-    const start = this.tokenStart;
+	const start = this.tokenStart;
 
-    this.eat(types.Hash);
+	this.eat(types.Hash);
 
-    return {
-        type: 'Hash',
-        loc: this.getLocation(start, this.tokenStart),
-        value: this.substrToCursor(start + 1)
-    };
+	return {
+		type: "Hash",
+		loc: this.getLocation(start, this.tokenStart),
+		value: this.substrToCursor(start + 1),
+	};
 }
 function generate(node) {
-    this.token(types.Hash, '#' + node.value);
+	this.token(types.Hash, "#" + node.value);
 }
 
 exports.generate = generate;

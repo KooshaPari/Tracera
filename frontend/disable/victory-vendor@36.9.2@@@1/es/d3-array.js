@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-array` (ESM)
 // See upstream license: https://github.com/d3/d3-array/blob/main/LICENSE
 //

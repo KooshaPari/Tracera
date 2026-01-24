@@ -2,52 +2,52 @@
  * @jest-environment jsdom
  */
 
-import * as colorette from 'colorette';
-import { logger, colorize } from '../logger';
+import * as colorette from "colorette";
+import { colorize, logger } from "../logger";
 
-describe('Logger in Browser', () => {
-  it('should call "console.error"', () => {
-    const error = jest.spyOn(console, 'error').mockImplementation();
+describe("Logger in Browser", () => {
+	it('should call "console.error"', () => {
+		const error = jest.spyOn(console, "error").mockImplementation();
 
-    logger.error('error');
+		logger.error("error");
 
-    expect(error).toBeCalledTimes(1);
-    expect(error).toBeCalledWith('error');
+		expect(error).toBeCalledTimes(1);
+		expect(error).toBeCalledWith("error");
 
-    error.mockRestore();
-  });
+		error.mockRestore();
+	});
 
-  it('should call "console.log"', () => {
-    const log = jest.spyOn(console, 'log').mockImplementation();
+	it('should call "console.log"', () => {
+		const log = jest.spyOn(console, "log").mockImplementation();
 
-    logger.info('info');
+		logger.info("info");
 
-    expect(log).toBeCalledTimes(1);
-    expect(log).toBeCalledWith('info');
+		expect(log).toBeCalledTimes(1);
+		expect(log).toBeCalledWith("info");
 
-    log.mockRestore();
-  });
+		log.mockRestore();
+	});
 
-  it('should call "console.warn"', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation();
+	it('should call "console.warn"', () => {
+		const warn = jest.spyOn(console, "warn").mockImplementation();
 
-    logger.warn('warn');
+		logger.warn("warn");
 
-    expect(warn).toBeCalledTimes(1);
-    expect(warn).toBeCalledWith('warn');
+		expect(warn).toBeCalledTimes(1);
+		expect(warn).toBeCalledWith("warn");
 
-    warn.mockRestore();
-  });
+		warn.mockRestore();
+	});
 });
 
-describe('colorize in Browser', () => {
-  it('should not call original colorette lib', () => {
-    const color = 'cyan';
-    const spyingCyan = jest.spyOn(colorette, color);
+describe("colorize in Browser", () => {
+	it("should not call original colorette lib", () => {
+		const color = "cyan";
+		const spyingCyan = jest.spyOn(colorette, color);
 
-    const colorized = colorize.cyan(color);
+		const colorized = colorize.cyan(color);
 
-    expect(spyingCyan).not.toBeCalled();
-    expect(colorized).toEqual(color);
-  });
+		expect(spyingCyan).not.toBeCalled();
+		expect(colorized).toEqual(color);
+	});
 });

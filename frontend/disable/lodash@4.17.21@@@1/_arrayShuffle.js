@@ -1,5 +1,5 @@
-var copyArray = require('./_copyArray'),
-    shuffleSelf = require('./_shuffleSelf');
+var copyArray = require("./_copyArray"),
+	shuffleSelf = require("./_shuffleSelf");
 
 /**
  * A specialized version of `_.shuffle` for arrays.
@@ -9,7 +9,7 @@ var copyArray = require('./_copyArray'),
  * @returns {Array} Returns the new shuffled array.
  */
 function arrayShuffle(array) {
-  return shuffleSelf(copyArray(array));
+	return shuffleSelf(copyArray(array));
 }
 
 module.exports = arrayShuffle;

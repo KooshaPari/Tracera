@@ -28,13 +28,13 @@ import { toDate } from "./toDate.js";
  * //=> 53
  */
 export function getISOWeek(date, options) {
-  const _date = toDate(date, options?.in);
-  const diff = +startOfISOWeek(_date) - +startOfISOWeekYear(_date);
+	const _date = toDate(date, options?.in);
+	const diff = +startOfISOWeek(_date) - +startOfISOWeekYear(_date);
 
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(diff / millisecondsInWeek) + 1;
+	// Round the number of weeks to the nearest integer because the number of
+	// milliseconds in a week is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round(diff / millisecondsInWeek) + 1;
 }
 
 // Fallback for modularized imports:

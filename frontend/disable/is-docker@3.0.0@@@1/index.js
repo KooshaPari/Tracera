@@ -1,10 +1,10 @@
-import fs from 'node:fs';
+import fs from "node:fs";
 
 let isDockerCached;
 
 function hasDockerEnv() {
 	try {
-		fs.statSync('/.dockerenv');
+		fs.statSync("/.dockerenv");
 		return true;
 	} catch {
 		return false;
@@ -13,7 +13,7 @@ function hasDockerEnv() {
 
 function hasDockerCGroup() {
 	try {
-		return fs.readFileSync('/proc/self/cgroup', 'utf8').includes('docker');
+		return fs.readFileSync("/proc/self/cgroup", "utf8").includes("docker");
 	} catch {
 		return false;
 	}

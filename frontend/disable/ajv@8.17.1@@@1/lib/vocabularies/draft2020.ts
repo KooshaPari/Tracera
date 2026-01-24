@@ -1,23 +1,23 @@
-import type {Vocabulary} from "../types"
-import coreVocabulary from "./core"
-import validationVocabulary from "./validation"
-import getApplicatorVocabulary from "./applicator"
-import dynamicVocabulary from "./dynamic"
-import nextVocabulary from "./next"
-import unevaluatedVocabulary from "./unevaluated"
-import formatVocabulary from "./format"
-import {metadataVocabulary, contentVocabulary} from "./metadata"
+import type { Vocabulary } from "../types";
+import getApplicatorVocabulary from "./applicator";
+import coreVocabulary from "./core";
+import dynamicVocabulary from "./dynamic";
+import formatVocabulary from "./format";
+import { contentVocabulary, metadataVocabulary } from "./metadata";
+import nextVocabulary from "./next";
+import unevaluatedVocabulary from "./unevaluated";
+import validationVocabulary from "./validation";
 
 const draft2020Vocabularies: Vocabulary[] = [
-  dynamicVocabulary,
-  coreVocabulary,
-  validationVocabulary,
-  getApplicatorVocabulary(true),
-  formatVocabulary,
-  metadataVocabulary,
-  contentVocabulary,
-  nextVocabulary,
-  unevaluatedVocabulary,
-]
+	dynamicVocabulary,
+	coreVocabulary,
+	validationVocabulary,
+	getApplicatorVocabulary(true),
+	formatVocabulary,
+	metadataVocabulary,
+	contentVocabulary,
+	nextVocabulary,
+	unevaluatedVocabulary,
+];
 
-export default draft2020Vocabularies
+export default draft2020Vocabularies;

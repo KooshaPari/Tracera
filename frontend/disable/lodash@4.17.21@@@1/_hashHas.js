@@ -1,4 +1,4 @@
-var nativeCreate = require('./_nativeCreate');
+var nativeCreate = require("./_nativeCreate");
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -16,8 +16,10 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
 function hashHas(key) {
-  var data = this.__data__;
-  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
+	var data = this.__data__;
+	return nativeCreate
+		? data[key] !== undefined
+		: hasOwnProperty.call(data, key);
 }
 
 module.exports = hashHas;

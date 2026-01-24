@@ -1,2 +1,2 @@
 // eslint-disable-next-line strict
-module.exports = require('form-data');
+module.exports = require("form-data");

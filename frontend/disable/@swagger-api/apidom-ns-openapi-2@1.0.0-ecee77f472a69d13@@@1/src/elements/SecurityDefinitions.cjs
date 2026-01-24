@@ -7,9 +7,9 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class SecurityDefinitions extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'securityDefinitions';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "securityDefinitions";
+	}
 }
-var _default = exports.default = SecurityDefinitions;
+var _default = (exports.default = SecurityDefinitions);

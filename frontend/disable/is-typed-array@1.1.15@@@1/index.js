@@ -1,6 +1,4 @@
-'use strict';
-
-var whichTypedArray = require('which-typed-array');
+var whichTypedArray = require("which-typed-array");
 
 /** @type {import('.')} */
 module.exports = function isTypedArray(value) {

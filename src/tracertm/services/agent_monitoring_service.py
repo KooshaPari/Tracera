@@ -40,15 +40,18 @@ class AgentMonitoringService:
             List of health status dictionaries
         """
         if agent_id:
-            agents = [self.session.query(Agent).filter(Agent.id == agent_id).first()]
-            if not agents[0]:
+            agent = self.session.query(Agent).filter(Agent.id == agent_id).first()
+            if agent is None:
                 return []
+            agents = [agent]
         else:
             agents = self.session.query(Agent).filter(Agent.project_id == project_id).all()
 
         health_status = []
 
         for agent in agents:
+            if agent is None:
+                continue
             # Determine health
             if agent.last_activity_at:
                 try:

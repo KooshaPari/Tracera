@@ -1,9 +1,10 @@
-const { dirname, resolve } = require('path');
-const { readdirSync, statSync } = require('fs');
+const { dirname, resolve } = require("path");
+const { readdirSync, statSync } = require("fs");
 
-module.exports = function (start, callback) {
-	let dir = resolve('.', start);
-	let tmp, stats = statSync(dir);
+module.exports = (start, callback) => {
+	let dir = resolve(".", start);
+	let tmp,
+		stats = statSync(dir);
 
 	if (!stats.isDirectory()) {
 		dir = dirname(dir);
@@ -12,7 +13,7 @@ module.exports = function (start, callback) {
 	while (true) {
 		tmp = callback(dir, readdirSync(dir));
 		if (tmp) return resolve(dir, tmp);
-		dir = dirname(tmp = dir);
+		dir = dirname((tmp = dir));
 		if (tmp === dir) break;
 	}
-}
+};

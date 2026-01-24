@@ -1,26 +1,24 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
 exports.validate = validate;
 exports.validateSDL = validateSDL;
 
-var _devAssert = require('../jsutils/devAssert.js');
+var _devAssert = require("../jsutils/devAssert.js");
 
-var _GraphQLError = require('../error/GraphQLError.js');
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _visitor = require('../language/visitor.js');
+var _visitor = require("../language/visitor.js");
 
-var _validate = require('../type/validate.js');
+var _validate = require("../type/validate.js");
 
-var _TypeInfo = require('../utilities/TypeInfo.js');
+var _TypeInfo = require("../utilities/TypeInfo.js");
 
-var _specifiedRules = require('./specifiedRules.js');
+var _specifiedRules = require("./specifiedRules.js");
 
-var _ValidationContext = require('./ValidationContext.js');
+var _ValidationContext = require("./ValidationContext.js");
 
 /**
  * Implements the "Validation" section of the spec.
@@ -43,83 +41,83 @@ var _ValidationContext = require('./ValidationContext.js');
  * will be created from the provided schema.
  */
 function validate(
-  schema,
-  documentAST,
-  rules = _specifiedRules.specifiedRules,
-  options,
-  /** @deprecated will be removed in 17.0.0 */
-  typeInfo = new _TypeInfo.TypeInfo(schema),
+	schema,
+	documentAST,
+	rules = _specifiedRules.specifiedRules,
+	options,
+	/** @deprecated will be removed in 17.0.0 */
+	typeInfo = new _TypeInfo.TypeInfo(schema),
 ) {
-  var _options$maxErrors;
+	var _options$maxErrors;
 
-  const maxErrors =
-    (_options$maxErrors =
-      options === null || options === void 0 ? void 0 : options.maxErrors) !==
-      null && _options$maxErrors !== void 0
-      ? _options$maxErrors
-      : 100;
-  documentAST || (0, _devAssert.devAssert)(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
+	const maxErrors =
+		(_options$maxErrors =
+			options === null || options === void 0 ? void 0 : options.maxErrors) !==
+			null && _options$maxErrors !== void 0
+			? _options$maxErrors
+			: 100;
+	documentAST || (0, _devAssert.devAssert)(false, "Must provide document."); // If the schema used for validation is invalid, throw an error.
 
-  (0, _validate.assertValidSchema)(schema);
-  const abortObj = Object.freeze({});
-  const errors = [];
-  const context = new _ValidationContext.ValidationContext(
-    schema,
-    documentAST,
-    typeInfo,
-    (error) => {
-      if (errors.length >= maxErrors) {
-        errors.push(
-          new _GraphQLError.GraphQLError(
-            'Too many validation errors, error limit reached. Validation aborted.',
-          ),
-        ); // eslint-disable-next-line @typescript-eslint/no-throw-literal
+	(0, _validate.assertValidSchema)(schema);
+	const abortObj = Object.freeze({});
+	const errors = [];
+	const context = new _ValidationContext.ValidationContext(
+		schema,
+		documentAST,
+		typeInfo,
+		(error) => {
+			if (errors.length >= maxErrors) {
+				errors.push(
+					new _GraphQLError.GraphQLError(
+						"Too many validation errors, error limit reached. Validation aborted.",
+					),
+				); // eslint-disable-next-line @typescript-eslint/no-throw-literal
 
-        throw abortObj;
-      }
+				throw abortObj;
+			}
 
-      errors.push(error);
-    },
-  ); // This uses a specialized visitor which runs multiple visitors in parallel,
-  // while maintaining the visitor skip and break API.
+			errors.push(error);
+		},
+	); // This uses a specialized visitor which runs multiple visitors in parallel,
+	// while maintaining the visitor skip and break API.
 
-  const visitor = (0, _visitor.visitInParallel)(
-    rules.map((rule) => rule(context)),
-  ); // Visit the whole document with each instance of all provided rules.
+	const visitor = (0, _visitor.visitInParallel)(
+		rules.map((rule) => rule(context)),
+	); // Visit the whole document with each instance of all provided rules.
 
-  try {
-    (0, _visitor.visit)(
-      documentAST,
-      (0, _TypeInfo.visitWithTypeInfo)(typeInfo, visitor),
-    );
-  } catch (e) {
-    if (e !== abortObj) {
-      throw e;
-    }
-  }
+	try {
+		(0, _visitor.visit)(
+			documentAST,
+			(0, _TypeInfo.visitWithTypeInfo)(typeInfo, visitor),
+		);
+	} catch (e) {
+		if (e !== abortObj) {
+			throw e;
+		}
+	}
 
-  return errors;
+	return errors;
 }
 /**
  * @internal
  */
 
 function validateSDL(
-  documentAST,
-  schemaToExtend,
-  rules = _specifiedRules.specifiedSDLRules,
+	documentAST,
+	schemaToExtend,
+	rules = _specifiedRules.specifiedSDLRules,
 ) {
-  const errors = [];
-  const context = new _ValidationContext.SDLValidationContext(
-    documentAST,
-    schemaToExtend,
-    (error) => {
-      errors.push(error);
-    },
-  );
-  const visitors = rules.map((rule) => rule(context));
-  (0, _visitor.visit)(documentAST, (0, _visitor.visitInParallel)(visitors));
-  return errors;
+	const errors = [];
+	const context = new _ValidationContext.SDLValidationContext(
+		documentAST,
+		schemaToExtend,
+		(error) => {
+			errors.push(error);
+		},
+	);
+	const visitors = rules.map((rule) => rule(context));
+	(0, _visitor.visit)(documentAST, (0, _visitor.visitInParallel)(visitors));
+	return errors;
 }
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
@@ -129,11 +127,11 @@ function validateSDL(
  */
 
 function assertValidSDL(documentAST) {
-  const errors = validateSDL(documentAST);
+	const errors = validateSDL(documentAST);
 
-  if (errors.length !== 0) {
-    throw new Error(errors.map((error) => error.message).join('\n\n'));
-  }
+	if (errors.length !== 0) {
+		throw new Error(errors.map((error) => error.message).join("\n\n"));
+	}
 }
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
@@ -143,9 +141,9 @@ function assertValidSDL(documentAST) {
  */
 
 function assertValidSDLExtension(documentAST, schema) {
-  const errors = validateSDL(documentAST, schema);
+	const errors = validateSDL(documentAST, schema);
 
-  if (errors.length !== 0) {
-    throw new Error(errors.map((error) => error.message).join('\n\n'));
-  }
+	if (errors.length !== 0) {
+		throw new Error(errors.map((error) => error.message).join("\n\n"));
+	}
 }

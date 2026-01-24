@@ -46,8 +46,8 @@ var _index2 = require("./toDate.cjs");
  * //=> Sun Jan 4 2004 00:00:00
  */
 function setWeek(date, week, options) {
-  const date_ = (0, _index2.toDate)(date, options?.in);
-  const diff = (0, _index.getWeek)(date_, options) - week;
-  date_.setDate(date_.getDate() - diff * 7);
-  return (0, _index2.toDate)(date_, options?.in);
+	const date_ = (0, _index2.toDate)(date, options?.in);
+	const diff = (0, _index.getWeek)(date_, options) - week;
+	date_.setDate(date_.getDate() - diff * 7);
+	return (0, _index2.toDate)(date_, options?.in);
 }

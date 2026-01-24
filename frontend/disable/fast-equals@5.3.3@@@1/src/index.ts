@@ -1,31 +1,31 @@
 import {
-  createEqualityComparatorConfig,
-  createEqualityComparator,
-  createInternalEqualityComparator,
-  createIsEqual,
-} from './comparator.js';
-import type { CustomEqualCreatorOptions } from './internalTypes.js';
-import { sameValueZeroEqual } from './utils.js';
+	createEqualityComparator,
+	createEqualityComparatorConfig,
+	createInternalEqualityComparator,
+	createIsEqual,
+} from "./comparator.js";
+import type { CustomEqualCreatorOptions } from "./internalTypes.js";
+import { sameValueZeroEqual } from "./utils.js";
 
 export { sameValueZeroEqual };
 export type {
-  AnyEqualityComparator,
-  Cache,
-  CircularState,
-  ComparatorConfig,
-  CreateCustomComparatorConfig,
-  CreateState,
-  CustomEqualCreatorOptions,
-  DefaultState,
-  Dictionary,
-  EqualityComparator,
-  EqualityComparatorCreator,
-  InternalEqualityComparator,
-  PrimitiveWrapper,
-  State,
-  TypeEqualityComparator,
-  TypedArray,
-} from './internalTypes.js';
+	AnyEqualityComparator,
+	Cache,
+	CircularState,
+	ComparatorConfig,
+	CreateCustomComparatorConfig,
+	CreateState,
+	CustomEqualCreatorOptions,
+	DefaultState,
+	Dictionary,
+	EqualityComparator,
+	EqualityComparatorCreator,
+	InternalEqualityComparator,
+	PrimitiveWrapper,
+	State,
+	TypedArray,
+	TypeEqualityComparator,
+} from "./internalTypes.js";
 
 /**
  * Whether the items passed are deeply-equal in value.
@@ -47,31 +47,31 @@ export const circularDeepEqual = createCustomEqual({ circular: true });
  * based on strict comparison.
  */
 export const strictCircularDeepEqual = createCustomEqual({
-  circular: true,
-  strict: true,
+	circular: true,
+	strict: true,
 });
 
 /**
  * Whether the items passed are shallowly-equal in value.
  */
 export const shallowEqual = createCustomEqual({
-  createInternalComparator: () => sameValueZeroEqual,
+	createInternalComparator: () => sameValueZeroEqual,
 });
 
 /**
  * Whether the items passed are shallowly-equal in value based on strict comparison
  */
 export const strictShallowEqual = createCustomEqual({
-  strict: true,
-  createInternalComparator: () => sameValueZeroEqual,
+	strict: true,
+	createInternalComparator: () => sameValueZeroEqual,
 });
 
 /**
  * Whether the items passed are shallowly-equal in value, including circular references.
  */
 export const circularShallowEqual = createCustomEqual({
-  circular: true,
-  createInternalComparator: () => sameValueZeroEqual,
+	circular: true,
+	createInternalComparator: () => sameValueZeroEqual,
 });
 
 /**
@@ -79,9 +79,9 @@ export const circularShallowEqual = createCustomEqual({
  * based on strict comparison.
  */
 export const strictCircularShallowEqual = createCustomEqual({
-  circular: true,
-  createInternalComparator: () => sameValueZeroEqual,
-  strict: true,
+	circular: true,
+	createInternalComparator: () => sameValueZeroEqual,
+	strict: true,
 });
 
 /**
@@ -93,20 +93,20 @@ export const strictCircularShallowEqual = createCustomEqual({
  * `RegExp.prototype.flags` out of the box.
  */
 export function createCustomEqual<Meta = undefined>(
-  options: CustomEqualCreatorOptions<Meta> = {},
+	options: CustomEqualCreatorOptions<Meta> = {},
 ) {
-  const {
-    circular = false,
-    createInternalComparator: createCustomInternalComparator,
-    createState,
-    strict = false,
-  } = options;
+	const {
+		circular = false,
+		createInternalComparator: createCustomInternalComparator,
+		createState,
+		strict = false,
+	} = options;
 
-  const config = createEqualityComparatorConfig<Meta>(options);
-  const comparator = createEqualityComparator(config);
-  const equals = createCustomInternalComparator
-    ? createCustomInternalComparator(comparator)
-    : createInternalEqualityComparator(comparator);
+	const config = createEqualityComparatorConfig<Meta>(options);
+	const comparator = createEqualityComparator(config);
+	const equals = createCustomInternalComparator
+		? createCustomInternalComparator(comparator)
+		: createInternalEqualityComparator(comparator);
 
-  return createIsEqual({ circular, comparator, createState, equals, strict });
+	return createIsEqual({ circular, comparator, createState, equals, strict });
 }

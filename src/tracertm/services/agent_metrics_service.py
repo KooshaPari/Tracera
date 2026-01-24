@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from tracertm.models.agent import Agent
 from tracertm.models.event import Event
+from tracertm.models.item import Item
 
 
 class AgentMetricsService:
@@ -81,10 +82,12 @@ class AgentMetricsService:
             conflict_rate = (conflicts / total_ops * 100) if total_ops > 0 else 0
 
             # Calculate average response time (if available in event data)
-            response_times = []
+            response_times: list[float] = []
             for event in agent_events:
                 if event.data and "response_time_ms" in event.data:
-                    response_times.append(event.data["response_time_ms"])
+                    rt = event.data["response_time_ms"]
+                    if isinstance(rt, (int, float)):
+                        response_times.append(float(rt))
 
             avg_response_time = sum(response_times) / len(response_times) if response_times else None
 
@@ -133,7 +136,7 @@ class AgentMetricsService:
             .all()
         )
 
-        status_counts = {}
+        status_counts: dict[str, int] = {}
         for item in items:
             status_counts[item.status] = status_counts.get(item.status, 0) + 1
 

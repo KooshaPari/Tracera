@@ -25,6 +25,6 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isWeekend(date, options) {
-  const day = (0, _index.toDate)(date, options?.in).getDay();
-  return day === 0 || day === 6;
+	const day = (0, _index.toDate)(date, options?.in).getDay();
+	return day === 0 || day === 6;
 }

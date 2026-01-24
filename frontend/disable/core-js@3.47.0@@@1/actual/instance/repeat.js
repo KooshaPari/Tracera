@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/instance/repeat');
+"use strict";
+var parent = require("../../stable/instance/repeat");
 
 module.exports = parent;

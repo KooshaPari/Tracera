@@ -61,28 +61,28 @@ var _index2 = require("./differenceInCalendarDays.cjs");
  * //=> 92
  */
 function differenceInDays(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const sign = compareLocalAsc(laterDate_, earlierDate_);
-  const difference = Math.abs(
-    (0, _index2.differenceInCalendarDays)(laterDate_, earlierDate_),
-  );
+	const sign = compareLocalAsc(laterDate_, earlierDate_);
+	const difference = Math.abs(
+		(0, _index2.differenceInCalendarDays)(laterDate_, earlierDate_),
+	);
 
-  laterDate_.setDate(laterDate_.getDate() - sign * difference);
+	laterDate_.setDate(laterDate_.getDate() - sign * difference);
 
-  // Math.abs(diff in full days - diff in calendar days) === 1 if last calendar day is not full
-  // If so, result must be decreased by 1 in absolute value
-  const isLastDayNotFull = Number(
-    compareLocalAsc(laterDate_, earlierDate_) === -sign,
-  );
+	// Math.abs(diff in full days - diff in calendar days) === 1 if last calendar day is not full
+	// If so, result must be decreased by 1 in absolute value
+	const isLastDayNotFull = Number(
+		compareLocalAsc(laterDate_, earlierDate_) === -sign,
+	);
 
-  const result = sign * (difference - isLastDayNotFull);
-  // Prevent negative zero
-  return result === 0 ? 0 : result;
+	const result = sign * (difference - isLastDayNotFull);
+	// Prevent negative zero
+	return result === 0 ? 0 : result;
 }
 
 // Like `compareAsc` but uses local time not UTC, which is needed
@@ -90,18 +90,18 @@ function differenceInDays(laterDate, earlierDate, options) {
 // having the same representation in local time, e.g. one hour before
 // DST ends vs. the instant that DST ends.
 function compareLocalAsc(laterDate, earlierDate) {
-  const diff =
-    laterDate.getFullYear() - earlierDate.getFullYear() ||
-    laterDate.getMonth() - earlierDate.getMonth() ||
-    laterDate.getDate() - earlierDate.getDate() ||
-    laterDate.getHours() - earlierDate.getHours() ||
-    laterDate.getMinutes() - earlierDate.getMinutes() ||
-    laterDate.getSeconds() - earlierDate.getSeconds() ||
-    laterDate.getMilliseconds() - earlierDate.getMilliseconds();
+	const diff =
+		laterDate.getFullYear() - earlierDate.getFullYear() ||
+		laterDate.getMonth() - earlierDate.getMonth() ||
+		laterDate.getDate() - earlierDate.getDate() ||
+		laterDate.getHours() - earlierDate.getHours() ||
+		laterDate.getMinutes() - earlierDate.getMinutes() ||
+		laterDate.getSeconds() - earlierDate.getSeconds() ||
+		laterDate.getMilliseconds() - earlierDate.getMilliseconds();
 
-  if (diff < 0) return -1;
-  if (diff > 0) return 1;
+	if (diff < 0) return -1;
+	if (diff > 0) return 1;
 
-  // Return 0 if diff is 0; return NaN if diff is NaN
-  return diff;
+	// Return 0 if diff is 0; return NaN if diff is NaN
+	return diff;
 }

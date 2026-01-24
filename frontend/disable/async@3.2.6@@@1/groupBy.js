@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = groupBy;
 
-var _groupByLimit = require('./groupByLimit.js');
+var _groupByLimit = require("./groupByLimit.js");
 
 var _groupByLimit2 = _interopRequireDefault(_groupByLimit);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Returns a new object, where each value corresponds to an array of items, from
@@ -103,6 +103,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function groupBy(coll, iteratee, callback) {
-    return (0, _groupByLimit2.default)(coll, Infinity, iteratee, callback);
+	return (0, _groupByLimit2.default)(coll, Infinity, iteratee, callback);
 }
 module.exports = exports.default;

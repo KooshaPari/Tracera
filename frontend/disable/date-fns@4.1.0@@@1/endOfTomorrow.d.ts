@@ -3,7 +3,7 @@ import type { ContextOptions } from "./types.js";
  * The {@link endOfTomorrow} function options.
  */
 export interface EndOfTomorrowOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfTomorrow
  * @category Day Helpers
@@ -25,6 +25,6 @@ export interface EndOfTomorrowOptions<DateType extends Date = Date>
  * //=> Tue Oct 7 2014 23:59:59.999
  */
 export declare function endOfTomorrow<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(options?: EndOfTomorrowOptions<ResultDate> | undefined): ResultDate;

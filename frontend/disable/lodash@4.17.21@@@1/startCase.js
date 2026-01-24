@@ -1,5 +1,5 @@
-var createCompounder = require('./_createCompounder'),
-    upperFirst = require('./upperFirst');
+var createCompounder = require("./_createCompounder"),
+	upperFirst = require("./upperFirst");
 
 /**
  * Converts `string` to
@@ -22,8 +22,8 @@ var createCompounder = require('./_createCompounder'),
  * _.startCase('__FOO_BAR__');
  * // => 'FOO BAR'
  */
-var startCase = createCompounder(function(result, word, index) {
-  return result + (index ? ' ' : '') + upperFirst(word);
-});
+var startCase = createCompounder(
+	(result, word, index) => result + (index ? " " : "") + upperFirst(word),
+);
 
 module.exports = startCase;

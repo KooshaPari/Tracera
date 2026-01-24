@@ -30,28 +30,28 @@ import { daysInYear } from "./constants.js";
  * //=> 7889238000
  */
 export function milliseconds({
-  years,
-  months,
-  weeks,
-  days,
-  hours,
-  minutes,
-  seconds,
+	years,
+	months,
+	weeks,
+	days,
+	hours,
+	minutes,
+	seconds,
 }) {
-  let totalDays = 0;
+	let totalDays = 0;
 
-  if (years) totalDays += years * daysInYear;
-  if (months) totalDays += months * (daysInYear / 12);
-  if (weeks) totalDays += weeks * 7;
-  if (days) totalDays += days;
+	if (years) totalDays += years * daysInYear;
+	if (months) totalDays += months * (daysInYear / 12);
+	if (weeks) totalDays += weeks * 7;
+	if (days) totalDays += days;
 
-  let totalSeconds = totalDays * 24 * 60 * 60;
+	let totalSeconds = totalDays * 24 * 60 * 60;
 
-  if (hours) totalSeconds += hours * 60 * 60;
-  if (minutes) totalSeconds += minutes * 60;
-  if (seconds) totalSeconds += seconds;
+	if (hours) totalSeconds += hours * 60 * 60;
+	if (minutes) totalSeconds += minutes * 60;
+	if (seconds) totalSeconds += seconds;
 
-  return Math.trunc(totalSeconds * 1000);
+	return Math.trunc(totalSeconds * 1000);
 }
 
 // Fallback for modularized imports:

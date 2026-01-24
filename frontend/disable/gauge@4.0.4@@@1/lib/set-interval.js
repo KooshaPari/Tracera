@@ -1,3 +1,2 @@
-'use strict'
 // this exists so we can replace it during testing
-module.exports = setInterval
+module.exports = setInterval;

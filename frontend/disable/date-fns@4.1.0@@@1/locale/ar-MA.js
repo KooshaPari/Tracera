@@ -12,17 +12,17 @@ import { match } from "./ar-MA/_lib/match.js";
  * @author Achraf Rrami [@rramiachraf](https://github.com/rramiachraf)
  */
 export const arMA = {
-  code: "ar-MA",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    // Monday is 1
-    weekStartsOn: 1,
-    firstWeekContainsDate: 1,
-  },
+	code: "ar-MA",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		// Monday is 1
+		weekStartsOn: 1,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

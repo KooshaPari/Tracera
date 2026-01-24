@@ -41,27 +41,27 @@ var _index3 = require("./toDate.cjs");
  */
 
 function getOverlappingDaysInIntervals(intervalLeft, intervalRight) {
-  const [leftStart, leftEnd] = [
-    +(0, _index3.toDate)(intervalLeft.start),
-    +(0, _index3.toDate)(intervalLeft.end),
-  ].sort((a, b) => a - b);
-  const [rightStart, rightEnd] = [
-    +(0, _index3.toDate)(intervalRight.start),
-    +(0, _index3.toDate)(intervalRight.end),
-  ].sort((a, b) => a - b);
+	const [leftStart, leftEnd] = [
+		+(0, _index3.toDate)(intervalLeft.start),
+		+(0, _index3.toDate)(intervalLeft.end),
+	].sort((a, b) => a - b);
+	const [rightStart, rightEnd] = [
+		+(0, _index3.toDate)(intervalRight.start),
+		+(0, _index3.toDate)(intervalRight.end),
+	].sort((a, b) => a - b);
 
-  // Prevent NaN result if intervals don't overlap at all.
-  const isOverlapping = leftStart < rightEnd && rightStart < leftEnd;
-  if (!isOverlapping) return 0;
+	// Prevent NaN result if intervals don't overlap at all.
+	const isOverlapping = leftStart < rightEnd && rightStart < leftEnd;
+	if (!isOverlapping) return 0;
 
-  // Remove the timezone offset to negate the DST effect on calculations.
-  const overlapLeft = rightStart < leftStart ? leftStart : rightStart;
-  const left =
-    overlapLeft - (0, _index.getTimezoneOffsetInMilliseconds)(overlapLeft);
-  const overlapRight = rightEnd > leftEnd ? leftEnd : rightEnd;
-  const right =
-    overlapRight - (0, _index.getTimezoneOffsetInMilliseconds)(overlapRight);
+	// Remove the timezone offset to negate the DST effect on calculations.
+	const overlapLeft = rightStart < leftStart ? leftStart : rightStart;
+	const left =
+		overlapLeft - (0, _index.getTimezoneOffsetInMilliseconds)(overlapLeft);
+	const overlapRight = rightEnd > leftEnd ? leftEnd : rightEnd;
+	const right =
+		overlapRight - (0, _index.getTimezoneOffsetInMilliseconds)(overlapRight);
 
-  // Ceil the number to include partial days too.
-  return Math.ceil((right - left) / _index2.millisecondsInDay);
+	// Ceil the number to include partial days too.
+	return Math.ceil((right - left) / _index2.millisecondsInDay);
 }

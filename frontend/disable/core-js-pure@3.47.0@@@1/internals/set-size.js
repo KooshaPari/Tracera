@@ -1,4 +1,2 @@
-'use strict';
-module.exports = function (set) {
-  return set.size;
-};
+"use strict";
+module.exports = (set) => set.size;

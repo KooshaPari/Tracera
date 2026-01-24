@@ -7,11 +7,11 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class Parameter extends _apidomNsOpenapi.ParameterElement {
-  get schema() {
-    return this.get('schema');
-  }
-  set schema(schema) {
-    this.set('schema', schema);
-  }
+	get schema() {
+		return this.get("schema");
+	}
+	set schema(schema) {
+		this.set("schema", schema);
+	}
 }
-var _default = exports.default = Parameter;
+var _default = (exports.default = Parameter);

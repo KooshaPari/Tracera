@@ -18,7 +18,7 @@ import { monthsInYear } from "./constants.js";
  * //=> 24
  */
 export function yearsToMonths(years) {
-  return Math.trunc(years * monthsInYear);
+	return Math.trunc(years * monthsInYear);
 }
 
 // Fallback for modularized imports:

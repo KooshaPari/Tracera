@@ -1,25 +1,25 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = auto;
 
-var _once = require('./internal/once.js');
+var _once = require("./internal/once.js");
 
 var _once2 = _interopRequireDefault(_once);
 
-var _onlyOnce = require('./internal/onlyOnce.js');
+var _onlyOnce = require("./internal/onlyOnce.js");
 
 var _onlyOnce2 = _interopRequireDefault(_onlyOnce);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _promiseCallback = require('./internal/promiseCallback.js');
+var _promiseCallback = require("./internal/promiseCallback.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Determines the best order for running the {@link AsyncFunction}s in `tasks`, based on
@@ -167,167 +167,178 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function auto(tasks, concurrency, callback) {
-    if (typeof concurrency !== 'number') {
-        // concurrency is optional, shift the args.
-        callback = concurrency;
-        concurrency = null;
-    }
-    callback = (0, _once2.default)(callback || (0, _promiseCallback.promiseCallback)());
-    var numTasks = Object.keys(tasks).length;
-    if (!numTasks) {
-        return callback(null);
-    }
-    if (!concurrency) {
-        concurrency = numTasks;
-    }
+	if (typeof concurrency !== "number") {
+		// concurrency is optional, shift the args.
+		callback = concurrency;
+		concurrency = null;
+	}
+	callback = (0, _once2.default)(
+		callback || (0, _promiseCallback.promiseCallback)(),
+	);
+	var numTasks = Object.keys(tasks).length;
+	if (!numTasks) {
+		return callback(null);
+	}
+	if (!concurrency) {
+		concurrency = numTasks;
+	}
 
-    var results = {};
-    var runningTasks = 0;
-    var canceled = false;
-    var hasError = false;
+	var results = {};
+	var runningTasks = 0;
+	var canceled = false;
+	var hasError = false;
 
-    var listeners = Object.create(null);
+	var listeners = Object.create(null);
 
-    var readyTasks = [];
+	var readyTasks = [];
 
-    // for cycle detection:
-    var readyToCheck = []; // tasks that have been identified as reachable
-    // without the possibility of returning to an ancestor task
-    var uncheckedDependencies = {};
+	// for cycle detection:
+	var readyToCheck = []; // tasks that have been identified as reachable
+	// without the possibility of returning to an ancestor task
+	var uncheckedDependencies = {};
 
-    Object.keys(tasks).forEach(key => {
-        var task = tasks[key];
-        if (!Array.isArray(task)) {
-            // no dependencies
-            enqueueTask(key, [task]);
-            readyToCheck.push(key);
-            return;
-        }
+	Object.keys(tasks).forEach((key) => {
+		var task = tasks[key];
+		if (!Array.isArray(task)) {
+			// no dependencies
+			enqueueTask(key, [task]);
+			readyToCheck.push(key);
+			return;
+		}
 
-        var dependencies = task.slice(0, task.length - 1);
-        var remainingDependencies = dependencies.length;
-        if (remainingDependencies === 0) {
-            enqueueTask(key, task);
-            readyToCheck.push(key);
-            return;
-        }
-        uncheckedDependencies[key] = remainingDependencies;
+		var dependencies = task.slice(0, task.length - 1);
+		var remainingDependencies = dependencies.length;
+		if (remainingDependencies === 0) {
+			enqueueTask(key, task);
+			readyToCheck.push(key);
+			return;
+		}
+		uncheckedDependencies[key] = remainingDependencies;
 
-        dependencies.forEach(dependencyName => {
-            if (!tasks[dependencyName]) {
-                throw new Error('async.auto task `' + key + '` has a non-existent dependency `' + dependencyName + '` in ' + dependencies.join(', '));
-            }
-            addListener(dependencyName, () => {
-                remainingDependencies--;
-                if (remainingDependencies === 0) {
-                    enqueueTask(key, task);
-                }
-            });
-        });
-    });
+		dependencies.forEach((dependencyName) => {
+			if (!tasks[dependencyName]) {
+				throw new Error(
+					"async.auto task `" +
+						key +
+						"` has a non-existent dependency `" +
+						dependencyName +
+						"` in " +
+						dependencies.join(", "),
+				);
+			}
+			addListener(dependencyName, () => {
+				remainingDependencies--;
+				if (remainingDependencies === 0) {
+					enqueueTask(key, task);
+				}
+			});
+		});
+	});
 
-    checkForDeadlocks();
-    processQueue();
+	checkForDeadlocks();
+	processQueue();
 
-    function enqueueTask(key, task) {
-        readyTasks.push(() => runTask(key, task));
-    }
+	function enqueueTask(key, task) {
+		readyTasks.push(() => runTask(key, task));
+	}
 
-    function processQueue() {
-        if (canceled) return;
-        if (readyTasks.length === 0 && runningTasks === 0) {
-            return callback(null, results);
-        }
-        while (readyTasks.length && runningTasks < concurrency) {
-            var run = readyTasks.shift();
-            run();
-        }
-    }
+	function processQueue() {
+		if (canceled) return;
+		if (readyTasks.length === 0 && runningTasks === 0) {
+			return callback(null, results);
+		}
+		while (readyTasks.length && runningTasks < concurrency) {
+			var run = readyTasks.shift();
+			run();
+		}
+	}
 
-    function addListener(taskName, fn) {
-        var taskListeners = listeners[taskName];
-        if (!taskListeners) {
-            taskListeners = listeners[taskName] = [];
-        }
+	function addListener(taskName, fn) {
+		var taskListeners = listeners[taskName];
+		if (!taskListeners) {
+			taskListeners = listeners[taskName] = [];
+		}
 
-        taskListeners.push(fn);
-    }
+		taskListeners.push(fn);
+	}
 
-    function taskComplete(taskName) {
-        var taskListeners = listeners[taskName] || [];
-        taskListeners.forEach(fn => fn());
-        processQueue();
-    }
+	function taskComplete(taskName) {
+		var taskListeners = listeners[taskName] || [];
+		taskListeners.forEach((fn) => fn());
+		processQueue();
+	}
 
-    function runTask(key, task) {
-        if (hasError) return;
+	function runTask(key, task) {
+		if (hasError) return;
 
-        var taskCallback = (0, _onlyOnce2.default)((err, ...result) => {
-            runningTasks--;
-            if (err === false) {
-                canceled = true;
-                return;
-            }
-            if (result.length < 2) {
-                [result] = result;
-            }
-            if (err) {
-                var safeResults = {};
-                Object.keys(results).forEach(rkey => {
-                    safeResults[rkey] = results[rkey];
-                });
-                safeResults[key] = result;
-                hasError = true;
-                listeners = Object.create(null);
-                if (canceled) return;
-                callback(err, safeResults);
-            } else {
-                results[key] = result;
-                taskComplete(key);
-            }
-        });
+		var taskCallback = (0, _onlyOnce2.default)((err, ...result) => {
+			runningTasks--;
+			if (err === false) {
+				canceled = true;
+				return;
+			}
+			if (result.length < 2) {
+				[result] = result;
+			}
+			if (err) {
+				var safeResults = {};
+				Object.keys(results).forEach((rkey) => {
+					safeResults[rkey] = results[rkey];
+				});
+				safeResults[key] = result;
+				hasError = true;
+				listeners = Object.create(null);
+				if (canceled) return;
+				callback(err, safeResults);
+			} else {
+				results[key] = result;
+				taskComplete(key);
+			}
+		});
 
-        runningTasks++;
-        var taskFn = (0, _wrapAsync2.default)(task[task.length - 1]);
-        if (task.length > 1) {
-            taskFn(results, taskCallback);
-        } else {
-            taskFn(taskCallback);
-        }
-    }
+		runningTasks++;
+		var taskFn = (0, _wrapAsync2.default)(task[task.length - 1]);
+		if (task.length > 1) {
+			taskFn(results, taskCallback);
+		} else {
+			taskFn(taskCallback);
+		}
+	}
 
-    function checkForDeadlocks() {
-        // Kahn's algorithm
-        // https://en.wikipedia.org/wiki/Topological_sorting#Kahn.27s_algorithm
-        // http://connalle.blogspot.com/2013/10/topological-sortingkahn-algorithm.html
-        var currentTask;
-        var counter = 0;
-        while (readyToCheck.length) {
-            currentTask = readyToCheck.pop();
-            counter++;
-            getDependents(currentTask).forEach(dependent => {
-                if (--uncheckedDependencies[dependent] === 0) {
-                    readyToCheck.push(dependent);
-                }
-            });
-        }
+	function checkForDeadlocks() {
+		// Kahn's algorithm
+		// https://en.wikipedia.org/wiki/Topological_sorting#Kahn.27s_algorithm
+		// http://connalle.blogspot.com/2013/10/topological-sortingkahn-algorithm.html
+		var currentTask;
+		var counter = 0;
+		while (readyToCheck.length) {
+			currentTask = readyToCheck.pop();
+			counter++;
+			getDependents(currentTask).forEach((dependent) => {
+				if (--uncheckedDependencies[dependent] === 0) {
+					readyToCheck.push(dependent);
+				}
+			});
+		}
 
-        if (counter !== numTasks) {
-            throw new Error('async.auto cannot execute tasks due to a recursive dependency');
-        }
-    }
+		if (counter !== numTasks) {
+			throw new Error(
+				"async.auto cannot execute tasks due to a recursive dependency",
+			);
+		}
+	}
 
-    function getDependents(taskName) {
-        var result = [];
-        Object.keys(tasks).forEach(key => {
-            const task = tasks[key];
-            if (Array.isArray(task) && task.indexOf(taskName) >= 0) {
-                result.push(key);
-            }
-        });
-        return result;
-    }
+	function getDependents(taskName) {
+		var result = [];
+		Object.keys(tasks).forEach((key) => {
+			const task = tasks[key];
+			if (Array.isArray(task) && task.indexOf(taskName) >= 0) {
+				result.push(key);
+			}
+		});
+		return result;
+	}
 
-    return callback[_promiseCallback.PROMISE_SYMBOL];
+	return callback[_promiseCallback.PROMISE_SYMBOL];
 }
 module.exports = exports.default;

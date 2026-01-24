@@ -1,17 +1,17 @@
-import type {Vocabulary} from "../types"
-import coreVocabulary from "./core"
-import validationVocabulary from "./validation"
-import getApplicatorVocabulary from "./applicator"
-import formatVocabulary from "./format"
-import {metadataVocabulary, contentVocabulary} from "./metadata"
+import type { Vocabulary } from "../types";
+import getApplicatorVocabulary from "./applicator";
+import coreVocabulary from "./core";
+import formatVocabulary from "./format";
+import { contentVocabulary, metadataVocabulary } from "./metadata";
+import validationVocabulary from "./validation";
 
 const draft7Vocabularies: Vocabulary[] = [
-  coreVocabulary,
-  validationVocabulary,
-  getApplicatorVocabulary(),
-  formatVocabulary,
-  metadataVocabulary,
-  contentVocabulary,
-]
+	coreVocabulary,
+	validationVocabulary,
+	getApplicatorVocabulary(),
+	formatVocabulary,
+	metadataVocabulary,
+	contentVocabulary,
+];
 
-export default draft7Vocabularies
+export default draft7Vocabularies;

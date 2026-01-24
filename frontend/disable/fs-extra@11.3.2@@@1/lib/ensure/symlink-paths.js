@@ -1,10 +1,8 @@
-'use strict'
+const path = require("path");
+const fs = require("../fs");
+const { pathExists } = require("../path-exists");
 
-const path = require('path')
-const fs = require('../fs')
-const { pathExists } = require('../path-exists')
-
-const u = require('universalify').fromPromise
+const u = require("universalify").fromPromise;
 
 /**
  * Function that returns two types of paths, one relative to symlink, and one
@@ -28,74 +26,74 @@ const u = require('universalify').fromPromise
  * the ability to pass in `relative to current working direcotry` paths.
  */
 
-async function symlinkPaths (srcpath, dstpath) {
-  if (path.isAbsolute(srcpath)) {
-    try {
-      await fs.lstat(srcpath)
-    } catch (err) {
-      err.message = err.message.replace('lstat', 'ensureSymlink')
-      throw err
-    }
+async function symlinkPaths(srcpath, dstpath) {
+	if (path.isAbsolute(srcpath)) {
+		try {
+			await fs.lstat(srcpath);
+		} catch (err) {
+			err.message = err.message.replace("lstat", "ensureSymlink");
+			throw err;
+		}
 
-    return {
-      toCwd: srcpath,
-      toDst: srcpath
-    }
-  }
+		return {
+			toCwd: srcpath,
+			toDst: srcpath,
+		};
+	}
 
-  const dstdir = path.dirname(dstpath)
-  const relativeToDst = path.join(dstdir, srcpath)
+	const dstdir = path.dirname(dstpath);
+	const relativeToDst = path.join(dstdir, srcpath);
 
-  const exists = await pathExists(relativeToDst)
-  if (exists) {
-    return {
-      toCwd: relativeToDst,
-      toDst: srcpath
-    }
-  }
+	const exists = await pathExists(relativeToDst);
+	if (exists) {
+		return {
+			toCwd: relativeToDst,
+			toDst: srcpath,
+		};
+	}
 
-  try {
-    await fs.lstat(srcpath)
-  } catch (err) {
-    err.message = err.message.replace('lstat', 'ensureSymlink')
-    throw err
-  }
+	try {
+		await fs.lstat(srcpath);
+	} catch (err) {
+		err.message = err.message.replace("lstat", "ensureSymlink");
+		throw err;
+	}
 
-  return {
-    toCwd: srcpath,
-    toDst: path.relative(dstdir, srcpath)
-  }
+	return {
+		toCwd: srcpath,
+		toDst: path.relative(dstdir, srcpath),
+	};
 }
 
-function symlinkPathsSync (srcpath, dstpath) {
-  if (path.isAbsolute(srcpath)) {
-    const exists = fs.existsSync(srcpath)
-    if (!exists) throw new Error('absolute srcpath does not exist')
-    return {
-      toCwd: srcpath,
-      toDst: srcpath
-    }
-  }
+function symlinkPathsSync(srcpath, dstpath) {
+	if (path.isAbsolute(srcpath)) {
+		const exists = fs.existsSync(srcpath);
+		if (!exists) throw new Error("absolute srcpath does not exist");
+		return {
+			toCwd: srcpath,
+			toDst: srcpath,
+		};
+	}
 
-  const dstdir = path.dirname(dstpath)
-  const relativeToDst = path.join(dstdir, srcpath)
-  const exists = fs.existsSync(relativeToDst)
-  if (exists) {
-    return {
-      toCwd: relativeToDst,
-      toDst: srcpath
-    }
-  }
+	const dstdir = path.dirname(dstpath);
+	const relativeToDst = path.join(dstdir, srcpath);
+	const exists = fs.existsSync(relativeToDst);
+	if (exists) {
+		return {
+			toCwd: relativeToDst,
+			toDst: srcpath,
+		};
+	}
 
-  const srcExists = fs.existsSync(srcpath)
-  if (!srcExists) throw new Error('relative srcpath does not exist')
-  return {
-    toCwd: srcpath,
-    toDst: path.relative(dstdir, srcpath)
-  }
+	const srcExists = fs.existsSync(srcpath);
+	if (!srcExists) throw new Error("relative srcpath does not exist");
+	return {
+		toCwd: srcpath,
+		toDst: path.relative(dstdir, srcpath),
+	};
 }
 
 module.exports = {
-  symlinkPaths: u(symlinkPaths),
-  symlinkPathsSync
-}
+	symlinkPaths: u(symlinkPaths),
+	symlinkPathsSync,
+};

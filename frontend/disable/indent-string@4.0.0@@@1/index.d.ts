@@ -36,7 +36,7 @@ indentString('Unicorns\nRainbows', 4, {indent: '♥'});
 declare function indentString(
 	string: string,
 	count?: number,
-	options?: indentString.Options
+	options?: indentString.Options,
 ): string;
 
 export = indentString;

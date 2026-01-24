@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/date/get-year');
+"use strict";
+module.exports = require("../../full/date/get-year");

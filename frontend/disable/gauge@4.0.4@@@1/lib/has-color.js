@@ -1,4 +1,3 @@
-'use strict'
-var colorSupport = require('color-support')
+var colorSupport = require("color-support");
 
-module.exports = colorSupport().hasBasic
+module.exports = colorSupport().hasBasic;

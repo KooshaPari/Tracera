@@ -1,4 +1,4 @@
-var baseUniq = require('./_baseUniq');
+var baseUniq = require("./_baseUniq");
 
 /**
  * This method is like `_.uniq` except that it accepts `comparator` which
@@ -21,8 +21,8 @@ var baseUniq = require('./_baseUniq');
  * // => [{ 'x': 1, 'y': 2 }, { 'x': 2, 'y': 1 }]
  */
 function uniqWith(array, comparator) {
-  comparator = typeof comparator == 'function' ? comparator : undefined;
-  return (array && array.length) ? baseUniq(array, undefined, comparator) : [];
+	comparator = typeof comparator == "function" ? comparator : undefined;
+	return array && array.length ? baseUniq(array, undefined, comparator) : [];
 }
 
 module.exports = uniqWith;

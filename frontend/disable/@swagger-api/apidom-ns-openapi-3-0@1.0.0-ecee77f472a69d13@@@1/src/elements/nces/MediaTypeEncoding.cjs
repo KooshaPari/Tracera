@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class MediaTypeEncoding extends _apidomCore.ObjectElement {
-  static primaryClass = 'media-type-encoding';
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.classes.push(MediaTypeEncoding.primaryClass);
-  }
+	static primaryClass = "media-type-encoding";
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.classes.push(MediaTypeEncoding.primaryClass);
+	}
 }
-var _default = exports.default = MediaTypeEncoding;
+var _default = (exports.default = MediaTypeEncoding);

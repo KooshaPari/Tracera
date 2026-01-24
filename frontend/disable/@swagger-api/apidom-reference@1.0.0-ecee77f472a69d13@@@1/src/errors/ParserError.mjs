@@ -1,4 +1,5 @@
 import ParseError from "./ParseError.mjs";
+
 /**
  * @public
  */

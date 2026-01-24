@@ -1,4 +1,5 @@
 import JsonSchemaUriError from "./JsonSchemaUriError.mjs";
+
 /**
  * @public
  */

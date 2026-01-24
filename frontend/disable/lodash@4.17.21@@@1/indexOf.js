@@ -1,5 +1,5 @@
-var baseIndexOf = require('./_baseIndexOf'),
-    toInteger = require('./toInteger');
+var baseIndexOf = require("./_baseIndexOf"),
+	toInteger = require("./toInteger");
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeMax = Math.max;
@@ -28,15 +28,15 @@ var nativeMax = Math.max;
  * // => 3
  */
 function indexOf(array, value, fromIndex) {
-  var length = array == null ? 0 : array.length;
-  if (!length) {
-    return -1;
-  }
-  var index = fromIndex == null ? 0 : toInteger(fromIndex);
-  if (index < 0) {
-    index = nativeMax(length + index, 0);
-  }
-  return baseIndexOf(array, value, index);
+	var length = array == null ? 0 : array.length;
+	if (!length) {
+		return -1;
+	}
+	var index = fromIndex == null ? 0 : toInteger(fromIndex);
+	if (index < 0) {
+		index = nativeMax(length + index, 0);
+	}
+	return baseIndexOf(array, value, index);
 }
 
 module.exports = indexOf;

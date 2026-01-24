@@ -78,12 +78,16 @@ class ImportService:
         imported = 0
 
         for row in reader:
+            title = row.get("Title", "")
+            view = row.get("View", "FEATURE")
+            item_type = row.get("Type", "task")
+            status = row.get("Status", "todo")
             await self.items.create(
                 project_id=project_id,
-                title=row.get("Title"),
-                view=row.get("View"),
-                item_type=row.get("Type"),
-                status=row.get("Status"),
+                title=title if isinstance(title, str) else "",
+                view=view if isinstance(view, str) else "FEATURE",
+                item_type=item_type if isinstance(item_type, str) else "task",
+                status=status if isinstance(status, str) else "todo",
                 description=row.get("Description"),
             )
             imported += 1

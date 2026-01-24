@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 operation-operationId-url-safe', () => {
-  it('should report on invalid operationIds', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 operation-operationId-url-safe", () => {
+	it("should report on invalid operationIds", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test':
@@ -15,16 +19,18 @@ describe('Oas3 operation-operationId-url-safe', () => {
               put:
                 operationId: "invalid❤️"
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-operationId-url-safe': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-operationId-url-safe": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -41,5 +47,5 @@ describe('Oas3 operation-operationId-url-safe', () => {
         },
       ]
     `);
-  });
+	});
 });

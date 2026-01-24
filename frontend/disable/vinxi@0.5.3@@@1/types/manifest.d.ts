@@ -1,15 +1,15 @@
 export type Asset = LinkAsset | ScriptOrStyleAsset;
 
 type LinkAsset = {
-	tag: 'link';
-	attrs: Record<string, string>
-}
+	tag: "link";
+	attrs: Record<string, string>;
+};
 
 type ScriptOrStyleAsset = {
-	tag: 'script' | 'style';
+	tag: "script" | "style";
 	attrs: Record<string, string>;
 	children?: string;
-}
+};
 
 export type Manifest = {
 	/** Name of the router */

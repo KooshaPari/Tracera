@@ -48,7 +48,7 @@ class AgentEvent(Base, TimestampMixin):
     )
 
     # Event data
-    event_data: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
+    event_data: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)
 
     __table_args__ = (
         Index("idx_agent_events_project_agent", "project_id", "agent_id"),

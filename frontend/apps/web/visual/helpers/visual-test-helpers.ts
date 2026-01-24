@@ -3,35 +3,35 @@
  * Provides reusable functions for visual regression tests
  */
 
-import { type Page } from '@playwright/test'
+import type { Page } from "@playwright/test";
 
 /**
  * Theme modes supported by TraceRTM
  */
-export type ThemeMode = 'light' | 'dark'
+export type ThemeMode = "light" | "dark";
 
 /**
  * Set the theme mode for visual testing
  */
 export async function setTheme(page: Page, theme: ThemeMode): Promise<void> {
-  await page.evaluate((t) => {
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, theme)
+	await page.evaluate((t) => {
+		if (t === "dark") {
+			document.documentElement.classList.add("dark");
+		} else {
+			document.documentElement.classList.remove("dark");
+		}
+	}, theme);
 
-  // Wait for theme transition to complete
-  await page.waitForTimeout(100)
+	// Wait for theme transition to complete
+	await page.waitForTimeout(100);
 }
 
 /**
  * Disable all animations for consistent screenshots
  */
 export async function disableAnimations(page: Page): Promise<void> {
-  await page.addStyleTag({
-    content: `
+	await page.addStyleTag({
+		content: `
       *, *::before, *::after {
         animation-duration: 0ms !important;
         animation-delay: 0ms !important;
@@ -39,30 +39,33 @@ export async function disableAnimations(page: Page): Promise<void> {
         transition-delay: 0ms !important;
       }
     `,
-  })
+	});
 }
 
 /**
  * Wait for fonts to load before taking screenshots
  */
 export async function waitForFonts(page: Page): Promise<void> {
-  await page.evaluate(() => document.fonts.ready)
+	await page.evaluate(() => document.fonts.ready);
 }
 
 /**
  * Create a component showcase page for visual testing
  */
-export async function createShowcasePage(page: Page, html: string): Promise<void> {
-  await page.goto('http://localhost:5173')
+export async function createShowcasePage(
+	page: Page,
+	html: string,
+): Promise<void> {
+	await page.goto("http://localhost:5173");
 
-  await page.evaluate((content) => {
-    const root = document.getElementById('root')
-    if (root) {
-      root.innerHTML = content
-    }
-  }, html)
+	await page.evaluate((content) => {
+		const root = document.getElementById("root");
+		if (root) {
+			root.innerHTML = content;
+		}
+	}, html);
 
-  await waitForFonts(page)
+	await waitForFonts(page);
 }
 
 /**
@@ -91,7 +94,7 @@ export const BUTTON_VARIANTS_HTML = `
       </div>
     </section>
   </div>
-`
+`;
 
 /**
  * Common card layout HTML for reuse
@@ -115,7 +118,7 @@ export const CARD_LAYOUT_HTML = `
       </div>
     </div>
   </div>
-`
+`;
 
 /**
  * Form layout HTML for reuse
@@ -145,79 +148,79 @@ export const FORM_LAYOUT_HTML = `
       </div>
     </div>
   </div>
-`
+`;
 
 /**
  * Wait for element to be stable (no layout shifts)
  */
 export async function waitForStableElement(
-  page: Page,
-  selector: string,
-  timeout = 1000
+	page: Page,
+	selector: string,
+	timeout = 1000,
 ): Promise<void> {
-  await page.waitForSelector(selector, { state: 'visible' })
+	await page.waitForSelector(selector, { state: "visible" });
 
-  // Wait for potential layout shifts
-  await page.waitForTimeout(timeout)
+	// Wait for potential layout shifts
+	await page.waitForTimeout(timeout);
 }
 
 /**
  * Screenshot comparison options optimized for component testing
  */
 export const COMPONENT_SCREENSHOT_OPTIONS = {
-  maxDiffPixels: 100,
-  threshold: 0.2,
-  animations: 'disabled' as const,
-}
+	maxDiffPixels: 100,
+	threshold: 0.2,
+	animations: "disabled" as const,
+};
 
 /**
  * Screenshot comparison options optimized for layout testing
  */
 export const LAYOUT_SCREENSHOT_OPTIONS = {
-  maxDiffPixels: 200,
-  threshold: 0.3,
-  animations: 'disabled' as const,
-  fullPage: true,
-}
+	maxDiffPixels: 200,
+	threshold: 0.3,
+	animations: "disabled" as const,
+	fullPage: true,
+};
 
 /**
  * Screenshot comparison options optimized for theme testing
  */
 export const THEME_SCREENSHOT_OPTIONS = {
-  maxDiffPixels: 150,
-  threshold: 0.25,
-  animations: 'disabled' as const,
-}
+	maxDiffPixels: 150,
+	threshold: 0.25,
+	animations: "disabled" as const,
+};
 
 /**
  * Common viewport sizes for responsive testing
  */
 export const VIEWPORTS = {
-  mobile: { width: 375, height: 667 },
-  mobileLarge: { width: 428, height: 926 },
-  tablet: { width: 768, height: 1024 },
-  desktop: { width: 1280, height: 800 },
-  desktopLarge: { width: 1920, height: 1080 },
-} as const
+	mobile: { width: 375, height: 667 },
+	mobileLarge: { width: 428, height: 926 },
+	tablet: { width: 768, height: 1024 },
+	desktop: { width: 1280, height: 800 },
+	desktopLarge: { width: 1920, height: 1080 },
+} as const;
 
 /**
  * Test all theme modes for a given test
  */
 export async function testAllThemes(
-  page: Page,
-  testFn: (theme: ThemeMode) => Promise<void>
+	page: Page,
+	testFn: (theme: ThemeMode) => Promise<void>,
 ): Promise<void> {
-  for (const theme of ['light', 'dark'] as const) {
-    await setTheme(page, theme)
-    await testFn(theme)
-  }
+	for (const theme of ["light", "dark"] as const) {
+		await setTheme(page, theme);
+		await testFn(theme);
+	}
 }
 
 /**
  * Create a grid of color swatches for theme testing
  */
 export function createColorPaletteHTML(theme: ThemeMode): string {
-  return `
+	return `
     <div class="bg-background p-8 space-y-8">
       <h1 class="text-3xl font-bold text-foreground">${theme.charAt(0).toUpperCase() + theme.slice(1)} Theme Colors</h1>
 
@@ -253,28 +256,31 @@ export function createColorPaletteHTML(theme: ThemeMode): string {
         </div>
       </section>
     </div>
-  `
+  `;
 }
 
 /**
  * Hide elements that may cause visual flakiness (e.g., time-based content)
  */
-export async function hideFlakeyElements(page: Page, selectors: string[]): Promise<void> {
-  for (const selector of selectors) {
-    await page.evaluate((sel) => {
-      const elements = document.querySelectorAll(sel)
-      elements.forEach((el) => {
-        ;(el as HTMLElement).style.visibility = 'hidden'
-      })
-    }, selector)
-  }
+export async function hideFlakeyElements(
+	page: Page,
+	selectors: string[],
+): Promise<void> {
+	for (const selector of selectors) {
+		await page.evaluate((sel) => {
+			const elements = document.querySelectorAll(sel);
+			elements.forEach((el) => {
+				(el as HTMLElement).style.visibility = "hidden";
+			});
+		}, selector);
+	}
 }
 
 /**
  * Mock current time for consistent timestamp displays
  */
 export async function mockTime(page: Page, timestamp: Date): Promise<void> {
-  await page.addInitScript(`{
+	await page.addInitScript(`{
     const mockDate = new Date('${timestamp.toISOString()}');
     Date = class extends Date {
       constructor(...args) {
@@ -288,14 +294,14 @@ export async function mockTime(page: Page, timestamp: Date): Promise<void> {
         return mockDate.getTime();
       }
     }
-  }`)
+  }`);
 }
 
 /**
  * Standard setup for visual tests
  */
 export async function setupVisualTest(page: Page): Promise<void> {
-  await page.goto('http://localhost:5173')
-  await disableAnimations(page)
-  await waitForFonts(page)
+	await page.goto("http://localhost:5173");
+	await disableAnimations(page);
+	await waitForFonts(page);
 }

@@ -1,233 +1,225 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
 
-const Assert = require('@hapi/hoek/lib/assert');
-
-const Any = require('./any');
-const Common = require('../common');
-const Template = require('../template');
-
+const Any = require("./any");
+const Common = require("../common");
+const Template = require("../template");
 
 const internals = {};
 
-
-internals.isDate = function (value) {
-
-    return value instanceof Date;
-};
-
+internals.isDate = (value) => value instanceof Date;
 
 module.exports = Any.extend({
+	type: "date",
 
-    type: 'date',
+	coerce: {
+		from: ["number", "string"],
+		method(value, { schema }) {
+			return { value: internals.parse(value, schema._flags.format) || value };
+		},
+	},
 
-    coerce: {
-        from: ['number', 'string'],
-        method(value, { schema }) {
+	validate(value, { schema, error, prefs }) {
+		if (value instanceof Date && !isNaN(value.getTime())) {
+			return;
+		}
 
-            return { value: internals.parse(value, schema._flags.format) || value };
-        }
-    },
+		const format = schema._flags.format;
 
-    validate(value, { schema, error, prefs }) {
+		if (!prefs.convert || !format || typeof value !== "string") {
+			return { value, errors: error("date.base") };
+		}
 
-        if (value instanceof Date &&
-            !isNaN(value.getTime())) {
+		return { value, errors: error("date.format", { format }) };
+	},
 
-            return;
-        }
+	rules: {
+		compare: {
+			method: false,
+			validate(value, helpers, { date }, { name, operator, args }) {
+				const to = date === "now" ? Date.now() : date.getTime();
+				if (Common.compare(value.getTime(), to, operator)) {
+					return value;
+				}
 
-        const format = schema._flags.format;
+				return helpers.error("date." + name, { limit: args.date, value });
+			},
+			args: [
+				{
+					name: "date",
+					ref: true,
+					normalize: (date) => {
+						return date === "now" ? date : internals.parse(date);
+					},
+					assert: (date) => date !== null,
+					message: "must have a valid date format",
+				},
+			],
+		},
 
-        if (!prefs.convert ||
-            !format ||
-            typeof value !== 'string') {
+		format: {
+			method(format) {
+				Assert(
+					["iso", "javascript", "unix"].includes(format),
+					"Unknown date format",
+					format,
+				);
 
-            return { value, errors: error('date.base') };
-        }
+				return this.$_setFlag("format", format);
+			},
+		},
 
-        return { value, errors: error('date.format', { format }) };
-    },
+		greater: {
+			method(date) {
+				return this.$_addRule({
+					name: "greater",
+					method: "compare",
+					args: { date },
+					operator: ">",
+				});
+			},
+		},
 
-    rules: {
+		iso: {
+			method() {
+				return this.format("iso");
+			},
+		},
 
-        compare: {
-            method: false,
-            validate(value, helpers, { date }, { name, operator, args }) {
+		less: {
+			method(date) {
+				return this.$_addRule({
+					name: "less",
+					method: "compare",
+					args: { date },
+					operator: "<",
+				});
+			},
+		},
 
-                const to = date === 'now' ? Date.now() : date.getTime();
-                if (Common.compare(value.getTime(), to, operator)) {
-                    return value;
-                }
+		max: {
+			method(date) {
+				return this.$_addRule({
+					name: "max",
+					method: "compare",
+					args: { date },
+					operator: "<=",
+				});
+			},
+		},
 
-                return helpers.error('date.' + name, { limit: args.date, value });
-            },
-            args: [
-                {
-                    name: 'date',
-                    ref: true,
-                    normalize: (date) => {
+		min: {
+			method(date) {
+				return this.$_addRule({
+					name: "min",
+					method: "compare",
+					args: { date },
+					operator: ">=",
+				});
+			},
+		},
 
-                        return date === 'now' ? date : internals.parse(date);
-                    },
-                    assert: (date) => date !== null,
-                    message: 'must have a valid date format'
-                }
-            ]
-        },
+		timestamp: {
+			method(type = "javascript") {
+				Assert(
+					["javascript", "unix"].includes(type),
+					'"type" must be one of "javascript, unix"',
+				);
 
-        format: {
-            method(format) {
+				return this.format(type);
+			},
+		},
+	},
 
-                Assert(['iso', 'javascript', 'unix'].includes(format), 'Unknown date format', format);
+	cast: {
+		number: {
+			from: internals.isDate,
+			to(value, helpers) {
+				return value.getTime();
+			},
+		},
+		string: {
+			from: internals.isDate,
+			to(value, { prefs }) {
+				return Template.date(value, prefs);
+			},
+		},
+	},
 
-                return this.$_setFlag('format', format);
-            }
-        },
+	messages: {
+		"date.base": "{{#label}} must be a valid date",
+		"date.format":
+			'{{#label}} must be in {msg("date.format." + #format) || #format} format',
+		"date.greater": "{{#label}} must be greater than {{:#limit}}",
+		"date.less": "{{#label}} must be less than {{:#limit}}",
+		"date.max": "{{#label}} must be less than or equal to {{:#limit}}",
+		"date.min": "{{#label}} must be greater than or equal to {{:#limit}}",
 
-        greater: {
-            method(date) {
+		// Messages used in date.format
 
-                return this.$_addRule({ name: 'greater', method: 'compare', args: { date }, operator: '>' });
-            }
-        },
-
-        iso: {
-            method() {
-
-                return this.format('iso');
-            }
-        },
-
-        less: {
-            method(date) {
-
-                return this.$_addRule({ name: 'less', method: 'compare', args: { date }, operator: '<' });
-            }
-        },
-
-        max: {
-            method(date) {
-
-                return this.$_addRule({ name: 'max', method: 'compare', args: { date }, operator: '<=' });
-            }
-        },
-
-        min: {
-            method(date) {
-
-                return this.$_addRule({ name: 'min', method: 'compare', args: { date }, operator: '>=' });
-            }
-        },
-
-        timestamp: {
-            method(type = 'javascript') {
-
-                Assert(['javascript', 'unix'].includes(type), '"type" must be one of "javascript, unix"');
-
-                return this.format(type);
-            }
-        }
-    },
-
-    cast: {
-        number: {
-            from: internals.isDate,
-            to(value, helpers) {
-
-                return value.getTime();
-            }
-        },
-        string: {
-            from: internals.isDate,
-            to(value, { prefs }) {
-
-                return Template.date(value, prefs);
-            }
-        }
-    },
-
-    messages: {
-        'date.base': '{{#label}} must be a valid date',
-        'date.format': '{{#label}} must be in {msg("date.format." + #format) || #format} format',
-        'date.greater': '{{#label}} must be greater than {{:#limit}}',
-        'date.less': '{{#label}} must be less than {{:#limit}}',
-        'date.max': '{{#label}} must be less than or equal to {{:#limit}}',
-        'date.min': '{{#label}} must be greater than or equal to {{:#limit}}',
-
-        // Messages used in date.format
-
-        'date.format.iso': 'ISO 8601 date',
-        'date.format.javascript': 'timestamp or number of milliseconds',
-        'date.format.unix': 'timestamp or number of seconds'
-    }
+		"date.format.iso": "ISO 8601 date",
+		"date.format.javascript": "timestamp or number of milliseconds",
+		"date.format.unix": "timestamp or number of seconds",
+	},
 });
-
 
 // Helpers
 
-internals.parse = function (value, format) {
+internals.parse = (value, format) => {
+	if (value instanceof Date) {
+		return value;
+	}
 
-    if (value instanceof Date) {
-        return value;
-    }
+	if (typeof value !== "string" && (isNaN(value) || !isFinite(value))) {
+		return null;
+	}
 
-    if (typeof value !== 'string' &&
-        (isNaN(value) || !isFinite(value))) {
+	if (/^\s*$/.test(value)) {
+		return null;
+	}
 
-        return null;
-    }
+	// ISO
 
-    if (/^\s*$/.test(value)) {
-        return null;
-    }
+	if (format === "iso") {
+		if (!Common.isIsoDate(value)) {
+			return null;
+		}
 
-    // ISO
+		return internals.date(value.toString());
+	}
 
-    if (format === 'iso') {
-        if (!Common.isIsoDate(value)) {
-            return null;
-        }
+	// Normalize number string
 
-        return internals.date(value.toString());
-    }
+	const original = value;
+	if (typeof value === "string" && /^[+-]?\d+(\.\d+)?$/.test(value)) {
+		value = parseFloat(value);
+	}
 
-    // Normalize number string
+	// Timestamp
 
-    const original = value;
-    if (typeof value === 'string' &&
-        /^[+-]?\d+(\.\d+)?$/.test(value)) {
+	if (format) {
+		if (format === "javascript") {
+			return internals.date(1 * value); // Casting to number
+		}
 
-        value = parseFloat(value);
-    }
+		if (format === "unix") {
+			return internals.date(1000 * value);
+		}
 
-    // Timestamp
+		if (typeof original === "string") {
+			return null;
+		}
+	}
 
-    if (format) {
-        if (format === 'javascript') {
-            return internals.date(1 * value);        // Casting to number
-        }
+	// Plain
 
-        if (format === 'unix') {
-            return internals.date(1000 * value);
-        }
-
-        if (typeof original === 'string') {
-            return null;
-        }
-    }
-
-    // Plain
-
-    return internals.date(value);
+	return internals.date(value);
 };
 
+internals.date = (value) => {
+	const date = new Date(value);
+	if (!isNaN(date.getTime())) {
+		return date;
+	}
 
-internals.date = function (value) {
-
-    const date = new Date(value);
-    if (!isNaN(date.getTime())) {
-        return date;
-    }
-
-    return null;
+	return null;
 };

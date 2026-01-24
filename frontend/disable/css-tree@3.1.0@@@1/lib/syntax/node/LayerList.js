@@ -1,36 +1,34 @@
-import { Comma } from '../../tokenizer/index.js';
+import { Comma } from "../../tokenizer/index.js";
 
-export const name = 'LayerList';
+export const name = "LayerList";
 export const structure = {
-    children: [[
-        'Layer'
-    ]]
+	children: [["Layer"]],
 };
 
 export function parse() {
-    const children = this.createList();
+	const children = this.createList();
 
-    this.skipSC();
+	this.skipSC();
 
-    while (!this.eof) {
-        children.push(this.Layer());
+	while (!this.eof) {
+		children.push(this.Layer());
 
-        if (this.lookupTypeNonSC(0) !== Comma) {
-            break;
-        }
+		if (this.lookupTypeNonSC(0) !== Comma) {
+			break;
+		}
 
-        this.skipSC();
-        this.next();
-        this.skipSC();
-    }
+		this.skipSC();
+		this.next();
+		this.skipSC();
+	}
 
-    return {
-        type: 'LayerList',
-        loc: this.getLocationFromList(children),
-        children
-    };
+	return {
+		type: "LayerList",
+		loc: this.getLocationFromList(children),
+		children,
+	};
 }
 
 export function generate(node) {
-    this.children(node, () => this.token(Comma, ','));
+	this.children(node, () => this.token(Comma, ","));
 }

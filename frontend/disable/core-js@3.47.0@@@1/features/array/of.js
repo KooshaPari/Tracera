@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/array/of');
+"use strict";
+module.exports = require("../../full/array/of");

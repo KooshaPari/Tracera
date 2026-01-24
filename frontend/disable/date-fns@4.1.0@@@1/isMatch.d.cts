@@ -1,17 +1,17 @@
 import type {
-  AdditionalTokensOptions,
-  FirstWeekContainsDateOptions,
-  LocalizedOptions,
-  WeekOptions,
+	AdditionalTokensOptions,
+	FirstWeekContainsDateOptions,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link isMatch} function options.
  */
 export interface IsMatchOptions
-  extends LocalizedOptions<"options" | "match" | "formatLong">,
-    WeekOptions,
-    FirstWeekContainsDateOptions,
-    AdditionalTokensOptions {}
+	extends LocalizedOptions<"options" | "match" | "formatLong">,
+		WeekOptions,
+		FirstWeekContainsDateOptions,
+		AdditionalTokensOptions {}
 /**
  * @name isMatch
  * @category Common Helpers
@@ -297,7 +297,7 @@ export interface IsMatchOptions
  * //=> true
  */
 export declare function isMatch(
-  dateStr: string,
-  formatStr: string,
-  options?: IsMatchOptions,
+	dateStr: string,
+	formatStr: string,
+	options?: IsMatchOptions,
 ): boolean;

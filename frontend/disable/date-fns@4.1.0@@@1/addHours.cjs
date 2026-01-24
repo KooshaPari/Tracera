@@ -30,9 +30,9 @@ var _index2 = require("./constants.cjs");
  * //=> Fri Jul 11 2014 01:00:00
  */
 function addHours(date, amount, options) {
-  return (0, _index.addMilliseconds)(
-    date,
-    amount * _index2.millisecondsInHour,
-    options,
-  );
+	return (0, _index.addMilliseconds)(
+		date,
+		amount * _index2.millisecondsInHour,
+		options,
+	);
 }

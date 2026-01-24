@@ -17,7 +17,7 @@ import { addMilliseconds } from "./addMilliseconds.js";
  * @returns The new date with the milliseconds subtracted
  */
 export function subMilliseconds(date, amount, options) {
-  return addMilliseconds(date, -amount, options);
+	return addMilliseconds(date, -amount, options);
 }
 
 // Fallback for modularized imports:

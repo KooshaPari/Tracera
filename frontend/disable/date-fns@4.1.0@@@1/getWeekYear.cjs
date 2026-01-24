@@ -44,44 +44,44 @@ var _index4 = require("./toDate.cjs");
  * //=> 2004
  */
 function getWeekYear(date, options) {
-  const _date = (0, _index4.toDate)(date, options?.in);
-  const year = _date.getFullYear();
+	const _date = (0, _index4.toDate)(date, options?.in);
+	const year = _date.getFullYear();
 
-  const defaultOptions = (0, _index.getDefaultOptions)();
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
+	const defaultOptions = (0, _index.getDefaultOptions)();
+	const firstWeekContainsDate =
+		options?.firstWeekContainsDate ??
+		options?.locale?.options?.firstWeekContainsDate ??
+		defaultOptions.firstWeekContainsDate ??
+		defaultOptions.locale?.options?.firstWeekContainsDate ??
+		1;
 
-  const firstWeekOfNextYear = (0, _index2.constructFrom)(
-    options?.in || date,
-    0,
-  );
-  firstWeekOfNextYear.setFullYear(year + 1, 0, firstWeekContainsDate);
-  firstWeekOfNextYear.setHours(0, 0, 0, 0);
-  const startOfNextYear = (0, _index3.startOfWeek)(
-    firstWeekOfNextYear,
-    options,
-  );
+	const firstWeekOfNextYear = (0, _index2.constructFrom)(
+		options?.in || date,
+		0,
+	);
+	firstWeekOfNextYear.setFullYear(year + 1, 0, firstWeekContainsDate);
+	firstWeekOfNextYear.setHours(0, 0, 0, 0);
+	const startOfNextYear = (0, _index3.startOfWeek)(
+		firstWeekOfNextYear,
+		options,
+	);
 
-  const firstWeekOfThisYear = (0, _index2.constructFrom)(
-    options?.in || date,
-    0,
-  );
-  firstWeekOfThisYear.setFullYear(year, 0, firstWeekContainsDate);
-  firstWeekOfThisYear.setHours(0, 0, 0, 0);
-  const startOfThisYear = (0, _index3.startOfWeek)(
-    firstWeekOfThisYear,
-    options,
-  );
+	const firstWeekOfThisYear = (0, _index2.constructFrom)(
+		options?.in || date,
+		0,
+	);
+	firstWeekOfThisYear.setFullYear(year, 0, firstWeekContainsDate);
+	firstWeekOfThisYear.setHours(0, 0, 0, 0);
+	const startOfThisYear = (0, _index3.startOfWeek)(
+		firstWeekOfThisYear,
+		options,
+	);
 
-  if (+_date >= +startOfNextYear) {
-    return year + 1;
-  } else if (+_date >= +startOfThisYear) {
-    return year;
-  } else {
-    return year - 1;
-  }
+	if (+_date >= +startOfNextYear) {
+		return year + 1;
+	} else if (+_date >= +startOfThisYear) {
+		return year;
+	} else {
+		return year - 1;
+	}
 }

@@ -24,10 +24,10 @@ exports.isExists = isExists; /**
  * //=> false
  */
 function isExists(year, month, day) {
-  const date = new Date(year, month, day);
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month &&
-    date.getDate() === day
-  );
+	const date = new Date(year, month, day);
+	return (
+		date.getFullYear() === year &&
+		date.getMonth() === month &&
+		date.getDate() === day
+	);
 }

@@ -19,6 +19,6 @@ export interface IsLeapYearOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isLeapYear(
-  date: DateArg<Date> & {},
-  options?: IsLeapYearOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsLeapYearOptions | undefined,
 ): boolean;

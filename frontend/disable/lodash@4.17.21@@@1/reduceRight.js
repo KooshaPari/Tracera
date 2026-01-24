@@ -1,8 +1,8 @@
-var arrayReduceRight = require('./_arrayReduceRight'),
-    baseEachRight = require('./_baseEachRight'),
-    baseIteratee = require('./_baseIteratee'),
-    baseReduce = require('./_baseReduce'),
-    isArray = require('./isArray');
+var arrayReduceRight = require("./_arrayReduceRight"),
+	baseEachRight = require("./_baseEachRight"),
+	baseIteratee = require("./_baseIteratee"),
+	baseReduce = require("./_baseReduce"),
+	isArray = require("./isArray");
 
 /**
  * This method is like `_.reduce` except that it iterates over elements of
@@ -27,10 +27,16 @@ var arrayReduceRight = require('./_arrayReduceRight'),
  * // => [4, 5, 2, 3, 0, 1]
  */
 function reduceRight(collection, iteratee, accumulator) {
-  var func = isArray(collection) ? arrayReduceRight : baseReduce,
-      initAccum = arguments.length < 3;
+	var func = isArray(collection) ? arrayReduceRight : baseReduce,
+		initAccum = arguments.length < 3;
 
-  return func(collection, baseIteratee(iteratee, 4), accumulator, initAccum, baseEachRight);
+	return func(
+		collection,
+		baseIteratee(iteratee, 4),
+		accumulator,
+		initAccum,
+		baseEachRight,
+	);
 }
 
 module.exports = reduceRight;

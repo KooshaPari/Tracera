@@ -1,6 +1,5 @@
-'use strict';
-var defineProperty = require('../internals/object-define-property');
+"use strict";
+var defineProperty = require("../internals/object-define-property");
 
-module.exports = function (target, name, descriptor) {
-  return defineProperty.f(target, name, descriptor);
-};
+module.exports = (target, name, descriptor) =>
+	defineProperty.f(target, name, descriptor);

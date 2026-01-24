@@ -1,25 +1,25 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = retryable;
 
-var _retry = require('./retry.js');
+var _retry = require("./retry.js");
 
 var _retry2 = _interopRequireDefault(_retry);
 
-var _initialParams = require('./internal/initialParams.js');
+var _initialParams = require("./internal/initialParams.js");
 
 var _initialParams2 = _interopRequireDefault(_initialParams);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _promiseCallback = require('./internal/promiseCallback.js');
+var _promiseCallback = require("./internal/promiseCallback.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * A close relative of [`retry`]{@link module:ControlFlow.retry}.  This method
@@ -51,27 +51,28 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * }, callback);
  */
 function retryable(opts, task) {
-    if (!task) {
-        task = opts;
-        opts = null;
-    }
-    let arity = opts && opts.arity || task.length;
-    if ((0, _wrapAsync.isAsync)(task)) {
-        arity += 1;
-    }
-    var _task = (0, _wrapAsync2.default)(task);
-    return (0, _initialParams2.default)((args, callback) => {
-        if (args.length < arity - 1 || callback == null) {
-            args.push(callback);
-            callback = (0, _promiseCallback.promiseCallback)();
-        }
-        function taskFn(cb) {
-            _task(...args, cb);
-        }
+	if (!task) {
+		task = opts;
+		opts = null;
+	}
+	let arity = (opts && opts.arity) || task.length;
+	if ((0, _wrapAsync.isAsync)(task)) {
+		arity += 1;
+	}
+	var _task = (0, _wrapAsync2.default)(task);
+	return (0, _initialParams2.default)((args, callback) => {
+		if (args.length < arity - 1 || callback == null) {
+			args.push(callback);
+			callback = (0, _promiseCallback.promiseCallback)();
+		}
+		function taskFn(cb) {
+			_task(...args, cb);
+		}
 
-        if (opts) (0, _retry2.default)(opts, taskFn, callback);else (0, _retry2.default)(taskFn, callback);
+		if (opts) (0, _retry2.default)(opts, taskFn, callback);
+		else (0, _retry2.default)(taskFn, callback);
 
-        return callback[_promiseCallback.PROMISE_SYMBOL];
-    });
+		return callback[_promiseCallback.PROMISE_SYMBOL];
+	});
 }
 module.exports = exports.default;

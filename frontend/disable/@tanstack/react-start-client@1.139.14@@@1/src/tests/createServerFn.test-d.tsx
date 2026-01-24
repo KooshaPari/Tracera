@@ -1,5 +1,5 @@
-import { expectTypeOf, test } from 'vitest'
-import { createServerFn } from '@tanstack/start-client-core'
+import { createServerFn } from "@tanstack/start-client-core";
+import { expectTypeOf, test } from "vitest";
 
 /*
 // disabled until we really support RSC
@@ -18,38 +18,38 @@ test.skip('createServerFn returns RSC', () => {
   >()
 })*/
 
-test('createServerFn returns async array', () => {
-  const result: Array<{ a: number }> = [{ a: 1 }]
-  const serverFn = createServerFn({ method: 'GET' }).handler(async () => {
-    return result
-  })
+test("createServerFn returns async array", () => {
+	const result: Array<{ a: number }> = [{ a: 1 }];
+	const serverFn = createServerFn({ method: "GET" }).handler(async () => {
+		return result;
+	});
 
-  expectTypeOf(serverFn()).toEqualTypeOf<Promise<Array<{ a: number }>>>()
-})
+	expectTypeOf(serverFn()).toEqualTypeOf<Promise<Array<{ a: number }>>>();
+});
 
-test('createServerFn returns sync array', () => {
-  const result: Array<{ a: number }> = [{ a: 1 }]
-  const serverFn = createServerFn({ method: 'GET' }).handler(() => {
-    return result
-  })
+test("createServerFn returns sync array", () => {
+	const result: Array<{ a: number }> = [{ a: 1 }];
+	const serverFn = createServerFn({ method: "GET" }).handler(() => {
+		return result;
+	});
 
-  expectTypeOf(serverFn()).toEqualTypeOf<Promise<Array<{ a: number }>>>()
-})
+	expectTypeOf(serverFn()).toEqualTypeOf<Promise<Array<{ a: number }>>>();
+});
 
-test('createServerFn returns async union', () => {
-  const result = '1' as string | number
-  const serverFn = createServerFn({ method: 'GET' }).handler(async () => {
-    return result
-  })
+test("createServerFn returns async union", () => {
+	const result = "1" as string | number;
+	const serverFn = createServerFn({ method: "GET" }).handler(async () => {
+		return result;
+	});
 
-  expectTypeOf(serverFn()).toEqualTypeOf<Promise<string | number>>()
-})
+	expectTypeOf(serverFn()).toEqualTypeOf<Promise<string | number>>();
+});
 
-test('createServerFn returns sync union', () => {
-  const result = '1' as string | number
-  const serverFn = createServerFn({ method: 'GET' }).handler(() => {
-    return result
-  })
+test("createServerFn returns sync union", () => {
+	const result = "1" as string | number;
+	const serverFn = createServerFn({ method: "GET" }).handler(() => {
+		return result;
+	});
 
-  expectTypeOf(serverFn()).toEqualTypeOf<Promise<string | number>>()
-})
+	expectTypeOf(serverFn()).toEqualTypeOf<Promise<string | number>>();
+});

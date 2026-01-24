@@ -1,7 +1,8 @@
-import { ifElse, always } from 'ramda';
-import { dispatch, stubUndefined } from 'ramda-adjunct';
-import { BREAK } from '@swagger-api/apidom-core';
+import { BREAK } from "@swagger-api/apidom-core";
+import { always, ifElse } from "ramda";
+import { dispatch, stubUndefined } from "ramda-adjunct";
 import SpecificationVisitor from "../SpecificationVisitor.mjs";
+
 /**
  * @public
  */
@@ -12,24 +13,20 @@ import SpecificationVisitor from "../SpecificationVisitor.mjs";
  * @public
  */
 class AlternatingVisitor extends SpecificationVisitor {
-  alternator;
-  constructor({
-    alternator,
-    ...rest
-  }) {
-    super({
-      ...rest
-    });
-    this.alternator = alternator;
-  }
-  enter(element) {
-    const functions = this.alternator.map(({
-      predicate,
-      specPath
-    }) => ifElse(predicate, always(specPath), stubUndefined));
-    const specPath = dispatch(functions)(element);
-    this.element = this.toRefractedElement(specPath, element);
-    return BREAK;
-  }
+	alternator;
+	constructor({ alternator, ...rest }) {
+		super({
+			...rest,
+		});
+		this.alternator = alternator;
+	}
+	enter(element) {
+		const functions = this.alternator.map(({ predicate, specPath }) =>
+			ifElse(predicate, always(specPath), stubUndefined),
+		);
+		const specPath = dispatch(functions)(element);
+		this.element = this.toRefractedElement(specPath, element);
+		return BREAK;
+	}
 }
 export default AlternatingVisitor;

@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _onlyOnce = require('./internal/onlyOnce.js');
+var _onlyOnce = require("./internal/onlyOnce.js");
 
 var _onlyOnce2 = _interopRequireDefault(_onlyOnce);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The post-check version of [`whilst`]{@link module:ControlFlow.whilst}. To reflect the difference in
@@ -42,26 +42,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback is passed
  */
 function doWhilst(iteratee, test, callback) {
-    callback = (0, _onlyOnce2.default)(callback);
-    var _fn = (0, _wrapAsync2.default)(iteratee);
-    var _test = (0, _wrapAsync2.default)(test);
-    var results;
+	callback = (0, _onlyOnce2.default)(callback);
+	var _fn = (0, _wrapAsync2.default)(iteratee);
+	var _test = (0, _wrapAsync2.default)(test);
+	var results;
 
-    function next(err, ...args) {
-        if (err) return callback(err);
-        if (err === false) return;
-        results = args;
-        _test(...args, check);
-    }
+	function next(err, ...args) {
+		if (err) return callback(err);
+		if (err === false) return;
+		results = args;
+		_test(...args, check);
+	}
 
-    function check(err, truth) {
-        if (err) return callback(err);
-        if (err === false) return;
-        if (!truth) return callback(null, ...results);
-        _fn(next);
-    }
+	function check(err, truth) {
+		if (err) return callback(err);
+		if (err === false) return;
+		if (!truth) return callback(null, ...results);
+		_fn(next);
+	}
 
-    return check(null, true);
+	return check(null, true);
 }
 
 exports.default = (0, _awaitify2.default)(doWhilst, 3);

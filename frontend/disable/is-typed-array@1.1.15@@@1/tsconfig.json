@@ -1,6 +1,4 @@
 {
 	"extends": "@ljharb/tsconfig",
-	"exclude": [
-		"coverage",
-	],
+	"exclude": ["coverage"]
 }

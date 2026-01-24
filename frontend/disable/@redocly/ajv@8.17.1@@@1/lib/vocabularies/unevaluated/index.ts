@@ -1,7 +1,7 @@
-import type {Vocabulary} from "../../types"
-import unevaluatedProperties from "./unevaluatedProperties"
-import unevaluatedItems from "./unevaluatedItems"
+import type { Vocabulary } from "../../types";
+import unevaluatedItems from "./unevaluatedItems";
+import unevaluatedProperties from "./unevaluatedProperties";
 
-const unevaluated: Vocabulary = [unevaluatedProperties, unevaluatedItems]
+const unevaluated: Vocabulary = [unevaluatedProperties, unevaluatedItems];
 
-export default unevaluated
+export default unevaluated;

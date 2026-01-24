@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../es/object/group-by');
+"use strict";
+var parent = require("../../es/object/group-by");
 
 module.exports = parent;

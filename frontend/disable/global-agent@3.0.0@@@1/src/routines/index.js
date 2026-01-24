@@ -1,3 +1,3 @@
 // @flow
 
-export {default as bootstrap} from './bootstrap';
+export { default as bootstrap } from "./bootstrap";

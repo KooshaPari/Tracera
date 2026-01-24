@@ -1,32 +1,30 @@
 import {
-  invokeCallback,
-  subscribe,
-  FULFILLED,
-  REJECTED,
-  noop,
-  makePromise,
-  PROMISE_ID
-} from './-internal';
+	FULFILLED,
+	invokeCallback,
+	makePromise,
+	noop,
+	PROMISE_ID,
+	REJECTED,
+	subscribe,
+} from "./-internal";
 
-import { asap } from './asap';
+import { asap } from "./asap";
 
 export default function then(onFulfillment, onRejection) {
-  const parent = this;
+	const child = new this.constructor(noop);
 
-  const child = new this.constructor(noop);
+	if (child[PROMISE_ID] === undefined) {
+		makePromise(child);
+	}
 
-  if (child[PROMISE_ID] === undefined) {
-    makePromise(child);
-  }
+	const { _state } = this;
 
-  const { _state } = parent;
+	if (_state) {
+		const callback = arguments[_state - 1];
+		asap(() => invokeCallback(_state, child, callback, this._result));
+	} else {
+		subscribe(this, child, onFulfillment, onRejection);
+	}
 
-  if (_state) {
-    const callback = arguments[_state - 1];
-    asap(() => invokeCallback(_state, child, callback, parent._result));
-  } else {
-    subscribe(parent, child, onFulfillment, onRejection);
-  }
-
-  return child;
+	return child;
 }

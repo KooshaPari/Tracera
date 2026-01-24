@@ -1,6 +1,9 @@
-import type { HttpResolveConfig } from '../config';
-export declare function readFileFromUrl(url: string, config: HttpResolveConfig): Promise<{
-    body: any;
-    mimeType: any;
+import type { HttpResolveConfig } from "../config";
+export declare function readFileFromUrl(
+	url: string,
+	config: HttpResolveConfig,
+): Promise<{
+	body: any;
+	mimeType: any;
 }>;
 //# sourceMappingURL=read-file-from-url.d.ts.map

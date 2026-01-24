@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setISODay} function options.
  */
 export interface SetISODayOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setISODay
  * @category Weekday Helpers
@@ -29,10 +29,10 @@ export interface SetISODayOptions<DateType extends Date = Date>
  * //=> Sun Sep 07 2014 00:00:00
  */
 export declare function setISODay<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  day: number,
-  options?: SetISODayOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	day: number,
+	options?: SetISODayOptions<ResultDate> | undefined,
 ): ResultDate;

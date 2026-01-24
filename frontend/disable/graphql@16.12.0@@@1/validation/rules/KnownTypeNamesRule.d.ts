@@ -1,8 +1,8 @@
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from "../../language/visitor";
 import type {
-  SDLValidationContext,
-  ValidationContext,
-} from '../ValidationContext';
+	SDLValidationContext,
+	ValidationContext,
+} from "../ValidationContext";
 /**
  * Known type names
  *
@@ -12,5 +12,5 @@ import type {
  * See https://spec.graphql.org/draft/#sec-Fragment-Spread-Type-Existence
  */
 export declare function KnownTypeNamesRule(
-  context: ValidationContext | SDLValidationContext,
+	context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

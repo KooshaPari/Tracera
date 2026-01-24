@@ -1,6 +1,11 @@
-import process from 'process';
-import { pathSatisfies, propOr, pipe, test, last } from 'ramda';
-import { isUndefined, replaceAll, isNotUndefined, trimCharsEnd } from 'ramda-adjunct';
+import process from "process";
+import { last, pathSatisfies, pipe, propOr, test } from "ramda";
+import {
+	isNotUndefined,
+	isUndefined,
+	replaceAll,
+	trimCharsEnd,
+} from "ramda-adjunct";
 
 /**
  * SPDX-FileCopyrightText: Copyright (c) 2015 James Messinger
@@ -12,19 +17,19 @@ import { isUndefined, replaceAll, isNotUndefined, trimCharsEnd } from 'ramda-adj
  * @public
  */
 
-const isWindows = () => pathSatisfies(test(/^win/), ['platform'], process);
+const isWindows = () => pathSatisfies(test(/^win/), ["platform"], process);
 
 /**
  * Returns the protocol of the given URL, or `undefined` if it has no protocol.
  * @public
  */
-export const getProtocol = url => {
-  try {
-    const parsedUrl = new URL(url);
-    return trimCharsEnd(':', parsedUrl.protocol);
-  } catch {
-    return undefined;
-  }
+export const getProtocol = (url) => {
+	try {
+		const parsedUrl = new URL(url);
+		return trimCharsEnd(":", parsedUrl.protocol);
+	} catch {
+		return undefined;
+	}
 };
 
 /**
@@ -38,12 +43,12 @@ export const hasProtocol = pipe(getProtocol, isNotUndefined);
  * or an empty string if it has no extension.
  * @public
  */
-export const getExtension = url => {
-  const lastDotPosition = url.lastIndexOf('.');
-  if (lastDotPosition >= 0) {
-    return url.substring(lastDotPosition).toLowerCase();
-  }
-  return '';
+export const getExtension = (url) => {
+	const lastDotPosition = url.lastIndexOf(".");
+	if (lastDotPosition >= 0) {
+		return url.substring(lastDotPosition).toLowerCase();
+	}
+	return "";
 };
 
 /**
@@ -51,38 +56,40 @@ export const getExtension = url => {
  * This includes "file://" URLs.
  * @public
  */
-export const isFileSystemPath = uri => {
-  // @ts-ignore
-  if (process.browser) {
-    /**
-     * We're running in a browser, so assume that all paths are URLs.
-     * This way, even relative paths will be treated as URLs rather than as filesystem paths.
-     */
-    return false;
-  }
-  const protocol = getProtocol(uri);
-  return isUndefined(protocol) || protocol === 'file' || /^[a-zA-Z]$/.test(protocol);
+export const isFileSystemPath = (uri) => {
+	// @ts-expect-error
+	if (process.browser) {
+		/**
+		 * We're running in a browser, so assume that all paths are URLs.
+		 * This way, even relative paths will be treated as URLs rather than as filesystem paths.
+		 */
+		return false;
+	}
+	const protocol = getProtocol(uri);
+	return (
+		isUndefined(protocol) || protocol === "file" || /^[a-zA-Z]$/.test(protocol)
+	);
 };
 
 /**
  * Determines whether the given URI is an HTTP(S) URL.
  * @public
  */
-export const isHttpUrl = url => {
-  const protocol = getProtocol(url);
-  return protocol === 'http' || protocol === 'https';
+export const isHttpUrl = (url) => {
+	const protocol = getProtocol(url);
+	return protocol === "http" || protocol === "https";
 };
 
 /**
  * Determines whether the given URI
  * @public
  */
-export const isURI = uri => {
-  try {
-    return new URL(uri) && true;
-  } catch {
-    return false;
-  }
+export const isURI = (uri) => {
+	try {
+		return new URL(uri) && true;
+	} catch {
+		return false;
+	}
 };
 
 /**
@@ -94,56 +101,67 @@ export const isURI = uri => {
  * @public
  */
 export const toFileSystemPath = (uri, options) => {
-  // RegExp patterns to URL-decode special characters for local filesystem paths
-  const urlDecodePatterns = [/%23/g, '#', /%24/g, '$', /%26/g, '&', /%2C/g, ',', /%40/g, '@'];
-  const keepFileProtocol = propOr(false, 'keepFileProtocol', options);
-  const isWindowsPredicate = propOr(isWindows, 'isWindows', options);
+	// RegExp patterns to URL-decode special characters for local filesystem paths
+	const urlDecodePatterns = [
+		/%23/g,
+		"#",
+		/%24/g,
+		"$",
+		/%26/g,
+		"&",
+		/%2C/g,
+		",",
+		/%40/g,
+		"@",
+	];
+	const keepFileProtocol = propOr(false, "keepFileProtocol", options);
+	const isWindowsPredicate = propOr(isWindows, "isWindows", options);
 
-  // Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
-  let path = decodeURI(uri);
+	// Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
+	let path = decodeURI(uri);
 
-  // Step 2: Manually decode characters that are not decoded by `decodeURI`.
-  // This includes characters such as "#" and "?", which have special meaning in URLs,
-  // but are just normal characters in a filesystem path.
-  for (let i = 0; i < urlDecodePatterns.length; i += 2) {
-    // @ts-ignore
-    path = path.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
-  }
+	// Step 2: Manually decode characters that are not decoded by `decodeURI`.
+	// This includes characters such as "#" and "?", which have special meaning in URLs,
+	// but are just normal characters in a filesystem path.
+	for (let i = 0; i < urlDecodePatterns.length; i += 2) {
+		// @ts-expect-error
+		path = path.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
+	}
 
-  // Step 3: If it's a "file://" URL, then format it consistently
-  // or convert it to a local filesystem path
-  let isFileUrl = path.substring(0, 7).toLowerCase() === 'file://';
-  if (isFileUrl) {
-    // Strip-off the protocol, and the initial "/", if there is one
-    path = path[7] === '/' ? path.substring(8) : path.substring(7);
+	// Step 3: If it's a "file://" URL, then format it consistently
+	// or convert it to a local filesystem path
+	let isFileUrl = path.substring(0, 7).toLowerCase() === "file://";
+	if (isFileUrl) {
+		// Strip-off the protocol, and the initial "/", if there is one
+		path = path[7] === "/" ? path.substring(8) : path.substring(7);
 
-    // insert a colon (":") after the drive letter on Windows
-    if (isWindowsPredicate() && path[1] === '/') {
-      path = `${path[0]}:${path.substring(1)}`;
-    }
-    if (keepFileProtocol) {
-      // Return the consistently-formatted "file://" URL
-      path = `file:///${path}`;
-    } else {
-      // Convert the "file://" URL to a local filesystem path.
-      // On Windows, it will start with something like "C:/".
-      // On Posix, it will start with "/"
-      isFileUrl = false;
-      path = isWindowsPredicate() ? path : `/${path}`;
-    }
-  }
+		// insert a colon (":") after the drive letter on Windows
+		if (isWindowsPredicate() && path[1] === "/") {
+			path = `${path[0]}:${path.substring(1)}`;
+		}
+		if (keepFileProtocol) {
+			// Return the consistently-formatted "file://" URL
+			path = `file:///${path}`;
+		} else {
+			// Convert the "file://" URL to a local filesystem path.
+			// On Windows, it will start with something like "C:/".
+			// On Posix, it will start with "/"
+			isFileUrl = false;
+			path = isWindowsPredicate() ? path : `/${path}`;
+		}
+	}
 
-  // Step 4: Normalize Windows paths (unless it's a "file://" URL)
-  if (isWindowsPredicate() && !isFileUrl) {
-    // Replace forward slashes with backslashes
-    path = replaceAll('/', '\\', path);
+	// Step 4: Normalize Windows paths (unless it's a "file://" URL)
+	if (isWindowsPredicate() && !isFileUrl) {
+		// Replace forward slashes with backslashes
+		path = replaceAll("/", "\\", path);
 
-    // Capitalize the drive letter
-    if (path.substring(1, 3) === ':\\') {
-      path = path[0].toUpperCase() + path.substring(1);
-    }
-  }
-  return path;
+		// Capitalize the drive letter
+		if (path.substring(1, 3) === ":\\") {
+			path = path[0].toUpperCase() + path.substring(1);
+		}
+	}
+	return path;
 };
 
 /**
@@ -161,27 +179,27 @@ export const toFileSystemPath = (uri, options) => {
  * ```
  * @public
  */
-export const fromFileSystemPath = uri => {
-  const urlEncodePatterns = [/\?/g, '%3F', /#/g, '%23'];
-  let path = uri;
+export const fromFileSystemPath = (uri) => {
+	const urlEncodePatterns = [/\?/g, "%3F", /#/g, "%23"];
+	let path = uri;
 
-  // Step 1: On Windows, replace backslashes with forward slashes,
-  // rather than encoding them as "%5C"
-  if (isWindows()) {
-    path = path.replace(/\\/g, '/');
-  }
+	// Step 1: On Windows, replace backslashes with forward slashes,
+	// rather than encoding them as "%5C"
+	if (isWindows()) {
+		path = path.replace(/\\/g, "/");
+	}
 
-  // Step 2: `encodeURI` will take care of MOST characters
-  path = encodeURI(path);
+	// Step 2: `encodeURI` will take care of MOST characters
+	path = encodeURI(path);
 
-  // Step 3: Manually encode characters that are not encoded by `encodeURI`.
-  // This includes characters such as "#" and "?", which have special meaning in URLs,
-  // but are just normal characters in a filesystem path.
-  for (let i = 0; i < urlEncodePatterns.length; i += 2) {
-    // @ts-ignore
-    path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
-  }
-  return path;
+	// Step 3: Manually encode characters that are not encoded by `encodeURI`.
+	// This includes characters such as "#" and "?", which have special meaning in URLs,
+	// but are just normal characters in a filesystem path.
+	for (let i = 0; i < urlEncodePatterns.length; i += 2) {
+		// @ts-expect-error
+		path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
+	}
+	return path;
 };
 
 /**
@@ -189,25 +207,25 @@ export const fromFileSystemPath = uri => {
  * If there is no hash, then the root hash ("#") is returned.
  * @public
  */
-export const getHash = uri => {
-  const hashIndex = uri.indexOf('#');
-  if (hashIndex !== -1) {
-    return uri.substring(hashIndex);
-  }
-  return '#';
+export const getHash = (uri) => {
+	const hashIndex = uri.indexOf("#");
+	if (hashIndex !== -1) {
+		return uri.substring(hashIndex);
+	}
+	return "#";
 };
 
 /**
  * Removes the hash (URL fragment), if any, from the given path.
  * @public
  */
-export const stripHash = uri => {
-  const hashIndex = uri.indexOf('#');
-  let hashStrippedUri = uri;
-  if (hashIndex >= 0) {
-    hashStrippedUri = uri.substring(0, hashIndex);
-  }
-  return hashStrippedUri;
+export const stripHash = (uri) => {
+	const hashIndex = uri.indexOf("#");
+	let hashStrippedUri = uri;
+	if (hashIndex >= 0) {
+		hashStrippedUri = uri.substring(0, hashIndex);
+	}
+	return hashStrippedUri;
 };
 
 /**
@@ -215,16 +233,16 @@ export const stripHash = uri => {
  * @public
  */
 export const cwd = () => {
-  // @ts-ignore
-  if (process.browser) {
-    return stripHash(globalThis.location.href);
-  }
-  const path = process.cwd();
-  const lastChar = last(path);
-  if (['/', '\\'].includes(lastChar)) {
-    return path;
-  }
-  return path + (isWindows() ? '\\' : '/');
+	// @ts-expect-error
+	if (process.browser) {
+		return stripHash(globalThis.location.href);
+	}
+	const path = process.cwd();
+	const lastChar = last(path);
+	if (["/", "\\"].includes(lastChar)) {
+		return path;
+	}
+	return path + (isWindows() ? "\\" : "/");
 };
 
 /**
@@ -232,17 +250,13 @@ export const cwd = () => {
  * @public
  */
 export const resolve = (from, to) => {
-  const resolvedUrl = new URL(to, new URL(from, 'resolve://'));
-  if (resolvedUrl.protocol === 'resolve:') {
-    // `from` is a relative URL.
-    const {
-      pathname,
-      search,
-      hash
-    } = resolvedUrl;
-    return pathname + search + hash;
-  }
-  return resolvedUrl.toString();
+	const resolvedUrl = new URL(to, new URL(from, "resolve://"));
+	if (resolvedUrl.protocol === "resolve:") {
+		// `from` is a relative URL.
+		const { pathname, search, hash } = resolvedUrl;
+		return pathname + search + hash;
+	}
+	return resolvedUrl.toString();
 };
 
 /**
@@ -254,16 +268,16 @@ export const resolve = (from, to) => {
  * @public
  */
 
-export const sanitize = uri => {
-  if (isFileSystemPath(uri)) {
-    return fromFileSystemPath(toFileSystemPath(uri));
-  }
-  try {
-    return new URL(uri).toString();
-  } catch {
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI#encoding_for_ipv6
-    return encodeURI(decodeURI(uri)).replace(/%5B/g, '[').replace(/%5D/g, ']');
-  }
+export const sanitize = (uri) => {
+	if (isFileSystemPath(uri)) {
+		return fromFileSystemPath(toFileSystemPath(uri));
+	}
+	try {
+		return new URL(uri).toString();
+	} catch {
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI#encoding_for_ipv6
+		return encodeURI(decodeURI(uri)).replace(/%5B/g, "[").replace(/%5D/g, "]");
+	}
 };
 
 /**
@@ -273,9 +287,9 @@ export const sanitize = uri => {
  * @public
  */
 
-export const unsanitize = uri => {
-  if (isFileSystemPath(uri)) {
-    return toFileSystemPath(uri);
-  }
-  return decodeURI(uri);
+export const unsanitize = (uri) => {
+	if (isFileSystemPath(uri)) {
+		return toFileSystemPath(uri);
+	}
+	return decodeURI(uri);
 };

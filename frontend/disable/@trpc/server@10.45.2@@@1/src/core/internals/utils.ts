@@ -1,5 +1,5 @@
-import type { Simplify, WithoutIndexSignature } from '../../types';
-import type { ProcedureParams } from '../procedure';
+import type { Simplify, WithoutIndexSignature } from "../../types";
+import type { ProcedureParams } from "../procedure";
 
 /**
  * @internal
@@ -8,42 +8,42 @@ import type { ProcedureParams } from '../procedure';
  * is an object. Otherwise it will just use the type from `TWith`.
  */
 export type Overwrite<TType, TWith> = TWith extends any
-  ? TType extends object
-    ? {
-        [K in  // Exclude index signature from keys
-          | keyof WithoutIndexSignature<TType>
-          | keyof WithoutIndexSignature<TWith>]: K extends keyof TWith
-          ? TWith[K]
-          : K extends keyof TType
-          ? TType[K]
-          : never;
-      } & (string extends keyof TWith // Handle cases with an index signature
-        ? { [key: string]: TWith[string] }
-        : number extends keyof TWith
-        ? { [key: number]: TWith[number] }
-        : // eslint-disable-next-line @typescript-eslint/ban-types
-          {})
-    : TWith
-  : never;
+	? TType extends object
+		? {
+				[K in
+					| keyof WithoutIndexSignature<TType>
+					| keyof WithoutIndexSignature<TWith>]: K extends keyof TWith // Exclude index signature from keys
+					? TWith[K]
+					: K extends keyof TType
+						? TType[K]
+						: never;
+			} & (string extends keyof TWith // Handle cases with an index signature
+				? { [key: string]: TWith[string] }
+				: number extends keyof TWith
+					? { [key: number]: TWith[number] }
+					: // eslint-disable-next-line @typescript-eslint/ban-types
+						{})
+		: TWith
+	: never;
 
 /**
  * @internal
  */
 export type OverwriteKnown<TType, TWith> = {
-  [K in keyof TType]: K extends keyof TWith ? TWith[K] : TType[K];
+	[K in keyof TType]: K extends keyof TWith ? TWith[K] : TType[K];
 };
 /**
  * @internal
  */
 export type DefaultValue<TValue, TFallback> = UnsetMarker extends TValue
-  ? TFallback
-  : TValue;
+	? TFallback
+	: TValue;
 
 /**
  * @internal
  */
-export const middlewareMarker = 'middlewareMarker' as 'middlewareMarker' & {
-  __brand: 'middlewareMarker';
+export const middlewareMarker = "middlewareMarker" as "middlewareMarker" & {
+	__brand: "middlewareMarker";
 };
 
 /**
@@ -54,7 +54,7 @@ export type MiddlewareMarker = typeof middlewareMarker;
 /**
  * @internal
  */
-export const unsetMarker = Symbol('unsetMarker');
+export const unsetMarker = Symbol("unsetMarker");
 /**
  * @internal
  */
@@ -64,29 +64,29 @@ export type UnsetMarker = typeof unsetMarker;
  * @internal
  */
 export interface ResolveOptions<TParams extends ProcedureParams> {
-  ctx: Simplify<
-    Overwrite<TParams['_config']['$types']['ctx'], TParams['_ctx_out']>
-  >;
-  input: TParams['_input_out'] extends UnsetMarker
-    ? undefined
-    : TParams['_input_out'];
+	ctx: Simplify<
+		Overwrite<TParams["_config"]["$types"]["ctx"], TParams["_ctx_out"]>
+	>;
+	input: TParams["_input_out"] extends UnsetMarker
+		? undefined
+		: TParams["_input_out"];
 }
 
 /**
  * @internal
  */
 export type ValidateShape<TActualShape, TExpectedShape> =
-  TActualShape extends TExpectedShape
-    ? Exclude<keyof TActualShape, keyof TExpectedShape> extends never
-      ? TActualShape
-      : TExpectedShape
-    : never;
+	TActualShape extends TExpectedShape
+		? Exclude<keyof TActualShape, keyof TExpectedShape> extends never
+			? TActualShape
+			: TExpectedShape
+		: never;
 
 /**
  * @internal
  */
 export type PickFirstDefined<TType, TPick> = undefined extends TType
-  ? undefined extends TPick
-    ? never
-    : TPick
-  : TType;
+	? undefined extends TPick
+		? never
+		: TPick
+	: TType;

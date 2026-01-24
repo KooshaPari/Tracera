@@ -23,16 +23,16 @@
  * //=> 'P39Y2M20DT0H0M0S'
  */
 export function formatISODuration(duration) {
-  const {
-    years = 0,
-    months = 0,
-    days = 0,
-    hours = 0,
-    minutes = 0,
-    seconds = 0,
-  } = duration;
+	const {
+		years = 0,
+		months = 0,
+		days = 0,
+		hours = 0,
+		minutes = 0,
+		seconds = 0,
+	} = duration;
 
-  return `P${years}Y${months}M${days}DT${hours}H${minutes}M${seconds}S`;
+	return `P${years}Y${months}M${days}DT${hours}H${minutes}M${seconds}S`;
 }
 
 // Fallback for modularized imports:

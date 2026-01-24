@@ -1,8 +1,8 @@
-var baseGetTag = require('./_baseGetTag'),
-    isObjectLike = require('./isObjectLike');
+var baseGetTag = require("./_baseGetTag"),
+	isObjectLike = require("./isObjectLike");
 
 /** `Object#toString` result references. */
-var boolTag = '[object Boolean]';
+var boolTag = "[object Boolean]";
 
 /**
  * Checks if `value` is classified as a boolean primitive or object.
@@ -22,8 +22,11 @@ var boolTag = '[object Boolean]';
  * // => false
  */
 function isBoolean(value) {
-  return value === true || value === false ||
-    (isObjectLike(value) && baseGetTag(value) == boolTag);
+	return (
+		value === true ||
+		value === false ||
+		(isObjectLike(value) && baseGetTag(value) == boolTag)
+	);
 }
 
 module.exports = isBoolean;

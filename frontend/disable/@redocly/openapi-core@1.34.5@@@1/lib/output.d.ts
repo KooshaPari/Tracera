@@ -1,3 +1,3 @@
 export declare const output: {
-    write(str: string): boolean | undefined;
+	write(str: string): boolean | undefined;
 };

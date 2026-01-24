@@ -1,54 +1,54 @@
-var BrowserslistError = require('./error')
+var BrowserslistError = require("./error");
 
 function noop() {}
 
 module.exports = {
-  loadQueries: function loadQueries() {
-    throw new BrowserslistError(
-      'Sharable configs are not supported in client-side build of Browserslist'
-    )
-  },
+	loadQueries: function loadQueries() {
+		throw new BrowserslistError(
+			"Sharable configs are not supported in client-side build of Browserslist",
+		);
+	},
 
-  getStat: function getStat(opts) {
-    return opts.stats
-  },
+	getStat: function getStat(opts) {
+		return opts.stats;
+	},
 
-  loadConfig: function loadConfig(opts) {
-    if (opts.config) {
-      throw new BrowserslistError(
-        'Browserslist config are not supported in client-side build'
-      )
-    }
-  },
+	loadConfig: function loadConfig(opts) {
+		if (opts.config) {
+			throw new BrowserslistError(
+				"Browserslist config are not supported in client-side build",
+			);
+		}
+	},
 
-  loadCountry: function loadCountry() {
-    throw new BrowserslistError(
-      'Country statistics are not supported ' +
-        'in client-side build of Browserslist'
-    )
-  },
+	loadCountry: function loadCountry() {
+		throw new BrowserslistError(
+			"Country statistics are not supported " +
+				"in client-side build of Browserslist",
+		);
+	},
 
-  loadFeature: function loadFeature() {
-    throw new BrowserslistError(
-      'Supports queries are not available in client-side build of Browserslist'
-    )
-  },
+	loadFeature: function loadFeature() {
+		throw new BrowserslistError(
+			"Supports queries are not available in client-side build of Browserslist",
+		);
+	},
 
-  currentNode: function currentNode(resolve, context) {
-    return resolve(['maintained node versions'], context)[0]
-  },
+	currentNode: function currentNode(resolve, context) {
+		return resolve(["maintained node versions"], context)[0];
+	},
 
-  parseConfig: noop,
+	parseConfig: noop,
 
-  readConfig: noop,
+	readConfig: noop,
 
-  findConfig: noop,
+	findConfig: noop,
 
-  findConfigFile: noop,
+	findConfigFile: noop,
 
-  clearCaches: noop,
+	clearCaches: noop,
 
-  oldDataWarning: noop,
+	oldDataWarning: noop,
 
-  env: {}
-}
+	env: {},
+};

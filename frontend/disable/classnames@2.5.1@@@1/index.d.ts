@@ -9,11 +9,11 @@
 //   Marvin Hagemeister <https://github.com/marvinhagemeister>
 
 declare namespace classNames {
-  type Value = string | number | boolean | undefined | null;
-  type Mapping = Record<string, any>;
-  interface ArgumentArray extends Array<Argument> {}
-  interface ReadonlyArgumentArray extends ReadonlyArray<Argument> {}
-  type Argument = Value | Mapping | ArgumentArray | ReadonlyArgumentArray;
+	type Value = string | number | boolean | undefined | null;
+	type Mapping = Record<string, any>;
+	interface ArgumentArray extends Array<Argument> {}
+	interface ReadonlyArgumentArray extends ReadonlyArray<Argument> {}
+	type Argument = Value | Mapping | ArgumentArray | ReadonlyArgumentArray;
 }
 
 interface ClassNames {

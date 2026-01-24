@@ -1,33 +1,38 @@
-import { Comma, String as StringToken, Ident, RightParenthesis } from '../../tokenizer/index.js';
+import {
+	Comma,
+	Ident,
+	RightParenthesis,
+	String as StringToken,
+} from "../../tokenizer/index.js";
 
 export function parseLanguageRangeList() {
-    const children = this.createList();
+	const children = this.createList();
 
-    this.skipSC();
+	this.skipSC();
 
-    loop: while (!this.eof) {
-        switch (this.tokenType) {
-            case Ident:
-                children.push(this.Identifier());
-                break;
+	loop: while (!this.eof) {
+		switch (this.tokenType) {
+			case Ident:
+				children.push(this.Identifier());
+				break;
 
-            case StringToken:
-                children.push(this.String());
-                break;
+			case StringToken:
+				children.push(this.String());
+				break;
 
-            case Comma:
-                children.push(this.Operator());
-                break;
+			case Comma:
+				children.push(this.Operator());
+				break;
 
-            case RightParenthesis:
-                break loop;
+			case RightParenthesis:
+				break loop;
 
-            default:
-                this.error('Identifier, string or comma is expected');
-        }
+			default:
+				this.error("Identifier, string or comma is expected");
+		}
 
-        this.skipSC();
-    }
+		this.skipSC();
+	}
 
-    return children;
+	return children;
 }

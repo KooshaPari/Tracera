@@ -19,72 +19,72 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require('./common');
-var assert = require('assert');
-var events = require('../');
+require("./common");
+var assert = require("assert");
+var events = require("../");
 
 var callbacks_called = [];
 
 var e = new events.EventEmitter();
 
 function callback1() {
-  callbacks_called.push('callback1');
-  e.on('foo', callback2);
-  e.on('foo', callback3);
-  e.removeListener('foo', callback1);
+	callbacks_called.push("callback1");
+	e.on("foo", callback2);
+	e.on("foo", callback3);
+	e.removeListener("foo", callback1);
 }
 
 function callback2() {
-  callbacks_called.push('callback2');
-  e.removeListener('foo', callback2);
+	callbacks_called.push("callback2");
+	e.removeListener("foo", callback2);
 }
 
 function callback3() {
-  callbacks_called.push('callback3');
-  e.removeListener('foo', callback3);
+	callbacks_called.push("callback3");
+	e.removeListener("foo", callback3);
 }
 
-e.on('foo', callback1);
-assert.strictEqual(e.listeners('foo').length, 1);
+e.on("foo", callback1);
+assert.strictEqual(e.listeners("foo").length, 1);
 
-e.emit('foo');
-assert.strictEqual(e.listeners('foo').length, 2);
+e.emit("foo");
+assert.strictEqual(e.listeners("foo").length, 2);
 assert.ok(Array.isArray(callbacks_called));
 assert.strictEqual(callbacks_called.length, 1);
-assert.strictEqual(callbacks_called[0], 'callback1');
+assert.strictEqual(callbacks_called[0], "callback1");
 
-e.emit('foo');
-assert.strictEqual(e.listeners('foo').length, 0);
+e.emit("foo");
+assert.strictEqual(e.listeners("foo").length, 0);
 assert.ok(Array.isArray(callbacks_called));
 assert.strictEqual(callbacks_called.length, 3);
-assert.strictEqual(callbacks_called[0], 'callback1');
-assert.strictEqual(callbacks_called[1], 'callback2');
-assert.strictEqual(callbacks_called[2], 'callback3');
+assert.strictEqual(callbacks_called[0], "callback1");
+assert.strictEqual(callbacks_called[1], "callback2");
+assert.strictEqual(callbacks_called[2], "callback3");
 
-e.emit('foo');
-assert.strictEqual(e.listeners('foo').length, 0);
+e.emit("foo");
+assert.strictEqual(e.listeners("foo").length, 0);
 assert.ok(Array.isArray(callbacks_called));
 assert.strictEqual(callbacks_called.length, 3);
-assert.strictEqual(callbacks_called[0], 'callback1');
-assert.strictEqual(callbacks_called[1], 'callback2');
-assert.strictEqual(callbacks_called[2], 'callback3');
+assert.strictEqual(callbacks_called[0], "callback1");
+assert.strictEqual(callbacks_called[1], "callback2");
+assert.strictEqual(callbacks_called[2], "callback3");
 
-e.on('foo', callback1);
-e.on('foo', callback2);
-assert.strictEqual(e.listeners('foo').length, 2);
-e.removeAllListeners('foo');
-assert.strictEqual(e.listeners('foo').length, 0);
+e.on("foo", callback1);
+e.on("foo", callback2);
+assert.strictEqual(e.listeners("foo").length, 2);
+e.removeAllListeners("foo");
+assert.strictEqual(e.listeners("foo").length, 0);
 
 // Verify that removing callbacks while in emit allows emits to propagate to
 // all listeners
 callbacks_called = [];
 
-e.on('foo', callback2);
-e.on('foo', callback3);
-assert.strictEqual(2, e.listeners('foo').length);
-e.emit('foo');
+e.on("foo", callback2);
+e.on("foo", callback3);
+assert.strictEqual(2, e.listeners("foo").length);
+e.emit("foo");
 assert.ok(Array.isArray(callbacks_called));
 assert.strictEqual(callbacks_called.length, 2);
-assert.strictEqual(callbacks_called[0], 'callback2');
-assert.strictEqual(callbacks_called[1], 'callback3');
-assert.strictEqual(0, e.listeners('foo').length);
+assert.strictEqual(callbacks_called[0], "callback2");
+assert.strictEqual(callbacks_called[1], "callback3");
+assert.strictEqual(0, e.listeners("foo").length);

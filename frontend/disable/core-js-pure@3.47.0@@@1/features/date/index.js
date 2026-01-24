@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/date');
+"use strict";
+module.exports = require("../../full/date");

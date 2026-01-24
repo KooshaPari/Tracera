@@ -1,4 +1,4 @@
-var baseSortedIndex = require('./_baseSortedIndex');
+var baseSortedIndex = require("./_baseSortedIndex");
 
 /**
  * This method is like `_.sortedIndex` except that it returns the highest
@@ -19,7 +19,7 @@ var baseSortedIndex = require('./_baseSortedIndex');
  * // => 4
  */
 function sortedLastIndex(array, value) {
-  return baseSortedIndex(array, value, true);
+	return baseSortedIndex(array, value, true);
 }
 
 module.exports = sortedLastIndex;

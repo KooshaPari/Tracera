@@ -34,10 +34,29 @@ class ProjectRepository:
 
     async def get_by_id(self, project_id: str) -> Project | None:
         """Get project by ID."""
+        # Use raw SQL to avoid model column mismatches with database schema
+        from sqlalchemy import text
         result = await self.session.execute(
-            select(Project).where(Project.id == project_id)
+            text("SELECT id, name, metadata, created_at, updated_at FROM projects WHERE id = :project_id AND deleted_at IS NULL"),
+            {"project_id": project_id}
         )
-        return result.scalar_one_or_none()
+        row = result.fetchone()
+        if not row:
+            return None
+        
+        # Create a Project-like object that works with the actual schema
+        project = type('Project', (), {})()  # type: ignore
+        project.id = str(row.id)
+        project.name = row.name
+        project.project_metadata = row.metadata if row.metadata else {}
+        project.metadata = project.project_metadata  # Alias for compatibility
+        project.created_at = row.created_at
+        project.updated_at = row.updated_at
+        # Add description property that reads from metadata
+        project.description = None
+        if isinstance(project.project_metadata, dict):
+            project.description = project.project_metadata.get("description")
+        return project
 
     async def get_by_name(self, name: str) -> Project | None:
         """Get project by name."""
@@ -46,8 +65,28 @@ class ProjectRepository:
 
     async def get_all(self) -> list[Project]:
         """Get all projects."""
-        result = await self.session.execute(select(Project))
-        return list(result.scalars().all())
+        # Use raw SQL to avoid model column mismatches with database schema
+        from sqlalchemy import text
+        result = await self.session.execute(
+            text("SELECT id, name, metadata, created_at, updated_at FROM projects WHERE deleted_at IS NULL")
+        )
+        projects = []
+        for row in result:
+            # Create a Project-like object that works with the actual schema
+            # Use type: ignore to bypass SQLAlchemy model validation
+            project = type('Project', (), {})()  # type: ignore
+            project.id = str(row.id)
+            project.name = row.name
+            project.project_metadata = row.metadata if row.metadata else {}
+            project.metadata = project.project_metadata  # Alias for compatibility
+            project.created_at = row.created_at
+            project.updated_at = row.updated_at
+            # Add description property that reads from metadata
+            project.description = None
+            if isinstance(project.project_metadata, dict):
+                project.description = project.project_metadata.get("description")
+            projects.append(project)
+        return projects
 
     async def update(
         self,

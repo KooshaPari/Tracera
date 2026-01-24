@@ -1,17 +1,13 @@
-'use strict';
-
 const {
-  ArrayPrototypeFind,
-  ObjectEntries,
-  ObjectPrototypeHasOwnProperty: ObjectHasOwn,
-  StringPrototypeCharAt,
-  StringPrototypeIncludes,
-  StringPrototypeStartsWith,
-} = require('./internal/primordials');
+	ArrayPrototypeFind,
+	ObjectEntries,
+	ObjectPrototypeHasOwnProperty: ObjectHasOwn,
+	StringPrototypeCharAt,
+	StringPrototypeIncludes,
+	StringPrototypeStartsWith,
+} = require("./internal/primordials");
 
-const {
-  validateObject,
-} = require('./internal/validators');
+const { validateObject } = require("./internal/validators");
 
 // These are internal utilities to make the parsing logic easier to read, and
 // add lots of detail for the curious. They are in a separate file to allow
@@ -24,16 +20,15 @@ const {
  * Return the named property, but only if it is an own property.
  */
 function objectGetOwn(obj, prop) {
-  if (ObjectHasOwn(obj, prop))
-    return obj[prop];
+	if (ObjectHasOwn(obj, prop)) return obj[prop];
 }
 
 /**
  * Return the named options property, but only if it is an own property.
  */
 function optionsGetOwn(options, longOption, prop) {
-  if (ObjectHasOwn(options, longOption))
-    return objectGetOwn(options[longOption], prop);
+	if (ObjectHasOwn(options, longOption))
+		return objectGetOwn(options[longOption], prop);
 }
 
 /**
@@ -45,11 +40,11 @@ function optionsGetOwn(options, longOption, prop) {
  * isOptionValue(undefined) // returns false
  */
 function isOptionValue(value) {
-  if (value == null) return false;
+	if (value == null) return false;
 
-  // Open Group Utility Conventions are that an option-argument
-  // is the argument after the option, and may start with a dash.
-  return true; // greedy!
+	// Open Group Utility Conventions are that an option-argument
+	// is the argument after the option, and may start with a dash.
+	return true; // greedy!
 }
 
 /**
@@ -58,9 +53,9 @@ function isOptionValue(value) {
  * In strict mode we throw errors if value is option-like.
  */
 function isOptionLikeValue(value) {
-  if (value == null) return false;
+	if (value == null) return false;
 
-  return value.length > 1 && StringPrototypeCharAt(value, 0) === '-';
+	return value.length > 1 && StringPrototypeCharAt(value, 0) === "-";
 }
 
 /**
@@ -68,9 +63,11 @@ function isOptionLikeValue(value) {
  * @example '-f'
  */
 function isLoneShortOption(arg) {
-  return arg.length === 2 &&
-    StringPrototypeCharAt(arg, 0) === '-' &&
-    StringPrototypeCharAt(arg, 1) !== '-';
+	return (
+		arg.length === 2 &&
+		StringPrototypeCharAt(arg, 0) === "-" &&
+		StringPrototypeCharAt(arg, 1) !== "-"
+	);
 }
 
 /**
@@ -82,9 +79,11 @@ function isLoneShortOption(arg) {
  * isLoneLongOption('--foo=bar') // returns false
  */
 function isLoneLongOption(arg) {
-  return arg.length > 2 &&
-    StringPrototypeStartsWith(arg, '--') &&
-    !StringPrototypeIncludes(arg, '=', 3);
+	return (
+		arg.length > 2 &&
+		StringPrototypeStartsWith(arg, "--") &&
+		!StringPrototypeIncludes(arg, "=", 3)
+	);
 }
 
 /**
@@ -94,9 +93,11 @@ function isLoneLongOption(arg) {
  * isLongOptionAndValue('--foo=bar') // returns true
  */
 function isLongOptionAndValue(arg) {
-  return arg.length > 2 &&
-    StringPrototypeStartsWith(arg, '--') &&
-    StringPrototypeIncludes(arg, '=', 3);
+	return (
+		arg.length > 2 &&
+		StringPrototypeStartsWith(arg, "--") &&
+		StringPrototypeIncludes(arg, "=", 3)
+	);
 }
 
 /**
@@ -122,13 +123,13 @@ function isLongOptionAndValue(arg) {
  * }) // returns true
  */
 function isShortOptionGroup(arg, options) {
-  if (arg.length <= 2) return false;
-  if (StringPrototypeCharAt(arg, 0) !== '-') return false;
-  if (StringPrototypeCharAt(arg, 1) === '-') return false;
+	if (arg.length <= 2) return false;
+	if (StringPrototypeCharAt(arg, 0) !== "-") return false;
+	if (StringPrototypeCharAt(arg, 1) === "-") return false;
 
-  const firstShort = StringPrototypeCharAt(arg, 1);
-  const longOption = findLongOptionForShort(firstShort, options);
-  return optionsGetOwn(options, longOption, 'type') !== 'string';
+	const firstShort = StringPrototypeCharAt(arg, 1);
+	const longOption = findLongOptionForShort(firstShort, options);
+	return optionsGetOwn(options, longOption, "type") !== "string";
 }
 
 /**
@@ -141,15 +142,15 @@ function isShortOptionGroup(arg, options) {
  * }) // returns true
  */
 function isShortOptionAndValue(arg, options) {
-  validateObject(options, 'options');
+	validateObject(options, "options");
 
-  if (arg.length <= 2) return false;
-  if (StringPrototypeCharAt(arg, 0) !== '-') return false;
-  if (StringPrototypeCharAt(arg, 1) === '-') return false;
+	if (arg.length <= 2) return false;
+	if (StringPrototypeCharAt(arg, 0) !== "-") return false;
+	if (StringPrototypeCharAt(arg, 1) === "-") return false;
 
-  const shortOption = StringPrototypeCharAt(arg, 1);
-  const longOption = findLongOptionForShort(shortOption, options);
-  return optionsGetOwn(options, longOption, 'type') === 'string';
+	const shortOption = StringPrototypeCharAt(arg, 1);
+	const longOption = findLongOptionForShort(shortOption, options);
+	return optionsGetOwn(options, longOption, "type") === "string";
 }
 
 /**
@@ -162,12 +163,13 @@ function isShortOptionAndValue(arg, options) {
  * }) // returns 'bar'
  */
 function findLongOptionForShort(shortOption, options) {
-  validateObject(options, 'options');
-  const longOptionEntry = ArrayPrototypeFind(
-    ObjectEntries(options),
-    ({ 1: optionConfig }) => objectGetOwn(optionConfig, 'short') === shortOption
-  );
-  return longOptionEntry?.[0] ?? shortOption;
+	validateObject(options, "options");
+	const longOptionEntry = ArrayPrototypeFind(
+		ObjectEntries(options),
+		({ 1: optionConfig }) =>
+			objectGetOwn(optionConfig, "short") === shortOption,
+	);
+	return longOptionEntry?.[0] ?? shortOption;
 }
 
 /**
@@ -179,20 +181,22 @@ function findLongOptionForShort(shortOption, options) {
  * @param {object} values - option values returned in `values` by parseArgs
  */
 function useDefaultValueOption(longOption, optionConfig, values) {
-  return objectGetOwn(optionConfig, 'default') !== undefined &&
-    values[longOption] === undefined;
+	return (
+		objectGetOwn(optionConfig, "default") !== undefined &&
+		values[longOption] === undefined
+	);
 }
 
 module.exports = {
-  findLongOptionForShort,
-  isLoneLongOption,
-  isLoneShortOption,
-  isLongOptionAndValue,
-  isOptionValue,
-  isOptionLikeValue,
-  isShortOptionAndValue,
-  isShortOptionGroup,
-  useDefaultValueOption,
-  objectGetOwn,
-  optionsGetOwn,
+	findLongOptionForShort,
+	isLoneLongOption,
+	isLoneShortOption,
+	isLongOptionAndValue,
+	isOptionValue,
+	isOptionLikeValue,
+	isShortOptionAndValue,
+	isShortOptionGroup,
+	useDefaultValueOption,
+	objectGetOwn,
+	optionsGetOwn,
 };

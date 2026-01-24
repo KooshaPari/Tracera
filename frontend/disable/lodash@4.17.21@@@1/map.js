@@ -1,7 +1,7 @@
-var arrayMap = require('./_arrayMap'),
-    baseIteratee = require('./_baseIteratee'),
-    baseMap = require('./_baseMap'),
-    isArray = require('./isArray');
+var arrayMap = require("./_arrayMap"),
+	baseIteratee = require("./_baseIteratee"),
+	baseMap = require("./_baseMap"),
+	isArray = require("./isArray");
 
 /**
  * Creates an array of values by running each element in `collection` thru
@@ -46,8 +46,8 @@ var arrayMap = require('./_arrayMap'),
  * // => ['barney', 'fred']
  */
 function map(collection, iteratee) {
-  var func = isArray(collection) ? arrayMap : baseMap;
-  return func(collection, baseIteratee(iteratee, 3));
+	var func = isArray(collection) ? arrayMap : baseMap;
+	return func(collection, baseIteratee(iteratee, 3));
 }
 
 module.exports = map;

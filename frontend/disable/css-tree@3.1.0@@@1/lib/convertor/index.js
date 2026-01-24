@@ -1,4 +1,4 @@
-import { createConvertor } from './create.js';
-import walker from '../walker/index.js';
+import walker from "../walker/index.js";
+import { createConvertor } from "./create.js";
 
 export default createConvertor(walker);

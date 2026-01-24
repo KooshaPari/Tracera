@@ -48,27 +48,27 @@ import { toDate } from "./toDate.js";
  * //=> Sat Jan 01 2005 00:00:00
  */
 export function setWeekYear(date, weekYear, options) {
-  const defaultOptions = getDefaultOptions();
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
+	const defaultOptions = getDefaultOptions();
+	const firstWeekContainsDate =
+		options?.firstWeekContainsDate ??
+		options?.locale?.options?.firstWeekContainsDate ??
+		defaultOptions.firstWeekContainsDate ??
+		defaultOptions.locale?.options?.firstWeekContainsDate ??
+		1;
 
-  const diff = differenceInCalendarDays(
-    toDate(date, options?.in),
-    startOfWeekYear(date, options),
-    options,
-  );
+	const diff = differenceInCalendarDays(
+		toDate(date, options?.in),
+		startOfWeekYear(date, options),
+		options,
+	);
 
-  const firstWeek = constructFrom(options?.in || date, 0);
-  firstWeek.setFullYear(weekYear, 0, firstWeekContainsDate);
-  firstWeek.setHours(0, 0, 0, 0);
+	const firstWeek = constructFrom(options?.in || date, 0);
+	firstWeek.setFullYear(weekYear, 0, firstWeekContainsDate);
+	firstWeek.setHours(0, 0, 0, 0);
 
-  const date_ = startOfWeekYear(firstWeek, options);
-  date_.setDate(date_.getDate() + diff);
-  return date_;
+	const date_ = startOfWeekYear(firstWeek, options);
+	date_.setDate(date_.getDate() + diff);
+	return date_;
 }
 
 // Fallback for modularized imports:

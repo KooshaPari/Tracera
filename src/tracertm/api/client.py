@@ -329,10 +329,10 @@ class TraceRTMClient:
         self,
         name: str,
         capabilities: list[str] | None = None,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
         agent_type: str = "ai_agent",
         project_ids: list[str] | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """
         Register an agent (FR41, FR51).
@@ -350,9 +350,9 @@ class TraceRTMClient:
 
         if existing:
             existing.name = name or existing.name
-            existing.capabilities = capabilities
-            existing.config = config
-            existing.agent_metadata = config
+            existing.capabilities = list(capabilities) if capabilities else []
+            existing.config = config or {}
+            existing.agent_metadata = config or {}
             session.commit()
             return existing.id
 
@@ -361,7 +361,7 @@ class TraceRTMClient:
 
         agent_id = generate_agent_uuid()
 
-        agent = Agent(
+        agent: Agent = Agent(
             id=agent_id,
             project_id=project_id,
             name=name,
@@ -461,10 +461,12 @@ class TraceRTMClient:
 
         # Get assigned projects from metadata
         metadata = agent.agent_metadata or {}
-        assigned = metadata.get("assigned_projects", [])
+        assigned_raw: Any = metadata.get("assigned_projects", [])
+        assigned = list(assigned_raw) if assigned_raw else []
         # Include primary project
-        primary = [agent.project_id]
-        return list(set(primary + assigned))
+        primary = [agent.project_id] if agent.project_id else []
+        combined: list[Any] = primary + assigned
+        return [str(p) for p in list(set(combined)) if p]
 
     def get_agent_capabilities(self, agent_id: str | None = None) -> list[str]:
         """
@@ -477,7 +479,8 @@ class TraceRTMClient:
         agent = session.query(Agent).filter(Agent.id == target_id).first()
         if not agent:
             return []
-        return agent.capabilities or []
+        capabilities_raw: Any = agent.capabilities
+        return list(capabilities_raw) if capabilities_raw else []
 
     def list_projects(self) -> list[Project]:
         """
@@ -614,7 +617,7 @@ class TraceRTMClient:
         priority: str = "medium",
         owner: str | None = None,
         parent_id: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
         **kwargs: Any,
     ) -> ItemView | Any:
@@ -643,7 +646,7 @@ class TraceRTMClient:
             raise ValueError("view is required")
         project_id = project_id or self.config_manager.get("current_project_id")
 
-        item = Item(
+        item: Item = Item(
             project_id=project_id,
             title=title,
             description=description,
@@ -678,7 +681,7 @@ class TraceRTMClient:
         priority: str = "medium",
         owner: str | None = None,
         parent_id: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
         **kwargs: Any,
     ) -> ItemView | Any:
@@ -706,7 +709,7 @@ class TraceRTMClient:
         status: str | None = None,
         priority: str | None = None,
         owner: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ItemView | Any:
         """
         Update an item with optimistic locking and retry logic (FR38, FR42, Story 5.3).
@@ -795,7 +798,7 @@ class TraceRTMClient:
         status: str | None = None,
         priority: str | None = None,
         owner: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ItemView | Any:
         """Async wrapper for update_item."""
         return self.update_item(
@@ -850,12 +853,12 @@ class TraceRTMClient:
         source_id: str,
         target_id: str,
         link_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
     ) -> Link:
         session = self._ensure_sync_session()
         project_id = project_id or self._get_project_id()
-        link = Link(
+        link: Link = Link(
             project_id=project_id,
             source_item_id=source_id,
             target_item_id=target_id,
@@ -871,7 +874,7 @@ class TraceRTMClient:
         source_id: str,
         target_id: str,
         link_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
     ) -> Link:
         return self.create_link(
@@ -888,7 +891,7 @@ class TraceRTMClient:
         target_id: str,
         forward_type: str,
         reverse_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
     ) -> list[Link]:
         forward = self.create_link(
@@ -927,7 +930,7 @@ class TraceRTMClient:
         self,
         link_id: str,
         link_type: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Link:
         session = self._ensure_sync_session()
         link = session.query(Link).filter(Link.id.like(f"{link_id}%")).first()
@@ -1035,7 +1038,7 @@ class TraceRTMClient:
         items_data = json.loads(data)
         return self.batch_create_items(items_data, project_id=project_id)
 
-    def batch_create_links(self, links_data: list[dict]) -> list[Link]:
+    def batch_create_links(self, links_data: list[dict[str, Any]]) -> list[Link]:
         created = []
         for payload in links_data:
             created.append(self.create_link(**payload))
@@ -1151,7 +1154,7 @@ class TraceRTMClient:
 
         # Import items
         for item_data in data.get("items", []):
-            item = Item(
+            item: Item = Item(
                 project_id=project_id,
                 title=item_data.get("title", ""),
                 description=item_data.get("description"),
@@ -1170,7 +1173,7 @@ class TraceRTMClient:
 
         # Import links (after items are created)
         for link_data in data.get("links", []):
-            link = Link(
+            link: Link = Link(
                 project_id=project_id,
                 source_item_id=link_data["source_id"],
                 target_item_id=link_data["target_id"],

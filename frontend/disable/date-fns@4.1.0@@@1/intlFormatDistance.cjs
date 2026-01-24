@@ -118,101 +118,101 @@ var _index10 = require("./differenceInSeconds.cjs");
  * //=> 'in 2 yr'
  */
 function intlFormatDistance(laterDate, earlierDate, options) {
-  let value = 0;
-  let unit;
+	let value = 0;
+	let unit;
 
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  if (!options?.unit) {
-    // Get the unit based on diffInSeconds calculations if no unit is specified
-    const diffInSeconds = (0, _index10.differenceInSeconds)(
-      laterDate_,
-      earlierDate_,
-    ); // The smallest unit
+	if (!options?.unit) {
+		// Get the unit based on diffInSeconds calculations if no unit is specified
+		const diffInSeconds = (0, _index10.differenceInSeconds)(
+			laterDate_,
+			earlierDate_,
+		); // The smallest unit
 
-    if (Math.abs(diffInSeconds) < _index2.secondsInMinute) {
-      value = (0, _index10.differenceInSeconds)(laterDate_, earlierDate_);
-      unit = "second";
-    } else if (Math.abs(diffInSeconds) < _index2.secondsInHour) {
-      value = (0, _index9.differenceInMinutes)(laterDate_, earlierDate_);
-      unit = "minute";
-    } else if (
-      Math.abs(diffInSeconds) < _index2.secondsInDay &&
-      Math.abs(
-        (0, _index3.differenceInCalendarDays)(laterDate_, earlierDate_),
-      ) < 1
-    ) {
-      value = (0, _index8.differenceInHours)(laterDate_, earlierDate_);
-      unit = "hour";
-    } else if (
-      Math.abs(diffInSeconds) < _index2.secondsInWeek &&
-      (value = (0, _index3.differenceInCalendarDays)(
-        laterDate_,
-        earlierDate_,
-      )) &&
-      Math.abs(value) < 7
-    ) {
-      unit = "day";
-    } else if (Math.abs(diffInSeconds) < _index2.secondsInMonth) {
-      value = (0, _index6.differenceInCalendarWeeks)(laterDate_, earlierDate_);
-      unit = "week";
-    } else if (Math.abs(diffInSeconds) < _index2.secondsInQuarter) {
-      value = (0, _index4.differenceInCalendarMonths)(laterDate_, earlierDate_);
-      unit = "month";
-    } else if (Math.abs(diffInSeconds) < _index2.secondsInYear) {
-      if (
-        (0, _index5.differenceInCalendarQuarters)(laterDate_, earlierDate_) < 4
-      ) {
-        // To filter out cases that are less than a year but match 4 quarters
-        value = (0, _index5.differenceInCalendarQuarters)(
-          laterDate_,
-          earlierDate_,
-        );
-        unit = "quarter";
-      } else {
-        value = (0, _index7.differenceInCalendarYears)(
-          laterDate_,
-          earlierDate_,
-        );
-        unit = "year";
-      }
-    } else {
-      value = (0, _index7.differenceInCalendarYears)(laterDate_, earlierDate_);
-      unit = "year";
-    }
-  } else {
-    // Get the value if unit is specified
-    unit = options?.unit;
-    if (unit === "second") {
-      value = (0, _index10.differenceInSeconds)(laterDate_, earlierDate_);
-    } else if (unit === "minute") {
-      value = (0, _index9.differenceInMinutes)(laterDate_, earlierDate_);
-    } else if (unit === "hour") {
-      value = (0, _index8.differenceInHours)(laterDate_, earlierDate_);
-    } else if (unit === "day") {
-      value = (0, _index3.differenceInCalendarDays)(laterDate_, earlierDate_);
-    } else if (unit === "week") {
-      value = (0, _index6.differenceInCalendarWeeks)(laterDate_, earlierDate_);
-    } else if (unit === "month") {
-      value = (0, _index4.differenceInCalendarMonths)(laterDate_, earlierDate_);
-    } else if (unit === "quarter") {
-      value = (0, _index5.differenceInCalendarQuarters)(
-        laterDate_,
-        earlierDate_,
-      );
-    } else if (unit === "year") {
-      value = (0, _index7.differenceInCalendarYears)(laterDate_, earlierDate_);
-    }
-  }
+		if (Math.abs(diffInSeconds) < _index2.secondsInMinute) {
+			value = (0, _index10.differenceInSeconds)(laterDate_, earlierDate_);
+			unit = "second";
+		} else if (Math.abs(diffInSeconds) < _index2.secondsInHour) {
+			value = (0, _index9.differenceInMinutes)(laterDate_, earlierDate_);
+			unit = "minute";
+		} else if (
+			Math.abs(diffInSeconds) < _index2.secondsInDay &&
+			Math.abs(
+				(0, _index3.differenceInCalendarDays)(laterDate_, earlierDate_),
+			) < 1
+		) {
+			value = (0, _index8.differenceInHours)(laterDate_, earlierDate_);
+			unit = "hour";
+		} else if (
+			Math.abs(diffInSeconds) < _index2.secondsInWeek &&
+			(value = (0, _index3.differenceInCalendarDays)(
+				laterDate_,
+				earlierDate_,
+			)) &&
+			Math.abs(value) < 7
+		) {
+			unit = "day";
+		} else if (Math.abs(diffInSeconds) < _index2.secondsInMonth) {
+			value = (0, _index6.differenceInCalendarWeeks)(laterDate_, earlierDate_);
+			unit = "week";
+		} else if (Math.abs(diffInSeconds) < _index2.secondsInQuarter) {
+			value = (0, _index4.differenceInCalendarMonths)(laterDate_, earlierDate_);
+			unit = "month";
+		} else if (Math.abs(diffInSeconds) < _index2.secondsInYear) {
+			if (
+				(0, _index5.differenceInCalendarQuarters)(laterDate_, earlierDate_) < 4
+			) {
+				// To filter out cases that are less than a year but match 4 quarters
+				value = (0, _index5.differenceInCalendarQuarters)(
+					laterDate_,
+					earlierDate_,
+				);
+				unit = "quarter";
+			} else {
+				value = (0, _index7.differenceInCalendarYears)(
+					laterDate_,
+					earlierDate_,
+				);
+				unit = "year";
+			}
+		} else {
+			value = (0, _index7.differenceInCalendarYears)(laterDate_, earlierDate_);
+			unit = "year";
+		}
+	} else {
+		// Get the value if unit is specified
+		unit = options?.unit;
+		if (unit === "second") {
+			value = (0, _index10.differenceInSeconds)(laterDate_, earlierDate_);
+		} else if (unit === "minute") {
+			value = (0, _index9.differenceInMinutes)(laterDate_, earlierDate_);
+		} else if (unit === "hour") {
+			value = (0, _index8.differenceInHours)(laterDate_, earlierDate_);
+		} else if (unit === "day") {
+			value = (0, _index3.differenceInCalendarDays)(laterDate_, earlierDate_);
+		} else if (unit === "week") {
+			value = (0, _index6.differenceInCalendarWeeks)(laterDate_, earlierDate_);
+		} else if (unit === "month") {
+			value = (0, _index4.differenceInCalendarMonths)(laterDate_, earlierDate_);
+		} else if (unit === "quarter") {
+			value = (0, _index5.differenceInCalendarQuarters)(
+				laterDate_,
+				earlierDate_,
+			);
+		} else if (unit === "year") {
+			value = (0, _index7.differenceInCalendarYears)(laterDate_, earlierDate_);
+		}
+	}
 
-  const rtf = new Intl.RelativeTimeFormat(options?.locale, {
-    numeric: "auto",
-    ...options,
-  });
+	const rtf = new Intl.RelativeTimeFormat(options?.locale, {
+		numeric: "auto",
+		...options,
+	});
 
-  return rtf.format(value, unit);
+	return rtf.format(value, unit);
 }

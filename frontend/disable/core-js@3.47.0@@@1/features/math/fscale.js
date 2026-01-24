@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/fscale');
+"use strict";
+module.exports = require("../../full/math/fscale");

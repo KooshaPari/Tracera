@@ -20,10 +20,9 @@
  * @param {Number[]} [elements] - The flat list of element index and element value pairs.
  */
 lunr.Vector = function (elements) {
-  this._magnitude = 0
-  this.elements = elements || []
-}
-
+	this._magnitude = 0;
+	this.elements = elements || [];
+};
 
 /**
  * Calculates the position within the vector to insert a given index.
@@ -36,47 +35,47 @@ lunr.Vector = function (elements) {
  * @returns {Number}
  */
 lunr.Vector.prototype.positionForIndex = function (index) {
-  // For an empty vector the tuple can be inserted at the beginning
-  if (this.elements.length == 0) {
-    return 0
-  }
+	// For an empty vector the tuple can be inserted at the beginning
+	if (this.elements.length == 0) {
+		return 0;
+	}
 
-  var start = 0,
-      end = this.elements.length / 2,
-      sliceLength = end - start,
-      pivotPoint = Math.floor(sliceLength / 2),
-      pivotIndex = this.elements[pivotPoint * 2]
+	var start = 0,
+		end = this.elements.length / 2,
+		sliceLength = end - start,
+		pivotPoint = Math.floor(sliceLength / 2),
+		pivotIndex = this.elements[pivotPoint * 2];
 
-  while (sliceLength > 1) {
-    if (pivotIndex < index) {
-      start = pivotPoint
-    }
+	while (sliceLength > 1) {
+		if (pivotIndex < index) {
+			start = pivotPoint;
+		}
 
-    if (pivotIndex > index) {
-      end = pivotPoint
-    }
+		if (pivotIndex > index) {
+			end = pivotPoint;
+		}
 
-    if (pivotIndex == index) {
-      break
-    }
+		if (pivotIndex == index) {
+			break;
+		}
 
-    sliceLength = end - start
-    pivotPoint = start + Math.floor(sliceLength / 2)
-    pivotIndex = this.elements[pivotPoint * 2]
-  }
+		sliceLength = end - start;
+		pivotPoint = start + Math.floor(sliceLength / 2);
+		pivotIndex = this.elements[pivotPoint * 2];
+	}
 
-  if (pivotIndex == index) {
-    return pivotPoint * 2
-  }
+	if (pivotIndex == index) {
+		return pivotPoint * 2;
+	}
 
-  if (pivotIndex > index) {
-    return pivotPoint * 2
-  }
+	if (pivotIndex > index) {
+		return pivotPoint * 2;
+	}
 
-  if (pivotIndex < index) {
-    return (pivotPoint + 1) * 2
-  }
-}
+	if (pivotIndex < index) {
+		return (pivotPoint + 1) * 2;
+	}
+};
 
 /**
  * Inserts an element at an index within the vector.
@@ -88,10 +87,10 @@ lunr.Vector.prototype.positionForIndex = function (index) {
  * @param {Number} val - The value to be inserted into the vector.
  */
 lunr.Vector.prototype.insert = function (insertIdx, val) {
-  this.upsert(insertIdx, val, function () {
-    throw "duplicate index"
-  })
-}
+	this.upsert(insertIdx, val, () => {
+		throw "duplicate index";
+	});
+};
 
 /**
  * Inserts or updates an existing index within the vector.
@@ -102,15 +101,15 @@ lunr.Vector.prototype.insert = function (insertIdx, val) {
  * requested value are passed as arguments
  */
 lunr.Vector.prototype.upsert = function (insertIdx, val, fn) {
-  this._magnitude = 0
-  var position = this.positionForIndex(insertIdx)
+	this._magnitude = 0;
+	var position = this.positionForIndex(insertIdx);
 
-  if (this.elements[position] == insertIdx) {
-    this.elements[position + 1] = fn(this.elements[position + 1], val)
-  } else {
-    this.elements.splice(position, 0, insertIdx, val)
-  }
-}
+	if (this.elements[position] == insertIdx) {
+		this.elements[position + 1] = fn(this.elements[position + 1], val);
+	} else {
+		this.elements.splice(position, 0, insertIdx, val);
+	}
+};
 
 /**
  * Calculates the magnitude of this vector.
@@ -118,18 +117,18 @@ lunr.Vector.prototype.upsert = function (insertIdx, val, fn) {
  * @returns {Number}
  */
 lunr.Vector.prototype.magnitude = function () {
-  if (this._magnitude) return this._magnitude
+	if (this._magnitude) return this._magnitude;
 
-  var sumOfSquares = 0,
-      elementsLength = this.elements.length
+	var sumOfSquares = 0,
+		elementsLength = this.elements.length;
 
-  for (var i = 1; i < elementsLength; i += 2) {
-    var val = this.elements[i]
-    sumOfSquares += val * val
-  }
+	for (var i = 1; i < elementsLength; i += 2) {
+		var val = this.elements[i];
+		sumOfSquares += val * val;
+	}
 
-  return this._magnitude = Math.sqrt(sumOfSquares)
-}
+	return (this._magnitude = Math.sqrt(sumOfSquares));
+};
 
 /**
  * Calculates the dot product of this vector and another vector.
@@ -138,27 +137,31 @@ lunr.Vector.prototype.magnitude = function () {
  * @returns {Number}
  */
 lunr.Vector.prototype.dot = function (otherVector) {
-  var dotProduct = 0,
-      a = this.elements, b = otherVector.elements,
-      aLen = a.length, bLen = b.length,
-      aVal = 0, bVal = 0,
-      i = 0, j = 0
+	var dotProduct = 0,
+		a = this.elements,
+		b = otherVector.elements,
+		aLen = a.length,
+		bLen = b.length,
+		aVal = 0,
+		bVal = 0,
+		i = 0,
+		j = 0;
 
-  while (i < aLen && j < bLen) {
-    aVal = a[i], bVal = b[j]
-    if (aVal < bVal) {
-      i += 2
-    } else if (aVal > bVal) {
-      j += 2
-    } else if (aVal == bVal) {
-      dotProduct += a[i + 1] * b[j + 1]
-      i += 2
-      j += 2
-    }
-  }
+	while (i < aLen && j < bLen) {
+		(aVal = a[i]), (bVal = b[j]);
+		if (aVal < bVal) {
+			i += 2;
+		} else if (aVal > bVal) {
+			j += 2;
+		} else if (aVal == bVal) {
+			dotProduct += a[i + 1] * b[j + 1];
+			i += 2;
+			j += 2;
+		}
+	}
 
-  return dotProduct
-}
+	return dotProduct;
+};
 
 /**
  * Calculates the similarity between this vector and another vector.
@@ -168,8 +171,8 @@ lunr.Vector.prototype.dot = function (otherVector) {
  * @returns {Number}
  */
 lunr.Vector.prototype.similarity = function (otherVector) {
-  return this.dot(otherVector) / this.magnitude() || 0
-}
+	return this.dot(otherVector) / this.magnitude() || 0;
+};
 
 /**
  * Converts the vector to an array of the elements within the vector.
@@ -177,14 +180,14 @@ lunr.Vector.prototype.similarity = function (otherVector) {
  * @returns {Number[]}
  */
 lunr.Vector.prototype.toArray = function () {
-  var output = new Array (this.elements.length / 2)
+	var output = new Array(this.elements.length / 2);
 
-  for (var i = 1, j = 0; i < this.elements.length; i += 2, j++) {
-    output[j] = this.elements[i]
-  }
+	for (var i = 1, j = 0; i < this.elements.length; i += 2, j++) {
+		output[j] = this.elements[i];
+	}
 
-  return output
-}
+	return output;
+};
 
 /**
  * A JSON serializable representation of the vector.
@@ -192,5 +195,5 @@ lunr.Vector.prototype.toArray = function () {
  * @returns {Number[]}
  */
 lunr.Vector.prototype.toJSON = function () {
-  return this.elements
-}
+	return this.elements;
+};

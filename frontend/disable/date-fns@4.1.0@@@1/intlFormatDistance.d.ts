@@ -3,25 +3,25 @@ import type { ContextOptions, DateArg, MaybeArray } from "./types.js";
  * The {@link intlFormatDistance} function options.
  */
 export interface IntlFormatDistanceOptions
-  extends Intl.RelativeTimeFormatOptions,
-    ContextOptions<Date> {
-  /** Force the distance unit */
-  unit?: IntlFormatDistanceUnit;
-  /** The locales to use (see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#locales_argument) */
-  locale?: MaybeArray<Intl.ResolvedDateTimeFormatOptions["locale"]>;
+	extends Intl.RelativeTimeFormatOptions,
+		ContextOptions<Date> {
+	/** Force the distance unit */
+	unit?: IntlFormatDistanceUnit;
+	/** The locales to use (see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#locales_argument) */
+	locale?: MaybeArray<Intl.ResolvedDateTimeFormatOptions["locale"]>;
 }
 /**
  * The unit used to format the distance in {@link intlFormatDistance}.
  */
 export type IntlFormatDistanceUnit =
-  | "year"
-  | "quarter"
-  | "month"
-  | "week"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second";
+	| "year"
+	| "quarter"
+	| "month"
+	| "week"
+	| "day"
+	| "hour"
+	| "minute"
+	| "second";
 /**
  * @name intlFormatDistance
  * @category Common Helpers
@@ -120,7 +120,7 @@ export type IntlFormatDistanceUnit =
  * //=> 'in 2 yr'
  */
 export declare function intlFormatDistance(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IntlFormatDistanceOptions,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IntlFormatDistanceOptions,
 ): string;

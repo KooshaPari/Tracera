@@ -1,5 +1,5 @@
-import type { NodeType } from '.';
-import type { Oas3_1NodeType } from './redocly-yaml';
+import type { NodeType } from ".";
+import type { Oas3_1NodeType } from "./redocly-yaml";
 export declare const Schema: NodeType;
 export declare const SchemaProperties: NodeType;
 export declare const DependentRequired: NodeType;

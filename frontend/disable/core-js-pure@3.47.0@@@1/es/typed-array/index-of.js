@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.typed-array.index-of');
+"use strict";
+require("../../modules/es.typed-array.index-of");

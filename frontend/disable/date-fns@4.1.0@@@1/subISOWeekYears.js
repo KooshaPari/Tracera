@@ -29,7 +29,7 @@ import { addISOWeekYears } from "./addISOWeekYears.js";
  * //=> Mon Aug 31 2009 00:00:00
  */
 export function subISOWeekYears(date, amount, options) {
-  return addISOWeekYears(date, -amount, options);
+	return addISOWeekYears(date, -amount, options);
 }
 
 // Fallback for modularized imports:

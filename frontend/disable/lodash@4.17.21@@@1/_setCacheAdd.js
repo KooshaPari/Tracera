@@ -1,5 +1,5 @@
 /** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED = '__lodash_hash_undefined__';
+var HASH_UNDEFINED = "__lodash_hash_undefined__";
 
 /**
  * Adds `value` to the array cache.
@@ -12,8 +12,8 @@ var HASH_UNDEFINED = '__lodash_hash_undefined__';
  * @returns {Object} Returns the cache instance.
  */
 function setCacheAdd(value) {
-  this.__data__.set(value, HASH_UNDEFINED);
-  return this;
+	this.__data__.set(value, HASH_UNDEFINED);
+	return this;
 }
 
 module.exports = setCacheAdd;

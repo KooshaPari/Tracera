@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-color` (ESM)
 // See upstream license: https://github.com/d3/d3-color/blob/main/LICENSE
 //

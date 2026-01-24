@@ -3,8 +3,8 @@ import type { ContextOptions, Interval, StepOptions } from "./types.js";
  * The {@link eachQuarterOfInterval} function options.
  */
 export interface EachQuarterOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachQuarterOfInterval} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the date argument,
@@ -12,16 +12,16 @@ export interface EachQuarterOfIntervalOptions<DateType extends Date = Date>
  * a context function is passed, it uses the context function return type.
  */
 export type EachQuarterOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachQuarterOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachQuarterOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachQuarterOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachQuarterOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachQuarterOfInterval
@@ -52,9 +52,9 @@ export type EachQuarterOfIntervalResult<
  * // ]
  */
 export declare function eachQuarterOfInterval<
-  IntervalType extends Interval,
-  Options extends EachQuarterOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachQuarterOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachQuarterOfIntervalResult<IntervalType, Options>;

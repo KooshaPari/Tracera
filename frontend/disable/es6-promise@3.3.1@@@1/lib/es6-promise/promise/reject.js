@@ -1,7 +1,4 @@
-import {
-  noop,
-  reject as _reject
-} from '../-internal';
+import { reject as _reject, noop } from "../-internal";
 
 /**
   `Promise.reject` returns a promise rejected with the passed `reason`.
@@ -38,9 +35,7 @@ import {
   @return {Promise} a promise rejected with the given `reason`.
 */
 export default function reject(reason) {
-  /*jshint validthis:true */
-  let Constructor = this;
-  let promise = new Constructor(noop);
-  _reject(promise, reason);
-  return promise;
+	const promise = new this(noop);
+	_reject(promise, reason);
+	return promise;
 }

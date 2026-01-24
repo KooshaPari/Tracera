@@ -1,35 +1,41 @@
-import { toNestErrors } from '@hookform/resolvers';
+import { toNestErrors } from "@hookform/resolvers";
 import {
-  FieldError,
-  FieldValues,
-  Resolver,
-  appendErrors,
-} from 'react-hook-form';
-import { getDotPath, safeParseAsync } from 'valibot';
-import { BaseSchema, BaseSchemaAsync, Config, InferIssue } from 'valibot';
+	appendErrors,
+	type FieldError,
+	type FieldValues,
+	type Resolver,
+} from "react-hook-form";
+import {
+	type BaseSchema,
+	type BaseSchemaAsync,
+	type Config,
+	getDotPath,
+	type InferIssue,
+	safeParseAsync,
+} from "valibot";
 
 export function valibotResolver<Input extends FieldValues, Context, Output>(
-  schema: BaseSchema<Input, Output, any> | BaseSchemaAsync<Input, Output, any>,
-  schemaOptions?: Partial<
-    Omit<Config<InferIssue<typeof schema>>, 'abortPipeEarly' | 'skipPipe'>
-  >,
-  resolverOptions?: {
-    mode?: 'async' | 'sync';
-    raw?: false;
-  },
+	schema: BaseSchema<Input, Output, any> | BaseSchemaAsync<Input, Output, any>,
+	schemaOptions?: Partial<
+		Omit<Config<InferIssue<typeof schema>>, "abortPipeEarly" | "skipPipe">
+	>,
+	resolverOptions?: {
+		mode?: "async" | "sync";
+		raw?: false;
+	},
 ): Resolver<Input, Context, Output>;
 
 export function valibotResolver<Input extends FieldValues, Context, Output>(
-  schema: BaseSchema<Input, Output, any> | BaseSchemaAsync<Input, Output, any>,
-  schemaOptions:
-    | Partial<
-        Omit<Config<InferIssue<typeof schema>>, 'abortPipeEarly' | 'skipPipe'>
-      >
-    | undefined,
-  resolverOptions: {
-    mode?: 'async' | 'sync';
-    raw: true;
-  },
+	schema: BaseSchema<Input, Output, any> | BaseSchemaAsync<Input, Output, any>,
+	schemaOptions:
+		| Partial<
+				Omit<Config<InferIssue<typeof schema>>, "abortPipeEarly" | "skipPipe">
+		  >
+		| undefined,
+	resolverOptions: {
+		mode?: "async" | "sync";
+		raw: true;
+	},
 ): Resolver<Input, Context, Input>;
 
 /**
@@ -51,88 +57,88 @@ export function valibotResolver<Input extends FieldValues, Context, Output>(
  * });
  */
 export function valibotResolver<Input extends FieldValues, Context, Output>(
-  schema: BaseSchema<Input, Output, any> | BaseSchemaAsync<Input, Output, any>,
-  schemaOptions?: Partial<
-    Omit<Config<InferIssue<typeof schema>>, 'abortPipeEarly' | 'skipPipe'>
-  >,
-  resolverOptions: {
-    /**
-     * @default async
-     */
-    mode?: 'sync' | 'async';
-    /**
-     * Return the raw input values rather than the parsed values.
-     * @default false
-     */
-    raw?: boolean;
-  } = {},
+	schema: BaseSchema<Input, Output, any> | BaseSchemaAsync<Input, Output, any>,
+	schemaOptions?: Partial<
+		Omit<Config<InferIssue<typeof schema>>, "abortPipeEarly" | "skipPipe">
+	>,
+	resolverOptions: {
+		/**
+		 * @default async
+		 */
+		mode?: "sync" | "async";
+		/**
+		 * Return the raw input values rather than the parsed values.
+		 * @default false
+		 */
+		raw?: boolean;
+	} = {},
 ): Resolver<Input, Context, Output | Input> {
-  return async (values: Input, _, options) => {
-    // Check if we should validate all field criteria
-    const validateAllFieldCriteria =
-      !options.shouldUseNativeValidation && options.criteriaMode === 'all';
+	return async (values: Input, _, options) => {
+		// Check if we should validate all field criteria
+		const validateAllFieldCriteria =
+			!options.shouldUseNativeValidation && options.criteriaMode === "all";
 
-    // Parse values with Valibot schema
-    const result = await safeParseAsync(
-      schema,
-      values,
-      Object.assign({}, schemaOptions, {
-        abortPipeEarly: !validateAllFieldCriteria,
-      }),
-    );
+		// Parse values with Valibot schema
+		const result = await safeParseAsync(
+			schema,
+			values,
+			Object.assign({}, schemaOptions, {
+				abortPipeEarly: !validateAllFieldCriteria,
+			}),
+		);
 
-    // If there are issues, return them as errors
-    if (result.issues) {
-      // Create errors object
-      const errors: Record<string, FieldError> = {};
+		// If there are issues, return them as errors
+		if (result.issues) {
+			// Create errors object
+			const errors: Record<string, FieldError> = {};
 
-      // Iterate over issues to add them to errors object
-      for (; result.issues.length; ) {
-        const issue = result.issues[0];
-        // Create dot path from issue
-        const path = getDotPath(issue);
+			// Iterate over issues to add them to errors object
+			for (; result.issues.length; ) {
+				const issue = result.issues[0];
+				// Create dot path from issue
+				const path = getDotPath(issue);
 
-        if (path) {
-          // Add first error of path to errors object
-          if (!errors[path]) {
-            errors[path] = { message: issue.message, type: issue.type };
-          }
+				if (path) {
+					// Add first error of path to errors object
+					if (!errors[path]) {
+						errors[path] = { message: issue.message, type: issue.type };
+					}
 
-          // If configured, add all errors of path to errors object
-          if (validateAllFieldCriteria) {
-            const types = errors[path].types;
-            const messages = types && types[issue.type];
-            errors[path] = appendErrors(
-              path,
-              validateAllFieldCriteria,
-              errors,
-              issue.type,
-              messages
-                ? ([] as string[]).concat(
-                    messages as string | string[],
-                    issue.message,
-                  )
-                : issue.message,
-            ) as FieldError;
-          }
-        }
+					// If configured, add all errors of path to errors object
+					if (validateAllFieldCriteria) {
+						const types = errors[path].types;
+						const messages = types && types[issue.type];
+						errors[path] = appendErrors(
+							path,
+							validateAllFieldCriteria,
+							errors,
+							issue.type,
+							messages
+								? ([] as string[]).concat(
+										messages as string | string[],
+										issue.message,
+									)
+								: issue.message,
+						) as FieldError;
+					}
+				}
 
-        result.issues.shift();
-      }
+				result.issues.shift();
+			}
 
-      // Return resolver result with errors
-      return {
-        values: {},
-        errors: toNestErrors(errors, options),
-      } as const;
-    }
+			// Return resolver result with errors
+			return {
+				values: {},
+				errors: toNestErrors(errors, options),
+			} as const;
+		}
 
-    // Otherwise, return resolver result with values
-    return {
-      values: resolverOptions.raw
-        ? Object.assign({}, values)
-        : (result.output as FieldValues),
-      errors: {},
-    };
-  };
+		// Otherwise, return resolver result with values
+		return {
+			values: resolverOptions.raw
+				? Object.assign({}, values)
+				: (result.output as FieldValues),
+			errors: {},
+		};
+	};
 }

@@ -16,7 +16,10 @@ import type { Writer, WriterSync } from "./types.js";
  * await writeAll(file, contentBytes);
  * ```
  */
-export declare function writeAll(writer: Writer, data: Uint8Array): Promise<void>;
+export declare function writeAll(
+	writer: Writer,
+	data: Uint8Array,
+): Promise<void>;
 /**
  * Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).
@@ -35,4 +38,7 @@ export declare function writeAll(writer: Writer, data: Uint8Array): Promise<void
  * writeAllSync(file, contentBytes);
  * ```
  */
-export declare function writeAllSync(writer: WriterSync, data: Uint8Array): void;
+export declare function writeAllSync(
+	writer: WriterSync,
+	data: Uint8Array,
+): void;

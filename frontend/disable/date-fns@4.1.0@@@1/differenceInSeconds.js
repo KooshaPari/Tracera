@@ -29,8 +29,8 @@ import { differenceInMilliseconds } from "./differenceInMilliseconds.js";
  * //=> 12
  */
 export function differenceInSeconds(laterDate, earlierDate, options) {
-  const diff = differenceInMilliseconds(laterDate, earlierDate) / 1000;
-  return getRoundingMethod(options?.roundingMethod)(diff);
+	const diff = differenceInMilliseconds(laterDate, earlierDate) / 1000;
+	return getRoundingMethod(options?.roundingMethod)(diff);
 }
 
 // Fallback for modularized imports:

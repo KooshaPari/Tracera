@@ -1,5 +1,5 @@
-var baseNth = require('./_baseNth'),
-    toInteger = require('./toInteger');
+var baseNth = require("./_baseNth"),
+	toInteger = require("./toInteger");
 
 /**
  * Gets the element at index `n` of `array`. If `n` is negative, the nth
@@ -23,7 +23,7 @@ var baseNth = require('./_baseNth'),
  * // => 'c';
  */
 function nth(array, n) {
-  return (array && array.length) ? baseNth(array, toInteger(n)) : undefined;
+	return array && array.length ? baseNth(array, toInteger(n)) : undefined;
 }
 
 module.exports = nth;

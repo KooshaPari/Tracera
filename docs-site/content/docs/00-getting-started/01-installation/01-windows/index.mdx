@@ -1,0 +1,616 @@
+---
+title: "Windows Installation"
+description: "Complete guide for installing TracerTM on Windows 10/11"
+---
+
+# Windows Installation
+
+This guide provides comprehensive instructions for installing TracerTM on Windows 10 and Windows 11, including multiple installation methods, configuration, and troubleshooting.
+
+## System Requirements
+
+### Minimum Requirements
+
+- **Operating System**: Windows 10 (version 1909 or later) or Windows 11
+- **RAM**: 4 GB minimum, 8 GB recommended
+- **Disk Space**: 500 MB for TracerTM plus dependencies
+- **Processor**: x64 or ARM64 architecture
+- **Display**: 1366x768 minimum resolution
+
+### Required Software
+
+- **Python**: 3.11 or higher (3.12 recommended)
+- **Node.js**: 20.x or higher (for frontend components)
+- **Git**: 2.40 or higher (recommended for version control integration)
+
+## Installation Methods
+
+TracerTM can be installed on Windows using several methods. Choose the one that best fits your workflow.
+
+### Method 1: Installing via pip (Recommended)
+
+This is the most straightforward method for Python users.
+
+#### Step 1: Install Python
+
+If Python is not already installed:
+
+1. Download Python from [python.org](https://www.python.org/downloads/)
+2. Run the installer
+3. **Important**: Check "Add Python to PATH" during installation
+4. Verify installation:
+
+```powershell
+# PowerShell or Command Prompt
+python --version
+# Should output: Python 3.12.x or higher
+
+pip --version
+# Should output: pip 24.x or higher
+```
+
+#### Step 2: Install TracerTM
+
+```powershell
+# Install TracerTM globally
+pip install tracertm
+
+# Or install for current user only (no admin required)
+pip install --user tracertm
+```
+
+#### Step 3: Verify Installation
+
+```powershell
+tracertm --version
+```
+
+### Method 2: Installing via pipx (Isolated Environment)
+
+pipx installs Python applications in isolated environments, preventing dependency conflicts.
+
+#### Step 1: Install pipx
+
+```powershell
+# Install pipx using pip
+pip install --user pipx
+
+# Ensure pipx is on PATH
+pipx ensurepath
+```
+
+**Important**: After running `pipx ensurepath`, restart your terminal or run:
+
+```powershell
+# Refresh environment variables in current session
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+```
+
+#### Step 2: Install TracerTM
+
+```powershell
+pipx install tracertm
+```
+
+#### Step 3: Verify Installation
+
+```powershell
+tracertm --version
+```
+
+### Method 3: Windows Package Manager (winget)
+
+Windows Package Manager (winget) is included with Windows 11 and Windows 10 version 1809+.
+
+```powershell
+# Search for TracerTM
+winget search tracertm
+
+# Install TracerTM
+winget install tracertm
+
+# Verify installation
+tracertm --version
+```
+
+### Method 4: Scoop Package Manager
+
+[Scoop](https://scoop.sh) is a popular command-line installer for Windows.
+
+#### Step 1: Install Scoop
+
+```powershell
+# Run in PowerShell (non-admin)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+```
+
+#### Step 2: Install Python and TracerTM
+
+```powershell
+# Install Python via Scoop
+scoop install python
+
+# Install TracerTM
+pip install tracertm
+
+# Or use pipx
+scoop install pipx
+pipx install tracertm
+```
+
+### Method 5: Chocolatey Package Manager
+
+[Chocolatey](https://chocolatey.org) is an enterprise-grade package manager for Windows.
+
+#### Step 1: Install Chocolatey
+
+Run PowerShell **as Administrator**:
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+```
+
+#### Step 2: Install Python and TracerTM
+
+```powershell
+# Install Python
+choco install python -y
+
+# Refresh environment
+refreshenv
+
+# Install TracerTM
+pip install tracertm
+```
+
+## Installing Prerequisites
+
+### Installing Git for Windows
+
+Git is recommended for version control integration and collaborative workflows.
+
+```powershell
+# Using winget
+winget install Git.Git
+
+# Using Chocolatey (requires admin)
+choco install git -y
+
+# Using Scoop
+scoop install git
+
+# Verify installation
+git --version
+```
+
+**Configuration**:
+
+```powershell
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+```
+
+### Installing Node.js
+
+Node.js is required for frontend components and some CLI features.
+
+```powershell
+# Using winget
+winget install OpenJS.NodeJS.LTS
+
+# Using Chocolatey (requires admin)
+choco install nodejs-lts -y
+
+# Using Scoop
+scoop install nodejs-lts
+
+# Verify installation
+node --version
+npm --version
+```
+
+## PATH Configuration
+
+If `tracertm` is not recognized after installation, you may need to configure your PATH manually.
+
+### Checking Your PATH
+
+```powershell
+# PowerShell
+$env:Path -split ';'
+
+# Command Prompt
+echo %PATH%
+```
+
+### Adding Python Scripts to PATH
+
+The Python Scripts directory typically needs to be in your PATH:
+
+```powershell
+# Default locations:
+# C:\Users\<YourUsername>\AppData\Local\Programs\Python\Python312\Scripts
+# C:\Users\<YourUsername>\AppData\Roaming\Python\Python312\Scripts (--user installs)
+# C:\Users\<YourUsername>\.local\bin (pipx)
+
+# Find Python Scripts directory
+python -m site --user-site
+# Replace 'site-packages' with 'Scripts' in the output
+```
+
+### Adding to PATH (User Level)
+
+```powershell
+# PowerShell (run as user)
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+$pythonScripts = "$env:USERPROFILE\AppData\Roaming\Python\Python312\Scripts"
+[Environment]::SetEnvironmentVariable("Path", "$userPath;$pythonScripts", "User")
+```
+
+### Adding to PATH (System Level)
+
+```powershell
+# PowerShell (run as Administrator)
+$systemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$pythonScripts = "C:\Program Files\Python312\Scripts"
+[Environment]::SetEnvironmentVariable("Path", "$systemPath;$pythonScripts", "Machine")
+```
+
+**After modifying PATH**: Restart your terminal or run:
+
+```powershell
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+```
+
+## PowerShell vs Command Prompt
+
+TracerTM works in both PowerShell and Command Prompt, but there are some differences.
+
+### PowerShell (Recommended)
+
+```powershell
+# PowerShell supports advanced features
+tracertm init my-project
+
+# Tab completion works better
+tracertm pro<TAB>
+
+# Better error messages
+tracertm --help | Select-String "config"
+```
+
+### Command Prompt
+
+```cmd
+REM Basic commands work the same
+tracertm init my-project
+
+REM Piping works differently
+tracertm --help | findstr "config"
+```
+
+### Setting PowerShell as Default
+
+1. Windows 11: Settings > Privacy & security > For developers > Terminal > Windows PowerShell
+2. Windows 10: Right-click Start > Windows PowerShell
+
+## WSL2 Alternative Setup
+
+For developers familiar with Linux, running TracerTM in WSL2 provides a native Linux experience.
+
+### Step 1: Enable WSL2
+
+```powershell
+# Run PowerShell as Administrator
+wsl --install
+
+# Or install specific distribution
+wsl --install -d Ubuntu-22.04
+```
+
+### Step 2: Configure WSL2
+
+```bash
+# Inside WSL2 terminal
+sudo apt update
+sudo apt install python3.12 python3-pip git -y
+
+# Install TracerTM
+pip3 install tracertm
+
+# Verify
+tracertm --version
+```
+
+### Step 3: Access Windows Files
+
+```bash
+# Windows drives are mounted under /mnt/
+cd /mnt/c/Users/YourUsername/Documents
+
+# Initialize project
+tracertm init my-project
+```
+
+### WSL2 Benefits
+
+- Native Linux environment
+- Better performance for file operations
+- Access to Linux tools
+- Seamless integration with Windows filesystem
+
+### WSL2 Considerations
+
+- Slower cross-filesystem performance (WSL ↔ Windows)
+- Keep projects in WSL filesystem (`~/projects`) for best performance
+- Use VS Code Remote-WSL extension for development
+
+## Verifying Installation
+
+### Basic Verification
+
+```powershell
+# Check version
+tracertm --version
+
+# Check installation location
+where.exe tracertm
+
+# PowerShell alternative
+Get-Command tracertm | Select-Object Source
+```
+
+### Comprehensive Verification
+
+```powershell
+# Display help
+tracertm --help
+
+# Check configuration
+tracertm config show
+
+# Test initialization
+mkdir test-project
+cd test-project
+tracertm init
+tracertm status
+```
+
+## Common Windows-Specific Issues
+
+### Issue 1: "tracertm is not recognized"
+
+**Cause**: TracerTM is not in your PATH.
+
+**Solution**:
+
+```powershell
+# Find where pip installed it
+pip show tracertm
+
+# Check if Scripts directory is in PATH
+python -m site --user-site
+# Add corresponding Scripts directory to PATH (see PATH Configuration section)
+```
+
+### Issue 2: PowerShell Execution Policy Error
+
+**Error**: "cannot be loaded because running scripts is disabled"
+
+**Solution**:
+
+```powershell
+# Check current policy
+Get-ExecutionPolicy
+
+# Set policy for current user (recommended)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Or bypass for single session
+powershell -ExecutionPolicy Bypass
+```
+
+### Issue 3: Permission Denied During Installation
+
+**Cause**: Insufficient permissions.
+
+**Solution**:
+
+```powershell
+# Option 1: Install for user only (no admin needed)
+pip install --user tracertm
+
+# Option 2: Use pipx (isolated install)
+pipx install tracertm
+
+# Option 3: Run PowerShell as Administrator (not recommended)
+```
+
+### Issue 4: SSL Certificate Verification Failed
+
+**Cause**: Corporate firewall or proxy.
+
+**Solution**:
+
+```powershell
+# Temporary workaround (not recommended for production)
+pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org tracertm
+
+# Better: Configure pip to use corporate proxy
+pip config set global.proxy http://proxy.company.com:8080
+
+# Or set environment variable
+$env:HTTP_PROXY = "http://proxy.company.com:8080"
+$env:HTTPS_PROXY = "http://proxy.company.com:8080"
+```
+
+### Issue 5: ModuleNotFoundError After Installation
+
+**Cause**: Multiple Python versions or virtual environments.
+
+**Solution**:
+
+```powershell
+# Check which Python is being used
+python --version
+where.exe python
+
+# Install TracerTM with specific Python version
+py -3.12 -m pip install tracertm
+
+# Or use python executable directly
+C:\Users\YourUsername\AppData\Local\Programs\Python\Python312\python.exe -m pip install tracertm
+```
+
+### Issue 6: Long Path Issues
+
+**Error**: "The filename or extension is too long"
+
+**Solution**:
+
+```powershell
+# Enable long paths in Windows 10/11 (requires admin)
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+
+# Or enable via Group Policy:
+# Computer Configuration > Administrative Templates > System > Filesystem
+# Enable "Enable Win32 long paths"
+```
+
+### Issue 7: Antivirus Blocking Installation
+
+**Cause**: Windows Defender or antivirus software blocking pip/executables.
+
+**Solution**:
+
+```powershell
+# Add Python and pip directories to Windows Defender exclusions
+# Settings > Privacy & Security > Windows Security > Virus & threat protection
+# Manage settings > Exclusions > Add or remove exclusions
+
+# Add these paths:
+# C:\Users\YourUsername\AppData\Local\Programs\Python
+# C:\Users\YourUsername\AppData\Roaming\Python
+# C:\Users\YourUsername\.local
+```
+
+## Updating TracerTM on Windows
+
+### Updating via pip
+
+```powershell
+# Update to latest version
+pip install --upgrade tracertm
+
+# Update to specific version
+pip install tracertm==1.2.3
+
+# Check for updates without installing
+pip list --outdated | Select-String tracertm
+```
+
+### Updating via pipx
+
+```powershell
+# Update TracerTM
+pipx upgrade tracertm
+
+# Upgrade all pipx packages
+pipx upgrade-all
+```
+
+### Updating via winget
+
+```powershell
+# Update TracerTM
+winget upgrade tracertm
+
+# Update all packages
+winget upgrade --all
+```
+
+### Updating via Chocolatey
+
+```powershell
+# Update TracerTM (requires admin)
+choco upgrade tracertm -y
+
+# Update all packages
+choco upgrade all -y
+```
+
+### Updating via Scoop
+
+```powershell
+# Update Scoop itself
+scoop update
+
+# Update TracerTM (if available in Scoop bucket)
+scoop update tracertm
+
+# Update all packages
+scoop update *
+```
+
+## Post-Installation Configuration
+
+### Initialize Configuration
+
+```powershell
+# Create default configuration
+tracertm config init
+
+# Configuration file location
+# C:\Users\YourUsername\.tracertm\config.yaml
+```
+
+### Set Default Editor
+
+```powershell
+# Windows
+tracertm config set editor notepad
+
+# VS Code
+tracertm config set editor code
+
+# Vim (if installed)
+tracertm config set editor vim
+```
+
+### Configure Git Integration
+
+```powershell
+tracertm config set git.enabled true
+tracertm config set git.auto_commit false
+```
+
+## Next Steps
+
+After successful installation:
+
+1. **[Quick Start Guide](/docs/getting-started/quick-start)** - Create your first project
+2. **[Configuration Guide](/docs/getting-started/configuration)** - Customize TracerTM settings
+3. **[CLI Reference](/docs/cli/commands)** - Learn all available commands
+4. **[First Project Tutorial](/docs/getting-started/first-project)** - Step-by-step project setup
+
+## Additional Resources
+
+- **GitHub Repository**: [github.com/tracertm/tracertm](https://github.com/tracertm/tracertm)
+- **Issue Tracker**: Report bugs and request features
+- **Community Discord**: Get help from other Windows users
+- **Windows-Specific FAQ**: [docs/faq/windows](/docs/faq/windows)
+
+## Performance Tips for Windows
+
+1. **Use SSD**: Install TracerTM on SSD for better performance
+2. **Exclude from Antivirus**: Add TracerTM directories to exclusions
+3. **Enable Long Paths**: Prevent path length issues
+4. **Use PowerShell 7+**: Better performance than Windows PowerShell 5.1
+5. **Consider WSL2**: For heavy workloads or Linux-native tools
+
+---
+
+**Need Help?** If you encounter issues not covered here, please check our [troubleshooting guide](/docs/troubleshooting) or [open an issue](https://github.com/tracertm/tracertm/issues).

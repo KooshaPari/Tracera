@@ -1,4 +1,4 @@
-var baseUniq = require('./_baseUniq');
+var baseUniq = require("./_baseUniq");
 
 /**
  * Creates a duplicate-free version of an array, using
@@ -19,7 +19,7 @@ var baseUniq = require('./_baseUniq');
  * // => [2, 1]
  */
 function uniq(array) {
-  return (array && array.length) ? baseUniq(array) : [];
+	return array && array.length ? baseUniq(array) : [];
 }
 
 module.exports = uniq;

@@ -1,7 +1,12 @@
-import { visit } from '@swagger-api/apidom-ast';
+import { visit } from "@swagger-api/apidom-ast";
 import TreeCursorIterator from "../TreeCursorIterator.mjs";
 import CstVisitor, { keyMap as cstKeyMap } from "./visitors/CstVisitor.mjs";
-import JsonAstVisitor, { keyMap as astKeyMap, isNode, getNodeType } from "./visitors/JsonAstVisitor.mjs";
+import JsonAstVisitor, {
+	keyMap as astKeyMap,
+	getNodeType,
+	isNode,
+} from "./visitors/JsonAstVisitor.mjs";
+
 /**
  * @public
  */
@@ -21,29 +26,27 @@ import JsonAstVisitor, { keyMap as astKeyMap, isNode, getNodeType } from "./visi
  * to do additional analysis magic on JSON AST.
  * @public
  */
-const analyze = (cst, {
-  sourceMap = false
-} = {}) => {
-  const cursor = cst.walk();
-  const iterator = new TreeCursorIterator(cursor);
-  const [rootNode] = Array.from(iterator);
-  const cstVisitor = new CstVisitor();
-  const astVisitor = new JsonAstVisitor();
-  const jsonAst = visit(rootNode, cstVisitor, {
-    // @ts-ignore
-    keyMap: cstKeyMap,
-    state: {
-      sourceMap
-    }
-  });
-  return visit(jsonAst.rootNode, astVisitor, {
-    // @ts-ignore
-    keyMap: astKeyMap,
-    nodeTypeGetter: getNodeType,
-    nodePredicate: isNode,
-    state: {
-      sourceMap
-    }
-  });
+const analyze = (cst, { sourceMap = false } = {}) => {
+	const cursor = cst.walk();
+	const iterator = new TreeCursorIterator(cursor);
+	const [rootNode] = Array.from(iterator);
+	const cstVisitor = new CstVisitor();
+	const astVisitor = new JsonAstVisitor();
+	const jsonAst = visit(rootNode, cstVisitor, {
+		// @ts-expect-error
+		keyMap: cstKeyMap,
+		state: {
+			sourceMap,
+		},
+	});
+	return visit(jsonAst.rootNode, astVisitor, {
+		// @ts-expect-error
+		keyMap: astKeyMap,
+		nodeTypeGetter: getNodeType,
+		nodePredicate: isNode,
+		state: {
+			sourceMap,
+		},
+	});
 };
 export default analyze;

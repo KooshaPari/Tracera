@@ -1,12 +1,13 @@
 // @flow
 
 import {
-  serializeError,
-} from 'serialize-error';
-import {
   boolean,
 } from 'boolean';
+import {
+  serializeError,
+} from 'serialize-error';
 import Logger from '../Logger';
+
 import type {
   AgentType,
   GetUrlProxyMethodType,

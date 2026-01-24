@@ -20,7 +20,7 @@ export interface DifferenceInMonthsOptions extends ContextOptions<Date> {}
  * //=> 7
  */
 export declare function differenceInMonths(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInMonthsOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInMonthsOptions | undefined,
 ): number;

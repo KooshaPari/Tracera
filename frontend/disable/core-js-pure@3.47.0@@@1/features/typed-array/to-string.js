@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/to-string');
+"use strict";
+module.exports = require("../../full/typed-array/to-string");

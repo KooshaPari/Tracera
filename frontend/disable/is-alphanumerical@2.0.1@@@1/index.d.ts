@@ -5,4 +5,4 @@
  * @param {string|number} character
  * @returns {boolean} Whether `character` is alphanumerical.
  */
-export function isAlphanumerical(character: string | number): boolean
+export function isAlphanumerical(character: string | number): boolean;

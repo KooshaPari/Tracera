@@ -1,8 +1,9 @@
-import { Mixin } from 'ts-mixer';
-import { always } from 'ramda';
+import { always } from "ramda";
+import { Mixin } from "ts-mixer";
 import OAuthFlowElement from "../../../../elements/OAuthFlow.mjs";
-import FixedFieldsVisitor from "../../generics/FixedFieldsVisitor.mjs";
 import FallbackVisitor from "../../FallbackVisitor.mjs";
+import FixedFieldsVisitor from "../../generics/FixedFieldsVisitor.mjs";
+
 /**
  * @public
  */
@@ -10,11 +11,11 @@ import FallbackVisitor from "../../FallbackVisitor.mjs";
  * @public
  */
 class OAuthFlowVisitor extends Mixin(FixedFieldsVisitor, FallbackVisitor) {
-  constructor(options) {
-    super(options);
-    this.element = new OAuthFlowElement();
-    this.specPath = always(['document', 'objects', 'OAuthFlow']);
-    this.canSupportSpecificationExtensions = true;
-  }
+	constructor(options) {
+		super(options);
+		this.element = new OAuthFlowElement();
+		this.specPath = always(["document", "objects", "OAuthFlow"]);
+		this.canSupportSpecificationExtensions = true;
+	}
 }
 export default OAuthFlowVisitor;

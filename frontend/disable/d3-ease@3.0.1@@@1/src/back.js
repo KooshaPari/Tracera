@@ -1,37 +1,41 @@
 var overshoot = 1.70158;
 
 export var backIn = (function custom(s) {
-  s = +s;
+	s = +s;
 
-  function backIn(t) {
-    return (t = +t) * t * (s * (t - 1) + t);
-  }
+	function backIn(t) {
+		return (t = +t) * t * (s * (t - 1) + t);
+	}
 
-  backIn.overshoot = custom;
+	backIn.overshoot = custom;
 
-  return backIn;
+	return backIn;
 })(overshoot);
 
 export var backOut = (function custom(s) {
-  s = +s;
+	s = +s;
 
-  function backOut(t) {
-    return --t * t * ((t + 1) * s + t) + 1;
-  }
+	function backOut(t) {
+		return --t * t * ((t + 1) * s + t) + 1;
+	}
 
-  backOut.overshoot = custom;
+	backOut.overshoot = custom;
 
-  return backOut;
+	return backOut;
 })(overshoot);
 
 export var backInOut = (function custom(s) {
-  s = +s;
+	s = +s;
 
-  function backInOut(t) {
-    return ((t *= 2) < 1 ? t * t * ((s + 1) * t - s) : (t -= 2) * t * ((s + 1) * t + s) + 2) / 2;
-  }
+	function backInOut(t) {
+		return (
+			((t *= 2) < 1
+				? t * t * ((s + 1) * t - s)
+				: (t -= 2) * t * ((s + 1) * t + s) + 2) / 2
+		);
+	}
 
-  backInOut.overshoot = custom;
+	backInOut.overshoot = custom;
 
-  return backInOut;
+	return backInOut;
 })(overshoot);

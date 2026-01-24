@@ -1,5 +1,4 @@
-'use strict';
-const cliBoxes = require('./boxes.json');
+const cliBoxes = require("./boxes.json");
 
 module.exports = cliBoxes;
 // TODO: Remove this for the next major release

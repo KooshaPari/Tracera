@@ -2,10 +2,10 @@
  Copyright 2012-2015, Yahoo Inc.
  Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
  */
-const { transformSync } = require('@babel/core');
-const { defaults } = require('@istanbuljs/schema');
-const programVisitor = require('./visitor');
-const readInitialCoverage = require('./read-coverage');
+const { transformSync } = require("@babel/core");
+const { defaults } = require("@istanbuljs/schema");
+const programVisitor = require("./visitor");
+const readInitialCoverage = require("./read-coverage");
 
 /**
  * Instrumenter is the public API for the instrument library.
@@ -30,135 +30,134 @@ const readInitialCoverage = require('./read-coverage');
  * @param {Object} [opts.generatorOpts] - set babel generator options
  */
 class Instrumenter {
-    constructor(opts = {}) {
-        this.opts = {
-            ...defaults.instrumenter,
-            ...opts
-        };
-        this.fileCoverage = null;
-        this.sourceMap = null;
-    }
-    /**
-     * instrument the supplied code and track coverage against the supplied
-     * filename. It throws if invalid code is passed to it. ES5 and ES6 syntax
-     * is supported. To instrument ES6 modules, make sure that you set the
-     * `esModules` property to `true` when creating the instrumenter.
-     *
-     * @param {string} code - the code to instrument
-     * @param {string} filename - the filename against which to track coverage.
-     * @param {object} [inputSourceMap] - the source map that maps the not instrumented code back to it's original form.
-     * Is assigned to the coverage object and therefore, is available in the json output and can be used to remap the
-     * coverage to the untranspiled source.
-     * @returns {string} the instrumented code.
-     */
-    instrumentSync(code, filename, inputSourceMap) {
-        if (typeof code !== 'string') {
-            throw new Error('Code must be a string');
-        }
-        filename = filename || String(new Date().getTime()) + '.js';
-        const { opts } = this;
-        let output = {};
-        const babelOpts = {
-            configFile: false,
-            babelrc: false,
-            ast: true,
-            filename: filename || String(new Date().getTime()) + '.js',
-            inputSourceMap,
-            sourceMaps: opts.produceSourceMap,
-            compact: opts.compact,
-            comments: opts.preserveComments,
-            parserOpts: {
-                allowReturnOutsideFunction: opts.autoWrap,
-                sourceType: opts.esModules ? 'module' : 'script',
-                plugins: opts.parserPlugins
-            },
-            generatorOpts: opts.generatorOpts,
-            plugins: [
-                [
-                    ({ types }) => {
-                        const ee = programVisitor(types, filename, {
-                            coverageVariable: opts.coverageVariable,
-                            reportLogic: opts.reportLogic,
-                            coverageGlobalScope: opts.coverageGlobalScope,
-                            coverageGlobalScopeFunc:
-                                opts.coverageGlobalScopeFunc,
-                            ignoreClassMethods: opts.ignoreClassMethods,
-                            inputSourceMap
-                        });
+	constructor(opts = {}) {
+		this.opts = {
+			...defaults.instrumenter,
+			...opts,
+		};
+		this.fileCoverage = null;
+		this.sourceMap = null;
+	}
+	/**
+	 * instrument the supplied code and track coverage against the supplied
+	 * filename. It throws if invalid code is passed to it. ES5 and ES6 syntax
+	 * is supported. To instrument ES6 modules, make sure that you set the
+	 * `esModules` property to `true` when creating the instrumenter.
+	 *
+	 * @param {string} code - the code to instrument
+	 * @param {string} filename - the filename against which to track coverage.
+	 * @param {object} [inputSourceMap] - the source map that maps the not instrumented code back to it's original form.
+	 * Is assigned to the coverage object and therefore, is available in the json output and can be used to remap the
+	 * coverage to the untranspiled source.
+	 * @returns {string} the instrumented code.
+	 */
+	instrumentSync(code, filename, inputSourceMap) {
+		if (typeof code !== "string") {
+			throw new Error("Code must be a string");
+		}
+		filename = filename || String(new Date().getTime()) + ".js";
+		const { opts } = this;
+		let output = {};
+		const babelOpts = {
+			configFile: false,
+			babelrc: false,
+			ast: true,
+			filename: filename || String(new Date().getTime()) + ".js",
+			inputSourceMap,
+			sourceMaps: opts.produceSourceMap,
+			compact: opts.compact,
+			comments: opts.preserveComments,
+			parserOpts: {
+				allowReturnOutsideFunction: opts.autoWrap,
+				sourceType: opts.esModules ? "module" : "script",
+				plugins: opts.parserPlugins,
+			},
+			generatorOpts: opts.generatorOpts,
+			plugins: [
+				[
+					({ types }) => {
+						const ee = programVisitor(types, filename, {
+							coverageVariable: opts.coverageVariable,
+							reportLogic: opts.reportLogic,
+							coverageGlobalScope: opts.coverageGlobalScope,
+							coverageGlobalScopeFunc: opts.coverageGlobalScopeFunc,
+							ignoreClassMethods: opts.ignoreClassMethods,
+							inputSourceMap,
+						});
 
-                        return {
-                            visitor: {
-                                Program: {
-                                    enter: ee.enter,
-                                    exit(path) {
-                                        output = ee.exit(path);
-                                    }
-                                }
-                            }
-                        };
-                    }
-                ]
-            ]
-        };
+						return {
+							visitor: {
+								Program: {
+									enter: ee.enter,
+									exit(path) {
+										output = ee.exit(path);
+									},
+								},
+							},
+						};
+					},
+				],
+			],
+		};
 
-        const codeMap = transformSync(code, babelOpts);
+		const codeMap = transformSync(code, babelOpts);
 
-        if (!output || !output.fileCoverage) {
-            const initialCoverage =
-                readInitialCoverage(codeMap.ast) ||
-                /* istanbul ignore next: paranoid check */ {};
-            this.fileCoverage = initialCoverage.coverageData;
-            this.sourceMap = inputSourceMap;
-            return code;
-        }
+		if (!output || !output.fileCoverage) {
+			const initialCoverage =
+				readInitialCoverage(codeMap.ast) ||
+				/* istanbul ignore next: paranoid check */ {};
+			this.fileCoverage = initialCoverage.coverageData;
+			this.sourceMap = inputSourceMap;
+			return code;
+		}
 
-        this.fileCoverage = output.fileCoverage;
-        this.sourceMap = codeMap.map;
-        const cb = this.opts.sourceMapUrlCallback;
-        if (cb && output.sourceMappingURL) {
-            cb(filename, output.sourceMappingURL);
-        }
+		this.fileCoverage = output.fileCoverage;
+		this.sourceMap = codeMap.map;
+		const cb = this.opts.sourceMapUrlCallback;
+		if (cb && output.sourceMappingURL) {
+			cb(filename, output.sourceMappingURL);
+		}
 
-        return codeMap.code;
-    }
-    /**
-     * callback-style instrument method that calls back with an error
-     * as opposed to throwing one. Note that in the current implementation,
-     * the callback will be called in the same process tick and is not asynchronous.
-     *
-     * @param {string} code - the code to instrument
-     * @param {string} filename - the filename against which to track coverage.
-     * @param {Function} callback - the callback
-     * @param {Object} inputSourceMap - the source map that maps the not instrumented code back to it's original form.
-     * Is assigned to the coverage object and therefore, is available in the json output and can be used to remap the
-     * coverage to the untranspiled source.
-     */
-    instrument(code, filename, callback, inputSourceMap) {
-        if (!callback && typeof filename === 'function') {
-            callback = filename;
-            filename = null;
-        }
-        try {
-            const out = this.instrumentSync(code, filename, inputSourceMap);
-            callback(null, out);
-        } catch (ex) {
-            callback(ex);
-        }
-    }
-    /**
-     * returns the file coverage object for the last file instrumented.
-     * @returns {Object} the file coverage object.
-     */
-    lastFileCoverage() {
-        return this.fileCoverage;
-    }
-    /**
-     * returns the source map produced for the last file instrumented.
-     * @returns {null|Object} the source map object.
-     */
-    lastSourceMap() {
-        return this.sourceMap;
-    }
+		return codeMap.code;
+	}
+	/**
+	 * callback-style instrument method that calls back with an error
+	 * as opposed to throwing one. Note that in the current implementation,
+	 * the callback will be called in the same process tick and is not asynchronous.
+	 *
+	 * @param {string} code - the code to instrument
+	 * @param {string} filename - the filename against which to track coverage.
+	 * @param {Function} callback - the callback
+	 * @param {Object} inputSourceMap - the source map that maps the not instrumented code back to it's original form.
+	 * Is assigned to the coverage object and therefore, is available in the json output and can be used to remap the
+	 * coverage to the untranspiled source.
+	 */
+	instrument(code, filename, callback, inputSourceMap) {
+		if (!callback && typeof filename === "function") {
+			callback = filename;
+			filename = null;
+		}
+		try {
+			const out = this.instrumentSync(code, filename, inputSourceMap);
+			callback(null, out);
+		} catch (ex) {
+			callback(ex);
+		}
+	}
+	/**
+	 * returns the file coverage object for the last file instrumented.
+	 * @returns {Object} the file coverage object.
+	 */
+	lastFileCoverage() {
+		return this.fileCoverage;
+	}
+	/**
+	 * returns the source map produced for the last file instrumented.
+	 * @returns {null|Object} the source map object.
+	 */
+	lastSourceMap() {
+		return this.sourceMap;
+	}
 }
 
 module.exports = Instrumenter;

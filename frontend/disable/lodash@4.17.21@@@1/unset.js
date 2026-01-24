@@ -1,4 +1,4 @@
-var baseUnset = require('./_baseUnset');
+var baseUnset = require("./_baseUnset");
 
 /**
  * Removes the property at `path` of `object`.
@@ -28,7 +28,7 @@ var baseUnset = require('./_baseUnset');
  * // => { 'a': [{ 'b': {} }] };
  */
 function unset(object, path) {
-  return object == null ? true : baseUnset(object, path);
+	return object == null ? true : baseUnset(object, path);
 }
 
 module.exports = unset;

@@ -1,11 +1,10 @@
-'use strict';
-const os = require('os');
-const onExit = require('signal-exit');
+const os = require("os");
+const onExit = require("signal-exit");
 
 const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 // Monkey-patches `childProcess.kill()` to add `forceKillAfterTimeout` behavior
-const spawnedKill = (kill, signal = 'SIGTERM', options = {}) => {
+const spawnedKill = (kill, signal = "SIGTERM", options = {}) => {
 	const killResult = kill(signal);
 	setKillTimeout(kill, signal, options, killResult);
 	return killResult;
@@ -18,7 +17,7 @@ const setKillTimeout = (kill, signal, options, killResult) => {
 
 	const timeout = getForceKillAfterTimeout(options);
 	const t = setTimeout(() => {
-		kill('SIGKILL');
+		kill("SIGKILL");
 	}, timeout);
 
 	// Guarded because there's no `.unref()` when `execa` is used in the renderer
@@ -30,22 +29,26 @@ const setKillTimeout = (kill, signal, options, killResult) => {
 	}
 };
 
-const shouldForceKill = (signal, {forceKillAfterTimeout}, killResult) => {
+const shouldForceKill = (signal, { forceKillAfterTimeout }, killResult) => {
 	return isSigterm(signal) && forceKillAfterTimeout !== false && killResult;
 };
 
-const isSigterm = signal => {
-	return signal === os.constants.signals.SIGTERM ||
-		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
+const isSigterm = (signal) => {
+	return (
+		signal === os.constants.signals.SIGTERM ||
+		(typeof signal === "string" && signal.toUpperCase() === "SIGTERM")
+	);
 };
 
-const getForceKillAfterTimeout = ({forceKillAfterTimeout = true}) => {
+const getForceKillAfterTimeout = ({ forceKillAfterTimeout = true }) => {
 	if (forceKillAfterTimeout === true) {
 		return DEFAULT_FORCE_KILL_TIMEOUT;
 	}
 
 	if (!Number.isFinite(forceKillAfterTimeout) || forceKillAfterTimeout < 0) {
-		throw new TypeError(`Expected the \`forceKillAfterTimeout\` option to be a non-negative integer, got \`${forceKillAfterTimeout}\` (${typeof forceKillAfterTimeout})`);
+		throw new TypeError(
+			`Expected the \`forceKillAfterTimeout\` option to be a non-negative integer, got \`${forceKillAfterTimeout}\` (${typeof forceKillAfterTimeout})`,
+		);
 	}
 
 	return forceKillAfterTimeout;
@@ -62,11 +65,15 @@ const spawnedCancel = (spawned, context) => {
 
 const timeoutKill = (spawned, signal, reject) => {
 	spawned.kill(signal);
-	reject(Object.assign(new Error('Timed out'), {timedOut: true, signal}));
+	reject(Object.assign(new Error("Timed out"), { timedOut: true, signal }));
 };
 
 // `timeout` option handling
-const setupTimeout = (spawned, {timeout, killSignal = 'SIGTERM'}, spawnedPromise) => {
+const setupTimeout = (
+	spawned,
+	{ timeout, killSignal = "SIGTERM" },
+	spawnedPromise,
+) => {
 	if (timeout === 0 || timeout === undefined) {
 		return spawnedPromise;
 	}
@@ -85,14 +92,16 @@ const setupTimeout = (spawned, {timeout, killSignal = 'SIGTERM'}, spawnedPromise
 	return Promise.race([timeoutPromise, safeSpawnedPromise]);
 };
 
-const validateTimeout = ({timeout}) => {
+const validateTimeout = ({ timeout }) => {
 	if (timeout !== undefined && (!Number.isFinite(timeout) || timeout < 0)) {
-		throw new TypeError(`Expected the \`timeout\` option to be a non-negative integer, got \`${timeout}\` (${typeof timeout})`);
+		throw new TypeError(
+			`Expected the \`timeout\` option to be a non-negative integer, got \`${timeout}\` (${typeof timeout})`,
+		);
 	}
 };
 
 // `cleanup` option handling
-const setExitHandler = async (spawned, {cleanup, detached}, timedPromise) => {
+const setExitHandler = async (spawned, { cleanup, detached }, timedPromise) => {
 	if (!cleanup || detached) {
 		return timedPromise;
 	}
@@ -111,5 +120,5 @@ module.exports = {
 	spawnedCancel,
 	setupTimeout,
 	validateTimeout,
-	setExitHandler
+	setExitHandler,
 };

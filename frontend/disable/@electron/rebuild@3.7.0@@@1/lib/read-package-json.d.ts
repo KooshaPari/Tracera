@@ -1,1 +1,4 @@
-export declare function readPackageJson(dir: string, safe?: boolean): Promise<any>;
+export declare function readPackageJson(
+	dir: string,
+	safe?: boolean,
+): Promise<any>;

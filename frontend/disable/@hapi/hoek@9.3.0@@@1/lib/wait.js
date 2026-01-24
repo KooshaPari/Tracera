@@ -1,37 +1,35 @@
-'use strict';
-
 const internals = {
-    maxTimer: 2 ** 31 - 1              // ~25 days
+	maxTimer: 2 ** 31 - 1, // ~25 days
 };
 
+module.exports = (timeout, returnValue, options) => {
+	if (typeof timeout === "bigint") {
+		timeout = Number(timeout);
+	}
 
-module.exports = function (timeout, returnValue, options) {
+	if (timeout >= Number.MAX_SAFE_INTEGER) {
+		// Thousands of years
+		timeout = Infinity;
+	}
 
-    if (typeof timeout === 'bigint') {
-        timeout = Number(timeout);
-    }
+	if (typeof timeout !== "number" && timeout !== undefined) {
+		throw new TypeError("Timeout must be a number or bigint");
+	}
 
-    if (timeout >= Number.MAX_SAFE_INTEGER) {         // Thousands of years
-        timeout = Infinity;
-    }
+	return new Promise((resolve) => {
+		const _setTimeout = options ? options.setTimeout : setTimeout;
 
-    if (typeof timeout !== 'number' && timeout !== undefined) {
-        throw new TypeError('Timeout must be a number or bigint');
-    }
+		const activate = () => {
+			const time = Math.min(timeout, internals.maxTimer);
+			timeout -= time;
+			_setTimeout(
+				() => (timeout > 0 ? activate() : resolve(returnValue)),
+				time,
+			);
+		};
 
-    return new Promise((resolve) => {
-
-        const _setTimeout = options ? options.setTimeout : setTimeout;
-
-        const activate = () => {
-
-            const time = Math.min(timeout, internals.maxTimer);
-            timeout -= time;
-            _setTimeout(() => (timeout > 0 ? activate() : resolve(returnValue)), time);
-        };
-
-        if (timeout !== Infinity) {
-            activate();
-        }
-    });
+		if (timeout !== Infinity) {
+			activate();
+		}
+	});
 };

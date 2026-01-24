@@ -1,9 +1,8 @@
-export { configSchema, getConfig, resolveConfigPath } from './config'
-export type { Config } from './config'
-
+export type { Config } from "./config";
+export { configSchema, getConfig, resolveConfigPath } from "./config";
+export type { StartAPIRoutePathSegment } from "./generator";
 export {
-  generator,
-  startAPIRouteSegmentsFromTSRFilePath,
-  CONSTANTS,
-} from './generator'
-export type { StartAPIRoutePathSegment } from './generator'
+	CONSTANTS,
+	generator,
+	startAPIRouteSegmentsFromTSRFilePath,
+} from "./generator";

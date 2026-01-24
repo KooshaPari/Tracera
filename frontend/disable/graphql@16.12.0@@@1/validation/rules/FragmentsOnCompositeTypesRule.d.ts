@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Fragments on composite type
  *
@@ -10,5 +10,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
  */
 export declare function FragmentsOnCompositeTypesRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

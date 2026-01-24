@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.typed-array.find');
+"use strict";
+require("../../modules/es.typed-array.find");

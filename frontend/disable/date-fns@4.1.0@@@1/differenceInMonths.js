@@ -24,37 +24,37 @@ import { isLastDayOfMonth } from "./isLastDayOfMonth.js";
  * //=> 7
  */
 export function differenceInMonths(laterDate, earlierDate, options) {
-  const [laterDate_, workingLaterDate, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, workingLaterDate, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		laterDate,
+		earlierDate,
+	);
 
-  const sign = compareAsc(workingLaterDate, earlierDate_);
-  const difference = Math.abs(
-    differenceInCalendarMonths(workingLaterDate, earlierDate_),
-  );
+	const sign = compareAsc(workingLaterDate, earlierDate_);
+	const difference = Math.abs(
+		differenceInCalendarMonths(workingLaterDate, earlierDate_),
+	);
 
-  if (difference < 1) return 0;
+	if (difference < 1) return 0;
 
-  if (workingLaterDate.getMonth() === 1 && workingLaterDate.getDate() > 27)
-    workingLaterDate.setDate(30);
+	if (workingLaterDate.getMonth() === 1 && workingLaterDate.getDate() > 27)
+		workingLaterDate.setDate(30);
 
-  workingLaterDate.setMonth(workingLaterDate.getMonth() - sign * difference);
+	workingLaterDate.setMonth(workingLaterDate.getMonth() - sign * difference);
 
-  let isLastMonthNotFull = compareAsc(workingLaterDate, earlierDate_) === -sign;
+	let isLastMonthNotFull = compareAsc(workingLaterDate, earlierDate_) === -sign;
 
-  if (
-    isLastDayOfMonth(laterDate_) &&
-    difference === 1 &&
-    compareAsc(laterDate_, earlierDate_) === 1
-  ) {
-    isLastMonthNotFull = false;
-  }
+	if (
+		isLastDayOfMonth(laterDate_) &&
+		difference === 1 &&
+		compareAsc(laterDate_, earlierDate_) === 1
+	) {
+		isLastMonthNotFull = false;
+	}
 
-  const result = sign * (difference - +isLastMonthNotFull);
-  return result === 0 ? 0 : result;
+	const result = sign * (difference - +isLastMonthNotFull);
+	return result === 0 ? 0 : result;
 }
 
 // Fallback for modularized imports:

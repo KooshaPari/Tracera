@@ -4,7 +4,7 @@
  * MIT Licensed
  */
 
-import {flag} from './flag.js';
+import { flag } from "./flag.js";
 
 /**
  * ### .test(object, expression)
@@ -18,7 +18,7 @@ import {flag} from './flag.js';
  * @name test
  */
 export function test(obj, args) {
-  let negate = flag(obj, 'negate'),
-    expr = args[0];
-  return negate ? !expr : expr;
+	const negate = flag(obj, "negate"),
+		expr = args[0];
+	return negate ? !expr : expr;
 }

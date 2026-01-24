@@ -4,4 +4,4 @@ export = className;
  * @param  {object} value A value to examine
  * @returns {(string|null)} A string or null
  */
-declare function className(value: object): (string | null);
+declare function className(value: object): string | null;

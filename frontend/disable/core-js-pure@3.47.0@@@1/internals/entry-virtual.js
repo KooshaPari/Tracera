@@ -1,6 +1,4 @@
-'use strict';
-var path = require('../internals/path');
+"use strict";
+var path = require("../internals/path");
 
-module.exports = function (CONSTRUCTOR) {
-  return path[CONSTRUCTOR + 'Prototype'];
-};
+module.exports = (CONSTRUCTOR) => path[CONSTRUCTOR + "Prototype"];

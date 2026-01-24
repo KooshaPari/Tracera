@@ -1,5 +1,5 @@
-import type { Oas2Rule } from '../../visitors';
+import type { Oas2Rule } from "../../visitors";
 export type BooleanParameterPrefixesOptions = {
-    prefixes?: string[];
+	prefixes?: string[];
 };
 export declare const BooleanParameterPrefixes: Oas2Rule;

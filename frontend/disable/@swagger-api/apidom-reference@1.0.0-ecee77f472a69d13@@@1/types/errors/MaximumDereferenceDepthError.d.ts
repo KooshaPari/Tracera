@@ -1,7 +1,6 @@
-import DereferenceError from './DereferenceError.ts';
+import DereferenceError from "./DereferenceError.ts";
 /**
  * @public
  */
-declare class MaximumDereferenceDepthError extends DereferenceError {
-}
+declare class MaximumDereferenceDepthError extends DereferenceError {}
 export default MaximumDereferenceDepthError;

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/array/unique-by');
+"use strict";
+module.exports = require("../../full/array/unique-by");

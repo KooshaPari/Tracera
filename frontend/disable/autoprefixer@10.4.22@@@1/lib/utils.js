@@ -1,65 +1,62 @@
-let { list } = require('postcss')
+const { list } = require("postcss");
 
 /**
  * Throw special error, to tell beniary,
  * that this error is from Autoprefixer.
  */
-module.exports.error = function (text) {
-  let err = new Error(text)
-  err.autoprefixer = true
-  throw err
-}
+module.exports.error = (text) => {
+	const err = new Error(text);
+	err.autoprefixer = true;
+	throw err;
+};
 
 /**
  * Return array, that doesn’t contain duplicates.
  */
-module.exports.uniq = function (array) {
-  return [...new Set(array)]
-}
+module.exports.uniq = (array) => [...new Set(array)];
 
 /**
  * Return "-webkit-" on "-webkit- old"
  */
-module.exports.removeNote = function (string) {
-  if (!string.includes(' ')) {
-    return string
-  }
+module.exports.removeNote = (string) => {
+	if (!string.includes(" ")) {
+		return string;
+	}
 
-  return string.split(' ')[0]
-}
+	return string.split(" ")[0];
+};
 
 /**
  * Escape RegExp symbols
  */
-module.exports.escapeRegexp = function (string) {
-  return string.replace(/[$()*+-.?[\\\]^{|}]/g, '\\$&')
-}
+module.exports.escapeRegexp = (string) =>
+	string.replace(/[$()*+-.?[\\\]^{|}]/g, "\\$&");
 
 /**
  * Return regexp to check, that CSS string contain word
  */
 module.exports.regexp = function (word, escape = true) {
-  if (escape) {
-    word = this.escapeRegexp(word)
-  }
-  return new RegExp(`(^|[\\s,(])(${word}($|[\\s(,]))`, 'gi')
-}
+	if (escape) {
+		word = this.escapeRegexp(word);
+	}
+	return new RegExp(`(^|[\\s,(])(${word}($|[\\s(,]))`, "gi");
+};
 
 /**
  * Change comma list
  */
-module.exports.editList = function (value, callback) {
-  let origin = list.comma(value)
-  let changed = callback(origin, [])
+module.exports.editList = (value, callback) => {
+	const origin = list.comma(value);
+	const changed = callback(origin, []);
 
-  if (origin === changed) {
-    return value
-  }
+	if (origin === changed) {
+		return value;
+	}
 
-  let join = value.match(/,\s*/)
-  join = join ? join[0] : ', '
-  return changed.join(join)
-}
+	let join = value.match(/,\s*/);
+	join = join ? join[0] : ", ";
+	return changed.join(join);
+};
 
 /**
  * Split the selector into parts.
@@ -69,25 +66,24 @@ module.exports.editList = function (value, callback) {
  * @return {Array<Array<Array>>} 3 level deep array of split selector
  * @see utils.test.js for examples
  */
-module.exports.splitSelector = function (selector) {
-  return list.comma(selector).map(i => {
-    return list.space(i).map(k => {
-      return k.split(/(?=\.|#)/g)
-    })
-  })
-}
+module.exports.splitSelector = (selector) =>
+	list.comma(selector).map((i) => {
+		return list.space(i).map((k) => {
+			return k.split(/(?=\.|#)/g);
+		});
+	});
 
 /**
  * Return true if a given value only contains numbers.
  * @param {*} value
  * @returns {boolean}
  */
-module.exports.isPureNumber = function (value) {
-  if (typeof value === 'number') {
-    return true
-  }
-  if (typeof value === 'string') {
-    return /^[0-9]+$/.test(value)
-  }
-  return false
-}
+module.exports.isPureNumber = (value) => {
+	if (typeof value === "number") {
+		return true;
+	}
+	if (typeof value === "string") {
+		return /^[0-9]+$/.test(value);
+	}
+	return false;
+};

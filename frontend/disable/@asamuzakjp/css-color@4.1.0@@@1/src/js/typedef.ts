@@ -15,17 +15,17 @@
  * @property [key] - key
  */
 export interface Options {
-  alpha?: boolean;
-  colorScheme?: string;
-  colorSpace?: string;
-  currentColor?: string;
-  customProperty?: Record<string, string | ((K: string) => string)>;
-  d50?: boolean;
-  delimiter?: string | string[];
-  dimension?: Record<string, number | ((K: string) => number)>;
-  format?: string;
-  nullable?: boolean;
-  preserveComment?: boolean;
+	alpha?: boolean;
+	colorScheme?: string;
+	colorSpace?: string;
+	currentColor?: string;
+	customProperty?: Record<string, string | ((K: string) => string)>;
+	d50?: boolean;
+	delimiter?: string | string[];
+	dimension?: Record<string, number | ((K: string) => number)>;
+	format?: string;
+	nullable?: boolean;
+	preserveComment?: boolean;
 }
 
 /**
@@ -37,52 +37,52 @@ export type ColorChannels = [x: number, y: number, z: number, alpha: number];
  * @type StringColorChannels - color channels
  */
 export type StringColorChannels = [
-  x: string,
-  y: string,
-  z: string,
-  alpha: string | undefined
+	x: string,
+	y: string,
+	z: string,
+	alpha: string | undefined,
 ];
 
 /**
  * @type StringColorSpacedChannels - specified value
  */
 export type StringColorSpacedChannels = [
-  cs: string,
-  x: string,
-  y: string,
-  z: string,
-  alpha: string | undefined
+	cs: string,
+	x: string,
+	y: string,
+	z: string,
+	alpha: string | undefined,
 ];
 
 /**
  * @type ComputedColorChannels - computed value
  */
 export type ComputedColorChannels = [
-  cs: string,
-  x: number,
-  y: number,
-  z: number,
-  alpha: number
+	cs: string,
+	x: number,
+	y: number,
+	z: number,
+	alpha: number,
 ];
 
 /**
  * @type SpecifiedColorChannels - specified value
  */
 export type SpecifiedColorChannels = [
-  cs: string,
-  x: number | string,
-  y: number | string,
-  z: number | string,
-  alpha: number | string
+	cs: string,
+	x: number | string,
+	y: number | string,
+	z: number | string,
+	alpha: number | string,
 ];
 
 /**
  * @type MatchedRegExp - matched regexp array
  */
 export type MatchedRegExp = [
-  match: string,
-  gr1: string,
-  gr2: string,
-  gr3: string,
-  gr4: string
+	match: string,
+	gr1: string,
+	gr2: string,
+	gr3: string,
+	gr4: string,
 ];

@@ -1,0 +1,272 @@
+---
+title: "Troubleshooting"
+description: "Common setup issues."
+---
+
+## Common Setup Issues
+
+This section addresses the most common problems when setting up TracerTM locally or in your environment.
+
+## Database Connectivity
+
+### PostgreSQL Connection Issues
+
+**Problem:** Error connecting to PostgreSQL database
+
+**Check these steps:**
+
+1. Verify PostgreSQL is running:
+```bash
+# macOS with Homebrew
+brew services list | grep postgres
+
+# Linux with systemd
+sudo systemctl status postgresql
+
+# Docker
+docker ps | grep postgres
+```
+
+2. Verify database credentials in `.env`:
+```bash
+# Required environment variables
+DATABASE_URL="postgresql://user:password@localhost:5432/tracertm"
+POSTGRES_USER=tracertm
+POSTGRES_PASSWORD=your_secure_password
+```
+
+3. Test connection:
+```bash
+# Install psql if needed
+psql -U tracertm -d tracertm -h localhost -c "SELECT 1"
+```
+
+4. Common password and permission issues:
+```bash
+# Reset password
+sudo -u postgres psql -c "ALTER USER tracertm PASSWORD 'new_password';"
+
+# Ensure correct permissions
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE tracertm TO tracertm;"
+```
+
+### Redis Connection Issues
+
+**Problem:** Cannot connect to Redis cache
+
+**Check these steps:**
+
+1. Verify Redis is running:
+```bash
+# macOS
+redis-cli ping
+# Should return: PONG
+
+# Docker
+docker exec <redis-container> redis-cli ping
+```
+
+2. Check Redis configuration:
+```bash
+# Verify port and host in .env
+REDIS_URL="redis://localhost:6379"
+```
+
+3. Test Redis connection:
+```bash
+redis-cli -h localhost -p 6379 ping
+```
+
+## CLI Troubleshooting
+
+### Health Check
+
+Run the health check command to diagnose connectivity:
+
+```bash
+trace health
+```
+
+This command verifies:
+- CLI version and configuration
+- API server connectivity
+- Database accessibility
+- Cache/Redis status
+- Authentication credentials
+
+### Authentication Failures
+
+**Problem:** "Invalid API key" or "Unauthorized" errors
+
+**Solution:**
+
+1. Verify API key is set:
+```bash
+echo $TRACERTM_API_KEY
+```
+
+2. Create/reset API key:
+```bash
+trace auth api-key:create --name "local-dev"
+```
+
+3. Configure API key in environment:
+```bash
+export TRACERTM_API_KEY="your_api_key_here"
+```
+
+4. For Docker deployments, verify in secrets:
+```bash
+docker run -e TRACERTM_API_KEY="$TRACERTM_API_KEY" ...
+```
+
+### Command Not Found
+
+**Problem:** `trace: command not found`
+
+**Solution:**
+
+1. Verify installation:
+```bash
+which trace
+```
+
+2. If not found, reinstall:
+```bash
+# macOS
+brew install atoms-tech/tap/tracertm
+
+# Linux
+curl -fsSL https://install.tracertm.io | sh
+
+# npm/Node.js
+npm install -g @tracertm/cli
+```
+
+3. Verify PATH includes installation directory:
+```bash
+echo $PATH
+# Should contain installation directory
+```
+
+## Environment Variable Errors
+
+### "Unknown configuration option"
+
+Verify all required environment variables are set:
+
+```bash
+# Required variables
+TRACERTM_API_KEY
+DATABASE_URL
+REDIS_URL
+
+# Optional variables
+DEBUG=tracertm:*
+LOG_LEVEL=info
+```
+
+Check for typos in variable names:
+```bash
+# List all current env vars
+env | grep -i trace
+```
+
+### Port Already in Use
+
+**Problem:** "Port 3000 is already in use"
+
+**Solution:**
+
+```bash
+# Find process using port
+lsof -i :3000
+
+# Kill process (replace PID)
+kill -9 <PID>
+
+# Or use different port
+PORT=3001 trace serve
+```
+
+## Network and Firewall Issues
+
+### Connection Timeouts
+
+**Problem:** Operations timeout after waiting
+
+**Solutions:**
+
+1. Increase connection timeout:
+```bash
+export TRACE_TIMEOUT=30000  # milliseconds
+```
+
+2. Check network connectivity:
+```bash
+# Test API server
+curl -v http://localhost:3000/health
+
+# Test database
+nc -zv localhost 5432
+```
+
+3. Check firewall rules:
+```bash
+# macOS
+sudo pfctl -sr
+
+# Linux
+sudo iptables -L
+```
+
+## Performance Issues
+
+### Slow Commands
+
+**Problem:** CLI commands are slow
+
+**Solutions:**
+
+1. Enable caching:
+```bash
+export TRACE_CACHE_ENABLED=true
+trace cache:clear  # Clear stale cache
+```
+
+2. Use pagination for large datasets:
+```bash
+trace artifacts list --limit 100 --offset 0
+```
+
+3. Enable debug logging to identify bottlenecks:
+```bash
+trace --debug <command> 2>&1 | grep -i "duration\|time"
+```
+
+## Getting More Help
+
+If you've tried these solutions and still have issues:
+
+1. **Collect debug information:**
+```bash
+trace export-logs --output debug-logs.zip
+trace --debug health > health-report.txt
+```
+
+2. **Check logs:**
+```bash
+# Docker logs
+docker logs <container-name>
+
+# Local logs
+cat ~/.tracertm/logs/latest.log
+```
+
+3. **Report to support:**
+- Include logs and error messages
+- Describe steps to reproduce
+- Include system information (OS, versions)
+- Provide request IDs from API errors
+
+See [Getting Support](/docs/00-getting-started/09-support) for support channels.

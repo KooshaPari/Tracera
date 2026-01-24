@@ -1,5 +1,5 @@
-var copyObject = require('./_copyObject'),
-    keysIn = require('./keysIn');
+var copyObject = require("./_copyObject"),
+	keysIn = require("./keysIn");
 
 /**
  * The base implementation of `_.assignIn` without support for multiple sources
@@ -11,7 +11,7 @@ var copyObject = require('./_copyObject'),
  * @returns {Object} Returns `object`.
  */
 function baseAssignIn(object, source) {
-  return object && copyObject(source, keysIn(source), object);
+	return object && copyObject(source, keysIn(source), object);
 }
 
 module.exports = baseAssignIn;

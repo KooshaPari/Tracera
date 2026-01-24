@@ -27,5 +27,5 @@ var _index = require("./toDate.cjs");
  * //=> Wed Feb 29 2012 11:45:05
  */
 function fromUnixTime(unixTime, options) {
-  return (0, _index.toDate)(unixTime * 1000, options?.in);
+	return (0, _index.toDate)(unixTime * 1000, options?.in);
 }

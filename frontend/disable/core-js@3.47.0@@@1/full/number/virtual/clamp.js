@@ -1,5 +1,5 @@
-'use strict';
-require('../../../modules/esnext.number.clamp');
-var getBuiltInPrototypeMethod = require('../../../internals/get-built-in-prototype-method');
+"use strict";
+require("../../../modules/esnext.number.clamp");
+var getBuiltInPrototypeMethod = require("../../../internals/get-built-in-prototype-method");
 
-module.exports = getBuiltInPrototypeMethod('Number', 'clamp');
+module.exports = getBuiltInPrototypeMethod("Number", "clamp");

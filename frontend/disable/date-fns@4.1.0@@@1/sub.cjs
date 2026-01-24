@@ -51,30 +51,30 @@ var _index3 = require("./subMonths.cjs");
  * //=> Mon Sep 1 2014 10:19:50
  */
 function sub(date, duration, options) {
-  const {
-    years = 0,
-    months = 0,
-    weeks = 0,
-    days = 0,
-    hours = 0,
-    minutes = 0,
-    seconds = 0,
-  } = duration;
+	const {
+		years = 0,
+		months = 0,
+		weeks = 0,
+		days = 0,
+		hours = 0,
+		minutes = 0,
+		seconds = 0,
+	} = duration;
 
-  const withoutMonths = (0, _index3.subMonths)(
-    date,
-    months + years * 12,
-    options,
-  );
-  const withoutDays = (0, _index2.subDays)(
-    withoutMonths,
-    days + weeks * 7,
-    options,
-  );
+	const withoutMonths = (0, _index3.subMonths)(
+		date,
+		months + years * 12,
+		options,
+	);
+	const withoutDays = (0, _index2.subDays)(
+		withoutMonths,
+		days + weeks * 7,
+		options,
+	);
 
-  const minutesToSub = minutes + hours * 60;
-  const secondsToSub = seconds + minutesToSub * 60;
-  const msToSub = secondsToSub * 1000;
+	const minutesToSub = minutes + hours * 60;
+	const secondsToSub = seconds + minutesToSub * 60;
+	const msToSub = secondsToSub * 1000;
 
-  return (0, _index.constructFrom)(options?.in || date, +withoutDays - msToSub);
+	return (0, _index.constructFrom)(options?.in || date, +withoutDays - msToSub);
 }

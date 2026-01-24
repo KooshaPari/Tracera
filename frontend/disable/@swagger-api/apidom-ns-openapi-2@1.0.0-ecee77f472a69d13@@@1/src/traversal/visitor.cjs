@@ -6,11 +6,11 @@ var _apidomCore = require("@swagger-api/apidom-core");
 /**
  * @public
  */
-const getNodeType = element => {
-  if (!(0, _apidomCore.isElement)(element)) {
-    return undefined;
-  }
-  return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
+const getNodeType = (element) => {
+	if (!(0, _apidomCore.isElement)(element)) {
+		return undefined;
+	}
+	return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
 };
 
 /**
@@ -24,33 +24,33 @@ const getNodeType = element => {
  * @public
  */
 exports.getNodeType = getNodeType;
-const keyMap = exports.keyMap = {
-  SwaggerElement: ['content'],
-  InfoElement: ['content'],
-  ContactElement: ['content'],
-  LicenseElement: ['content'],
-  PathsElement: ['content'],
-  PathItemElement: ['content'],
-  OperationElement: ['content'],
-  ExternalDocumentationElement: ['content'],
-  ParameterElement: ['content'],
-  ItemsElement: ['content'],
-  ExampleElement: ['content'],
-  ResponsesElement: ['content'],
-  ResponseElement: ['content'],
-  HeadersElement: ['content'],
-  HeaderElement: ['content'],
-  TagElement: ['content'],
-  ReferenceElement: ['content'],
-  JSONReferenceElement: ['content'],
-  SchemaElement: ['content'],
-  XmlElement: ['content'],
-  DefinitionsElement: ['content'],
-  ParametersDefinitionsElement: ['content'],
-  ResponsesDefinitionsElement: ['content'],
-  SecurityDefinitionsElement: ['content'],
-  SecuritySchemeElement: ['content'],
-  ScopesElement: ['content'],
-  SecurityRequirementElement: ['content'],
-  ..._apidomCore.keyMap
-};
+const keyMap = (exports.keyMap = {
+	SwaggerElement: ["content"],
+	InfoElement: ["content"],
+	ContactElement: ["content"],
+	LicenseElement: ["content"],
+	PathsElement: ["content"],
+	PathItemElement: ["content"],
+	OperationElement: ["content"],
+	ExternalDocumentationElement: ["content"],
+	ParameterElement: ["content"],
+	ItemsElement: ["content"],
+	ExampleElement: ["content"],
+	ResponsesElement: ["content"],
+	ResponseElement: ["content"],
+	HeadersElement: ["content"],
+	HeaderElement: ["content"],
+	TagElement: ["content"],
+	ReferenceElement: ["content"],
+	JSONReferenceElement: ["content"],
+	SchemaElement: ["content"],
+	XmlElement: ["content"],
+	DefinitionsElement: ["content"],
+	ParametersDefinitionsElement: ["content"],
+	ResponsesDefinitionsElement: ["content"],
+	SecurityDefinitionsElement: ["content"],
+	SecuritySchemeElement: ["content"],
+	ScopesElement: ["content"],
+	SecurityRequirementElement: ["content"],
+	..._apidomCore.keyMap,
+});

@@ -1,16 +1,12 @@
 "use strict";
 exports.format = exports.formatDate = format;
 Object.defineProperty(exports, "formatters", {
-  enumerable: true,
-  get: function () {
-    return _index3.formatters;
-  },
+	enumerable: true,
+	get: () => _index3.formatters,
 });
 Object.defineProperty(exports, "longFormatters", {
-  enumerable: true,
-  get: function () {
-    return _index4.longFormatters;
-  },
+	enumerable: true,
+	get: () => _index4.longFormatters,
 });
 var _index = require("./_lib/defaultLocale.cjs");
 var _index2 = require("./_lib/defaultOptions.cjs");
@@ -36,7 +32,7 @@ var _index7 = require("./toDate.cjs");
 //   then the sequence will continue until the end of the string.
 // - . matches any single character unmatched by previous parts of the RegExps
 const formattingTokensRegExp =
-  /[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
+	/[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
 
 // This RegExp catches symbols escaped by quotes, and also
 // sequences of symbols P, p, and the combinations like `PPPPPPPppppp`
@@ -335,106 +331,106 @@ const unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * //=> "3 o'clock"
  */
 function format(date, formatStr, options) {
-  const defaultOptions = (0, _index2.getDefaultOptions)();
-  const locale =
-    options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
+	const defaultOptions = (0, _index2.getDefaultOptions)();
+	const locale =
+		options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
 
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
+	const firstWeekContainsDate =
+		options?.firstWeekContainsDate ??
+		options?.locale?.options?.firstWeekContainsDate ??
+		defaultOptions.firstWeekContainsDate ??
+		defaultOptions.locale?.options?.firstWeekContainsDate ??
+		1;
 
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const originalDate = (0, _index7.toDate)(date, options?.in);
+	const originalDate = (0, _index7.toDate)(date, options?.in);
 
-  if (!(0, _index6.isValid)(originalDate)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (!(0, _index6.isValid)(originalDate)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  let parts = formatStr
-    .match(longFormattingTokensRegExp)
-    .map((substring) => {
-      const firstCharacter = substring[0];
-      if (firstCharacter === "p" || firstCharacter === "P") {
-        const longFormatter = _index4.longFormatters[firstCharacter];
-        return longFormatter(substring, locale.formatLong);
-      }
-      return substring;
-    })
-    .join("")
-    .match(formattingTokensRegExp)
-    .map((substring) => {
-      // Replace two single quote characters with one single quote character
-      if (substring === "''") {
-        return { isToken: false, value: "'" };
-      }
+	let parts = formatStr
+		.match(longFormattingTokensRegExp)
+		.map((substring) => {
+			const firstCharacter = substring[0];
+			if (firstCharacter === "p" || firstCharacter === "P") {
+				const longFormatter = _index4.longFormatters[firstCharacter];
+				return longFormatter(substring, locale.formatLong);
+			}
+			return substring;
+		})
+		.join("")
+		.match(formattingTokensRegExp)
+		.map((substring) => {
+			// Replace two single quote characters with one single quote character
+			if (substring === "''") {
+				return { isToken: false, value: "'" };
+			}
 
-      const firstCharacter = substring[0];
-      if (firstCharacter === "'") {
-        return { isToken: false, value: cleanEscapedString(substring) };
-      }
+			const firstCharacter = substring[0];
+			if (firstCharacter === "'") {
+				return { isToken: false, value: cleanEscapedString(substring) };
+			}
 
-      if (_index3.formatters[firstCharacter]) {
-        return { isToken: true, value: substring };
-      }
+			if (_index3.formatters[firstCharacter]) {
+				return { isToken: true, value: substring };
+			}
 
-      if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
-        throw new RangeError(
-          "Format string contains an unescaped latin alphabet character `" +
-            firstCharacter +
-            "`",
-        );
-      }
+			if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
+				throw new RangeError(
+					"Format string contains an unescaped latin alphabet character `" +
+						firstCharacter +
+						"`",
+				);
+			}
 
-      return { isToken: false, value: substring };
-    });
+			return { isToken: false, value: substring };
+		});
 
-  // invoke localize preprocessor (only for french locales at the moment)
-  if (locale.localize.preprocessor) {
-    parts = locale.localize.preprocessor(originalDate, parts);
-  }
+	// invoke localize preprocessor (only for french locales at the moment)
+	if (locale.localize.preprocessor) {
+		parts = locale.localize.preprocessor(originalDate, parts);
+	}
 
-  const formatterOptions = {
-    firstWeekContainsDate,
-    weekStartsOn,
-    locale,
-  };
+	const formatterOptions = {
+		firstWeekContainsDate,
+		weekStartsOn,
+		locale,
+	};
 
-  return parts
-    .map((part) => {
-      if (!part.isToken) return part.value;
+	return parts
+		.map((part) => {
+			if (!part.isToken) return part.value;
 
-      const token = part.value;
+			const token = part.value;
 
-      if (
-        (!options?.useAdditionalWeekYearTokens &&
-          (0, _index5.isProtectedWeekYearToken)(token)) ||
-        (!options?.useAdditionalDayOfYearTokens &&
-          (0, _index5.isProtectedDayOfYearToken)(token))
-      ) {
-        (0, _index5.warnOrThrowProtectedError)(token, formatStr, String(date));
-      }
+			if (
+				(!options?.useAdditionalWeekYearTokens &&
+					(0, _index5.isProtectedWeekYearToken)(token)) ||
+				(!options?.useAdditionalDayOfYearTokens &&
+					(0, _index5.isProtectedDayOfYearToken)(token))
+			) {
+				(0, _index5.warnOrThrowProtectedError)(token, formatStr, String(date));
+			}
 
-      const formatter = _index3.formatters[token[0]];
-      return formatter(originalDate, token, locale.localize, formatterOptions);
-    })
-    .join("");
+			const formatter = _index3.formatters[token[0]];
+			return formatter(originalDate, token, locale.localize, formatterOptions);
+		})
+		.join("");
 }
 
 function cleanEscapedString(input) {
-  const matched = input.match(escapedStringRegExp);
+	const matched = input.match(escapedStringRegExp);
 
-  if (!matched) {
-    return input;
-  }
+	if (!matched) {
+		return input;
+	}
 
-  return matched[1].replace(doubleQuoteRegExp, "'");
+	return matched[1].replace(doubleQuoteRegExp, "'");
 }

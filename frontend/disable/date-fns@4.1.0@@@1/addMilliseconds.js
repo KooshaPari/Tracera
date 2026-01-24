@@ -28,7 +28,7 @@ import { toDate } from "./toDate.js";
  * //=> Thu Jul 10 2014 12:45:30.750
  */
 export function addMilliseconds(date, amount, options) {
-  return constructFrom(options?.in || date, +toDate(date) + amount);
+	return constructFrom(options?.in || date, +toDate(date) + amount);
 }
 
 // Fallback for modularized imports:

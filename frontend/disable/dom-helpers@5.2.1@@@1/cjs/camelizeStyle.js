@@ -1,5 +1,3 @@
-"use strict";
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 exports.__esModule = true;
@@ -15,7 +13,7 @@ var _camelize = _interopRequireDefault(require("./camelize"));
 var msPattern = /^-ms-/;
 
 function camelizeStyleName(string) {
-  return (0, _camelize.default)(string.replace(msPattern, 'ms-'));
+	return (0, _camelize.default)(string.replace(msPattern, "ms-"));
 }
 
 module.exports = exports["default"];

@@ -1,7 +1,5 @@
-'use strict';
-
-var has = Object.prototype.hasOwnProperty
-  , prefix = '~';
+var has = Object.prototype.hasOwnProperty,
+	prefix = "~";
 
 /**
  * Constructor to create a storage for our `EE` objects.
@@ -20,13 +18,13 @@ function Events() {}
 // overridden or used as an attack vector.
 //
 if (Object.create) {
-  Events.prototype = Object.create(null);
+	Events.prototype = Object.create(null);
 
-  //
-  // This hack is needed because the `__proto__` property is still inherited in
-  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
-  //
-  if (!new Events().__proto__) prefix = false;
+	//
+	// This hack is needed because the `__proto__` property is still inherited in
+	// some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
+	//
+	if (!new Events().__proto__) prefix = false;
 }
 
 /**
@@ -39,9 +37,9 @@ if (Object.create) {
  * @private
  */
 function EE(fn, context, once) {
-  this.fn = fn;
-  this.context = context;
-  this.once = once || false;
+	this.fn = fn;
+	this.context = context;
+	this.once = once || false;
 }
 
 /**
@@ -56,18 +54,19 @@ function EE(fn, context, once) {
  * @private
  */
 function addListener(emitter, event, fn, context, once) {
-  if (typeof fn !== 'function') {
-    throw new TypeError('The listener must be a function');
-  }
+	if (typeof fn !== "function") {
+		throw new TypeError("The listener must be a function");
+	}
 
-  var listener = new EE(fn, context || emitter, once)
-    , evt = prefix ? prefix + event : event;
+	var listener = new EE(fn, context || emitter, once),
+		evt = prefix ? prefix + event : event;
 
-  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
-  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
-  else emitter._events[evt] = [emitter._events[evt], listener];
+	if (!emitter._events[evt])
+		(emitter._events[evt] = listener), emitter._eventsCount++;
+	else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+	else emitter._events[evt] = [emitter._events[evt], listener];
 
-  return emitter;
+	return emitter;
 }
 
 /**
@@ -78,8 +77,8 @@ function addListener(emitter, event, fn, context, once) {
  * @private
  */
 function clearEvent(emitter, evt) {
-  if (--emitter._eventsCount === 0) emitter._events = new Events();
-  else delete emitter._events[evt];
+	if (--emitter._eventsCount === 0) emitter._events = new Events();
+	else delete emitter._events[evt];
 }
 
 /**
@@ -90,8 +89,8 @@ function clearEvent(emitter, evt) {
  * @public
  */
 function EventEmitter() {
-  this._events = new Events();
-  this._eventsCount = 0;
+	this._events = new Events();
+	this._eventsCount = 0;
 }
 
 /**
@@ -102,21 +101,21 @@ function EventEmitter() {
  * @public
  */
 EventEmitter.prototype.eventNames = function eventNames() {
-  var names = []
-    , events
-    , name;
+	var names = [],
+		events,
+		name;
 
-  if (this._eventsCount === 0) return names;
+	if (this._eventsCount === 0) return names;
 
-  for (name in (events = this._events)) {
-    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
-  }
+	for (name in (events = this._events)) {
+		if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+	}
 
-  if (Object.getOwnPropertySymbols) {
-    return names.concat(Object.getOwnPropertySymbols(events));
-  }
+	if (Object.getOwnPropertySymbols) {
+		return names.concat(Object.getOwnPropertySymbols(events));
+	}
 
-  return names;
+	return names;
 };
 
 /**
@@ -127,17 +126,17 @@ EventEmitter.prototype.eventNames = function eventNames() {
  * @public
  */
 EventEmitter.prototype.listeners = function listeners(event) {
-  var evt = prefix ? prefix + event : event
-    , handlers = this._events[evt];
+	var evt = prefix ? prefix + event : event,
+		handlers = this._events[evt];
 
-  if (!handlers) return [];
-  if (handlers.fn) return [handlers.fn];
+	if (!handlers) return [];
+	if (handlers.fn) return [handlers.fn];
 
-  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
-    ee[i] = handlers[i].fn;
-  }
+	for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+		ee[i] = handlers[i].fn;
+	}
 
-  return ee;
+	return ee;
 };
 
 /**
@@ -148,12 +147,12 @@ EventEmitter.prototype.listeners = function listeners(event) {
  * @public
  */
 EventEmitter.prototype.listenerCount = function listenerCount(event) {
-  var evt = prefix ? prefix + event : event
-    , listeners = this._events[evt];
+	var evt = prefix ? prefix + event : event,
+		listeners = this._events[evt];
 
-  if (!listeners) return 0;
-  if (listeners.fn) return 1;
-  return listeners.length;
+	if (!listeners) return 0;
+	if (listeners.fn) return 1;
+	return listeners.length;
 };
 
 /**
@@ -164,55 +163,72 @@ EventEmitter.prototype.listenerCount = function listenerCount(event) {
  * @public
  */
 EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-  var evt = prefix ? prefix + event : event;
+	var evt = prefix ? prefix + event : event;
 
-  if (!this._events[evt]) return false;
+	if (!this._events[evt]) return false;
 
-  var listeners = this._events[evt]
-    , len = arguments.length
-    , args
-    , i;
+	var listeners = this._events[evt],
+		len = arguments.length,
+		args,
+		i;
 
-  if (listeners.fn) {
-    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+	if (listeners.fn) {
+		if (listeners.once)
+			this.removeListener(event, listeners.fn, undefined, true);
 
-    switch (len) {
-      case 1: return listeners.fn.call(listeners.context), true;
-      case 2: return listeners.fn.call(listeners.context, a1), true;
-      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
-      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
-      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-    }
+		switch (len) {
+			case 1:
+				return listeners.fn.call(listeners.context), true;
+			case 2:
+				return listeners.fn.call(listeners.context, a1), true;
+			case 3:
+				return listeners.fn.call(listeners.context, a1, a2), true;
+			case 4:
+				return listeners.fn.call(listeners.context, a1, a2, a3), true;
+			case 5:
+				return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+			case 6:
+				return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+		}
 
-    for (i = 1, args = new Array(len -1); i < len; i++) {
-      args[i - 1] = arguments[i];
-    }
+		for (i = 1, args = new Array(len - 1); i < len; i++) {
+			args[i - 1] = arguments[i];
+		}
 
-    listeners.fn.apply(listeners.context, args);
-  } else {
-    var length = listeners.length
-      , j;
+		listeners.fn.apply(listeners.context, args);
+	} else {
+		var length = listeners.length,
+			j;
 
-    for (i = 0; i < length; i++) {
-      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+		for (i = 0; i < length; i++) {
+			if (listeners[i].once)
+				this.removeListener(event, listeners[i].fn, undefined, true);
 
-      switch (len) {
-        case 1: listeners[i].fn.call(listeners[i].context); break;
-        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
-        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
-        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
-        default:
-          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
-            args[j - 1] = arguments[j];
-          }
+			switch (len) {
+				case 1:
+					listeners[i].fn.call(listeners[i].context);
+					break;
+				case 2:
+					listeners[i].fn.call(listeners[i].context, a1);
+					break;
+				case 3:
+					listeners[i].fn.call(listeners[i].context, a1, a2);
+					break;
+				case 4:
+					listeners[i].fn.call(listeners[i].context, a1, a2, a3);
+					break;
+				default:
+					if (!args)
+						for (j = 1, args = new Array(len - 1); j < len; j++) {
+							args[j - 1] = arguments[j];
+						}
 
-          listeners[i].fn.apply(listeners[i].context, args);
-      }
-    }
-  }
+					listeners[i].fn.apply(listeners[i].context, args);
+			}
+		}
+	}
 
-  return true;
+	return true;
 };
 
 /**
@@ -225,7 +241,7 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
  * @public
  */
 EventEmitter.prototype.on = function on(event, fn, context) {
-  return addListener(this, event, fn, context, false);
+	return addListener(this, event, fn, context, false);
 };
 
 /**
@@ -238,7 +254,7 @@ EventEmitter.prototype.on = function on(event, fn, context) {
  * @public
  */
 EventEmitter.prototype.once = function once(event, fn, context) {
-  return addListener(this, event, fn, context, true);
+	return addListener(this, event, fn, context, true);
 };
 
 /**
@@ -251,44 +267,50 @@ EventEmitter.prototype.once = function once(event, fn, context) {
  * @returns {EventEmitter} `this`.
  * @public
  */
-EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
-  var evt = prefix ? prefix + event : event;
+EventEmitter.prototype.removeListener = function removeListener(
+	event,
+	fn,
+	context,
+	once,
+) {
+	var evt = prefix ? prefix + event : event;
 
-  if (!this._events[evt]) return this;
-  if (!fn) {
-    clearEvent(this, evt);
-    return this;
-  }
+	if (!this._events[evt]) return this;
+	if (!fn) {
+		clearEvent(this, evt);
+		return this;
+	}
 
-  var listeners = this._events[evt];
+	var listeners = this._events[evt];
 
-  if (listeners.fn) {
-    if (
-      listeners.fn === fn &&
-      (!once || listeners.once) &&
-      (!context || listeners.context === context)
-    ) {
-      clearEvent(this, evt);
-    }
-  } else {
-    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
-      if (
-        listeners[i].fn !== fn ||
-        (once && !listeners[i].once) ||
-        (context && listeners[i].context !== context)
-      ) {
-        events.push(listeners[i]);
-      }
-    }
+	if (listeners.fn) {
+		if (
+			listeners.fn === fn &&
+			(!once || listeners.once) &&
+			(!context || listeners.context === context)
+		) {
+			clearEvent(this, evt);
+		}
+	} else {
+		for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+			if (
+				listeners[i].fn !== fn ||
+				(once && !listeners[i].once) ||
+				(context && listeners[i].context !== context)
+			) {
+				events.push(listeners[i]);
+			}
+		}
 
-    //
-    // Reset the array, or remove it completely if we have no more listeners.
-    //
-    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
-    else clearEvent(this, evt);
-  }
+		//
+		// Reset the array, or remove it completely if we have no more listeners.
+		//
+		if (events.length)
+			this._events[evt] = events.length === 1 ? events[0] : events;
+		else clearEvent(this, evt);
+	}
 
-  return this;
+	return this;
 };
 
 /**
@@ -299,17 +321,17 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, conte
  * @public
  */
 EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
-  var evt;
+	var evt;
 
-  if (event) {
-    evt = prefix ? prefix + event : event;
-    if (this._events[evt]) clearEvent(this, evt);
-  } else {
-    this._events = new Events();
-    this._eventsCount = 0;
-  }
+	if (event) {
+		evt = prefix ? prefix + event : event;
+		if (this._events[evt]) clearEvent(this, evt);
+	} else {
+		this._events = new Events();
+		this._eventsCount = 0;
+	}
 
-  return this;
+	return this;
 };
 
 //
@@ -331,6 +353,6 @@ EventEmitter.EventEmitter = EventEmitter;
 //
 // Expose the module.
 //
-if ('undefined' !== typeof module) {
-  module.exports = EventEmitter;
+if ("undefined" !== typeof module) {
+	module.exports = EventEmitter;
 }

@@ -1,5 +1,5 @@
-var arraySample = require('./_arraySample'),
-    values = require('./values');
+var arraySample = require("./_arraySample"),
+	values = require("./values");
 
 /**
  * The base implementation of `_.sample`.
@@ -9,7 +9,7 @@ var arraySample = require('./_arraySample'),
  * @returns {*} Returns the random element.
  */
 function baseSample(collection) {
-  return arraySample(values(collection));
+	return arraySample(values(collection));
 }
 
 module.exports = baseSample;

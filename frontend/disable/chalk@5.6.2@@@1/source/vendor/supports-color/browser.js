@@ -1,12 +1,14 @@
 /* eslint-env browser */
 
 const level = (() => {
-	if (!('navigator' in globalThis)) {
+	if (!("navigator" in globalThis)) {
 		return 0;
 	}
 
 	if (globalThis.navigator.userAgentData) {
-		const brand = navigator.userAgentData.brands.find(({brand}) => brand === 'Chromium');
+		const brand = navigator.userAgentData.brands.find(
+			({ brand }) => brand === "Chromium",
+		);
 		if (brand && brand.version > 93) {
 			return 3;
 		}

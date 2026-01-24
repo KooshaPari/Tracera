@@ -6,5 +6,8 @@ var _apidomNsApiDesignSystems = require("@swagger-api/apidom-ns-api-design-syste
 /**
  * @public
  */
-const jsonMediaTypes = new _apidomNsApiDesignSystems.ApiDesignSystemsMediaTypes(..._apidomNsApiDesignSystems.mediaTypes.filterByFormat('generic'), ..._apidomNsApiDesignSystems.mediaTypes.filterByFormat('json'));
-var _default = exports.default = jsonMediaTypes;
+const jsonMediaTypes = new _apidomNsApiDesignSystems.ApiDesignSystemsMediaTypes(
+	..._apidomNsApiDesignSystems.mediaTypes.filterByFormat("generic"),
+	..._apidomNsApiDesignSystems.mediaTypes.filterByFormat("json"),
+);
+var _default = (exports.default = jsonMediaTypes);

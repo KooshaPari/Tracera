@@ -1,5 +1,5 @@
-var baseFlatten = require('./_baseFlatten'),
-    map = require('./map');
+var baseFlatten = require("./_baseFlatten"),
+	map = require("./map");
 
 /**
  * Creates a flattened array of values by running each element in `collection`
@@ -23,7 +23,7 @@ var baseFlatten = require('./_baseFlatten'),
  * // => [1, 1, 2, 2]
  */
 function flatMap(collection, iteratee) {
-  return baseFlatten(map(collection, iteratee), 1);
+	return baseFlatten(map(collection, iteratee), 1);
 }
 
 module.exports = flatMap;

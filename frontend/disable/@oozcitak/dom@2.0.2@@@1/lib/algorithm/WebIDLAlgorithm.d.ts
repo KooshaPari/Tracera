@@ -5,4 +5,8 @@
  * @param name - property name
  * @param value - property value
  */
-export declare function idl_defineConst(o: any, name: string, value: string | number | boolean): void;
+export declare function idl_defineConst(
+	o: any,
+	name: string,
+	value: string | number | boolean,
+): void;

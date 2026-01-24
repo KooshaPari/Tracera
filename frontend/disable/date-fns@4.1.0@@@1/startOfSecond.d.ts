@@ -3,7 +3,7 @@ import type { DateArg, ContextOptions } from "./types.js";
  * The {@link startOfSecond} function options.
  */
 export interface StartOfSecondOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name startOfSecond
  * @category Second Helpers
@@ -27,9 +27,9 @@ export interface StartOfSecondOptions<DateType extends Date = Date>
  * //=> Mon Dec 01 2014 22:15:45.000
  */
 export declare function startOfSecond<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: StartOfSecondOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: StartOfSecondOptions<ResultDate> | undefined,
 ): ResultDate;

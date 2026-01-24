@@ -1,19 +1,17 @@
-'use strict';
-
-var keys = require('object-keys');
-var hasSymbols = typeof Symbol === 'function' && typeof Symbol('foo') === 'symbol';
+var keys = require("object-keys");
+var hasSymbols =
+	typeof Symbol === "function" && typeof Symbol("foo") === "symbol";
 
 var toStr = Object.prototype.toString;
 var concat = Array.prototype.concat;
-var defineDataProperty = require('define-data-property');
+var defineDataProperty = require("define-data-property");
 
-var isFunction = function (fn) {
-	return typeof fn === 'function' && toStr.call(fn) === '[object Function]';
-};
+var isFunction = (fn) =>
+	typeof fn === "function" && toStr.call(fn) === "[object Function]";
 
-var supportsDescriptors = require('has-property-descriptors')();
+var supportsDescriptors = require("has-property-descriptors")();
 
-var defineProperty = function (object, name, value, predicate) {
+var defineProperty = (object, name, value, predicate) => {
 	if (name in object) {
 		if (predicate === true) {
 			if (object[name] === value) {

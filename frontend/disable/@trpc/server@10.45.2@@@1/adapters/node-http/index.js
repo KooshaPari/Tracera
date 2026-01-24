@@ -1,1 +1,1 @@
-module.exports = require('../../dist/adapters/node-http');
+module.exports = require("../../dist/adapters/node-http");

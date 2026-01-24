@@ -20,5 +20,5 @@ var _index = require("./constants.cjs");
  * //=> 730
  */
 function yearsToDays(years) {
-  return Math.trunc(years * _index.daysInYear);
+	return Math.trunc(years * _index.daysInYear);
 }

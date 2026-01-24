@@ -1,3 +1,3 @@
-'use strict';
+"use strict";
 // https://github.com/tc39/proposal-regex-escaping
-require('../modules/esnext.regexp.escape');
+require("../modules/esnext.regexp.escape");

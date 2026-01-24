@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/data-view/set-float16');
+"use strict";
+module.exports = require("../../full/data-view/set-float16");

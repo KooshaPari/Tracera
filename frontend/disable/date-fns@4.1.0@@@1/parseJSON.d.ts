@@ -3,7 +3,7 @@ import type { ContextOptions } from "./types.js";
  * The {@link parseJSON} function options.
  */
 export interface ParseJSONOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * Converts a complete ISO date string in UTC time, the typical format for transmitting
  * a date in JSON, to a JavaScript `Date` instance.
@@ -37,6 +37,6 @@ export interface ParseJSONOptions<DateType extends Date = Date>
  * @returns The parsed date in the local time zone
  */
 export declare function parseJSON<ResultDate extends Date = Date>(
-  dateStr: string,
-  options?: ParseJSONOptions<ResultDate> | undefined,
+	dateStr: string,
+	options?: ParseJSONOptions<ResultDate> | undefined,
 ): ResultDate;

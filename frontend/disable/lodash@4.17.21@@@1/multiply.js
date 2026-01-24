@@ -1,4 +1,4 @@
-var createMathOperation = require('./_createMathOperation');
+var createMathOperation = require("./_createMathOperation");
 
 /**
  * Multiply two numbers.
@@ -15,8 +15,9 @@ var createMathOperation = require('./_createMathOperation');
  * _.multiply(6, 4);
  * // => 24
  */
-var multiply = createMathOperation(function(multiplier, multiplicand) {
-  return multiplier * multiplicand;
-}, 1);
+var multiply = createMathOperation(
+	(multiplier, multiplicand) => multiplier * multiplicand,
+	1,
+);
 
 module.exports = multiply;

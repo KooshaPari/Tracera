@@ -14,14 +14,14 @@
  * @typedef {import('./jsx-classic.js').IntrinsicElements} s.JSX.IntrinsicElements
  */
 
-import {html, svg} from 'property-information'
-import {createH} from './create-h.js'
-import {svgCaseSensitiveTagNames} from './svg-case-sensitive-tag-names.js'
+import { html, svg } from "property-information";
+import { createH } from "./create-h.js";
+import { svgCaseSensitiveTagNames } from "./svg-case-sensitive-tag-names.js";
 
 // Note: this explicit type is needed, otherwise TS creates broken types.
 /** @type {ReturnType<createH>} */
-export const h = createH(html, 'div')
+export const h = createH(html, "div");
 
 // Note: this explicit type is needed, otherwise TS creates broken types.
 /** @type {ReturnType<createH>} */
-export const s = createH(svg, 'g', svgCaseSensitiveTagNames)
+export const s = createH(svg, "g", svgCaseSensitiveTagNames);

@@ -23,7 +23,7 @@ export interface DifferenceInYearsOptions extends ContextOptions<Date> {}
  * //=> 1
  */
 export declare function differenceInYears(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInYearsOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInYearsOptions | undefined,
 ): number;

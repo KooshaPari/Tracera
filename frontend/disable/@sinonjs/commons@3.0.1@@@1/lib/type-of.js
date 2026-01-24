@@ -1,5 +1,3 @@
-"use strict";
-
 var type = require("type-detect");
 
 /**
@@ -8,5 +6,5 @@ var type = require("type-detect");
  * @returns {string}
  */
 module.exports = function typeOf(value) {
-    return type(value).toLowerCase();
+	return type(value).toLowerCase();
 };

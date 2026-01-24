@@ -1,11 +1,11 @@
 /** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff` */
 export interface Rgb {
-    /** Red component value */
-    r: number;
-    /** Green component value */
-    g: number;
-    /** Blue component value */
-    b: number;
+	/** Red component value */
+	r: number;
+	/** Green component value */
+	g: number;
+	/** Blue component value */
+	b: number;
 }
 /**
  * Set changing text color to enabled or disabled

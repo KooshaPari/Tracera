@@ -1,14 +1,12 @@
-"use strict";
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-exports.default = function (...args) {
-    return function (...ignoredArgs /*, callback*/) {
-        var callback = ignoredArgs.pop();
-        return callback(null, ...args);
-    };
-};
+exports.default =
+	(...args) =>
+	(...ignoredArgs /*, callback*/) => {
+		var callback = ignoredArgs.pop();
+		return callback(null, ...args);
+	};
 
 module.exports = exports.default;

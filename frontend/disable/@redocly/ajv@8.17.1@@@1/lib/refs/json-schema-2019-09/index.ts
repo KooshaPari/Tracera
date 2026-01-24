@@ -1,28 +1,28 @@
-import type Ajv from "../../core"
-import type {AnySchemaObject} from "../../types"
-import * as metaSchema from "./schema.json"
-import * as applicator from "./meta/applicator.json"
-import * as content from "./meta/content.json"
-import * as core from "./meta/core.json"
-import * as format from "./meta/format.json"
-import * as metadata from "./meta/meta-data.json"
-import * as validation from "./meta/validation.json"
+import type Ajv from "../../core";
+import type { AnySchemaObject } from "../../types";
+import * as applicator from "./meta/applicator.json";
+import * as content from "./meta/content.json";
+import * as core from "./meta/core.json";
+import * as format from "./meta/format.json";
+import * as metadata from "./meta/meta-data.json";
+import * as validation from "./meta/validation.json";
+import * as metaSchema from "./schema.json";
 
-const META_SUPPORT_DATA = ["/properties"]
+const META_SUPPORT_DATA = ["/properties"];
 
 export default function addMetaSchema2019(this: Ajv, $data?: boolean): Ajv {
-  ;[
-    metaSchema,
-    applicator,
-    content,
-    core,
-    with$data(this, format),
-    metadata,
-    with$data(this, validation),
-  ].forEach((sch) => this.addMetaSchema(sch, undefined, false))
-  return this
+	[
+		metaSchema,
+		applicator,
+		content,
+		core,
+		with$data(this, format),
+		metadata,
+		with$data(this, validation),
+	].forEach((sch) => this.addMetaSchema(sch, undefined, false));
+	return this;
 
-  function with$data(ajv: Ajv, sch: AnySchemaObject): AnySchemaObject {
-    return $data ? ajv.$dataMetaSchema(sch, META_SUPPORT_DATA) : sch
-  }
+	function with$data(ajv: Ajv, sch: AnySchemaObject): AnySchemaObject {
+		return $data ? ajv.$dataMetaSchema(sch, META_SUPPORT_DATA) : sch;
+	}
 }

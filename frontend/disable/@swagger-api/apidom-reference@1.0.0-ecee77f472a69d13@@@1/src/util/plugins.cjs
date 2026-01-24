@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 exports.run = exports.filter = void 0;
 var _ramdaAdjunct = require("ramda-adjunct");
@@ -9,8 +10,10 @@ var _PluginError = _interopRequireDefault(require("../errors/PluginError.cjs"));
  * Filters the given plugins, returning only the ones return `true` for the given method.
  */
 const filter = async (method, parameters, plugins) => {
-  const pluginResults = await Promise.all(plugins.map((0, _ramdaAdjunct.invokeArgs)([method], parameters)));
-  return plugins.filter((plugin, index) => pluginResults[index]);
+	const pluginResults = await Promise.all(
+		plugins.map((0, _ramdaAdjunct.invokeArgs)([method], parameters)),
+	);
+	return plugins.filter((plugin, index) => pluginResults[index]);
 };
 
 /**
@@ -24,21 +27,21 @@ const filter = async (method, parameters, plugins) => {
  */
 exports.filter = filter;
 const run = async (method, parameters, plugins) => {
-  let lastError;
-  for (const plugin of plugins) {
-    try {
-      const result = await plugin[method].call(plugin, ...parameters); // eslint-disable-line no-await-in-loop
-      return {
-        plugin,
-        result
-      };
-    } catch (error) {
-      lastError = new _PluginError.default('Error while running plugin', {
-        cause: error,
-        plugin
-      });
-    }
-  }
-  return Promise.reject(lastError);
+	let lastError;
+	for (const plugin of plugins) {
+		try {
+			const result = await plugin[method].call(plugin, ...parameters); // eslint-disable-line no-await-in-loop
+			return {
+				plugin,
+				result,
+			};
+		} catch (error) {
+			lastError = new _PluginError.default("Error while running plugin", {
+				cause: error,
+				plugin,
+			});
+		}
+	}
+	return Promise.reject(lastError);
 };
 exports.run = run;

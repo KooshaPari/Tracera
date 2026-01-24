@@ -192,16 +192,20 @@
    END OF TERMS AND CONDITIONS
 */
 
-import type { ConstructorOverloadParameters, NumOverloads, OverloadsInfoUnion } from "./overloads";
 import type {
-  IsAny,
-  IsNever,
-  IsUnknown,
-  MutuallyExtends,
-  OptionalKeys,
-  ReadonlyKeys,
-  RequiredKeys,
-  UnionToTuple,
+	ConstructorOverloadParameters,
+	NumOverloads,
+	OverloadsInfoUnion,
+} from "./overloads";
+import type {
+	IsAny,
+	IsNever,
+	IsUnknown,
+	MutuallyExtends,
+	OptionalKeys,
+	ReadonlyKeys,
+	RequiredKeys,
+	UnionToTuple,
 } from "./utils";
 /**
  * Represents a deeply branded type.
@@ -220,64 +224,85 @@ import type {
  * better to use {@linkcode StrictEqualUsingTSInternalIdenticalToOperator}.
  */
 export type DeepBrand<T> =
-  IsNever<T> extends true
-    ? {
-        type: "never";
-      }
-    : IsAny<T> extends true
-      ? {
-          type: "any";
-        }
-      : IsUnknown<T> extends true
-        ? {
-            type: "unknown";
-          }
-        : T extends string | number | boolean | symbol | bigint | null | undefined | void
-          ? {
-              type: "primitive";
-              value: T;
-            }
-          : T extends new (...args: any[]) => any
-            ? {
-                type: "constructor";
-                params: ConstructorOverloadParameters<T>;
-                instance: DeepBrand<InstanceType<Extract<T, new (...args: any) => any>>>;
-              }
-            : T extends (...args: infer P) => infer R
-              ? NumOverloads<T> extends 1
-                ? {
-                    type: "function";
-                    params: DeepBrand<P>;
-                    return: DeepBrand<R>;
-                    this: DeepBrand<ThisParameterType<T>>;
-                    props: DeepBrand<Omit<T, keyof Function>>;
-                  }
-                : UnionToTuple<OverloadsInfoUnion<T>> extends infer OverloadsTuple
-                  ? {
-                      type: "overloads";
-                      overloads: {
-                        [K in keyof OverloadsTuple]: DeepBrand<OverloadsTuple[K]>;
-                      };
-                    }
-                  : never
-              : T extends any[]
-                ? {
-                    type: "array";
-                    items: {
-                      [K in keyof T]: T[K];
-                    };
-                  }
-                : {
-                    type: "object";
-                    properties: {
-                      [K in keyof T]: DeepBrand<T[K]>;
-                    };
-                    readonly: ReadonlyKeys<T>;
-                    required: RequiredKeys<T>;
-                    optional: OptionalKeys<T>;
-                    constructorParams: DeepBrand<ConstructorOverloadParameters<T>>;
-                  };
+	IsNever<T> extends true
+		? {
+				type: "never";
+			}
+		: IsAny<T> extends true
+			? {
+					type: "any";
+				}
+			: IsUnknown<T> extends true
+				? {
+						type: "unknown";
+					}
+				: T extends
+							| string
+							| number
+							| boolean
+							| symbol
+							| bigint
+							| null
+							| undefined
+							| void
+					? {
+							type: "primitive";
+							value: T;
+						}
+					: T extends new (
+								...args: any[]
+							) => any
+						? {
+								type: "constructor";
+								params: ConstructorOverloadParameters<T>;
+								instance: DeepBrand<
+									InstanceType<Extract<T, new (...args: any) => any>>
+								>;
+							}
+						: T extends (...args: infer P) => infer R
+							? NumOverloads<T> extends 1
+								? {
+										type: "function";
+										params: DeepBrand<P>;
+										return: DeepBrand<R>;
+										this: DeepBrand<ThisParameterType<T>>;
+										props: DeepBrand<Omit<T, keyof Function>>;
+									}
+								: UnionToTuple<
+											OverloadsInfoUnion<T>
+										> extends infer OverloadsTuple
+									? {
+											type: "overloads";
+											overloads: {
+												[K in keyof OverloadsTuple]: DeepBrand<
+													OverloadsTuple[K]
+												>;
+											};
+										}
+									: never
+							: T extends any[]
+								? {
+										type: "array";
+										items: {
+											[K in keyof T]: T[K];
+										};
+									}
+								: {
+										type: "object";
+										properties: {
+											[K in keyof T]: DeepBrand<T[K]>;
+										};
+										readonly: ReadonlyKeys<T>;
+										required: RequiredKeys<T>;
+										optional: OptionalKeys<T>;
+										constructorParams: DeepBrand<
+											ConstructorOverloadParameters<T>
+										>;
+									};
 /**
  * Checks if two types are strictly equal using branding.
  */
-export type StrictEqualUsingBranding<Left, Right> = MutuallyExtends<DeepBrand<Left>, DeepBrand<Right>>;
+export type StrictEqualUsingBranding<Left, Right> = MutuallyExtends<
+	DeepBrand<Left>,
+	DeepBrand<Right>
+>;

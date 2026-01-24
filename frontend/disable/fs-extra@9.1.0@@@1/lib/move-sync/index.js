@@ -1,5 +1,3 @@
-'use strict'
-
 module.exports = {
-  moveSync: require('./move-sync')
-}
+	moveSync: require("./move-sync"),
+};

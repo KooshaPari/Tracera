@@ -1,11 +1,25 @@
-import Diff from './base.js';
-import type { ChangeObject, CallbackOptionAbortable, CallbackOptionNonabortable, DiffCallbackNonabortable, DiffJsonOptionsAbortable, DiffJsonOptionsNonabortable } from '../types.js';
-import { tokenize } from './line.js';
+import Diff from "./base.js";
+import type {
+	ChangeObject,
+	CallbackOptionAbortable,
+	CallbackOptionNonabortable,
+	DiffCallbackNonabortable,
+	DiffJsonOptionsAbortable,
+	DiffJsonOptionsNonabortable,
+} from "../types.js";
+import { tokenize } from "./line.js";
 declare class JsonDiff extends Diff<string, string, string | object> {
-    get useLongestToken(): boolean;
-    tokenize: typeof tokenize;
-    castInput(value: string | object, options: DiffJsonOptionsNonabortable | DiffJsonOptionsAbortable): string;
-    equals(left: string, right: string, options: DiffJsonOptionsNonabortable | DiffJsonOptionsAbortable): boolean;
+	get useLongestToken(): boolean;
+	tokenize: typeof tokenize;
+	castInput(
+		value: string | object,
+		options: DiffJsonOptionsNonabortable | DiffJsonOptionsAbortable,
+	): string;
+	equals(
+		left: string,
+		right: string,
+		options: DiffJsonOptionsNonabortable | DiffJsonOptionsAbortable,
+	): boolean;
 }
 export declare const jsonDiff: JsonDiff;
 /**
@@ -14,11 +28,36 @@ export declare const jsonDiff: JsonDiff;
  *
  * @returns a list of change objects.
  */
-export declare function diffJson(oldStr: string | object, newStr: string | object, options: DiffCallbackNonabortable<string>): undefined;
-export declare function diffJson(oldStr: string | object, newStr: string | object, options: DiffJsonOptionsAbortable & CallbackOptionAbortable<string>): undefined;
-export declare function diffJson(oldStr: string | object, newStr: string | object, options: DiffJsonOptionsNonabortable & CallbackOptionNonabortable<string>): undefined;
-export declare function diffJson(oldStr: string | object, newStr: string | object, options: DiffJsonOptionsAbortable): ChangeObject<string>[] | undefined;
-export declare function diffJson(oldStr: string | object, newStr: string | object, options?: DiffJsonOptionsNonabortable): ChangeObject<string>[];
-export declare function canonicalize(obj: any, stack: Array<any> | null, replacementStack: Array<any> | null, replacer: (k: string, v: any) => any, key?: string): any;
-export {};
+export declare function diffJson(
+	oldStr: string | object,
+	newStr: string | object,
+	options: DiffCallbackNonabortable<string>,
+): undefined;
+export declare function diffJson(
+	oldStr: string | object,
+	newStr: string | object,
+	options: DiffJsonOptionsAbortable & CallbackOptionAbortable<string>,
+): undefined;
+export declare function diffJson(
+	oldStr: string | object,
+	newStr: string | object,
+	options: DiffJsonOptionsNonabortable & CallbackOptionNonabortable<string>,
+): undefined;
+export declare function diffJson(
+	oldStr: string | object,
+	newStr: string | object,
+	options: DiffJsonOptionsAbortable,
+): ChangeObject<string>[] | undefined;
+export declare function diffJson(
+	oldStr: string | object,
+	newStr: string | object,
+	options?: DiffJsonOptionsNonabortable,
+): ChangeObject<string>[];
+export declare function canonicalize(
+	obj: any,
+	stack: Array<any> | null,
+	replacementStack: Array<any> | null,
+	replacer: (k: string, v: any) => any,
+	key?: string,
+): any;
 //# sourceMappingURL=json.d.ts.map

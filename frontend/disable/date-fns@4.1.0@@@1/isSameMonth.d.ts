@@ -28,7 +28,7 @@ export interface IsSameMonthOptions extends ContextOptions<Date> {}
  * //=> false
  */
 export declare function isSameMonth(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IsSameMonthOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IsSameMonthOptions | undefined,
 ): boolean;

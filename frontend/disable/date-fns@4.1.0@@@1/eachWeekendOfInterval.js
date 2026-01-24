@@ -41,15 +41,15 @@ import { isWeekend } from "./isWeekend.js";
  * // ]
  */
 export function eachWeekendOfInterval(interval, options) {
-  const { start, end } = normalizeInterval(options?.in, interval);
-  const dateInterval = eachDayOfInterval({ start, end }, options);
-  const weekends = [];
-  let index = 0;
-  while (index < dateInterval.length) {
-    const date = dateInterval[index++];
-    if (isWeekend(date)) weekends.push(constructFrom(start, date));
-  }
-  return weekends;
+	const { start, end } = normalizeInterval(options?.in, interval);
+	const dateInterval = eachDayOfInterval({ start, end }, options);
+	const weekends = [];
+	let index = 0;
+	while (index < dateInterval.length) {
+		const date = dateInterval[index++];
+		if (isWeekend(date)) weekends.push(constructFrom(start, date));
+	}
+	return weekends;
 }
 
 // Fallback for modularized imports:

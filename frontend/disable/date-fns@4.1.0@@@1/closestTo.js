@@ -40,18 +40,18 @@ import { constructFrom } from "./constructFrom.js";
  * //=> Tue Jan 01 2030 00:00:00
  */
 export function closestTo(dateToCompare, dates, options) {
-  const [dateToCompare_, ...dates_] = normalizeDates(
-    options?.in,
-    dateToCompare,
-    ...dates,
-  );
+	const [dateToCompare_, ...dates_] = normalizeDates(
+		options?.in,
+		dateToCompare,
+		...dates,
+	);
 
-  const index = closestIndexTo(dateToCompare_, dates_);
+	const index = closestIndexTo(dateToCompare_, dates_);
 
-  if (typeof index === "number" && isNaN(index))
-    return constructFrom(dateToCompare_, NaN);
+	if (typeof index === "number" && isNaN(index))
+		return constructFrom(dateToCompare_, NaN);
 
-  if (index !== undefined) return dates_[index];
+	if (index !== undefined) return dates_[index];
 }
 
 // Fallback for modularized imports:

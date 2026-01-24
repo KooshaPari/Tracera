@@ -45,20 +45,20 @@ import { startOfWeek } from "./startOfWeek.js";
  * //=> Mon Jan 03 2005 00:00:00
  */
 export function startOfWeekYear(date, options) {
-  const defaultOptions = getDefaultOptions();
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
+	const defaultOptions = getDefaultOptions();
+	const firstWeekContainsDate =
+		options?.firstWeekContainsDate ??
+		options?.locale?.options?.firstWeekContainsDate ??
+		defaultOptions.firstWeekContainsDate ??
+		defaultOptions.locale?.options?.firstWeekContainsDate ??
+		1;
 
-  const year = getWeekYear(date, options);
-  const firstWeek = constructFrom(options?.in || date, 0);
-  firstWeek.setFullYear(year, 0, firstWeekContainsDate);
-  firstWeek.setHours(0, 0, 0, 0);
-  const _date = startOfWeek(firstWeek, options);
-  return _date;
+	const year = getWeekYear(date, options);
+	const firstWeek = constructFrom(options?.in || date, 0);
+	firstWeek.setFullYear(year, 0, firstWeekContainsDate);
+	firstWeek.setHours(0, 0, 0, 0);
+	const _date = startOfWeek(firstWeek, options);
+	return _date;
 }
 
 // Fallback for modularized imports:

@@ -1,5 +1,18 @@
-import { XMLBuilderCreateOptions, ExpandObject, XMLBuilder, XMLWriterOptions, JSONWriterOptions, ObjectWriterOptions, XMLSerializedAsObject, XMLSerializedAsObjectArray, MapWriterOptions, XMLSerializedAsMap, XMLSerializedAsMapArray, YAMLWriterOptions } from '../interfaces';
-import { Node } from '@oozcitak/dom/lib/dom/interfaces';
+import {
+	XMLBuilderCreateOptions,
+	ExpandObject,
+	XMLBuilder,
+	XMLWriterOptions,
+	JSONWriterOptions,
+	ObjectWriterOptions,
+	XMLSerializedAsObject,
+	XMLSerializedAsObjectArray,
+	MapWriterOptions,
+	XMLSerializedAsMap,
+	XMLSerializedAsMapArray,
+	YAMLWriterOptions,
+} from "../interfaces";
+import { Node } from "@oozcitak/dom/lib/dom/interfaces";
 /**
  * Wraps a DOM node for use with XML builder with default options.
  *
@@ -24,7 +37,10 @@ export declare function builder(nodes: Node[]): XMLBuilder[];
  *
  * @returns an XML builder
  */
-export declare function builder(options: XMLBuilderCreateOptions, node: Node): XMLBuilder;
+export declare function builder(
+	options: XMLBuilderCreateOptions,
+	node: Node,
+): XMLBuilder;
 /**
  * Wraps an array of DOM nodes for use with XML builder with the given options.
  *
@@ -33,7 +49,10 @@ export declare function builder(options: XMLBuilderCreateOptions, node: Node): X
  *
  * @returns an array of XML builders
  */
-export declare function builder(options: XMLBuilderCreateOptions, nodes: Node[]): XMLBuilder[];
+export declare function builder(
+	options: XMLBuilderCreateOptions,
+	nodes: Node[],
+): XMLBuilder[];
 /**
  * Creates an XML document without any child nodes.
  *
@@ -66,7 +85,10 @@ export declare function create(contents: string | ExpandObject): XMLBuilder;
  *
  * @returns document node
  */
-export declare function create(options: XMLBuilderCreateOptions, contents: string | ExpandObject): XMLBuilder;
+export declare function create(
+	options: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+): XMLBuilder;
 /**
  * Creates a new document fragment without any child nodes.
  *
@@ -99,7 +121,10 @@ export declare function fragment(contents: string | ExpandObject): XMLBuilder;
  *
  * @returns document fragment node
  */
-export declare function fragment(options: XMLBuilderCreateOptions, contents: string | ExpandObject): XMLBuilder;
+export declare function fragment(
+	options: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+): XMLBuilder;
 /**
  * Parses an XML document with the default options and converts it to an XML
  * document string with the default writer options.
@@ -120,7 +145,10 @@ export declare function convert(contents: string | ExpandObject): string;
  *
  * @returns document node
  */
-export declare function convert(builderOptions: XMLBuilderCreateOptions, contents: string | ExpandObject): string;
+export declare function convert(
+	builderOptions: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+): string;
 /**
  * Parses an XML document with the default options and converts it an XML
  * document string.
@@ -131,7 +159,10 @@ export declare function convert(builderOptions: XMLBuilderCreateOptions, content
  *
  * @returns document node
  */
-export declare function convert(contents: string | ExpandObject, convertOptions: XMLWriterOptions): string;
+export declare function convert(
+	contents: string | ExpandObject,
+	convertOptions: XMLWriterOptions,
+): string;
 /**
  * Parses an XML document with the default options and converts it a JSON string.
  *
@@ -141,7 +172,10 @@ export declare function convert(contents: string | ExpandObject, convertOptions:
  *
  * @returns document node
  */
-export declare function convert(contents: string | ExpandObject, convertOptions: JSONWriterOptions): string;
+export declare function convert(
+	contents: string | ExpandObject,
+	convertOptions: JSONWriterOptions,
+): string;
 /**
  * Parses an XML document with the default options and converts it a YAML string.
  *
@@ -151,7 +185,10 @@ export declare function convert(contents: string | ExpandObject, convertOptions:
  *
  * @returns document node
  */
-export declare function convert(contents: string | ExpandObject, convertOptions: YAMLWriterOptions): string;
+export declare function convert(
+	contents: string | ExpandObject,
+	convertOptions: YAMLWriterOptions,
+): string;
 /**
  * Parses an XML document with the default options and converts it to its object
  * representation.
@@ -162,7 +199,10 @@ export declare function convert(contents: string | ExpandObject, convertOptions:
  *
  * @returns document node
  */
-export declare function convert(contents: string | ExpandObject, convertOptions: ObjectWriterOptions): XMLSerializedAsObject | XMLSerializedAsObjectArray;
+export declare function convert(
+	contents: string | ExpandObject,
+	convertOptions: ObjectWriterOptions,
+): XMLSerializedAsObject | XMLSerializedAsObjectArray;
 /**
  * Parses an XML document with the default options and converts it to its object
  * representation using ES6 maps.
@@ -173,7 +213,10 @@ export declare function convert(contents: string | ExpandObject, convertOptions:
  *
  * @returns document node
  */
-export declare function convert(contents: string | ExpandObject, convertOptions: MapWriterOptions): XMLSerializedAsMap | XMLSerializedAsMapArray;
+export declare function convert(
+	contents: string | ExpandObject,
+	convertOptions: MapWriterOptions,
+): XMLSerializedAsMap | XMLSerializedAsMapArray;
 /**
  * Parses an XML document with the given options and converts it to an XML
  * document string.
@@ -185,7 +228,11 @@ export declare function convert(contents: string | ExpandObject, convertOptions:
  *
  * @returns document node
  */
-export declare function convert(builderOptions: XMLBuilderCreateOptions, contents: string | ExpandObject, convertOptions: XMLWriterOptions): string;
+export declare function convert(
+	builderOptions: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+	convertOptions: XMLWriterOptions,
+): string;
 /**
  * Parses an XML document with the given options and converts it to a JSON
  * string.
@@ -197,7 +244,11 @@ export declare function convert(builderOptions: XMLBuilderCreateOptions, content
  *
  * @returns document node
  */
-export declare function convert(builderOptions: XMLBuilderCreateOptions, contents: string | ExpandObject, convertOptions: JSONWriterOptions): string;
+export declare function convert(
+	builderOptions: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+	convertOptions: JSONWriterOptions,
+): string;
 /**
  * Parses an XML document with the given options and converts it to a YAML
  * string.
@@ -209,7 +260,11 @@ export declare function convert(builderOptions: XMLBuilderCreateOptions, content
  *
  * @returns document node
  */
-export declare function convert(builderOptions: XMLBuilderCreateOptions, contents: string | ExpandObject, convertOptions: YAMLWriterOptions): string;
+export declare function convert(
+	builderOptions: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+	convertOptions: YAMLWriterOptions,
+): string;
 /**
  * Parses an XML document with the given options and converts it to its object
  * representation.
@@ -221,7 +276,11 @@ export declare function convert(builderOptions: XMLBuilderCreateOptions, content
  *
  * @returns document node
  */
-export declare function convert(builderOptions: XMLBuilderCreateOptions, contents: string | ExpandObject, convertOptions: ObjectWriterOptions): XMLSerializedAsObject | XMLSerializedAsObjectArray;
+export declare function convert(
+	builderOptions: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+	convertOptions: ObjectWriterOptions,
+): XMLSerializedAsObject | XMLSerializedAsObjectArray;
 /**
  * Parses an XML document with the given options and converts it to its object
  * representation using ES6 maps.
@@ -233,4 +292,8 @@ export declare function convert(builderOptions: XMLBuilderCreateOptions, content
  *
  * @returns document node
  */
-export declare function convert(builderOptions: XMLBuilderCreateOptions, contents: string | ExpandObject, convertOptions: MapWriterOptions): XMLSerializedAsMap | XMLSerializedAsMapArray;
+export declare function convert(
+	builderOptions: XMLBuilderCreateOptions,
+	contents: string | ExpandObject,
+	convertOptions: MapWriterOptions,
+): XMLSerializedAsMap | XMLSerializedAsMapArray;

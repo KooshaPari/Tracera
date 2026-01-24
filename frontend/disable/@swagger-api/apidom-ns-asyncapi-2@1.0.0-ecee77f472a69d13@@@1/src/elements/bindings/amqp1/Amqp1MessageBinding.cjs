@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class Amqp1MessageBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'amqp1MessageBinding';
-    this.classes.push('message-binding');
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "amqp1MessageBinding";
+		this.classes.push("message-binding");
+	}
 }
-var _default = exports.default = Amqp1MessageBinding;
+var _default = (exports.default = Amqp1MessageBinding);

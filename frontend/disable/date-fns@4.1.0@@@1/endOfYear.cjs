@@ -29,9 +29,9 @@ var _index = require("./toDate.cjs");
  * //=> Wed Dec 31 2014 23:59:59.999
  */
 function endOfYear(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const year = _date.getFullYear();
-  _date.setFullYear(year + 1, 0, 0);
-  _date.setHours(23, 59, 59, 999);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	const year = _date.getFullYear();
+	_date.setFullYear(year + 1, 0, 0);
+	_date.setHours(23, 59, 59, 999);
+	return _date;
 }

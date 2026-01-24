@@ -1,6 +1,10 @@
-import { compareFunctionCovs, compareRangeCovs, compareScriptCovs } from "./compare";
+import {
+	compareFunctionCovs,
+	compareRangeCovs,
+	compareScriptCovs,
+} from "./compare";
 import { RangeTree } from "./range-tree";
-import { FunctionCov, ProcessCov, ScriptCov } from "./types";
+import type { FunctionCov, ProcessCov, ScriptCov } from "./types";
 
 /**
  * Normalizes a process coverage.
@@ -13,10 +17,10 @@ import { FunctionCov, ProcessCov, ScriptCov } from "./types";
  * @param processCov Process coverage to normalize.
  */
 export function normalizeProcessCov(processCov: ProcessCov): void {
-  processCov.result.sort(compareScriptCovs);
-  for (const [scriptId, scriptCov] of processCov.result.entries()) {
-    scriptCov.scriptId = scriptId.toString(10);
-  }
+	processCov.result.sort(compareScriptCovs);
+	for (const [scriptId, scriptCov] of processCov.result.entries()) {
+		scriptCov.scriptId = scriptId.toString(10);
+	}
 }
 
 /**
@@ -28,10 +32,10 @@ export function normalizeProcessCov(processCov: ProcessCov): void {
  * @param processCov Process coverage to normalize.
  */
 export function deepNormalizeProcessCov(processCov: ProcessCov): void {
-  for (const scriptCov of processCov.result) {
-    deepNormalizeScriptCov(scriptCov);
-  }
-  normalizeProcessCov(processCov);
+	for (const scriptCov of processCov.result) {
+		deepNormalizeScriptCov(scriptCov);
+	}
+	normalizeProcessCov(processCov);
 }
 
 /**
@@ -43,7 +47,7 @@ export function deepNormalizeProcessCov(processCov: ProcessCov): void {
  * @param scriptCov Script coverage to normalize.
  */
 export function normalizeScriptCov(scriptCov: ScriptCov): void {
-  scriptCov.functions.sort(compareFunctionCovs);
+	scriptCov.functions.sort(compareFunctionCovs);
 }
 
 /**
@@ -55,10 +59,10 @@ export function normalizeScriptCov(scriptCov: ScriptCov): void {
  * @param scriptCov Script coverage to normalize.
  */
 export function deepNormalizeScriptCov(scriptCov: ScriptCov): void {
-  for (const funcCov of scriptCov.functions) {
-    normalizeFunctionCov(funcCov);
-  }
-  normalizeScriptCov(scriptCov);
+	for (const funcCov of scriptCov.functions) {
+		normalizeFunctionCov(funcCov);
+	}
+	normalizeScriptCov(scriptCov);
 }
 
 /**
@@ -70,15 +74,15 @@ export function deepNormalizeScriptCov(scriptCov: ScriptCov): void {
  * @param funcCov Function coverage to normalize.
  */
 export function normalizeFunctionCov(funcCov: FunctionCov): void {
-  funcCov.ranges.sort(compareRangeCovs);
-  const tree: RangeTree = RangeTree.fromSortedRanges(funcCov.ranges)!;
-  normalizeRangeTree(tree);
-  funcCov.ranges = tree.toRanges();
+	funcCov.ranges.sort(compareRangeCovs);
+	const tree: RangeTree = RangeTree.fromSortedRanges(funcCov.ranges)!;
+	normalizeRangeTree(tree);
+	funcCov.ranges = tree.toRanges();
 }
 
 /**
  * @internal
  */
 export function normalizeRangeTree(tree: RangeTree): void {
-  tree.normalize();
+	tree.normalize();
 }

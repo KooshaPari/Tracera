@@ -1,7 +1,6 @@
-import ResolverError from './ResolverError.ts';
+import ResolverError from "./ResolverError.ts";
 /**
  * @public
  */
-declare class UnmatchedResolverError extends ResolverError {
-}
+declare class UnmatchedResolverError extends ResolverError {}
 export default UnmatchedResolverError;

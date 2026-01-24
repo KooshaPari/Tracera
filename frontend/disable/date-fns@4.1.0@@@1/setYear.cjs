@@ -30,11 +30,11 @@ var _index2 = require("./toDate.cjs");
  * //=> Sun Sep 01 2013 00:00:00
  */
 function setYear(date, year, options) {
-  const date_ = (0, _index2.toDate)(date, options?.in);
+	const date_ = (0, _index2.toDate)(date, options?.in);
 
-  // Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
-  if (isNaN(+date_)) return (0, _index.constructFrom)(options?.in || date, NaN);
+	// Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
+	if (isNaN(+date_)) return (0, _index.constructFrom)(options?.in || date, NaN);
 
-  date_.setFullYear(year);
-  return date_;
+	date_.setFullYear(year);
+	return date_;
 }

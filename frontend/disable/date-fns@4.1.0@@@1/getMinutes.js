@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> 45
  */
 export function getMinutes(date, options) {
-  return toDate(date, options?.in).getMinutes();
+	return toDate(date, options?.in).getMinutes();
 }
 
 // Fallback for modularized imports:

@@ -1,152 +1,158 @@
-import Emitter from '../emitter.mjs';
-import define from '../define/index.mjs';
-import * as is from '../is.mjs';
-import Selector from '../selector/index.mjs';
+import define from "../define/index.mjs";
+import Emitter from "../emitter.mjs";
+import * as is from "../is.mjs";
+import Selector from "../selector/index.mjs";
 
-let emitterOptions = {
-  qualifierCompare: function( selector1, selector2 ){
-    if( selector1 == null || selector2 == null ){
-      return selector1 == null && selector2 == null;
-    } else {
-      return selector1.sameText( selector2 );
-    }
-  },
-  eventMatches: function( ele, listener, eventObj ){
-    let selector = listener.qualifier;
+const emitterOptions = {
+	qualifierCompare: (selector1, selector2) => {
+		if (selector1 == null || selector2 == null) {
+			return selector1 == null && selector2 == null;
+		} else {
+			return selector1.sameText(selector2);
+		}
+	},
+	eventMatches: (ele, listener, eventObj) => {
+		const selector = listener.qualifier;
 
-    if( selector != null ){
-      return ele !== eventObj.target && is.element( eventObj.target ) && selector.matches( eventObj.target );
-    }
+		if (selector != null) {
+			return (
+				ele !== eventObj.target &&
+				is.element(eventObj.target) &&
+				selector.matches(eventObj.target)
+			);
+		}
 
-    return true;
-  },
-  addEventFields: function( ele, evt ){
-    evt.cy = ele.cy();
-    evt.target = ele;
-  },
-  callbackContext: function( ele, listener, eventObj ){
-    return listener.qualifier != null ? eventObj.target : ele;
-  },
-  beforeEmit: function( context, listener/*, eventObj*/ ){
-    if( listener.conf && listener.conf.once ){
-      listener.conf.onceCollection.removeListener( listener.event, listener.qualifier, listener.callback );
-    }
-  },
-  bubble: function(){
-    return true;
-  },
-  parent: function( ele ){
-    return ele.isChild() ? ele.parent() : ele.cy();
-  }
+		return true;
+	},
+	addEventFields: (ele, evt) => {
+		evt.cy = ele.cy();
+		evt.target = ele;
+	},
+	callbackContext: (ele, listener, eventObj) =>
+		listener.qualifier != null ? eventObj.target : ele,
+	beforeEmit: (context, listener /*, eventObj*/) => {
+		if (listener.conf && listener.conf.once) {
+			listener.conf.onceCollection.removeListener(
+				listener.event,
+				listener.qualifier,
+				listener.callback,
+			);
+		}
+	},
+	bubble: () => true,
+	parent: (ele) => (ele.isChild() ? ele.parent() : ele.cy()),
 };
 
-let argSelector = function( arg ){
-  if( is.string(arg) ){
-    return new Selector( arg );
-  } else {
-    return arg;
-  }
+const argSelector = (arg) => {
+	if (is.string(arg)) {
+		return new Selector(arg);
+	} else {
+		return arg;
+	}
 };
 
-let elesfn = ({
-  createEmitter: function(){
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
-      let _p = ele._private;
+const elesfn = {
+	createEmitter: function () {
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
+			const _p = ele._private;
 
-      if( !_p.emitter ){
-        _p.emitter = new Emitter( emitterOptions, ele );
-      }
-    }
+			if (!_p.emitter) {
+				_p.emitter = new Emitter(emitterOptions, ele);
+			}
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  emitter: function(){
-    return this._private.emitter;
-  },
+	emitter: function () {
+		return this._private.emitter;
+	},
 
-  on: function( events, selector, callback ){
-    let argSel = argSelector(selector);
+	on: function (events, selector, callback) {
+		const argSel = argSelector(selector);
 
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
 
-      ele.emitter().on( events, argSel, callback );
-    }
+			ele.emitter().on(events, argSel, callback);
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  removeListener: function( events, selector, callback ){
-    let argSel = argSelector(selector);
+	removeListener: function (events, selector, callback) {
+		const argSel = argSelector(selector);
 
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
 
-      ele.emitter().removeListener( events, argSel, callback );
-    }
+			ele.emitter().removeListener(events, argSel, callback);
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  removeAllListeners: function(){
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
+	removeAllListeners: function () {
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
 
-      ele.emitter().removeAllListeners();
-    }
+			ele.emitter().removeAllListeners();
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  one: function( events, selector, callback ){
-    let argSel = argSelector(selector);
+	one: function (events, selector, callback) {
+		const argSel = argSelector(selector);
 
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
 
-      ele.emitter().one( events, argSel, callback );
-    }
+			ele.emitter().one(events, argSel, callback);
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  once: function( events, selector, callback ){
-    let argSel = argSelector(selector);
+	once: function (events, selector, callback) {
+		const argSel = argSelector(selector);
 
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
 
-      ele.emitter().on( events, argSel, callback, {
-        once: true,
-        onceCollection: this
-      } );
-    }
-  },
+			ele.emitter().on(events, argSel, callback, {
+				once: true,
+				onceCollection: this,
+			});
+		}
+	},
 
-  emit: function( events, extraParams ){
-    for( let i = 0; i < this.length; i++ ){
-      let ele = this[i];
+	emit: function (events, extraParams) {
+		for (let i = 0; i < this.length; i++) {
+			const ele = this[i];
 
-      ele.emitter().emit( events, extraParams );
-    }
+			ele.emitter().emit(events, extraParams);
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  emitAndNotify: function( event, extraParams ){ // for internal use only
-    if( this.length === 0 ){ return; } // empty collections don't need to notify anything
+	emitAndNotify: function (event, extraParams) {
+		// for internal use only
+		if (this.length === 0) {
+			return;
+		} // empty collections don't need to notify anything
 
-    // notify renderer
-    this.cy().notify( event, this );
+		// notify renderer
+		this.cy().notify(event, this);
 
-    this.emit( event, extraParams );
+		this.emit(event, extraParams);
 
-    return this;
-  }
-});
+		return this;
+	},
+};
 
-define.eventAliasesOn( elesfn );
+define.eventAliasesOn(elesfn);
 
 export default elesfn;

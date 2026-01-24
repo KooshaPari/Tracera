@@ -8,17 +8,15 @@ Returns the filename and line number of the caller in the call stack
 export function location(depth?: number): location.Location;
 
 declare namespace location {
-
-    interface Location {
-
-        /**
+	interface Location {
+		/**
         The fully qualified filename.
         */
-        readonly filename: string;
+		readonly filename: string;
 
-        /**
+		/**
         The file line number.
         */
-        readonly line: number;
-    }
+		readonly line: number;
+	}
 }

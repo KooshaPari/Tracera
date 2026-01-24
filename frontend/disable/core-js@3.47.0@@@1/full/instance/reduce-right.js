@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/instance/reduce-right');
+"use strict";
+var parent = require("../../actual/instance/reduce-right");
 
 module.exports = parent;

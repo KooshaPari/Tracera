@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/clear-immediate');
+"use strict";
+module.exports = require("../full/clear-immediate");

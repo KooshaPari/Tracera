@@ -1,5 +1,5 @@
-var arrayPush = require('./_arrayPush'),
-    isArray = require('./isArray');
+var arrayPush = require("./_arrayPush"),
+	isArray = require("./isArray");
 
 /**
  * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
@@ -13,8 +13,8 @@ var arrayPush = require('./_arrayPush'),
  * @returns {Array} Returns the array of property names and symbols.
  */
 function baseGetAllKeys(object, keysFunc, symbolsFunc) {
-  var result = keysFunc(object);
-  return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
+	var result = keysFunc(object);
+	return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
 }
 
 module.exports = baseGetAllKeys;

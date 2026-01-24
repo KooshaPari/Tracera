@@ -1,7 +1,5 @@
-'use strict';
+"use strict";
 
-const Lexer = require('./Lexer.cjs');
-
-
+const Lexer = require("./Lexer.cjs");
 
 exports.Lexer = Lexer.Lexer;

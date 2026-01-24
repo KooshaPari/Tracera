@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-var $isNaN = require('./isNaN');
+var $isNaN = require("./isNaN");
 
 /** @type {import('./sign')} */
 module.exports = function sign(number) {

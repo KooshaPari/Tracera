@@ -29,5 +29,5 @@ var _index = require("./addMilliseconds.cjs");
  * //=> Thu Jul 10 2014 12:45:30
  */
 function addSeconds(date, amount, options) {
-  return (0, _index.addMilliseconds)(date, amount * 1000, options);
+	return (0, _index.addMilliseconds)(date, amount * 1000, options);
 }

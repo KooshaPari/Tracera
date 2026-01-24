@@ -17,18 +17,18 @@ import { formatLong } from "./fr-CA/_lib/formatLong.js";
  * @author Gabriele Petrioli [@gpetrioli](https://github.com/gpetrioli)
  */
 export const frCA = {
-  code: "fr-CA",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
+	code: "fr-CA",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
 
-  // Unique for fr-CA
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	// Unique for fr-CA
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

@@ -1,7 +1,5 @@
-'use strict';
-
-var AxiosError = require('../core/AxiosError');
-var utils = require('../utils');
+var AxiosError = require("../core/AxiosError");
+var utils = require("../utils");
 
 /**
  * A `CanceledError` is an object that is thrown when an operation is canceled.
@@ -10,13 +8,17 @@ var utils = require('../utils');
  * @param {string=} message The message.
  */
 function CanceledError(message) {
-  // eslint-disable-next-line no-eq-null,eqeqeq
-  AxiosError.call(this, message == null ? 'canceled' : message, AxiosError.ERR_CANCELED);
-  this.name = 'CanceledError';
+	// eslint-disable-next-line no-eq-null,eqeqeq
+	AxiosError.call(
+		this,
+		message == null ? "canceled" : message,
+		AxiosError.ERR_CANCELED,
+	);
+	this.name = "CanceledError";
 }
 
 utils.inherits(CanceledError, AxiosError, {
-  __CANCEL__: true
+	__CANCEL__: true,
 });
 
 module.exports = CanceledError;

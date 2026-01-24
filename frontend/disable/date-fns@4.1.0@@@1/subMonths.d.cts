@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The subMonths function options.
  */
 export interface SubMonthsOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name subMonths
  * @category Month Helpers
@@ -27,10 +27,10 @@ export interface SubMonthsOptions<DateType extends Date = Date>
  * //=> Mon Sep 01 2014 00:00:00
  */
 export declare function subMonths<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: SubMonthsOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: SubMonthsOptions<ResultDate> | undefined,
 ): ResultDate;

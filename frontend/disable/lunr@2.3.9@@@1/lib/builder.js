@@ -28,21 +28,21 @@
  * @property {array} metadataWhitelist - A list of metadata keys that have been whitelisted for entry in the index.
  */
 lunr.Builder = function () {
-  this._ref = "id"
-  this._fields = Object.create(null)
-  this._documents = Object.create(null)
-  this.invertedIndex = Object.create(null)
-  this.fieldTermFrequencies = {}
-  this.fieldLengths = {}
-  this.tokenizer = lunr.tokenizer
-  this.pipeline = new lunr.Pipeline
-  this.searchPipeline = new lunr.Pipeline
-  this.documentCount = 0
-  this._b = 0.75
-  this._k1 = 1.2
-  this.termIndex = 0
-  this.metadataWhitelist = []
-}
+	this._ref = "id";
+	this._fields = Object.create(null);
+	this._documents = Object.create(null);
+	this.invertedIndex = Object.create(null);
+	this.fieldTermFrequencies = {};
+	this.fieldLengths = {};
+	this.tokenizer = lunr.tokenizer;
+	this.pipeline = new lunr.Pipeline();
+	this.searchPipeline = new lunr.Pipeline();
+	this.documentCount = 0;
+	this._b = 0.75;
+	this._k1 = 1.2;
+	this.termIndex = 0;
+	this.metadataWhitelist = [];
+};
 
 /**
  * Sets the document field used as the document reference. Every document must have this field.
@@ -57,8 +57,8 @@ lunr.Builder = function () {
  * @param {string} ref - The name of the reference field in the document.
  */
 lunr.Builder.prototype.ref = function (ref) {
-  this._ref = ref
-}
+	this._ref = ref;
+};
 
 /**
  * A function that is used to extract a field from a document.
@@ -93,12 +93,14 @@ lunr.Builder.prototype.ref = function (ref) {
  * @throws {RangeError} fieldName cannot contain unsupported characters '/'
  */
 lunr.Builder.prototype.field = function (fieldName, attributes) {
-  if (/\//.test(fieldName)) {
-    throw new RangeError ("Field '" + fieldName + "' contains illegal character '/'")
-  }
+	if (/\//.test(fieldName)) {
+		throw new RangeError(
+			"Field '" + fieldName + "' contains illegal character '/'",
+		);
+	}
 
-  this._fields[fieldName] = attributes || {}
-}
+	this._fields[fieldName] = attributes || {};
+};
 
 /**
  * A parameter to tune the amount of field length normalisation that is applied when
@@ -109,14 +111,14 @@ lunr.Builder.prototype.field = function (fieldName, attributes) {
  * @param {number} number - The value to set for this tuning parameter.
  */
 lunr.Builder.prototype.b = function (number) {
-  if (number < 0) {
-    this._b = 0
-  } else if (number > 1) {
-    this._b = 1
-  } else {
-    this._b = number
-  }
-}
+	if (number < 0) {
+		this._b = 0;
+	} else if (number > 1) {
+		this._b = 1;
+	} else {
+		this._b = number;
+	}
+};
 
 /**
  * A parameter that controls the speed at which a rise in term frequency results in term
@@ -126,8 +128,8 @@ lunr.Builder.prototype.b = function (number) {
  * @param {number} number - The value to set for this tuning parameter.
  */
 lunr.Builder.prototype.k1 = function (number) {
-  this._k1 = number
-}
+	this._k1 = number;
+};
 
 /**
  * Adds a document to the index.
@@ -147,74 +149,75 @@ lunr.Builder.prototype.k1 = function (number) {
  * @param {number} [attributes.boost=1] - Boost applied to all terms within this document.
  */
 lunr.Builder.prototype.add = function (doc, attributes) {
-  var docRef = doc[this._ref],
-      fields = Object.keys(this._fields)
+	var docRef = doc[this._ref],
+		fields = Object.keys(this._fields);
 
-  this._documents[docRef] = attributes || {}
-  this.documentCount += 1
+	this._documents[docRef] = attributes || {};
+	this.documentCount += 1;
 
-  for (var i = 0; i < fields.length; i++) {
-    var fieldName = fields[i],
-        extractor = this._fields[fieldName].extractor,
-        field = extractor ? extractor(doc) : doc[fieldName],
-        tokens = this.tokenizer(field, {
-          fields: [fieldName]
-        }),
-        terms = this.pipeline.run(tokens),
-        fieldRef = new lunr.FieldRef (docRef, fieldName),
-        fieldTerms = Object.create(null)
+	for (var i = 0; i < fields.length; i++) {
+		var fieldName = fields[i],
+			extractor = this._fields[fieldName].extractor,
+			field = extractor ? extractor(doc) : doc[fieldName],
+			tokens = this.tokenizer(field, {
+				fields: [fieldName],
+			}),
+			terms = this.pipeline.run(tokens),
+			fieldRef = new lunr.FieldRef(docRef, fieldName),
+			fieldTerms = Object.create(null);
 
-    this.fieldTermFrequencies[fieldRef] = fieldTerms
-    this.fieldLengths[fieldRef] = 0
+		this.fieldTermFrequencies[fieldRef] = fieldTerms;
+		this.fieldLengths[fieldRef] = 0;
 
-    // store the length of this field for this document
-    this.fieldLengths[fieldRef] += terms.length
+		// store the length of this field for this document
+		this.fieldLengths[fieldRef] += terms.length;
 
-    // calculate term frequencies for this field
-    for (var j = 0; j < terms.length; j++) {
-      var term = terms[j]
+		// calculate term frequencies for this field
+		for (var j = 0; j < terms.length; j++) {
+			var term = terms[j];
 
-      if (fieldTerms[term] == undefined) {
-        fieldTerms[term] = 0
-      }
+			if (fieldTerms[term] == undefined) {
+				fieldTerms[term] = 0;
+			}
 
-      fieldTerms[term] += 1
+			fieldTerms[term] += 1;
 
-      // add to inverted index
-      // create an initial posting if one doesn't exist
-      if (this.invertedIndex[term] == undefined) {
-        var posting = Object.create(null)
-        posting["_index"] = this.termIndex
-        this.termIndex += 1
+			// add to inverted index
+			// create an initial posting if one doesn't exist
+			if (this.invertedIndex[term] == undefined) {
+				var posting = Object.create(null);
+				posting["_index"] = this.termIndex;
+				this.termIndex += 1;
 
-        for (var k = 0; k < fields.length; k++) {
-          posting[fields[k]] = Object.create(null)
-        }
+				for (var k = 0; k < fields.length; k++) {
+					posting[fields[k]] = Object.create(null);
+				}
 
-        this.invertedIndex[term] = posting
-      }
+				this.invertedIndex[term] = posting;
+			}
 
-      // add an entry for this term/fieldName/docRef to the invertedIndex
-      if (this.invertedIndex[term][fieldName][docRef] == undefined) {
-        this.invertedIndex[term][fieldName][docRef] = Object.create(null)
-      }
+			// add an entry for this term/fieldName/docRef to the invertedIndex
+			if (this.invertedIndex[term][fieldName][docRef] == undefined) {
+				this.invertedIndex[term][fieldName][docRef] = Object.create(null);
+			}
 
-      // store all whitelisted metadata about this token in the
-      // inverted index
-      for (var l = 0; l < this.metadataWhitelist.length; l++) {
-        var metadataKey = this.metadataWhitelist[l],
-            metadata = term.metadata[metadataKey]
+			// store all whitelisted metadata about this token in the
+			// inverted index
+			for (var l = 0; l < this.metadataWhitelist.length; l++) {
+				var metadataKey = this.metadataWhitelist[l],
+					metadata = term.metadata[metadataKey];
 
-        if (this.invertedIndex[term][fieldName][docRef][metadataKey] == undefined) {
-          this.invertedIndex[term][fieldName][docRef][metadataKey] = []
-        }
+				if (
+					this.invertedIndex[term][fieldName][docRef][metadataKey] == undefined
+				) {
+					this.invertedIndex[term][fieldName][docRef][metadataKey] = [];
+				}
 
-        this.invertedIndex[term][fieldName][docRef][metadataKey].push(metadata)
-      }
-    }
-
-  }
-}
+				this.invertedIndex[term][fieldName][docRef][metadataKey].push(metadata);
+			}
+		}
+	}
+};
 
 /**
  * Calculates the average document length for this index
@@ -222,32 +225,32 @@ lunr.Builder.prototype.add = function (doc, attributes) {
  * @private
  */
 lunr.Builder.prototype.calculateAverageFieldLengths = function () {
+	var fieldRefs = Object.keys(this.fieldLengths),
+		numberOfFields = fieldRefs.length,
+		accumulator = {},
+		documentsWithField = {};
 
-  var fieldRefs = Object.keys(this.fieldLengths),
-      numberOfFields = fieldRefs.length,
-      accumulator = {},
-      documentsWithField = {}
+	for (var i = 0; i < numberOfFields; i++) {
+		var fieldRef = lunr.FieldRef.fromString(fieldRefs[i]),
+			field = fieldRef.fieldName;
 
-  for (var i = 0; i < numberOfFields; i++) {
-    var fieldRef = lunr.FieldRef.fromString(fieldRefs[i]),
-        field = fieldRef.fieldName
+		documentsWithField[field] || (documentsWithField[field] = 0);
+		documentsWithField[field] += 1;
 
-    documentsWithField[field] || (documentsWithField[field] = 0)
-    documentsWithField[field] += 1
+		accumulator[field] || (accumulator[field] = 0);
+		accumulator[field] += this.fieldLengths[fieldRef];
+	}
 
-    accumulator[field] || (accumulator[field] = 0)
-    accumulator[field] += this.fieldLengths[fieldRef]
-  }
+	var fields = Object.keys(this._fields);
 
-  var fields = Object.keys(this._fields)
+	for (var i = 0; i < fields.length; i++) {
+		var fieldName = fields[i];
+		accumulator[fieldName] =
+			accumulator[fieldName] / documentsWithField[fieldName];
+	}
 
-  for (var i = 0; i < fields.length; i++) {
-    var fieldName = fields[i]
-    accumulator[fieldName] = accumulator[fieldName] / documentsWithField[fieldName]
-  }
-
-  this.averageFieldLength = accumulator
-}
+	this.averageFieldLength = accumulator;
+};
 
 /**
  * Builds a vector space model of every document using lunr.Vector
@@ -255,56 +258,63 @@ lunr.Builder.prototype.calculateAverageFieldLengths = function () {
  * @private
  */
 lunr.Builder.prototype.createFieldVectors = function () {
-  var fieldVectors = {},
-      fieldRefs = Object.keys(this.fieldTermFrequencies),
-      fieldRefsLength = fieldRefs.length,
-      termIdfCache = Object.create(null)
+	var fieldVectors = {},
+		fieldRefs = Object.keys(this.fieldTermFrequencies),
+		fieldRefsLength = fieldRefs.length,
+		termIdfCache = Object.create(null);
 
-  for (var i = 0; i < fieldRefsLength; i++) {
-    var fieldRef = lunr.FieldRef.fromString(fieldRefs[i]),
-        fieldName = fieldRef.fieldName,
-        fieldLength = this.fieldLengths[fieldRef],
-        fieldVector = new lunr.Vector,
-        termFrequencies = this.fieldTermFrequencies[fieldRef],
-        terms = Object.keys(termFrequencies),
-        termsLength = terms.length
+	for (var i = 0; i < fieldRefsLength; i++) {
+		var fieldRef = lunr.FieldRef.fromString(fieldRefs[i]),
+			fieldName = fieldRef.fieldName,
+			fieldLength = this.fieldLengths[fieldRef],
+			fieldVector = new lunr.Vector(),
+			termFrequencies = this.fieldTermFrequencies[fieldRef],
+			terms = Object.keys(termFrequencies),
+			termsLength = terms.length;
 
+		var fieldBoost = this._fields[fieldName].boost || 1,
+			docBoost = this._documents[fieldRef.docRef].boost || 1;
 
-    var fieldBoost = this._fields[fieldName].boost || 1,
-        docBoost = this._documents[fieldRef.docRef].boost || 1
+		for (var j = 0; j < termsLength; j++) {
+			var term = terms[j],
+				tf = termFrequencies[term],
+				termIndex = this.invertedIndex[term]._index,
+				idf,
+				score,
+				scoreWithPrecision;
 
-    for (var j = 0; j < termsLength; j++) {
-      var term = terms[j],
-          tf = termFrequencies[term],
-          termIndex = this.invertedIndex[term]._index,
-          idf, score, scoreWithPrecision
+			if (termIdfCache[term] === undefined) {
+				idf = lunr.idf(this.invertedIndex[term], this.documentCount);
+				termIdfCache[term] = idf;
+			} else {
+				idf = termIdfCache[term];
+			}
 
-      if (termIdfCache[term] === undefined) {
-        idf = lunr.idf(this.invertedIndex[term], this.documentCount)
-        termIdfCache[term] = idf
-      } else {
-        idf = termIdfCache[term]
-      }
+			score =
+				(idf * ((this._k1 + 1) * tf)) /
+				(this._k1 *
+					(1 -
+						this._b +
+						this._b * (fieldLength / this.averageFieldLength[fieldName])) +
+					tf);
+			score *= fieldBoost;
+			score *= docBoost;
+			scoreWithPrecision = Math.round(score * 1000) / 1000;
+			// Converts 1.23456789 to 1.234.
+			// Reducing the precision so that the vectors take up less
+			// space when serialised. Doing it now so that they behave
+			// the same before and after serialisation. Also, this is
+			// the fastest approach to reducing a number's precision in
+			// JavaScript.
 
-      score = idf * ((this._k1 + 1) * tf) / (this._k1 * (1 - this._b + this._b * (fieldLength / this.averageFieldLength[fieldName])) + tf)
-      score *= fieldBoost
-      score *= docBoost
-      scoreWithPrecision = Math.round(score * 1000) / 1000
-      // Converts 1.23456789 to 1.234.
-      // Reducing the precision so that the vectors take up less
-      // space when serialised. Doing it now so that they behave
-      // the same before and after serialisation. Also, this is
-      // the fastest approach to reducing a number's precision in
-      // JavaScript.
+			fieldVector.insert(termIndex, scoreWithPrecision);
+		}
 
-      fieldVector.insert(termIndex, scoreWithPrecision)
-    }
+		fieldVectors[fieldRef] = fieldVector;
+	}
 
-    fieldVectors[fieldRef] = fieldVector
-  }
-
-  this.fieldVectors = fieldVectors
-}
+	this.fieldVectors = fieldVectors;
+};
 
 /**
  * Creates a token set of all tokens in the index using lunr.TokenSet
@@ -312,10 +322,10 @@ lunr.Builder.prototype.createFieldVectors = function () {
  * @private
  */
 lunr.Builder.prototype.createTokenSet = function () {
-  this.tokenSet = lunr.TokenSet.fromArray(
-    Object.keys(this.invertedIndex).sort()
-  )
-}
+	this.tokenSet = lunr.TokenSet.fromArray(
+		Object.keys(this.invertedIndex).sort(),
+	);
+};
 
 /**
  * Builds the index, creating an instance of lunr.Index.
@@ -326,18 +336,18 @@ lunr.Builder.prototype.createTokenSet = function () {
  * @returns {lunr.Index}
  */
 lunr.Builder.prototype.build = function () {
-  this.calculateAverageFieldLengths()
-  this.createFieldVectors()
-  this.createTokenSet()
+	this.calculateAverageFieldLengths();
+	this.createFieldVectors();
+	this.createTokenSet();
 
-  return new lunr.Index({
-    invertedIndex: this.invertedIndex,
-    fieldVectors: this.fieldVectors,
-    tokenSet: this.tokenSet,
-    fields: Object.keys(this._fields),
-    pipeline: this.searchPipeline
-  })
-}
+	return new lunr.Index({
+		invertedIndex: this.invertedIndex,
+		fieldVectors: this.fieldVectors,
+		tokenSet: this.tokenSet,
+		fields: Object.keys(this._fields),
+		pipeline: this.searchPipeline,
+	});
+};
 
 /**
  * Applies a plugin to the index builder.
@@ -354,7 +364,7 @@ lunr.Builder.prototype.build = function () {
  * @param {Function} plugin The plugin to apply.
  */
 lunr.Builder.prototype.use = function (fn) {
-  var args = Array.prototype.slice.call(arguments, 1)
-  args.unshift(this)
-  fn.apply(this, args)
-}
+	var args = Array.prototype.slice.call(arguments, 1);
+	args.unshift(this);
+	fn.apply(this, args);
+};

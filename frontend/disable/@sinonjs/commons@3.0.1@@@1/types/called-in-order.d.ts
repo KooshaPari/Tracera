@@ -11,24 +11,27 @@ export = calledInOrder;
  * @param  {SinonProxy[] | SinonProxy} spies An array of proxies, or several proxies as arguments
  * @returns {boolean} true when spies are called in order, false otherwise
  */
-declare function calledInOrder(spies: SinonProxy[] | SinonProxy, ...args: any[]): boolean;
+declare function calledInOrder(
+	spies: SinonProxy[] | SinonProxy,
+	...args: any[]
+): boolean;
 declare namespace calledInOrder {
-    export { SinonProxy };
+	export { SinonProxy };
 }
 /**
  * A Sinon proxy object (fake, spy, stub)
  */
 type SinonProxy = {
-    /**
-     * - A method that determines if this proxy was called before another one
-     */
-    calledBefore: Function;
-    /**
-     * - Some id
-     */
-    id: string;
-    /**
-     * - Number of times this proxy has been called
-     */
-    callCount: number;
+	/**
+	 * - A method that determines if this proxy was called before another one
+	 */
+	calledBefore: Function;
+	/**
+	 * - Some id
+	 */
+	id: string;
+	/**
+	 * - Number of times this proxy has been called
+	 */
+	callCount: number;
 };

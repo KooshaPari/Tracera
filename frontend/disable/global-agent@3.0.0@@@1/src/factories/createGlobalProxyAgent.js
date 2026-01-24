@@ -1,12 +1,11 @@
 // @flow
 
-import http from 'http';
-import https from 'https';
 import {
   boolean as parseBoolean,
 } from 'boolean';
+import http from 'http';
+import https from 'https';
 import semver from 'semver';
-import Logger from '../Logger';
 import {
   HttpProxyAgent,
   HttpsProxyAgent,
@@ -14,15 +13,18 @@ import {
 import {
   UnexpectedStateError,
 } from '../errors';
+import Logger from '../Logger';
 import {
   bindHttpMethod,
   isUrlMatchingNoProxy,
   parseProxyUrl,
 } from '../utilities';
+
 import type {
   ProxyAgentConfigurationInputType,
   ProxyAgentConfigurationType,
 } from '../types';
+
 import createProxyController from './createProxyController';
 
 const httpGet = http.get;

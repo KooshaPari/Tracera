@@ -29,7 +29,7 @@ import { startOfWeek } from "./startOfWeek.js";
  * //=> Mon Sep 01 2014 00:00:00
  */
 export function startOfISOWeek(date, options) {
-  return startOfWeek(date, { ...options, weekStartsOn: 1 });
+	return startOfWeek(date, { ...options, weekStartsOn: 1 });
 }
 
 // Fallback for modularized imports:

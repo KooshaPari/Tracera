@@ -1,5 +1,5 @@
-import * as node from '../node/index.js';
+import * as node from "../node/index.js";
 
 export default {
-    node
+	node,
 };

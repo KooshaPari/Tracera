@@ -1,8 +1,8 @@
-export { FixedSizeSet } from './FixedSizeSet.js';
-export { ObjectCache } from './ObjectCache.js';
-export { CompareCache } from './CompareCache.js';
-export { Lazy } from './Lazy.js';
-export { StringWalker } from './StringWalker.js';
+export { FixedSizeSet } from "./FixedSizeSet.js";
+export { ObjectCache } from "./ObjectCache.js";
+export { CompareCache } from "./CompareCache.js";
+export { Lazy } from "./Lazy.js";
+export { StringWalker } from "./StringWalker.js";
 /**
  * Applies the mixin to a given class.
  *
@@ -12,7 +12,11 @@ export { StringWalker } from './StringWalker.js';
  * functions whose names are in this array will be kept by prepending an
  * underscore to their names.
  */
-export declare function applyMixin(baseClass: any, mixinClass: any, ...overrides: string[]): void;
+export declare function applyMixin(
+	baseClass: any,
+	mixinClass: any,
+	...overrides: string[]
+): void;
 /**
  * Applies default values to the given object.
  *
@@ -21,11 +25,17 @@ export declare function applyMixin(baseClass: any, mixinClass: any, ...overrides
  * @param overwrite - if set to `true` defaults object always overwrites object
  * values, whether they are `undefined` or not.
  */
-export declare function applyDefaults(obj: {
-    [key: string]: unknown;
-} | undefined, defaults: {
-    [key: string]: any;
-}, overwrite?: boolean): any;
+export declare function applyDefaults(
+	obj:
+		| {
+				[key: string]: unknown;
+		  }
+		| undefined,
+	defaults: {
+		[key: string]: any;
+	},
+	overwrite?: boolean,
+): any;
 /**
  * Iterates over items of an array or set.
  *
@@ -34,7 +44,11 @@ export declare function applyDefaults(obj: {
  * single argument
  * @param thisArg - the value of this inside callback
  */
-export declare function forEachArray<T>(arr: Array<T> | Set<T>, callback: ((item: T) => void), thisArg?: any): void;
+export declare function forEachArray<T>(
+	arr: Array<T> | Set<T>,
+	callback: (item: T) => void,
+	thisArg?: any,
+): void;
 /**
  * Iterates over key/value pairs of a map or object.
  *
@@ -43,9 +57,15 @@ export declare function forEachArray<T>(arr: Array<T> | Set<T>, callback: ((item
  * argument and object value as its second argument
  * @param thisArg - the value of this inside callback
  */
-export declare function forEachObject<T>(obj: Map<string, T> | {
-    [key: string]: T;
-}, callback: ((key: string, item: T) => void), thisArg?: any): void;
+export declare function forEachObject<T>(
+	obj:
+		| Map<string, T>
+		| {
+				[key: string]: T;
+		  },
+	callback: (key: string, item: T) => void,
+	thisArg?: any,
+): void;
 /**
  * Returns the number of entries in an array or set.
  *
@@ -57,35 +77,60 @@ export declare function arrayLength<T = unknown>(obj: T[] | Set<T>): number;
  *
  * @param obj - map or object
  */
-export declare function objectLength(obj: Map<string, any> | {
-    [key: string]: any;
-}): number;
+export declare function objectLength(
+	obj:
+		| Map<string, any>
+		| {
+				[key: string]: any;
+		  },
+): number;
 /**
  * Gets the value of a key from a map or object.
  *
  * @param obj - map or object
  * @param key - the key to retrieve
  */
-export declare function getObjectValue<T>(obj: Map<string, T> | {
-    [key: string]: T;
-}, key: string): T | undefined;
+export declare function getObjectValue<T>(
+	obj:
+		| Map<string, T>
+		| {
+				[key: string]: T;
+		  },
+	key: string,
+): T | undefined;
 /**
  * Removes a property from a map or object.
  *
  * @param obj - map or object
  * @param key - the key to remove
  */
-export declare function removeObjectValue<T>(obj: Map<string, T> | {
-    [key: string]: T;
-}, key: string): void;
+export declare function removeObjectValue<T>(
+	obj:
+		| Map<string, T>
+		| {
+				[key: string]: T;
+		  },
+	key: string,
+): void;
 /**
  * Deep clones the given object.
  *
  * @param obj - an object
  */
-export declare function clone<T extends string | number | boolean | null | undefined | unknown | Function | any[] | {
-    [key: string]: unknown;
-}>(obj: T): any;
+export declare function clone<
+	T extends
+		| string
+		| number
+		| boolean
+		| null
+		| undefined
+		| unknown
+		| Function
+		| any[]
+		| {
+				[key: string]: unknown;
+		  },
+>(obj: T): any;
 /**
  * Type guard for boolean types
  *
@@ -109,7 +154,9 @@ export declare function isString(x: any): x is string;
  *
  * @param x - a variable to type check
  */
-export declare function isFunction<T = unknown>(x: any): x is ((...args: any[]) => T);
+export declare function isFunction<T = unknown>(
+	x: any,
+): x is (...args: any[]) => T;
 /**
  * Type guard for JS objects
  *
@@ -117,9 +164,11 @@ export declare function isFunction<T = unknown>(x: any): x is ((...args: any[]) 
  *
  * @param x - a variable to type check
  */
-export declare function isObject<T = unknown>(x: any): x is ({
-    [key: string]: T;
-});
+export declare function isObject<T = unknown>(
+	x: any,
+): x is {
+	[key: string]: T;
+};
 /**
  * Type guard for arrays
  *
@@ -149,9 +198,11 @@ export declare function isEmpty(x: any): boolean;
  *
  * @param x - a variable to check
  */
-export declare function isPlainObject<T = unknown>(x: any): x is ({
-    [key: string]: T;
-});
+export declare function isPlainObject<T = unknown>(
+	x: any,
+): x is {
+	[key: string]: T;
+};
 /**
  * Determines if `x` is an iterable Object.
  *

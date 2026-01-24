@@ -1,3 +1,3 @@
-var why = require('./')
+var why = require("./");
 
-require('siginfo')(why, true)
+require("siginfo")(why, true);

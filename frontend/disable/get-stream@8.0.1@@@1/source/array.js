@@ -1,15 +1,15 @@
-import {getStreamContents} from './contents.js';
-import {identity, noop, getContentsProp} from './utils.js';
+import { getStreamContents } from "./contents.js";
+import { getContentsProp, identity, noop } from "./utils.js";
 
 export async function getStreamAsArray(stream, options) {
 	return getStreamContents(stream, arrayMethods, options);
 }
 
-const initArray = () => ({contents: []});
+const initArray = () => ({ contents: [] });
 
 const increment = () => 1;
 
-const addArrayChunk = (convertedChunk, {contents}) => {
+const addArrayChunk = (convertedChunk, { contents }) => {
 	contents.push(convertedChunk);
 	return contents;
 };

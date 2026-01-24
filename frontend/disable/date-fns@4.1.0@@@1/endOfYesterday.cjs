@@ -27,9 +27,9 @@ var _index2 = require("./constructNow.cjs");
  * //=> Sun Oct 5 2014 23:59:59.999
  */
 function endOfYesterday(options) {
-  const now = (0, _index2.constructNow)(options?.in);
-  const date = (0, _index.constructFrom)(options?.in, 0);
-  date.setFullYear(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  date.setHours(23, 59, 59, 999);
-  return date;
+	const now = (0, _index2.constructNow)(options?.in);
+	const date = (0, _index.constructFrom)(options?.in, 0);
+	date.setFullYear(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+	date.setHours(23, 59, 59, 999);
+	return date;
 }

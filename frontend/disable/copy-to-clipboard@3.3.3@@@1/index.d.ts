@@ -3,12 +3,12 @@
 // Definitions by: Denis Carriere <https://github.com/DenisCarriere>, MartynasZilinskas <https://github.com/MartynasZilinskas>
 
 interface Options {
-  debug?: boolean;
-  message?: string;
-  format?: string; // MIME type
-  onCopy?: (clipboardData: object) => void;
+	debug?: boolean;
+	message?: string;
+	format?: string; // MIME type
+	onCopy?: (clipboardData: object) => void;
 }
 
 declare function copy(text: string, options?: Options): boolean;
-declare namespace copy { }
+declare namespace copy {}
 export = copy;

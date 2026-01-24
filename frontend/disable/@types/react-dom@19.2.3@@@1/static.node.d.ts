@@ -1,7 +1,7 @@
 export {
-    prerender,
-    prerenderToNodeStream,
-    resumeAndPrerender,
-    resumeAndPrerenderToNodeStream,
-    version,
+	prerender,
+	prerenderToNodeStream,
+	resumeAndPrerender,
+	resumeAndPrerenderToNodeStream,
+	version,
 } from "./static";

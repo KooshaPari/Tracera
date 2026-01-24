@@ -1,4 +1,4 @@
 interface ImportMeta {
-  url: string
-  readonly vitest?: typeof import('vitest')
+	url: string;
+	readonly vitest?: typeof import("vitest");
 }

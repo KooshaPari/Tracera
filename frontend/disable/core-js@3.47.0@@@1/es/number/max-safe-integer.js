@@ -1,4 +1,4 @@
-'use strict';
-require('../../modules/es.number.max-safe-integer');
+"use strict";
+require("../../modules/es.number.max-safe-integer");
 
-module.exports = 0x1FFFFFFFFFFFFF;
+module.exports = 0x1fffffffffffff;

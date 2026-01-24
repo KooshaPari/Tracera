@@ -14,14 +14,18 @@ import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as SearchIndexRouteImport } from './routes/search.index'
 import { Route as ReportsIndexRouteImport } from './routes/reports.index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
+import { Route as MatrixIndexRouteImport } from './routes/matrix.index'
 import { Route as LinksIndexRouteImport } from './routes/links.index'
 import { Route as ItemsIndexRouteImport } from './routes/items.index'
+import { Route as ImpactIndexRouteImport } from './routes/impact.index'
 import { Route as GraphIndexRouteImport } from './routes/graph.index'
+import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as ApiDocsIndexRouteImport } from './routes/api-docs.index'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ItemsTreeRouteImport } from './routes/items.tree'
 import { Route as ItemsKanbanRouteImport } from './routes/items.kanban'
+import { Route as ItemsItemIdRouteImport } from './routes/items.$itemId'
 import { Route as ApiSwaggerConfigRouteImport } from './routes/api/swagger-config'
 import { Route as ApiSpecRouteImport } from './routes/api/spec'
 import { Route as ApiAuthTestRouteImport } from './routes/api/auth-test'
@@ -32,9 +36,19 @@ import { Route as ImpactAnalysisIndexRouteImport } from './routes/impact.analysi
 import { Route as EventsTimelineIndexRouteImport } from './routes/events.timeline.index'
 import { Route as ProjectsProjectIdViewsWireframeRouteImport } from './routes/projects.$projectId.views.wireframe'
 import { Route as ProjectsProjectIdViewsTestRouteImport } from './routes/projects.$projectId.views.test'
+import { Route as ProjectsProjectIdViewsSecurityRouteImport } from './routes/projects.$projectId.views.security'
+import { Route as ProjectsProjectIdViewsPerformanceRouteImport } from './routes/projects.$projectId.views.performance'
+import { Route as ProjectsProjectIdViewsMonitoringRouteImport } from './routes/projects.$projectId.views.monitoring'
+import { Route as ProjectsProjectIdViewsJourneyRouteImport } from './routes/projects.$projectId.views.journey'
+import { Route as ProjectsProjectIdViewsInfrastructureRouteImport } from './routes/projects.$projectId.views.infrastructure'
 import { Route as ProjectsProjectIdViewsFeatureRouteImport } from './routes/projects.$projectId.views.feature'
+import { Route as ProjectsProjectIdViewsDomainRouteImport } from './routes/projects.$projectId.views.domain'
+import { Route as ProjectsProjectIdViewsDependencyRouteImport } from './routes/projects.$projectId.views.dependency'
+import { Route as ProjectsProjectIdViewsDataflowRouteImport } from './routes/projects.$projectId.views.dataflow'
 import { Route as ProjectsProjectIdViewsDatabaseRouteImport } from './routes/projects.$projectId.views.database'
+import { Route as ProjectsProjectIdViewsConfigurationRouteImport } from './routes/projects.$projectId.views.configuration'
 import { Route as ProjectsProjectIdViewsCodeRouteImport } from './routes/projects.$projectId.views.code'
+import { Route as ProjectsProjectIdViewsArchitectureRouteImport } from './routes/projects.$projectId.views.architecture'
 import { Route as ProjectsProjectIdViewsApiRouteImport } from './routes/projects.$projectId.views.api'
 import { Route as ProjectsProjectIdViewsViewTypeRouteImport } from './routes/projects.$projectId.views.$viewType'
 import { Route as ProjectsProjectIdViewsViewTypeItemIdRouteImport } from './routes/projects.$projectId.views.$viewType.$itemId'
@@ -64,6 +78,11 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MatrixIndexRoute = MatrixIndexRouteImport.update({
+  id: '/matrix/',
+  path: '/matrix/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LinksIndexRoute = LinksIndexRouteImport.update({
   id: '/links/',
   path: '/links/',
@@ -74,9 +93,19 @@ const ItemsIndexRoute = ItemsIndexRouteImport.update({
   path: '/items/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ImpactIndexRoute = ImpactIndexRouteImport.update({
+  id: '/impact/',
+  path: '/impact/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GraphIndexRoute = GraphIndexRouteImport.update({
   id: '/graph/',
   path: '/graph/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDocsIndexRoute = ApiDocsIndexRouteImport.update({
@@ -102,6 +131,11 @@ const ItemsTreeRoute = ItemsTreeRouteImport.update({
 const ItemsKanbanRoute = ItemsKanbanRouteImport.update({
   id: '/items/kanban',
   path: '/items/kanban',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsItemIdRoute = ItemsItemIdRouteImport.update({
+  id: '/items/$itemId',
+  path: '/items/$itemId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSwaggerConfigRoute = ApiSwaggerConfigRouteImport.update({
@@ -156,10 +190,58 @@ const ProjectsProjectIdViewsTestRoute =
     path: '/views/test',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
+const ProjectsProjectIdViewsSecurityRoute =
+  ProjectsProjectIdViewsSecurityRouteImport.update({
+    id: '/views/security',
+    path: '/views/security',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsPerformanceRoute =
+  ProjectsProjectIdViewsPerformanceRouteImport.update({
+    id: '/views/performance',
+    path: '/views/performance',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsMonitoringRoute =
+  ProjectsProjectIdViewsMonitoringRouteImport.update({
+    id: '/views/monitoring',
+    path: '/views/monitoring',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsJourneyRoute =
+  ProjectsProjectIdViewsJourneyRouteImport.update({
+    id: '/views/journey',
+    path: '/views/journey',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsInfrastructureRoute =
+  ProjectsProjectIdViewsInfrastructureRouteImport.update({
+    id: '/views/infrastructure',
+    path: '/views/infrastructure',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
 const ProjectsProjectIdViewsFeatureRoute =
   ProjectsProjectIdViewsFeatureRouteImport.update({
     id: '/views/feature',
     path: '/views/feature',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDomainRoute =
+  ProjectsProjectIdViewsDomainRouteImport.update({
+    id: '/views/domain',
+    path: '/views/domain',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDependencyRoute =
+  ProjectsProjectIdViewsDependencyRouteImport.update({
+    id: '/views/dependency',
+    path: '/views/dependency',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDataflowRoute =
+  ProjectsProjectIdViewsDataflowRouteImport.update({
+    id: '/views/dataflow',
+    path: '/views/dataflow',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 const ProjectsProjectIdViewsDatabaseRoute =
@@ -168,10 +250,22 @@ const ProjectsProjectIdViewsDatabaseRoute =
     path: '/views/database',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
+const ProjectsProjectIdViewsConfigurationRoute =
+  ProjectsProjectIdViewsConfigurationRouteImport.update({
+    id: '/views/configuration',
+    path: '/views/configuration',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
 const ProjectsProjectIdViewsCodeRoute =
   ProjectsProjectIdViewsCodeRouteImport.update({
     id: '/views/code',
     path: '/views/code',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsArchitectureRoute =
+  ProjectsProjectIdViewsArchitectureRouteImport.update({
+    id: '/views/architecture',
+    path: '/views/architecture',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 const ProjectsProjectIdViewsApiRoute =
@@ -200,14 +294,18 @@ export interface FileRoutesByFullPath {
   '/api/auth-test': typeof ApiAuthTestRoute
   '/api/spec': typeof ApiSpecRoute
   '/api/swagger-config': typeof ApiSwaggerConfigRoute
+  '/items/$itemId': typeof ItemsItemIdRoute
   '/items/kanban': typeof ItemsKanbanRoute
   '/items/tree': typeof ItemsTreeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/agents': typeof AgentsIndexRoute
   '/api-docs': typeof ApiDocsIndexRoute
+  '/events': typeof EventsIndexRoute
   '/graph': typeof GraphIndexRoute
+  '/impact': typeof ImpactIndexRoute
   '/items': typeof ItemsIndexRoute
   '/links': typeof LinksIndexRoute
+  '/matrix': typeof MatrixIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/reports': typeof ReportsIndexRoute
   '/search': typeof SearchIndexRoute
@@ -217,9 +315,19 @@ export interface FileRoutesByFullPath {
   '/matrix/traceability': typeof MatrixTraceabilityIndexRoute
   '/projects/$projectId/views/$viewType': typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
   '/projects/$projectId/views/api': typeof ProjectsProjectIdViewsApiRoute
+  '/projects/$projectId/views/architecture': typeof ProjectsProjectIdViewsArchitectureRoute
   '/projects/$projectId/views/code': typeof ProjectsProjectIdViewsCodeRoute
+  '/projects/$projectId/views/configuration': typeof ProjectsProjectIdViewsConfigurationRoute
   '/projects/$projectId/views/database': typeof ProjectsProjectIdViewsDatabaseRoute
+  '/projects/$projectId/views/dataflow': typeof ProjectsProjectIdViewsDataflowRoute
+  '/projects/$projectId/views/dependency': typeof ProjectsProjectIdViewsDependencyRoute
+  '/projects/$projectId/views/domain': typeof ProjectsProjectIdViewsDomainRoute
   '/projects/$projectId/views/feature': typeof ProjectsProjectIdViewsFeatureRoute
+  '/projects/$projectId/views/infrastructure': typeof ProjectsProjectIdViewsInfrastructureRoute
+  '/projects/$projectId/views/journey': typeof ProjectsProjectIdViewsJourneyRoute
+  '/projects/$projectId/views/monitoring': typeof ProjectsProjectIdViewsMonitoringRoute
+  '/projects/$projectId/views/performance': typeof ProjectsProjectIdViewsPerformanceRoute
+  '/projects/$projectId/views/security': typeof ProjectsProjectIdViewsSecurityRoute
   '/projects/$projectId/views/test': typeof ProjectsProjectIdViewsTestRoute
   '/projects/$projectId/views/wireframe': typeof ProjectsProjectIdViewsWireframeRoute
   '/projects/$projectId/views/$viewType/$itemId': typeof ProjectsProjectIdViewsViewTypeItemIdRoute
@@ -231,14 +339,18 @@ export interface FileRoutesByTo {
   '/api/auth-test': typeof ApiAuthTestRoute
   '/api/spec': typeof ApiSpecRoute
   '/api/swagger-config': typeof ApiSwaggerConfigRoute
+  '/items/$itemId': typeof ItemsItemIdRoute
   '/items/kanban': typeof ItemsKanbanRoute
   '/items/tree': typeof ItemsTreeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/agents': typeof AgentsIndexRoute
   '/api-docs': typeof ApiDocsIndexRoute
+  '/events': typeof EventsIndexRoute
   '/graph': typeof GraphIndexRoute
+  '/impact': typeof ImpactIndexRoute
   '/items': typeof ItemsIndexRoute
   '/links': typeof LinksIndexRoute
+  '/matrix': typeof MatrixIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/reports': typeof ReportsIndexRoute
   '/search': typeof SearchIndexRoute
@@ -248,9 +360,19 @@ export interface FileRoutesByTo {
   '/matrix/traceability': typeof MatrixTraceabilityIndexRoute
   '/projects/$projectId/views/$viewType': typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
   '/projects/$projectId/views/api': typeof ProjectsProjectIdViewsApiRoute
+  '/projects/$projectId/views/architecture': typeof ProjectsProjectIdViewsArchitectureRoute
   '/projects/$projectId/views/code': typeof ProjectsProjectIdViewsCodeRoute
+  '/projects/$projectId/views/configuration': typeof ProjectsProjectIdViewsConfigurationRoute
   '/projects/$projectId/views/database': typeof ProjectsProjectIdViewsDatabaseRoute
+  '/projects/$projectId/views/dataflow': typeof ProjectsProjectIdViewsDataflowRoute
+  '/projects/$projectId/views/dependency': typeof ProjectsProjectIdViewsDependencyRoute
+  '/projects/$projectId/views/domain': typeof ProjectsProjectIdViewsDomainRoute
   '/projects/$projectId/views/feature': typeof ProjectsProjectIdViewsFeatureRoute
+  '/projects/$projectId/views/infrastructure': typeof ProjectsProjectIdViewsInfrastructureRoute
+  '/projects/$projectId/views/journey': typeof ProjectsProjectIdViewsJourneyRoute
+  '/projects/$projectId/views/monitoring': typeof ProjectsProjectIdViewsMonitoringRoute
+  '/projects/$projectId/views/performance': typeof ProjectsProjectIdViewsPerformanceRoute
+  '/projects/$projectId/views/security': typeof ProjectsProjectIdViewsSecurityRoute
   '/projects/$projectId/views/test': typeof ProjectsProjectIdViewsTestRoute
   '/projects/$projectId/views/wireframe': typeof ProjectsProjectIdViewsWireframeRoute
   '/projects/$projectId/views/$viewType/$itemId': typeof ProjectsProjectIdViewsViewTypeItemIdRoute
@@ -263,14 +385,18 @@ export interface FileRoutesById {
   '/api/auth-test': typeof ApiAuthTestRoute
   '/api/spec': typeof ApiSpecRoute
   '/api/swagger-config': typeof ApiSwaggerConfigRoute
+  '/items/$itemId': typeof ItemsItemIdRoute
   '/items/kanban': typeof ItemsKanbanRoute
   '/items/tree': typeof ItemsTreeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/agents/': typeof AgentsIndexRoute
   '/api-docs/': typeof ApiDocsIndexRoute
+  '/events/': typeof EventsIndexRoute
   '/graph/': typeof GraphIndexRoute
+  '/impact/': typeof ImpactIndexRoute
   '/items/': typeof ItemsIndexRoute
   '/links/': typeof LinksIndexRoute
+  '/matrix/': typeof MatrixIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/reports/': typeof ReportsIndexRoute
   '/search/': typeof SearchIndexRoute
@@ -280,9 +406,19 @@ export interface FileRoutesById {
   '/matrix/traceability/': typeof MatrixTraceabilityIndexRoute
   '/projects/$projectId/views/$viewType': typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
   '/projects/$projectId/views/api': typeof ProjectsProjectIdViewsApiRoute
+  '/projects/$projectId/views/architecture': typeof ProjectsProjectIdViewsArchitectureRoute
   '/projects/$projectId/views/code': typeof ProjectsProjectIdViewsCodeRoute
+  '/projects/$projectId/views/configuration': typeof ProjectsProjectIdViewsConfigurationRoute
   '/projects/$projectId/views/database': typeof ProjectsProjectIdViewsDatabaseRoute
+  '/projects/$projectId/views/dataflow': typeof ProjectsProjectIdViewsDataflowRoute
+  '/projects/$projectId/views/dependency': typeof ProjectsProjectIdViewsDependencyRoute
+  '/projects/$projectId/views/domain': typeof ProjectsProjectIdViewsDomainRoute
   '/projects/$projectId/views/feature': typeof ProjectsProjectIdViewsFeatureRoute
+  '/projects/$projectId/views/infrastructure': typeof ProjectsProjectIdViewsInfrastructureRoute
+  '/projects/$projectId/views/journey': typeof ProjectsProjectIdViewsJourneyRoute
+  '/projects/$projectId/views/monitoring': typeof ProjectsProjectIdViewsMonitoringRoute
+  '/projects/$projectId/views/performance': typeof ProjectsProjectIdViewsPerformanceRoute
+  '/projects/$projectId/views/security': typeof ProjectsProjectIdViewsSecurityRoute
   '/projects/$projectId/views/test': typeof ProjectsProjectIdViewsTestRoute
   '/projects/$projectId/views/wireframe': typeof ProjectsProjectIdViewsWireframeRoute
   '/projects/$projectId/views/$viewType/$itemId': typeof ProjectsProjectIdViewsViewTypeItemIdRoute
@@ -296,14 +432,18 @@ export interface FileRouteTypes {
     | '/api/auth-test'
     | '/api/spec'
     | '/api/swagger-config'
+    | '/items/$itemId'
     | '/items/kanban'
     | '/items/tree'
     | '/projects/$projectId'
     | '/agents'
     | '/api-docs'
+    | '/events'
     | '/graph'
+    | '/impact'
     | '/items'
     | '/links'
+    | '/matrix'
     | '/projects'
     | '/reports'
     | '/search'
@@ -313,9 +453,19 @@ export interface FileRouteTypes {
     | '/matrix/traceability'
     | '/projects/$projectId/views/$viewType'
     | '/projects/$projectId/views/api'
+    | '/projects/$projectId/views/architecture'
     | '/projects/$projectId/views/code'
+    | '/projects/$projectId/views/configuration'
     | '/projects/$projectId/views/database'
+    | '/projects/$projectId/views/dataflow'
+    | '/projects/$projectId/views/dependency'
+    | '/projects/$projectId/views/domain'
     | '/projects/$projectId/views/feature'
+    | '/projects/$projectId/views/infrastructure'
+    | '/projects/$projectId/views/journey'
+    | '/projects/$projectId/views/monitoring'
+    | '/projects/$projectId/views/performance'
+    | '/projects/$projectId/views/security'
     | '/projects/$projectId/views/test'
     | '/projects/$projectId/views/wireframe'
     | '/projects/$projectId/views/$viewType/$itemId'
@@ -327,14 +477,18 @@ export interface FileRouteTypes {
     | '/api/auth-test'
     | '/api/spec'
     | '/api/swagger-config'
+    | '/items/$itemId'
     | '/items/kanban'
     | '/items/tree'
     | '/projects/$projectId'
     | '/agents'
     | '/api-docs'
+    | '/events'
     | '/graph'
+    | '/impact'
     | '/items'
     | '/links'
+    | '/matrix'
     | '/projects'
     | '/reports'
     | '/search'
@@ -344,9 +498,19 @@ export interface FileRouteTypes {
     | '/matrix/traceability'
     | '/projects/$projectId/views/$viewType'
     | '/projects/$projectId/views/api'
+    | '/projects/$projectId/views/architecture'
     | '/projects/$projectId/views/code'
+    | '/projects/$projectId/views/configuration'
     | '/projects/$projectId/views/database'
+    | '/projects/$projectId/views/dataflow'
+    | '/projects/$projectId/views/dependency'
+    | '/projects/$projectId/views/domain'
     | '/projects/$projectId/views/feature'
+    | '/projects/$projectId/views/infrastructure'
+    | '/projects/$projectId/views/journey'
+    | '/projects/$projectId/views/monitoring'
+    | '/projects/$projectId/views/performance'
+    | '/projects/$projectId/views/security'
     | '/projects/$projectId/views/test'
     | '/projects/$projectId/views/wireframe'
     | '/projects/$projectId/views/$viewType/$itemId'
@@ -358,14 +522,18 @@ export interface FileRouteTypes {
     | '/api/auth-test'
     | '/api/spec'
     | '/api/swagger-config'
+    | '/items/$itemId'
     | '/items/kanban'
     | '/items/tree'
     | '/projects/$projectId'
     | '/agents/'
     | '/api-docs/'
+    | '/events/'
     | '/graph/'
+    | '/impact/'
     | '/items/'
     | '/links/'
+    | '/matrix/'
     | '/projects/'
     | '/reports/'
     | '/search/'
@@ -375,9 +543,19 @@ export interface FileRouteTypes {
     | '/matrix/traceability/'
     | '/projects/$projectId/views/$viewType'
     | '/projects/$projectId/views/api'
+    | '/projects/$projectId/views/architecture'
     | '/projects/$projectId/views/code'
+    | '/projects/$projectId/views/configuration'
     | '/projects/$projectId/views/database'
+    | '/projects/$projectId/views/dataflow'
+    | '/projects/$projectId/views/dependency'
+    | '/projects/$projectId/views/domain'
     | '/projects/$projectId/views/feature'
+    | '/projects/$projectId/views/infrastructure'
+    | '/projects/$projectId/views/journey'
+    | '/projects/$projectId/views/monitoring'
+    | '/projects/$projectId/views/performance'
+    | '/projects/$projectId/views/security'
     | '/projects/$projectId/views/test'
     | '/projects/$projectId/views/wireframe'
     | '/projects/$projectId/views/$viewType/$itemId'
@@ -390,14 +568,18 @@ export interface RootRouteChildren {
   ApiAuthTestRoute: typeof ApiAuthTestRoute
   ApiSpecRoute: typeof ApiSpecRoute
   ApiSwaggerConfigRoute: typeof ApiSwaggerConfigRoute
+  ItemsItemIdRoute: typeof ItemsItemIdRoute
   ItemsKanbanRoute: typeof ItemsKanbanRoute
   ItemsTreeRoute: typeof ItemsTreeRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
   AgentsIndexRoute: typeof AgentsIndexRoute
   ApiDocsIndexRoute: typeof ApiDocsIndexRoute
+  EventsIndexRoute: typeof EventsIndexRoute
   GraphIndexRoute: typeof GraphIndexRoute
+  ImpactIndexRoute: typeof ImpactIndexRoute
   ItemsIndexRoute: typeof ItemsIndexRoute
   LinksIndexRoute: typeof LinksIndexRoute
+  MatrixIndexRoute: typeof MatrixIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
   SearchIndexRoute: typeof SearchIndexRoute
@@ -444,6 +626,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/matrix/': {
+      id: '/matrix/'
+      path: '/matrix'
+      fullPath: '/matrix'
+      preLoaderRoute: typeof MatrixIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/links/': {
       id: '/links/'
       path: '/links'
@@ -458,11 +647,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ItemsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/impact/': {
+      id: '/impact/'
+      path: '/impact'
+      fullPath: '/impact'
+      preLoaderRoute: typeof ImpactIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/graph/': {
       id: '/graph/'
       path: '/graph'
       fullPath: '/graph'
       preLoaderRoute: typeof GraphIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api-docs/': {
@@ -498,6 +701,13 @@ declare module '@tanstack/react-router' {
       path: '/items/kanban'
       fullPath: '/items/kanban'
       preLoaderRoute: typeof ItemsKanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items/$itemId': {
+      id: '/items/$itemId'
+      path: '/items/$itemId'
+      fullPath: '/items/$itemId'
+      preLoaderRoute: typeof ItemsItemIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/swagger-config': {
@@ -570,11 +780,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdViewsTestRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
+    '/projects/$projectId/views/security': {
+      id: '/projects/$projectId/views/security'
+      path: '/views/security'
+      fullPath: '/projects/$projectId/views/security'
+      preLoaderRoute: typeof ProjectsProjectIdViewsSecurityRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/performance': {
+      id: '/projects/$projectId/views/performance'
+      path: '/views/performance'
+      fullPath: '/projects/$projectId/views/performance'
+      preLoaderRoute: typeof ProjectsProjectIdViewsPerformanceRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/monitoring': {
+      id: '/projects/$projectId/views/monitoring'
+      path: '/views/monitoring'
+      fullPath: '/projects/$projectId/views/monitoring'
+      preLoaderRoute: typeof ProjectsProjectIdViewsMonitoringRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/journey': {
+      id: '/projects/$projectId/views/journey'
+      path: '/views/journey'
+      fullPath: '/projects/$projectId/views/journey'
+      preLoaderRoute: typeof ProjectsProjectIdViewsJourneyRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/infrastructure': {
+      id: '/projects/$projectId/views/infrastructure'
+      path: '/views/infrastructure'
+      fullPath: '/projects/$projectId/views/infrastructure'
+      preLoaderRoute: typeof ProjectsProjectIdViewsInfrastructureRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
     '/projects/$projectId/views/feature': {
       id: '/projects/$projectId/views/feature'
       path: '/views/feature'
       fullPath: '/projects/$projectId/views/feature'
       preLoaderRoute: typeof ProjectsProjectIdViewsFeatureRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/domain': {
+      id: '/projects/$projectId/views/domain'
+      path: '/views/domain'
+      fullPath: '/projects/$projectId/views/domain'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDomainRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/dependency': {
+      id: '/projects/$projectId/views/dependency'
+      path: '/views/dependency'
+      fullPath: '/projects/$projectId/views/dependency'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDependencyRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/dataflow': {
+      id: '/projects/$projectId/views/dataflow'
+      path: '/views/dataflow'
+      fullPath: '/projects/$projectId/views/dataflow'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDataflowRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
     '/projects/$projectId/views/database': {
@@ -584,11 +850,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdViewsDatabaseRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
+    '/projects/$projectId/views/configuration': {
+      id: '/projects/$projectId/views/configuration'
+      path: '/views/configuration'
+      fullPath: '/projects/$projectId/views/configuration'
+      preLoaderRoute: typeof ProjectsProjectIdViewsConfigurationRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
     '/projects/$projectId/views/code': {
       id: '/projects/$projectId/views/code'
       path: '/views/code'
       fullPath: '/projects/$projectId/views/code'
       preLoaderRoute: typeof ProjectsProjectIdViewsCodeRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/architecture': {
+      id: '/projects/$projectId/views/architecture'
+      path: '/views/architecture'
+      fullPath: '/projects/$projectId/views/architecture'
+      preLoaderRoute: typeof ProjectsProjectIdViewsArchitectureRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
     '/projects/$projectId/views/api': {
@@ -633,9 +913,19 @@ const ProjectsProjectIdViewsViewTypeRouteWithChildren =
 interface ProjectsProjectIdRouteChildren {
   ProjectsProjectIdViewsViewTypeRoute: typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
   ProjectsProjectIdViewsApiRoute: typeof ProjectsProjectIdViewsApiRoute
+  ProjectsProjectIdViewsArchitectureRoute: typeof ProjectsProjectIdViewsArchitectureRoute
   ProjectsProjectIdViewsCodeRoute: typeof ProjectsProjectIdViewsCodeRoute
+  ProjectsProjectIdViewsConfigurationRoute: typeof ProjectsProjectIdViewsConfigurationRoute
   ProjectsProjectIdViewsDatabaseRoute: typeof ProjectsProjectIdViewsDatabaseRoute
+  ProjectsProjectIdViewsDataflowRoute: typeof ProjectsProjectIdViewsDataflowRoute
+  ProjectsProjectIdViewsDependencyRoute: typeof ProjectsProjectIdViewsDependencyRoute
+  ProjectsProjectIdViewsDomainRoute: typeof ProjectsProjectIdViewsDomainRoute
   ProjectsProjectIdViewsFeatureRoute: typeof ProjectsProjectIdViewsFeatureRoute
+  ProjectsProjectIdViewsInfrastructureRoute: typeof ProjectsProjectIdViewsInfrastructureRoute
+  ProjectsProjectIdViewsJourneyRoute: typeof ProjectsProjectIdViewsJourneyRoute
+  ProjectsProjectIdViewsMonitoringRoute: typeof ProjectsProjectIdViewsMonitoringRoute
+  ProjectsProjectIdViewsPerformanceRoute: typeof ProjectsProjectIdViewsPerformanceRoute
+  ProjectsProjectIdViewsSecurityRoute: typeof ProjectsProjectIdViewsSecurityRoute
   ProjectsProjectIdViewsTestRoute: typeof ProjectsProjectIdViewsTestRoute
   ProjectsProjectIdViewsWireframeRoute: typeof ProjectsProjectIdViewsWireframeRoute
 }
@@ -644,9 +934,23 @@ const ProjectsProjectIdRouteChildren: ProjectsProjectIdRouteChildren = {
   ProjectsProjectIdViewsViewTypeRoute:
     ProjectsProjectIdViewsViewTypeRouteWithChildren,
   ProjectsProjectIdViewsApiRoute: ProjectsProjectIdViewsApiRoute,
+  ProjectsProjectIdViewsArchitectureRoute:
+    ProjectsProjectIdViewsArchitectureRoute,
   ProjectsProjectIdViewsCodeRoute: ProjectsProjectIdViewsCodeRoute,
+  ProjectsProjectIdViewsConfigurationRoute:
+    ProjectsProjectIdViewsConfigurationRoute,
   ProjectsProjectIdViewsDatabaseRoute: ProjectsProjectIdViewsDatabaseRoute,
+  ProjectsProjectIdViewsDataflowRoute: ProjectsProjectIdViewsDataflowRoute,
+  ProjectsProjectIdViewsDependencyRoute: ProjectsProjectIdViewsDependencyRoute,
+  ProjectsProjectIdViewsDomainRoute: ProjectsProjectIdViewsDomainRoute,
   ProjectsProjectIdViewsFeatureRoute: ProjectsProjectIdViewsFeatureRoute,
+  ProjectsProjectIdViewsInfrastructureRoute:
+    ProjectsProjectIdViewsInfrastructureRoute,
+  ProjectsProjectIdViewsJourneyRoute: ProjectsProjectIdViewsJourneyRoute,
+  ProjectsProjectIdViewsMonitoringRoute: ProjectsProjectIdViewsMonitoringRoute,
+  ProjectsProjectIdViewsPerformanceRoute:
+    ProjectsProjectIdViewsPerformanceRoute,
+  ProjectsProjectIdViewsSecurityRoute: ProjectsProjectIdViewsSecurityRoute,
   ProjectsProjectIdViewsTestRoute: ProjectsProjectIdViewsTestRoute,
   ProjectsProjectIdViewsWireframeRoute: ProjectsProjectIdViewsWireframeRoute,
 }
@@ -661,14 +965,18 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthTestRoute: ApiAuthTestRoute,
   ApiSpecRoute: ApiSpecRoute,
   ApiSwaggerConfigRoute: ApiSwaggerConfigRoute,
+  ItemsItemIdRoute: ItemsItemIdRoute,
   ItemsKanbanRoute: ItemsKanbanRoute,
   ItemsTreeRoute: ItemsTreeRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
   AgentsIndexRoute: AgentsIndexRoute,
   ApiDocsIndexRoute: ApiDocsIndexRoute,
+  EventsIndexRoute: EventsIndexRoute,
   GraphIndexRoute: GraphIndexRoute,
+  ImpactIndexRoute: ImpactIndexRoute,
   ItemsIndexRoute: ItemsIndexRoute,
   LinksIndexRoute: LinksIndexRoute,
+  MatrixIndexRoute: MatrixIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ReportsIndexRoute: ReportsIndexRoute,
   SearchIndexRoute: SearchIndexRoute,
@@ -680,12 +988,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

@@ -42,23 +42,23 @@ var _index4 = require("./startOfWeek.cjs");
  * //=> 2
  */
 function differenceInCalendarWeeks(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const laterStartOfWeek = (0, _index4.startOfWeek)(laterDate_, options);
-  const earlierStartOfWeek = (0, _index4.startOfWeek)(earlierDate_, options);
+	const laterStartOfWeek = (0, _index4.startOfWeek)(laterDate_, options);
+	const earlierStartOfWeek = (0, _index4.startOfWeek)(earlierDate_, options);
 
-  const laterTimestamp =
-    +laterStartOfWeek -
-    (0, _index.getTimezoneOffsetInMilliseconds)(laterStartOfWeek);
-  const earlierTimestamp =
-    +earlierStartOfWeek -
-    (0, _index.getTimezoneOffsetInMilliseconds)(earlierStartOfWeek);
+	const laterTimestamp =
+		+laterStartOfWeek -
+		(0, _index.getTimezoneOffsetInMilliseconds)(laterStartOfWeek);
+	const earlierTimestamp =
+		+earlierStartOfWeek -
+		(0, _index.getTimezoneOffsetInMilliseconds)(earlierStartOfWeek);
 
-  return Math.round(
-    (laterTimestamp - earlierTimestamp) / _index3.millisecondsInWeek,
-  );
+	return Math.round(
+		(laterTimestamp - earlierTimestamp) / _index3.millisecondsInWeek,
+	);
 }

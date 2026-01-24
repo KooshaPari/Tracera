@@ -1,12 +1,12 @@
 import { formatters } from "./_lib/format/formatters.js";
 import { longFormatters } from "./_lib/format/longFormatters.js";
 import type {
-  AdditionalTokensOptions,
-  ContextOptions,
-  DateArg,
-  FirstWeekContainsDateOptions,
-  LocalizedOptions,
-  WeekOptions,
+	AdditionalTokensOptions,
+	ContextOptions,
+	DateArg,
+	FirstWeekContainsDateOptions,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 export { formatters, longFormatters };
 export { format as formatDate };
@@ -15,11 +15,11 @@ export type { FormatOptions as FormatDateOptions };
  * The {@link format} function options.
  */
 export interface FormatOptions
-  extends LocalizedOptions<"options" | "localize" | "formatLong">,
-    WeekOptions,
-    FirstWeekContainsDateOptions,
-    AdditionalTokensOptions,
-    ContextOptions<Date> {}
+	extends LocalizedOptions<"options" | "localize" | "formatLong">,
+		WeekOptions,
+		FirstWeekContainsDateOptions,
+		AdditionalTokensOptions,
+		ContextOptions<Date> {}
 /**
  * @name format
  * @alias formatDate
@@ -305,7 +305,7 @@ export interface FormatOptions
  * //=> "3 o'clock"
  */
 export declare function format(
-  date: DateArg<Date> & {},
-  formatStr: string,
-  options?: FormatOptions,
+	date: DateArg<Date> & {},
+	formatStr: string,
+	options?: FormatOptions,
 ): string;

@@ -1,7 +1,6 @@
-import BundleError from './BundleError.ts';
+import BundleError from "./BundleError.ts";
 /**
  * @public
  */
-declare class MaximumBundleDepthError extends BundleError {
-}
+declare class MaximumBundleDepthError extends BundleError {}
 export default MaximumBundleDepthError;

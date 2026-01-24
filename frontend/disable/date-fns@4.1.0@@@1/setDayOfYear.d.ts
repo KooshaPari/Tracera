@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setDayOfYear} function options.
  */
 export interface SetDayOfYearOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setDayOfYear
  * @category Day Helpers
@@ -27,10 +27,10 @@ export interface SetDayOfYearOptions<DateType extends Date = Date>
  * //=> Thu Jan 02 2014 00:00:00
  */
 export declare function setDayOfYear<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  dayOfYear: number,
-  options?: SetDayOfYearOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	dayOfYear: number,
+	options?: SetDayOfYearOptions<ResultDate> | undefined,
 ): ResultDate;

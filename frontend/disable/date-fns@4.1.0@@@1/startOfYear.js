@@ -27,10 +27,10 @@ import { toDate } from "./toDate.js";
  * //=> Wed Jan 01 2014 00:00:00
  */
 export function startOfYear(date, options) {
-  const date_ = toDate(date, options?.in);
-  date_.setFullYear(date_.getFullYear(), 0, 1);
-  date_.setHours(0, 0, 0, 0);
-  return date_;
+	const date_ = toDate(date, options?.in);
+	date_.setFullYear(date_.getFullYear(), 0, 1);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
 }
 
 // Fallback for modularized imports:

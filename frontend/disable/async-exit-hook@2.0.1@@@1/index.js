@@ -1,5 +1,3 @@
-'use strict';
-
 const hooks = [];
 const errHooks = [];
 let called = false;
@@ -86,18 +84,19 @@ function add(hook) {
 	hooks.push(hook);
 
 	if (hooks.length === 1) {
-		add.hookEvent('exit');
-		add.hookEvent('beforeExit', 0);
-		add.hookEvent('SIGHUP', 128 + 1);
-		add.hookEvent('SIGINT', 128 + 2);
-		add.hookEvent('SIGTERM', 128 + 15);
-		add.hookEvent('SIGBREAK', 128 + 21);
+		add.hookEvent("exit");
+		add.hookEvent("beforeExit", 0);
+		add.hookEvent("SIGHUP", 128 + 1);
+		add.hookEvent("SIGINT", 128 + 2);
+		add.hookEvent("SIGTERM", 128 + 15);
+		add.hookEvent("SIGBREAK", 128 + 21);
 
 		// PM2 Cluster shutdown message. Caught to support async handlers with pm2, needed because
 		// explicitly calling process.exit() doesn't trigger the beforeExit event, and the exit
 		// event cannot support async handlers, since the event loop is never called after it.
-		add.hookEvent('message', 0, function (msg) { // eslint-disable-line prefer-arrow-callback
-			if (msg !== 'shutdown') {
+		add.hookEvent("message", 0, (msg) => {
+			// eslint-disable-line prefer-arrow-callback
+			if (msg !== "shutdown") {
 				return true;
 			}
 		});
@@ -105,7 +104,7 @@ function add(hook) {
 }
 
 // New signal / event to hook
-add.hookEvent = function (event, code, filter) {
+add.hookEvent = (event, code, filter) => {
 	events[event] = function () {
 		const eventFilters = filters[event];
 		for (let i = 0; i < eventFilters.length; i++) {
@@ -127,17 +126,17 @@ add.hookEvent = function (event, code, filter) {
 };
 
 // Unhook signal / event
-add.unhookEvent = function (event) {
+add.unhookEvent = (event) => {
 	process.removeListener(event, events[event]);
 	delete events[event];
 	delete filters[event];
 };
 
 // List hooked events
-add.hookedEvents = function () {
+add.hookedEvents = () => {
 	const ret = [];
 	for (const name in events) {
-		if ({}.hasOwnProperty.call(events, name)) {
+		if (Object.hasOwn(events, name)) {
 			ret.push(name);
 		}
 	}
@@ -145,25 +144,25 @@ add.hookedEvents = function () {
 };
 
 // Add an uncaught exception handler
-add.uncaughtExceptionHandler = function (hook) {
+add.uncaughtExceptionHandler = (hook) => {
 	errHooks.push(hook);
 
 	if (errHooks.length === 1) {
-		process.once('uncaughtException', exit.bind(null, true, 1));
+		process.once("uncaughtException", exit.bind(null, true, 1));
 	}
 };
 
 // Add an unhandled rejection handler
-add.unhandledRejectionHandler = function (hook) {
+add.unhandledRejectionHandler = (hook) => {
 	errHooks.push(hook);
 
 	if (errHooks.length === 1) {
-		process.once('unhandledRejection', exit.bind(null, true, 1));
+		process.once("unhandledRejection", exit.bind(null, true, 1));
 	}
 };
 
 // Configure async force exit timeout
-add.forceExitTimeout = function (ms) {
+add.forceExitTimeout = (ms) => {
 	asyncTimeoutMs = ms;
 };
 

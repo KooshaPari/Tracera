@@ -1,17 +1,17 @@
 import type {
-  ContextOptions,
-  DateArg,
-  NearestMinutes,
-  NearestToUnitOptions,
-  RoundingOptions,
+	ContextOptions,
+	DateArg,
+	NearestMinutes,
+	NearestToUnitOptions,
+	RoundingOptions,
 } from "./types.js";
 /**
  * The {@link roundToNearestMinutes} function options.
  */
 export interface RoundToNearestMinutesOptions<DateType extends Date = Date>
-  extends NearestToUnitOptions<NearestMinutes>,
-    RoundingOptions,
-    ContextOptions<DateType> {}
+	extends NearestToUnitOptions<NearestMinutes>,
+		RoundingOptions,
+		ContextOptions<DateType> {}
 /**
  * @name roundToNearestMinutes
  * @category Minute Helpers
@@ -50,9 +50,9 @@ export interface RoundToNearestMinutesOptions<DateType extends Date = Date>
  * //=> Thu Jul 10 2014 12:30:00
  */
 export declare function roundToNearestMinutes<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: RoundToNearestMinutesOptions<ResultDate>,
+	date: DateArg<DateType>,
+	options?: RoundToNearestMinutesOptions<ResultDate>,
 ): ResultDate;

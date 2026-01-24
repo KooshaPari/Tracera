@@ -1,16 +1,15 @@
-import { outdent } from 'outdent';
-import * as path from 'path';
+import * as fs from "fs";
+import { outdent } from "outdent";
+import * as path from "path";
+import { parseYamlToDocument } from "../../__tests__/utils";
+import { BaseResolver, type Document, resolveDocument } from "../resolve";
+import { normalizeTypes } from "../types";
+import { Oas3Types } from "../types/oas3";
 
-import { resolveDocument, BaseResolver, Document } from '../resolve';
-import { parseYamlToDocument } from '../../__tests__/utils';
-import { Oas3Types } from '../types/oas3';
-import { normalizeTypes } from '../types';
-import * as fs from 'fs';
-
-describe('collect refs', () => {
-  it('should resolve local refs', async () => {
-    const rootDocument = parseYamlToDocument(
-      outdent`
+describe("collect refs", () => {
+	it("should resolve local refs", async () => {
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         info:
           $ref: "#/defs/info"
@@ -19,36 +18,36 @@ describe('collect refs', () => {
             contact: {}
             license: {}
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument,
-      externalRefResolver: new BaseResolver(),
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument,
+			externalRefResolver: new BaseResolver(),
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
-    expect(resolvedRefs.size).toEqual(1);
-    expect(Array.from(resolvedRefs.keys())).toMatchInlineSnapshot(
-      [`foobar.yaml::#/defs/info`],
-      `
+		expect(resolvedRefs).toBeDefined();
+		expect(resolvedRefs.size).toEqual(1);
+		expect(Array.from(resolvedRefs.keys())).toMatchInlineSnapshot(
+			[`foobar.yaml::#/defs/info`],
+			`
       [
         "foobar.yaml::#/defs/info",
       ]
-    `
-    );
-    expect(Array.from(resolvedRefs.values()).map((info) => info.node)).toEqual([
-      { contact: {}, license: {} },
-    ]);
-  });
+    `,
+		);
+		expect(Array.from(resolvedRefs.values()).map((info) => info.node)).toEqual([
+			{ contact: {}, license: {} },
+		]);
+	});
 
-  // Or using async/await.
-  it('should throw on self-circular refs', async () => {
-    expect.assertions(1);
+	// Or using async/await.
+	it("should throw on self-circular refs", async () => {
+		expect.assertions(1);
 
-    const rootDocument = parseYamlToDocument(
-      outdent`
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         info:
           $ref: "#/info"
@@ -57,23 +56,23 @@ describe('collect refs', () => {
             contact: {}
             license: {}
       `,
-      ''
-    );
+			"",
+		);
 
-    try {
-      await resolveDocument({
-        rootDocument,
-        externalRefResolver: new BaseResolver(),
-        rootType: normalizeTypes(Oas3Types).Root,
-      });
-    } catch (e) {
-      expect(e.message).toEqual('Self-referencing circular pointer');
-    }
-  });
+		try {
+			await resolveDocument({
+				rootDocument,
+				externalRefResolver: new BaseResolver(),
+				rootType: normalizeTypes(Oas3Types).Root,
+			});
+		} catch (e) {
+			expect(e.message).toEqual("Self-referencing circular pointer");
+		}
+	});
 
-  it('should resolve local transitive refs', async () => {
-    const rootDocument = parseYamlToDocument(
-      outdent`
+	it("should resolve local transitive refs", async () => {
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         info:
           $ref: "#/tmp/info"
@@ -90,34 +89,34 @@ describe('collect refs', () => {
             contact: {}
             license: {}
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument,
-      externalRefResolver: new BaseResolver(),
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument,
+			externalRefResolver: new BaseResolver(),
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
-    expect(resolvedRefs.size).toEqual(4);
-    expect(Array.from(resolvedRefs.keys())).toEqual([
-      'foobar.yaml::#/defs',
-      'foobar.yaml::#/propDest',
-      'foobar.yaml::#/tmp/info',
-      'foobar.yaml::#/propTrans',
-    ]);
-    expect(Array.from(resolvedRefs.values()).map((info) => info.node)).toEqual([
-      { info: { contact: {}, license: {} } },
-      { type: 'string' },
-      { contact: {}, license: {} },
-      { type: 'string' },
-    ]);
-  });
+		expect(resolvedRefs).toBeDefined();
+		expect(resolvedRefs.size).toEqual(4);
+		expect(Array.from(resolvedRefs.keys())).toEqual([
+			"foobar.yaml::#/defs",
+			"foobar.yaml::#/propDest",
+			"foobar.yaml::#/tmp/info",
+			"foobar.yaml::#/propTrans",
+		]);
+		expect(Array.from(resolvedRefs.values()).map((info) => info.node)).toEqual([
+			{ info: { contact: {}, license: {} } },
+			{ type: "string" },
+			{ contact: {}, license: {} },
+			{ type: "string" },
+		]);
+	});
 
-  it('should throw on ref loop', async () => {
-    const rootDocument = parseYamlToDocument(
-      outdent`
+	it("should throw on ref loop", async () => {
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         info:
           $ref: "#/loop"
@@ -126,78 +125,82 @@ describe('collect refs', () => {
         loop2:
           $ref: '#/info'
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    try {
-      await resolveDocument({
-        rootDocument,
-        externalRefResolver: new BaseResolver(),
-        rootType: normalizeTypes(Oas3Types).Root,
-      });
-    } catch (e) {
-      expect(e.message).toEqual('Self-referencing circular pointer');
-    }
-  });
+		try {
+			await resolveDocument({
+				rootDocument,
+				externalRefResolver: new BaseResolver(),
+				rootType: normalizeTypes(Oas3Types).Root,
+			});
+		} catch (e) {
+			expect(e.message).toEqual("Self-referencing circular pointer");
+		}
+	});
 
-  it('should resolve external ref', async () => {
-    const cwd = path.join(__dirname, 'fixtures/resolve');
-    const rootDocument = parseYamlToDocument(
-      outdent`
+	it("should resolve external ref", async () => {
+		const cwd = path.join(__dirname, "fixtures/resolve");
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         info:
           $ref: "./externalInfo.yaml#/info"
       `,
-      path.join(cwd, 'foobar.yaml')
-    );
+			path.join(cwd, "foobar.yaml"),
+		);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument,
-      externalRefResolver: new BaseResolver(),
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument,
+			externalRefResolver: new BaseResolver(),
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
-    // expect(resolvedRefs.size).toEqual(2);
-    expect(Array.from(resolvedRefs.keys()).map((ref) => ref.substring(cwd.length + 1))).toEqual([
-      'foobar.yaml::./externalInfo.yaml#/info',
-      'externalInfo.yaml::./externalLicense.yaml',
-    ]);
+		expect(resolvedRefs).toBeDefined();
+		// expect(resolvedRefs.size).toEqual(2);
+		expect(
+			Array.from(resolvedRefs.keys()).map((ref) =>
+				ref.substring(cwd.length + 1),
+			),
+		).toEqual([
+			"foobar.yaml::./externalInfo.yaml#/info",
+			"externalInfo.yaml::./externalLicense.yaml",
+		]);
 
-    expect(Array.from(resolvedRefs.values()).map((info) => info.node)).toEqual([
-      {
-        contact: {},
-        license: {
-          $ref: './externalLicense.yaml',
-        },
-      },
-      {
-        name: 'MIT',
-      },
-    ]);
-  });
+		expect(Array.from(resolvedRefs.values()).map((info) => info.node)).toEqual([
+			{
+				contact: {},
+				license: {
+					$ref: "./externalLicense.yaml",
+				},
+			},
+			{
+				name: "MIT",
+			},
+		]);
+	});
 
-  it('should resolve back references', async () => {
-    const cwd = path.join(__dirname, 'fixtures/resolve');
-    const externalRefResolver = new BaseResolver();
-    const rootDocument = await externalRefResolver.resolveDocument(
-      null,
-      `${cwd}/openapi-with-back.yaml`
-    );
+	it("should resolve back references", async () => {
+		const cwd = path.join(__dirname, "fixtures/resolve");
+		const externalRefResolver = new BaseResolver();
+		const rootDocument = await externalRefResolver.resolveDocument(
+			null,
+			`${cwd}/openapi-with-back.yaml`,
+		);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument: rootDocument as Document,
-      externalRefResolver: externalRefResolver,
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument: rootDocument as Document,
+			externalRefResolver: externalRefResolver,
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
+		expect(resolvedRefs).toBeDefined();
 
-    expect(
-      Array.from(resolvedRefs.keys())
-        .map((ref) => ref.substring(cwd.length + 1))
-        .sort()
-    ).toMatchInlineSnapshot(`
+		expect(
+			Array.from(resolvedRefs.keys())
+				.map((ref) => ref.substring(cwd.length + 1))
+				.sort(),
+		).toMatchInlineSnapshot(`
       [
         "openapi-with-back.yaml::./schemas/type-a.yaml#/",
         "openapi-with-back.yaml::./schemas/type-b.yaml#/",
@@ -205,15 +208,15 @@ describe('collect refs', () => {
       ]
     `);
 
-    expect(
-      Array.from(resolvedRefs.values())
-        .map((val) => val.node)
-        .sort((firstEl, secondEl) => {
-          const getKey = (el: any): string => el?.allOf?.type || el?.type || '';
+		expect(
+			Array.from(resolvedRefs.values())
+				.map((val) => val.node)
+				.sort((firstEl, secondEl) => {
+					const getKey = (el: any): string => el?.allOf?.type || el?.type || "";
 
-          return getKey(firstEl).localeCompare(getKey(secondEl));
-        })
-    ).toMatchInlineSnapshot(`
+					return getKey(firstEl).localeCompare(getKey(secondEl));
+				}),
+		).toMatchInlineSnapshot(`
       [
         {
           "allOf": [
@@ -254,22 +257,28 @@ describe('collect refs', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should resolve external refs with circular', async () => {
-    const cwd = path.join(__dirname, 'fixtures/resolve');
-    const externalRefResolver = new BaseResolver();
-    const rootDocument = await externalRefResolver.resolveDocument(null, `${cwd}/openapi.yaml`);
+	it("should resolve external refs with circular", async () => {
+		const cwd = path.join(__dirname, "fixtures/resolve");
+		const externalRefResolver = new BaseResolver();
+		const rootDocument = await externalRefResolver.resolveDocument(
+			null,
+			`${cwd}/openapi.yaml`,
+		);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument: rootDocument as Document,
-      externalRefResolver: externalRefResolver,
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument: rootDocument as Document,
+			externalRefResolver: externalRefResolver,
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
-    expect(Array.from(resolvedRefs.keys()).map((ref) => ref.substring(cwd.length + 1)))
-      .toMatchInlineSnapshot(`
+		expect(resolvedRefs).toBeDefined();
+		expect(
+			Array.from(resolvedRefs.keys()).map((ref) =>
+				ref.substring(cwd.length + 1),
+			),
+		).toMatchInlineSnapshot(`
       [
         "openapi.yaml::#/components/schemas/Local",
         "openapi.yaml::#/components/schemas/Local/properties/string",
@@ -280,7 +289,9 @@ describe('collect refs', () => {
       ]
     `);
 
-    expect(Array.from(resolvedRefs.values()).map((val) => val.node)).toMatchInlineSnapshot(`
+		expect(
+			Array.from(resolvedRefs.values()).map((val) => val.node),
+		).toMatchInlineSnapshot(`
       [
         {
           "properties": {
@@ -342,35 +353,40 @@ describe('collect refs', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should resolve referenceable scalars', async () => {
-    const cwd = path.join(__dirname, 'fixtures/resolve');
-    const externalRefResolver = new BaseResolver();
-    const rootDocument = await externalRefResolver.resolveDocument(
-      null,
-      `${cwd}/openapi-with-md-description.yaml`
-    );
+	it("should resolve referenceable scalars", async () => {
+		const cwd = path.join(__dirname, "fixtures/resolve");
+		const externalRefResolver = new BaseResolver();
+		const rootDocument = await externalRefResolver.resolveDocument(
+			null,
+			`${cwd}/openapi-with-md-description.yaml`,
+		);
 
-    expect(rootDocument).toBeDefined();
+		expect(rootDocument).toBeDefined();
 
-    // @ts-ignore
-    Oas3Types.Info.properties.description['referenceable'] = true;
-    const resolvedRefs = await resolveDocument({
-      rootDocument: rootDocument as Document,
-      externalRefResolver: externalRefResolver,
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		// @ts-expect-error
+		Oas3Types.Info.properties.description["referenceable"] = true;
+		const resolvedRefs = await resolveDocument({
+			rootDocument: rootDocument as Document,
+			externalRefResolver: externalRefResolver,
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
-    // expect(resolvedRefs.size).toEqual(2);
-    expect(Array.from(resolvedRefs.keys()).map((ref) => ref.substring(cwd.length + 1)))
-      .toMatchInlineSnapshot(`
+		expect(resolvedRefs).toBeDefined();
+		// expect(resolvedRefs.size).toEqual(2);
+		expect(
+			Array.from(resolvedRefs.keys()).map((ref) =>
+				ref.substring(cwd.length + 1),
+			),
+		).toMatchInlineSnapshot(`
       [
         "openapi-with-md-description.yaml::./description.md",
       ]
     `);
-    expect(Array.from(resolvedRefs.values()).map((val) => val.node)).toMatchInlineSnapshot(`
+		expect(
+			Array.from(resolvedRefs.values()).map((val) => val.node),
+		).toMatchInlineSnapshot(`
       [
         "# Hello World
 
@@ -378,54 +394,64 @@ describe('collect refs', () => {
       ",
       ]
     `);
-  });
+	});
 
-  it('should resolve external transitive ref', async () => {
-    const cwd = path.join(__dirname, 'fixtures/resolve');
-    const rootDocument = parseYamlToDocument(
-      outdent`
+	it("should resolve external transitive ref", async () => {
+		const cwd = path.join(__dirname, "fixtures/resolve");
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           $ref: "./transitive/components.yaml#/components/schemas/a"
       `,
-      path.join(cwd, 'foobar.yaml')
-    );
+			path.join(cwd, "foobar.yaml"),
+		);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument,
-      externalRefResolver: new BaseResolver(),
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument,
+			externalRefResolver: new BaseResolver(),
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(resolvedRefs).toBeDefined();
-    expect(resolvedRefs.size).toEqual(3);
-    expect(Array.from(resolvedRefs.keys()).map((ref) => ref.substring(cwd.length + 1))).toEqual([
-      'transitive/components.yaml::./schemas.yaml#/schemas',
-      'transitive/schemas.yaml::a.yaml',
-      'foobar.yaml::./transitive/components.yaml#/components/schemas/a',
-    ]);
+		expect(resolvedRefs).toBeDefined();
+		expect(resolvedRefs.size).toEqual(3);
+		expect(
+			Array.from(resolvedRefs.keys()).map((ref) =>
+				ref.substring(cwd.length + 1),
+			),
+		).toEqual([
+			"transitive/components.yaml::./schemas.yaml#/schemas",
+			"transitive/schemas.yaml::a.yaml",
+			"foobar.yaml::./transitive/components.yaml#/components/schemas/a",
+		]);
 
-    expect(Array.from(resolvedRefs.values()).pop()!.node).toEqual({ type: 'string' });
-  });
+		expect(Array.from(resolvedRefs.values()).pop()!.node).toEqual({
+			type: "string",
+		});
+	});
 
-  it('should throw error if ref is folder', async () => {
-    const cwd = path.join(__dirname, 'fixtures/resolve');
-    const rootDocument = parseYamlToDocument(
-      outdent`
+	it("should throw error if ref is folder", async () => {
+		const cwd = path.join(__dirname, "fixtures/resolve");
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           $ref: "./transitive/components.yaml#/components/schemas/a"
       `,
-      path.join(cwd, 'foobar')
-    );
-    jest.spyOn(fs, 'lstatSync').mockImplementation((_) => ({ isDirectory: () => true } as any));
+			path.join(cwd, "foobar"),
+		);
+		jest
+			.spyOn(fs, "lstatSync")
+			.mockImplementation((_) => ({ isDirectory: () => true }) as any);
 
-    const resolvedRefs = await resolveDocument({
-      rootDocument,
-      externalRefResolver: new BaseResolver(),
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		const resolvedRefs = await resolveDocument({
+			rootDocument,
+			externalRefResolver: new BaseResolver(),
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(Array.from(resolvedRefs.values()).pop()!.error).toBeInstanceOf(Error);
-  });
+		expect(Array.from(resolvedRefs.values()).pop()!.error).toBeInstanceOf(
+			Error,
+		);
+	});
 });

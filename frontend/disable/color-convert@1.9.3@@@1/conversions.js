@@ -1,5 +1,5 @@
 /* MIT license */
-var cssKeywords = require('color-name');
+var cssKeywords = require("color-name");
 
 // NOTE: conversions should only return primitive values (i.e. arrays, or
 //       values that give correct `typeof` results).
@@ -7,54 +7,54 @@ var cssKeywords = require('color-name');
 
 var reverseKeywords = {};
 for (var key in cssKeywords) {
-	if (cssKeywords.hasOwnProperty(key)) {
+	if (Object.hasOwn(cssKeywords, key)) {
 		reverseKeywords[cssKeywords[key]] = key;
 	}
 }
 
-var convert = module.exports = {
-	rgb: {channels: 3, labels: 'rgb'},
-	hsl: {channels: 3, labels: 'hsl'},
-	hsv: {channels: 3, labels: 'hsv'},
-	hwb: {channels: 3, labels: 'hwb'},
-	cmyk: {channels: 4, labels: 'cmyk'},
-	xyz: {channels: 3, labels: 'xyz'},
-	lab: {channels: 3, labels: 'lab'},
-	lch: {channels: 3, labels: 'lch'},
-	hex: {channels: 1, labels: ['hex']},
-	keyword: {channels: 1, labels: ['keyword']},
-	ansi16: {channels: 1, labels: ['ansi16']},
-	ansi256: {channels: 1, labels: ['ansi256']},
-	hcg: {channels: 3, labels: ['h', 'c', 'g']},
-	apple: {channels: 3, labels: ['r16', 'g16', 'b16']},
-	gray: {channels: 1, labels: ['gray']}
-};
+var convert = (module.exports = {
+	rgb: { channels: 3, labels: "rgb" },
+	hsl: { channels: 3, labels: "hsl" },
+	hsv: { channels: 3, labels: "hsv" },
+	hwb: { channels: 3, labels: "hwb" },
+	cmyk: { channels: 4, labels: "cmyk" },
+	xyz: { channels: 3, labels: "xyz" },
+	lab: { channels: 3, labels: "lab" },
+	lch: { channels: 3, labels: "lch" },
+	hex: { channels: 1, labels: ["hex"] },
+	keyword: { channels: 1, labels: ["keyword"] },
+	ansi16: { channels: 1, labels: ["ansi16"] },
+	ansi256: { channels: 1, labels: ["ansi256"] },
+	hcg: { channels: 3, labels: ["h", "c", "g"] },
+	apple: { channels: 3, labels: ["r16", "g16", "b16"] },
+	gray: { channels: 1, labels: ["gray"] },
+});
 
 // hide .channels and .labels properties
 for (var model in convert) {
-	if (convert.hasOwnProperty(model)) {
-		if (!('channels' in convert[model])) {
-			throw new Error('missing channels property: ' + model);
+	if (Object.hasOwn(convert, model)) {
+		if (!("channels" in convert[model])) {
+			throw new Error("missing channels property: " + model);
 		}
 
-		if (!('labels' in convert[model])) {
-			throw new Error('missing channel labels property: ' + model);
+		if (!("labels" in convert[model])) {
+			throw new Error("missing channel labels property: " + model);
 		}
 
 		if (convert[model].labels.length !== convert[model].channels) {
-			throw new Error('channel and label counts mismatch: ' + model);
+			throw new Error("channel and label counts mismatch: " + model);
 		}
 
 		var channels = convert[model].channels;
 		var labels = convert[model].labels;
 		delete convert[model].channels;
 		delete convert[model].labels;
-		Object.defineProperty(convert[model], 'channels', {value: channels});
-		Object.defineProperty(convert[model], 'labels', {value: labels});
+		Object.defineProperty(convert[model], "channels", { value: channels });
+		Object.defineProperty(convert[model], "labels", { value: labels });
 	}
 }
 
-convert.rgb.hsl = function (rgb) {
+convert.rgb.hsl = (rgb) => {
 	var r = rgb[0] / 255;
 	var g = rgb[1] / 255;
 	var b = rgb[2] / 255;
@@ -94,7 +94,7 @@ convert.rgb.hsl = function (rgb) {
 	return [h, s * 100, l * 100];
 };
 
-convert.rgb.hsv = function (rgb) {
+convert.rgb.hsv = (rgb) => {
 	var rdif;
 	var gdif;
 	var bdif;
@@ -106,9 +106,7 @@ convert.rgb.hsv = function (rgb) {
 	var b = rgb[2] / 255;
 	var v = Math.max(r, g, b);
 	var diff = v - Math.min(r, g, b);
-	var diffc = function (c) {
-		return (v - c) / 6 / diff + 1 / 2;
-	};
+	var diffc = (c) => (v - c) / 6 / diff + 1 / 2;
 
 	if (diff === 0) {
 		h = s = 0;
@@ -121,9 +119,9 @@ convert.rgb.hsv = function (rgb) {
 		if (r === v) {
 			h = bdif - gdif;
 		} else if (g === v) {
-			h = (1 / 3) + rdif - bdif;
+			h = 1 / 3 + rdif - bdif;
 		} else if (b === v) {
-			h = (2 / 3) + gdif - rdif;
+			h = 2 / 3 + gdif - rdif;
 		}
 		if (h < 0) {
 			h += 1;
@@ -132,26 +130,22 @@ convert.rgb.hsv = function (rgb) {
 		}
 	}
 
-	return [
-		h * 360,
-		s * 100,
-		v * 100
-	];
+	return [h * 360, s * 100, v * 100];
 };
 
-convert.rgb.hwb = function (rgb) {
+convert.rgb.hwb = (rgb) => {
 	var r = rgb[0];
 	var g = rgb[1];
 	var b = rgb[2];
 	var h = convert.rgb.hsl(rgb)[0];
-	var w = 1 / 255 * Math.min(r, Math.min(g, b));
+	var w = (1 / 255) * Math.min(r, Math.min(g, b));
 
-	b = 1 - 1 / 255 * Math.max(r, Math.max(g, b));
+	b = 1 - (1 / 255) * Math.max(r, Math.max(g, b));
 
 	return [h, w * 100, b * 100];
 };
 
-convert.rgb.cmyk = function (rgb) {
+convert.rgb.cmyk = (rgb) => {
 	var r = rgb[0] / 255;
 	var g = rgb[1] / 255;
 	var b = rgb[2] / 255;
@@ -172,14 +166,10 @@ convert.rgb.cmyk = function (rgb) {
  * See https://en.m.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance
  * */
 function comparativeDistance(x, y) {
-	return (
-		Math.pow(x[0] - y[0], 2) +
-		Math.pow(x[1] - y[1], 2) +
-		Math.pow(x[2] - y[2], 2)
-	);
+	return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2 + (x[2] - y[2]) ** 2;
 }
 
-convert.rgb.keyword = function (rgb) {
+convert.rgb.keyword = (rgb) => {
 	var reversed = reverseKeywords[rgb];
 	if (reversed) {
 		return reversed;
@@ -189,7 +179,7 @@ convert.rgb.keyword = function (rgb) {
 	var currentClosestKeyword;
 
 	for (var keyword in cssKeywords) {
-		if (cssKeywords.hasOwnProperty(keyword)) {
+		if (Object.hasOwn(cssKeywords, keyword)) {
 			var value = cssKeywords[keyword];
 
 			// Compute comparative distance
@@ -206,28 +196,26 @@ convert.rgb.keyword = function (rgb) {
 	return currentClosestKeyword;
 };
 
-convert.keyword.rgb = function (keyword) {
-	return cssKeywords[keyword];
-};
+convert.keyword.rgb = (keyword) => cssKeywords[keyword];
 
-convert.rgb.xyz = function (rgb) {
+convert.rgb.xyz = (rgb) => {
 	var r = rgb[0] / 255;
 	var g = rgb[1] / 255;
 	var b = rgb[2] / 255;
 
 	// assume sRGB
-	r = r > 0.04045 ? Math.pow(((r + 0.055) / 1.055), 2.4) : (r / 12.92);
-	g = g > 0.04045 ? Math.pow(((g + 0.055) / 1.055), 2.4) : (g / 12.92);
-	b = b > 0.04045 ? Math.pow(((b + 0.055) / 1.055), 2.4) : (b / 12.92);
+	r = r > 0.04045 ? ((r + 0.055) / 1.055) ** 2.4 : r / 12.92;
+	g = g > 0.04045 ? ((g + 0.055) / 1.055) ** 2.4 : g / 12.92;
+	b = b > 0.04045 ? ((b + 0.055) / 1.055) ** 2.4 : b / 12.92;
 
-	var x = (r * 0.4124) + (g * 0.3576) + (b * 0.1805);
-	var y = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
-	var z = (r * 0.0193) + (g * 0.1192) + (b * 0.9505);
+	var x = r * 0.4124 + g * 0.3576 + b * 0.1805;
+	var y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+	var z = r * 0.0193 + g * 0.1192 + b * 0.9505;
 
 	return [x * 100, y * 100, z * 100];
 };
 
-convert.rgb.lab = function (rgb) {
+convert.rgb.lab = (rgb) => {
 	var xyz = convert.rgb.xyz(rgb);
 	var x = xyz[0];
 	var y = xyz[1];
@@ -240,18 +228,18 @@ convert.rgb.lab = function (rgb) {
 	y /= 100;
 	z /= 108.883;
 
-	x = x > 0.008856 ? Math.pow(x, 1 / 3) : (7.787 * x) + (16 / 116);
-	y = y > 0.008856 ? Math.pow(y, 1 / 3) : (7.787 * y) + (16 / 116);
-	z = z > 0.008856 ? Math.pow(z, 1 / 3) : (7.787 * z) + (16 / 116);
+	x = x > 0.008856 ? x ** (1 / 3) : 7.787 * x + 16 / 116;
+	y = y > 0.008856 ? y ** (1 / 3) : 7.787 * y + 16 / 116;
+	z = z > 0.008856 ? z ** (1 / 3) : 7.787 * z + 16 / 116;
 
-	l = (116 * y) - 16;
+	l = 116 * y - 16;
 	a = 500 * (x - y);
 	b = 200 * (y - z);
 
 	return [l, a, b];
 };
 
-convert.hsl.rgb = function (hsl) {
+convert.hsl.rgb = (hsl) => {
 	var h = hsl[0] / 360;
 	var s = hsl[1] / 100;
 	var l = hsl[2] / 100;
@@ -276,7 +264,7 @@ convert.hsl.rgb = function (hsl) {
 
 	rgb = [0, 0, 0];
 	for (var i = 0; i < 3; i++) {
-		t3 = h + 1 / 3 * -(i - 1);
+		t3 = h + (1 / 3) * -(i - 1);
 		if (t3 < 0) {
 			t3++;
 		}
@@ -300,7 +288,7 @@ convert.hsl.rgb = function (hsl) {
 	return rgb;
 };
 
-convert.hsl.hsv = function (hsl) {
+convert.hsl.hsv = (hsl) => {
 	var h = hsl[0];
 	var s = hsl[1] / 100;
 	var l = hsl[2] / 100;
@@ -310,7 +298,7 @@ convert.hsl.hsv = function (hsl) {
 	var v;
 
 	l *= 2;
-	s *= (l <= 1) ? l : 2 - l;
+	s *= l <= 1 ? l : 2 - l;
 	smin *= lmin <= 1 ? lmin : 2 - lmin;
 	v = (l + s) / 2;
 	sv = l === 0 ? (2 * smin) / (lmin + smin) : (2 * s) / (l + s);
@@ -318,7 +306,7 @@ convert.hsl.hsv = function (hsl) {
 	return [h, sv * 100, v * 100];
 };
 
-convert.hsv.rgb = function (hsv) {
+convert.hsv.rgb = (hsv) => {
 	var h = hsv[0] / 60;
 	var s = hsv[1] / 100;
 	var v = hsv[2] / 100;
@@ -326,8 +314,8 @@ convert.hsv.rgb = function (hsv) {
 
 	var f = h - Math.floor(h);
 	var p = 255 * v * (1 - s);
-	var q = 255 * v * (1 - (s * f));
-	var t = 255 * v * (1 - (s * (1 - f)));
+	var q = 255 * v * (1 - s * f);
+	var t = 255 * v * (1 - s * (1 - f));
 	v *= 255;
 
 	switch (hi) {
@@ -346,7 +334,7 @@ convert.hsv.rgb = function (hsv) {
 	}
 };
 
-convert.hsv.hsl = function (hsv) {
+convert.hsv.hsl = (hsv) => {
 	var h = hsv[0];
 	var s = hsv[1] / 100;
 	var v = hsv[2] / 100;
@@ -358,7 +346,7 @@ convert.hsv.hsl = function (hsv) {
 	l = (2 - s) * v;
 	lmin = (2 - s) * vmin;
 	sl = s * vmin;
-	sl /= (lmin <= 1) ? lmin : 2 - lmin;
+	sl /= lmin <= 1 ? lmin : 2 - lmin;
 	sl = sl || 0;
 	l /= 2;
 
@@ -366,7 +354,7 @@ convert.hsv.hsl = function (hsv) {
 };
 
 // http://dev.w3.org/csswg/css-color/#hwb-to-rgb
-convert.hwb.rgb = function (hwb) {
+convert.hwb.rgb = (hwb) => {
 	var h = hwb[0] / 360;
 	var wh = hwb[1] / 100;
 	var bl = hwb[2] / 100;
@@ -398,18 +386,42 @@ convert.hwb.rgb = function (hwb) {
 	switch (i) {
 		default:
 		case 6:
-		case 0: r = v; g = n; b = wh; break;
-		case 1: r = n; g = v; b = wh; break;
-		case 2: r = wh; g = v; b = n; break;
-		case 3: r = wh; g = n; b = v; break;
-		case 4: r = n; g = wh; b = v; break;
-		case 5: r = v; g = wh; b = n; break;
+		case 0:
+			r = v;
+			g = n;
+			b = wh;
+			break;
+		case 1:
+			r = n;
+			g = v;
+			b = wh;
+			break;
+		case 2:
+			r = wh;
+			g = v;
+			b = n;
+			break;
+		case 3:
+			r = wh;
+			g = n;
+			b = v;
+			break;
+		case 4:
+			r = n;
+			g = wh;
+			b = v;
+			break;
+		case 5:
+			r = v;
+			g = wh;
+			b = n;
+			break;
 	}
 
 	return [r * 255, g * 255, b * 255];
 };
 
-convert.cmyk.rgb = function (cmyk) {
+convert.cmyk.rgb = (cmyk) => {
 	var c = cmyk[0] / 100;
 	var m = cmyk[1] / 100;
 	var y = cmyk[2] / 100;
@@ -425,7 +437,7 @@ convert.cmyk.rgb = function (cmyk) {
 	return [r * 255, g * 255, b * 255];
 };
 
-convert.xyz.rgb = function (xyz) {
+convert.xyz.rgb = (xyz) => {
 	var x = xyz[0] / 100;
 	var y = xyz[1] / 100;
 	var z = xyz[2] / 100;
@@ -433,22 +445,16 @@ convert.xyz.rgb = function (xyz) {
 	var g;
 	var b;
 
-	r = (x * 3.2406) + (y * -1.5372) + (z * -0.4986);
-	g = (x * -0.9689) + (y * 1.8758) + (z * 0.0415);
-	b = (x * 0.0557) + (y * -0.2040) + (z * 1.0570);
+	r = x * 3.2406 + y * -1.5372 + z * -0.4986;
+	g = x * -0.9689 + y * 1.8758 + z * 0.0415;
+	b = x * 0.0557 + y * -0.204 + z * 1.057;
 
 	// assume sRGB
-	r = r > 0.0031308
-		? ((1.055 * Math.pow(r, 1.0 / 2.4)) - 0.055)
-		: r * 12.92;
+	r = r > 0.0031308 ? 1.055 * r ** (1.0 / 2.4) - 0.055 : r * 12.92;
 
-	g = g > 0.0031308
-		? ((1.055 * Math.pow(g, 1.0 / 2.4)) - 0.055)
-		: g * 12.92;
+	g = g > 0.0031308 ? 1.055 * g ** (1.0 / 2.4) - 0.055 : g * 12.92;
 
-	b = b > 0.0031308
-		? ((1.055 * Math.pow(b, 1.0 / 2.4)) - 0.055)
-		: b * 12.92;
+	b = b > 0.0031308 ? 1.055 * b ** (1.0 / 2.4) - 0.055 : b * 12.92;
 
 	r = Math.min(Math.max(0, r), 1);
 	g = Math.min(Math.max(0, g), 1);
@@ -457,7 +463,7 @@ convert.xyz.rgb = function (xyz) {
 	return [r * 255, g * 255, b * 255];
 };
 
-convert.xyz.lab = function (xyz) {
+convert.xyz.lab = (xyz) => {
 	var x = xyz[0];
 	var y = xyz[1];
 	var z = xyz[2];
@@ -469,18 +475,18 @@ convert.xyz.lab = function (xyz) {
 	y /= 100;
 	z /= 108.883;
 
-	x = x > 0.008856 ? Math.pow(x, 1 / 3) : (7.787 * x) + (16 / 116);
-	y = y > 0.008856 ? Math.pow(y, 1 / 3) : (7.787 * y) + (16 / 116);
-	z = z > 0.008856 ? Math.pow(z, 1 / 3) : (7.787 * z) + (16 / 116);
+	x = x > 0.008856 ? x ** (1 / 3) : 7.787 * x + 16 / 116;
+	y = y > 0.008856 ? y ** (1 / 3) : 7.787 * y + 16 / 116;
+	z = z > 0.008856 ? z ** (1 / 3) : 7.787 * z + 16 / 116;
 
-	l = (116 * y) - 16;
+	l = 116 * y - 16;
 	a = 500 * (x - y);
 	b = 200 * (y - z);
 
 	return [l, a, b];
 };
 
-convert.lab.xyz = function (lab) {
+convert.lab.xyz = (lab) => {
 	var l = lab[0];
 	var a = lab[1];
 	var b = lab[2];
@@ -492,9 +498,9 @@ convert.lab.xyz = function (lab) {
 	x = a / 500 + y;
 	z = y - b / 200;
 
-	var y2 = Math.pow(y, 3);
-	var x2 = Math.pow(x, 3);
-	var z2 = Math.pow(z, 3);
+	var y2 = y ** 3;
+	var x2 = x ** 3;
+	var z2 = z ** 3;
 	y = y2 > 0.008856 ? y2 : (y - 16 / 116) / 7.787;
 	x = x2 > 0.008856 ? x2 : (x - 16 / 116) / 7.787;
 	z = z2 > 0.008856 ? z2 : (z - 16 / 116) / 7.787;
@@ -506,7 +512,7 @@ convert.lab.xyz = function (lab) {
 	return [x, y, z];
 };
 
-convert.lab.lch = function (lab) {
+convert.lab.lch = (lab) => {
 	var l = lab[0];
 	var a = lab[1];
 	var b = lab[2];
@@ -515,7 +521,7 @@ convert.lab.lch = function (lab) {
 	var c;
 
 	hr = Math.atan2(b, a);
-	h = hr * 360 / 2 / Math.PI;
+	h = (hr * 360) / 2 / Math.PI;
 
 	if (h < 0) {
 		h += 360;
@@ -526,7 +532,7 @@ convert.lab.lch = function (lab) {
 	return [l, c, h];
 };
 
-convert.lch.lab = function (lch) {
+convert.lch.lab = (lch) => {
 	var l = lch[0];
 	var c = lch[1];
 	var h = lch[2];
@@ -534,7 +540,7 @@ convert.lch.lab = function (lch) {
 	var b;
 	var hr;
 
-	hr = h / 360 * 2 * Math.PI;
+	hr = (h / 360) * 2 * Math.PI;
 	a = c * Math.cos(hr);
 	b = c * Math.sin(hr);
 
@@ -553,10 +559,11 @@ convert.rgb.ansi16 = function (args) {
 		return 30;
 	}
 
-	var ansi = 30
-		+ ((Math.round(b / 255) << 2)
-		| (Math.round(g / 255) << 1)
-		| Math.round(r / 255));
+	var ansi =
+		30 +
+		((Math.round(b / 255) << 2) |
+			(Math.round(g / 255) << 1) |
+			Math.round(r / 255));
 
 	if (value === 2) {
 		ansi += 60;
@@ -565,13 +572,13 @@ convert.rgb.ansi16 = function (args) {
 	return ansi;
 };
 
-convert.hsv.ansi16 = function (args) {
+convert.hsv.ansi16 = (args) => {
 	// optimization here; we already know the value and don't need to get
 	// it converted for us.
 	return convert.rgb.ansi16(convert.hsv.rgb(args), args[2]);
 };
 
-convert.rgb.ansi256 = function (args) {
+convert.rgb.ansi256 = (args) => {
 	var r = args[0];
 	var g = args[1];
 	var b = args[2];
@@ -590,15 +597,16 @@ convert.rgb.ansi256 = function (args) {
 		return Math.round(((r - 8) / 247) * 24) + 232;
 	}
 
-	var ansi = 16
-		+ (36 * Math.round(r / 255 * 5))
-		+ (6 * Math.round(g / 255 * 5))
-		+ Math.round(b / 255 * 5);
+	var ansi =
+		16 +
+		36 * Math.round((r / 255) * 5) +
+		6 * Math.round((g / 255) * 5) +
+		Math.round((b / 255) * 5);
 
 	return ansi;
 };
 
-convert.ansi16.rgb = function (args) {
+convert.ansi16.rgb = (args) => {
 	var color = args % 10;
 
 	// handle greyscale
@@ -607,20 +615,20 @@ convert.ansi16.rgb = function (args) {
 			color += 3.5;
 		}
 
-		color = color / 10.5 * 255;
+		color = (color / 10.5) * 255;
 
 		return [color, color, color];
 	}
 
 	var mult = (~~(args > 50) + 1) * 0.5;
-	var r = ((color & 1) * mult) * 255;
-	var g = (((color >> 1) & 1) * mult) * 255;
-	var b = (((color >> 2) & 1) * mult) * 255;
+	var r = (color & 1) * mult * 255;
+	var g = ((color >> 1) & 1) * mult * 255;
+	var b = ((color >> 2) & 1) * mult * 255;
 
 	return [r, g, b];
 };
 
-convert.ansi256.rgb = function (args) {
+convert.ansi256.rgb = (args) => {
 	// handle greyscale
 	if (args >= 232) {
 		var c = (args - 232) * 10 + 8;
@@ -630,23 +638,24 @@ convert.ansi256.rgb = function (args) {
 	args -= 16;
 
 	var rem;
-	var r = Math.floor(args / 36) / 5 * 255;
-	var g = Math.floor((rem = args % 36) / 6) / 5 * 255;
-	var b = (rem % 6) / 5 * 255;
+	var r = (Math.floor(args / 36) / 5) * 255;
+	var g = (Math.floor((rem = args % 36) / 6) / 5) * 255;
+	var b = ((rem % 6) / 5) * 255;
 
 	return [r, g, b];
 };
 
-convert.rgb.hex = function (args) {
-	var integer = ((Math.round(args[0]) & 0xFF) << 16)
-		+ ((Math.round(args[1]) & 0xFF) << 8)
-		+ (Math.round(args[2]) & 0xFF);
+convert.rgb.hex = (args) => {
+	var integer =
+		((Math.round(args[0]) & 0xff) << 16) +
+		((Math.round(args[1]) & 0xff) << 8) +
+		(Math.round(args[2]) & 0xff);
 
 	var string = integer.toString(16).toUpperCase();
-	return '000000'.substring(string.length) + string;
+	return "000000".substring(string.length) + string;
 };
 
-convert.hex.rgb = function (args) {
+convert.hex.rgb = (args) => {
 	var match = args.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
 	if (!match) {
 		return [0, 0, 0];
@@ -655,26 +664,27 @@ convert.hex.rgb = function (args) {
 	var colorString = match[0];
 
 	if (match[0].length === 3) {
-		colorString = colorString.split('').map(function (char) {
-			return char + char;
-		}).join('');
+		colorString = colorString
+			.split("")
+			.map((char) => char + char)
+			.join("");
 	}
 
 	var integer = parseInt(colorString, 16);
-	var r = (integer >> 16) & 0xFF;
-	var g = (integer >> 8) & 0xFF;
-	var b = integer & 0xFF;
+	var r = (integer >> 16) & 0xff;
+	var g = (integer >> 8) & 0xff;
+	var b = integer & 0xff;
 
 	return [r, g, b];
 };
 
-convert.rgb.hcg = function (rgb) {
+convert.rgb.hcg = (rgb) => {
 	var r = rgb[0] / 255;
 	var g = rgb[1] / 255;
 	var b = rgb[2] / 255;
 	var max = Math.max(Math.max(r, g), b);
 	var min = Math.min(Math.min(r, g), b);
-	var chroma = (max - min);
+	var chroma = max - min;
 	var grayscale;
 	var hue;
 
@@ -686,11 +696,9 @@ convert.rgb.hcg = function (rgb) {
 
 	if (chroma <= 0) {
 		hue = 0;
-	} else
-	if (max === r) {
+	} else if (max === r) {
 		hue = ((g - b) / chroma) % 6;
-	} else
-	if (max === g) {
+	} else if (max === g) {
 		hue = 2 + (b - r) / chroma;
 	} else {
 		hue = 4 + (r - g) / chroma + 4;
@@ -702,7 +710,7 @@ convert.rgb.hcg = function (rgb) {
 	return [hue * 360, chroma * 100, grayscale * 100];
 };
 
-convert.hsl.hcg = function (hsl) {
+convert.hsl.hcg = (hsl) => {
 	var s = hsl[1] / 100;
 	var l = hsl[2] / 100;
 	var c = 1;
@@ -721,7 +729,7 @@ convert.hsl.hcg = function (hsl) {
 	return [hsl[0], c * 100, f * 100];
 };
 
-convert.hsv.hcg = function (hsv) {
+convert.hsv.hcg = (hsv) => {
 	var s = hsv[1] / 100;
 	var v = hsv[2] / 100;
 
@@ -735,7 +743,7 @@ convert.hsv.hcg = function (hsv) {
 	return [hsv[0], c * 100, f * 100];
 };
 
-convert.hcg.rgb = function (hcg) {
+convert.hcg.rgb = (hcg) => {
 	var h = hcg[0] / 360;
 	var c = hcg[1] / 100;
 	var g = hcg[2] / 100;
@@ -752,17 +760,34 @@ convert.hcg.rgb = function (hcg) {
 
 	switch (Math.floor(hi)) {
 		case 0:
-			pure[0] = 1; pure[1] = v; pure[2] = 0; break;
+			pure[0] = 1;
+			pure[1] = v;
+			pure[2] = 0;
+			break;
 		case 1:
-			pure[0] = w; pure[1] = 1; pure[2] = 0; break;
+			pure[0] = w;
+			pure[1] = 1;
+			pure[2] = 0;
+			break;
 		case 2:
-			pure[0] = 0; pure[1] = 1; pure[2] = v; break;
+			pure[0] = 0;
+			pure[1] = 1;
+			pure[2] = v;
+			break;
 		case 3:
-			pure[0] = 0; pure[1] = w; pure[2] = 1; break;
+			pure[0] = 0;
+			pure[1] = w;
+			pure[2] = 1;
+			break;
 		case 4:
-			pure[0] = v; pure[1] = 0; pure[2] = 1; break;
+			pure[0] = v;
+			pure[1] = 0;
+			pure[2] = 1;
+			break;
 		default:
-			pure[0] = 1; pure[1] = 0; pure[2] = w;
+			pure[0] = 1;
+			pure[1] = 0;
+			pure[2] = w;
 	}
 
 	mg = (1.0 - c) * g;
@@ -770,11 +795,11 @@ convert.hcg.rgb = function (hcg) {
 	return [
 		(c * pure[0] + mg) * 255,
 		(c * pure[1] + mg) * 255,
-		(c * pure[2] + mg) * 255
+		(c * pure[2] + mg) * 255,
 	];
 };
 
-convert.hcg.hsv = function (hcg) {
+convert.hcg.hsv = (hcg) => {
 	var c = hcg[1] / 100;
 	var g = hcg[2] / 100;
 
@@ -788,7 +813,7 @@ convert.hcg.hsv = function (hcg) {
 	return [hcg[0], f * 100, v * 100];
 };
 
-convert.hcg.hsl = function (hcg) {
+convert.hcg.hsl = (hcg) => {
 	var c = hcg[1] / 100;
 	var g = hcg[2] / 100;
 
@@ -797,22 +822,21 @@ convert.hcg.hsl = function (hcg) {
 
 	if (l > 0.0 && l < 0.5) {
 		s = c / (2 * l);
-	} else
-	if (l >= 0.5 && l < 1.0) {
+	} else if (l >= 0.5 && l < 1.0) {
 		s = c / (2 * (1 - l));
 	}
 
 	return [hcg[0], s * 100, l * 100];
 };
 
-convert.hcg.hwb = function (hcg) {
+convert.hcg.hwb = (hcg) => {
 	var c = hcg[1] / 100;
 	var g = hcg[2] / 100;
 	var v = c + g * (1.0 - c);
 	return [hcg[0], (v - c) * 100, (1 - v) * 100];
 };
 
-convert.hwb.hcg = function (hwb) {
+convert.hwb.hcg = (hwb) => {
 	var w = hwb[1] / 100;
 	var b = hwb[2] / 100;
 	var v = 1 - b;
@@ -826,43 +850,41 @@ convert.hwb.hcg = function (hwb) {
 	return [hwb[0], c * 100, g * 100];
 };
 
-convert.apple.rgb = function (apple) {
-	return [(apple[0] / 65535) * 255, (apple[1] / 65535) * 255, (apple[2] / 65535) * 255];
-};
+convert.apple.rgb = (apple) => [
+	(apple[0] / 65535) * 255,
+	(apple[1] / 65535) * 255,
+	(apple[2] / 65535) * 255,
+];
 
-convert.rgb.apple = function (rgb) {
-	return [(rgb[0] / 255) * 65535, (rgb[1] / 255) * 65535, (rgb[2] / 255) * 65535];
-};
+convert.rgb.apple = (rgb) => [
+	(rgb[0] / 255) * 65535,
+	(rgb[1] / 255) * 65535,
+	(rgb[2] / 255) * 65535,
+];
 
-convert.gray.rgb = function (args) {
-	return [args[0] / 100 * 255, args[0] / 100 * 255, args[0] / 100 * 255];
-};
+convert.gray.rgb = (args) => [
+	(args[0] / 100) * 255,
+	(args[0] / 100) * 255,
+	(args[0] / 100) * 255,
+];
 
-convert.gray.hsl = convert.gray.hsv = function (args) {
-	return [0, 0, args[0]];
-};
+convert.gray.hsl = convert.gray.hsv = (args) => [0, 0, args[0]];
 
-convert.gray.hwb = function (gray) {
-	return [0, 100, gray[0]];
-};
+convert.gray.hwb = (gray) => [0, 100, gray[0]];
 
-convert.gray.cmyk = function (gray) {
-	return [0, 0, 0, gray[0]];
-};
+convert.gray.cmyk = (gray) => [0, 0, 0, gray[0]];
 
-convert.gray.lab = function (gray) {
-	return [gray[0], 0, 0];
-};
+convert.gray.lab = (gray) => [gray[0], 0, 0];
 
-convert.gray.hex = function (gray) {
-	var val = Math.round(gray[0] / 100 * 255) & 0xFF;
+convert.gray.hex = (gray) => {
+	var val = Math.round((gray[0] / 100) * 255) & 0xff;
 	var integer = (val << 16) + (val << 8) + val;
 
 	var string = integer.toString(16).toUpperCase();
-	return '000000'.substring(string.length) + string;
+	return "000000".substring(string.length) + string;
 };
 
-convert.rgb.gray = function (rgb) {
+convert.rgb.gray = (rgb) => {
 	var val = (rgb[0] + rgb[1] + rgb[2]) / 3;
-	return [val / 255 * 100];
+	return [(val / 255) * 100];
 };

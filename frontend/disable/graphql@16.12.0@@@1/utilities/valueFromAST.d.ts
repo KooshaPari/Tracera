@@ -1,7 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { ValueNode } from '../language/ast';
-import type { GraphQLInputType } from '../type/definition';
+import type { Maybe } from "../jsutils/Maybe";
+import type { ObjMap } from "../jsutils/ObjMap";
+import type { ValueNode } from "../language/ast";
+import type { GraphQLInputType } from "../type/definition";
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -23,7 +23,7 @@ import type { GraphQLInputType } from '../type/definition';
  *
  */
 export declare function valueFromAST(
-  valueNode: Maybe<ValueNode>,
-  type: GraphQLInputType,
-  variables?: Maybe<ObjMap<unknown>>,
+	valueNode: Maybe<ValueNode>,
+	type: GraphQLInputType,
+	variables?: Maybe<ObjMap<unknown>>,
 ): unknown;

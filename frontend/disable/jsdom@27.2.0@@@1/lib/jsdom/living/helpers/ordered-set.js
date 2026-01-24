@@ -6,99 +6,100 @@
 // an element while keep the relative order using a Set, only remove and then add something at the end.
 
 module.exports = class OrderedSet {
-  constructor() {
-    this._items = [];
-  }
+	constructor() {
+		this._items = [];
+	}
 
-  append(item) {
-    if (!this.contains(item)) {
-      this._items.push(item);
-    }
-  }
+	append(item) {
+		if (!this.contains(item)) {
+			this._items.push(item);
+		}
+	}
 
-  prepend(item) {
-    if (!this.contains(item)) {
-      this._items.unshift(item);
-    }
-  }
+	prepend(item) {
+		if (!this.contains(item)) {
+			this._items.unshift(item);
+		}
+	}
 
-  replace(item, replacement) {
-    let seen = false;
-    for (let i = 0; i < this._items.length;) {
-      const isInstance = this._items[i] === item || this._items[i] === replacement;
-      if (seen && isInstance) {
-        this._items.splice(i, 1);
-      } else {
-        if (isInstance) {
-          this._items[i] = replacement;
-          seen = true;
-        }
-        i++;
-      }
-    }
-  }
+	replace(item, replacement) {
+		let seen = false;
+		for (let i = 0; i < this._items.length; ) {
+			const isInstance =
+				this._items[i] === item || this._items[i] === replacement;
+			if (seen && isInstance) {
+				this._items.splice(i, 1);
+			} else {
+				if (isInstance) {
+					this._items[i] = replacement;
+					seen = true;
+				}
+				i++;
+			}
+		}
+	}
 
-  remove(...items) {
-    this.removePredicate(item => items.includes(item));
-  }
+	remove(...items) {
+		this.removePredicate((item) => items.includes(item));
+	}
 
-  removePredicate(predicate) {
-    for (let i = 0; i < this._items.length;) {
-      if (predicate(this._items[i])) {
-        this._items.splice(i, 1);
-      } else {
-        i++;
-      }
-    }
-  }
+	removePredicate(predicate) {
+		for (let i = 0; i < this._items.length; ) {
+			if (predicate(this._items[i])) {
+				this._items.splice(i, 1);
+			} else {
+				i++;
+			}
+		}
+	}
 
-  empty() {
-    this._items.length = 0;
-  }
+	empty() {
+		this._items.length = 0;
+	}
 
-  contains(item) {
-    return this._items.includes(item);
-  }
+	contains(item) {
+		return this._items.includes(item);
+	}
 
-  get size() {
-    return this._items.length;
-  }
+	get size() {
+		return this._items.length;
+	}
 
-  isEmpty() {
-    return this._items.length === 0;
-  }
+	isEmpty() {
+		return this._items.length === 0;
+	}
 
-  // Useful for other parts of jsdom
+	// Useful for other parts of jsdom
 
-  [Symbol.iterator]() {
-    return this._items[Symbol.iterator]();
-  }
+	[Symbol.iterator]() {
+		return this._items[Symbol.iterator]();
+	}
 
-  keys() {
-    return this._items.keys();
-  }
+	keys() {
+		return this._items.keys();
+	}
 
-  get(index) {
-    return this._items[index];
-  }
+	get(index) {
+		return this._items[index];
+	}
 
-  some(func) {
-    return this._items.some(func);
-  }
+	some(func) {
+		return this._items.some(func);
+	}
 
-  // https://dom.spec.whatwg.org/#concept-ordered-set-parser
-  static parse(input) {
-    const tokens = new OrderedSet();
-    for (const token of input.split(/[\t\n\f\r ]+/)) {
-      if (token) {
-        tokens.append(token);
-      }
-    }
-    return tokens;
-  }
+	// https://dom.spec.whatwg.org/#concept-ordered-set-parser
+	static parse(input) {
+		const tokens = new OrderedSet();
+		for (const token of input.split(/[\t\n\f\r ]+/)) {
+			if (token) {
+				tokens.append(token);
+			}
+		}
+		return tokens;
+	}
 
-  // https://dom.spec.whatwg.org/#concept-ordered-set-serializer
-  serialize() {
-    return this._items.join(" ");
-  }
+	// https://dom.spec.whatwg.org/#concept-ordered-set-serializer
+	serialize() {
+		return this._items.join(" ");
+	}
 };

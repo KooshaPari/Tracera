@@ -1,42 +1,45 @@
-import { Address4 } from './ipv4';
-import { Address6 } from './ipv6';
+import type { Address4 } from "./ipv4";
+import type { Address6 } from "./ipv6";
 
 export interface ReverseFormOptions {
-  omitSuffix?: boolean;
+	omitSuffix?: boolean;
 }
 
-export function isInSubnet(this: Address4 | Address6, address: Address4 | Address6) {
-  if (this.subnetMask < address.subnetMask) {
-    return false;
-  }
+export function isInSubnet(
+	this: Address4 | Address6,
+	address: Address4 | Address6,
+) {
+	if (this.subnetMask < address.subnetMask) {
+		return false;
+	}
 
-  if (this.mask(address.subnetMask) === address.mask()) {
-    return true;
-  }
+	if (this.mask(address.subnetMask) === address.mask()) {
+		return true;
+	}
 
-  return false;
+	return false;
 }
 
 export function isCorrect(defaultBits: number) {
-  return function (this: Address4 | Address6) {
-    if (this.addressMinusSuffix !== this.correctForm()) {
-      return false;
-    }
+	return function (this: Address4 | Address6) {
+		if (this.addressMinusSuffix !== this.correctForm()) {
+			return false;
+		}
 
-    if (this.subnetMask === defaultBits && !this.parsedSubnet) {
-      return true;
-    }
+		if (this.subnetMask === defaultBits && !this.parsedSubnet) {
+			return true;
+		}
 
-    return this.parsedSubnet === String(this.subnetMask);
-  };
+		return this.parsedSubnet === String(this.subnetMask);
+	};
 }
 
 export function numberToPaddedHex(number: number) {
-  return number.toString(16).padStart(2, '0');
+	return number.toString(16).padStart(2, "0");
 }
 
 export function stringToPaddedHex(numberString: string) {
-  return numberToPaddedHex(parseInt(numberString, 10));
+	return numberToPaddedHex(parseInt(numberString, 10));
 }
 
 /**
@@ -44,12 +47,12 @@ export function stringToPaddedHex(numberString: string) {
  * @param position Byte position, where 0 is the least significant bit
  */
 export function testBit(binaryValue: string, position: number): boolean {
-  const { length } = binaryValue;
+	const { length } = binaryValue;
 
-  if (position > length) {
-    return false;
-  }
+	if (position > length) {
+		return false;
+	}
 
-  const positionInString = length - position;
-  return binaryValue.substring(positionInString, positionInString + 1) === '1';
+	const positionInString = length - position;
+	return binaryValue.substring(positionInString, positionInString + 1) === "1";
 }

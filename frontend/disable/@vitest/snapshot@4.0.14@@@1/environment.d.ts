@@ -1,1 +1,1 @@
-export * from './dist/environment.js'
+export * from "./dist/environment.js";

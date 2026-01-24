@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/escape');
+"use strict";
+module.exports = require("../full/escape");

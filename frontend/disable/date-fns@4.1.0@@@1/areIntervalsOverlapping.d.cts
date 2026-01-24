@@ -3,8 +3,8 @@ import type { ContextOptions, Interval } from "./types.js";
  * The {@link areIntervalsOverlapping} function options.
  */
 export interface AreIntervalsOverlappingOptions extends ContextOptions<Date> {
-  /** Whether the comparison is inclusive or not */
-  inclusive?: boolean;
+	/** Whether the comparison is inclusive or not */
+	inclusive?: boolean;
 }
 /**
  * @name areIntervalsOverlapping
@@ -54,7 +54,7 @@ export interface AreIntervalsOverlappingOptions extends ContextOptions<Date> {
  * //=> true
  */
 export declare function areIntervalsOverlapping(
-  intervalLeft: Interval,
-  intervalRight: Interval,
-  options?: AreIntervalsOverlappingOptions,
+	intervalLeft: Interval,
+	intervalRight: Interval,
+	options?: AreIntervalsOverlappingOptions,
 ): boolean;

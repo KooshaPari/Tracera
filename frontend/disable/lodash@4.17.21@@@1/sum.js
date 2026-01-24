@@ -1,5 +1,5 @@
-var baseSum = require('./_baseSum'),
-    identity = require('./identity');
+var baseSum = require("./_baseSum"),
+	identity = require("./identity");
 
 /**
  * Computes the sum of the values in `array`.
@@ -16,9 +16,7 @@ var baseSum = require('./_baseSum'),
  * // => 20
  */
 function sum(array) {
-  return (array && array.length)
-    ? baseSum(array, identity)
-    : 0;
+	return array && array.length ? baseSum(array, identity) : 0;
 }
 
 module.exports = sum;

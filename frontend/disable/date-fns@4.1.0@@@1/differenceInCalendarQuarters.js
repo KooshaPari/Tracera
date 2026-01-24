@@ -28,16 +28,16 @@ import { getQuarter } from "./getQuarter.js";
  * //=> 3
  */
 export function differenceInCalendarQuarters(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
-  const quartersDiff = getQuarter(laterDate_) - getQuarter(earlierDate_);
+	const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
+	const quartersDiff = getQuarter(laterDate_) - getQuarter(earlierDate_);
 
-  return yearsDiff * 4 + quartersDiff;
+	return yearsDiff * 4 + quartersDiff;
 }
 
 // Fallback for modularized imports:

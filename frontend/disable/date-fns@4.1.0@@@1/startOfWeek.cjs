@@ -35,19 +35,19 @@ var _index2 = require("./toDate.cjs");
  * //=> Mon Sep 01 2014 00:00:00
  */
 function startOfWeek(date, options) {
-  const defaultOptions = (0, _index.getDefaultOptions)();
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const defaultOptions = (0, _index.getDefaultOptions)();
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const _date = (0, _index2.toDate)(date, options?.in);
-  const day = _date.getDay();
-  const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
+	const _date = (0, _index2.toDate)(date, options?.in);
+	const day = _date.getDay();
+	const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
 
-  _date.setDate(_date.getDate() - diff);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
+	_date.setDate(_date.getDate() - diff);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
 }

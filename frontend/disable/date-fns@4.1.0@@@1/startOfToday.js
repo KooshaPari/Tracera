@@ -25,7 +25,7 @@ import { startOfDay } from "./startOfDay.js";
  * //=> Mon Oct 6 2014 00:00:00
  */
 export function startOfToday(options) {
-  return startOfDay(Date.now(), options);
+	return startOfDay(Date.now(), options);
 }
 
 // Fallback for modularized imports:

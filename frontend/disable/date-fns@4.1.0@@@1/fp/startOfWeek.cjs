@@ -5,6 +5,6 @@ var _index = require("../startOfWeek.cjs");
 var _index2 = require("./_lib/convertToFP.cjs"); // This file is generated automatically by `scripts/build/fp.ts`. Please, don't change it.
 
 const startOfWeek = (exports.startOfWeek = (0, _index2.convertToFP)(
-  _index.startOfWeek,
-  1,
+	_index.startOfWeek,
+	1,
 ));

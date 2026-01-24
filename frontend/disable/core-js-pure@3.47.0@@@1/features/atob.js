@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/atob');
+"use strict";
+module.exports = require("../full/atob");

@@ -1,10 +1,10 @@
-import type { SourceMapSegment, ReverseSegment } from './sourcemap-segment';
-import { COLUMN } from './sourcemap-segment';
+import type { ReverseSegment, SourceMapSegment } from "./sourcemap-segment";
+import { COLUMN } from "./sourcemap-segment";
 
 export type MemoState = {
-  lastKey: number;
-  lastNeedle: number;
-  lastIndex: number;
+	lastKey: number;
+	lastNeedle: number;
+	lastIndex: number;
 };
 
 export let found = false;
@@ -26,59 +26,59 @@ export let found = false;
  * ```
  */
 export function binarySearch(
-  haystack: SourceMapSegment[] | ReverseSegment[],
-  needle: number,
-  low: number,
-  high: number,
+	haystack: SourceMapSegment[] | ReverseSegment[],
+	needle: number,
+	low: number,
+	high: number,
 ): number {
-  while (low <= high) {
-    const mid = low + ((high - low) >> 1);
-    const cmp = haystack[mid][COLUMN] - needle;
+	while (low <= high) {
+		const mid = low + ((high - low) >> 1);
+		const cmp = haystack[mid][COLUMN] - needle;
 
-    if (cmp === 0) {
-      found = true;
-      return mid;
-    }
+		if (cmp === 0) {
+			found = true;
+			return mid;
+		}
 
-    if (cmp < 0) {
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
+		if (cmp < 0) {
+			low = mid + 1;
+		} else {
+			high = mid - 1;
+		}
+	}
 
-  found = false;
-  return low - 1;
+	found = false;
+	return low - 1;
 }
 
 export function upperBound(
-  haystack: SourceMapSegment[] | ReverseSegment[],
-  needle: number,
-  index: number,
+	haystack: SourceMapSegment[] | ReverseSegment[],
+	needle: number,
+	index: number,
 ): number {
-  for (let i = index + 1; i < haystack.length; index = i++) {
-    if (haystack[i][COLUMN] !== needle) break;
-  }
-  return index;
+	for (let i = index + 1; i < haystack.length; index = i++) {
+		if (haystack[i][COLUMN] !== needle) break;
+	}
+	return index;
 }
 
 export function lowerBound(
-  haystack: SourceMapSegment[] | ReverseSegment[],
-  needle: number,
-  index: number,
+	haystack: SourceMapSegment[] | ReverseSegment[],
+	needle: number,
+	index: number,
 ): number {
-  for (let i = index - 1; i >= 0; index = i--) {
-    if (haystack[i][COLUMN] !== needle) break;
-  }
-  return index;
+	for (let i = index - 1; i >= 0; index = i--) {
+		if (haystack[i][COLUMN] !== needle) break;
+	}
+	return index;
 }
 
 export function memoizedState(): MemoState {
-  return {
-    lastKey: -1,
-    lastNeedle: -1,
-    lastIndex: -1,
-  };
+	return {
+		lastKey: -1,
+		lastNeedle: -1,
+		lastIndex: -1,
+	};
 }
 
 /**
@@ -86,30 +86,30 @@ export function memoizedState(): MemoState {
  * index, allowing us to skip a few tests if mappings are monotonically increasing.
  */
 export function memoizedBinarySearch(
-  haystack: SourceMapSegment[] | ReverseSegment[],
-  needle: number,
-  state: MemoState,
-  key: number,
+	haystack: SourceMapSegment[] | ReverseSegment[],
+	needle: number,
+	state: MemoState,
+	key: number,
 ): number {
-  const { lastKey, lastNeedle, lastIndex } = state;
+	const { lastKey, lastNeedle, lastIndex } = state;
 
-  let low = 0;
-  let high = haystack.length - 1;
-  if (key === lastKey) {
-    if (needle === lastNeedle) {
-      found = lastIndex !== -1 && haystack[lastIndex][COLUMN] === needle;
-      return lastIndex;
-    }
+	let low = 0;
+	let high = haystack.length - 1;
+	if (key === lastKey) {
+		if (needle === lastNeedle) {
+			found = lastIndex !== -1 && haystack[lastIndex][COLUMN] === needle;
+			return lastIndex;
+		}
 
-    if (needle >= lastNeedle) {
-      // lastIndex may be -1 if the previous needle was not found.
-      low = lastIndex === -1 ? 0 : lastIndex;
-    } else {
-      high = lastIndex;
-    }
-  }
-  state.lastKey = key;
-  state.lastNeedle = needle;
+		if (needle >= lastNeedle) {
+			// lastIndex may be -1 if the previous needle was not found.
+			low = lastIndex === -1 ? 0 : lastIndex;
+		} else {
+			high = lastIndex;
+		}
+	}
+	state.lastKey = key;
+	state.lastNeedle = needle;
 
-  return (state.lastIndex = binarySearch(haystack, needle, low, high));
+	return (state.lastIndex = binarySearch(haystack, needle, low, high));
 }

@@ -1,37 +1,37 @@
 var exponent = 3;
 
 export var polyIn = (function custom(e) {
-  e = +e;
+	e = +e;
 
-  function polyIn(t) {
-    return Math.pow(t, e);
-  }
+	function polyIn(t) {
+		return t ** e;
+	}
 
-  polyIn.exponent = custom;
+	polyIn.exponent = custom;
 
-  return polyIn;
+	return polyIn;
 })(exponent);
 
 export var polyOut = (function custom(e) {
-  e = +e;
+	e = +e;
 
-  function polyOut(t) {
-    return 1 - Math.pow(1 - t, e);
-  }
+	function polyOut(t) {
+		return 1 - (1 - t) ** e;
+	}
 
-  polyOut.exponent = custom;
+	polyOut.exponent = custom;
 
-  return polyOut;
+	return polyOut;
 })(exponent);
 
 export var polyInOut = (function custom(e) {
-  e = +e;
+	e = +e;
 
-  function polyInOut(t) {
-    return ((t *= 2) <= 1 ? Math.pow(t, e) : 2 - Math.pow(2 - t, e)) / 2;
-  }
+	function polyInOut(t) {
+		return ((t *= 2) <= 1 ? t ** e : 2 - (2 - t) ** e) / 2;
+	}
 
-  polyInOut.exponent = custom;
+	polyInOut.exponent = custom;
 
-  return polyInOut;
+	return polyInOut;
 })(exponent);

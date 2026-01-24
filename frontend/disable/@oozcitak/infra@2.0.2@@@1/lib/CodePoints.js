@@ -1,6 +1,22 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ASCIIAlphanumeric = exports.ASCIIAlpha = exports.ASCIILowerAlpha = exports.ASCIIUpperAlpha = exports.ASCIIHexDigit = exports.ASCIILowerHexDigit = exports.ASCIIUpperHexDigit = exports.ASCIIDigit = exports.Control = exports.C0ControlOrSpace = exports.C0Control = exports.ASCIIWhiteSpace = exports.ASCIITabOrNewLine = exports.ASCIICodePoint = exports.NonCharacter = exports.ScalarValue = exports.Surrogate = void 0;
+exports.ASCIIAlphanumeric =
+	exports.ASCIIAlpha =
+	exports.ASCIILowerAlpha =
+	exports.ASCIIUpperAlpha =
+	exports.ASCIIHexDigit =
+	exports.ASCIILowerHexDigit =
+	exports.ASCIIUpperHexDigit =
+	exports.ASCIIDigit =
+	exports.Control =
+	exports.C0ControlOrSpace =
+	exports.C0Control =
+	exports.ASCIIWhiteSpace =
+	exports.ASCIITabOrNewLine =
+	exports.ASCIICodePoint =
+	exports.NonCharacter =
+	exports.ScalarValue =
+	exports.Surrogate =
+		void 0;
 /**
  * A surrogate is a code point that is in the range U+D800 to U+DFFF, inclusive.
  */
@@ -17,7 +33,8 @@ exports.ScalarValue = /[\uD800-\uDFFF]/;
  * U+BFFFF, U+CFFFE, U+CFFFF, U+DFFFE, U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE,
  * U+FFFFF, U+10FFFE, or U+10FFFF.
  */
-exports.NonCharacter = /[\uFDD0-\uFDEF\uFFFE\uFFFF]|[\uD83F\uD87F\uD8BF\uD8FF\uD93F\uD97F\uD9BF\uD9FF\uDA3F\uDA7F\uDABF\uDAFF\uDB3F\uDB7F\uDBBF\uDBFF][\uDFFE\uDFFF]/;
+exports.NonCharacter =
+	/[\uFDD0-\uFDEF\uFFFE\uFFFF]|[\uD83F\uD87F\uD8BF\uD8FF\uD93F\uD97F\uD9BF\uD9FF\uDA3F\uDA7F\uDABF\uDAFF\uDB3F\uDB7F\uDBBF\uDBFF][\uDFFE\uDFFF]/;
 /**
  * An ASCII code point is a code point in the range U+0000 NULL to U+007F
  * DELETE, inclusive.

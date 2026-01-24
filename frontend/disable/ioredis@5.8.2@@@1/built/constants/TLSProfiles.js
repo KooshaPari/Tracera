@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * TLS settings for Redis Cloud. Updated on 2022-08-19.
@@ -143,7 +142,7 @@ Mx86OyXShkDOOyyGeMlhLxS67ttVb9+E7gUJTb0o2HLO02JQZR7rkpeDMdmztcpH
 WD9f
 -----END CERTIFICATE-----`;
 const TLSProfiles = {
-    RedisCloudFixed: { ca: RedisCloudCA },
-    RedisCloudFlexible: { ca: RedisCloudCA },
+	RedisCloudFixed: { ca: RedisCloudCA },
+	RedisCloudFlexible: { ca: RedisCloudCA },
 };
 exports.default = TLSProfiles;

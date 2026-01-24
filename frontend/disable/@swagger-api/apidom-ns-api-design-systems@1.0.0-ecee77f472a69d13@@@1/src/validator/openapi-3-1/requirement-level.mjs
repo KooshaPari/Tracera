@@ -1,7 +1,7 @@
 export const may = (value, values) => {
-  if (value === null) return true;
-  return values.includes(value);
+	if (value === null) return true;
+	return values.includes(value);
 };
 export const must = (value, values) => {
-  return values.includes(value);
+	return values.includes(value);
 };

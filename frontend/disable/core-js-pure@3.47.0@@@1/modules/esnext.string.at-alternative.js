@@ -1,3 +1,3 @@
-'use strict';
+"use strict";
 // TODO: Remove from `core-js@4`
-require('../modules/es.string.at-alternative');
+require("../modules/es.string.at-alternative");

@@ -20,5 +20,5 @@ var _index = require("./toDate.cjs");
  * //=> 5
  */
 function getSeconds(date) {
-  return (0, _index.toDate)(date).getSeconds();
+	return (0, _index.toDate)(date).getSeconds();
 }

@@ -1,6 +1,6 @@
-var baseExtremum = require('./_baseExtremum'),
-    baseLt = require('./_baseLt'),
-    identity = require('./identity');
+var baseExtremum = require("./_baseExtremum"),
+	baseLt = require("./_baseLt"),
+	identity = require("./identity");
 
 /**
  * Computes the minimum value of `array`. If `array` is empty or falsey,
@@ -21,9 +21,9 @@ var baseExtremum = require('./_baseExtremum'),
  * // => undefined
  */
 function min(array) {
-  return (array && array.length)
-    ? baseExtremum(array, identity, baseLt)
-    : undefined;
+	return array && array.length
+		? baseExtremum(array, identity, baseLt)
+		: undefined;
 }
 
 module.exports = min;

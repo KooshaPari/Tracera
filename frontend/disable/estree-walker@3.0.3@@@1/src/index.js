@@ -1,5 +1,5 @@
-import { SyncWalker } from './sync.js';
-import { AsyncWalker } from './async.js';
+import { AsyncWalker } from "./async.js";
+import { SyncWalker } from "./sync.js";
 
 /**
  * @typedef {import('estree').Node} Node

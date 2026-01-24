@@ -46,37 +46,37 @@ var _index4 = require("./startOfWeek.cjs");
  * // ]
  */
 function eachWeekOfInterval(interval, options) {
-  const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
+	const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
 
-  let reversed = +start > +end;
-  const startDateWeek = reversed
-    ? (0, _index4.startOfWeek)(end, options)
-    : (0, _index4.startOfWeek)(start, options);
-  const endDateWeek = reversed
-    ? (0, _index4.startOfWeek)(start, options)
-    : (0, _index4.startOfWeek)(end, options);
+	let reversed = +start > +end;
+	const startDateWeek = reversed
+		? (0, _index4.startOfWeek)(end, options)
+		: (0, _index4.startOfWeek)(start, options);
+	const endDateWeek = reversed
+		? (0, _index4.startOfWeek)(start, options)
+		: (0, _index4.startOfWeek)(end, options);
 
-  startDateWeek.setHours(15);
-  endDateWeek.setHours(15);
+	startDateWeek.setHours(15);
+	endDateWeek.setHours(15);
 
-  const endTime = +endDateWeek.getTime();
-  let currentDate = startDateWeek;
+	const endTime = +endDateWeek.getTime();
+	let currentDate = startDateWeek;
 
-  let step = options?.step ?? 1;
-  if (!step) return [];
-  if (step < 0) {
-    step = -step;
-    reversed = !reversed;
-  }
+	let step = options?.step ?? 1;
+	if (!step) return [];
+	if (step < 0) {
+		step = -step;
+		reversed = !reversed;
+	}
 
-  const dates = [];
+	const dates = [];
 
-  while (+currentDate <= endTime) {
-    currentDate.setHours(0);
-    dates.push((0, _index3.constructFrom)(start, currentDate));
-    currentDate = (0, _index2.addWeeks)(currentDate, step);
-    currentDate.setHours(15);
-  }
+	while (+currentDate <= endTime) {
+		currentDate.setHours(0);
+		dates.push((0, _index3.constructFrom)(start, currentDate));
+		currentDate = (0, _index2.addWeeks)(currentDate, step);
+		currentDate.setHours(15);
+	}
 
-  return reversed ? dates.reverse() : dates;
+	return reversed ? dates.reverse() : dates;
 }

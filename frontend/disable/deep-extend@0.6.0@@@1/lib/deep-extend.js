@@ -25,21 +25,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-'use strict';
-
 function isSpecificValue(val) {
-	return (
-		val instanceof Buffer
-		|| val instanceof Date
-		|| val instanceof RegExp
-	) ? true : false;
+	return val instanceof Buffer || val instanceof Date || val instanceof RegExp
+		? true
+		: false;
 }
 
 function cloneSpecificValue(val) {
 	if (val instanceof Buffer) {
-		var x = Buffer.alloc
-			? Buffer.alloc(val.length)
-			: new Buffer(val.length);
+		var x = Buffer.alloc ? Buffer.alloc(val.length) : new Buffer(val.length);
 		val.copy(x);
 		return x;
 	} else if (val instanceof Date) {
@@ -47,7 +41,7 @@ function cloneSpecificValue(val) {
 	} else if (val instanceof RegExp) {
 		return new RegExp(val);
 	} else {
-		throw new Error('Unexpected situation');
+		throw new Error("Unexpected situation");
 	}
 }
 
@@ -56,8 +50,8 @@ function cloneSpecificValue(val) {
  */
 function deepCloneArray(arr) {
 	var clone = [];
-	arr.forEach(function (item, index) {
-		if (typeof item === 'object' && item !== null) {
+	arr.forEach((item, index) => {
+		if (typeof item === "object" && item !== null) {
 			if (Array.isArray(item)) {
 				clone[index] = deepCloneArray(item);
 			} else if (isSpecificValue(item)) {
@@ -73,7 +67,7 @@ function deepCloneArray(arr) {
 }
 
 function safeGetProperty(object, property) {
-	return property === '__proto__' ? undefined : object[property];
+	return property === "__proto__" ? undefined : object[property];
 }
 
 /**
@@ -85,8 +79,8 @@ function safeGetProperty(object, property) {
  * object as first argument, like this:
  *   deepExtend({}, yourObj_1, [yourObj_N]);
  */
-var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
-	if (arguments.length < 1 || typeof arguments[0] !== 'object') {
+var deepExtend = (module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
+	if (arguments.length < 1 || typeof arguments[0] !== "object") {
 		return false;
 	}
 
@@ -101,13 +95,13 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 
 	var val, src, clone;
 
-	args.forEach(function (obj) {
+	args.forEach((obj) => {
 		// skip argument if isn't an object, is null, or is an array
-		if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+		if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
 			return;
 		}
 
-		Object.keys(obj).forEach(function (key) {
+		Object.keys(obj).forEach((key) => {
 			src = safeGetProperty(target, key); // source value
 			val = safeGetProperty(obj, key); // new value
 
@@ -115,30 +109,34 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 			if (val === target) {
 				return;
 
-			/**
-			 * if new value isn't object then just overwrite by new value
-			 * instead of extending.
-			 */
-			} else if (typeof val !== 'object' || val === null) {
+				/**
+				 * if new value isn't object then just overwrite by new value
+				 * instead of extending.
+				 */
+			} else if (typeof val !== "object" || val === null) {
 				target[key] = val;
 				return;
 
-			// just clone arrays (and recursive clone objects inside)
+				// just clone arrays (and recursive clone objects inside)
 			} else if (Array.isArray(val)) {
 				target[key] = deepCloneArray(val);
 				return;
 
-			// custom cloning and overwrite for specific objects
+				// custom cloning and overwrite for specific objects
 			} else if (isSpecificValue(val)) {
 				target[key] = cloneSpecificValue(val);
 				return;
 
-			// overwrite by new value if source isn't object or array
-			} else if (typeof src !== 'object' || src === null || Array.isArray(src)) {
+				// overwrite by new value if source isn't object or array
+			} else if (
+				typeof src !== "object" ||
+				src === null ||
+				Array.isArray(src)
+			) {
 				target[key] = deepExtend({}, val);
 				return;
 
-			// source value and new value is objects both, extending...
+				// source value and new value is objects both, extending...
 			} else {
 				target[key] = deepExtend(src, val);
 				return;
@@ -147,4 +145,4 @@ var deepExtend = module.exports = function (/*obj_1, [obj_2], [obj_N]*/) {
 	});
 
 	return target;
-};
+});

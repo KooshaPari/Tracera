@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { bundleDocument } from '../../bundle';
-import { BaseResolver } from '../../resolve';
-import { parseYamlToDocument, yamlSerializer, makeConfig } from '../../../__tests__/utils';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	yamlSerializer,
+} from "../../../__tests__/utils";
+import { bundleDocument } from "../../bundle";
+import { BaseResolver } from "../../resolve";
 
-describe('oas3 remove-x-internal', () => {
-  expect.addSnapshotSerializer(yamlSerializer);
-  const testDocument = parseYamlToDocument(
-    outdent`
+describe("oas3 remove-x-internal", () => {
+	expect.addSnapshotSerializer(yamlSerializer);
+	const testDocument = parseYamlToDocument(
+		outdent`
       openapi: 3.0.0
       paths:
         /pet:
@@ -18,19 +22,21 @@ describe('oas3 remove-x-internal', () => {
         parameters:
           x:
             name: x
-    `
-  );
+    `,
+	);
 
-  it('should use `internalFlagProperty` option to remove internal paths', async () => {
-    const { bundle: res } = await bundleDocument({
-      document: testDocument,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: { 'remove-x-internal': { internalFlagProperty: 'removeit' } },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+	it("should use `internalFlagProperty` option to remove internal paths", async () => {
+		const { bundle: res } = await bundleDocument({
+			document: testDocument,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"remove-x-internal": { internalFlagProperty: "removeit" },
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
           openapi: 3.0.0
           components:
             parameters:
@@ -38,11 +44,11 @@ describe('oas3 remove-x-internal', () => {
                 name: x
 
         `);
-  });
+	});
 
-  it('should clean types: Server, Operation, Parameter, PathItem, Example', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should clean types: Server, Operation, Parameter, PathItem, Example", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         servers:
           - url: //petstore.swagger.io/v2
@@ -90,14 +96,17 @@ describe('oas3 remove-x-internal', () => {
               name: x
             y:
               name: y
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({ rules: {}, decorators: { 'remove-x-internal': 'on' } }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "remove-x-internal": "on" },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.1.0
       paths:
         /pet:
@@ -118,11 +127,11 @@ describe('oas3 remove-x-internal', () => {
             name: 'y'
 
       `);
-  });
+	});
 
-  it('should clean types: Schema, Response, RequestBody, MediaType, Callback', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should clean types: Schema, Response, RequestBody, MediaType, Callback", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         paths:
           /pet:
@@ -163,15 +172,18 @@ describe('oas3 remove-x-internal', () => {
                     servers:
                       - url: //callback-url.path-level/v1
                         description: Path level server
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({ rules: {}, decorators: { 'remove-x-internal': 'on' } }),
-    });
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "remove-x-internal": "on" },
+			}),
+		});
 
-    expect(res.parsed).toMatchInlineSnapshot(`
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.1.0
       paths:
         /pet:
@@ -186,11 +198,11 @@ describe('oas3 remove-x-internal', () => {
       components: {}
 
       `);
-  });
+	});
 
-  it('should remove refs', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should remove refs", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         openapi: 3.0.1
         info:
           version: 1.0.0
@@ -237,14 +249,17 @@ describe('oas3 remove-x-internal', () => {
               schema:
                 type: string
               x-internal: true
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({ rules: {}, decorators: { 'remove-x-internal': 'on' } }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "remove-x-internal": "on" },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.1
       info:
         version: 1.0.0
@@ -270,11 +285,11 @@ describe('oas3 remove-x-internal', () => {
               type: string
 
     `);
-  });
+	});
 
-  it('should remove $refs and the corresponding discriminator mapping', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should remove $refs and the corresponding discriminator mapping", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         info: {}
         paths:
@@ -320,14 +335,17 @@ describe('oas3 remove-x-internal', () => {
                 type:
                   type: string
                   enum: [cranberry]
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({ rules: {}, decorators: { 'remove-x-internal': 'on' } }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "remove-x-internal": "on" },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.1.0
       info: {}
       paths:
@@ -367,13 +385,13 @@ describe('oas3 remove-x-internal', () => {
                   - cranberry
 
     `);
-  });
+	});
 });
 
-describe('oas2 remove-x-internal', () => {
-  it('should clean types - base test', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+describe("oas2 remove-x-internal", () => {
+	it("should clean types - base test", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         host: api.instagram.com
         paths:
@@ -397,14 +415,17 @@ describe('oas2 remove-x-internal', () => {
                 '200':
                   x-internal: true
                   description: List of recent media entries.
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({ rules: {}, decorators: { 'remove-x-internal': 'on' } }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "remove-x-internal": "on" },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
           swagger: '2.0'
           host: api.instagram.com
           paths:
@@ -412,5 +433,5 @@ describe('oas2 remove-x-internal', () => {
               get: {}
 
         `);
-  });
+	});
 });

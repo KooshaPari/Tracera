@@ -1,4 +1,3 @@
-"use strict";
 /*--------------------------------------------------------------------------
 
 @sinclair/typebox/system
@@ -27,64 +26,68 @@ THE SOFTWARE.
 
 ---------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TypeSystem = exports.TypeSystemDuplicateFormat = exports.TypeSystemDuplicateTypeKind = void 0;
+exports.TypeSystem =
+	exports.TypeSystemDuplicateFormat =
+	exports.TypeSystemDuplicateTypeKind =
+		void 0;
 const Types = require("../typebox");
 class TypeSystemDuplicateTypeKind extends Error {
-    constructor(kind) {
-        super(`Duplicate type kind '${kind}' detected`);
-    }
+	constructor(kind) {
+		super(`Duplicate type kind '${kind}' detected`);
+	}
 }
 exports.TypeSystemDuplicateTypeKind = TypeSystemDuplicateTypeKind;
 class TypeSystemDuplicateFormat extends Error {
-    constructor(kind) {
-        super(`Duplicate string format '${kind}' detected`);
-    }
+	constructor(kind) {
+		super(`Duplicate string format '${kind}' detected`);
+	}
 }
 exports.TypeSystemDuplicateFormat = TypeSystemDuplicateFormat;
 /** Creates user defined types and formats and provides overrides for value checking behaviours */
 var TypeSystem;
-(function (TypeSystem) {
-    // ------------------------------------------------------------------------
-    // Assertion Policies
-    // ------------------------------------------------------------------------
-    /** Sets whether TypeBox should assert optional properties using the TypeScript `exactOptionalPropertyTypes` assertion policy. The default is `false` */
-    TypeSystem.ExactOptionalPropertyTypes = false;
-    /** Sets whether arrays should be treated as a kind of objects. The default is `false` */
-    TypeSystem.AllowArrayObjects = false;
-    /** Sets whether `NaN` or `Infinity` should be treated as valid numeric values. The default is `false` */
-    TypeSystem.AllowNaN = false;
-    /** Sets whether `null` should validate for void types. The default is `false` */
-    TypeSystem.AllowVoidNull = false;
-    // ------------------------------------------------------------------------
-    // String Formats and Types
-    // ------------------------------------------------------------------------
-    /** Creates a new type */
-    function Type(kind, check) {
-        if (Types.TypeRegistry.Has(kind))
-            throw new TypeSystemDuplicateTypeKind(kind);
-        Types.TypeRegistry.Set(kind, check);
-        return (options = {}) => Types.Type.Unsafe({ ...options, [Types.Kind]: kind });
-    }
-    TypeSystem.Type = Type;
-    /** Creates a new string format */
-    function Format(format, check) {
-        if (Types.FormatRegistry.Has(format))
-            throw new TypeSystemDuplicateFormat(format);
-        Types.FormatRegistry.Set(format, check);
-        return format;
-    }
-    TypeSystem.Format = Format;
-    // ------------------------------------------------------------------------
-    // Deprecated
-    // ------------------------------------------------------------------------
-    /** @deprecated Use `TypeSystem.Type()` instead. */
-    function CreateType(kind, check) {
-        return Type(kind, check);
-    }
-    TypeSystem.CreateType = CreateType;
-    /** @deprecated Use `TypeSystem.Format()` instead.  */
-    function CreateFormat(format, check) {
-        return Format(format, check);
-    }
-    TypeSystem.CreateFormat = CreateFormat;
-})(TypeSystem = exports.TypeSystem || (exports.TypeSystem = {}));
+((TypeSystem) => {
+	// ------------------------------------------------------------------------
+	// Assertion Policies
+	// ------------------------------------------------------------------------
+	/** Sets whether TypeBox should assert optional properties using the TypeScript `exactOptionalPropertyTypes` assertion policy. The default is `false` */
+	TypeSystem.ExactOptionalPropertyTypes = false;
+	/** Sets whether arrays should be treated as a kind of objects. The default is `false` */
+	TypeSystem.AllowArrayObjects = false;
+	/** Sets whether `NaN` or `Infinity` should be treated as valid numeric values. The default is `false` */
+	TypeSystem.AllowNaN = false;
+	/** Sets whether `null` should validate for void types. The default is `false` */
+	TypeSystem.AllowVoidNull = false;
+	// ------------------------------------------------------------------------
+	// String Formats and Types
+	// ------------------------------------------------------------------------
+	/** Creates a new type */
+	function Type(kind, check) {
+		if (Types.TypeRegistry.Has(kind))
+			throw new TypeSystemDuplicateTypeKind(kind);
+		Types.TypeRegistry.Set(kind, check);
+		return (options = {}) =>
+			Types.Type.Unsafe({ ...options, [Types.Kind]: kind });
+	}
+	TypeSystem.Type = Type;
+	/** Creates a new string format */
+	function Format(format, check) {
+		if (Types.FormatRegistry.Has(format))
+			throw new TypeSystemDuplicateFormat(format);
+		Types.FormatRegistry.Set(format, check);
+		return format;
+	}
+	TypeSystem.Format = Format;
+	// ------------------------------------------------------------------------
+	// Deprecated
+	// ------------------------------------------------------------------------
+	/** @deprecated Use `TypeSystem.Type()` instead. */
+	function CreateType(kind, check) {
+		return Type(kind, check);
+	}
+	TypeSystem.CreateType = CreateType;
+	/** @deprecated Use `TypeSystem.Format()` instead.  */
+	function CreateFormat(format, check) {
+		return Format(format, check);
+	}
+	TypeSystem.CreateFormat = CreateFormat;
+})((TypeSystem = exports.TypeSystem || (exports.TypeSystem = {})));

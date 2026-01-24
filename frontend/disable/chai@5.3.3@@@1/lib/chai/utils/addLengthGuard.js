@@ -1,4 +1,4 @@
-const fnLengthDesc = Object.getOwnPropertyDescriptor(function () {}, 'length');
+const fnLengthDesc = Object.getOwnPropertyDescriptor(() => {}, "length");
 
 /*!
  * Chai - addLengthGuard utility
@@ -41,33 +41,33 @@ const fnLengthDesc = Object.getOwnPropertyDescriptor(function () {}, 'length');
  * @name addLengthGuard
  */
 export function addLengthGuard(fn, assertionName, isChainable) {
-  if (!fnLengthDesc.configurable) return fn;
+	if (!fnLengthDesc.configurable) return fn;
 
-  Object.defineProperty(fn, 'length', {
-    get: function () {
-      if (isChainable) {
-        throw Error(
-          'Invalid Chai property: ' +
-            assertionName +
-            '.length. Due' +
-            ' to a compatibility issue, "length" cannot directly follow "' +
-            assertionName +
-            '". Use "' +
-            assertionName +
-            '.lengthOf" instead.'
-        );
-      }
+	Object.defineProperty(fn, "length", {
+		get: () => {
+			if (isChainable) {
+				throw Error(
+					"Invalid Chai property: " +
+						assertionName +
+						".length. Due" +
+						' to a compatibility issue, "length" cannot directly follow "' +
+						assertionName +
+						'". Use "' +
+						assertionName +
+						'.lengthOf" instead.',
+				);
+			}
 
-      throw Error(
-        'Invalid Chai property: ' +
-          assertionName +
-          '.length. See' +
-          ' docs for proper usage of "' +
-          assertionName +
-          '".'
-      );
-    }
-  });
+			throw Error(
+				"Invalid Chai property: " +
+					assertionName +
+					".length. See" +
+					' docs for proper usage of "' +
+					assertionName +
+					'".',
+			);
+		},
+	});
 
-  return fn;
+	return fn;
 }

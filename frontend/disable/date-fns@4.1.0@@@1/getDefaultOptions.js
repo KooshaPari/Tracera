@@ -25,7 +25,7 @@ import { getDefaultOptions as getInternalDefaultOptions } from "./_lib/defaultOp
  * //=> { weekStarsOn: 1, firstWeekContainsDate: 4 }
  */
 export function getDefaultOptions() {
-  return Object.assign({}, getInternalDefaultOptions());
+	return Object.assign({}, getInternalDefaultOptions());
 }
 
 // Fallback for modularized imports:

@@ -4,23 +4,23 @@
  * @module cheerio/attributes
  */
 
-import { text } from '../static.js';
-import { domEach, camelCase, cssCase } from '../utils.js';
-import { isTag, type AnyNode, type Element } from 'domhandler';
-import type { Cheerio } from '../cheerio.js';
-import { innerText, textContent } from 'domutils';
-import { ElementType } from 'htmlparser2';
+import { type AnyNode, type Element, isTag } from "domhandler";
+import { innerText, textContent } from "domutils";
+import { ElementType } from "htmlparser2";
+import type { Cheerio } from "../cheerio.js";
+import { text } from "../static.js";
+import { camelCase, cssCase, domEach } from "../utils.js";
+
 const hasOwn =
-  // @ts-expect-error `hasOwn` is a standard object method
-  (Object.hasOwn as (object: unknown, prop: string) => boolean) ??
-  ((object: unknown, prop: string) =>
-    Object.prototype.hasOwnProperty.call(object, prop));
+	// @ts-expect-error `hasOwn` is a standard object method
+	(Object.hasOwn as (object: unknown, prop: string) => boolean) ??
+	((object: unknown, prop: string) => Object.hasOwn(object, prop));
 const rspace = /\s+/;
-const dataAttrPrefix = 'data-';
+const dataAttrPrefix = "data-";
 
 // Attributes that are booleans
 const rboolean =
-  /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i;
+	/^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i;
 // Matches strings that look like JSON objects or arrays
 const rbrace = /^{[^]*}$|^\[[^]*]$/;
 
@@ -38,49 +38,49 @@ const rbrace = /^{[^]*}$|^\[[^]*]$/;
  * @returns The attribute's value.
  */
 function getAttr(
-  elem: AnyNode,
-  name: undefined,
-  xmlMode?: boolean,
+	elem: AnyNode,
+	name: undefined,
+	xmlMode?: boolean,
 ): Record<string, string> | undefined;
 function getAttr(
-  elem: AnyNode,
-  name: string,
-  xmlMode?: boolean,
+	elem: AnyNode,
+	name: string,
+	xmlMode?: boolean,
 ): string | undefined;
 function getAttr(
-  elem: AnyNode,
-  name: string | undefined,
-  xmlMode?: boolean,
+	elem: AnyNode,
+	name: string | undefined,
+	xmlMode?: boolean,
 ): Record<string, string> | string | undefined {
-  if (!elem || !isTag(elem)) return undefined;
+	if (!elem || !isTag(elem)) return undefined;
 
-  elem.attribs ??= {};
+	elem.attribs ??= {};
 
-  // Return the entire attribs object if no attribute specified
-  if (!name) {
-    return elem.attribs;
-  }
+	// Return the entire attribs object if no attribute specified
+	if (!name) {
+		return elem.attribs;
+	}
 
-  if (hasOwn(elem.attribs, name)) {
-    // Get the (decoded) attribute
-    return !xmlMode && rboolean.test(name) ? name : elem.attribs[name];
-  }
+	if (hasOwn(elem.attribs, name)) {
+		// Get the (decoded) attribute
+		return !xmlMode && rboolean.test(name) ? name : elem.attribs[name];
+	}
 
-  // Mimic the DOM and return text content as value for `option's`
-  if (elem.name === 'option' && name === 'value') {
-    return text(elem.children);
-  }
+	// Mimic the DOM and return text content as value for `option's`
+	if (elem.name === "option" && name === "value") {
+		return text(elem.children);
+	}
 
-  // Mimic DOM with default value for radios/checkboxes
-  if (
-    elem.name === 'input' &&
-    (elem.attribs['type'] === 'radio' || elem.attribs['type'] === 'checkbox') &&
-    name === 'value'
-  ) {
-    return 'on';
-  }
+	// Mimic DOM with default value for radios/checkboxes
+	if (
+		elem.name === "input" &&
+		(elem.attribs["type"] === "radio" || elem.attribs["type"] === "checkbox") &&
+		name === "value"
+	) {
+		return "on";
+	}
 
-  return undefined;
+	return undefined;
 }
 
 /**
@@ -93,11 +93,11 @@ function getAttr(
  * @param value - The attribute's value.
  */
 function setAttr(el: Element, name: string, value: string | null) {
-  if (value === null) {
-    removeAttribute(el, name);
-  } else {
-    el.attribs[name] = `${value}`;
-  }
+	if (value === null) {
+		removeAttribute(el, name);
+	} else {
+		el.attribs[name] = `${value}`;
+	}
 }
 
 /**
@@ -117,8 +117,8 @@ function setAttr(el: Element, name: string, value: string | null) {
  * @see {@link https://api.jquery.com/attr/}
  */
 export function attr<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string,
+	this: Cheerio<T>,
+	name: string,
 ): string | undefined;
 /**
  * Method for getting all attributes and their values of the first element in
@@ -136,7 +136,7 @@ export function attr<T extends AnyNode>(
  * @see {@link https://api.jquery.com/attr/}
  */
 export function attr<T extends AnyNode>(
-  this: Cheerio<T>,
+	this: Cheerio<T>,
 ): Record<string, string> | undefined;
 /**
  * Method for setting attributes. Sets the attribute value for all elements in
@@ -157,12 +157,12 @@ export function attr<T extends AnyNode>(
  * @see {@link https://api.jquery.com/attr/}
  */
 export function attr<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string,
-  value?:
-    | string
-    | null
-    | ((this: Element, i: number, attrib: string) => string | null),
+	this: Cheerio<T>,
+	name: string,
+	value?:
+		| string
+		| null
+		| ((this: Element, i: number, attrib: string) => string | null),
 ): Cheerio<T>;
 /**
  * Method for setting multiple attributes at once. Sets the attribute value for
@@ -182,46 +182,44 @@ export function attr<T extends AnyNode>(
  * @see {@link https://api.jquery.com/attr/}
  */
 export function attr<T extends AnyNode>(
-  this: Cheerio<T>,
-  values: Record<string, string | null>,
+	this: Cheerio<T>,
+	values: Record<string, string | null>,
 ): Cheerio<T>;
 export function attr<T extends AnyNode>(
-  this: Cheerio<T>,
-  name?: string | Record<string, string | null>,
-  value?:
-    | string
-    | null
-    | ((this: Element, i: number, attrib: string) => string | null),
+	this: Cheerio<T>,
+	name?: string | Record<string, string | null>,
+	value?:
+		| string
+		| null
+		| ((this: Element, i: number, attrib: string) => string | null),
 ): string | Cheerio<T> | undefined | Record<string, string> {
-  // Set the value (with attr map support)
-  if (typeof name === 'object' || value !== undefined) {
-    if (typeof value === 'function') {
-      if (typeof name !== 'string') {
-        {
-          throw new Error('Bad combination of arguments.');
-        }
-      }
-      return domEach(this, (el, i) => {
-        if (isTag(el)) setAttr(el, name, value.call(el, i, el.attribs[name]));
-      });
-    }
-    return domEach(this, (el) => {
-      if (!isTag(el)) return;
+	// Set the value (with attr map support)
+	if (typeof name === "object" || value !== undefined) {
+		if (typeof value === "function") {
+			if (typeof name !== "string") {
+				throw new Error("Bad combination of arguments.");
+			}
+			return domEach(this, (el, i) => {
+				if (isTag(el)) setAttr(el, name, value.call(el, i, el.attribs[name]));
+			});
+		}
+		return domEach(this, (el) => {
+			if (!isTag(el)) return;
 
-      if (typeof name === 'object') {
-        for (const objName of Object.keys(name)) {
-          const objValue = name[objName];
-          setAttr(el, objName, objValue);
-        }
-      } else {
-        setAttr(el, name!, value!);
-      }
-    });
-  }
+			if (typeof name === "object") {
+				for (const objName of Object.keys(name)) {
+					const objValue = name[objName];
+					setAttr(el, objName, objValue);
+				}
+			} else {
+				setAttr(el, name!, value!);
+			}
+		});
+	}
 
-  return arguments.length > 1
-    ? this
-    : getAttr(this[0], name!, this.options.xmlMode);
+	return arguments.length > 1
+		? this
+		: getAttr(this[0], name!, this.options.xmlMode);
 }
 
 /**
@@ -235,16 +233,16 @@ export function attr<T extends AnyNode>(
  * @returns The prop's value.
  */
 function getProp(
-  el: Element,
-  name: string,
-  xmlMode?: boolean,
+	el: Element,
+	name: string,
+	xmlMode?: boolean,
 ): string | undefined | boolean | Element[keyof Element] {
-  return name in el
-    ? // @ts-expect-error TS doesn't like us accessing the value directly here.
-      (el[name] as string | undefined)
-    : !xmlMode && rboolean.test(name)
-      ? getAttr(el, name, false) !== undefined
-      : getAttr(el, name, xmlMode);
+	return name in el
+		? // @ts-expect-error TS doesn't like us accessing the value directly here.
+			(el[name] as string | undefined)
+		: !xmlMode && rboolean.test(name)
+			? getAttr(el, name, false) !== undefined
+			: getAttr(el, name, xmlMode);
 }
 
 /**
@@ -257,26 +255,26 @@ function getProp(
  * @param xmlMode - Disable handling of special HTML attributes.
  */
 function setProp(el: Element, name: string, value: unknown, xmlMode?: boolean) {
-  if (name in el) {
-    // @ts-expect-error Overriding value
-    el[name] = value;
-  } else {
-    setAttr(
-      el,
-      name,
-      !xmlMode && rboolean.test(name)
-        ? value
-          ? ''
-          : null
-        : `${value as string}`,
-    );
-  }
+	if (name in el) {
+		// @ts-expect-error Overriding value
+		el[name] = value;
+	} else {
+		setAttr(
+			el,
+			name,
+			!xmlMode && rboolean.test(name)
+				? value
+					? ""
+					: null
+				: `${value as string}`,
+		);
+	}
 }
 
 interface StyleProp {
-  length: number;
-  [key: string]: string | number;
-  [index: number]: string;
+	length: number;
+	[key: string]: string | number;
+	[index: number]: string;
 }
 
 /**
@@ -300,12 +298,12 @@ interface StyleProp {
  * @see {@link https://api.jquery.com/prop/}
  */
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: 'tagName' | 'nodeName',
+	this: Cheerio<T>,
+	name: "tagName" | "nodeName",
 ): string | undefined;
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: 'innerHTML' | 'outerHTML' | 'innerText' | 'textContent',
+	this: Cheerio<T>,
+	name: "innerHTML" | "outerHTML" | "innerText" | "textContent",
 ): string | null;
 /**
  * Get a parsed CSS style object.
@@ -315,8 +313,8 @@ export function prop<T extends AnyNode>(
  *   attribute.
  */
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: 'style',
+	this: Cheerio<T>,
+	name: "style",
 ): StyleProp | undefined;
 /**
  * Resolve `href` or `src` of supported elements. Requires the `baseURI` option
@@ -333,8 +331,8 @@ export function prop<T extends AnyNode>(
  * @returns The resolved URL, or `undefined` if the element is not supported.
  */
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: 'href' | 'src',
+	this: Cheerio<T>,
+	name: "href" | "src",
 ): string | undefined;
 /**
  * Get a property of an element.
@@ -343,8 +341,8 @@ export function prop<T extends AnyNode>(
  * @returns The property's value.
  */
 export function prop<T extends AnyNode, K extends keyof Element>(
-  this: Cheerio<T>,
-  name: K,
+	this: Cheerio<T>,
+	name: K,
 ): Element[K];
 /**
  * Set a property of an element.
@@ -354,11 +352,11 @@ export function prop<T extends AnyNode, K extends keyof Element>(
  * @returns The instance itself.
  */
 export function prop<T extends AnyNode, K extends keyof Element>(
-  this: Cheerio<T>,
-  name: K,
-  value:
-    | Element[K]
-    | ((this: Element, i: number, prop: K) => Element[keyof Element]),
+	this: Cheerio<T>,
+	name: K,
+	value:
+		| Element[K]
+		| ((this: Element, i: number, prop: K) => Element[keyof Element]),
 ): Cheerio<T>;
 /**
  * Set multiple properties of an element.
@@ -376,8 +374,8 @@ export function prop<T extends AnyNode, K extends keyof Element>(
  * @returns The instance itself.
  */
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  map: Record<string, string | Element[keyof Element] | boolean>,
+	this: Cheerio<T>,
+	map: Record<string, string | Element[keyof Element] | boolean>,
 ): Cheerio<T>;
 /**
  * Set a property of an element.
@@ -387,13 +385,13 @@ export function prop<T extends AnyNode>(
  * @returns The instance itself.
  */
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string,
-  value:
-    | string
-    | boolean
-    | null
-    | ((this: Element, i: number, prop: string) => string | boolean),
+	this: Cheerio<T>,
+	name: string,
+	value:
+		| string
+		| boolean
+		| null
+		| ((this: Element, i: number, prop: string) => string | boolean),
 ): Cheerio<T>;
 /**
  * Get a property of an element.
@@ -403,119 +401,119 @@ export function prop<T extends AnyNode>(
  */
 export function prop<T extends AnyNode>(this: Cheerio<T>, name: string): string;
 export function prop<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string | Record<string, string | Element[keyof Element] | boolean>,
-  value?: unknown,
+	this: Cheerio<T>,
+	name: string | Record<string, string | Element[keyof Element] | boolean>,
+	value?: unknown,
 ):
-  | Cheerio<T>
-  | string
-  | boolean
-  | undefined
-  | null
-  | Element[keyof Element]
-  | StyleProp {
-  if (typeof name === 'string' && value === undefined) {
-    const el = this[0];
+	| Cheerio<T>
+	| string
+	| boolean
+	| undefined
+	| null
+	| Element[keyof Element]
+	| StyleProp {
+	if (typeof name === "string" && value === undefined) {
+		const el = this[0];
 
-    if (!el) return undefined;
+		if (!el) return undefined;
 
-    switch (name) {
-      case 'style': {
-        const property = this.css() as StyleProp;
-        const keys = Object.keys(property);
-        for (let i = 0; i < keys.length; i++) {
-          property[i] = keys[i];
-        }
+		switch (name) {
+			case "style": {
+				const property = this.css() as StyleProp;
+				const keys = Object.keys(property);
+				for (let i = 0; i < keys.length; i++) {
+					property[i] = keys[i];
+				}
 
-        property.length = keys.length;
+				property.length = keys.length;
 
-        return property;
-      }
-      case 'tagName':
-      case 'nodeName': {
-        if (!isTag(el)) return undefined;
-        return el.name.toUpperCase();
-      }
+				return property;
+			}
+			case "tagName":
+			case "nodeName": {
+				if (!isTag(el)) return undefined;
+				return el.name.toUpperCase();
+			}
 
-      case 'href':
-      case 'src': {
-        if (!isTag(el)) return undefined;
-        const prop = el.attribs?.[name];
+			case "href":
+			case "src": {
+				if (!isTag(el)) return undefined;
+				const prop = el.attribs?.[name];
 
-        if (
-          typeof URL !== 'undefined' &&
-          ((name === 'href' && (el.tagName === 'a' || el.tagName === 'link')) ||
-            (name === 'src' &&
-              (el.tagName === 'img' ||
-                el.tagName === 'iframe' ||
-                el.tagName === 'audio' ||
-                el.tagName === 'video' ||
-                el.tagName === 'source'))) &&
-          prop !== undefined &&
-          this.options.baseURI
-        ) {
-          return new URL(prop, this.options.baseURI).href;
-        }
+				if (
+					typeof URL !== "undefined" &&
+					((name === "href" && (el.tagName === "a" || el.tagName === "link")) ||
+						(name === "src" &&
+							(el.tagName === "img" ||
+								el.tagName === "iframe" ||
+								el.tagName === "audio" ||
+								el.tagName === "video" ||
+								el.tagName === "source"))) &&
+					prop !== undefined &&
+					this.options.baseURI
+				) {
+					return new URL(prop, this.options.baseURI).href;
+				}
 
-        return prop;
-      }
+				return prop;
+			}
 
-      case 'innerText': {
-        return innerText(el);
-      }
+			case "innerText": {
+				return innerText(el);
+			}
 
-      case 'textContent': {
-        return textContent(el);
-      }
+			case "textContent": {
+				return textContent(el);
+			}
 
-      case 'outerHTML': {
-        if (el.type === ElementType.Root) return this.html();
-        return this.clone().wrap('<container />').parent().html();
-      }
+			case "outerHTML": {
+				if (el.type === ElementType.Root) return this.html();
+				return this.clone().wrap("<container />").parent().html();
+			}
 
-      case 'innerHTML': {
-        return this.html();
-      }
+			case "innerHTML": {
+				return this.html();
+			}
 
-      default: {
-        if (!isTag(el)) return undefined;
-        return getProp(el, name, this.options.xmlMode);
-      }
-    }
-  }
+			default: {
+				if (!isTag(el)) return undefined;
+				return getProp(el, name, this.options.xmlMode);
+			}
+		}
+	}
 
-  if (typeof name === 'object' || value !== undefined) {
-    if (typeof value === 'function') {
-      if (typeof name === 'object') {
-        throw new TypeError('Bad combination of arguments.');
-      }
-      return domEach(this, (el, i) => {
-        if (isTag(el)) {
-          setProp(
-            el,
-            name,
-            value.call(el, i, getProp(el, name, this.options.xmlMode)),
-            this.options.xmlMode,
-          );
-        }
-      });
-    }
+	if (typeof name === "object" || value !== undefined) {
+		if (typeof value === "function") {
+			if (typeof name === "object") {
+				throw new TypeError("Bad combination of arguments.");
+			}
+			return domEach(this, (el, i) => {
+				if (isTag(el)) {
+					setProp(
+						el,
+						name,
+						value.call(el, i, getProp(el, name, this.options.xmlMode)),
+						this.options.xmlMode,
+					);
+				}
+			});
+		}
 
-    return domEach(this, (el) => {
-      if (!isTag(el)) return;
+		return domEach(this, (el) => {
+			if (!isTag(el)) return;
 
-      if (typeof name === 'object') {
-        for (const key of Object.keys(name)) {
-          const val = name[key];
-          setProp(el, key, val, this.options.xmlMode);
-        }
-      } else {
-        setProp(el, name, value, this.options.xmlMode);
-      }
-    });
-  }
+			if (typeof name === "object") {
+				for (const key of Object.keys(name)) {
+					const val = name[key];
+					setProp(el, key, val, this.options.xmlMode);
+				}
+			} else {
+				setProp(el, name, value, this.options.xmlMode);
+			}
+		});
+	}
 
-  return undefined;
+	return undefined;
 }
 
 /**
@@ -524,8 +522,8 @@ export function prop<T extends AnyNode>(
  * @private
  */
 interface DataElement extends Element {
-  /** The data attribute. */
-  data?: Record<string, unknown>;
+	/** The data attribute. */
+	data?: Record<string, unknown>;
 }
 
 /**
@@ -537,16 +535,16 @@ interface DataElement extends Element {
  * @param value - The data attribute's value.
  */
 function setData(
-  elem: DataElement,
-  name: string | Record<string, unknown>,
-  value?: unknown,
+	elem: DataElement,
+	name: string | Record<string, unknown>,
+	value?: unknown,
 ) {
-  elem.data ??= {};
+	elem.data ??= {};
 
-  if (typeof name === 'object') Object.assign(elem.data, name);
-  else if (typeof name === 'string' && value !== undefined) {
-    elem.data[name] = value;
-  }
+	if (typeof name === "object") Object.assign(elem.data, name);
+	else if (typeof name === "string" && value !== undefined) {
+		elem.data[name] = value;
+	}
 }
 
 /**
@@ -559,19 +557,19 @@ function setData(
  * @returns A map with all of the data attributes.
  */
 function readAllData(el: DataElement): unknown {
-  for (const domName of Object.keys(el.attribs)) {
-    if (!domName.startsWith(dataAttrPrefix)) {
-      continue;
-    }
+	for (const domName of Object.keys(el.attribs)) {
+		if (!domName.startsWith(dataAttrPrefix)) {
+			continue;
+		}
 
-    const jsName = camelCase(domName.slice(dataAttrPrefix.length));
+		const jsName = camelCase(domName.slice(dataAttrPrefix.length));
 
-    if (!hasOwn(el.data, jsName)) {
-      el.data![jsName] = parseDataValue(el.attribs[domName]);
-    }
-  }
+		if (!hasOwn(el.data, jsName)) {
+			el.data![jsName] = parseDataValue(el.attribs[domName]);
+		}
+	}
 
-  return el.data;
+	return el.data;
 }
 
 /**
@@ -585,18 +583,18 @@ function readAllData(el: DataElement): unknown {
  * @returns The data attribute's value.
  */
 function readData(el: DataElement, name: string): unknown {
-  const domName = dataAttrPrefix + cssCase(name);
-  const data = el.data!;
+	const domName = dataAttrPrefix + cssCase(name);
+	const data = el.data!;
 
-  if (hasOwn(data, name)) {
-    return data[name];
-  }
+	if (hasOwn(data, name)) {
+		return data[name];
+	}
 
-  if (hasOwn(el.attribs, domName)) {
-    return (data[name] = parseDataValue(el.attribs[domName]));
-  }
+	if (hasOwn(el.attribs, domName)) {
+		return (data[name] = parseDataValue(el.attribs[domName]));
+	}
 
-  return undefined;
+	return undefined;
 }
 
 /**
@@ -608,19 +606,19 @@ function readData(el: DataElement, name: string): unknown {
  * @returns The parsed value.
  */
 function parseDataValue(value: string): unknown {
-  if (value === 'null') return null;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  const num = Number(value);
-  if (value === String(num)) return num;
-  if (rbrace.test(value)) {
-    try {
-      return JSON.parse(value);
-    } catch {
-      /* Ignore */
-    }
-  }
-  return value;
+	if (value === "null") return null;
+	if (value === "true") return true;
+	if (value === "false") return false;
+	const num = Number(value);
+	if (value === String(num)) return num;
+	if (rbrace.test(value)) {
+		try {
+			return JSON.parse(value);
+		} catch {
+			/* Ignore */
+		}
+	}
+	return value;
 }
 
 /**
@@ -641,8 +639,8 @@ function parseDataValue(value: string): unknown {
  * @see {@link https://api.jquery.com/data/}
  */
 export function data<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string,
+	this: Cheerio<T>,
+	name: string,
 ): unknown;
 /**
  * Method for getting all of an element's data attributes, for only the first
@@ -660,7 +658,7 @@ export function data<T extends AnyNode>(
  * @see {@link https://api.jquery.com/data/}
  */
 export function data<T extends AnyNode>(
-  this: Cheerio<T>,
+	this: Cheerio<T>,
 ): Record<string, unknown>;
 /**
  * Method for setting data attributes, for only the first element in the matched
@@ -682,9 +680,9 @@ export function data<T extends AnyNode>(
  * @see {@link https://api.jquery.com/data/}
  */
 export function data<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string,
-  value: unknown,
+	this: Cheerio<T>,
+	name: string,
+	value: unknown,
 ): Cheerio<T>;
 /**
  * Method for setting multiple data attributes at once, for only the first
@@ -705,38 +703,38 @@ export function data<T extends AnyNode>(
  * @see {@link https://api.jquery.com/data/}
  */
 export function data<T extends AnyNode>(
-  this: Cheerio<T>,
-  values: Record<string, unknown>,
+	this: Cheerio<T>,
+	values: Record<string, unknown>,
 ): Cheerio<T>;
 export function data<T extends AnyNode>(
-  this: Cheerio<T>,
-  name?: string | Record<string, unknown>,
-  value?: unknown,
+	this: Cheerio<T>,
+	name?: string | Record<string, unknown>,
+	value?: unknown,
 ): unknown {
-  const elem = this[0];
+	const elem = this[0];
 
-  if (!elem || !isTag(elem)) return;
+	if (!elem || !isTag(elem)) return;
 
-  const dataEl: DataElement = elem;
-  dataEl.data ??= {};
+	const dataEl: DataElement = elem;
+	dataEl.data ??= {};
 
-  // Return the entire data object if no data specified
-  if (name == null) {
-    return readAllData(dataEl);
-  }
+	// Return the entire data object if no data specified
+	if (name == null) {
+		return readAllData(dataEl);
+	}
 
-  // Set the value (with attr map support)
-  if (typeof name === 'object' || value !== undefined) {
-    domEach(this, (el) => {
-      if (isTag(el)) {
-        if (typeof name === 'object') setData(el, name);
-        else setData(el, name, value);
-      }
-    });
-    return this;
-  }
+	// Set the value (with attr map support)
+	if (typeof name === "object" || value !== undefined) {
+		domEach(this, (el) => {
+			if (isTag(el)) {
+				if (typeof name === "object") setData(el, name);
+				else setData(el, name, value);
+			}
+		});
+		return this;
+	}
 
-  return readData(dataEl, name);
+	return readData(dataEl, name);
 }
 
 /**
@@ -755,7 +753,7 @@ export function data<T extends AnyNode>(
  * @see {@link https://api.jquery.com/val/}
  */
 export function val<T extends AnyNode>(
-  this: Cheerio<T>,
+	this: Cheerio<T>,
 ): string | undefined | string[];
 /**
  * Method for setting the value of input, select, and textarea. Note: Support
@@ -774,52 +772,52 @@ export function val<T extends AnyNode>(
  * @see {@link https://api.jquery.com/val/}
  */
 export function val<T extends AnyNode>(
-  this: Cheerio<T>,
-  value: string | string[],
+	this: Cheerio<T>,
+	value: string | string[],
 ): Cheerio<T>;
 export function val<T extends AnyNode>(
-  this: Cheerio<T>,
-  value?: string | string[],
+	this: Cheerio<T>,
+	value?: string | string[],
 ): string | string[] | Cheerio<T> | undefined {
-  const querying = arguments.length === 0;
-  const element = this[0];
+	const querying = arguments.length === 0;
+	const element = this[0];
 
-  if (!element || !isTag(element)) return querying ? undefined : this;
+	if (!element || !isTag(element)) return querying ? undefined : this;
 
-  switch (element.name) {
-    case 'textarea': {
-      return this.text(value as string);
-    }
-    case 'select': {
-      const option = this.find('option:selected');
-      if (!querying) {
-        if (this.attr('multiple') == null && typeof value === 'object') {
-          return this;
-        }
+	switch (element.name) {
+		case "textarea": {
+			return this.text(value as string);
+		}
+		case "select": {
+			const option = this.find("option:selected");
+			if (!querying) {
+				if (this.attr("multiple") == null && typeof value === "object") {
+					return this;
+				}
 
-        this.find('option').removeAttr('selected');
+				this.find("option").removeAttr("selected");
 
-        const values = typeof value === 'object' ? value : [value];
-        for (const val of values) {
-          this.find(`option[value="${val}"]`).attr('selected', '');
-        }
+				const values = typeof value === "object" ? value : [value];
+				for (const val of values) {
+					this.find(`option[value="${val}"]`).attr("selected", "");
+				}
 
-        return this;
-      }
+				return this;
+			}
 
-      return this.attr('multiple')
-        ? option.toArray().map((el) => text(el.children))
-        : option.attr('value');
-    }
-    case 'input':
-    case 'option': {
-      return querying
-        ? this.attr('value')
-        : this.attr('value', value as string);
-    }
-  }
+			return this.attr("multiple")
+				? option.toArray().map((el) => text(el.children))
+				: option.attr("value");
+		}
+		case "input":
+		case "option": {
+			return querying
+				? this.attr("value")
+				: this.attr("value", value as string);
+		}
+	}
 
-  return undefined;
+	return undefined;
 }
 
 /**
@@ -830,9 +828,9 @@ export function val<T extends AnyNode>(
  * @param name - Name of the attribute to remove.
  */
 function removeAttribute(elem: Element, name: string) {
-  if (!elem.attribs || !hasOwn(elem.attribs, name)) return;
+	if (!elem.attribs || !hasOwn(elem.attribs, name)) return;
 
-  delete elem.attribs[name];
+	delete elem.attribs[name];
 }
 
 /**
@@ -843,7 +841,7 @@ function removeAttribute(elem: Element, name: string) {
  * @returns - Split names.
  */
 function splitNames(names?: string): string[] {
-  return names ? names.trim().split(rspace) : [];
+	return names ? names.trim().split(rspace) : [];
 }
 
 /**
@@ -866,18 +864,18 @@ function splitNames(names?: string): string[] {
  * @see {@link https://api.jquery.com/removeAttr/}
  */
 export function removeAttr<T extends AnyNode>(
-  this: Cheerio<T>,
-  name: string,
+	this: Cheerio<T>,
+	name: string,
 ): Cheerio<T> {
-  const attrNames = splitNames(name);
+	const attrNames = splitNames(name);
 
-  for (const attrName of attrNames) {
-    domEach(this, (elem) => {
-      if (isTag(elem)) removeAttribute(elem, attrName);
-    });
-  }
+	for (const attrName of attrNames) {
+		domEach(this, (elem) => {
+			if (isTag(elem)) removeAttribute(elem, attrName);
+		});
+	}
 
-  return this;
+	return this;
 }
 
 /**
@@ -902,28 +900,28 @@ export function removeAttr<T extends AnyNode>(
  * @see {@link https://api.jquery.com/hasClass/}
  */
 export function hasClass<T extends AnyNode>(
-  this: Cheerio<T>,
-  className: string,
+	this: Cheerio<T>,
+	className: string,
 ): boolean {
-  return this.toArray().some((elem) => {
-    const clazz = isTag(elem) && elem.attribs['class'];
-    let idx = -1;
+	return this.toArray().some((elem) => {
+		const clazz = isTag(elem) && elem.attribs["class"];
+		let idx = -1;
 
-    if (clazz && className.length > 0) {
-      while ((idx = clazz.indexOf(className, idx + 1)) > -1) {
-        const end = idx + className.length;
+		if (clazz && className.length > 0) {
+			while ((idx = clazz.indexOf(className, idx + 1)) > -1) {
+				const end = idx + className.length;
 
-        if (
-          (idx === 0 || rspace.test(clazz[idx - 1])) &&
-          (end === clazz.length || rspace.test(clazz[end]))
-        ) {
-          return true;
-        }
-      }
-    }
+				if (
+					(idx === 0 || rspace.test(clazz[idx - 1])) &&
+					(end === clazz.length || rspace.test(clazz[end]))
+				) {
+					return true;
+				}
+			}
+		}
 
-    return false;
-  });
+		return false;
+	});
 }
 
 /**
@@ -945,51 +943,51 @@ export function hasClass<T extends AnyNode>(
  * @see {@link https://api.jquery.com/addClass/}
  */
 export function addClass<T extends AnyNode, R extends ArrayLike<T>>(
-  this: R,
-  value?:
-    | string
-    | ((this: Element, i: number, className: string) => string | undefined),
+	this: R,
+	value?:
+		| string
+		| ((this: Element, i: number, className: string) => string | undefined),
 ): R {
-  // Support functions
-  if (typeof value === 'function') {
-    return domEach(this, (el, i) => {
-      if (isTag(el)) {
-        const className = el.attribs['class'] || '';
-        addClass.call([el], value.call(el, i, className));
-      }
-    });
-  }
+	// Support functions
+	if (typeof value === "function") {
+		return domEach(this, (el, i) => {
+			if (isTag(el)) {
+				const className = el.attribs["class"] || "";
+				addClass.call([el], value.call(el, i, className));
+			}
+		});
+	}
 
-  // Return if no value or not a string or function
-  if (!value || typeof value !== 'string') return this;
+	// Return if no value or not a string or function
+	if (!value || typeof value !== "string") return this;
 
-  const classNames = value.split(rspace);
-  const numElements = this.length;
+	const classNames = value.split(rspace);
+	const numElements = this.length;
 
-  for (let i = 0; i < numElements; i++) {
-    const el = this[i];
-    // If selected element isn't a tag, move on
-    if (!isTag(el)) continue;
+	for (let i = 0; i < numElements; i++) {
+		const el = this[i];
+		// If selected element isn't a tag, move on
+		if (!isTag(el)) continue;
 
-    // If we don't already have classes — always set xmlMode to false here, as it doesn't matter for classes
-    const className = getAttr(el, 'class', false);
+		// If we don't already have classes — always set xmlMode to false here, as it doesn't matter for classes
+		const className = getAttr(el, "class", false);
 
-    if (className) {
-      let setClass = ` ${className} `;
+		if (className) {
+			let setClass = ` ${className} `;
 
-      // Check if class already exists
-      for (const cn of classNames) {
-        const appendClass = `${cn} `;
-        if (!setClass.includes(` ${appendClass}`)) setClass += appendClass;
-      }
+			// Check if class already exists
+			for (const cn of classNames) {
+				const appendClass = `${cn} `;
+				if (!setClass.includes(` ${appendClass}`)) setClass += appendClass;
+			}
 
-      setAttr(el, 'class', setClass.trim());
-    } else {
-      setAttr(el, 'class', classNames.join(' ').trim());
-    }
-  }
+			setAttr(el, "class", setClass.trim());
+		} else {
+			setAttr(el, "class", classNames.join(" ").trim());
+		}
+	}
 
-  return this;
+	return this;
 }
 
 /**
@@ -1013,53 +1011,53 @@ export function addClass<T extends AnyNode, R extends ArrayLike<T>>(
  * @see {@link https://api.jquery.com/removeClass/}
  */
 export function removeClass<T extends AnyNode, R extends ArrayLike<T>>(
-  this: R,
-  name?:
-    | string
-    | ((this: Element, i: number, className: string) => string | undefined),
+	this: R,
+	name?:
+		| string
+		| ((this: Element, i: number, className: string) => string | undefined),
 ): R {
-  // Handle if value is a function
-  if (typeof name === 'function') {
-    return domEach(this, (el, i) => {
-      if (isTag(el)) {
-        removeClass.call([el], name.call(el, i, el.attribs['class'] || ''));
-      }
-    });
-  }
+	// Handle if value is a function
+	if (typeof name === "function") {
+		return domEach(this, (el, i) => {
+			if (isTag(el)) {
+				removeClass.call([el], name.call(el, i, el.attribs["class"] || ""));
+			}
+		});
+	}
 
-  const classes = splitNames(name);
-  const numClasses = classes.length;
-  const removeAll = arguments.length === 0;
+	const classes = splitNames(name);
+	const numClasses = classes.length;
+	const removeAll = arguments.length === 0;
 
-  return domEach(this, (el) => {
-    if (!isTag(el)) return;
+	return domEach(this, (el) => {
+		if (!isTag(el)) return;
 
-    if (removeAll) {
-      // Short circuit the remove all case as this is the nice one
-      el.attribs['class'] = '';
-    } else {
-      const elClasses = splitNames(el.attribs['class']);
-      let changed = false;
+		if (removeAll) {
+			// Short circuit the remove all case as this is the nice one
+			el.attribs["class"] = "";
+		} else {
+			const elClasses = splitNames(el.attribs["class"]);
+			let changed = false;
 
-      for (let j = 0; j < numClasses; j++) {
-        const index = elClasses.indexOf(classes[j]);
+			for (let j = 0; j < numClasses; j++) {
+				const index = elClasses.indexOf(classes[j]);
 
-        if (index !== -1) {
-          elClasses.splice(index, 1);
-          changed = true;
+				if (index !== -1) {
+					elClasses.splice(index, 1);
+					changed = true;
 
-          /*
-           * We have to do another pass to ensure that there are not duplicate
-           * classes listed
-           */
-          j--;
-        }
-      }
-      if (changed) {
-        el.attribs['class'] = elClasses.join(' ');
-      }
-    }
-  });
+					/*
+					 * We have to do another pass to ensure that there are not duplicate
+					 * classes listed
+					 */
+					j--;
+				}
+			}
+			if (changed) {
+				el.attribs["class"] = elClasses.join(" ");
+			}
+		}
+	});
 }
 
 /**
@@ -1084,61 +1082,61 @@ export function removeClass<T extends AnyNode, R extends ArrayLike<T>>(
  * @see {@link https://api.jquery.com/toggleClass/}
  */
 export function toggleClass<T extends AnyNode, R extends ArrayLike<T>>(
-  this: R,
-  value?:
-    | string
-    | ((
-        this: Element,
-        i: number,
-        className: string,
-        stateVal?: boolean,
-      ) => string),
-  stateVal?: boolean,
+	this: R,
+	value?:
+		| string
+		| ((
+				this: Element,
+				i: number,
+				className: string,
+				stateVal?: boolean,
+		  ) => string),
+	stateVal?: boolean,
 ): R {
-  // Support functions
-  if (typeof value === 'function') {
-    return domEach(this, (el, i) => {
-      if (isTag(el)) {
-        toggleClass.call(
-          [el],
-          value.call(el, i, el.attribs['class'] || '', stateVal),
-          stateVal,
-        );
-      }
-    });
-  }
+	// Support functions
+	if (typeof value === "function") {
+		return domEach(this, (el, i) => {
+			if (isTag(el)) {
+				toggleClass.call(
+					[el],
+					value.call(el, i, el.attribs["class"] || "", stateVal),
+					stateVal,
+				);
+			}
+		});
+	}
 
-  // Return if no value or not a string or function
-  if (!value || typeof value !== 'string') return this;
+	// Return if no value or not a string or function
+	if (!value || typeof value !== "string") return this;
 
-  const classNames = value.split(rspace);
-  const numClasses = classNames.length;
-  const state = typeof stateVal === 'boolean' ? (stateVal ? 1 : -1) : 0;
-  const numElements = this.length;
+	const classNames = value.split(rspace);
+	const numClasses = classNames.length;
+	const state = typeof stateVal === "boolean" ? (stateVal ? 1 : -1) : 0;
+	const numElements = this.length;
 
-  for (let i = 0; i < numElements; i++) {
-    const el = this[i];
-    // If selected element isn't a tag, move on
-    if (!isTag(el)) continue;
+	for (let i = 0; i < numElements; i++) {
+		const el = this[i];
+		// If selected element isn't a tag, move on
+		if (!isTag(el)) continue;
 
-    const elementClasses = splitNames(el.attribs['class']);
+		const elementClasses = splitNames(el.attribs["class"]);
 
-    // Check if class already exists
-    for (let j = 0; j < numClasses; j++) {
-      // Check if the class name is currently defined
-      const index = elementClasses.indexOf(classNames[j]);
+		// Check if class already exists
+		for (let j = 0; j < numClasses; j++) {
+			// Check if the class name is currently defined
+			const index = elementClasses.indexOf(classNames[j]);
 
-      // Add if stateValue === true or we are toggling and there is no value
-      if (state >= 0 && index === -1) {
-        elementClasses.push(classNames[j]);
-      } else if (state <= 0 && index !== -1) {
-        // Otherwise remove but only if the item exists
-        elementClasses.splice(index, 1);
-      }
-    }
+			// Add if stateValue === true or we are toggling and there is no value
+			if (state >= 0 && index === -1) {
+				elementClasses.push(classNames[j]);
+			} else if (state <= 0 && index !== -1) {
+				// Otherwise remove but only if the item exists
+				elementClasses.splice(index, 1);
+			}
+		}
 
-    el.attribs['class'] = elementClasses.join(' ');
-  }
+		el.attribs["class"] = elementClasses.join(" ");
+	}
 
-  return this;
+	return this;
 }

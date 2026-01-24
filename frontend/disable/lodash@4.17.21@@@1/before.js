@@ -1,7 +1,7 @@
-var toInteger = require('./toInteger');
+var toInteger = require("./toInteger");
 
 /** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
+var FUNC_ERROR_TEXT = "Expected a function";
 
 /**
  * Creates a function that invokes `func`, with the `this` binding and arguments
@@ -21,20 +21,20 @@ var FUNC_ERROR_TEXT = 'Expected a function';
  * // => Allows adding up to 4 contacts to the list.
  */
 function before(n, func) {
-  var result;
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  n = toInteger(n);
-  return function() {
-    if (--n > 0) {
-      result = func.apply(this, arguments);
-    }
-    if (n <= 1) {
-      func = undefined;
-    }
-    return result;
-  };
+	var result;
+	if (typeof func != "function") {
+		throw new TypeError(FUNC_ERROR_TEXT);
+	}
+	n = toInteger(n);
+	return function () {
+		if (--n > 0) {
+			result = func.apply(this, arguments);
+		}
+		if (n <= 1) {
+			func = undefined;
+		}
+		return result;
+	};
 }
 
 module.exports = before;

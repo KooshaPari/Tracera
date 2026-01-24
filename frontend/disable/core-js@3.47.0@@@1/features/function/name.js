@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/function/name');
+"use strict";
+module.exports = require("../../full/function/name");

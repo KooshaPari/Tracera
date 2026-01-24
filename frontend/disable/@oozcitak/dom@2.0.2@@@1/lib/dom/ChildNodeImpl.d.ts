@@ -5,12 +5,12 @@ import { Node, ChildNode } from "./interfaces";
  * {@link CharacterData} and {@link DocumentType}.
  */
 export declare class ChildNodeImpl implements ChildNode {
-    /** @inheritdoc */
-    before(...nodes: (Node | string)[]): void;
-    /** @inheritdoc */
-    after(...nodes: (Node | string)[]): void;
-    /** @inheritdoc */
-    replaceWith(...nodes: (Node | string)[]): void;
-    /** @inheritdoc */
-    remove(): void;
+	/** @inheritdoc */
+	before(...nodes: (Node | string)[]): void;
+	/** @inheritdoc */
+	after(...nodes: (Node | string)[]): void;
+	/** @inheritdoc */
+	replaceWith(...nodes: (Node | string)[]): void;
+	/** @inheritdoc */
+	remove(): void;
 }

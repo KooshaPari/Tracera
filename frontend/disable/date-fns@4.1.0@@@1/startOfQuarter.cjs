@@ -29,10 +29,10 @@ var _index = require("./toDate.cjs");
  * //=> Tue Jul 01 2014 00:00:00
  */
 function startOfQuarter(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const currentMonth = _date.getMonth();
-  const month = currentMonth - (currentMonth % 3);
-  _date.setMonth(month, 1);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	const currentMonth = _date.getMonth();
+	const month = currentMonth - (currentMonth % 3);
+	_date.setMonth(month, 1);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
 }

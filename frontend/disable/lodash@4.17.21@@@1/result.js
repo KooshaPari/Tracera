@@ -1,6 +1,6 @@
-var castPath = require('./_castPath'),
-    isFunction = require('./isFunction'),
-    toKey = require('./_toKey');
+var castPath = require("./_castPath"),
+	isFunction = require("./isFunction"),
+	toKey = require("./_toKey");
 
 /**
  * This method is like `_.get` except that if the resolved value is a
@@ -32,25 +32,25 @@ var castPath = require('./_castPath'),
  * // => 'default'
  */
 function result(object, path, defaultValue) {
-  path = castPath(path, object);
+	path = castPath(path, object);
 
-  var index = -1,
-      length = path.length;
+	var index = -1,
+		length = path.length;
 
-  // Ensure the loop is entered when path is empty.
-  if (!length) {
-    length = 1;
-    object = undefined;
-  }
-  while (++index < length) {
-    var value = object == null ? undefined : object[toKey(path[index])];
-    if (value === undefined) {
-      index = length;
-      value = defaultValue;
-    }
-    object = isFunction(value) ? value.call(object) : value;
-  }
-  return object;
+	// Ensure the loop is entered when path is empty.
+	if (!length) {
+		length = 1;
+		object = undefined;
+	}
+	while (++index < length) {
+		var value = object == null ? undefined : object[toKey(path[index])];
+		if (value === undefined) {
+			index = length;
+			value = defaultValue;
+		}
+		object = isFunction(value) ? value.call(object) : value;
+	}
+	return object;
 }
 
 module.exports = result;

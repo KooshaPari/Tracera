@@ -1,5 +1,5 @@
-var createToPairs = require('./_createToPairs'),
-    keysIn = require('./keysIn');
+var createToPairs = require("./_createToPairs"),
+	keysIn = require("./keysIn");
 
 /**
  * Creates an array of own and inherited enumerable string keyed-value pairs

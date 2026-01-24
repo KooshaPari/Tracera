@@ -1,38 +1,44 @@
-import {type Buffer} from 'node:buffer';
-import {type ChildProcess} from 'node:child_process';
-import {type Stream, type Readable as ReadableStream, type Writable as WritableStream} from 'node:stream';
+import { type Buffer } from "node:buffer";
+import { type ChildProcess } from "node:child_process";
+import {
+	type Stream,
+	type Readable as ReadableStream,
+	type Writable as WritableStream,
+} from "node:stream";
 
 export type StdioOption =
-	| 'pipe'
-	| 'overlapped'
-	| 'ipc'
-	| 'ignore'
-	| 'inherit'
+	| "pipe"
+	| "overlapped"
+	| "ipc"
+	| "ignore"
+	| "inherit"
 	| Stream
 	| number
 	| undefined;
 
 type EncodingOption =
-  | 'utf8'
-  // eslint-disable-next-line unicorn/text-encoding-identifier-case
-  | 'utf-8'
-  | 'utf16le'
-  | 'utf-16le'
-  | 'ucs2'
-  | 'ucs-2'
-  | 'latin1'
-  | 'binary'
-  | 'ascii'
-  | 'hex'
-  | 'base64'
-  | 'base64url'
-  | 'buffer'
-  | null
-  | undefined;
-type DefaultEncodingOption = 'utf8';
-type BufferEncodingOption = 'buffer' | null;
+	| "utf8"
+	// eslint-disable-next-line unicorn/text-encoding-identifier-case
+	| "utf-8"
+	| "utf16le"
+	| "utf-16le"
+	| "ucs2"
+	| "ucs-2"
+	| "latin1"
+	| "binary"
+	| "ascii"
+	| "hex"
+	| "base64"
+	| "base64url"
+	| "buffer"
+	| null
+	| undefined;
+type DefaultEncodingOption = "utf8";
+type BufferEncodingOption = "buffer" | null;
 
-export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type CommonOptions<
+	EncodingType extends EncodingOption = DefaultEncodingOption,
+> = {
 	/**
 	Kill the spawned process when the parent process exits unless either:
 		- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
@@ -153,7 +159,12 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default 'pipe'
 	*/
-	readonly stdio?: 'pipe' | 'overlapped' | 'ignore' | 'inherit' | readonly StdioOption[];
+	readonly stdio?:
+		| "pipe"
+		| "overlapped"
+		| "ignore"
+		| "inherit"
+		| readonly StdioOption[];
 
 	/**
 	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
@@ -164,7 +175,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default 'json'
 	*/
-	readonly serialization?: 'json' | 'advanced';
+	readonly serialization?: "json" | "advanced";
 
 	/**
 	Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
@@ -273,7 +284,9 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly verbose?: boolean;
 };
 
-export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type Options<
+	EncodingType extends EncodingOption = DefaultEncodingOption,
+> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -289,7 +302,9 @@ export type Options<EncodingType extends EncodingOption = DefaultEncodingOption>
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type SyncOptions<
+	EncodingType extends EncodingOption = DefaultEncodingOption,
+> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -305,7 +320,9 @@ export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type NodeOptions<
+	EncodingType extends EncodingOption = DefaultEncodingOption,
+> = {
 	/**
 	The Node.js executable to use.
 
@@ -389,8 +406,9 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	cwd: string;
 };
 
-export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
-} & ExecaReturnBase<StdoutStderrType>;
+export type ExecaSyncReturnValue<
+	StdoutStderrType extends StdoutStderrAll = string,
+> = {} & ExecaReturnBase<StdoutStderrType>;
 
 /**
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
@@ -402,7 +420,9 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaReturnValue<
+	StdoutStderrType extends StdoutStderrAll = string,
+> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -420,26 +440,28 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> 
 	isCanceled: boolean;
 } & ExecaSyncReturnValue<StdoutStderrType>;
 
-export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = {
-	/**
+export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> =
+	{
+		/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
 	The child process stderr then stdout are appended to the end, separated with newlines and not interleaved.
 	*/
-	message: string;
+		message: string;
 
-	/**
+		/**
 	This is the same as the `message` property except it does not include the child process stdout/stderr.
 	*/
-	shortMessage: string;
+		shortMessage: string;
 
-	/**
+		/**
 	Original error message. This is the same as the `message` property except it includes neither the child process stdout/stderr nor some additional information added by Execa.
 
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/
-	originalMessage?: string;
-} & Error & ExecaReturnBase<StdoutStderrType>;
+		originalMessage?: string;
+	} & Error &
+		ExecaReturnBase<StdoutStderrType>;
 
 export type ExecaError<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
@@ -479,7 +501,9 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	all?: ReadableStream;
 
 	catch<ResultType = never>(
-		onRejected?: (reason: ExecaError<StdoutStderrType>) => ResultType | PromiseLike<ResultType>
+		onRejected?: (
+			reason: ExecaError<StdoutStderrType>,
+		) => ResultType | PromiseLike<ResultType>,
 	): Promise<ExecaReturnValue<StdoutStderrType> | ResultType>;
 
 	/**
@@ -502,29 +526,43 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 
 	The `stdout` option] must be kept as `pipe`, its default value.
 	*/
-	pipeStdout?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeStdout?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+	pipeStdout?<Target extends ExecaChildPromise<StdoutStderrAll>>(
+		target: Target,
+	): Target;
+	pipeStdout?(
+		target: WritableStream | string,
+	): ExecaChildProcess<StdoutStderrType>;
 
 	/**
 	Like `pipeStdout()` but piping the child process's `stderr` instead.
 
 	The `stderr` option must be kept as `pipe`, its default value.
 	*/
-	pipeStderr?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeStderr?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+	pipeStderr?<Target extends ExecaChildPromise<StdoutStderrAll>>(
+		target: Target,
+	): Target;
+	pipeStderr?(
+		target: WritableStream | string,
+	): ExecaChildProcess<StdoutStderrType>;
 
 	/**
 	Combines both `pipeStdout()` and `pipeStderr()`.
 
 	Either the `stdout` option or the `stderr` option must be kept as `pipe`, their default value. Also, the `all` option must be set to `true`.
 	*/
-	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(
+		target: Target,
+	): Target;
+	pipeAll?(
+		target: WritableStream | string,
+	): ExecaChildProcess<StdoutStderrType>;
 };
 
-export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &
-ExecaChildPromise<StdoutStderrType> &
-Promise<ExecaReturnValue<StdoutStderrType>>;
+export type ExecaChildProcess<
+	StdoutStderrType extends StdoutStderrAll = string,
+> = ChildProcess &
+	ExecaChildPromise<StdoutStderrType> &
+	Promise<ExecaReturnValue<StdoutStderrType>>;
 
 /**
 Executes a command using `file ...arguments`. `arguments` are specified as an array of strings. Returns a `childProcess`.
@@ -640,15 +678,18 @@ setTimeout(() => {
 export function execa(
 	file: string,
 	arguments?: readonly string[],
-	options?: Options
+	options?: Options,
 ): ExecaChildProcess;
 export function execa(
 	file: string,
 	arguments?: readonly string[],
-	options?: Options<BufferEncodingOption>
+	options?: Options<BufferEncodingOption>,
 ): ExecaChildProcess<Buffer>;
 export function execa(file: string, options?: Options): ExecaChildProcess;
-export function execa(file: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
+export function execa(
+	file: string,
+	options?: Options<BufferEncodingOption>,
+): ExecaChildProcess<Buffer>;
 
 /**
 Same as `execa()` but synchronous.
@@ -713,17 +754,20 @@ try {
 export function execaSync(
 	file: string,
 	arguments?: readonly string[],
-	options?: SyncOptions
+	options?: SyncOptions,
 ): ExecaSyncReturnValue;
 export function execaSync(
 	file: string,
 	arguments?: readonly string[],
-	options?: SyncOptions<BufferEncodingOption>
+	options?: SyncOptions<BufferEncodingOption>,
 ): ExecaSyncReturnValue<Buffer>;
-export function execaSync(file: string, options?: SyncOptions): ExecaSyncReturnValue;
 export function execaSync(
 	file: string,
-	options?: SyncOptions<BufferEncodingOption>
+	options?: SyncOptions,
+): ExecaSyncReturnValue;
+export function execaSync(
+	file: string,
+	options?: SyncOptions<BufferEncodingOption>,
 ): ExecaSyncReturnValue<Buffer>;
 
 /**
@@ -748,8 +792,14 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommand(command: string, options?: Options): ExecaChildProcess;
-export function execaCommand(command: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
+export function execaCommand(
+	command: string,
+	options?: Options,
+): ExecaChildProcess;
+export function execaCommand(
+	command: string,
+	options?: Options<BufferEncodingOption>,
+): ExecaChildProcess<Buffer>;
 
 /**
 Same as `execaCommand()` but synchronous.
@@ -767,15 +817,26 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
-export function execaCommandSync(command: string, options?: SyncOptions<BufferEncodingOption>): ExecaSyncReturnValue<Buffer>;
+export function execaCommandSync(
+	command: string,
+	options?: SyncOptions,
+): ExecaSyncReturnValue;
+export function execaCommandSync(
+	command: string,
+	options?: SyncOptions<BufferEncodingOption>,
+): ExecaSyncReturnValue<Buffer>;
 
 type TemplateExpression =
 	| string
 	| number
 	| ExecaReturnValue<string | Buffer>
 	| ExecaSyncReturnValue<string | Buffer>
-	| Array<string | number | ExecaReturnValue<string | Buffer> | ExecaSyncReturnValue<string | Buffer>>;
+	| Array<
+			| string
+			| number
+			| ExecaReturnValue<string | Buffer>
+			| ExecaSyncReturnValue<string | Buffer>
+	  >;
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
@@ -944,12 +1005,18 @@ await execaNode('scriptPath', ['argument']);
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
-	options?: NodeOptions
+	options?: NodeOptions,
 ): ExecaChildProcess;
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
-	options?: NodeOptions<BufferEncodingOption>
+	options?: NodeOptions<BufferEncodingOption>,
 ): ExecaChildProcess<Buffer>;
-export function execaNode(scriptPath: string, options?: NodeOptions): ExecaChildProcess;
-export function execaNode(scriptPath: string, options?: NodeOptions<BufferEncodingOption>): ExecaChildProcess<Buffer>;
+export function execaNode(
+	scriptPath: string,
+	options?: NodeOptions,
+): ExecaChildProcess;
+export function execaNode(
+	scriptPath: string,
+	options?: NodeOptions<BufferEncodingOption>,
+): ExecaChildProcess<Buffer>;

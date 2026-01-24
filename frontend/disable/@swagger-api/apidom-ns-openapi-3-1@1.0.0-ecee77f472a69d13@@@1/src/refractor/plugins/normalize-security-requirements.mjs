@@ -1,5 +1,6 @@
-import { OperationSecurityElement } from '@swagger-api/apidom-ns-openapi-3-0';
+import { OperationSecurityElement } from "@swagger-api/apidom-ns-openapi-3-0";
 import NormalizeStorage from "./normalize-header-examples/NormalizeStorage.mjs";
+
 /**
  * Override of Security Requirement Objects.
  *
@@ -17,53 +18,64 @@ import NormalizeStorage from "./normalize-header-examples/NormalizeStorage.mjs";
 /**
  * @public
  */
-const plugin = ({
-  storageField = 'x-normalized'
-} = {}) => toolbox => {
-  const {
-    predicates,
-    ancestorLineageToJSONPointer
-  } = toolbox;
-  let topLevelSecurity;
-  let storage;
-  return {
-    visitor: {
-      OpenApi3_1Element: {
-        enter(openapiElement) {
-          storage = new NormalizeStorage(openapiElement, storageField, 'security-requirements');
-          if (predicates.isArrayElement(openapiElement.security)) {
-            topLevelSecurity = openapiElement.security;
-          }
-        },
-        leave() {
-          storage = undefined;
-          topLevelSecurity = undefined;
-        }
-      },
-      OperationElement: {
-        leave(operationElement, key, parent, path, ancestors) {
-          // skip visiting this Operation
-          if (ancestors.some(predicates.isComponentsElement)) {
-            return;
-          }
-          const operationJSONPointer = ancestorLineageToJSONPointer([...ancestors, parent, operationElement]);
+const plugin =
+	({ storageField = "x-normalized" } = {}) =>
+	(toolbox) => {
+		const { predicates, ancestorLineageToJSONPointer } = toolbox;
+		let topLevelSecurity;
+		let storage;
+		return {
+			visitor: {
+				OpenApi3_1Element: {
+					enter(openapiElement) {
+						storage = new NormalizeStorage(
+							openapiElement,
+							storageField,
+							"security-requirements",
+						);
+						if (predicates.isArrayElement(openapiElement.security)) {
+							topLevelSecurity = openapiElement.security;
+						}
+					},
+					leave() {
+						storage = undefined;
+						topLevelSecurity = undefined;
+					},
+				},
+				OperationElement: {
+					leave(operationElement, key, parent, path, ancestors) {
+						// skip visiting this Operation
+						if (ancestors.some(predicates.isComponentsElement)) {
+							return;
+						}
+						const operationJSONPointer = ancestorLineageToJSONPointer([
+							...ancestors,
+							parent,
+							operationElement,
+						]);
 
-          // skip visiting this Operation Object if it's already normalized
-          if (storage.includes(operationJSONPointer)) {
-            return;
-          }
-          const missingOperationLevelSecurity = typeof operationElement.security === 'undefined';
-          const hasTopLevelSecurity = typeof topLevelSecurity !== 'undefined';
-          if (missingOperationLevelSecurity && hasTopLevelSecurity) {
-            var _topLevelSecurity;
-            operationElement.security = new OperationSecurityElement((_topLevelSecurity = topLevelSecurity) === null || _topLevelSecurity === void 0 ? void 0 : _topLevelSecurity.content);
-            storage.append(operationJSONPointer);
-          }
-        }
-      }
-    }
-  };
-};
+						// skip visiting this Operation Object if it's already normalized
+						if (storage.includes(operationJSONPointer)) {
+							return;
+						}
+						const missingOperationLevelSecurity =
+							typeof operationElement.security === "undefined";
+						const hasTopLevelSecurity = typeof topLevelSecurity !== "undefined";
+						if (missingOperationLevelSecurity && hasTopLevelSecurity) {
+							var _topLevelSecurity;
+							operationElement.security = new OperationSecurityElement(
+								(_topLevelSecurity = topLevelSecurity) === null ||
+									_topLevelSecurity === void 0
+									? void 0
+									: _topLevelSecurity.content,
+							);
+							storage.append(operationJSONPointer);
+						}
+					},
+				},
+			},
+		};
+	};
 /* eslint-enable */
 
 export default plugin;

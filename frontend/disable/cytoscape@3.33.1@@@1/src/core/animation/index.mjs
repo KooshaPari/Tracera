@@ -1,60 +1,64 @@
-import define from '../../define/index.mjs';
-import * as util from '../../util/index.mjs';
-import stepAll from './step-all.mjs';
+import define from "../../define/index.mjs";
+import * as util from "../../util/index.mjs";
+import stepAll from "./step-all.mjs";
 
-let corefn = ({
+const corefn = {
+	// pull in animation functions
+	animate: define.animate(),
+	animation: define.animation(),
+	animated: define.animated(),
+	clearQueue: define.clearQueue(),
+	delay: define.delay(),
+	delayAnimation: define.delayAnimation(),
+	stop: define.stop(),
 
-  // pull in animation functions
-  animate: define.animate(),
-  animation: define.animation(),
-  animated: define.animated(),
-  clearQueue: define.clearQueue(),
-  delay: define.delay(),
-  delayAnimation: define.delayAnimation(),
-  stop: define.stop(),
+	addToAnimationPool: function (eles) {
+		if (!this.styleEnabled()) {
+			return;
+		} // save cycles when no style used
 
-  addToAnimationPool: function( eles ){
-    let cy = this;
+		this._private.aniEles.merge(eles);
+	},
 
-    if( !cy.styleEnabled() ){ return; } // save cycles when no style used
+	stopAnimationLoop: function () {
+		this._private.animationsRunning = false;
+	},
 
-    cy._private.aniEles.merge( eles );
-  },
+	startAnimationLoop: function () {
+		const cy = this;
 
-  stopAnimationLoop: function(){
-    this._private.animationsRunning = false;
-  },
+		cy._private.animationsRunning = true;
 
-  startAnimationLoop: function(){
-    let cy = this;
+		if (!cy.styleEnabled()) {
+			return;
+		} // save cycles when no style used
 
-    cy._private.animationsRunning = true;
+		// NB the animation loop will exec in headless environments if style enabled
+		// and explicit cy.destroy() is necessary to stop the loop
 
-    if( !cy.styleEnabled() ){ return; } // save cycles when no style used
+		function headlessStep() {
+			if (!cy._private.animationsRunning) {
+				return;
+			}
 
-    // NB the animation loop will exec in headless environments if style enabled
-    // and explicit cy.destroy() is necessary to stop the loop
+			util.requestAnimationFrame(function animationStep(now) {
+				stepAll(now, cy);
+				headlessStep();
+			});
+		}
 
-    function headlessStep(){
-      if( !cy._private.animationsRunning ){ return; }
+		const renderer = cy.renderer();
 
-      util.requestAnimationFrame( function animationStep( now ){
-        stepAll( now, cy );
-        headlessStep();
-      } );
-    }
-
-    let renderer = cy.renderer();
-
-    if( renderer && renderer.beforeRender ){ // let the renderer schedule animations
-      renderer.beforeRender( function rendererAnimationStep( willDraw, now ){
-        stepAll( now, cy );
-      }, renderer.beforeRenderPriorities.animations );
-    } else { // manage the animation loop ourselves
-      headlessStep(); // first call
-    }
-  }
-
-});
+		if (renderer && renderer.beforeRender) {
+			// let the renderer schedule animations
+			renderer.beforeRender(function rendererAnimationStep(willDraw, now) {
+				stepAll(now, cy);
+			}, renderer.beforeRenderPriorities.animations);
+		} else {
+			// manage the animation loop ourselves
+			headlessStep(); // first call
+		}
+	},
+};
 
 export default corefn;

@@ -30,10 +30,10 @@ import { toDate } from "./toDate.js";
  * //=> Sat Jan 01 2005 00:00:00
  */
 export function setISOWeek(date, week, options) {
-  const _date = toDate(date, options?.in);
-  const diff = getISOWeek(_date, options) - week;
-  _date.setDate(_date.getDate() - diff * 7);
-  return _date;
+	const _date = toDate(date, options?.in);
+	const diff = getISOWeek(_date, options) - week;
+	_date.setDate(_date.getDate() - diff * 7);
+	return _date;
 }
 
 // Fallback for modularized imports:

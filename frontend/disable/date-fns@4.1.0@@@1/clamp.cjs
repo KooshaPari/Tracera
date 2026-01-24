@@ -47,15 +47,15 @@ var _index3 = require("./min.cjs");
  * //=> Mon Mar 22 2021 00:00:00
  */
 function clamp(date, interval, options) {
-  const [date_, start, end] = (0, _index.normalizeDates)(
-    options?.in,
-    date,
-    interval.start,
-    interval.end,
-  );
+	const [date_, start, end] = (0, _index.normalizeDates)(
+		options?.in,
+		date,
+		interval.start,
+		interval.end,
+	);
 
-  return (0, _index3.min)(
-    [(0, _index2.max)([date_, start], options), end],
-    options,
-  );
+	return (0, _index3.min)(
+		[(0, _index2.max)([date_, start], options), end],
+		options,
+	);
 }

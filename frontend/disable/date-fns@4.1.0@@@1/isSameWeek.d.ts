@@ -4,9 +4,9 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link isSameWeek} function options.
  */
 export interface IsSameWeekOptions
-  extends WeekOptions,
-    LocalizedOptions<"options">,
-    ContextOptions<Date> {}
+	extends WeekOptions,
+		LocalizedOptions<"options">,
+		ContextOptions<Date> {}
 /**
  * @name isSameWeek
  * @category Week Helpers
@@ -40,7 +40,7 @@ export interface IsSameWeekOptions
  * //=> false
  */
 export declare function isSameWeek(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IsSameWeekOptions,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IsSameWeekOptions,
 ): boolean;

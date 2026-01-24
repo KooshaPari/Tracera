@@ -1,6 +1,6 @@
-var http   = require('http'),
-    https  = require('https'),
-    common = require('../common');
+var http = require("http"),
+	https = require("https"),
+	common = require("../common");
 
 /*!
  * Array of passes.
@@ -15,148 +15,162 @@ var http   = require('http'),
  *
  */
 
-
 module.exports = {
-  /**
-   * WebSocket requests must have the `GET` method and
-   * the `upgrade:websocket` header
-   *
-   * @param {ClientRequest} Req Request object
-   * @param {Socket} Websocket
-   *
-   * @api private
-   */
+	/**
+	 * WebSocket requests must have the `GET` method and
+	 * the `upgrade:websocket` header
+	 *
+	 * @param {ClientRequest} Req Request object
+	 * @param {Socket} Websocket
+	 *
+	 * @api private
+	 */
 
-  checkMethodAndHeader : function checkMethodAndHeader(req, socket) {
-    if (req.method !== 'GET' || !req.headers.upgrade) {
-      socket.destroy();
-      return true;
-    }
+	checkMethodAndHeader: function checkMethodAndHeader(req, socket) {
+		if (req.method !== "GET" || !req.headers.upgrade) {
+			socket.destroy();
+			return true;
+		}
 
-    if (req.headers.upgrade.toLowerCase() !== 'websocket') {
-      socket.destroy();
-      return true;
-    }
-  },
+		if (req.headers.upgrade.toLowerCase() !== "websocket") {
+			socket.destroy();
+			return true;
+		}
+	},
 
-  /**
-   * Sets `x-forwarded-*` headers if specified in config.
-   *
-   * @param {ClientRequest} Req Request object
-   * @param {Socket} Websocket
-   * @param {Object} Options Config object passed to the proxy
-   *
-   * @api private
-   */
+	/**
+	 * Sets `x-forwarded-*` headers if specified in config.
+	 *
+	 * @param {ClientRequest} Req Request object
+	 * @param {Socket} Websocket
+	 * @param {Object} Options Config object passed to the proxy
+	 *
+	 * @api private
+	 */
 
-  XHeaders : function XHeaders(req, socket, options) {
-    if(!options.xfwd) return;
+	XHeaders: function XHeaders(req, socket, options) {
+		if (!options.xfwd) return;
 
-    var values = {
-      for  : req.connection.remoteAddress || req.socket.remoteAddress,
-      port : common.getPort(req),
-      proto: common.hasEncryptedConnection(req) ? 'wss' : 'ws'
-    };
+		var values = {
+			for: req.connection.remoteAddress || req.socket.remoteAddress,
+			port: common.getPort(req),
+			proto: common.hasEncryptedConnection(req) ? "wss" : "ws",
+		};
 
-    ['for', 'port', 'proto'].forEach(function(header) {
-      req.headers['x-forwarded-' + header] =
-        (req.headers['x-forwarded-' + header] || '') +
-        (req.headers['x-forwarded-' + header] ? ',' : '') +
-        values[header];
-    });
-  },
+		["for", "port", "proto"].forEach((header) => {
+			req.headers["x-forwarded-" + header] =
+				(req.headers["x-forwarded-" + header] || "") +
+				(req.headers["x-forwarded-" + header] ? "," : "") +
+				values[header];
+		});
+	},
 
-  /**
-   * Does the actual proxying. Make the request and upgrade it
-   * send the Switching Protocols request and pipe the sockets.
-   *
-   * @param {ClientRequest} Req Request object
-   * @param {Socket} Websocket
-   * @param {Object} Options Config object passed to the proxy
-   *
-   * @api private
-   */
-  stream : function stream(req, socket, options, head, server, clb) {
+	/**
+	 * Does the actual proxying. Make the request and upgrade it
+	 * send the Switching Protocols request and pipe the sockets.
+	 *
+	 * @param {ClientRequest} Req Request object
+	 * @param {Socket} Websocket
+	 * @param {Object} Options Config object passed to the proxy
+	 *
+	 * @api private
+	 */
+	stream: function stream(req, socket, options, head, server, clb) {
+		var createHttpHeader = (line, headers) =>
+			Object.keys(headers)
+				.reduce(
+					(head, key) => {
+						var value = headers[key];
 
-    var createHttpHeader = function(line, headers) {
-      return Object.keys(headers).reduce(function (head, key) {
-        var value = headers[key];
+						if (!Array.isArray(value)) {
+							head.push(key + ": " + value);
+							return head;
+						}
 
-        if (!Array.isArray(value)) {
-          head.push(key + ': ' + value);
-          return head;
-        }
+						for (var i = 0; i < value.length; i++) {
+							head.push(key + ": " + value[i]);
+						}
+						return head;
+					},
+					[line],
+				)
+				.join("\r\n") + "\r\n\r\n";
 
-        for (var i = 0; i < value.length; i++) {
-          head.push(key + ': ' + value[i]);
-        }
-        return head;
-      }, [line])
-      .join('\r\n') + '\r\n\r\n';
-    }
+		common.setupSocket(socket);
 
-    common.setupSocket(socket);
+		if (head && head.length) socket.unshift(head);
 
-    if (head && head.length) socket.unshift(head);
+		var proxyReq = (
+			common.isSSL.test(options.target.protocol) ? https : http
+		).request(common.setupOutgoing(options.ssl || {}, options, req));
 
+		// Enable developers to modify the proxyReq before headers are sent
+		if (server) {
+			server.emit("proxyReqWs", proxyReq, req, socket, options, head);
+		}
 
-    var proxyReq = (common.isSSL.test(options.target.protocol) ? https : http).request(
-      common.setupOutgoing(options.ssl || {}, options, req)
-    );
+		// Error Handler
+		proxyReq.on("error", onOutgoingError);
+		proxyReq.on("response", (res) => {
+			// if upgrade event isn't going to happen, close the socket
+			if (!res.upgrade) {
+				socket.write(
+					createHttpHeader(
+						"HTTP/" +
+							res.httpVersion +
+							" " +
+							res.statusCode +
+							" " +
+							res.statusMessage,
+						res.headers,
+					),
+				);
+				res.pipe(socket);
+			}
+		});
 
-    // Enable developers to modify the proxyReq before headers are sent
-    if (server) { server.emit('proxyReqWs', proxyReq, req, socket, options, head); }
+		proxyReq.on("upgrade", (proxyRes, proxySocket, proxyHead) => {
+			proxySocket.on("error", onOutgoingError);
 
-    // Error Handler
-    proxyReq.on('error', onOutgoingError);
-    proxyReq.on('response', function (res) {
-      // if upgrade event isn't going to happen, close the socket
-      if (!res.upgrade) {
-        socket.write(createHttpHeader('HTTP/' + res.httpVersion + ' ' + res.statusCode + ' ' + res.statusMessage, res.headers));
-        res.pipe(socket);
-      }
-    });
+			// Allow us to listen when the websocket has completed
+			proxySocket.on("end", () => {
+				server.emit("close", proxyRes, proxySocket, proxyHead);
+			});
 
-    proxyReq.on('upgrade', function(proxyRes, proxySocket, proxyHead) {
-      proxySocket.on('error', onOutgoingError);
+			// The pipe below will end proxySocket if socket closes cleanly, but not
+			// if it errors (eg, vanishes from the net and starts returning
+			// EHOSTUNREACH). We need to do that explicitly.
+			socket.on("error", () => {
+				proxySocket.end();
+			});
 
-      // Allow us to listen when the websocket has completed
-      proxySocket.on('end', function () {
-        server.emit('close', proxyRes, proxySocket, proxyHead);
-      });
+			common.setupSocket(proxySocket);
 
-      // The pipe below will end proxySocket if socket closes cleanly, but not
-      // if it errors (eg, vanishes from the net and starts returning
-      // EHOSTUNREACH). We need to do that explicitly.
-      socket.on('error', function () {
-        proxySocket.end();
-      });
+			if (proxyHead && proxyHead.length) proxySocket.unshift(proxyHead);
 
-      common.setupSocket(proxySocket);
+			//
+			// Remark: Handle writing the headers to the socket when switching protocols
+			// Also handles when a header is an array
+			//
+			socket.write(
+				createHttpHeader("HTTP/1.1 101 Switching Protocols", proxyRes.headers),
+			);
 
-      if (proxyHead && proxyHead.length) proxySocket.unshift(proxyHead);
+			proxySocket.pipe(socket).pipe(proxySocket);
 
-      //
-      // Remark: Handle writing the headers to the socket when switching protocols
-      // Also handles when a header is an array
-      //
-      socket.write(createHttpHeader('HTTP/1.1 101 Switching Protocols', proxyRes.headers));
+			server.emit("open", proxySocket);
+			server.emit("proxySocket", proxySocket); //DEPRECATED.
+		});
 
-      proxySocket.pipe(socket).pipe(proxySocket);
+		return proxyReq.end(); // XXX: CHECK IF THIS IS THIS CORRECT
 
-      server.emit('open', proxySocket);
-      server.emit('proxySocket', proxySocket);  //DEPRECATED.
-    });
-
-    return proxyReq.end(); // XXX: CHECK IF THIS IS THIS CORRECT
-
-    function onOutgoingError(err) {
-      if (clb) {
-        clb(err, req, socket);
-      } else {
-        server.emit('error', err, req, socket);
-      }
-      socket.end();
-    }
-  }
+		function onOutgoingError(err) {
+			if (clb) {
+				clb(err, req, socket);
+			} else {
+				server.emit("error", err, req, socket);
+			}
+			socket.end();
+		}
+	},
 };

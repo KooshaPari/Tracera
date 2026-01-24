@@ -1,9 +1,9 @@
-'use strict';
+
 
 var test = require('tape');
 
 if (typeof Symbol === 'function' && typeof Symbol() === 'symbol') {
-	test('has native Symbol support', function (t) {
+	test('has native Symbol support', (t) => {
 		t.equal(typeof Symbol, 'function');
 		t.equal(typeof Symbol(), 'symbol');
 		t.end();
@@ -14,7 +14,7 @@ if (typeof Symbol === 'function' && typeof Symbol() === 'symbol') {
 
 var hasSymbols = require('../../shams');
 
-test('polyfilled Symbols', function (t) {
+test('polyfilled Symbols', (t) => {
 	/* eslint-disable global-require */
 	t.equal(hasSymbols(), false, 'hasSymbols is false before polyfilling');
 	require('core-js/fn/symbol');

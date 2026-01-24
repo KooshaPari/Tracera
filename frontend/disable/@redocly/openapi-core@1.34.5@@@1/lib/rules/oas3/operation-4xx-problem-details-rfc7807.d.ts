@@ -1,4 +1,4 @@
-import type { Oas3Rule } from '../../visitors';
+import type { Oas3Rule } from "../../visitors";
 /**
  * Validation according to rfc7807 - https://datatracker.ietf.org/doc/html/rfc7807
  */

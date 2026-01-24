@@ -1,10 +1,8 @@
-'use strict';
+var implementation = require("../implementation");
+var test = require("tape");
+var runTests = require("./tests");
 
-var implementation = require('../implementation');
-var test = require('tape');
-var runTests = require('./tests');
-
-test('implementation', function (t) {
+test("implementation", (t) => {
 	runTests(implementation, t);
 
 	t.end();

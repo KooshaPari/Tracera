@@ -9,33 +9,32 @@ import { getElementParent } from "./querying.js";
  * needs to be called once for each subtree.
  */
 export function cacheParentResults(next, { adapter, cacheResults }, matches) {
-    if (cacheResults === false || typeof WeakMap === "undefined") {
-        return (elem) => next(elem) && matches(elem);
-    }
-    // Use a cache to avoid re-checking children of an element.
-    // @ts-expect-error `Node` is not extending object
-    const resultCache = new WeakMap();
-    function addResultToCache(elem) {
-        const result = matches(elem);
-        resultCache.set(elem, result);
-        return result;
-    }
-    return function cachedMatcher(elem) {
-        if (!next(elem))
-            return false;
-        if (resultCache.has(elem)) {
-            return resultCache.get(elem);
-        }
-        // Check all of the element's parents.
-        let node = elem;
-        do {
-            const parent = getElementParent(node, adapter);
-            if (parent === null) {
-                return addResultToCache(elem);
-            }
-            node = parent;
-        } while (!resultCache.has(node));
-        return resultCache.get(node) && addResultToCache(elem);
-    };
+	if (cacheResults === false || typeof WeakMap === "undefined") {
+		return (elem) => next(elem) && matches(elem);
+	}
+	// Use a cache to avoid re-checking children of an element.
+	// @ts-expect-error `Node` is not extending object
+	const resultCache = new WeakMap();
+	function addResultToCache(elem) {
+		const result = matches(elem);
+		resultCache.set(elem, result);
+		return result;
+	}
+	return function cachedMatcher(elem) {
+		if (!next(elem)) return false;
+		if (resultCache.has(elem)) {
+			return resultCache.get(elem);
+		}
+		// Check all of the element's parents.
+		let node = elem;
+		do {
+			const parent = getElementParent(node, adapter);
+			if (parent === null) {
+				return addResultToCache(elem);
+			}
+			node = parent;
+		} while (!resultCache.has(node));
+		return resultCache.get(node) && addResultToCache(elem);
+	};
 }
 //# sourceMappingURL=cache.js.map

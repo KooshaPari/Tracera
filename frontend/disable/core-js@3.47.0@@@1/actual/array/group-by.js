@@ -1,5 +1,5 @@
-'use strict';
-require('../../modules/esnext.array.group-by');
-var entryUnbind = require('../../internals/entry-unbind');
+"use strict";
+require("../../modules/esnext.array.group-by");
+var entryUnbind = require("../../internals/entry-unbind");
 
-module.exports = entryUnbind('Array', 'groupBy');
+module.exports = entryUnbind("Array", "groupBy");

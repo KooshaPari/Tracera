@@ -1,79 +1,79 @@
-import type { ASTNode } from './ast';
-import { Kind } from './kinds';
+import type { ASTNode } from "./ast";
+import { Kind } from "./kinds";
 /**
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
 export declare type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 declare type KindVisitor = {
-  readonly [NodeT in ASTNode as NodeT['kind']]?:
-    | ASTVisitFn<NodeT>
-    | EnterLeaveVisitor<NodeT>;
+	readonly [NodeT in ASTNode as NodeT["kind"]]?:
+		| ASTVisitFn<NodeT>
+		| EnterLeaveVisitor<NodeT>;
 };
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
-  readonly enter?: ASTVisitFn<TVisitedNode>;
-  readonly leave?: ASTVisitFn<TVisitedNode>;
+	readonly enter?: ASTVisitFn<TVisitedNode>;
+	readonly leave?: ASTVisitFn<TVisitedNode>;
 }
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
 export declare type ASTVisitFn<TVisitedNode extends ASTNode> = (
-  /** The current node being visiting. */
-  node: TVisitedNode,
-  /** The index or key to this node from the parent node or Array. */
-  key: string | number | undefined,
-  /** The parent immediately above this node, which may be an Array. */
-  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
-  /** The key path to get to this node from the root node. */
-  path: ReadonlyArray<string | number>,
-  /**
-   * All nodes and Arrays visited before reaching parent of this node.
-   * These correspond to array indices in `path`.
-   * Note: ancestors includes arrays which contain the parent of visited node.
-   */
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+	/** The current node being visiting. */
+	node: TVisitedNode,
+	/** The index or key to this node from the parent node or Array. */
+	key: string | number | undefined,
+	/** The parent immediately above this node, which may be an Array. */
+	parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
+	/** The key path to get to this node from the root node. */
+	path: ReadonlyArray<string | number>,
+	/**
+	 * All nodes and Arrays visited before reaching parent of this node.
+	 * These correspond to array indices in `path`.
+	 * Note: ancestors includes arrays which contain the parent of visited node.
+	 */
+	ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
 /**
  * A reducer is comprised of reducer functions which convert AST nodes into
  * another form.
  */
 export declare type ASTReducer<R> = {
-  readonly [NodeT in ASTNode as NodeT['kind']]?: {
-    readonly enter?: ASTVisitFn<NodeT>;
-    readonly leave: ASTReducerFn<NodeT, R>;
-  };
+	readonly [NodeT in ASTNode as NodeT["kind"]]?: {
+		readonly enter?: ASTVisitFn<NodeT>;
+		readonly leave: ASTReducerFn<NodeT, R>;
+	};
 };
 declare type ASTReducerFn<TReducedNode extends ASTNode, R> = (
-  /** The current node being visiting. */
-  node: {
-    [K in keyof TReducedNode]: ReducedField<TReducedNode[K], R>;
-  },
-  /** The index or key to this node from the parent node or Array. */
-  key: string | number | undefined,
-  /** The parent immediately above this node, which may be an Array. */
-  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
-  /** The key path to get to this node from the root node. */
-  path: ReadonlyArray<string | number>,
-  /**
-   * All nodes and Arrays visited before reaching parent of this node.
-   * These correspond to array indices in `path`.
-   * Note: ancestors includes arrays which contain the parent of visited node.
-   */
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+	/** The current node being visiting. */
+	node: {
+		[K in keyof TReducedNode]: ReducedField<TReducedNode[K], R>;
+	},
+	/** The index or key to this node from the parent node or Array. */
+	key: string | number | undefined,
+	/** The parent immediately above this node, which may be an Array. */
+	parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
+	/** The key path to get to this node from the root node. */
+	path: ReadonlyArray<string | number>,
+	/**
+	 * All nodes and Arrays visited before reaching parent of this node.
+	 * These correspond to array indices in `path`.
+	 * Note: ancestors includes arrays which contain the parent of visited node.
+	 */
+	ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => R;
 declare type ReducedField<T, R> = T extends null | undefined
-  ? T
-  : T extends ReadonlyArray<any>
-  ? ReadonlyArray<R>
-  : R;
+	? T
+	: T extends ReadonlyArray<any>
+		? ReadonlyArray<R>
+		: R;
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
  *
  * @deprecated Please inline it. Will be removed in v17
  */
 export declare type ASTVisitorKeyMap = {
-  [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
+	[NodeT in ASTNode as NodeT["kind"]]?: ReadonlyArray<keyof NodeT>;
 };
 export declare const BREAK: unknown;
 /**
@@ -155,14 +155,14 @@ export declare const BREAK: unknown;
  * ```
  */
 export declare function visit<N extends ASTNode>(
-  root: N,
-  visitor: ASTVisitor,
-  visitorKeys?: ASTVisitorKeyMap,
+	root: N,
+	visitor: ASTVisitor,
+	visitorKeys?: ASTVisitorKeyMap,
 ): N;
 export declare function visit<R>(
-  root: ASTNode,
-  visitor: ASTReducer<R>,
-  visitorKeys?: ASTVisitorKeyMap,
+	root: ASTNode,
+	visitor: ASTReducer<R>,
+	visitorKeys?: ASTVisitorKeyMap,
 ): R;
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
@@ -171,14 +171,14 @@ export declare function visit<R>(
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export declare function visitInParallel(
-  visitors: ReadonlyArray<ASTVisitor>,
+	visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor;
 /**
  * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
  */
 export declare function getEnterLeaveForKind(
-  visitor: ASTVisitor,
-  kind: Kind,
+	visitor: ASTVisitor,
+	kind: Kind,
 ): EnterLeaveVisitor<ASTNode>;
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
@@ -187,8 +187,7 @@ export declare function getEnterLeaveForKind(
  * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
  */
 export declare function getVisitFn(
-  visitor: ASTVisitor,
-  kind: Kind,
-  isLeaving: boolean,
+	visitor: ASTVisitor,
+	kind: Kind,
+	isLeaving: boolean,
 ): ASTVisitFn<ASTNode> | undefined;
-export {};

@@ -1,1 +1,1 @@
-export * from './dist/coverage.js'
+export * from "./dist/coverage.js";

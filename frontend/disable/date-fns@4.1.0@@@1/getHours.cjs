@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> 11
  */
 function getHours(date, options) {
-  return (0, _index.toDate)(date, options?.in).getHours();
+	return (0, _index.toDate)(date, options?.in).getHours();
 }

@@ -1,4 +1,4 @@
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from "../error/GraphQLError";
 /**
  * Upholds the spec rules about naming.
  * @deprecated Please use `assertName` instead. Will be removed in v17
@@ -9,5 +9,5 @@ export declare function assertValidName(name: string): string;
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
 export declare function isValidNameError(
-  name: string,
+	name: string,
 ): GraphQLError | undefined;

@@ -54,4 +54,7 @@ import { GlobToRegExpOptions } from "../_common/glob_to_reg_exp.js";
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment. */
-export declare function globToRegExp(glob: string, options?: GlobToRegExpOptions): RegExp;
+export declare function globToRegExp(
+	glob: string,
+	options?: GlobToRegExpOptions,
+): RegExp;

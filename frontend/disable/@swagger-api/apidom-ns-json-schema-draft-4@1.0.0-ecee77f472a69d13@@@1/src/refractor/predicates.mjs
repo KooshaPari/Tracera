@@ -1,4 +1,4 @@
-import { isObjectElement } from '@swagger-api/apidom-core';
+import { isObjectElement } from "@swagger-api/apidom-core";
 
 /**
  * @public
@@ -8,6 +8,6 @@ import { isObjectElement } from '@swagger-api/apidom-core';
 /**
  * @public
  */
-export const isJSONReferenceLikeElement = element => {
-  return isObjectElement(element) && element.hasKey('$ref');
+export const isJSONReferenceLikeElement = (element) => {
+	return isObjectElement(element) && element.hasKey("$ref");
 };

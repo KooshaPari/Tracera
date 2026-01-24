@@ -8,7 +8,10 @@ import { FixedSizeSet } from "@oozcitak/util";
  * @param forward- `true` to return the next node, or `false` to
  * return the previous node.
  */
-export declare function nodeIterator_traverse(iterator: NodeIterator, forward: boolean): Node | null;
+export declare function nodeIterator_traverse(
+	iterator: NodeIterator,
+	forward: boolean,
+): Node | null;
 /**
  * Gets the global iterator list.
  */

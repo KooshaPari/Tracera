@@ -1,4 +1,4 @@
-import { Emitter, EventMap } from 'strict-event-emitter'
+import type { Emitter, EventMap } from "strict-event-emitter";
 
 /**
  * Emits an event on the given emitter but executes
@@ -6,20 +6,20 @@ import { Emitter, EventMap } from 'strict-event-emitter'
  * listeners (e.g. those having "sleep" and handling the request).
  */
 export async function emitAsync<
-  Events extends EventMap,
-  EventName extends keyof Events
+	Events extends EventMap,
+	EventName extends keyof Events,
 >(
-  emitter: Emitter<Events>,
-  eventName: EventName,
-  ...data: Events[EventName]
+	emitter: Emitter<Events>,
+	eventName: EventName,
+	...data: Events[EventName]
 ): Promise<void> {
-  const listeners = emitter.listeners(eventName)
+	const listeners = emitter.listeners(eventName);
 
-  if (listeners.length === 0) {
-    return
-  }
+	if (listeners.length === 0) {
+		return;
+	}
 
-  for (const listener of listeners) {
-    await listener.apply(emitter, data)
-  }
+	for (const listener of listeners) {
+		await listener.apply(emitter, data);
+	}
 }

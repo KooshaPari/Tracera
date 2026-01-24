@@ -1,7 +1,6 @@
-import { ApiDOMError } from '@swagger-api/apidom-error';
+import { ApiDOMError } from "@swagger-api/apidom-error";
 /**
  * @public
  */
-declare class EvaluationElementIdError extends ApiDOMError {
-}
+declare class EvaluationElementIdError extends ApiDOMError {}
 export default EvaluationElementIdError;

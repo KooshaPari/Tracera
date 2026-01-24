@@ -55,7 +55,7 @@ class Queue {
 		return this._size;
 	}
 
-	* [Symbol.iterator]() {
+	*[Symbol.iterator]() {
 		let current = this._head;
 
 		while (current) {

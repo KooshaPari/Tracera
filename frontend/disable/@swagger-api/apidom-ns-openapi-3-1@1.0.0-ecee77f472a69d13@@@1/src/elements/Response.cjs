@@ -7,4 +7,4 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class Response extends _apidomNsOpenapi.ResponseElement {}
-var _default = exports.default = Response;
+var _default = (exports.default = Response);

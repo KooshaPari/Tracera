@@ -36,14 +36,14 @@ import { constructFromSymbol } from "./constants.js";
  * }
  */
 export function constructFrom(date, value) {
-  if (typeof date === "function") return date(value);
+	if (typeof date === "function") return date(value);
 
-  if (date && typeof date === "object" && constructFromSymbol in date)
-    return date[constructFromSymbol](value);
+	if (date && typeof date === "object" && constructFromSymbol in date)
+		return date[constructFromSymbol](value);
 
-  if (date instanceof Date) return new date.constructor(value);
+	if (date instanceof Date) return new date.constructor(value);
 
-  return new Date(value);
+	return new Date(value);
 }
 
 // Fallback for modularized imports:

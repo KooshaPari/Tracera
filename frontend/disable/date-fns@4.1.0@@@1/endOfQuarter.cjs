@@ -29,10 +29,10 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 30 2014 23:59:59.999
  */
 function endOfQuarter(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const currentMonth = _date.getMonth();
-  const month = currentMonth - (currentMonth % 3) + 3;
-  _date.setMonth(month, 0);
-  _date.setHours(23, 59, 59, 999);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	const currentMonth = _date.getMonth();
+	const month = currentMonth - (currentMonth % 3) + 3;
+	_date.setMonth(month, 0);
+	_date.setHours(23, 59, 59, 999);
+	return _date;
 }

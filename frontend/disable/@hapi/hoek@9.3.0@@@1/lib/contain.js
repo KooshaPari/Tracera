@@ -1,307 +1,276 @@
-'use strict';
-
-const Assert = require('./assert');
-const DeepEqual = require('./deepEqual');
-const EscapeRegex = require('./escapeRegex');
-const Utils = require('./utils');
-
+const Assert = require("./assert");
+const DeepEqual = require("./deepEqual");
+const EscapeRegex = require("./escapeRegex");
+const Utils = require("./utils");
 
 const internals = {};
 
+module.exports = (ref, values, options = {}) => {
+	// options: { deep, once, only, part, symbols }
 
-module.exports = function (ref, values, options = {}) {        // options: { deep, once, only, part, symbols }
-
-    /*
+	/*
         string -> string(s)
         array -> item(s)
         object -> key(s)
         object -> object (key:value)
     */
 
-    if (typeof values !== 'object') {
-        values = [values];
-    }
+	if (typeof values !== "object") {
+		values = [values];
+	}
 
-    Assert(!Array.isArray(values) || values.length, 'Values array cannot be empty');
+	Assert(
+		!Array.isArray(values) || values.length,
+		"Values array cannot be empty",
+	);
 
-    // String
+	// String
 
-    if (typeof ref === 'string') {
-        return internals.string(ref, values, options);
-    }
+	if (typeof ref === "string") {
+		return internals.string(ref, values, options);
+	}
 
-    // Array
+	// Array
 
-    if (Array.isArray(ref)) {
-        return internals.array(ref, values, options);
-    }
+	if (Array.isArray(ref)) {
+		return internals.array(ref, values, options);
+	}
 
-    // Object
+	// Object
 
-    Assert(typeof ref === 'object', 'Reference must be string or an object');
-    return internals.object(ref, values, options);
+	Assert(typeof ref === "object", "Reference must be string or an object");
+	return internals.object(ref, values, options);
 };
 
+internals.array = (ref, values, options) => {
+	if (!Array.isArray(values)) {
+		values = [values];
+	}
 
-internals.array = function (ref, values, options) {
+	if (!ref.length) {
+		return false;
+	}
 
-    if (!Array.isArray(values)) {
-        values = [values];
-    }
+	if (options.only && options.once && ref.length !== values.length) {
+		return false;
+	}
 
-    if (!ref.length) {
-        return false;
-    }
+	let compare;
 
-    if (options.only &&
-        options.once &&
-        ref.length !== values.length) {
+	// Map values
 
-        return false;
-    }
+	const map = new Map();
+	for (const value of values) {
+		if (!options.deep || !value || typeof value !== "object") {
+			const existing = map.get(value);
+			if (existing) {
+				++existing.allowed;
+			} else {
+				map.set(value, { allowed: 1, hits: 0 });
+			}
+		} else {
+			compare = compare || internals.compare(options);
 
-    let compare;
+			let found = false;
+			for (const [key, existing] of map.entries()) {
+				if (compare(key, value)) {
+					++existing.allowed;
+					found = true;
+					break;
+				}
+			}
 
-    // Map values
+			if (!found) {
+				map.set(value, { allowed: 1, hits: 0 });
+			}
+		}
+	}
 
-    const map = new Map();
-    for (const value of values) {
-        if (!options.deep ||
-            !value ||
-            typeof value !== 'object') {
+	// Lookup values
 
-            const existing = map.get(value);
-            if (existing) {
-                ++existing.allowed;
-            }
-            else {
-                map.set(value, { allowed: 1, hits: 0 });
-            }
-        }
-        else {
-            compare = compare || internals.compare(options);
+	let hits = 0;
+	for (const item of ref) {
+		let match;
+		if (!options.deep || !item || typeof item !== "object") {
+			match = map.get(item);
+		} else {
+			compare = compare || internals.compare(options);
 
-            let found = false;
-            for (const [key, existing] of map.entries()) {
-                if (compare(key, value)) {
-                    ++existing.allowed;
-                    found = true;
-                    break;
-                }
-            }
+			for (const [key, existing] of map.entries()) {
+				if (compare(key, item)) {
+					match = existing;
+					break;
+				}
+			}
+		}
 
-            if (!found) {
-                map.set(value, { allowed: 1, hits: 0 });
-            }
-        }
-    }
+		if (match) {
+			++match.hits;
+			++hits;
 
-    // Lookup values
+			if (options.once && match.hits > match.allowed) {
+				return false;
+			}
+		}
+	}
 
-    let hits = 0;
-    for (const item of ref) {
-        let match;
-        if (!options.deep ||
-            !item ||
-            typeof item !== 'object') {
+	// Validate results
 
-            match = map.get(item);
-        }
-        else {
-            compare = compare || internals.compare(options);
+	if (options.only && hits !== ref.length) {
+		return false;
+	}
 
-            for (const [key, existing] of map.entries()) {
-                if (compare(key, item)) {
-                    match = existing;
-                    break;
-                }
-            }
-        }
+	for (const match of map.values()) {
+		if (match.hits === match.allowed) {
+			continue;
+		}
 
-        if (match) {
-            ++match.hits;
-            ++hits;
+		if (match.hits < match.allowed && !options.part) {
+			return false;
+		}
+	}
 
-            if (options.once &&
-                match.hits > match.allowed) {
-
-                return false;
-            }
-        }
-    }
-
-    // Validate results
-
-    if (options.only &&
-        hits !== ref.length) {
-
-        return false;
-    }
-
-    for (const match of map.values()) {
-        if (match.hits === match.allowed) {
-            continue;
-        }
-
-        if (match.hits < match.allowed &&
-            !options.part) {
-
-            return false;
-        }
-    }
-
-    return !!hits;
+	return !!hits;
 };
 
+internals.object = (ref, values, options) => {
+	Assert(options.once === undefined, "Cannot use option once with object");
 
-internals.object = function (ref, values, options) {
+	const keys = Utils.keys(ref, options);
+	if (!keys.length) {
+		return false;
+	}
 
-    Assert(options.once === undefined, 'Cannot use option once with object');
+	// Keys list
 
-    const keys = Utils.keys(ref, options);
-    if (!keys.length) {
-        return false;
-    }
+	if (Array.isArray(values)) {
+		return internals.array(keys, values, options);
+	}
 
-    // Keys list
+	// Key value pairs
 
-    if (Array.isArray(values)) {
-        return internals.array(keys, values, options);
-    }
+	const symbols = Object.getOwnPropertySymbols(values).filter((sym) =>
+		values.propertyIsEnumerable(sym),
+	);
+	const targets = [...Object.keys(values), ...symbols];
 
-    // Key value pairs
+	const compare = internals.compare(options);
+	const set = new Set(targets);
 
-    const symbols = Object.getOwnPropertySymbols(values).filter((sym) => values.propertyIsEnumerable(sym));
-    const targets = [...Object.keys(values), ...symbols];
+	for (const key of keys) {
+		if (!set.has(key)) {
+			if (options.only) {
+				return false;
+			}
 
-    const compare = internals.compare(options);
-    const set = new Set(targets);
+			continue;
+		}
 
-    for (const key of keys) {
-        if (!set.has(key)) {
-            if (options.only) {
-                return false;
-            }
+		if (!compare(values[key], ref[key])) {
+			return false;
+		}
 
-            continue;
-        }
+		set.delete(key);
+	}
 
-        if (!compare(values[key], ref[key])) {
-            return false;
-        }
+	if (set.size) {
+		return options.part ? set.size < targets.length : false;
+	}
 
-        set.delete(key);
-    }
-
-    if (set.size) {
-        return options.part ? set.size < targets.length : false;
-    }
-
-    return true;
+	return true;
 };
 
+internals.string = (ref, values, options) => {
+	// Empty string
 
-internals.string = function (ref, values, options) {
+	if (ref === "") {
+		return (
+			(values.length === 1 && values[0] === "") || // '' contains ''
+			(!options.once && !values.some((v) => v !== ""))
+		); // '' contains multiple '' if !once
+	}
 
-    // Empty string
+	// Map values
 
-    if (ref === '') {
-        return values.length === 1 && values[0] === '' ||               // '' contains ''
-            !options.once && !values.some((v) => v !== '');             // '' contains multiple '' if !once
-    }
+	const map = new Map();
+	const patterns = [];
 
-    // Map values
+	for (const value of values) {
+		Assert(
+			typeof value === "string",
+			"Cannot compare string reference to non-string value",
+		);
 
-    const map = new Map();
-    const patterns = [];
+		if (value) {
+			const existing = map.get(value);
+			if (existing) {
+				++existing.allowed;
+			} else {
+				map.set(value, { allowed: 1, hits: 0 });
+				patterns.push(EscapeRegex(value));
+			}
+		} else if (options.once || options.only) {
+			return false;
+		}
+	}
 
-    for (const value of values) {
-        Assert(typeof value === 'string', 'Cannot compare string reference to non-string value');
+	if (!patterns.length) {
+		// Non-empty string contains unlimited empty string
+		return true;
+	}
 
-        if (value) {
-            const existing = map.get(value);
-            if (existing) {
-                ++existing.allowed;
-            }
-            else {
-                map.set(value, { allowed: 1, hits: 0 });
-                patterns.push(EscapeRegex(value));
-            }
-        }
-        else if (options.once ||
-            options.only) {
+	// Match patterns
 
-            return false;
-        }
-    }
+	const regex = new RegExp(`(${patterns.join("|")})`, "g");
+	const leftovers = ref.replace(regex, ($0, $1) => {
+		++map.get($1).hits;
+		return ""; // Remove from string
+	});
 
-    if (!patterns.length) {                     // Non-empty string contains unlimited empty string
-        return true;
-    }
+	// Validate results
 
-    // Match patterns
+	if (options.only && leftovers) {
+		return false;
+	}
 
-    const regex = new RegExp(`(${patterns.join('|')})`, 'g');
-    const leftovers = ref.replace(regex, ($0, $1) => {
+	let any = false;
+	for (const match of map.values()) {
+		if (match.hits) {
+			any = true;
+		}
 
-        ++map.get($1).hits;
-        return '';                              // Remove from string
-    });
+		if (match.hits === match.allowed) {
+			continue;
+		}
 
-    // Validate results
+		if (match.hits < match.allowed && !options.part) {
+			return false;
+		}
 
-    if (options.only &&
-        leftovers) {
+		// match.hits > match.allowed
 
-        return false;
-    }
+		if (options.once) {
+			return false;
+		}
+	}
 
-    let any = false;
-    for (const match of map.values()) {
-        if (match.hits) {
-            any = true;
-        }
-
-        if (match.hits === match.allowed) {
-            continue;
-        }
-
-        if (match.hits < match.allowed &&
-            !options.part) {
-
-            return false;
-        }
-
-        // match.hits > match.allowed
-
-        if (options.once) {
-            return false;
-        }
-    }
-
-    return !!any;
+	return !!any;
 };
 
+internals.compare = (options) => {
+	if (!options.deep) {
+		return internals.shallow;
+	}
 
-internals.compare = function (options) {
+	const hasOnly = options.only !== undefined;
+	const hasPart = options.part !== undefined;
 
-    if (!options.deep) {
-        return internals.shallow;
-    }
+	const flags = {
+		prototype: hasOnly ? options.only : hasPart ? !options.part : false,
+		part: hasOnly ? !options.only : hasPart ? options.part : false,
+	};
 
-    const hasOnly = options.only !== undefined;
-    const hasPart = options.part !== undefined;
-
-    const flags = {
-        prototype: hasOnly ? options.only : hasPart ? !options.part : false,
-        part: hasOnly ? !options.only : hasPart ? options.part : false
-    };
-
-    return (a, b) => DeepEqual(a, b, flags);
+	return (a, b) => DeepEqual(a, b, flags);
 };
 
-
-internals.shallow = function (a, b) {
-
-    return a === b;
-};
+internals.shallow = (a, b) => a === b;

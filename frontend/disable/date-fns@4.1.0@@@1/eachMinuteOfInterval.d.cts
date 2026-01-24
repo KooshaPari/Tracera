@@ -3,8 +3,8 @@ import type { ContextOptions, Interval, StepOptions } from "./types.js";
  * The {@link eachMinuteOfInterval} function options.
  */
 export interface EachMinuteOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachMinuteOfInterval} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the date argument,
@@ -12,16 +12,16 @@ export interface EachMinuteOfIntervalOptions<DateType extends Date = Date>
  * a context function is passed, it uses the context function return type.
  */
 export type EachMinuteOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachMinuteOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachMinuteOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachMinuteOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachMinuteOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachMinuteOfInterval
@@ -53,9 +53,9 @@ export type EachMinuteOfIntervalResult<
  * // ]
  */
 export declare function eachMinuteOfInterval<
-  IntervalType extends Interval,
-  Options extends EachMinuteOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachMinuteOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachMinuteOfIntervalResult<IntervalType, Options>;

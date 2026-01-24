@@ -1,10 +1,12 @@
 // @flow
 
 import net from 'net';
+
 import type {
   ConnectionCallbackType,
   ConnectionConfigurationType,
 } from '../types';
+
 import Agent from './Agent';
 
 class HttpProxyAgent extends Agent {

@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = function isCancel(value) {
-  return !!(value && value.__CANCEL__);
+	return !!(value && value.__CANCEL__);
 };

@@ -1,15 +1,98 @@
 "use strict";
 
-var _interopRequireWildcard = require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireWildcard =
+	require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
-exports.visit = exports.traverse = exports.transclude = exports.toYAML = exports.toValue = exports.toString = exports.toJSON = exports.some = exports.sexprs = exports.reject = exports.refractorPluginSemanticElementIdentity = exports.refractorPluginElementIdentity = exports.refract = exports.parents = exports.namespace = exports.mergeRight = exports.mergeLeft = exports.mergeAllVisitors = exports.keyMap = exports.isStringElement = exports.isRefElement = exports.isPrimitiveElement = exports.isParseResultElement = exports.isObjectElement = exports.isNumberElement = exports.isNullElement = exports.isMemberElement = exports.isLinkElement = exports.isElement = exports.isBooleanElement = exports.isArrayElement = exports.isAnnotationElement = exports.includesSymbols = exports.includesClasses = exports.hasElementSourceMap = exports.getNodeType = exports.from = exports.findAtOffset = exports.find = exports.filter = exports.dispatchRefractorPlugins = exports.dereference = exports.dehydrate = exports.defaultIdentityManager = exports.deepmerge = exports.createPredicate = exports.createNamespace = exports.cloneShallow = exports.cloneNode = exports.cloneDeep = exports.assignSourceMap = exports.Transcluder = exports.StringElement = exports.ShallowCloneError = exports.RefElement = exports.ParseResultElement = exports.ObjectSlice = exports.ObjectElement = exports.NumberElement = exports.NullElement = exports.Namespace = exports.MemberElement = exports.MediaTypes = exports.LinkElement = exports.KeyValuePair = exports.IdentityManager = exports.ElementIdentityError = exports.Element = exports.DeepCloneError = exports.CommentElement = exports.CloneError = exports.BooleanElement = exports.BREAK = exports.ArraySlice = exports.ArrayElement = exports.AnnotationElement = void 0;
+exports.visit =
+	exports.traverse =
+	exports.transclude =
+	exports.toYAML =
+	exports.toValue =
+	exports.toString =
+	exports.toJSON =
+	exports.some =
+	exports.sexprs =
+	exports.reject =
+	exports.refractorPluginSemanticElementIdentity =
+	exports.refractorPluginElementIdentity =
+	exports.refract =
+	exports.parents =
+	exports.namespace =
+	exports.mergeRight =
+	exports.mergeLeft =
+	exports.mergeAllVisitors =
+	exports.keyMap =
+	exports.isStringElement =
+	exports.isRefElement =
+	exports.isPrimitiveElement =
+	exports.isParseResultElement =
+	exports.isObjectElement =
+	exports.isNumberElement =
+	exports.isNullElement =
+	exports.isMemberElement =
+	exports.isLinkElement =
+	exports.isElement =
+	exports.isBooleanElement =
+	exports.isArrayElement =
+	exports.isAnnotationElement =
+	exports.includesSymbols =
+	exports.includesClasses =
+	exports.hasElementSourceMap =
+	exports.getNodeType =
+	exports.from =
+	exports.findAtOffset =
+	exports.find =
+	exports.filter =
+	exports.dispatchRefractorPlugins =
+	exports.dereference =
+	exports.dehydrate =
+	exports.defaultIdentityManager =
+	exports.deepmerge =
+	exports.createPredicate =
+	exports.createNamespace =
+	exports.cloneShallow =
+	exports.cloneNode =
+	exports.cloneDeep =
+	exports.assignSourceMap =
+	exports.Transcluder =
+	exports.StringElement =
+	exports.ShallowCloneError =
+	exports.RefElement =
+	exports.ParseResultElement =
+	exports.ObjectSlice =
+	exports.ObjectElement =
+	exports.NumberElement =
+	exports.NullElement =
+	exports.Namespace =
+	exports.MemberElement =
+	exports.MediaTypes =
+	exports.LinkElement =
+	exports.KeyValuePair =
+	exports.IdentityManager =
+	exports.ElementIdentityError =
+	exports.Element =
+	exports.DeepCloneError =
+	exports.CommentElement =
+	exports.CloneError =
+	exports.BooleanElement =
+	exports.BREAK =
+	exports.ArraySlice =
+	exports.ArrayElement =
+	exports.AnnotationElement =
+		void 0;
 var _index = require("./refractor/plugins/dispatcher/index.cjs");
 exports.dispatchRefractorPlugins = _index.dispatchPluginsSync;
-var _elementIdentity = _interopRequireDefault(require("./refractor/plugins/element-identity.cjs"));
+var _elementIdentity = _interopRequireDefault(
+	require("./refractor/plugins/element-identity.cjs"),
+);
 exports.refractorPluginElementIdentity = _elementIdentity.default;
-var _semanticElementIdentity = _interopRequireDefault(require("./refractor/plugins/semantic-element-identity.cjs"));
-exports.refractorPluginSemanticElementIdentity = _semanticElementIdentity.default;
+var _semanticElementIdentity = _interopRequireDefault(
+	require("./refractor/plugins/semantic-element-identity.cjs"),
+);
+exports.refractorPluginSemanticElementIdentity =
+	_semanticElementIdentity.default;
 var _mediaTypes = _interopRequireDefault(require("./media-types.cjs"));
 exports.MediaTypes = _mediaTypes.default;
 var _minim = require("minim");
@@ -78,26 +161,42 @@ exports.assignSourceMap = _util.assignSourceMap;
 var _index5 = require("./clone/index.cjs");
 exports.cloneShallow = _index5.cloneShallow;
 exports.cloneDeep = _index5.cloneDeep;
-var _CloneError = _interopRequireDefault(require("./clone/errors/CloneError.cjs"));
+var _CloneError = _interopRequireDefault(
+	require("./clone/errors/CloneError.cjs"),
+);
 exports.CloneError = _CloneError.default;
-var _DeepCloneError = _interopRequireDefault(require("./clone/errors/DeepCloneError.cjs"));
+var _DeepCloneError = _interopRequireDefault(
+	require("./clone/errors/DeepCloneError.cjs"),
+);
 exports.DeepCloneError = _DeepCloneError.default;
-var _ShallowCloneError = _interopRequireDefault(require("./clone/errors/ShallowCloneError.cjs"));
+var _ShallowCloneError = _interopRequireDefault(
+	require("./clone/errors/ShallowCloneError.cjs"),
+);
 exports.ShallowCloneError = _ShallowCloneError.default;
 var _index6 = require("./identity/index.cjs");
 exports.defaultIdentityManager = _index6.defaultIdentityManager;
 exports.IdentityManager = _index6.IdentityManager;
-var _ElementIdentityError = _interopRequireDefault(require("./identity/errors/ElementIdentityError.cjs"));
+var _ElementIdentityError = _interopRequireDefault(
+	require("./identity/errors/ElementIdentityError.cjs"),
+);
 exports.ElementIdentityError = _ElementIdentityError.default;
 var _from = _interopRequireDefault(require("./transformers/from.cjs"));
 exports.from = _from.default;
-var _index7 = _interopRequireDefault(require("./transformers/serializers/value/index.cjs"));
+var _index7 = _interopRequireDefault(
+	require("./transformers/serializers/value/index.cjs"),
+);
 exports.toValue = _index7.default;
-var _json = _interopRequireDefault(require("./transformers/serializers/json.cjs"));
+var _json = _interopRequireDefault(
+	require("./transformers/serializers/json.cjs"),
+);
 exports.toJSON = _json.default;
-var _yaml = _interopRequireDefault(require("./transformers/serializers/yaml-1-2.cjs"));
+var _yaml = _interopRequireDefault(
+	require("./transformers/serializers/yaml-1-2.cjs"),
+);
 exports.toYAML = _yaml.default;
-var _dehydrate = _interopRequireDefault(require("./transformers/dehydrate.cjs"));
+var _dehydrate = _interopRequireDefault(
+	require("./transformers/dehydrate.cjs"),
+);
 exports.dehydrate = _dehydrate.default;
 var _toString = _interopRequireDefault(require("./transformers/to-string.cjs"));
 exports.toString = _toString.default;

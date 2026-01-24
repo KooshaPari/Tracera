@@ -1,10 +1,9 @@
 // @flow
 
-import Roarr from 'roarr';
+import Roarr from "roarr";
 
-const Logger = Roarr
-  .child({
-    package: 'global-agent',
-  });
+const Logger = Roarr.child({
+	package: "global-agent",
+});
 
 export default Logger;

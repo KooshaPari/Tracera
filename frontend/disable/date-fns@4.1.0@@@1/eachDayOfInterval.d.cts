@@ -3,8 +3,8 @@ import type { ContextOptions, Interval, StepOptions } from "./types.js";
  * The {@link eachDayOfInterval} function options.
  */
 export interface EachDayOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachDayOfInterval} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the date argument,
@@ -12,16 +12,16 @@ export interface EachDayOfIntervalOptions<DateType extends Date = Date>
  * a context function is passed, it uses the context function return type.
  */
 export type EachDayOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachDayOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachDayOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachDayOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachDayOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachDayOfInterval
@@ -54,9 +54,9 @@ export type EachDayOfIntervalResult<
  * // ]
  */
 export declare function eachDayOfInterval<
-  IntervalType extends Interval,
-  Options extends EachDayOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachDayOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachDayOfIntervalResult<IntervalType, Options>;

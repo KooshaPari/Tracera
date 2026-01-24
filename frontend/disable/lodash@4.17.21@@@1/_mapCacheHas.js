@@ -1,4 +1,4 @@
-var getMapData = require('./_getMapData');
+var getMapData = require("./_getMapData");
 
 /**
  * Checks if a map value for `key` exists.
@@ -10,7 +10,7 @@ var getMapData = require('./_getMapData');
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
 function mapCacheHas(key) {
-  return getMapData(this, key).has(key);
+	return getMapData(this, key).has(key);
 }
 
 module.exports = mapCacheHas;

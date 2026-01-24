@@ -1,6 +1,6 @@
-var baseAssignValue = require('./_baseAssignValue'),
-    baseForOwn = require('./_baseForOwn'),
-    baseIteratee = require('./_baseIteratee');
+var baseAssignValue = require("./_baseAssignValue"),
+	baseForOwn = require("./_baseForOwn"),
+	baseIteratee = require("./_baseIteratee");
 
 /**
  * Creates an object with the same keys as `object` and values generated
@@ -31,13 +31,13 @@ var baseAssignValue = require('./_baseAssignValue'),
  * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
  */
 function mapValues(object, iteratee) {
-  var result = {};
-  iteratee = baseIteratee(iteratee, 3);
+	var result = {};
+	iteratee = baseIteratee(iteratee, 3);
 
-  baseForOwn(object, function(value, key, object) {
-    baseAssignValue(result, key, iteratee(value, key, object));
-  });
-  return result;
+	baseForOwn(object, (value, key, object) => {
+		baseAssignValue(result, key, iteratee(value, key, object));
+	});
+	return result;
 }
 
 module.exports = mapValues;

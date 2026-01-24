@@ -19,109 +19,109 @@
  * @property {Record<string, unknown> | undefined} [imports]
  */
 
-import fs from 'node:fs'
-import path from 'node:path'
-import {fileURLToPath} from 'node:url'
-import {codes} from './errors.js'
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { codes } from "./errors.js";
 
-const hasOwnProperty = {}.hasOwnProperty
+const hasOwnProperty = {}.hasOwnProperty;
 
-const {ERR_INVALID_PACKAGE_CONFIG} = codes
+const { ERR_INVALID_PACKAGE_CONFIG } = codes;
 
 /** @type {Map<string, PackageConfig>} */
-const cache = new Map()
+const cache = new Map();
 
 /**
  * @param {string} jsonPath
  * @param {{specifier: URL | string, base?: URL}} options
  * @returns {PackageConfig}
  */
-export function read(jsonPath, {base, specifier}) {
-  const existing = cache.get(jsonPath)
+export function read(jsonPath, { base, specifier }) {
+	const existing = cache.get(jsonPath);
 
-  if (existing) {
-    return existing
-  }
+	if (existing) {
+		return existing;
+	}
 
-  /** @type {string | undefined} */
-  let string
+	/** @type {string | undefined} */
+	let string;
 
-  try {
-    string = fs.readFileSync(path.toNamespacedPath(jsonPath), 'utf8')
-  } catch (error) {
-    const exception = /** @type {ErrnoException} */ (error)
+	try {
+		string = fs.readFileSync(path.toNamespacedPath(jsonPath), "utf8");
+	} catch (error) {
+		const exception = /** @type {ErrnoException} */ (error);
 
-    if (exception.code !== 'ENOENT') {
-      throw exception
-    }
-  }
+		if (exception.code !== "ENOENT") {
+			throw exception;
+		}
+	}
 
-  /** @type {PackageConfig} */
-  const result = {
-    exists: false,
-    pjsonPath: jsonPath,
-    main: undefined,
-    name: undefined,
-    type: 'none', // Ignore unknown types for forwards compatibility
-    exports: undefined,
-    imports: undefined
-  }
+	/** @type {PackageConfig} */
+	const result = {
+		exists: false,
+		pjsonPath: jsonPath,
+		main: undefined,
+		name: undefined,
+		type: "none", // Ignore unknown types for forwards compatibility
+		exports: undefined,
+		imports: undefined,
+	};
 
-  if (string !== undefined) {
-    /** @type {Record<string, unknown>} */
-    let parsed
+	if (string !== undefined) {
+		/** @type {Record<string, unknown>} */
+		let parsed;
 
-    try {
-      parsed = JSON.parse(string)
-    } catch (error_) {
-      const cause = /** @type {ErrnoException} */ (error_)
-      const error = new ERR_INVALID_PACKAGE_CONFIG(
-        jsonPath,
-        (base ? `"${specifier}" from ` : '') + fileURLToPath(base || specifier),
-        cause.message
-      )
-      error.cause = cause
-      throw error
-    }
+		try {
+			parsed = JSON.parse(string);
+		} catch (error_) {
+			const cause = /** @type {ErrnoException} */ (error_);
+			const error = new ERR_INVALID_PACKAGE_CONFIG(
+				jsonPath,
+				(base ? `"${specifier}" from ` : "") + fileURLToPath(base || specifier),
+				cause.message,
+			);
+			error.cause = cause;
+			throw error;
+		}
 
-    result.exists = true
+		result.exists = true;
 
-    if (
-      hasOwnProperty.call(parsed, 'name') &&
-      typeof parsed.name === 'string'
-    ) {
-      result.name = parsed.name
-    }
+		if (
+			hasOwnProperty.call(parsed, "name") &&
+			typeof parsed.name === "string"
+		) {
+			result.name = parsed.name;
+		}
 
-    if (
-      hasOwnProperty.call(parsed, 'main') &&
-      typeof parsed.main === 'string'
-    ) {
-      result.main = parsed.main
-    }
+		if (
+			hasOwnProperty.call(parsed, "main") &&
+			typeof parsed.main === "string"
+		) {
+			result.main = parsed.main;
+		}
 
-    if (hasOwnProperty.call(parsed, 'exports')) {
-      // @ts-expect-error: assume valid.
-      result.exports = parsed.exports
-    }
+		if (hasOwnProperty.call(parsed, "exports")) {
+			// @ts-expect-error: assume valid.
+			result.exports = parsed.exports;
+		}
 
-    if (hasOwnProperty.call(parsed, 'imports')) {
-      // @ts-expect-error: assume valid.
-      result.imports = parsed.imports
-    }
+		if (hasOwnProperty.call(parsed, "imports")) {
+			// @ts-expect-error: assume valid.
+			result.imports = parsed.imports;
+		}
 
-    // Ignore unknown types for forwards compatibility
-    if (
-      hasOwnProperty.call(parsed, 'type') &&
-      (parsed.type === 'commonjs' || parsed.type === 'module')
-    ) {
-      result.type = parsed.type
-    }
-  }
+		// Ignore unknown types for forwards compatibility
+		if (
+			hasOwnProperty.call(parsed, "type") &&
+			(parsed.type === "commonjs" || parsed.type === "module")
+		) {
+			result.type = parsed.type;
+		}
+	}
 
-  cache.set(jsonPath, result)
+	cache.set(jsonPath, result);
 
-  return result
+	return result;
 }
 
 /**
@@ -129,41 +129,41 @@ export function read(jsonPath, {base, specifier}) {
  * @returns {PackageConfig}
  */
 export function getPackageScopeConfig(resolved) {
-  // Note: in Node, this is now a native module.
-  let packageJSONUrl = new URL('package.json', resolved)
+	// Note: in Node, this is now a native module.
+	let packageJSONUrl = new URL("package.json", resolved);
 
-  while (true) {
-    const packageJSONPath = packageJSONUrl.pathname
-    if (packageJSONPath.endsWith('node_modules/package.json')) {
-      break
-    }
+	while (true) {
+		const packageJSONPath = packageJSONUrl.pathname;
+		if (packageJSONPath.endsWith("node_modules/package.json")) {
+			break;
+		}
 
-    const packageConfig = read(fileURLToPath(packageJSONUrl), {
-      specifier: resolved
-    })
+		const packageConfig = read(fileURLToPath(packageJSONUrl), {
+			specifier: resolved,
+		});
 
-    if (packageConfig.exists) {
-      return packageConfig
-    }
+		if (packageConfig.exists) {
+			return packageConfig;
+		}
 
-    const lastPackageJSONUrl = packageJSONUrl
-    packageJSONUrl = new URL('../package.json', packageJSONUrl)
+		const lastPackageJSONUrl = packageJSONUrl;
+		packageJSONUrl = new URL("../package.json", packageJSONUrl);
 
-    // Terminates at root where ../package.json equals ../../package.json
-    // (can't just check "/package.json" for Windows support).
-    if (packageJSONUrl.pathname === lastPackageJSONUrl.pathname) {
-      break
-    }
-  }
+		// Terminates at root where ../package.json equals ../../package.json
+		// (can't just check "/package.json" for Windows support).
+		if (packageJSONUrl.pathname === lastPackageJSONUrl.pathname) {
+			break;
+		}
+	}
 
-  const packageJSONPath = fileURLToPath(packageJSONUrl)
-  // ^^ Note: in Node, this is now a native module.
+	const packageJSONPath = fileURLToPath(packageJSONUrl);
+	// ^^ Note: in Node, this is now a native module.
 
-  return {
-    pjsonPath: packageJSONPath,
-    exists: false,
-    type: 'none'
-  }
+	return {
+		pjsonPath: packageJSONPath,
+		exists: false,
+		type: "none",
+	};
 }
 
 /**
@@ -172,6 +172,6 @@ export function getPackageScopeConfig(resolved) {
  * @returns {PackageType}
  */
 export function getPackageType(url) {
-  // To do @anonrig: Write a C++ function that returns only "type".
-  return getPackageScopeConfig(url).type
+	// To do @anonrig: Write a C++ function that returns only "type".
+	return getPackageScopeConfig(url).type;
 }

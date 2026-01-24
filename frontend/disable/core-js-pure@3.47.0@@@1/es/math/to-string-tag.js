@@ -1,4 +1,4 @@
-'use strict';
-require('../../modules/es.math.to-string-tag');
+"use strict";
+require("../../modules/es.math.to-string-tag");
 
-module.exports = 'Math';
+module.exports = "Math";

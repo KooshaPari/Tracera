@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link lastDayOfMonth} function options.
  */
 export interface LastDayOfMonthOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name lastDayOfMonth
  * @category Month Helpers
@@ -27,9 +27,9 @@ export interface LastDayOfMonthOptions<DateType extends Date = Date>
  * //=> Tue Sep 30 2014 00:00:00
  */
 export declare function lastDayOfMonth<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: LastDayOfMonthOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: LastDayOfMonthOptions<ResultDate> | undefined,
 ): ResultDate;

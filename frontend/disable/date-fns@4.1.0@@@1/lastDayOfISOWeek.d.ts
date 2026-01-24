@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link lastDayOfISOWeek} function options.
  */
 export interface LastDayOfISOWeekOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name lastDayOfISOWeek
  * @category ISO Week Helpers
@@ -29,9 +29,9 @@ export interface LastDayOfISOWeekOptions<DateType extends Date = Date>
  * //=> Sun Sep 07 2014 00:00:00
  */
 export declare function lastDayOfISOWeek<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: LastDayOfISOWeekOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: LastDayOfISOWeekOptions<ResultDate> | undefined,
 ): ResultDate;

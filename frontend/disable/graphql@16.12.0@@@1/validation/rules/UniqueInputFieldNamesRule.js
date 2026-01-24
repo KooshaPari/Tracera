@@ -1,13 +1,11 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 
-var _invariant = require('../../jsutils/invariant.js');
+var _invariant = require("../../jsutils/invariant.js");
 
-var _GraphQLError = require('../../error/GraphQLError.js');
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Unique input field names
@@ -18,37 +16,37 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  * See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
  */
 function UniqueInputFieldNamesRule(context) {
-  const knownNameStack = [];
-  let knownNames = Object.create(null);
-  return {
-    ObjectValue: {
-      enter() {
-        knownNameStack.push(knownNames);
-        knownNames = Object.create(null);
-      },
+	const knownNameStack = [];
+	let knownNames = Object.create(null);
+	return {
+		ObjectValue: {
+			enter() {
+				knownNameStack.push(knownNames);
+				knownNames = Object.create(null);
+			},
 
-      leave() {
-        const prevKnownNames = knownNameStack.pop();
-        prevKnownNames || (0, _invariant.invariant)(false);
-        knownNames = prevKnownNames;
-      },
-    },
+			leave() {
+				const prevKnownNames = knownNameStack.pop();
+				prevKnownNames || (0, _invariant.invariant)(false);
+				knownNames = prevKnownNames;
+			},
+		},
 
-    ObjectField(node) {
-      const fieldName = node.name.value;
+		ObjectField(node) {
+			const fieldName = node.name.value;
 
-      if (knownNames[fieldName]) {
-        context.reportError(
-          new _GraphQLError.GraphQLError(
-            `There can be only one input field named "${fieldName}".`,
-            {
-              nodes: [knownNames[fieldName], node.name],
-            },
-          ),
-        );
-      } else {
-        knownNames[fieldName] = node.name;
-      }
-    },
-  };
+			if (knownNames[fieldName]) {
+				context.reportError(
+					new _GraphQLError.GraphQLError(
+						`There can be only one input field named "${fieldName}".`,
+						{
+							nodes: [knownNames[fieldName], node.name],
+						},
+					),
+				);
+			} else {
+				knownNames[fieldName] = node.name;
+			}
+		},
+	};
 }

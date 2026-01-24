@@ -43,14 +43,14 @@ var _index4 = require("./isWeekend.cjs");
  * // ]
  */
 function eachWeekendOfInterval(interval, options) {
-  const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
-  const dateInterval = (0, _index3.eachDayOfInterval)({ start, end }, options);
-  const weekends = [];
-  let index = 0;
-  while (index < dateInterval.length) {
-    const date = dateInterval[index++];
-    if ((0, _index4.isWeekend)(date))
-      weekends.push((0, _index2.constructFrom)(start, date));
-  }
-  return weekends;
+	const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
+	const dateInterval = (0, _index3.eachDayOfInterval)({ start, end }, options);
+	const weekends = [];
+	let index = 0;
+	while (index < dateInterval.length) {
+		const date = dateInterval[index++];
+		if ((0, _index4.isWeekend)(date))
+			weekends.push((0, _index2.constructFrom)(start, date));
+	}
+	return weekends;
 }

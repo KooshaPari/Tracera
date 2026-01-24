@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentPosition = void 0;
 exports.removeSubsets = removeSubsets;
@@ -14,42 +13,42 @@ var domhandler_1 = require("domhandler");
  * @returns Remaining nodes that aren't contained by other nodes.
  */
 function removeSubsets(nodes) {
-    var idx = nodes.length;
-    /*
-     * Check if each node (or one of its ancestors) is already contained in the
-     * array.
-     */
-    while (--idx >= 0) {
-        var node = nodes[idx];
-        /*
-         * Remove the node if it is not unique.
-         * We are going through the array from the end, so we only
-         * have to check nodes that preceed the node under consideration in the array.
-         */
-        if (idx > 0 && nodes.lastIndexOf(node, idx - 1) >= 0) {
-            nodes.splice(idx, 1);
-            continue;
-        }
-        for (var ancestor = node.parent; ancestor; ancestor = ancestor.parent) {
-            if (nodes.includes(ancestor)) {
-                nodes.splice(idx, 1);
-                break;
-            }
-        }
-    }
-    return nodes;
+	var idx = nodes.length;
+	/*
+	 * Check if each node (or one of its ancestors) is already contained in the
+	 * array.
+	 */
+	while (--idx >= 0) {
+		var node = nodes[idx];
+		/*
+		 * Remove the node if it is not unique.
+		 * We are going through the array from the end, so we only
+		 * have to check nodes that preceed the node under consideration in the array.
+		 */
+		if (idx > 0 && nodes.lastIndexOf(node, idx - 1) >= 0) {
+			nodes.splice(idx, 1);
+			continue;
+		}
+		for (var ancestor = node.parent; ancestor; ancestor = ancestor.parent) {
+			if (nodes.includes(ancestor)) {
+				nodes.splice(idx, 1);
+				break;
+			}
+		}
+	}
+	return nodes;
 }
 /**
  * @category Helpers
  * @see {@link http://dom.spec.whatwg.org/#dom-node-comparedocumentposition}
  */
 var DocumentPosition;
-(function (DocumentPosition) {
-    DocumentPosition[DocumentPosition["DISCONNECTED"] = 1] = "DISCONNECTED";
-    DocumentPosition[DocumentPosition["PRECEDING"] = 2] = "PRECEDING";
-    DocumentPosition[DocumentPosition["FOLLOWING"] = 4] = "FOLLOWING";
-    DocumentPosition[DocumentPosition["CONTAINS"] = 8] = "CONTAINS";
-    DocumentPosition[DocumentPosition["CONTAINED_BY"] = 16] = "CONTAINED_BY";
+((DocumentPosition) => {
+	DocumentPosition[(DocumentPosition["DISCONNECTED"] = 1)] = "DISCONNECTED";
+	DocumentPosition[(DocumentPosition["PRECEDING"] = 2)] = "PRECEDING";
+	DocumentPosition[(DocumentPosition["FOLLOWING"] = 4)] = "FOLLOWING";
+	DocumentPosition[(DocumentPosition["CONTAINS"] = 8)] = "CONTAINS";
+	DocumentPosition[(DocumentPosition["CONTAINED_BY"] = 16)] = "CONTAINED_BY";
 })(DocumentPosition || (exports.DocumentPosition = DocumentPosition = {}));
 /**
  * Compare the position of one node against another node in any other document,
@@ -78,43 +77,43 @@ var DocumentPosition;
  * a description of these values.
  */
 function compareDocumentPosition(nodeA, nodeB) {
-    var aParents = [];
-    var bParents = [];
-    if (nodeA === nodeB) {
-        return 0;
-    }
-    var current = (0, domhandler_1.hasChildren)(nodeA) ? nodeA : nodeA.parent;
-    while (current) {
-        aParents.unshift(current);
-        current = current.parent;
-    }
-    current = (0, domhandler_1.hasChildren)(nodeB) ? nodeB : nodeB.parent;
-    while (current) {
-        bParents.unshift(current);
-        current = current.parent;
-    }
-    var maxIdx = Math.min(aParents.length, bParents.length);
-    var idx = 0;
-    while (idx < maxIdx && aParents[idx] === bParents[idx]) {
-        idx++;
-    }
-    if (idx === 0) {
-        return DocumentPosition.DISCONNECTED;
-    }
-    var sharedParent = aParents[idx - 1];
-    var siblings = sharedParent.children;
-    var aSibling = aParents[idx];
-    var bSibling = bParents[idx];
-    if (siblings.indexOf(aSibling) > siblings.indexOf(bSibling)) {
-        if (sharedParent === nodeB) {
-            return DocumentPosition.FOLLOWING | DocumentPosition.CONTAINED_BY;
-        }
-        return DocumentPosition.FOLLOWING;
-    }
-    if (sharedParent === nodeA) {
-        return DocumentPosition.PRECEDING | DocumentPosition.CONTAINS;
-    }
-    return DocumentPosition.PRECEDING;
+	var aParents = [];
+	var bParents = [];
+	if (nodeA === nodeB) {
+		return 0;
+	}
+	var current = (0, domhandler_1.hasChildren)(nodeA) ? nodeA : nodeA.parent;
+	while (current) {
+		aParents.unshift(current);
+		current = current.parent;
+	}
+	current = (0, domhandler_1.hasChildren)(nodeB) ? nodeB : nodeB.parent;
+	while (current) {
+		bParents.unshift(current);
+		current = current.parent;
+	}
+	var maxIdx = Math.min(aParents.length, bParents.length);
+	var idx = 0;
+	while (idx < maxIdx && aParents[idx] === bParents[idx]) {
+		idx++;
+	}
+	if (idx === 0) {
+		return DocumentPosition.DISCONNECTED;
+	}
+	var sharedParent = aParents[idx - 1];
+	var siblings = sharedParent.children;
+	var aSibling = aParents[idx];
+	var bSibling = bParents[idx];
+	if (siblings.indexOf(aSibling) > siblings.indexOf(bSibling)) {
+		if (sharedParent === nodeB) {
+			return DocumentPosition.FOLLOWING | DocumentPosition.CONTAINED_BY;
+		}
+		return DocumentPosition.FOLLOWING;
+	}
+	if (sharedParent === nodeA) {
+		return DocumentPosition.PRECEDING | DocumentPosition.CONTAINS;
+	}
+	return DocumentPosition.PRECEDING;
 }
 /**
  * Sort an array of nodes based on their relative position in the document,
@@ -126,17 +125,16 @@ function compareDocumentPosition(nodeA, nodeB) {
  * @returns Collection of unique nodes, sorted in document order.
  */
 function uniqueSort(nodes) {
-    nodes = nodes.filter(function (node, i, arr) { return !arr.includes(node, i + 1); });
-    nodes.sort(function (a, b) {
-        var relative = compareDocumentPosition(a, b);
-        if (relative & DocumentPosition.PRECEDING) {
-            return -1;
-        }
-        else if (relative & DocumentPosition.FOLLOWING) {
-            return 1;
-        }
-        return 0;
-    });
-    return nodes;
+	nodes = nodes.filter((node, i, arr) => !arr.includes(node, i + 1));
+	nodes.sort((a, b) => {
+		var relative = compareDocumentPosition(a, b);
+		if (relative & DocumentPosition.PRECEDING) {
+			return -1;
+		} else if (relative & DocumentPosition.FOLLOWING) {
+			return 1;
+		}
+		return 0;
+	});
+	return nodes;
 }
 //# sourceMappingURL=helpers.js.map

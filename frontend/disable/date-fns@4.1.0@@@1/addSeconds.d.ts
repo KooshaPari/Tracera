@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link addSeconds} function options.
  */
 export interface AddSecondsOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name addSeconds
  * @category Second Helpers
@@ -27,10 +27,10 @@ export interface AddSecondsOptions<DateType extends Date = Date>
  * //=> Thu Jul 10 2014 12:45:30
  */
 export declare function addSeconds<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: AddSecondsOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: AddSecondsOptions<ResultDate> | undefined,
 ): ResultDate;

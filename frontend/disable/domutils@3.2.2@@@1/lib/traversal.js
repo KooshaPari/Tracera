@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getChildren = getChildren;
 exports.getParent = getParent;
@@ -17,7 +16,7 @@ var domhandler_1 = require("domhandler");
  * @returns `elem`'s children, or an empty array.
  */
 function getChildren(elem) {
-    return (0, domhandler_1.hasChildren)(elem) ? elem.children : [];
+	return (0, domhandler_1.hasChildren)(elem) ? elem.children : [];
 }
 /**
  * Get a node's parent.
@@ -27,7 +26,7 @@ function getChildren(elem) {
  * @returns `elem`'s parent node, or `null` if `elem` is a root node.
  */
 function getParent(elem) {
-    return elem.parent || null;
+	return elem.parent || null;
 }
 /**
  * Gets an elements siblings, including the element itself.
@@ -41,21 +40,21 @@ function getParent(elem) {
  * @returns `elem`'s siblings, including `elem`.
  */
 function getSiblings(elem) {
-    var _a, _b;
-    var parent = getParent(elem);
-    if (parent != null)
-        return getChildren(parent);
-    var siblings = [elem];
-    var prev = elem.prev, next = elem.next;
-    while (prev != null) {
-        siblings.unshift(prev);
-        (_a = prev, prev = _a.prev);
-    }
-    while (next != null) {
-        siblings.push(next);
-        (_b = next, next = _b.next);
-    }
-    return siblings;
+	var _a, _b;
+	var parent = getParent(elem);
+	if (parent != null) return getChildren(parent);
+	var siblings = [elem];
+	var prev = elem.prev,
+		next = elem.next;
+	while (prev != null) {
+		siblings.unshift(prev);
+		(_a = prev), (prev = _a.prev);
+	}
+	while (next != null) {
+		siblings.push(next);
+		(_b = next), (next = _b.next);
+	}
+	return siblings;
 }
 /**
  * Gets an attribute from an element.
@@ -66,8 +65,8 @@ function getSiblings(elem) {
  * @returns The element's attribute value, or `undefined`.
  */
 function getAttributeValue(elem, name) {
-    var _a;
-    return (_a = elem.attribs) === null || _a === void 0 ? void 0 : _a[name];
+	var _a;
+	return (_a = elem.attribs) === null || _a === void 0 ? void 0 : _a[name];
 }
 /**
  * Checks whether an element has an attribute.
@@ -78,9 +77,11 @@ function getAttributeValue(elem, name) {
  * @returns Returns whether `elem` has the attribute `name`.
  */
 function hasAttrib(elem, name) {
-    return (elem.attribs != null &&
-        Object.prototype.hasOwnProperty.call(elem.attribs, name) &&
-        elem.attribs[name] != null);
+	return (
+		elem.attribs != null &&
+		Object.hasOwn(elem.attribs, name) &&
+		elem.attribs[name] != null
+	);
 }
 /**
  * Get the tag name of an element.
@@ -90,7 +91,7 @@ function hasAttrib(elem, name) {
  * @returns The tag name of `elem`.
  */
 function getName(elem) {
-    return elem.name;
+	return elem.name;
 }
 /**
  * Returns the next element sibling of a node.
@@ -101,11 +102,11 @@ function getName(elem) {
  * sibling.
  */
 function nextElementSibling(elem) {
-    var _a;
-    var next = elem.next;
-    while (next !== null && !(0, domhandler_1.isTag)(next))
-        (_a = next, next = _a.next);
-    return next;
+	var _a;
+	var next = elem.next;
+	while (next !== null && !(0, domhandler_1.isTag)(next))
+		(_a = next), (next = _a.next);
+	return next;
 }
 /**
  * Returns the previous element sibling of a node.
@@ -116,10 +117,10 @@ function nextElementSibling(elem) {
  * previous sibling.
  */
 function prevElementSibling(elem) {
-    var _a;
-    var prev = elem.prev;
-    while (prev !== null && !(0, domhandler_1.isTag)(prev))
-        (_a = prev, prev = _a.prev);
-    return prev;
+	var _a;
+	var prev = elem.prev;
+	while (prev !== null && !(0, domhandler_1.isTag)(prev))
+		(_a = prev), (prev = _a.prev);
+	return prev;
 }
 //# sourceMappingURL=traversal.js.map

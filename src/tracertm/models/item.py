@@ -4,6 +4,7 @@ Item model for TraceRTM.
 
 import uuid
 from datetime import datetime
+from typing import Any, ClassVar
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -68,7 +69,7 @@ class Item(Base, TimestampMixin):
         index=True,
     )
 
-    item_metadata: Mapped[dict] = mapped_column(JSONType, nullable=False, default=dict)
+    item_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -78,11 +79,11 @@ class Item(Base, TimestampMixin):
         DateTime(timezone=True), nullable=True, index=True
     )
 
-    __mapper_args__ = {
+    __mapper_args__: dict[str, Any] = {
         "version_id_col": version,  # Enable optimistic locking
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: object) -> None:
         # Map test-friendly aliases to internal column names
         if "type" in kwargs and "item_type" not in kwargs:
             kwargs["item_type"] = kwargs.pop("type")
@@ -90,19 +91,23 @@ class Item(Base, TimestampMixin):
             kwargs["item_metadata"] = kwargs.pop("metadata")
         super().__init__(**kwargs)
 
-    def __getattribute__(self, name):
+    def __getattribute__(self, name: str) -> object:
         if name == "type":
             return object.__getattribute__(self, "item_type")
         if name == "metadata":
             return object.__getattribute__(self, "item_metadata")
         return super().__getattribute__(name)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: object) -> None:
         if name == "type":
             name = "item_type"
         if name == "metadata":
             name = "item_metadata"
         super().__setattr__(name, value)
+
+    def __getitem__(self, key: str) -> object:
+        """Allow dict-style access used by some tests."""
+        return getattr(self, key)
 
     def __repr__(self) -> str:
         return f"<Item(id={self.id!r}, title={self.title!r}, view={self.view!r})>"

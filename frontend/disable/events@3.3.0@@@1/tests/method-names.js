@@ -19,17 +19,16 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'use strict';
-require('./common');
-var assert = require('assert');
-var events = require('../');
+require("./common");
+var assert = require("assert");
+var events = require("../");
 
 var E = events.EventEmitter.prototype;
-assert.strictEqual(E.constructor.name, 'EventEmitter');
-assert.strictEqual(E.on, E.addListener);  // Same method.
-assert.strictEqual(E.off, E.removeListener);  // Same method.
-Object.getOwnPropertyNames(E).forEach(function(name) {
-  if (name === 'constructor' || name === 'on' || name === 'off') return;
-  if (typeof E[name] !== 'function') return;
-  assert.strictEqual(E[name].name, name);
+assert.strictEqual(E.constructor.name, "EventEmitter");
+assert.strictEqual(E.on, E.addListener); // Same method.
+assert.strictEqual(E.off, E.removeListener); // Same method.
+Object.getOwnPropertyNames(E).forEach((name) => {
+	if (name === "constructor" || name === "on" || name === "off") return;
+	if (typeof E[name] !== "function") return;
+	assert.strictEqual(E[name].name, name);
 });

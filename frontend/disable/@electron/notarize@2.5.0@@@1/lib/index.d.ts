@@ -1,6 +1,10 @@
-import { NotarizeOptions, NotarizeOptionsLegacy, NotarizeOptionsNotaryTool } from './types';
+import {
+	NotarizeOptions,
+	NotarizeOptionsLegacy,
+	NotarizeOptionsNotaryTool,
+} from "./types";
 export { NotarizeOptions };
-export { validateNotaryToolAuthorizationArgs as validateAuthorizationArgs } from './validate-args';
+export { validateNotaryToolAuthorizationArgs as validateAuthorizationArgs } from "./validate-args";
 /**
  * Sends your app to Apple for notarization with `notarytool` and staples a successful
  * notarization result to the app bundle. This includes your {@link NotaryToolNotarizeAppOptions.appPath | appPath}

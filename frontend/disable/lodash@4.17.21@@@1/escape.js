@@ -1,9 +1,9 @@
-var escapeHtmlChar = require('./_escapeHtmlChar'),
-    toString = require('./toString');
+var escapeHtmlChar = require("./_escapeHtmlChar"),
+	toString = require("./toString");
 
 /** Used to match HTML entities and HTML characters. */
 var reUnescapedHtml = /[&<>"']/g,
-    reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
+	reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
 
 /**
  * Converts the characters "&", "<", ">", '"', and "'" in `string` to their
@@ -34,10 +34,10 @@ var reUnescapedHtml = /[&<>"']/g,
  * // => 'fred, barney, &amp; pebbles'
  */
 function escape(string) {
-  string = toString(string);
-  return (string && reHasUnescapedHtml.test(string))
-    ? string.replace(reUnescapedHtml, escapeHtmlChar)
-    : string;
+	string = toString(string);
+	return string && reHasUnescapedHtml.test(string)
+		? string.replace(reUnescapedHtml, escapeHtmlChar)
+		: string;
 }
 
 module.exports = escape;

@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias, cast
 from uuid import uuid4
 
 import yaml
@@ -12,14 +12,14 @@ from sqlalchemy.orm import Session
 try:
     import frontmatter
 except ImportError:
-    frontmatter = None
+    frontmatter = cast(Any, None)
 
 try:
     from markdown import Markdown
     from markdown_it import MarkdownIt
 except ImportError:
-    Markdown = None
-    MarkdownIt = None
+    Markdown = cast(Any, None)  # type: ignore
+    MarkdownIt = cast(Any, None)  # type: ignore
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -29,14 +29,14 @@ from tracertm.models.project import Project
 class StatelessIngestionService:
     """Service for stateless ingestion of MD/MDX/YAML/OpenSpec/BMad files."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         self.session = session
-        if MarkdownIt:
-            self.md_parser = MarkdownIt()
+        if MarkdownIt is not None:
+            self.md_parser: Any = MarkdownIt()
         else:
             self.md_parser = None
-        if Markdown:
-            self.markdown = Markdown()
+        if Markdown is not None:
+            self.markdown: Any = Markdown()
         else:
             self.markdown = None
 
@@ -390,7 +390,7 @@ class StatelessIngestionService:
                 }
             else:
                 # Generic YAML - estimate from structure
-                def count_items(d):
+                def count_items(d: Any) -> int:
                     count = 0
                     if isinstance(d, dict):
                         count += len(d)
@@ -731,7 +731,7 @@ class StatelessIngestionService:
         items_created = []
 
         # Recursively process YAML structure
-        def process_dict(d: dict[str, Any], parent_id: str | None = None):
+        def process_dict(d: dict[str, Any], parent_id: str | None = None) -> None:
             for key, value in d.items():
                 if isinstance(value, dict):
                     # Create item for this key
@@ -793,7 +793,7 @@ class StatelessIngestionService:
         """Determine item type based on header level."""
         type_mapping = metadata.get("type_mapping", {})
         if str(level) in type_mapping:
-            return type_mapping[str(level)]
+            return str(type_mapping[str(level)])
 
         # Default mapping
         default_mapping = {1: "epic", 2: "feature", 3: "story"}

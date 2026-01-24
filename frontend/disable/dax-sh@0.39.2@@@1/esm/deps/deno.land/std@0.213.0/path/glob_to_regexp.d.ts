@@ -1,7 +1,7 @@
 import type { GlobOptions } from "./_common/glob_to_reg_exp.js";
 import { OSType } from "./_os.js";
 export type GlobToRegExpOptions = GlobOptions & {
-    os?: OSType;
+	os?: OSType;
 };
 /** Convert a glob string to a regular expression.
  *
@@ -58,4 +58,7 @@ export type GlobToRegExpOptions = GlobOptions & {
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment. */
-export declare function globToRegExp(glob: string, options?: GlobToRegExpOptions): RegExp;
+export declare function globToRegExp(
+	glob: string,
+	options?: GlobToRegExpOptions,
+): RegExp;

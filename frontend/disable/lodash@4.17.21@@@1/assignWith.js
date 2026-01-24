@@ -1,6 +1,6 @@
-var copyObject = require('./_copyObject'),
-    createAssigner = require('./_createAssigner'),
-    keys = require('./keys');
+var copyObject = require("./_copyObject"),
+	createAssigner = require("./_createAssigner"),
+	keys = require("./keys");
 
 /**
  * This method is like `_.assign` except that it accepts `customizer`
@@ -30,8 +30,8 @@ var copyObject = require('./_copyObject'),
  * defaults({ 'a': 1 }, { 'b': 2 }, { 'a': 3 });
  * // => { 'a': 1, 'b': 2 }
  */
-var assignWith = createAssigner(function(object, source, srcIndex, customizer) {
-  copyObject(source, keys(source), object, customizer);
+var assignWith = createAssigner((object, source, srcIndex, customizer) => {
+	copyObject(source, keys(source), object, customizer);
 });
 
 module.exports = assignWith;

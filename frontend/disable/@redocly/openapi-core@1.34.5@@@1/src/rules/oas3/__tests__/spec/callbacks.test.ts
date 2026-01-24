@@ -1,8 +1,8 @@
-import { outdent } from 'outdent';
-import { validateDoc } from './utils';
+import { outdent } from "outdent";
+import { validateDoc } from "./utils";
 
-it('should not fail on valid callbacks object', async () => {
-  const source = outdent`
+it("should not fail on valid callbacks object", async () => {
+	const source = outdent`
     openapi: 3.0.2
     info:
       title: Test
@@ -33,9 +33,9 @@ it('should not fail on valid callbacks object', async () => {
               description: example description
   `;
 
-  expect(
-    await validateDoc(source, {
-      spec: 'error',
-    })
-  ).toMatchInlineSnapshot(`[]`);
+	expect(
+		await validateDoc(source, {
+			spec: "error",
+		}),
+	).toMatchInlineSnapshot(`[]`);
 });

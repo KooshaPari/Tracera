@@ -1,15 +1,15 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.x = x;
 exports.y = y;
 
 function x(p) {
-  return p[0];
+	return p[0];
 }
 
 function y(p) {
-  return p[1];
+	return p[1];
 }

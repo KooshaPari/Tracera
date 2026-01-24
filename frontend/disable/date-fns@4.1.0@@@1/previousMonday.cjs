@@ -28,5 +28,5 @@ var _index = require("./previousDay.cjs");
  * //=> Mon June 14 2021 00:00:00
  */
 function previousMonday(date, options) {
-  return (0, _index.previousDay)(date, 1, options);
+	return (0, _index.previousDay)(date, 1, options);
 }

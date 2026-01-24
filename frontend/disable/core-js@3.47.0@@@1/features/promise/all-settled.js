@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/promise/all-settled');
+"use strict";
+module.exports = require("../../full/promise/all-settled");

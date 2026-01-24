@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 /**
  * No fragment cycles
  *
@@ -9,5 +9,5 @@ import type { ASTValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
  */
 export declare function NoFragmentCyclesRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

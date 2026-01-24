@@ -1,8 +1,8 @@
-'use strict';
-var globalThis = require('../internals/global-this');
+"use strict";
+var globalThis = require("../internals/global-this");
 
-module.exports = function (CONSTRUCTOR, METHOD) {
-  var Constructor = globalThis[CONSTRUCTOR];
-  var Prototype = Constructor && Constructor.prototype;
-  return Prototype && Prototype[METHOD];
+module.exports = (CONSTRUCTOR, METHOD) => {
+	var Constructor = globalThis[CONSTRUCTOR];
+	var Prototype = Constructor && Constructor.prototype;
+	return Prototype && Prototype[METHOD];
 };

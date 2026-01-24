@@ -1,0 +1,24 @@
+name: E-Commerce Platform
+description: Modern e-commerce platform with user auth, product catalog, and checkout
+version: 1.0.0
+counters:
+  epic: 1
+  story: 3
+  test: 0
+  task: 2
+  test_case: 3
+  screen: 2
+  file: 1
+  class: 1
+  endpoint: 3
+  table: 2
+settings:
+  default_priority: medium
+  default_status: todo
+  auto_link_commits: true
+team: []
+hooks:
+  on_item_create: []
+  on_item_update: []
+  on_link_create: []
+id: 40b0a8d1-af95-4b97-a52c-9b891b6ea3db

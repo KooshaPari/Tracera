@@ -1,4 +1,4 @@
-import type { ObjMap } from './ObjMap';
+import type { ObjMap } from "./ObjMap";
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
  * for each value in the array.
@@ -27,6 +27,6 @@ import type { ObjMap } from './ObjMap';
  * ```
  */
 export declare function keyMap<T>(
-  list: ReadonlyArray<T>,
-  keyFn: (item: T) => string,
+	list: ReadonlyArray<T>,
+	keyFn: (item: T) => string,
 ): ObjMap<T>;

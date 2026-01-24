@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-scale` (ESM)
 // See upstream license: https://github.com/d3/d3-scale/blob/main/LICENSE
 //

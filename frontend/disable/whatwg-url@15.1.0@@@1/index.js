@@ -20,7 +20,8 @@ exports.serializeInteger = urlStateMachine.serializeInteger;
 exports.serializeURLOrigin = urlStateMachine.serializeURLOrigin;
 exports.setTheUsername = urlStateMachine.setTheUsername;
 exports.setThePassword = urlStateMachine.setThePassword;
-exports.cannotHaveAUsernamePasswordPort = urlStateMachine.cannotHaveAUsernamePasswordPort;
+exports.cannotHaveAUsernamePasswordPort =
+	urlStateMachine.cannotHaveAUsernamePasswordPort;
 exports.hasAnOpaquePath = urlStateMachine.hasAnOpaquePath;
 
 exports.percentDecodeString = percentEncoding.percentDecodeString;

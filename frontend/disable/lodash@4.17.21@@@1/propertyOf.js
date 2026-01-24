@@ -1,4 +1,4 @@
-var baseGet = require('./_baseGet');
+var baseGet = require("./_baseGet");
 
 /**
  * The opposite of `_.property`; this method creates a function that returns
@@ -22,9 +22,7 @@ var baseGet = require('./_baseGet');
  * // => [2, 0]
  */
 function propertyOf(object) {
-  return function(path) {
-    return object == null ? undefined : baseGet(object, path);
-  };
+	return (path) => (object == null ? undefined : baseGet(object, path));
 }
 
 module.exports = propertyOf;

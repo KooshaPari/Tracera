@@ -4,4 +4,7 @@
  * @param src src file path
  * @param dest dest file path
  */
-export declare function isSamePath(src: string | URL, dest: string | URL): boolean | void;
+export declare function isSamePath(
+	src: string | URL,
+	dest: string | URL,
+): boolean | void;

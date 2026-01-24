@@ -5,8 +5,8 @@
  * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
-var engine = require('zip-stream');
-var util = require('archiver-utils');
+var engine = require("zip-stream");
+var util = require("archiver-utils");
 
 /**
  * @constructor
@@ -18,24 +18,24 @@ var util = require('archiver-utils');
  * @param {Boolean} [options.store=false] Sets the compression method to STORE.
  * @param {Object} [options.zlib] Passed to [zlib]{@link https://nodejs.org/api/zlib.html#zlib_class_options}
  */
-var Zip = function(options) {
-  if (!(this instanceof Zip)) {
-    return new Zip(options);
-  }
+var Zip = function (options) {
+	if (!(this instanceof Zip)) {
+		return new Zip(options);
+	}
 
-  options = this.options = util.defaults(options, {
-    comment: '',
-    forceUTC: false,
-    namePrependSlash: false,
-    store: false
-  });
+	options = this.options = util.defaults(options, {
+		comment: "",
+		forceUTC: false,
+		namePrependSlash: false,
+		store: false,
+	});
 
-  this.supports = {
-    directory: true,
-    symlink: true
-  };
+	this.supports = {
+		directory: true,
+		symlink: true,
+	};
 
-  this.engine = new engine(options);
+	this.engine = new engine(options);
 };
 
 /**
@@ -52,36 +52,36 @@ var Zip = function(options) {
  * @param  {Function} callback
  * @return void
  */
-Zip.prototype.append = function(source, data, callback) {
-  this.engine.entry(source, data, callback);
+Zip.prototype.append = function (source, data, callback) {
+	this.engine.entry(source, data, callback);
 };
 
 /**
  * @return void
  */
-Zip.prototype.finalize = function() {
-  this.engine.finalize();
+Zip.prototype.finalize = function () {
+	this.engine.finalize();
 };
 
 /**
  * @return this.engine
  */
-Zip.prototype.on = function() {
-  return this.engine.on.apply(this.engine, arguments);
+Zip.prototype.on = function () {
+	return this.engine.on.apply(this.engine, arguments);
 };
 
 /**
  * @return this.engine
  */
-Zip.prototype.pipe = function() {
-  return this.engine.pipe.apply(this.engine, arguments);
+Zip.prototype.pipe = function () {
+	return this.engine.pipe.apply(this.engine, arguments);
 };
 
 /**
  * @return this.engine
  */
-Zip.prototype.unpipe = function() {
-  return this.engine.unpipe.apply(this.engine, arguments);
+Zip.prototype.unpipe = function () {
+	return this.engine.unpipe.apply(this.engine, arguments);
 };
 
 module.exports = Zip;

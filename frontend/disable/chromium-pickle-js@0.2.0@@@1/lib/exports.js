@@ -1,11 +1,7 @@
-var Pickle = require('./pickle')
+var Pickle = require("./pickle");
 
 module.exports = {
-  createEmpty: function () {
-    return new Pickle()
-  },
+	createEmpty: () => new Pickle(),
 
-  createFromBuffer: function (buffer) {
-    return new Pickle(buffer)
-  }
-}
+	createFromBuffer: (buffer) => new Pickle(buffer),
+};

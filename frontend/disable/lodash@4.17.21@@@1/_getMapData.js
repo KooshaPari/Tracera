@@ -1,4 +1,4 @@
-var isKeyable = require('./_isKeyable');
+var isKeyable = require("./_isKeyable");
 
 /**
  * Gets the data for `map`.
@@ -9,10 +9,10 @@ var isKeyable = require('./_isKeyable');
  * @returns {*} Returns the map data.
  */
 function getMapData(map, key) {
-  var data = map.__data__;
-  return isKeyable(key)
-    ? data[typeof key == 'string' ? 'string' : 'hash']
-    : data.map;
+	var data = map.__data__;
+	return isKeyable(key)
+		? data[typeof key == "string" ? "string" : "hash"]
+		: data.map;
 }
 
 module.exports = getMapData;

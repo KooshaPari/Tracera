@@ -1,11 +1,10 @@
-import { validateDefinedAndNonEmpty } from '../utils';
-
-import type { Oas3Rule, Oas2Rule } from '../../visitors';
+import type { Oas2Rule, Oas3Rule } from "../../visitors";
+import { validateDefinedAndNonEmpty } from "../utils";
 
 export const InfoLicenseUrl: Oas3Rule | Oas2Rule = () => {
-  return {
-    License(license, ctx) {
-      validateDefinedAndNonEmpty('url', license, ctx);
-    },
-  };
+	return {
+		License(license, ctx) {
+			validateDefinedAndNonEmpty("url", license, ctx);
+		},
+	};
 };

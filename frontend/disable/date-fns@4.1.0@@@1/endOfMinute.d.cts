@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfMinute} function options.
  */
 export interface EndOfMinuteOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfMinute
  * @category Minute Helpers
@@ -27,9 +27,9 @@ export interface EndOfMinuteOptions<DateType extends Date = Date>
  * //=> Mon Dec 01 2014 22:15:59.999
  */
 export declare function endOfMinute<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EndOfMinuteOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: EndOfMinuteOptions<ResultDate> | undefined,
 ): ResultDate;

@@ -1,13 +1,20 @@
-'use strict';
-const {signalsByName} = require('human-signals');
+const { signalsByName } = require("human-signals");
 
-const getErrorPrefix = ({timedOut, timeout, errorCode, signal, signalDescription, exitCode, isCanceled}) => {
+const getErrorPrefix = ({
+	timedOut,
+	timeout,
+	errorCode,
+	signal,
+	signalDescription,
+	exitCode,
+	isCanceled,
+}) => {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
 	}
 
 	if (isCanceled) {
-		return 'was canceled';
+		return "was canceled";
 	}
 
 	if (errorCode !== undefined) {
@@ -22,7 +29,7 @@ const getErrorPrefix = ({timedOut, timeout, errorCode, signal, signalDescription
 		return `failed with exit code ${exitCode}`;
 	}
 
-	return 'failed';
+	return "failed";
 };
 
 const makeError = ({
@@ -37,21 +44,34 @@ const makeError = ({
 	timedOut,
 	isCanceled,
 	killed,
-	parsed: {options: {timeout}}
+	parsed: {
+		options: { timeout },
+	},
 }) => {
 	// `signal` and `exitCode` emitted on `spawned.on('exit')` event can be `null`.
 	// We normalize them to `undefined`
 	exitCode = exitCode === null ? undefined : exitCode;
 	signal = signal === null ? undefined : signal;
-	const signalDescription = signal === undefined ? undefined : signalsByName[signal].description;
+	const signalDescription =
+		signal === undefined ? undefined : signalsByName[signal].description;
 
 	const errorCode = error && error.code;
 
-	const prefix = getErrorPrefix({timedOut, timeout, errorCode, signal, signalDescription, exitCode, isCanceled});
+	const prefix = getErrorPrefix({
+		timedOut,
+		timeout,
+		errorCode,
+		signal,
+		signalDescription,
+		exitCode,
+		isCanceled,
+	});
 	const execaMessage = `Command ${prefix}: ${command}`;
-	const isError = Object.prototype.toString.call(error) === '[object Error]';
-	const shortMessage = isError ? `${execaMessage}\n${error.message}` : execaMessage;
-	const message = [shortMessage, stderr, stdout].filter(Boolean).join('\n');
+	const isError = Object.prototype.toString.call(error) === "[object Error]";
+	const shortMessage = isError
+		? `${execaMessage}\n${error.message}`
+		: execaMessage;
+	const message = [shortMessage, stderr, stdout].filter(Boolean).join("\n");
 
 	if (isError) {
 		error.originalMessage = error.message;
@@ -73,7 +93,7 @@ const makeError = ({
 		error.all = all;
 	}
 
-	if ('bufferedData' in error) {
+	if ("bufferedData" in error) {
 		delete error.bufferedData;
 	}
 

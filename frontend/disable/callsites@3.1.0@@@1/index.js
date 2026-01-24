@@ -1,5 +1,3 @@
-'use strict';
-
 const callsites = () => {
 	const _prepareStackTrace = Error.prepareStackTrace;
 	Error.prepareStackTrace = (_, stack) => stack;

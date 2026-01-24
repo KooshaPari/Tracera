@@ -1,19 +1,19 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = autoInject;
 
-var _auto = require('./auto.js');
+var _auto = require("./auto.js");
 
 var _auto2 = _interopRequireDefault(_auto);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 var FN_ARGS = /^(?:async\s)?(?:function)?\s*(?:\w+\s*)?\(([^)]+)\)(?:\s*{)/;
 var ARROW_FN_ARGS = /^(?:async\s)?\s*(?:\(\s*)?((?:[^)=\s]\s*)*)(?:\)\s*)?=>/;
@@ -21,41 +21,49 @@ var FN_ARG_SPLIT = /,/;
 var FN_ARG = /(=.+)?(\s*)$/;
 
 function stripComments(string) {
-    let stripped = '';
-    let index = 0;
-    let endBlockComment = string.indexOf('*/');
-    while (index < string.length) {
-        if (string[index] === '/' && string[index + 1] === '/') {
-            // inline comment
-            let endIndex = string.indexOf('\n', index);
-            index = endIndex === -1 ? string.length : endIndex;
-        } else if (endBlockComment !== -1 && string[index] === '/' && string[index + 1] === '*') {
-            // block comment
-            let endIndex = string.indexOf('*/', index);
-            if (endIndex !== -1) {
-                index = endIndex + 2;
-                endBlockComment = string.indexOf('*/', index);
-            } else {
-                stripped += string[index];
-                index++;
-            }
-        } else {
-            stripped += string[index];
-            index++;
-        }
-    }
-    return stripped;
+	let stripped = "";
+	let index = 0;
+	let endBlockComment = string.indexOf("*/");
+	while (index < string.length) {
+		if (string[index] === "/" && string[index + 1] === "/") {
+			// inline comment
+			const endIndex = string.indexOf("\n", index);
+			index = endIndex === -1 ? string.length : endIndex;
+		} else if (
+			endBlockComment !== -1 &&
+			string[index] === "/" &&
+			string[index + 1] === "*"
+		) {
+			// block comment
+			const endIndex = string.indexOf("*/", index);
+			if (endIndex !== -1) {
+				index = endIndex + 2;
+				endBlockComment = string.indexOf("*/", index);
+			} else {
+				stripped += string[index];
+				index++;
+			}
+		} else {
+			stripped += string[index];
+			index++;
+		}
+	}
+	return stripped;
 }
 
 function parseParams(func) {
-    const src = stripComments(func.toString());
-    let match = src.match(FN_ARGS);
-    if (!match) {
-        match = src.match(ARROW_FN_ARGS);
-    }
-    if (!match) throw new Error('could not parse args in autoInject\nSource:\n' + src);
-    let [, args] = match;
-    return args.replace(/\s/g, '').split(FN_ARG_SPLIT).map(arg => arg.replace(FN_ARG, '').trim());
+	const src = stripComments(func.toString());
+	let match = src.match(FN_ARGS);
+	if (!match) {
+		match = src.match(ARROW_FN_ARGS);
+	}
+	if (!match)
+		throw new Error("could not parse args in autoInject\nSource:\n" + src);
+	const [, args] = match;
+	return args
+		.replace(/\s/g, "")
+		.split(FN_ARG_SPLIT)
+		.map((arg) => arg.replace(FN_ARG, "").trim());
 }
 
 /**
@@ -142,41 +150,44 @@ function parseParams(func) {
  * });
  */
 function autoInject(tasks, callback) {
-    var newTasks = {};
+	var newTasks = {};
 
-    Object.keys(tasks).forEach(key => {
-        var taskFn = tasks[key];
-        var params;
-        var fnIsAsync = (0, _wrapAsync.isAsync)(taskFn);
-        var hasNoDeps = !fnIsAsync && taskFn.length === 1 || fnIsAsync && taskFn.length === 0;
+	Object.keys(tasks).forEach((key) => {
+		var taskFn = tasks[key];
+		var params;
+		var fnIsAsync = (0, _wrapAsync.isAsync)(taskFn);
+		var hasNoDeps =
+			(!fnIsAsync && taskFn.length === 1) || (fnIsAsync && taskFn.length === 0);
 
-        if (Array.isArray(taskFn)) {
-            params = [...taskFn];
-            taskFn = params.pop();
+		if (Array.isArray(taskFn)) {
+			params = [...taskFn];
+			taskFn = params.pop();
 
-            newTasks[key] = params.concat(params.length > 0 ? newTask : taskFn);
-        } else if (hasNoDeps) {
-            // no dependencies, use the function as-is
-            newTasks[key] = taskFn;
-        } else {
-            params = parseParams(taskFn);
-            if (taskFn.length === 0 && !fnIsAsync && params.length === 0) {
-                throw new Error("autoInject task functions require explicit parameters.");
-            }
+			newTasks[key] = params.concat(params.length > 0 ? newTask : taskFn);
+		} else if (hasNoDeps) {
+			// no dependencies, use the function as-is
+			newTasks[key] = taskFn;
+		} else {
+			params = parseParams(taskFn);
+			if (taskFn.length === 0 && !fnIsAsync && params.length === 0) {
+				throw new Error(
+					"autoInject task functions require explicit parameters.",
+				);
+			}
 
-            // remove callback param
-            if (!fnIsAsync) params.pop();
+			// remove callback param
+			if (!fnIsAsync) params.pop();
 
-            newTasks[key] = params.concat(newTask);
-        }
+			newTasks[key] = params.concat(newTask);
+		}
 
-        function newTask(results, taskCb) {
-            var newArgs = params.map(name => results[name]);
-            newArgs.push(taskCb);
-            (0, _wrapAsync2.default)(taskFn)(...newArgs);
-        }
-    });
+		function newTask(results, taskCb) {
+			var newArgs = params.map((name) => results[name]);
+			newArgs.push(taskCb);
+			(0, _wrapAsync2.default)(taskFn)(...newArgs);
+		}
+	});
 
-    return (0, _auto2.default)(newTasks, callback);
+	return (0, _auto2.default)(newTasks, callback);
 }
 module.exports = exports.default;

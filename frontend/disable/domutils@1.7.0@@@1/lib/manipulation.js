@@ -1,35 +1,35 @@
-exports.removeElement = function(elem){
-	if(elem.prev) elem.prev.next = elem.next;
-	if(elem.next) elem.next.prev = elem.prev;
+exports.removeElement = (elem) => {
+	if (elem.prev) elem.prev.next = elem.next;
+	if (elem.next) elem.next.prev = elem.prev;
 
-	if(elem.parent){
+	if (elem.parent) {
 		var childs = elem.parent.children;
 		childs.splice(childs.lastIndexOf(elem), 1);
 	}
 };
 
-exports.replaceElement = function(elem, replacement){
-	var prev = replacement.prev = elem.prev;
-	if(prev){
+exports.replaceElement = (elem, replacement) => {
+	var prev = (replacement.prev = elem.prev);
+	if (prev) {
 		prev.next = replacement;
 	}
 
-	var next = replacement.next = elem.next;
-	if(next){
+	var next = (replacement.next = elem.next);
+	if (next) {
 		next.prev = replacement;
 	}
 
-	var parent = replacement.parent = elem.parent;
-	if(parent){
+	var parent = (replacement.parent = elem.parent);
+	if (parent) {
 		var childs = parent.children;
 		childs[childs.lastIndexOf(elem)] = replacement;
 	}
 };
 
-exports.appendChild = function(elem, child){
+exports.appendChild = (elem, child) => {
 	child.parent = elem;
 
-	if(elem.children.push(child) !== 1){
+	if (elem.children.push(child) !== 1) {
 		var sibling = elem.children[elem.children.length - 2];
 		sibling.next = child;
 		child.prev = sibling;
@@ -37,7 +37,7 @@ exports.appendChild = function(elem, child){
 	}
 };
 
-exports.append = function(elem, next){
+exports.append = (elem, next) => {
 	var parent = elem.parent,
 		currNext = elem.next;
 
@@ -46,32 +46,30 @@ exports.append = function(elem, next){
 	elem.next = next;
 	next.parent = parent;
 
-	if(currNext){
+	if (currNext) {
 		currNext.prev = next;
-		if(parent){
+		if (parent) {
 			var childs = parent.children;
 			childs.splice(childs.lastIndexOf(currNext), 0, next);
 		}
-	} else if(parent){
+	} else if (parent) {
 		parent.children.push(next);
 	}
 };
 
-exports.prepend = function(elem, prev){
+exports.prepend = (elem, prev) => {
 	var parent = elem.parent;
-	if(parent){
+	if (parent) {
 		var childs = parent.children;
 		childs.splice(childs.lastIndexOf(elem), 0, prev);
 	}
 
-	if(elem.prev){
+	if (elem.prev) {
 		elem.prev.next = prev;
 	}
-	
+
 	prev.parent = parent;
 	prev.prev = elem.prev;
 	prev.next = elem;
 	elem.prev = prev;
 };
-
-

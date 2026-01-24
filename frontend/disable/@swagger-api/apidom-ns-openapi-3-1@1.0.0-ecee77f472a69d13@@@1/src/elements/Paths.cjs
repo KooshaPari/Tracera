@@ -7,4 +7,4 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class Paths extends _apidomNsOpenapi.PathsElement {}
-var _default = exports.default = Paths;
+var _default = (exports.default = Paths);

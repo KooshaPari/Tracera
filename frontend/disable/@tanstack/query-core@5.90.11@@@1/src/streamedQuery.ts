@@ -1,33 +1,33 @@
-import { addToEnd } from './utils'
-import type { QueryFunction, QueryFunctionContext, QueryKey } from './types'
+import type { QueryFunction, QueryFunctionContext, QueryKey } from "./types";
+import { addToEnd } from "./utils";
 
 type BaseStreamedQueryParams<TQueryFnData, TQueryKey extends QueryKey> = {
-  streamFn: (
-    context: QueryFunctionContext<TQueryKey>,
-  ) => AsyncIterable<TQueryFnData> | Promise<AsyncIterable<TQueryFnData>>
-  refetchMode?: 'append' | 'reset' | 'replace'
-}
+	streamFn: (
+		context: QueryFunctionContext<TQueryKey>,
+	) => AsyncIterable<TQueryFnData> | Promise<AsyncIterable<TQueryFnData>>;
+	refetchMode?: "append" | "reset" | "replace";
+};
 
 type SimpleStreamedQueryParams<
-  TQueryFnData,
-  TQueryKey extends QueryKey,
+	TQueryFnData,
+	TQueryKey extends QueryKey,
 > = BaseStreamedQueryParams<TQueryFnData, TQueryKey> & {
-  reducer?: never
-  initialValue?: never
-}
+	reducer?: never;
+	initialValue?: never;
+};
 
 type ReducibleStreamedQueryParams<
-  TQueryFnData,
-  TData,
-  TQueryKey extends QueryKey,
+	TQueryFnData,
+	TData,
+	TQueryKey extends QueryKey,
 > = BaseStreamedQueryParams<TQueryFnData, TQueryKey> & {
-  reducer: (acc: TData, chunk: TQueryFnData) => TData
-  initialValue: TData
-}
+	reducer: (acc: TData, chunk: TQueryFnData) => TData;
+	initialValue: TData;
+};
 
 type StreamedQueryParams<TQueryFnData, TData, TQueryKey extends QueryKey> =
-  | SimpleStreamedQueryParams<TQueryFnData, TQueryKey>
-  | ReducibleStreamedQueryParams<TQueryFnData, TData, TQueryKey>
+	| SimpleStreamedQueryParams<TQueryFnData, TQueryKey>
+	| ReducibleStreamedQueryParams<TQueryFnData, TData, TQueryKey>;
 
 /**
  * This is a helper function to create a query function that streams data from an AsyncIterable.
@@ -44,56 +44,56 @@ type StreamedQueryParams<TQueryFnData, TData, TQueryKey extends QueryKey> =
  * @param initialValue - Initial value to be used while the first chunk is being fetched, and returned if the stream yields no values.
  */
 export function streamedQuery<
-  TQueryFnData = unknown,
-  TData = Array<TQueryFnData>,
-  TQueryKey extends QueryKey = QueryKey,
+	TQueryFnData = unknown,
+	TData = Array<TQueryFnData>,
+	TQueryKey extends QueryKey = QueryKey,
 >({
-  streamFn,
-  refetchMode = 'reset',
-  reducer = (items, chunk) =>
-    addToEnd(items as Array<TQueryFnData>, chunk) as TData,
-  initialValue = [] as TData,
+	streamFn,
+	refetchMode = "reset",
+	reducer = (items, chunk) =>
+		addToEnd(items as Array<TQueryFnData>, chunk) as TData,
+	initialValue = [] as TData,
 }: StreamedQueryParams<TQueryFnData, TData, TQueryKey>): QueryFunction<
-  TData,
-  TQueryKey
+	TData,
+	TQueryKey
 > {
-  return async (context) => {
-    const query = context.client
-      .getQueryCache()
-      .find({ queryKey: context.queryKey, exact: true })
-    const isRefetch = !!query && query.state.data !== undefined
-    if (isRefetch && refetchMode === 'reset') {
-      query.setState({
-        status: 'pending',
-        data: undefined,
-        error: null,
-        fetchStatus: 'fetching',
-      })
-    }
+	return async (context) => {
+		const query = context.client
+			.getQueryCache()
+			.find({ queryKey: context.queryKey, exact: true });
+		const isRefetch = !!query && query.state.data !== undefined;
+		if (isRefetch && refetchMode === "reset") {
+			query.setState({
+				status: "pending",
+				data: undefined,
+				error: null,
+				fetchStatus: "fetching",
+			});
+		}
 
-    let result = initialValue
+		let result = initialValue;
 
-    const stream = await streamFn(context)
+		const stream = await streamFn(context);
 
-    for await (const chunk of stream) {
-      if (context.signal.aborted) {
-        break
-      }
+		for await (const chunk of stream) {
+			if (context.signal.aborted) {
+				break;
+			}
 
-      // don't append to the cache directly when replace-refetching
-      if (!isRefetch || refetchMode !== 'replace') {
-        context.client.setQueryData<TData>(context.queryKey, (prev) =>
-          reducer(prev === undefined ? initialValue : prev, chunk),
-        )
-      }
-      result = reducer(result, chunk)
-    }
+			// don't append to the cache directly when replace-refetching
+			if (!isRefetch || refetchMode !== "replace") {
+				context.client.setQueryData<TData>(context.queryKey, (prev) =>
+					reducer(prev === undefined ? initialValue : prev, chunk),
+				);
+			}
+			result = reducer(result, chunk);
+		}
 
-    // finalize result: replace-refetching needs to write to the cache
-    if (isRefetch && refetchMode === 'replace' && !context.signal.aborted) {
-      context.client.setQueryData<TData>(context.queryKey, result)
-    }
+		// finalize result: replace-refetching needs to write to the cache
+		if (isRefetch && refetchMode === "replace" && !context.signal.aborted) {
+			context.client.setQueryData<TData>(context.queryKey, result);
+		}
 
-    return context.client.getQueryData(context.queryKey) ?? initialValue
-  }
+		return context.client.getQueryData(context.queryKey) ?? initialValue;
+	};
 }

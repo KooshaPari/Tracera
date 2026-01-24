@@ -1,13 +1,12 @@
-'use strict';
-const path = require('path');
-const fs = require('fs');
-const commonDir = require('commondir');
-const pkgDir = require('pkg-dir');
-const makeDir = require('make-dir');
+const path = require("path");
+const fs = require("fs");
+const commonDir = require("commondir");
+const pkgDir = require("pkg-dir");
+const makeDir = require("make-dir");
 
-const {env, cwd} = process;
+const { env, cwd } = process;
 
-const isWritable = path => {
+const isWritable = (path) => {
 	try {
 		fs.accessSync(path, fs.constants.W_OK);
 		return true;
@@ -29,7 +28,7 @@ function useDirectory(directory, options) {
 }
 
 function getNodeModuleDirectory(directory) {
-	const nodeModules = path.join(directory, 'node_modules');
+	const nodeModules = path.join(directory, "node_modules");
 
 	if (
 		!isWritable(nodeModules) &&
@@ -42,11 +41,11 @@ function getNodeModuleDirectory(directory) {
 }
 
 module.exports = (options = {}) => {
-	if (env.CACHE_DIR && !['true', 'false', '1', '0'].includes(env.CACHE_DIR)) {
+	if (env.CACHE_DIR && !["true", "false", "1", "0"].includes(env.CACHE_DIR)) {
 		return useDirectory(path.join(env.CACHE_DIR, options.name), options);
 	}
 
-	let {cwd: directory = cwd()} = options;
+	let { cwd: directory = cwd() } = options;
 
 	if (options.files) {
 		directory = commonDir(directory, options.files);
@@ -63,5 +62,8 @@ module.exports = (options = {}) => {
 		return undefined;
 	}
 
-	return useDirectory(path.join(directory, 'node_modules', '.cache', options.name), options);
+	return useDirectory(
+		path.join(directory, "node_modules", ".cache", options.name),
+		options,
+	);
 };

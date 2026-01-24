@@ -1,7 +1,6 @@
-import { ApiDOMError } from '@swagger-api/apidom-error';
+import { ApiDOMError } from "@swagger-api/apidom-error";
 /**
  * @public
  */
-declare class JsonSchemaUriError extends ApiDOMError {
-}
+declare class JsonSchemaUriError extends ApiDOMError {}
 export default JsonSchemaUriError;

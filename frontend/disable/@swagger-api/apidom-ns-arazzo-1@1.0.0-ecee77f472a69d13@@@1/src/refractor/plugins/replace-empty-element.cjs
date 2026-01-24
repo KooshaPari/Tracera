@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 exports.default = void 0;
 var _apidomCore = require("@swagger-api/apidom-core");
@@ -44,47 +45,63 @@ var _visitor = require("../../traversal/visitor.cjs");
  *      (InfoElement))
  */
 
-const isEmptyElement = element => (0, _apidomCore.isStringElement)(element) && (0, _apidomCore.includesClasses)(['yaml-e-node', 'yaml-e-scalar'], element);
+const isEmptyElement = (element) =>
+	(0, _apidomCore.isStringElement)(element) &&
+	(0, _apidomCore.includesClasses)(["yaml-e-node", "yaml-e-scalar"], element);
 const schema = {
-  // concrete types handling (CTs)
-  ArazzoSpecification1Element: {
-    info(...args) {
-      return new _Info.default(...args);
-    }
-  }
+	// concrete types handling (CTs)
+	ArazzoSpecification1Element: {
+		info(...args) {
+			return new _Info.default(...args);
+		},
+	},
 };
 const findElementFactory = (ancestor, keyName) => {
-  const elementType = (0, _visitor.getNodeType)(ancestor); // @ts-ignore
-  const keyMapping = schema[elementType] || schema[(0, _apidomCore.toValue)(ancestor.classes.first)];
-  return typeof keyMapping === 'undefined' ? undefined : Object.prototype.hasOwnProperty.call(keyMapping, '[key: *]') ? keyMapping['[key: *]'] : keyMapping[keyName];
+	const elementType = (0, _visitor.getNodeType)(ancestor); // @ts-ignore
+	const keyMapping =
+		schema[elementType] ||
+		schema[(0, _apidomCore.toValue)(ancestor.classes.first)];
+	return typeof keyMapping === "undefined"
+		? undefined
+		: Object.hasOwn(keyMapping, "[key: *]")
+			? keyMapping["[key: *]"]
+			: keyMapping[keyName];
 };
 
 /**
  * @public
  */
 const plugin = () => () => ({
-  visitor: {
-    StringElement(element, key, parent, path, ancestors) {
-      if (!isEmptyElement(element)) return undefined;
-      const lineage = [...ancestors, parent].filter(_apidomCore.isElement);
-      const parentElement = lineage[lineage.length - 1]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
-      let elementFactory;
-      let context;
-      if ((0, _apidomCore.isArrayElement)(parentElement)) {
-        context = element;
-        elementFactory = findElementFactory(parentElement, '<*>');
-      } else if ((0, _apidomCore.isMemberElement)(parentElement)) {
-        context = lineage[lineage.length - 2]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
-        elementFactory = findElementFactory(context, (0, _apidomCore.toValue)(parentElement.key));
-      }
+	visitor: {
+		StringElement(element, key, parent, path, ancestors) {
+			if (!isEmptyElement(element)) return undefined;
+			const lineage = [...ancestors, parent].filter(_apidomCore.isElement);
+			const parentElement = lineage[lineage.length - 1]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
+			let elementFactory;
+			let context;
+			if ((0, _apidomCore.isArrayElement)(parentElement)) {
+				context = element;
+				elementFactory = findElementFactory(parentElement, "<*>");
+			} else if ((0, _apidomCore.isMemberElement)(parentElement)) {
+				context = lineage[lineage.length - 2]; // @TODO(vladimir.gorej@gmail.com): can be replaced by Array.prototype.at in future
+				elementFactory = findElementFactory(
+					context,
+					(0, _apidomCore.toValue)(parentElement.key),
+				);
+			}
 
-      // no element factory found
-      if (typeof elementFactory !== 'function') return undefined;
-      const result = elementFactory.call({
-        context
-      }, undefined, (0, _apidomCore.cloneDeep)(element.meta), (0, _apidomCore.cloneDeep)(element.attributes));
-      return (0, _apidomCore.assignSourceMap)(result, element);
-    }
-  }
+			// no element factory found
+			if (typeof elementFactory !== "function") return undefined;
+			const result = elementFactory.call(
+				{
+					context,
+				},
+				undefined,
+				(0, _apidomCore.cloneDeep)(element.meta),
+				(0, _apidomCore.cloneDeep)(element.attributes),
+			);
+			return (0, _apidomCore.assignSourceMap)(result, element);
+		},
+	},
 });
-var _default = exports.default = plugin;
+var _default = (exports.default = plugin);

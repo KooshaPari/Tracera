@@ -5,12 +5,12 @@ import { Slotable, Slot, HTMLSlotElement } from "./interfaces";
  * {@link Text}.
  */
 export declare class SlotableImpl implements Slotable {
-    __name: string | undefined;
-    __assignedSlot: Slot | null | undefined;
-    get _name(): string;
-    set _name(val: string);
-    get _assignedSlot(): Slot | null;
-    set _assignedSlot(val: Slot | null);
-    /** @inheritdoc */
-    get assignedSlot(): HTMLSlotElement | null;
+	__name: string | undefined;
+	__assignedSlot: Slot | null | undefined;
+	get _name(): string;
+	set _name(val: string);
+	get _assignedSlot(): Slot | null;
+	set _assignedSlot(val: Slot | null);
+	/** @inheritdoc */
+	get assignedSlot(): HTMLSlotElement | null;
 }

@@ -22,6 +22,6 @@ export interface GetDaysInMonthOptions extends ContextOptions<Date> {}
  * //=> 29
  */
 export declare function getDaysInMonth(
-  date: DateArg<Date> & {},
-  options?: GetDaysInMonthOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetDaysInMonthOptions | undefined,
 ): number;

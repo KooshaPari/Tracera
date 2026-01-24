@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('no-ambiguous-paths', () => {
-  it('should report on ambiguous paths', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-ambiguous-paths", () => {
+	it("should report on ambiguous paths", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/good/{id}':
@@ -40,16 +44,16 @@ describe('no-ambiguous-paths', () => {
             get:
               summary: List all pets
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-ambiguous-paths': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "no-ambiguous-paths": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -92,5 +96,5 @@ describe('no-ambiguous-paths', () => {
         },
       ]
     `);
-  });
+	});
 });

@@ -1,1 +1,1 @@
-export * from '../../dist/adapters/next';
+export * from "../../dist/adapters/next";

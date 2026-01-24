@@ -3,7 +3,7 @@ import type { ContextOptions } from "./types.js";
  * The {@link fromUnixTime} function options.
  */
 export interface FromUnixTimeOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name fromUnixTime
  * @category Timestamp Helpers
@@ -25,6 +25,6 @@ export interface FromUnixTimeOptions<DateType extends Date = Date>
  * //=> Wed Feb 29 2012 11:45:05
  */
 export declare function fromUnixTime<DateType extends Date = Date>(
-  unixTime: number,
-  options?: FromUnixTimeOptions<DateType> | undefined,
+	unixTime: number,
+	options?: FromUnixTimeOptions<DateType> | undefined,
 ): DateType;

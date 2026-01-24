@@ -1,3 +1,3 @@
-import {should} from './index.js';
+import { should } from "./index.js";
 
 globalThis.should = should();

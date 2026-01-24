@@ -1,6 +1,4 @@
-'use strict';
-var isObject = require('../internals/is-object');
+"use strict";
+var isObject = require("../internals/is-object");
 
-module.exports = function (argument) {
-  return isObject(argument) || argument === null;
-};
+module.exports = (argument) => isObject(argument) || argument === null;

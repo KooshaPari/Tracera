@@ -115,7 +115,7 @@ class AutoLinkService:
 
             if not existing:
                 # Create bidirectional link
-                link = Link(
+                link: Link = Link(
                     project_id=project_id,
                     source_item_id=item_id,
                     target_item_id=code_item_id,

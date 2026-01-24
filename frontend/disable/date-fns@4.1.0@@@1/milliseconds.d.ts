@@ -29,11 +29,11 @@ import type { Duration } from "./types.js";
  * //=> 7889238000
  */
 export declare function milliseconds({
-  years,
-  months,
-  weeks,
-  days,
-  hours,
-  minutes,
-  seconds,
+	years,
+	months,
+	weeks,
+	days,
+	hours,
+	minutes,
+	seconds,
 }: Duration): number;

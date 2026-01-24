@@ -43,45 +43,45 @@ import { format } from "./format.js";
  * //=> "last Thursday at 12:45 AM"
  */
 export function formatRelative(date, baseDate, options) {
-  const [date_, baseDate_] = normalizeDates(options?.in, date, baseDate);
+	const [date_, baseDate_] = normalizeDates(options?.in, date, baseDate);
 
-  const defaultOptions = getDefaultOptions();
-  const locale = options?.locale ?? defaultOptions.locale ?? defaultLocale;
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const defaultOptions = getDefaultOptions();
+	const locale = options?.locale ?? defaultOptions.locale ?? defaultLocale;
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const diff = differenceInCalendarDays(date_, baseDate_);
+	const diff = differenceInCalendarDays(date_, baseDate_);
 
-  if (isNaN(diff)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (isNaN(diff)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  let token;
-  if (diff < -6) {
-    token = "other";
-  } else if (diff < -1) {
-    token = "lastWeek";
-  } else if (diff < 0) {
-    token = "yesterday";
-  } else if (diff < 1) {
-    token = "today";
-  } else if (diff < 2) {
-    token = "tomorrow";
-  } else if (diff < 7) {
-    token = "nextWeek";
-  } else {
-    token = "other";
-  }
+	let token;
+	if (diff < -6) {
+		token = "other";
+	} else if (diff < -1) {
+		token = "lastWeek";
+	} else if (diff < 0) {
+		token = "yesterday";
+	} else if (diff < 1) {
+		token = "today";
+	} else if (diff < 2) {
+		token = "tomorrow";
+	} else if (diff < 7) {
+		token = "nextWeek";
+	} else {
+		token = "other";
+	}
 
-  const formatStr = locale.formatRelative(token, date_, baseDate_, {
-    locale,
-    weekStartsOn,
-  });
-  return format(date_, formatStr, { locale, weekStartsOn });
+	const formatStr = locale.formatRelative(token, date_, baseDate_, {
+		locale,
+		weekStartsOn,
+	});
+	return format(date_, formatStr, { locale, weekStartsOn });
 }
 
 // Fallback for modularized imports:

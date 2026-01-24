@@ -23,5 +23,5 @@ var _index2 = require("./isSameSecond.cjs");
  * //=> true
  */
 function isThisSecond(date) {
-  return (0, _index2.isSameSecond)(date, (0, _index.constructNow)(date));
+	return (0, _index2.isSameSecond)(date, (0, _index.constructNow)(date));
 }

@@ -23,6 +23,6 @@ export interface IsThisMonthOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isThisMonth(
-  date: DateArg<Date> & {},
-  options?: IsThisMonthOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsThisMonthOptions | undefined,
 ): boolean;

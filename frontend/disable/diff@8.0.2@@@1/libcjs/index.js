@@ -1,7 +1,36 @@
 "use strict";
 /* See LICENSE file for terms of use */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.canonicalize = exports.convertChangesToXML = exports.convertChangesToDMP = exports.reversePatch = exports.parsePatch = exports.applyPatches = exports.applyPatch = exports.formatPatch = exports.createPatch = exports.createTwoFilesPatch = exports.structuredPatch = exports.arrayDiff = exports.diffArrays = exports.jsonDiff = exports.diffJson = exports.cssDiff = exports.diffCss = exports.sentenceDiff = exports.diffSentences = exports.diffTrimmedLines = exports.lineDiff = exports.diffLines = exports.wordsWithSpaceDiff = exports.diffWordsWithSpace = exports.wordDiff = exports.diffWords = exports.characterDiff = exports.diffChars = exports.Diff = void 0;
+exports.canonicalize =
+	exports.convertChangesToXML =
+	exports.convertChangesToDMP =
+	exports.reversePatch =
+	exports.parsePatch =
+	exports.applyPatches =
+	exports.applyPatch =
+	exports.formatPatch =
+	exports.createPatch =
+	exports.createTwoFilesPatch =
+	exports.structuredPatch =
+	exports.arrayDiff =
+	exports.diffArrays =
+	exports.jsonDiff =
+	exports.diffJson =
+	exports.cssDiff =
+	exports.diffCss =
+	exports.sentenceDiff =
+	exports.diffSentences =
+	exports.diffTrimmedLines =
+	exports.lineDiff =
+	exports.diffLines =
+	exports.wordsWithSpaceDiff =
+	exports.diffWordsWithSpace =
+	exports.wordDiff =
+	exports.diffWords =
+	exports.characterDiff =
+	exports.diffChars =
+	exports.Diff =
+		void 0;
 /*
  * Text diff implementation.
  *
@@ -19,43 +48,127 @@ exports.canonicalize = exports.convertChangesToXML = exports.convertChangesToDMP
 var base_js_1 = require("./diff/base.js");
 exports.Diff = base_js_1.default;
 var character_js_1 = require("./diff/character.js");
-Object.defineProperty(exports, "diffChars", { enumerable: true, get: function () { return character_js_1.diffChars; } });
-Object.defineProperty(exports, "characterDiff", { enumerable: true, get: function () { return character_js_1.characterDiff; } });
+Object.defineProperty(exports, "diffChars", {
+	enumerable: true,
+	get: () => character_js_1.diffChars,
+});
+Object.defineProperty(exports, "characterDiff", {
+	enumerable: true,
+	get: () => character_js_1.characterDiff,
+});
 var word_js_1 = require("./diff/word.js");
-Object.defineProperty(exports, "diffWords", { enumerable: true, get: function () { return word_js_1.diffWords; } });
-Object.defineProperty(exports, "diffWordsWithSpace", { enumerable: true, get: function () { return word_js_1.diffWordsWithSpace; } });
-Object.defineProperty(exports, "wordDiff", { enumerable: true, get: function () { return word_js_1.wordDiff; } });
-Object.defineProperty(exports, "wordsWithSpaceDiff", { enumerable: true, get: function () { return word_js_1.wordsWithSpaceDiff; } });
+Object.defineProperty(exports, "diffWords", {
+	enumerable: true,
+	get: () => word_js_1.diffWords,
+});
+Object.defineProperty(exports, "diffWordsWithSpace", {
+	enumerable: true,
+	get: () => word_js_1.diffWordsWithSpace,
+});
+Object.defineProperty(exports, "wordDiff", {
+	enumerable: true,
+	get: () => word_js_1.wordDiff,
+});
+Object.defineProperty(exports, "wordsWithSpaceDiff", {
+	enumerable: true,
+	get: () => word_js_1.wordsWithSpaceDiff,
+});
 var line_js_1 = require("./diff/line.js");
-Object.defineProperty(exports, "diffLines", { enumerable: true, get: function () { return line_js_1.diffLines; } });
-Object.defineProperty(exports, "diffTrimmedLines", { enumerable: true, get: function () { return line_js_1.diffTrimmedLines; } });
-Object.defineProperty(exports, "lineDiff", { enumerable: true, get: function () { return line_js_1.lineDiff; } });
+Object.defineProperty(exports, "diffLines", {
+	enumerable: true,
+	get: () => line_js_1.diffLines,
+});
+Object.defineProperty(exports, "diffTrimmedLines", {
+	enumerable: true,
+	get: () => line_js_1.diffTrimmedLines,
+});
+Object.defineProperty(exports, "lineDiff", {
+	enumerable: true,
+	get: () => line_js_1.lineDiff,
+});
 var sentence_js_1 = require("./diff/sentence.js");
-Object.defineProperty(exports, "diffSentences", { enumerable: true, get: function () { return sentence_js_1.diffSentences; } });
-Object.defineProperty(exports, "sentenceDiff", { enumerable: true, get: function () { return sentence_js_1.sentenceDiff; } });
+Object.defineProperty(exports, "diffSentences", {
+	enumerable: true,
+	get: () => sentence_js_1.diffSentences,
+});
+Object.defineProperty(exports, "sentenceDiff", {
+	enumerable: true,
+	get: () => sentence_js_1.sentenceDiff,
+});
 var css_js_1 = require("./diff/css.js");
-Object.defineProperty(exports, "diffCss", { enumerable: true, get: function () { return css_js_1.diffCss; } });
-Object.defineProperty(exports, "cssDiff", { enumerable: true, get: function () { return css_js_1.cssDiff; } });
+Object.defineProperty(exports, "diffCss", {
+	enumerable: true,
+	get: () => css_js_1.diffCss,
+});
+Object.defineProperty(exports, "cssDiff", {
+	enumerable: true,
+	get: () => css_js_1.cssDiff,
+});
 var json_js_1 = require("./diff/json.js");
-Object.defineProperty(exports, "diffJson", { enumerable: true, get: function () { return json_js_1.diffJson; } });
-Object.defineProperty(exports, "canonicalize", { enumerable: true, get: function () { return json_js_1.canonicalize; } });
-Object.defineProperty(exports, "jsonDiff", { enumerable: true, get: function () { return json_js_1.jsonDiff; } });
+Object.defineProperty(exports, "diffJson", {
+	enumerable: true,
+	get: () => json_js_1.diffJson,
+});
+Object.defineProperty(exports, "canonicalize", {
+	enumerable: true,
+	get: () => json_js_1.canonicalize,
+});
+Object.defineProperty(exports, "jsonDiff", {
+	enumerable: true,
+	get: () => json_js_1.jsonDiff,
+});
 var array_js_1 = require("./diff/array.js");
-Object.defineProperty(exports, "diffArrays", { enumerable: true, get: function () { return array_js_1.diffArrays; } });
-Object.defineProperty(exports, "arrayDiff", { enumerable: true, get: function () { return array_js_1.arrayDiff; } });
+Object.defineProperty(exports, "diffArrays", {
+	enumerable: true,
+	get: () => array_js_1.diffArrays,
+});
+Object.defineProperty(exports, "arrayDiff", {
+	enumerable: true,
+	get: () => array_js_1.arrayDiff,
+});
 var apply_js_1 = require("./patch/apply.js");
-Object.defineProperty(exports, "applyPatch", { enumerable: true, get: function () { return apply_js_1.applyPatch; } });
-Object.defineProperty(exports, "applyPatches", { enumerable: true, get: function () { return apply_js_1.applyPatches; } });
+Object.defineProperty(exports, "applyPatch", {
+	enumerable: true,
+	get: () => apply_js_1.applyPatch,
+});
+Object.defineProperty(exports, "applyPatches", {
+	enumerable: true,
+	get: () => apply_js_1.applyPatches,
+});
 var parse_js_1 = require("./patch/parse.js");
-Object.defineProperty(exports, "parsePatch", { enumerable: true, get: function () { return parse_js_1.parsePatch; } });
+Object.defineProperty(exports, "parsePatch", {
+	enumerable: true,
+	get: () => parse_js_1.parsePatch,
+});
 var reverse_js_1 = require("./patch/reverse.js");
-Object.defineProperty(exports, "reversePatch", { enumerable: true, get: function () { return reverse_js_1.reversePatch; } });
+Object.defineProperty(exports, "reversePatch", {
+	enumerable: true,
+	get: () => reverse_js_1.reversePatch,
+});
 var create_js_1 = require("./patch/create.js");
-Object.defineProperty(exports, "structuredPatch", { enumerable: true, get: function () { return create_js_1.structuredPatch; } });
-Object.defineProperty(exports, "createTwoFilesPatch", { enumerable: true, get: function () { return create_js_1.createTwoFilesPatch; } });
-Object.defineProperty(exports, "createPatch", { enumerable: true, get: function () { return create_js_1.createPatch; } });
-Object.defineProperty(exports, "formatPatch", { enumerable: true, get: function () { return create_js_1.formatPatch; } });
+Object.defineProperty(exports, "structuredPatch", {
+	enumerable: true,
+	get: () => create_js_1.structuredPatch,
+});
+Object.defineProperty(exports, "createTwoFilesPatch", {
+	enumerable: true,
+	get: () => create_js_1.createTwoFilesPatch,
+});
+Object.defineProperty(exports, "createPatch", {
+	enumerable: true,
+	get: () => create_js_1.createPatch,
+});
+Object.defineProperty(exports, "formatPatch", {
+	enumerable: true,
+	get: () => create_js_1.formatPatch,
+});
 var dmp_js_1 = require("./convert/dmp.js");
-Object.defineProperty(exports, "convertChangesToDMP", { enumerable: true, get: function () { return dmp_js_1.convertChangesToDMP; } });
+Object.defineProperty(exports, "convertChangesToDMP", {
+	enumerable: true,
+	get: () => dmp_js_1.convertChangesToDMP,
+});
 var xml_js_1 = require("./convert/xml.js");
-Object.defineProperty(exports, "convertChangesToXML", { enumerable: true, get: function () { return xml_js_1.convertChangesToXML; } });
+Object.defineProperty(exports, "convertChangesToXML", {
+	enumerable: true,
+	get: () => xml_js_1.convertChangesToXML,
+});

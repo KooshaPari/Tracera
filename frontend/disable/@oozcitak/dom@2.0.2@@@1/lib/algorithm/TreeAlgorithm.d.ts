@@ -8,7 +8,12 @@ import { Element, Node } from "../dom/interfaces";
  * @param shadow - whether to visit shadow tree nodes
  * @param filter - a function to filter nodes
  */
-export declare function tree_getFirstDescendantNode(node: Node, self?: boolean, shadow?: boolean, filter?: ((childNode: Node) => boolean)): Node | null;
+export declare function tree_getFirstDescendantNode(
+	node: Node,
+	self?: boolean,
+	shadow?: boolean,
+	filter?: (childNode: Node) => boolean,
+): Node | null;
 /**
  * Returns the next descendant node of the tree rooted at `node` in
  * depth-first pre-order.
@@ -19,7 +24,13 @@ export declare function tree_getFirstDescendantNode(node: Node, self?: boolean, 
  * @param shadow - whether to visit shadow tree nodes
  * @param filter - a function to filter nodes
  */
-export declare function tree_getNextDescendantNode(node: Node, currentNode: Node, self?: boolean, shadow?: boolean, filter?: ((childNode: Node) => boolean)): Node | null;
+export declare function tree_getNextDescendantNode(
+	node: Node,
+	currentNode: Node,
+	self?: boolean,
+	shadow?: boolean,
+	filter?: (childNode: Node) => boolean,
+): Node | null;
 /**
  * Traverses through all descendant nodes of the tree rooted at
  * `node` in depth-first pre-order.
@@ -29,7 +40,12 @@ export declare function tree_getNextDescendantNode(node: Node, currentNode: Node
  * @param shadow - whether to visit shadow tree nodes
  * @param filter - a function to filter nodes
  */
-export declare function tree_getDescendantNodes(node: Node, self?: boolean, shadow?: boolean, filter?: ((childNode: Node) => boolean)): Iterable<Node>;
+export declare function tree_getDescendantNodes(
+	node: Node,
+	self?: boolean,
+	shadow?: boolean,
+	filter?: (childNode: Node) => boolean,
+): Iterable<Node>;
 /**
  * Traverses through all descendant element nodes of the tree rooted at
  * `node` in depth-first preorder.
@@ -39,7 +55,12 @@ export declare function tree_getDescendantNodes(node: Node, self?: boolean, shad
  * @param shadow - whether to visit shadow tree nodes
  * @param filter - a function to filter nodes
  */
-export declare function tree_getDescendantElements(node: Node, self?: boolean, shadow?: boolean, filter?: ((childNode: Element) => boolean)): Iterable<Element>;
+export declare function tree_getDescendantElements(
+	node: Node,
+	self?: boolean,
+	shadow?: boolean,
+	filter?: (childNode: Element) => boolean,
+): Iterable<Element>;
 /**
  * Traverses through all sibling nodes of `node`.
  *
@@ -47,7 +68,11 @@ export declare function tree_getDescendantElements(node: Node, self?: boolean, s
  * @param self - whether to include `node` in traversal
  * @param filter - a function to filter nodes
  */
-export declare function tree_getSiblingNodes(node: Node, self?: boolean, filter?: ((childNode: Node) => boolean)): Iterable<Node>;
+export declare function tree_getSiblingNodes(
+	node: Node,
+	self?: boolean,
+	filter?: (childNode: Node) => boolean,
+): Iterable<Node>;
 /**
  * Gets the first ancestor of `node` in reverse tree order.
  *
@@ -55,7 +80,11 @@ export declare function tree_getSiblingNodes(node: Node, self?: boolean, filter?
  * @param self - whether to include `node` in traversal
  * @param filter - a function to filter nodes
  */
-export declare function tree_getFirstAncestorNode(node: Node, self?: boolean, filter?: ((ancestorNode: Node) => boolean)): Node | null;
+export declare function tree_getFirstAncestorNode(
+	node: Node,
+	self?: boolean,
+	filter?: (ancestorNode: Node) => boolean,
+): Node | null;
 /**
  * Gets the first ancestor of `node` in reverse tree order.
  *
@@ -63,7 +92,12 @@ export declare function tree_getFirstAncestorNode(node: Node, self?: boolean, fi
  * @param self - whether to include `node` in traversal
  * @param filter - a function to filter nodes
  */
-export declare function tree_getNextAncestorNode(node: Node, currentNode: Node, self?: boolean, filter?: ((ancestorNode: Node) => boolean)): Node | null;
+export declare function tree_getNextAncestorNode(
+	node: Node,
+	currentNode: Node,
+	self?: boolean,
+	filter?: (ancestorNode: Node) => boolean,
+): Node | null;
 /**
  * Traverses through all ancestor nodes `node` in reverse tree order.
  *
@@ -71,28 +105,41 @@ export declare function tree_getNextAncestorNode(node: Node, currentNode: Node, 
  * @param self - whether to include `node` in traversal
  * @param filter - a function to filter nodes
  */
-export declare function tree_getAncestorNodes(node: Node, self?: boolean, filter?: ((ancestorNode: Node) => boolean)): Iterable<Node>;
+export declare function tree_getAncestorNodes(
+	node: Node,
+	self?: boolean,
+	filter?: (ancestorNode: Node) => boolean,
+): Iterable<Node>;
 /**
  * Returns the common ancestor of the given nodes.
  *
  * @param nodeA - a node
  * @param nodeB - a node
  */
-export declare function tree_getCommonAncestor(nodeA: Node, nodeB: Node): Node | null;
+export declare function tree_getCommonAncestor(
+	nodeA: Node,
+	nodeB: Node,
+): Node | null;
 /**
  * Returns the node following `node` in depth-first preorder.
  *
  * @param root - root of the subtree
  * @param node - a node
  */
-export declare function tree_getFollowingNode(root: Node, node: Node): Node | null;
+export declare function tree_getFollowingNode(
+	root: Node,
+	node: Node,
+): Node | null;
 /**
  * Returns the node preceding `node` in depth-first preorder.
  *
  * @param root - root of the subtree
  * @param node - a node
  */
-export declare function tree_getPrecedingNode(root: Node, node: Node): Node | null;
+export declare function tree_getPrecedingNode(
+	root: Node,
+	node: Node,
+): Node | null;
 /**
  * Determines if the node tree is constrained. A node tree is
  * constrained as follows, expressed as a relationship between the
@@ -149,7 +196,12 @@ export declare function tree_rootNode(node: Node, shadow?: boolean): Node;
  * @param shadow - if `true`, traversal includes the
  * node's and its descendant's shadow trees as well.
  */
-export declare function tree_isDescendantOf(node: Node, other: Node, self?: boolean, shadow?: boolean): boolean;
+export declare function tree_isDescendantOf(
+	node: Node,
+	other: Node,
+	self?: boolean,
+	shadow?: boolean,
+): boolean;
 /**
  * Determines whether `other` is an ancestor of `node`. An object A
  * is called an ancestor of an object B if and only if B is a
@@ -161,7 +213,12 @@ export declare function tree_isDescendantOf(node: Node, other: Node, self?: bool
  * @param shadow - if `true`, traversal includes the
  * node's and its descendant's shadow trees as well.
  */
-export declare function tree_isAncestorOf(node: Node, other: Node, self?: boolean, shadow?: boolean): boolean;
+export declare function tree_isAncestorOf(
+	node: Node,
+	other: Node,
+	self?: boolean,
+	shadow?: boolean,
+): boolean;
 /**
  * Determines whether `other` is a host-including ancestor of `node`. An
  * object A is a host-including inclusive ancestor of an object B, if either
@@ -172,7 +229,11 @@ export declare function tree_isAncestorOf(node: Node, other: Node, self?: boolea
  * @param other - the node to check
  * @param self - if `true`, traversal includes `node` itself
  */
-export declare function tree_isHostIncludingAncestorOf(node: Node, other: Node, self?: boolean): boolean;
+export declare function tree_isHostIncludingAncestorOf(
+	node: Node,
+	other: Node,
+	self?: boolean,
+): boolean;
 /**
  * Determines whether `other` is a sibling of `node`. An object A is
  * called a sibling of an object B, if and only if B and A share
@@ -182,7 +243,11 @@ export declare function tree_isHostIncludingAncestorOf(node: Node, other: Node, 
  * @param other - the node to check
  * @param self - if `true`, traversal includes `node` itself
  */
-export declare function tree_isSiblingOf(node: Node, other: Node, self?: boolean): boolean;
+export declare function tree_isSiblingOf(
+	node: Node,
+	other: Node,
+	self?: boolean,
+): boolean;
 /**
  * Determines whether `other` is preceding `node`. An object A is
  * preceding an object B if A and B are in the same tree and A comes

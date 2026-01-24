@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/f16round');
+"use strict";
+module.exports = require("../../full/math/f16round");

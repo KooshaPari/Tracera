@@ -1,120 +1,125 @@
-let corefn = ({
-  notify: function( eventName, eventEles ){
-    let _p = this._private;
+const corefn = {
+	notify: function (eventName, eventEles) {
+		const _p = this._private;
 
-    if( this.batching() ){
-      _p.batchNotifications = _p.batchNotifications || {};
+		if (this.batching()) {
+			_p.batchNotifications = _p.batchNotifications || {};
 
-      let eles = _p.batchNotifications[ eventName ] = _p.batchNotifications[ eventName ] || this.collection();
+			const eles = (_p.batchNotifications[eventName] =
+				_p.batchNotifications[eventName] || this.collection());
 
-      if( eventEles != null ){
-        eles.merge( eventEles );
-      }
+			if (eventEles != null) {
+				eles.merge(eventEles);
+			}
 
-      return; // notifications are disabled during batching
-    }
+			return; // notifications are disabled during batching
+		}
 
-    if( !_p.notificationsEnabled ){ return; } // exit on disabled
+		if (!_p.notificationsEnabled) {
+			return;
+		} // exit on disabled
 
-    let renderer = this.renderer();
+		const renderer = this.renderer();
 
-    // exit if destroy() called on core or renderer in between frames #1499 #1528
-    if( this.destroyed() || !renderer ){ return; }
+		// exit if destroy() called on core or renderer in between frames #1499 #1528
+		if (this.destroyed() || !renderer) {
+			return;
+		}
 
-    renderer.notify( eventName, eventEles );
-  },
+		renderer.notify(eventName, eventEles);
+	},
 
-  notifications: function( bool ){
-    let p = this._private;
+	notifications: function (bool) {
+		const p = this._private;
 
-    if( bool === undefined ){
-      return p.notificationsEnabled;
-    } else {
-      p.notificationsEnabled = bool ? true : false;
-    }
+		if (bool === undefined) {
+			return p.notificationsEnabled;
+		} else {
+			p.notificationsEnabled = bool ? true : false;
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  noNotifications: function( callback ){
-    this.notifications( false );
-    callback();
-    this.notifications( true );
-  },
+	noNotifications: function (callback) {
+		this.notifications(false);
+		callback();
+		this.notifications(true);
+	},
 
-  batching: function(){
-    return this._private.batchCount > 0;
-  },
+	batching: function () {
+		return this._private.batchCount > 0;
+	},
 
-  startBatch: function(){
-    let _p = this._private;
+	startBatch: function () {
+		const _p = this._private;
 
-    if( _p.batchCount == null ){
-      _p.batchCount = 0;
-    }
+		if (_p.batchCount == null) {
+			_p.batchCount = 0;
+		}
 
-    if( _p.batchCount === 0 ){
-      _p.batchStyleEles = this.collection();
-      _p.batchNotifications = {};
-    }
+		if (_p.batchCount === 0) {
+			_p.batchStyleEles = this.collection();
+			_p.batchNotifications = {};
+		}
 
-    _p.batchCount++;
+		_p.batchCount++;
 
-    return this;
-  },
+		return this;
+	},
 
-  endBatch: function(){
-    let _p = this._private;
+	endBatch: function () {
+		const _p = this._private;
 
-    if( _p.batchCount === 0 ){ return this; }
+		if (_p.batchCount === 0) {
+			return this;
+		}
 
-    _p.batchCount--;
+		_p.batchCount--;
 
-    if( _p.batchCount === 0 ){
-      // update style for dirty eles
-      _p.batchStyleEles.updateStyle();
+		if (_p.batchCount === 0) {
+			// update style for dirty eles
+			_p.batchStyleEles.updateStyle();
 
-      let renderer = this.renderer();
+			const renderer = this.renderer();
 
-      // notify the renderer of queued eles and event types
-      Object.keys( _p.batchNotifications ).forEach( eventName => {
-        let eles = _p.batchNotifications[eventName];
+			// notify the renderer of queued eles and event types
+			Object.keys(_p.batchNotifications).forEach((eventName) => {
+				const eles = _p.batchNotifications[eventName];
 
-        if( eles.empty() ){
-          renderer.notify( eventName );
-        } else {
-          renderer.notify( eventName, eles );
-        }
-      } );
-    }
+				if (eles.empty()) {
+					renderer.notify(eventName);
+				} else {
+					renderer.notify(eventName, eles);
+				}
+			});
+		}
 
-    return this;
-  },
+		return this;
+	},
 
-  batch: function( callback ){
-    this.startBatch();
-    callback();
-    this.endBatch();
+	batch: function (callback) {
+		this.startBatch();
+		callback();
+		this.endBatch();
 
-    return this;
-  },
+		return this;
+	},
 
-  // for backwards compatibility
-  batchData: function( map ){
-    let cy = this;
+	// for backwards compatibility
+	batchData: function (map) {
+		return this.batch(() => {
+			const ids = Object.keys(map);
 
-    return this.batch( function(){
-      let ids = Object.keys( map );
+			for (let i = 0; i < ids.length; i++) {
+				const id = ids[i];
+				const data = map[id];
+				const ele = this.getElementById(id);
 
-      for( let i = 0; i < ids.length; i++ ){
-        let id = ids[i];
-        let data = map[ id ];
-        let ele = cy.getElementById( id );
-
-        ele.data( data );
-      }
-    } );
-  }
-});
+				ele.data(data);
+			}
+		});
+	},
+};
 
 export default corefn;

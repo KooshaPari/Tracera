@@ -1,23 +1,23 @@
-'use strict';
+"use strict";
 
-const name = 'Value';
+const name = "Value";
 const structure = {
-    children: [[]]
+	children: [[]],
 };
 
 function parse() {
-    const start = this.tokenStart;
-    const children = this.readSequence(this.scope.Value);
+	const start = this.tokenStart;
+	const children = this.readSequence(this.scope.Value);
 
-    return {
-        type: 'Value',
-        loc: this.getLocation(start, this.tokenStart),
-        children
-    };
+	return {
+		type: "Value",
+		loc: this.getLocation(start, this.tokenStart),
+		children,
+	};
 }
 
 function generate(node) {
-    this.children(node);
+	this.children(node);
 }
 
 exports.generate = generate;

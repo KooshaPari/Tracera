@@ -6,106 +6,112 @@ https://tldrlegal.com/license/mit-license
 https://github.com/jquery/jquery/blob/master/src/event.js
 */
 
-let Event = function( src, props ){
-  this.recycle( src, props );
+const Event = function (src, props) {
+	this.recycle(src, props);
 };
 
-function returnFalse(){
-  return false;
+function returnFalse() {
+	return false;
 }
 
-function returnTrue(){
-  return true;
+function returnTrue() {
+	return true;
 }
 
 // http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331/ecma-script-binding.html
 Event.prototype = {
-  instanceString: function(){
-    return 'event';
-  },
+	instanceString: () => "event",
 
-  recycle: function( src, props ){
-    this.isImmediatePropagationStopped = this.isPropagationStopped = this.isDefaultPrevented = returnFalse;
+	recycle: function (src, props) {
+		this.isImmediatePropagationStopped =
+			this.isPropagationStopped =
+			this.isDefaultPrevented =
+				returnFalse;
 
-    if( src != null && src.preventDefault ){ // Browser Event object
-      this.type = src.type;
+		if (src != null && src.preventDefault) {
+			// Browser Event object
+			this.type = src.type;
 
-      // Events bubbling up the document may have been marked as prevented
-      // by a handler lower down the tree; reflect the correct value.
-      this.isDefaultPrevented = ( src.defaultPrevented ) ? returnTrue : returnFalse;
+			// Events bubbling up the document may have been marked as prevented
+			// by a handler lower down the tree; reflect the correct value.
+			this.isDefaultPrevented = src.defaultPrevented ? returnTrue : returnFalse;
+		} else if (src != null && src.type) {
+			// Plain object containing all event details
+			props = src;
+		} else {
+			// Event string
+			this.type = src;
+		}
 
-    } else if( src != null && src.type ){ // Plain object containing all event details
-      props = src;
+		// Put explicitly provided properties onto the event object
+		if (props != null) {
+			// more efficient to manually copy fields we use
+			this.originalEvent = props.originalEvent;
+			this.type = props.type != null ? props.type : this.type;
+			this.cy = props.cy;
+			this.target = props.target;
+			this.position = props.position;
+			this.renderedPosition = props.renderedPosition;
+			this.namespace = props.namespace;
+			this.layout = props.layout;
+		}
 
-    } else { // Event string
-      this.type = src;
-    }
+		if (
+			this.cy != null &&
+			this.position != null &&
+			this.renderedPosition == null
+		) {
+			// create a rendered position based on the passed position
+			const pos = this.position;
+			const zoom = this.cy.zoom();
+			const pan = this.cy.pan();
 
-    // Put explicitly provided properties onto the event object
-    if( props != null ){
-      // more efficient to manually copy fields we use
-      this.originalEvent = props.originalEvent;
-      this.type = props.type != null ? props.type : this.type;
-      this.cy = props.cy;
-      this.target = props.target;
-      this.position = props.position;
-      this.renderedPosition = props.renderedPosition;
-      this.namespace = props.namespace;
-      this.layout = props.layout;
-    }
+			this.renderedPosition = {
+				x: pos.x * zoom + pan.x,
+				y: pos.y * zoom + pan.y,
+			};
+		}
 
-    if( this.cy != null && this.position != null && this.renderedPosition == null ){
-      // create a rendered position based on the passed position
-      let pos = this.position;
-      let zoom = this.cy.zoom();
-      let pan = this.cy.pan();
+		// Create a timestamp if incoming event doesn't have one
+		this.timeStamp = (src && src.timeStamp) || Date.now();
+	},
 
-      this.renderedPosition = {
-        x: pos.x * zoom + pan.x,
-        y: pos.y * zoom + pan.y
-      };
-    }
+	preventDefault: function () {
+		this.isDefaultPrevented = returnTrue;
 
-    // Create a timestamp if incoming event doesn't have one
-    this.timeStamp = src && src.timeStamp || Date.now();
-  },
+		const e = this.originalEvent;
+		if (!e) {
+			return;
+		}
 
-  preventDefault: function(){
-    this.isDefaultPrevented = returnTrue;
+		// if preventDefault exists run it on the original event
+		if (e.preventDefault) {
+			e.preventDefault();
+		}
+	},
 
-    let e = this.originalEvent;
-    if( !e ){
-      return;
-    }
+	stopPropagation: function () {
+		this.isPropagationStopped = returnTrue;
 
-    // if preventDefault exists run it on the original event
-    if( e.preventDefault ){
-      e.preventDefault();
-    }
-  },
+		const e = this.originalEvent;
+		if (!e) {
+			return;
+		}
 
-  stopPropagation: function(){
-    this.isPropagationStopped = returnTrue;
+		// if stopPropagation exists run it on the original event
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		}
+	},
 
-    let e = this.originalEvent;
-    if( !e ){
-      return;
-    }
+	stopImmediatePropagation: function () {
+		this.isImmediatePropagationStopped = returnTrue;
+		this.stopPropagation();
+	},
 
-    // if stopPropagation exists run it on the original event
-    if( e.stopPropagation ){
-      e.stopPropagation();
-    }
-  },
-
-  stopImmediatePropagation: function(){
-    this.isImmediatePropagationStopped = returnTrue;
-    this.stopPropagation();
-  },
-
-  isDefaultPrevented: returnFalse,
-  isPropagationStopped: returnFalse,
-  isImmediatePropagationStopped: returnFalse
+	isDefaultPrevented: returnFalse,
+	isPropagationStopped: returnFalse,
+	isImmediatePropagationStopped: returnFalse,
 };
 
 export default Event;

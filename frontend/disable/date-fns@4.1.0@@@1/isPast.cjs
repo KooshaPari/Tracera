@@ -21,5 +21,5 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isPast(date) {
-  return +(0, _index.toDate)(date) < Date.now();
+	return +(0, _index.toDate)(date) < Date.now();
 }

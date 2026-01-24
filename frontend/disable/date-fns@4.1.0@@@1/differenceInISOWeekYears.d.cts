@@ -28,7 +28,7 @@ export interface DifferenceInISOWeekYearsOptions extends ContextOptions<Date> {}
  * // => 1
  */
 export declare function differenceInISOWeekYears(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInISOWeekYearsOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInISOWeekYearsOptions | undefined,
 ): number;

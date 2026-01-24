@@ -14,4 +14,6 @@ if (importLocal(import.meta.url)) {
 }
 ```
 */
-export default function importLocal(filePath: string): boolean | undefined | unknown;
+export default function importLocal(
+	filePath: string,
+): boolean | undefined | unknown;

@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Common path-http-verbs-order', () => {
-  it('should report on invalid order', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Common path-http-verbs-order", () => {
+	it("should report on invalid order", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /some:
@@ -17,16 +21,16 @@ describe('Common path-http-verbs-order', () => {
             get:
               summary: post
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-http-verbs-order': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-http-verbs-order": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -56,11 +60,11 @@ describe('Common path-http-verbs-order', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report valid order', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report valid order", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         /some:
@@ -81,15 +85,15 @@ describe('Common path-http-verbs-order', () => {
           trace:
             summary: trace
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'path-http-verbs-order': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "path-http-verbs-order": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

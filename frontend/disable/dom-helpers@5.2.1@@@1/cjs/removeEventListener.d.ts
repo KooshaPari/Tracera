@@ -1,4 +1,4 @@
-import { TaggedEventHandler } from './addEventListener';
+import { TaggedEventHandler } from "./addEventListener";
 /**
  * A `removeEventListener` ponyfill
  *
@@ -7,5 +7,10 @@ import { TaggedEventHandler } from './addEventListener';
  * @param handle the handler
  * @param options event options
  */
-declare function removeEventListener<K extends keyof HTMLElementEventMap>(node: HTMLElement, eventName: K, handler: TaggedEventHandler<K>, options?: boolean | EventListenerOptions): void;
+declare function removeEventListener<K extends keyof HTMLElementEventMap>(
+	node: HTMLElement,
+	eventName: K,
+	handler: TaggedEventHandler<K>,
+	options?: boolean | EventListenerOptions,
+): void;
 export default removeEventListener;

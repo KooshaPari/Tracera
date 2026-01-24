@@ -1,8 +1,9 @@
-import { Mixin } from 'ts-mixer';
-import { BREAK, toValue } from '@swagger-api/apidom-core';
+import { BREAK, toValue } from "@swagger-api/apidom-core";
+import { Mixin } from "ts-mixer";
 import SwaggerVersionElement from "../../../elements/SwaggerVersion.mjs";
-import SpecificationVisitor from "../SpecificationVisitor.mjs";
 import FallbackVisitor from "../FallbackVisitor.mjs";
+import SpecificationVisitor from "../SpecificationVisitor.mjs";
+
 /**
  * @public
  */
@@ -10,11 +11,13 @@ import FallbackVisitor from "../FallbackVisitor.mjs";
  * @public
  */
 class SwaggerVisitor extends Mixin(SpecificationVisitor, FallbackVisitor) {
-  StringElement(stringElement) {
-    const swaggerVersionElement = new SwaggerVersionElement(toValue(stringElement));
-    this.copyMetaAndAttributes(stringElement, swaggerVersionElement);
-    this.element = swaggerVersionElement;
-    return BREAK;
-  }
+	StringElement(stringElement) {
+		const swaggerVersionElement = new SwaggerVersionElement(
+			toValue(stringElement),
+		);
+		this.copyMetaAndAttributes(stringElement, swaggerVersionElement);
+		this.element = swaggerVersionElement;
+		return BREAK;
+	}
 }
 export default SwaggerVisitor;

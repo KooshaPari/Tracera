@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/typed-array/map');
+"use strict";
+var parent = require("../../actual/typed-array/map");
 
 module.exports = parent;

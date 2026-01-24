@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Variables in allowed position
  *
@@ -8,5 +8,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  */
 export declare function VariablesInAllowedPositionRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

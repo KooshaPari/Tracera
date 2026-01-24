@@ -1,44 +1,47 @@
-import type { SourceMapSegment } from './sourcemap-segment.cts';
+import type { SourceMapSegment } from "./sourcemap-segment.cts";
 export interface SourceMapV3 {
-    file?: string | null;
-    names: readonly string[];
-    sourceRoot?: string;
-    sources: readonly (string | null)[];
-    sourcesContent?: readonly (string | null)[];
-    version: 3;
-    ignoreList?: readonly number[];
+	file?: string | null;
+	names: readonly string[];
+	sourceRoot?: string;
+	sources: readonly (string | null)[];
+	sourcesContent?: readonly (string | null)[];
+	version: 3;
+	ignoreList?: readonly number[];
 }
 export interface EncodedSourceMap extends SourceMapV3 {
-    mappings: string;
+	mappings: string;
 }
 export interface DecodedSourceMap extends SourceMapV3 {
-    mappings: readonly SourceMapSegment[][];
+	mappings: readonly SourceMapSegment[][];
 }
 export interface Pos {
-    line: number;
-    column: number;
+	line: number;
+	column: number;
 }
 export interface OriginalPos extends Pos {
-    source: string;
+	source: string;
 }
 export interface BindingExpressionRange {
-    start: Pos;
-    expression: string;
+	start: Pos;
+	expression: string;
 }
-export type Mapping = {
-    generated: Pos;
-    source: undefined;
-    original: undefined;
-    name: undefined;
-} | {
-    generated: Pos;
-    source: string;
-    original: Pos;
-    name: string;
-} | {
-    generated: Pos;
-    source: string;
-    original: Pos;
-    name: undefined;
-};
+export type Mapping =
+	| {
+			generated: Pos;
+			source: undefined;
+			original: undefined;
+			name: undefined;
+	  }
+	| {
+			generated: Pos;
+			source: string;
+			original: Pos;
+			name: string;
+	  }
+	| {
+			generated: Pos;
+			source: string;
+			original: Pos;
+			name: undefined;
+	  };
 //# sourceMappingURL=types.d.ts.map

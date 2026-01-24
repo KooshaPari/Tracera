@@ -7,4 +7,4 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 class ParseError extends _apidomError.ApiDOMError {}
-var _default = exports.default = ParseError;
+var _default = (exports.default = ParseError);

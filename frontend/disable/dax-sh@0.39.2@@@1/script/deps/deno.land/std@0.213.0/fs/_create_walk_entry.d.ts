@@ -5,8 +5,8 @@ import * as dntShim from "../../../../_dnt.shims.js";
  * {@linkcode expandGlob} and {@linkcode expandGlobSync}.
  */
 export interface WalkEntry extends dntShim.Deno.DirEntry {
-    /** Full path of the entry. */
-    path: string;
+	/** Full path of the entry. */
+	path: string;
 }
 /** Create {@linkcode WalkEntry} for the `path` synchronously. */
 export declare function createWalkEntrySync(path: string | URL): WalkEntry;

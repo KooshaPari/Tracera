@@ -1,7 +1,5 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.isDigit = isDigit;
 exports.isLetter = isLetter;
@@ -18,7 +16,7 @@ exports.isWhiteSpace = isWhiteSpace;
  * @internal
  */
 function isWhiteSpace(code) {
-  return code === 0x0009 || code === 0x0020;
+	return code === 0x0009 || code === 0x0020;
 }
 /**
  * ```
@@ -29,7 +27,7 @@ function isWhiteSpace(code) {
  */
 
 function isDigit(code) {
-  return code >= 0x0030 && code <= 0x0039;
+	return code >= 0x0030 && code <= 0x0039;
 }
 /**
  * ```
@@ -43,10 +41,10 @@ function isDigit(code) {
  */
 
 function isLetter(code) {
-  return (
-    (code >= 0x0061 && code <= 0x007a) || // A-Z
-    (code >= 0x0041 && code <= 0x005a) // a-z
-  );
+	return (
+		(code >= 0x0061 && code <= 0x007a) || // A-Z
+		(code >= 0x0041 && code <= 0x005a) // a-z
+	);
 }
 /**
  * ```
@@ -58,7 +56,7 @@ function isLetter(code) {
  */
 
 function isNameStart(code) {
-  return isLetter(code) || code === 0x005f;
+	return isLetter(code) || code === 0x005f;
 }
 /**
  * ```
@@ -71,5 +69,5 @@ function isNameStart(code) {
  */
 
 function isNameContinue(code) {
-  return isLetter(code) || isDigit(code) || code === 0x005f;
+	return isLetter(code) || isDigit(code) || code === 0x005f;
 }

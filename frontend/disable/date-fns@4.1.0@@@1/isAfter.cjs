@@ -21,5 +21,5 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isAfter(date, dateToCompare) {
-  return +(0, _index.toDate)(date) > +(0, _index.toDate)(dateToCompare);
+	return +(0, _index.toDate)(date) > +(0, _index.toDate)(dateToCompare);
 }

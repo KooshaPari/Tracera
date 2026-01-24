@@ -1,5 +1,5 @@
-var baseFlatten = require('./_baseFlatten'),
-    toInteger = require('./toInteger');
+var baseFlatten = require("./_baseFlatten"),
+	toInteger = require("./toInteger");
 
 /**
  * Recursively flatten `array` up to `depth` times.
@@ -22,12 +22,12 @@ var baseFlatten = require('./_baseFlatten'),
  * // => [1, 2, 3, [4], 5]
  */
 function flattenDepth(array, depth) {
-  var length = array == null ? 0 : array.length;
-  if (!length) {
-    return [];
-  }
-  depth = depth === undefined ? 1 : toInteger(depth);
-  return baseFlatten(array, depth);
+	var length = array == null ? 0 : array.length;
+	if (!length) {
+		return [];
+	}
+	depth = depth === undefined ? 1 : toInteger(depth);
+	return baseFlatten(array, depth);
 }
 
 module.exports = flattenDepth;

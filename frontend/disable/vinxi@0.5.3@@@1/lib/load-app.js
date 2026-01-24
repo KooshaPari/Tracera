@@ -138,10 +138,10 @@ export async function loadApp(configFile = undefined, args = {}) {
 			configFile
 				? {
 						configFile,
-				  }
+					}
 				: {
 						name: "app",
-				  },
+					},
 		);
 
 		if (appConfig.path) {

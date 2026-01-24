@@ -1,4 +1,5 @@
 import Node from "../../Node.mjs";
+
 /**
  * @public
  */
@@ -6,16 +7,13 @@ import Node from "../../Node.mjs";
  * @public
  */
 class YamlAnchor extends Node {
-  static type = 'anchor';
-  name;
-  constructor({
-    name,
-    ...rest
-  }) {
-    super({
-      ...rest
-    });
-    this.name = name;
-  }
+	static type = "anchor";
+	name;
+	constructor({ name, ...rest }) {
+		super({
+			...rest,
+		});
+		this.name = name;
+	}
 }
 export default YamlAnchor;

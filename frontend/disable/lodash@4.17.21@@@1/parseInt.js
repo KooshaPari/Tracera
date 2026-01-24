@@ -1,5 +1,5 @@
-var root = require('./_root'),
-    toString = require('./toString');
+var root = require("./_root"),
+	toString = require("./toString");
 
 /** Used to match leading whitespace. */
 var reTrimStart = /^\s+/;
@@ -32,12 +32,12 @@ var nativeParseInt = root.parseInt;
  * // => [6, 8, 10]
  */
 function parseInt(string, radix, guard) {
-  if (guard || radix == null) {
-    radix = 0;
-  } else if (radix) {
-    radix = +radix;
-  }
-  return nativeParseInt(toString(string).replace(reTrimStart, ''), radix || 0);
+	if (guard || radix == null) {
+		radix = 0;
+	} else if (radix) {
+		radix = +radix;
+	}
+	return nativeParseInt(toString(string).replace(reTrimStart, ""), radix || 0);
 }
 
 module.exports = parseInt;

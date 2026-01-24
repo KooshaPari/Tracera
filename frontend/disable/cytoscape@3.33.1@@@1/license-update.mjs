@@ -1,13 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const year = (new Date()).getFullYear();
+const year = new Date().getFullYear();
 
 const license = `Copyright (c) 2016-${year}, The Cytoscape Consortium.
 
@@ -29,4 +27,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.`;
 
-fs.writeFileSync(path.join(__dirname, 'LICENSE'), license);
+fs.writeFileSync(path.join(__dirname, "LICENSE"), license);

@@ -1,87 +1,87 @@
-var Stream = require("stream")
-var writeMethods = ["write", "end", "destroy"]
-var readMethods = ["resume", "pause"]
-var readEvents = ["data", "close"]
-var slice = Array.prototype.slice
+var Stream = require("stream");
+var writeMethods = ["write", "end", "destroy"];
+var readMethods = ["resume", "pause"];
+var readEvents = ["data", "close"];
+var slice = Array.prototype.slice;
 
-module.exports = duplex
+module.exports = duplex;
 
-function forEach (arr, fn) {
-    if (arr.forEach) {
-        return arr.forEach(fn)
-    }
+function forEach(arr, fn) {
+	if (arr.forEach) {
+		return arr.forEach(fn);
+	}
 
-    for (var i = 0; i < arr.length; i++) {
-        fn(arr[i], i)
-    }
+	for (var i = 0; i < arr.length; i++) {
+		fn(arr[i], i);
+	}
 }
 
 function duplex(writer, reader) {
-    var stream = new Stream()
-    var ended = false
+	var stream = new Stream();
+	var ended = false;
 
-    forEach(writeMethods, proxyWriter)
+	forEach(writeMethods, proxyWriter);
 
-    forEach(readMethods, proxyReader)
+	forEach(readMethods, proxyReader);
 
-    forEach(readEvents, proxyStream)
+	forEach(readEvents, proxyStream);
 
-    reader.on("end", handleEnd)
+	reader.on("end", handleEnd);
 
-    writer.on("drain", function() {
-      stream.emit("drain")
-    })
+	writer.on("drain", () => {
+		stream.emit("drain");
+	});
 
-    writer.on("error", reemit)
-    reader.on("error", reemit)
+	writer.on("error", reemit);
+	reader.on("error", reemit);
 
-    stream.writable = writer.writable
-    stream.readable = reader.readable
+	stream.writable = writer.writable;
+	stream.readable = reader.readable;
 
-    return stream
+	return stream;
 
-    function proxyWriter(methodName) {
-        stream[methodName] = method
+	function proxyWriter(methodName) {
+		stream[methodName] = method;
 
-        function method() {
-            return writer[methodName].apply(writer, arguments)
-        }
-    }
+		function method() {
+			return writer[methodName].apply(writer, arguments);
+		}
+	}
 
-    function proxyReader(methodName) {
-        stream[methodName] = method
+	function proxyReader(methodName) {
+		stream[methodName] = method;
 
-        function method() {
-            stream.emit(methodName)
-            var func = reader[methodName]
-            if (func) {
-                return func.apply(reader, arguments)
-            }
-            reader.emit(methodName)
-        }
-    }
+		function method() {
+			stream.emit(methodName);
+			var func = reader[methodName];
+			if (func) {
+				return func.apply(reader, arguments);
+			}
+			reader.emit(methodName);
+		}
+	}
 
-    function proxyStream(methodName) {
-        reader.on(methodName, reemit)
+	function proxyStream(methodName) {
+		reader.on(methodName, reemit);
 
-        function reemit() {
-            var args = slice.call(arguments)
-            args.unshift(methodName)
-            stream.emit.apply(stream, args)
-        }
-    }
+		function reemit() {
+			var args = slice.call(arguments);
+			args.unshift(methodName);
+			stream.emit.apply(stream, args);
+		}
+	}
 
-    function handleEnd() {
-        if (ended) {
-            return
-        }
-        ended = true
-        var args = slice.call(arguments)
-        args.unshift("end")
-        stream.emit.apply(stream, args)
-    }
+	function handleEnd() {
+		if (ended) {
+			return;
+		}
+		ended = true;
+		var args = slice.call(arguments);
+		args.unshift("end");
+		stream.emit.apply(stream, args);
+	}
 
-    function reemit(err) {
-        stream.emit("error", err)
-    }
+	function reemit(err) {
+		stream.emit("error", err);
+	}
 }

@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link addQuarters} function options.
  */
 export interface AddQuartersOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name addQuarters
  * @category Quarter Helpers
@@ -27,10 +27,10 @@ export interface AddQuartersOptions<DateType extends Date = Date>
  * //=; Mon Dec 01 2014 00:00:00
  */
 export declare function addQuarters<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: AddQuartersOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: AddQuartersOptions<ResultDate> | undefined,
 ): ResultDate;

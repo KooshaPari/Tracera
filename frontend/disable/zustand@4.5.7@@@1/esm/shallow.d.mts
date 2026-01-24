@@ -1,4 +1,4 @@
-import { shallow } from './vanilla/shallow.mjs';
+import { shallow } from "./vanilla/shallow.mjs";
 /**
  * @deprecated Use `import { shallow } from 'zustand/shallow'`
  */

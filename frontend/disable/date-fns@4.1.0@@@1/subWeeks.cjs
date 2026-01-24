@@ -29,5 +29,5 @@ var _index = require("./addWeeks.cjs");
  * //=> Mon Aug 04 2014 00:00:00
  */
 function subWeeks(date, amount, options) {
-  return (0, _index.addWeeks)(date, -amount, options);
+	return (0, _index.addWeeks)(date, -amount, options);
 }

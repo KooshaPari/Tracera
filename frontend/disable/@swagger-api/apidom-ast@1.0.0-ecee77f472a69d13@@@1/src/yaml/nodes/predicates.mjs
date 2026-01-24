@@ -2,54 +2,54 @@ import { isNodeType } from "../../predicates.mjs";
 /**
  * @public
  */
-export const isStream = node => isNodeType('stream', node);
+export const isStream = (node) => isNodeType("stream", node);
 
 /**
  * @public
  */
-export const isDocument = node => isNodeType('document', node);
+export const isDocument = (node) => isNodeType("document", node);
 
 /**
  * @public
  */
-export const isMapping = node => isNodeType('mapping', node);
+export const isMapping = (node) => isNodeType("mapping", node);
 
 /**
  * @public
  */
-export const isSequence = node => isNodeType('sequence', node);
+export const isSequence = (node) => isNodeType("sequence", node);
 
 /**
  * @public
  */
-export const isKeyValuePair = node => isNodeType('keyValuePair', node);
+export const isKeyValuePair = (node) => isNodeType("keyValuePair", node);
 
 /**
  * @public
  */
-export const isTag = node => isNodeType('tag', node);
+export const isTag = (node) => isNodeType("tag", node);
 
 /**
  * @public
  */
-export const isAnchor = node => isNodeType('anchor', node);
+export const isAnchor = (node) => isNodeType("anchor", node);
 
 /**
  * @public
  */
-export const isScalar = node => isNodeType('scalar', node);
+export const isScalar = (node) => isNodeType("scalar", node);
 
 /**
  * @public
  */
-export const isAlias = node => isNodeType('alias', node);
+export const isAlias = (node) => isNodeType("alias", node);
 
 /**
  * @public
  */
-export const isDirective = node => isNodeType('directive', node);
+export const isDirective = (node) => isNodeType("directive", node);
 
 /**
  * @public
  */
-export const isComment = node => isNodeType('comment', node);
+export const isComment = (node) => isNodeType("comment", node);

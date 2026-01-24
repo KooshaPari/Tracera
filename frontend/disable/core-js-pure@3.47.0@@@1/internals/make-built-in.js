@@ -1,4 +1,2 @@
-'use strict';
-module.exports = function (value) {
-  return value;
-};
+"use strict";
+module.exports = (value) => value;

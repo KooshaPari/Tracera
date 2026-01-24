@@ -1,12 +1,16 @@
-import { makeConfig, parseYamlToDocument, replaceSourceWithRef } from '../../../../__tests__/utils';
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 spec-strict-refs', () => {
-  it('should report about invalid usage of $ref', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 spec-strict-refs", () => {
+	it("should report about invalid usage of $ref", async () => {
+		const document = parseYamlToDocument(
+			outdent`
       openapi: "3.1.0"
       info:
         $ref: '#/components/schemas/test'
@@ -28,14 +32,14 @@ describe('Oas3 spec-strict-refs', () => {
         schemas:
           test:
             type: object                    
-		`
-    );
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'spec-strict-refs': 'error' } }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		`,
+		);
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "spec-strict-refs": "error" } }),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -65,5 +69,5 @@ describe('Oas3 spec-strict-refs', () => {
         },
       ]
     `);
-  });
+	});
 });

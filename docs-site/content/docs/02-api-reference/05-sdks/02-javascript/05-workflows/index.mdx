@@ -1,0 +1,55 @@
+---
+title: "JavaScript SDK - Workflows"
+description: "Manage workflows and item status transitions with the JavaScript SDK"
+keywords: [javascript, sdk, workflows, status, transitions]
+---
+
+# JavaScript SDK - Workflows
+
+Manage item status workflows and transitions using the JavaScript SDK.
+
+## Transition Item Status
+
+```javascript
+const result = await client.items.transition('item_abc123', {
+  toStatus: 'active',
+  comment: 'Ready for review'
+});
+
+console.log(`Transitioned from ${result.previousStatus} to ${result.newStatus}`);
+```
+
+## Get Workflow
+
+```javascript
+const workflow = await client.workflows.get('proj_123');
+console.log(`Workflow: ${workflow.name}`);
+console.log(`States: ${workflow.states}`);
+```
+
+## Examples
+
+### Safe Transition
+
+```javascript
+async function safeTransition(client, itemId, toStatus) {
+  const item = await client.items.get(itemId);
+  const workflow = await client.workflows.get(item.projectId);
+  
+  const allowed = workflow.getAllowedTransitions(item.status);
+  
+  if (allowed.includes(toStatus)) {
+    return await client.items.transition(itemId, {
+      toStatus,
+      comment: 'Status transition'
+    });
+  } else {
+    throw new Error(`Cannot transition from ${item.status} to ${toStatus}`);
+  }
+}
+```
+
+## Related Documentation
+
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - More examples

@@ -1,11 +1,15 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Arazzo workflow-dependsOn', () => {
-  const document = parseYamlToDocument(
-    outdent`
+describe("Arazzo workflow-dependsOn", () => {
+	const document = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.1'
       info:
         title: Cool API
@@ -60,11 +64,11 @@ describe('Arazzo workflow-dependsOn', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  const documentWithNotExistingWorkflows = parseYamlToDocument(
-    outdent`
+	const documentWithNotExistingWorkflows = parseYamlToDocument(
+		outdent`
     arazzo: 1.0.1
     info:
       title: Redocly Museum API Test Workflow
@@ -123,19 +127,19 @@ describe('Arazzo workflow-dependsOn', () => {
             outputs:
               events: $response.body
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  it('should report on dependsOn unique violation', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { 'workflow-dependsOn': 'error' },
-      }),
-    });
+	it("should report on dependsOn unique violation", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "workflow-dependsOn": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -152,30 +156,30 @@ describe('Arazzo workflow-dependsOn', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on dependsOn unique violation', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { 'workflow-dependsOn': 'off' },
-      }),
-    });
+	it("should not report on dependsOn unique violation", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "workflow-dependsOn": "off" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report on not existing workflows in dependsOn', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document: documentWithNotExistingWorkflows,
-      config: await makeConfig({
-        rules: { 'workflow-dependsOn': 'error' },
-      }),
-    });
+	it("should report on not existing workflows in dependsOn", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document: documentWithNotExistingWorkflows,
+			config: await makeConfig({
+				rules: { "workflow-dependsOn": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -205,5 +209,5 @@ describe('Arazzo workflow-dependsOn', () => {
         },
       ]
     `);
-  });
+	});
 });

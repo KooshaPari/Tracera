@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class HttpChannelBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'httpChannelBinding';
-    this.classes.push('channel-binding');
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "httpChannelBinding";
+		this.classes.push("channel-binding");
+	}
 }
-var _default = exports.default = HttpChannelBinding;
+var _default = (exports.default = HttpChannelBinding);

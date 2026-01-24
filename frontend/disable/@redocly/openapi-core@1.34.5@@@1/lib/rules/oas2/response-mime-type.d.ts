@@ -1,2 +1,2 @@
-import type { Oas2Rule } from '../../visitors';
+import type { Oas2Rule } from "../../visitors";
 export declare const ResponseMimeType: Oas2Rule;

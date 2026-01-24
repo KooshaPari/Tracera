@@ -1,5 +1,5 @@
-var baseAt = require('./_baseAt'),
-    flatRest = require('./_flatRest');
+var baseAt = require("./_baseAt"),
+	flatRest = require("./_flatRest");
 
 /**
  * Creates an array of values corresponding to `paths` of `object`.

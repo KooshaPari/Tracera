@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/log10');
+"use strict";
+module.exports = require("../../full/math/log10");

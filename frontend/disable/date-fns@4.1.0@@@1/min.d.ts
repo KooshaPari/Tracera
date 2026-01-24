@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link min} function options.
  */
 export interface MinOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name min
  * @category Common Helpers
@@ -30,9 +30,9 @@ export interface MinOptions<DateType extends Date = Date>
  * //=> Wed Feb 11 1987 00:00:00
  */
 export declare function min<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  dates: Array<DateArg<DateType>>,
-  options?: MinOptions<ResultDate> | undefined,
+	dates: Array<DateArg<DateType>>,
+	options?: MinOptions<ResultDate> | undefined,
 ): ResultDate;

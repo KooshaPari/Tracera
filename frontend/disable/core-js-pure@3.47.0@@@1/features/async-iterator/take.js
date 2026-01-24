@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/async-iterator/take');
+"use strict";
+module.exports = require("../../full/async-iterator/take");

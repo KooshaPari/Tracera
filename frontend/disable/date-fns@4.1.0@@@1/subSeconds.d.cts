@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link subSeconds} function options.
  */
 export interface SubSecondsOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * Subtract the specified number of seconds from the given date.
  *
@@ -22,10 +22,10 @@ export interface SubSecondsOptions<DateType extends Date = Date>
  * //=> Thu Jul 10 2014 12:44:30
  */
 export declare function subSeconds<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: SubSecondsOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: SubSecondsOptions<ResultDate> | undefined,
 ): ResultDate;

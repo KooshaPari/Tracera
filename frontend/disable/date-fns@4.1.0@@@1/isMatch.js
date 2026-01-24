@@ -290,7 +290,7 @@ import { parse } from "./parse.js";
  * //=> true
  */
 export function isMatch(dateStr, formatStr, options) {
-  return isValid(parse(dateStr, formatStr, new Date(), options));
+	return isValid(parse(dateStr, formatStr, new Date(), options));
 }
 
 // Fallback for modularized imports:

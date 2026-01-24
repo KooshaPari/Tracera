@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../full/composite-symbol');
+"use strict";
+module.exports = require("../full/composite-symbol");

@@ -10,20 +10,20 @@ Category: template
 
 /** @type LanguageFn */
 function erb(hljs) {
-  return {
-    name: 'ERB',
-    subLanguage: 'xml',
-    contains: [
-      hljs.COMMENT('<%#', '%>'),
-      {
-        begin: '<%[%=-]?',
-        end: '[%-]?%>',
-        subLanguage: 'ruby',
-        excludeBegin: true,
-        excludeEnd: true
-      }
-    ]
-  };
+	return {
+		name: "ERB",
+		subLanguage: "xml",
+		contains: [
+			hljs.COMMENT("<%#", "%>"),
+			{
+				begin: "<%[%=-]?",
+				end: "[%-]?%>",
+				subLanguage: "ruby",
+				excludeBegin: true,
+				excludeEnd: true,
+			},
+		],
+	};
 }
 
 module.exports = erb;

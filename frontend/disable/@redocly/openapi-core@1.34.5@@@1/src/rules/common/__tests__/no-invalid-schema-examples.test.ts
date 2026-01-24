@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('no-invalid-schema-examples', () => {
-  it('should report on invalid falsy example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-invalid-schema-examples", () => {
+	it("should report on invalid falsy example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         components:
           schemas:
@@ -17,16 +21,18 @@ describe('no-invalid-schema-examples', () => {
                   type: string
                   example: 0
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-schema-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-schema-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -47,11 +53,11 @@ describe('no-invalid-schema-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on nullable example for OAS3', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on nullable example for OAS3", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.3
         info: {}
         paths:
@@ -72,15 +78,17 @@ describe('no-invalid-schema-examples', () => {
             RiskMetadata:
               type: object
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-schema-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-schema-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

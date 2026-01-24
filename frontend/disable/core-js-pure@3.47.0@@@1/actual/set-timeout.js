@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../stable/set-timeout');
+"use strict";
+var parent = require("../stable/set-timeout");
 
 module.exports = parent;

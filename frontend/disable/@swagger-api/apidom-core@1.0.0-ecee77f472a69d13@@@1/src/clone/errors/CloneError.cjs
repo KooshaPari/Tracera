@@ -11,12 +11,12 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 class CloneError extends _apidomError.ApiDOMStructuredError {
-  value;
-  constructor(message, structuredOptions) {
-    super(message, structuredOptions);
-    if (typeof structuredOptions !== 'undefined') {
-      this.value = structuredOptions.value;
-    }
-  }
+	value;
+	constructor(message, structuredOptions) {
+		super(message, structuredOptions);
+		if (typeof structuredOptions !== "undefined") {
+			this.value = structuredOptions.value;
+		}
+	}
 }
-var _default = exports.default = CloneError;
+var _default = (exports.default = CloneError);

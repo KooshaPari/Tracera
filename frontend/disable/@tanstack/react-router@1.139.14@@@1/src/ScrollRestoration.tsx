@@ -1,69 +1,69 @@
-import {
-  defaultGetScrollRestorationKey,
-  getCssSelector,
-  scrollRestorationCache,
-  setupScrollRestoration,
-} from '@tanstack/router-core'
-import { useRouter } from './useRouter'
 import type {
-  ParsedLocation,
-  ScrollRestorationEntry,
-  ScrollRestorationOptions,
-} from '@tanstack/router-core'
+	ParsedLocation,
+	ScrollRestorationEntry,
+	ScrollRestorationOptions,
+} from "@tanstack/router-core";
+import {
+	defaultGetScrollRestorationKey,
+	getCssSelector,
+	scrollRestorationCache,
+	setupScrollRestoration,
+} from "@tanstack/router-core";
+import { useRouter } from "./useRouter";
 
 function useScrollRestoration() {
-  const router = useRouter()
-  setupScrollRestoration(router, true)
+	const router = useRouter();
+	setupScrollRestoration(router, true);
 }
 
 /**
  * @deprecated Use the `scrollRestoration` router option instead.
  */
 export function ScrollRestoration(_props: ScrollRestorationOptions) {
-  useScrollRestoration()
+	useScrollRestoration();
 
-  if (process.env.NODE_ENV === 'development') {
-    console.warn(
-      "The ScrollRestoration component is deprecated. Use createRouter's `scrollRestoration` option instead.",
-    )
-  }
+	if (process.env.NODE_ENV === "development") {
+		console.warn(
+			"The ScrollRestoration component is deprecated. Use createRouter's `scrollRestoration` option instead.",
+		);
+	}
 
-  return null
+	return null;
 }
 
 export function useElementScrollRestoration(
-  options: (
-    | {
-        id: string
-        getElement?: () => Window | Element | undefined | null
-      }
-    | {
-        id?: string
-        getElement: () => Window | Element | undefined | null
-      }
-  ) & {
-    getKey?: (location: ParsedLocation) => string
-  },
+	options: (
+		| {
+				id: string;
+				getElement?: () => Window | Element | undefined | null;
+		  }
+		| {
+				id?: string;
+				getElement: () => Window | Element | undefined | null;
+		  }
+	) & {
+		getKey?: (location: ParsedLocation) => string;
+	},
 ): ScrollRestorationEntry | undefined {
-  useScrollRestoration()
+	useScrollRestoration();
 
-  const router = useRouter()
-  const getKey = options.getKey || defaultGetScrollRestorationKey
+	const router = useRouter();
+	const getKey = options.getKey || defaultGetScrollRestorationKey;
 
-  let elementSelector = ''
+	let elementSelector = "";
 
-  if (options.id) {
-    elementSelector = `[data-scroll-restoration-id="${options.id}"]`
-  } else {
-    const element = options.getElement?.()
-    if (!element) {
-      return
-    }
-    elementSelector =
-      element instanceof Window ? 'window' : getCssSelector(element)
-  }
+	if (options.id) {
+		elementSelector = `[data-scroll-restoration-id="${options.id}"]`;
+	} else {
+		const element = options.getElement?.();
+		if (!element) {
+			return;
+		}
+		elementSelector =
+			element instanceof Window ? "window" : getCssSelector(element);
+	}
 
-  const restoreKey = getKey(router.latestLocation)
-  const byKey = scrollRestorationCache?.state[restoreKey]
-  return byKey?.[elementSelector]
+	const restoreKey = getKey(router.latestLocation);
+	const byKey = scrollRestorationCache?.state[restoreKey];
+	return byKey?.[elementSelector];
 }

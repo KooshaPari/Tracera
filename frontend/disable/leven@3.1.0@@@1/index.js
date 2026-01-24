@@ -1,4 +1,3 @@
-'use strict';
 const array = [];
 const charCodeCache = [];
 
@@ -23,7 +22,10 @@ const leven = (left, right) => {
 	// We can linearly drop suffix common to both strings since they
 	// don't increase distance at all
 	// Note: `~-` is the bitwise way to perform a `- 1` operation
-	while (leftLength > 0 && (left.charCodeAt(~-leftLength) === right.charCodeAt(~-rightLength))) {
+	while (
+		leftLength > 0 &&
+		left.charCodeAt(~-leftLength) === right.charCodeAt(~-rightLength)
+	) {
 		leftLength--;
 		rightLength--;
 	}
@@ -33,7 +35,10 @@ const leven = (left, right) => {
 	// don't increase distance at all
 	let start = 0;
 
-	while (start < leftLength && (left.charCodeAt(start) === right.charCodeAt(start))) {
+	while (
+		start < leftLength &&
+		left.charCodeAt(start) === right.charCodeAt(start)
+	) {
 		start++;
 	}
 
@@ -65,7 +70,14 @@ const leven = (left, right) => {
 			temp2 = bCharCode === charCodeCache[i] ? temp : temp + 1;
 			temp = array[i];
 			// eslint-disable-next-line no-multi-assign
-			result = array[i] = temp > result ? temp2 > result ? result + 1 : temp2 : temp2 > temp ? temp + 1 : temp2;
+			result = array[i] =
+				temp > result
+					? temp2 > result
+						? result + 1
+						: temp2
+					: temp2 > temp
+						? temp + 1
+						: temp2;
 		}
 	}
 

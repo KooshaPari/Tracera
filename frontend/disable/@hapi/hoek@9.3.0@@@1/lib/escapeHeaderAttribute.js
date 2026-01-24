@@ -1,16 +1,14 @@
-'use strict';
-
-const Assert = require('./assert');
-
+const Assert = require("./assert");
 
 const internals = {};
 
+module.exports = (attribute) => {
+	// Allowed value characters: !#$%&'()*+,-./:;<=>?@[]^_`{|}~ and space, a-z, A-Z, 0-9, \, "
 
-module.exports = function (attribute) {
+	Assert(
+		/^[ \w!#$%&'()*+,\-./:;<=>?@[\]^`{|}~"\\]*$/.test(attribute),
+		"Bad attribute value (" + attribute + ")",
+	);
 
-    // Allowed value characters: !#$%&'()*+,-./:;<=>?@[]^_`{|}~ and space, a-z, A-Z, 0-9, \, "
-
-    Assert(/^[ \w\!#\$%&'\(\)\*\+,\-\.\/\:;<\=>\?@\[\]\^`\{\|\}~\"\\]*$/.test(attribute), 'Bad attribute value (' + attribute + ')');
-
-    return attribute.replace(/\\/g, '\\\\').replace(/\"/g, '\\"');                             // Escape quotes and slash
+	return attribute.replace(/\\/g, "\\\\").replace(/"/g, '\\"'); // Escape quotes and slash
 };

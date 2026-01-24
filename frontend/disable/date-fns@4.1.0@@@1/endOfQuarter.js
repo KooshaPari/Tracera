@@ -27,12 +27,12 @@ import { toDate } from "./toDate.js";
  * //=> Tue Sep 30 2014 23:59:59.999
  */
 export function endOfQuarter(date, options) {
-  const _date = toDate(date, options?.in);
-  const currentMonth = _date.getMonth();
-  const month = currentMonth - (currentMonth % 3) + 3;
-  _date.setMonth(month, 0);
-  _date.setHours(23, 59, 59, 999);
-  return _date;
+	const _date = toDate(date, options?.in);
+	const currentMonth = _date.getMonth();
+	const month = currentMonth - (currentMonth % 3) + 3;
+	_date.setMonth(month, 0);
+	_date.setHours(23, 59, 59, 999);
+	return _date;
 }
 
 // Fallback for modularized imports:

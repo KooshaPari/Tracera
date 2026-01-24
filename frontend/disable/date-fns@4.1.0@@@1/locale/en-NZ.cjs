@@ -15,14 +15,14 @@ var _index5 = require("./en-NZ/_lib/formatLong.cjs");
  * @author Murray Lucas [@muntact](https://github.com/muntact)
  */
 const enNZ = (exports.enNZ = {
-  code: "en-NZ",
-  formatDistance: _index.formatDistance,
-  formatLong: _index5.formatLong,
-  formatRelative: _index2.formatRelative,
-  localize: _index3.localize,
-  match: _index4.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "en-NZ",
+	formatDistance: _index.formatDistance,
+	formatLong: _index5.formatLong,
+	formatRelative: _index2.formatRelative,
+	localize: _index3.localize,
+	match: _index4.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 });

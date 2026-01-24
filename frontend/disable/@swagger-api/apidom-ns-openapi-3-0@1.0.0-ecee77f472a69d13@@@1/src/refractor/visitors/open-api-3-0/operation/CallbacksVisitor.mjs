@@ -1,9 +1,10 @@
-import { Mixin } from 'ts-mixer';
-import { isReferenceLikeElement } from "../../../predicates.mjs";
-import { isReferenceElement } from "../../../../predicates.mjs";
+import { Mixin } from "ts-mixer";
 import OperationCallbacksElement from "../../../../elements/nces/OperationCallbacks.mjs";
-import MapVisitor from "../../generics/MapVisitor.mjs";
+import { isReferenceElement } from "../../../../predicates.mjs";
+import { isReferenceLikeElement } from "../../../predicates.mjs";
 import FallbackVisitor from "../../FallbackVisitor.mjs";
+import MapVisitor from "../../generics/MapVisitor.mjs";
+
 /**
  * @public
  */
@@ -11,20 +12,23 @@ import FallbackVisitor from "../../FallbackVisitor.mjs";
  * @public
  */
 class CallbacksVisitor extends Mixin(MapVisitor, FallbackVisitor) {
-  specPath;
-  constructor(options) {
-    super(options);
-    this.element = new OperationCallbacksElement();
-    this.specPath = element => isReferenceLikeElement(element) ? ['document', 'objects', 'Reference'] : ['document', 'objects', 'Callback'];
-  }
-  ObjectElement(objectElement) {
-    const result = MapVisitor.prototype.ObjectElement.call(this, objectElement);
+	specPath;
+	constructor(options) {
+		super(options);
+		this.element = new OperationCallbacksElement();
+		this.specPath = (element) =>
+			isReferenceLikeElement(element)
+				? ["document", "objects", "Reference"]
+				: ["document", "objects", "Callback"];
+	}
+	ObjectElement(objectElement) {
+		const result = MapVisitor.prototype.ObjectElement.call(this, objectElement);
 
-    // @ts-ignore
-    this.element.filter(isReferenceElement).forEach(referenceElement => {
-      referenceElement.setMetaProperty('referenced-element', 'callback');
-    });
-    return result;
-  }
+		// @ts-expect-error
+		this.element.filter(isReferenceElement).forEach((referenceElement) => {
+			referenceElement.setMetaProperty("referenced-element", "callback");
+		});
+		return result;
+	}
 }
 export default CallbacksVisitor;

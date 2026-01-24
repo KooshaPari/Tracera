@@ -1,5 +1,9 @@
-import { startsWith } from 'ramda';
-import { isStringElement, isObjectElement, toValue } from '@swagger-api/apidom-core';
+import {
+	isObjectElement,
+	isStringElement,
+	toValue,
+} from "@swagger-api/apidom-core";
+import { startsWith } from "ramda";
 
 /**
  * @public
@@ -8,8 +12,8 @@ import { isStringElement, isObjectElement, toValue } from '@swagger-api/apidom-c
 /**
  * @public
  */
-export const isReferenceLikeElement = element => {
-  return isObjectElement(element) && element.hasKey('$ref');
+export const isReferenceLikeElement = (element) => {
+	return isObjectElement(element) && element.hasKey("$ref");
 };
 
 /**
@@ -25,7 +29,7 @@ export const isTagLikeElement = isObjectElement;
 /**
  * @public
  */
-export const isOpenApiExtension = element => {
-  // @ts-ignore
-  return isStringElement(element.key) && startsWith('x-', toValue(element.key));
+export const isOpenApiExtension = (element) => {
+	// @ts-expect-error
+	return isStringElement(element.key) && startsWith("x-", toValue(element.key));
 };

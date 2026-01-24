@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> 1100
  */
 export function differenceInMilliseconds(laterDate, earlierDate) {
-  return +toDate(laterDate) - +toDate(earlierDate);
+	return +toDate(laterDate) - +toDate(earlierDate);
 }
 
 // Fallback for modularized imports:

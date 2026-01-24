@@ -24,9 +24,9 @@ import { toDate } from "./toDate.js";
  * //=> 366
  */
 export function getDaysInYear(date, options) {
-  const _date = toDate(date, options?.in);
-  if (Number.isNaN(+_date)) return NaN;
-  return isLeapYear(_date) ? 366 : 365;
+	const _date = toDate(date, options?.in);
+	if (Number.isNaN(+_date)) return NaN;
+	return isLeapYear(_date) ? 366 : 365;
 }
 
 // Fallback for modularized imports:

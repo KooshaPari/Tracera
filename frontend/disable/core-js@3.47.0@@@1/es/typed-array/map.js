@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.typed-array.map');
+"use strict";
+require("../../modules/es.typed-array.map");

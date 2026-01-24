@@ -1,14 +1,14 @@
-import type { BasicAcceptedElems } from './types.js';
-import type { CheerioAPI } from './load.js';
-import type { Cheerio } from './cheerio.js';
-import type { AnyNode, Document } from 'domhandler';
-import { textContent } from 'domutils';
+import type { AnyNode, Document } from "domhandler";
+import { textContent } from "domutils";
+import type { ExtractedMap, ExtractMap } from "./api/extract.js";
+import type { Cheerio } from "./cheerio.js";
+import type { CheerioAPI } from "./load.js";
 import {
-  type InternalOptions,
-  type CheerioOptions,
-  flattenOptions as flattenOptions,
-} from './options.js';
-import type { ExtractedMap, ExtractMap } from './api/extract.js';
+	type CheerioOptions,
+	flattenOptions,
+	type InternalOptions,
+} from "./options.js";
+import type { BasicAcceptedElems } from "./types.js";
 
 /**
  * Helper function to render a DOM.
@@ -19,13 +19,13 @@ import type { ExtractedMap, ExtractMap } from './api/extract.js';
  * @returns The rendered document.
  */
 function render(
-  that: CheerioAPI,
-  dom: BasicAcceptedElems<AnyNode> | undefined,
-  options: InternalOptions,
+	that: CheerioAPI,
+	dom: BasicAcceptedElems<AnyNode> | undefined,
+	options: InternalOptions,
 ): string {
-  if (!that) return '';
+	if (!that) return "";
 
-  return that(dom ?? that._root.children, null, undefined, options).toString();
+	return that(dom ?? that._root.children, null, undefined, options).toString();
 }
 
 /**
@@ -36,16 +36,16 @@ function render(
  * @returns Whether the object is an options object.
  */
 function isOptions(
-  dom?: BasicAcceptedElems<AnyNode> | CheerioOptions | null,
-  options?: CheerioOptions,
+	dom?: BasicAcceptedElems<AnyNode> | CheerioOptions | null,
+	options?: CheerioOptions,
 ): dom is CheerioOptions {
-  return (
-    !options &&
-    typeof dom === 'object' &&
-    dom != null &&
-    !('length' in dom) &&
-    !('type' in dom)
-  );
+	return (
+		!options &&
+		typeof dom === "object" &&
+		dom != null &&
+		!("length" in dom) &&
+		!("type" in dom)
+	);
 }
 
 /**
@@ -65,33 +65,33 @@ export function html(this: CheerioAPI, options?: CheerioOptions): string;
  * @returns The rendered document.
  */
 export function html(
-  this: CheerioAPI,
-  dom?: BasicAcceptedElems<AnyNode>,
-  options?: CheerioOptions,
+	this: CheerioAPI,
+	dom?: BasicAcceptedElems<AnyNode>,
+	options?: CheerioOptions,
 ): string;
 export function html(
-  this: CheerioAPI,
-  dom?: BasicAcceptedElems<AnyNode> | CheerioOptions,
-  options?: CheerioOptions,
+	this: CheerioAPI,
+	dom?: BasicAcceptedElems<AnyNode> | CheerioOptions,
+	options?: CheerioOptions,
 ): string {
-  /*
-   * Be flexible about parameters, sometimes we call html(),
-   * with options as only parameter
-   * check dom argument for dom element specific properties
-   * assume there is no 'length' or 'type' properties in the options object
-   */
-  const toRender = isOptions(dom) ? ((options = dom), undefined) : dom;
+	/*
+	 * Be flexible about parameters, sometimes we call html(),
+	 * with options as only parameter
+	 * check dom argument for dom element specific properties
+	 * assume there is no 'length' or 'type' properties in the options object
+	 */
+	const toRender = isOptions(dom) ? ((options = dom), undefined) : dom;
 
-  /*
-   * Sometimes `$.html()` is used without preloading html,
-   * so fallback non-existing options to the default ones.
-   */
-  const opts = {
-    ...this?._options,
-    ...flattenOptions(options),
-  };
+	/*
+	 * Sometimes `$.html()` is used without preloading html,
+	 * so fallback non-existing options to the default ones.
+	 */
+	const opts = {
+		...this?._options,
+		...flattenOptions(options),
+	};
 
-  return render(this, toRender, opts);
+	return render(this, toRender, opts);
 }
 
 /**
@@ -102,12 +102,12 @@ export function html(
  * @returns THe rendered document.
  */
 export function xml(
-  this: CheerioAPI,
-  dom?: BasicAcceptedElems<AnyNode>,
+	this: CheerioAPI,
+	dom?: BasicAcceptedElems<AnyNode>,
 ): string {
-  const options = { ...this._options, xmlMode: true };
+	const options = { ...this._options, xmlMode: true };
 
-  return render(this, dom, options);
+	return render(this, dom, options);
 }
 
 /**
@@ -122,18 +122,18 @@ export function xml(
  * @returns The rendered document.
  */
 export function text(
-  this: CheerioAPI | void,
-  elements?: ArrayLike<AnyNode>,
+	this: CheerioAPI | void,
+	elements?: ArrayLike<AnyNode>,
 ): string {
-  const elems = elements ?? (this ? this.root() : []);
+	const elems = elements ?? (this ? this.root() : []);
 
-  let ret = '';
+	let ret = "";
 
-  for (let i = 0; i < elems.length; i++) {
-    ret += textContent(elems[i]);
-  }
+	for (let i = 0; i < elems.length; i++) {
+		ret += textContent(elems[i]);
+	}
 
-  return ret;
+	return ret;
 }
 
 /**
@@ -150,39 +150,39 @@ export function text(
  * @see {@link https://api.jquery.com/jQuery.parseHTML/}
  */
 export function parseHTML(
-  this: CheerioAPI,
-  data: string,
-  context?: unknown,
-  keepScripts?: boolean,
+	this: CheerioAPI,
+	data: string,
+	context?: unknown,
+	keepScripts?: boolean,
 ): AnyNode[];
-export function parseHTML(this: CheerioAPI, data?: '' | null): null;
+export function parseHTML(this: CheerioAPI, data?: "" | null): null;
 export function parseHTML(
-  this: CheerioAPI,
-  data?: string | null,
-  context?: unknown,
-  keepScripts = typeof context === 'boolean' ? context : false,
+	this: CheerioAPI,
+	data?: string | null,
+	context?: unknown,
+	keepScripts = typeof context === "boolean" ? context : false,
 ): AnyNode[] | null {
-  if (!data || typeof data !== 'string') {
-    return null;
-  }
+	if (!data || typeof data !== "string") {
+		return null;
+	}
 
-  if (typeof context === 'boolean') {
-    keepScripts = context;
-  }
+	if (typeof context === "boolean") {
+		keepScripts = context;
+	}
 
-  const parsed = this.load(data, this._options, false);
-  if (!keepScripts) {
-    parsed('script').remove();
-  }
+	const parsed = this.load(data, this._options, false);
+	if (!keepScripts) {
+		parsed("script").remove();
+	}
 
-  /*
-   * The `children` array is used by Cheerio internally to group elements that
-   * share the same parents. When nodes created through `parseHTML` are
-   * inserted into previously-existing DOM structures, they will be removed
-   * from the `children` array. The results of `parseHTML` should remain
-   * constant across these operations, so a shallow copy should be returned.
-   */
-  return [...parsed.root()[0].children];
+	/*
+	 * The `children` array is used by Cheerio internally to group elements that
+	 * share the same parents. When nodes created through `parseHTML` are
+	 * inserted into previously-existing DOM structures, they will be removed
+	 * from the `children` array. The results of `parseHTML` should remain
+	 * constant across these operations, so a shallow copy should be returned.
+	 */
+	return [...parsed.root()[0].children];
 }
 
 /**
@@ -201,7 +201,7 @@ export function parseHTML(
  * @alias Cheerio.root
  */
 export function root(this: CheerioAPI): Cheerio<Document> {
-  return this(this._root);
+	return this(this._root);
 }
 
 /**
@@ -216,24 +216,24 @@ export function root(this: CheerioAPI): Cheerio<Document> {
  * @see {@link https://api.jquery.com/jQuery.contains/}
  */
 export function contains(container: AnyNode, contained: AnyNode): boolean {
-  // According to the jQuery API, an element does not "contain" itself
-  if (contained === container) {
-    return false;
-  }
+	// According to the jQuery API, an element does not "contain" itself
+	if (contained === container) {
+		return false;
+	}
 
-  /*
-   * Step up the descendants, stopping when the root element is reached
-   * (signaled by `.parent` returning a reference to the same object)
-   */
-  let next: AnyNode | null = contained;
-  while (next && next !== next.parent) {
-    next = next.parent;
-    if (next === container) {
-      return true;
-    }
-  }
+	/*
+	 * Step up the descendants, stopping when the root element is reached
+	 * (signaled by `.parent` returning a reference to the same object)
+	 */
+	let next: AnyNode | null = contained;
+	while (next && next !== next.parent) {
+		next = next.parent;
+		if (next === container) {
+			return true;
+		}
+	}
 
-  return false;
+	return false;
 }
 
 /**
@@ -246,10 +246,10 @@ export function contains(container: AnyNode, contained: AnyNode): boolean {
  * @returns An object containing the extracted values.
  */
 export function extract<M extends ExtractMap>(
-  this: CheerioAPI,
-  map: M,
+	this: CheerioAPI,
+	map: M,
 ): ExtractedMap<M> {
-  return this.root().extract(map);
+	return this.root().extract(map);
 }
 
 type Writable<T> = { -readonly [P in keyof T]: T[P] };
@@ -265,20 +265,20 @@ type Writable<T> = { -readonly [P in keyof T]: T[P] };
  * @see {@link https://api.jquery.com/jQuery.merge/}
  */
 export function merge<T>(
-  arr1: Writable<ArrayLike<T>>,
-  arr2: ArrayLike<T>,
+	arr1: Writable<ArrayLike<T>>,
+	arr2: ArrayLike<T>,
 ): ArrayLike<T> | undefined {
-  if (!isArrayLike(arr1) || !isArrayLike(arr2)) {
-    return;
-  }
-  let newLength = arr1.length;
-  const len = +arr2.length;
+	if (!isArrayLike(arr1) || !isArrayLike(arr2)) {
+		return;
+	}
+	let newLength = arr1.length;
+	const len = +arr2.length;
 
-  for (let i = 0; i < len; i++) {
-    arr1[newLength++] = arr2[i];
-  }
-  arr1.length = newLength;
-  return arr1;
+	for (let i = 0; i < len; i++) {
+		arr1[newLength++] = arr2[i];
+	}
+	arr1.length = newLength;
+	return arr1;
 }
 
 /**
@@ -289,24 +289,24 @@ export function merge<T>(
  * @returns Indicates if the item is array-like.
  */
 function isArrayLike(item: unknown): item is ArrayLike<unknown> {
-  if (Array.isArray(item)) {
-    return true;
-  }
+	if (Array.isArray(item)) {
+		return true;
+	}
 
-  if (
-    typeof item !== 'object' ||
-    item === null ||
-    !('length' in item) ||
-    typeof item.length !== 'number' ||
-    item.length < 0
-  ) {
-    return false;
-  }
+	if (
+		typeof item !== "object" ||
+		item === null ||
+		!("length" in item) ||
+		typeof item.length !== "number" ||
+		item.length < 0
+	) {
+		return false;
+	}
 
-  for (let i = 0; i < item.length; i++) {
-    if (!(i in item)) {
-      return false;
-    }
-  }
-  return true;
+	for (let i = 0; i < item.length; i++) {
+		if (!(i in item)) {
+			return false;
+		}
+	}
+	return true;
 }

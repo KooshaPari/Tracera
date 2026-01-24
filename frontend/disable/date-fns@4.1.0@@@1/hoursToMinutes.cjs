@@ -20,5 +20,5 @@ var _index = require("./constants.cjs");
  * //=> 120
  */
 function hoursToMinutes(hours) {
-  return Math.trunc(hours * _index.minutesInHour);
+	return Math.trunc(hours * _index.minutesInHour);
 }

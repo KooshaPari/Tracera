@@ -8,49 +8,49 @@
 /**
  * @see https://github.com/remix-run/remix/blob/0bcb4a304dd2f08f6032c3bf0c3aa7eb5b976901/packages/remix-server-runtime/upload/memoryUploadHandler.ts
  */
-import type { UploadHandler } from './uploadHandler';
-import { MaxPartSizeExceededError } from './uploadHandler';
+import type { UploadHandler } from "./uploadHandler";
+import { MaxPartSizeExceededError } from "./uploadHandler";
 
 export type MemoryUploadHandlerFilterArgs = {
-  filename?: string;
-  contentType: string;
-  name: string;
+	filename?: string;
+	contentType: string;
+	name: string;
 };
 
 export type MemoryUploadHandlerOptions = {
-  /**
-   * The maximum upload size allowed. If the size is exceeded an error will be thrown.
-   * Defaults to 3000000B (3MB).
-   */
-  maxPartSize?: number;
-  /**
-   *
-   * @param filename
-   * @param mimetype
-   * @param encoding
-   */
-  filter?(args: MemoryUploadHandlerFilterArgs): Promise<boolean> | boolean;
+	/**
+	 * The maximum upload size allowed. If the size is exceeded an error will be thrown.
+	 * Defaults to 3000000B (3MB).
+	 */
+	maxPartSize?: number;
+	/**
+	 *
+	 * @param filename
+	 * @param mimetype
+	 * @param encoding
+	 */
+	filter?(args: MemoryUploadHandlerFilterArgs): Promise<boolean> | boolean;
 };
 
 export function createMemoryUploadHandler({
-  filter,
-  maxPartSize = 3000000,
+	filter,
+	maxPartSize = 3000000,
 }: MemoryUploadHandlerOptions = {}): UploadHandler {
-  return async ({ filename, contentType, name, data }) => {
-    if (filter && !(await filter({ filename, contentType, name }))) {
-      return undefined;
-    }
+	return async ({ filename, contentType, name, data }) => {
+		if (filter && !(await filter({ filename, contentType, name }))) {
+			return undefined;
+		}
 
-    let size = 0;
-    const chunks = [];
-    for await (const chunk of data) {
-      size += chunk.byteLength;
-      if (size > maxPartSize) {
-        throw new MaxPartSizeExceededError(name, maxPartSize);
-      }
-      chunks.push(chunk);
-    }
+		let size = 0;
+		const chunks = [];
+		for await (const chunk of data) {
+			size += chunk.byteLength;
+			if (size > maxPartSize) {
+				throw new MaxPartSizeExceededError(name, maxPartSize);
+			}
+			chunks.push(chunk);
+		}
 
-    return new File(chunks, filename, { type: contentType });
-  };
+		return new File(chunks, filename, { type: contentType });
+	};
 }

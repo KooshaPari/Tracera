@@ -21,13 +21,13 @@ app.on('user-action', () => {
 ```
 */
 declare function defineLazyProp<
-	ObjectType extends {[key: string]: unknown},
+	ObjectType extends { [key: string]: unknown },
 	PropertyNameType extends string,
-	PropertyValueType
+	PropertyValueType,
 >(
 	object: ObjectType,
 	propertyName: PropertyNameType,
-	fn: () => PropertyValueType
-): ObjectType & {[K in PropertyNameType]: PropertyValueType};
+	fn: () => PropertyValueType,
+): ObjectType & { [K in PropertyNameType]: PropertyValueType };
 
 export = defineLazyProp;

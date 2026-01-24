@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/auto_link_service.py
+# hypothesis_version: 6.148.7
+
+['#(\\w+-\\d+)', 'STORY[-\\s]?(\\d+)', '\\((\\w+-\\d+)\\)', '\\[(\\w+-\\d+)\\]', 'add', 'auto_linked', 'commit_hash', 'commit_message', 'create', 'feat', 'implement', 'implements', 'spec', 'specification', 'story[-\\s]?(\\d+)', 'test', 'testing', 'tests']

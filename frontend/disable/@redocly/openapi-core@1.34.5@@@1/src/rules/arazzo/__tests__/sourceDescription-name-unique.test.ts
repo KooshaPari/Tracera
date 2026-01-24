@@ -1,11 +1,15 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Arazzo sourceDescription-name-unique', () => {
-  const document = parseYamlToDocument(
-    outdent`
+describe("Arazzo sourceDescription-name-unique", () => {
+	const document = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.1'
       info:
         title: Cool API
@@ -33,19 +37,19 @@ describe('Arazzo sourceDescription-name-unique', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  it('should report an error when sourceDescription `name` is not unique among all sourceDescriptions', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { 'sourceDescription-name-unique': 'error' },
-      }),
-    });
+	it("should report an error when sourceDescription `name` is not unique among all sourceDescriptions", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "sourceDescription-name-unique": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -62,17 +66,17 @@ describe('Arazzo sourceDescription-name-unique', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report an error when sourceDescription `name` is not unique among all sourceDescriptions', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {},
-      }),
-    });
+	it("should not report an error when sourceDescription `name` is not unique among all sourceDescriptions", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

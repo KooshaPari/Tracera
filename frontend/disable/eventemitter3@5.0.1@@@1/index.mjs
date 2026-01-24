@@ -1,4 +1,4 @@
-import EventEmitter from './index.js'
+import EventEmitter from "./index.js";
 
-export { EventEmitter }
-export default EventEmitter
+export { EventEmitter };
+export default EventEmitter;

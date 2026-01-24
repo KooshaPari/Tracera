@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var DOMImplementationImpl_1 = require("../dom/DOMImplementationImpl");
 var WindowImpl_1 = require("../dom/WindowImpl");
@@ -31,42 +30,42 @@ var DOMTokenListImpl_1 = require("../dom/DOMTokenListImpl");
  * @param document - associated document
  */
 function create_domImplementation(document) {
-    return DOMImplementationImpl_1.DOMImplementationImpl._create(document);
+	return DOMImplementationImpl_1.DOMImplementationImpl._create(document);
 }
 exports.create_domImplementation = create_domImplementation;
 /**
  * Creates a `Window` node.
  */
 function create_window() {
-    return WindowImpl_1.WindowImpl._create();
+	return WindowImpl_1.WindowImpl._create();
 }
 exports.create_window = create_window;
 /**
  * Creates an `XMLDocument` node.
  */
 function create_xmlDocument() {
-    return new XMLDocumentImpl_1.XMLDocumentImpl();
+	return new XMLDocumentImpl_1.XMLDocumentImpl();
 }
 exports.create_xmlDocument = create_xmlDocument;
 /**
  * Creates a `Document` node.
  */
 function create_document() {
-    return new DocumentImpl_1.DocumentImpl();
+	return new DocumentImpl_1.DocumentImpl();
 }
 exports.create_document = create_document;
 /**
  * Creates an `AbortController`.
  */
 function create_abortController() {
-    return new AbortControllerImpl_1.AbortControllerImpl();
+	return new AbortControllerImpl_1.AbortControllerImpl();
 }
 exports.create_abortController = create_abortController;
 /**
  * Creates an `AbortSignal`.
  */
 function create_abortSignal() {
-    return AbortSignalImpl_1.AbortSignalImpl._create();
+	return AbortSignalImpl_1.AbortSignalImpl._create();
 }
 exports.create_abortSignal = create_abortSignal;
 /**
@@ -78,7 +77,12 @@ exports.create_abortSignal = create_abortSignal;
  * @param systemId - `SYSTEM` identifier
  */
 function create_documentType(document, name, publicId, systemId) {
-    return DocumentTypeImpl_1.DocumentTypeImpl._create(document, name, publicId, systemId);
+	return DocumentTypeImpl_1.DocumentTypeImpl._create(
+		document,
+		name,
+		publicId,
+		systemId,
+	);
 }
 exports.create_documentType = create_documentType;
 /**
@@ -90,7 +94,12 @@ exports.create_documentType = create_documentType;
  * @param prefix - namespace prefix
  */
 function create_element(document, localName, namespace, prefix) {
-    return ElementImpl_1.ElementImpl._create(document, localName, namespace, prefix);
+	return ElementImpl_1.ElementImpl._create(
+		document,
+		localName,
+		namespace,
+		prefix,
+	);
 }
 exports.create_element = create_element;
 /**
@@ -102,8 +111,13 @@ exports.create_element = create_element;
  * @param prefix - namespace prefix
  */
 function create_htmlElement(document, localName, namespace, prefix) {
-    // TODO: Implement in HTML DOM
-    return ElementImpl_1.ElementImpl._create(document, localName, namespace, prefix);
+	// TODO: Implement in HTML DOM
+	return ElementImpl_1.ElementImpl._create(
+		document,
+		localName,
+		namespace,
+		prefix,
+	);
 }
 exports.create_htmlElement = create_htmlElement;
 /**
@@ -115,8 +129,13 @@ exports.create_htmlElement = create_htmlElement;
  * @param prefix - namespace prefix
  */
 function create_htmlUnknownElement(document, localName, namespace, prefix) {
-    // TODO: Implement in HTML DOM
-    return ElementImpl_1.ElementImpl._create(document, localName, namespace, prefix);
+	// TODO: Implement in HTML DOM
+	return ElementImpl_1.ElementImpl._create(
+		document,
+		localName,
+		namespace,
+		prefix,
+	);
 }
 exports.create_htmlUnknownElement = create_htmlUnknownElement;
 /**
@@ -125,7 +144,7 @@ exports.create_htmlUnknownElement = create_htmlUnknownElement;
  * @param document - owner document
  */
 function create_documentFragment(document) {
-    return DocumentFragmentImpl_1.DocumentFragmentImpl._create(document);
+	return DocumentFragmentImpl_1.DocumentFragmentImpl._create(document);
 }
 exports.create_documentFragment = create_documentFragment;
 /**
@@ -135,7 +154,7 @@ exports.create_documentFragment = create_documentFragment;
  * @param host - shadow root's host element node
  */
 function create_shadowRoot(document, host) {
-    return ShadowRootImpl_1.ShadowRootImpl._create(document, host);
+	return ShadowRootImpl_1.ShadowRootImpl._create(document, host);
 }
 exports.create_shadowRoot = create_shadowRoot;
 /**
@@ -145,7 +164,7 @@ exports.create_shadowRoot = create_shadowRoot;
  * @param localName - local name
  */
 function create_attr(document, localName) {
-    return AttrImpl_1.AttrImpl._create(document, localName);
+	return AttrImpl_1.AttrImpl._create(document, localName);
 }
 exports.create_attr = create_attr;
 /**
@@ -155,7 +174,7 @@ exports.create_attr = create_attr;
  * @param data - node contents
  */
 function create_text(document, data) {
-    return TextImpl_1.TextImpl._create(document, data);
+	return TextImpl_1.TextImpl._create(document, data);
 }
 exports.create_text = create_text;
 /**
@@ -165,7 +184,7 @@ exports.create_text = create_text;
  * @param data - node contents
  */
 function create_cdataSection(document, data) {
-    return CDATASectionImpl_1.CDATASectionImpl._create(document, data);
+	return CDATASectionImpl_1.CDATASectionImpl._create(document, data);
 }
 exports.create_cdataSection = create_cdataSection;
 /**
@@ -175,7 +194,7 @@ exports.create_cdataSection = create_cdataSection;
  * @param data - node contents
  */
 function create_comment(document, data) {
-    return CommentImpl_1.CommentImpl._create(document, data);
+	return CommentImpl_1.CommentImpl._create(document, data);
 }
 exports.create_comment = create_comment;
 /**
@@ -186,7 +205,11 @@ exports.create_comment = create_comment;
  * @param data - node contents
  */
 function create_processingInstruction(document, target, data) {
-    return ProcessingInstructionImpl_1.ProcessingInstructionImpl._create(document, target, data);
+	return ProcessingInstructionImpl_1.ProcessingInstructionImpl._create(
+		document,
+		target,
+		data,
+	);
 }
 exports.create_processingInstruction = create_processingInstruction;
 /**
@@ -196,8 +219,10 @@ exports.create_processingInstruction = create_processingInstruction;
  * @param filter - node filter
  */
 function create_htmlCollection(root, filter) {
-    if (filter === void 0) { filter = (function () { return true; }); }
-    return HTMLCollectionImpl_1.HTMLCollectionImpl._create(root, filter);
+	if (filter === void 0) {
+		filter = () => true;
+	}
+	return HTMLCollectionImpl_1.HTMLCollectionImpl._create(root, filter);
 }
 exports.create_htmlCollection = create_htmlCollection;
 /**
@@ -206,7 +231,7 @@ exports.create_htmlCollection = create_htmlCollection;
  * @param root - root node
  */
 function create_nodeList(root) {
-    return NodeListImpl_1.NodeListImpl._create(root);
+	return NodeListImpl_1.NodeListImpl._create(root);
 }
 exports.create_nodeList = create_nodeList;
 /**
@@ -216,7 +241,7 @@ exports.create_nodeList = create_nodeList;
  * @param items - a list of items to initialize the list
  */
 function create_nodeListStatic(root, items) {
-    return NodeListStaticImpl_1.NodeListStaticImpl._create(root, items);
+	return NodeListStaticImpl_1.NodeListStaticImpl._create(root, items);
 }
 exports.create_nodeListStatic = create_nodeListStatic;
 /**
@@ -225,7 +250,7 @@ exports.create_nodeListStatic = create_nodeListStatic;
  * @param element - parent element
  */
 function create_namedNodeMap(element) {
-    return NamedNodeMapImpl_1.NamedNodeMapImpl._create(element);
+	return NamedNodeMapImpl_1.NamedNodeMapImpl._create(element);
 }
 exports.create_namedNodeMap = create_namedNodeMap;
 /**
@@ -235,7 +260,7 @@ exports.create_namedNodeMap = create_namedNodeMap;
  * @param end - end point
  */
 function create_range(start, end) {
-    return RangeImpl_1.RangeImpl._create(start, end);
+	return RangeImpl_1.RangeImpl._create(start, end);
 }
 exports.create_range = create_range;
 /**
@@ -247,7 +272,11 @@ exports.create_range = create_range;
  * reference node
  */
 function create_nodeIterator(root, reference, pointerBeforeReference) {
-    return NodeIteratorImpl_1.NodeIteratorImpl._create(root, reference, pointerBeforeReference);
+	return NodeIteratorImpl_1.NodeIteratorImpl._create(
+		root,
+		reference,
+		pointerBeforeReference,
+	);
 }
 exports.create_nodeIterator = create_nodeIterator;
 /**
@@ -257,14 +286,14 @@ exports.create_nodeIterator = create_nodeIterator;
  * @param current - current node
  */
 function create_treeWalker(root, current) {
-    return TreeWalkerImpl_1.TreeWalkerImpl._create(root, current);
+	return TreeWalkerImpl_1.TreeWalkerImpl._create(root, current);
 }
 exports.create_treeWalker = create_treeWalker;
 /**
  * Creates a new `NodeFilter`.
  */
 function create_nodeFilter() {
-    return NodeFilterImpl_1.NodeFilterImpl._create();
+	return NodeFilterImpl_1.NodeFilterImpl._create();
 }
 exports.create_nodeFilter = create_nodeFilter;
 /**
@@ -286,8 +315,28 @@ exports.create_nodeFilter = create_nodeFilter;
  * mutation, node `data` for a mutation to a CharacterData node and `null`
  * for a mutation to the tree of nodes.
  */
-function create_mutationRecord(type, target, addedNodes, removedNodes, previousSibling, nextSibling, attributeName, attributeNamespace, oldValue) {
-    return MutationRecordImpl_1.MutationRecordImpl._create(type, target, addedNodes, removedNodes, previousSibling, nextSibling, attributeName, attributeNamespace, oldValue);
+function create_mutationRecord(
+	type,
+	target,
+	addedNodes,
+	removedNodes,
+	previousSibling,
+	nextSibling,
+	attributeName,
+	attributeNamespace,
+	oldValue,
+) {
+	return MutationRecordImpl_1.MutationRecordImpl._create(
+		type,
+		target,
+		addedNodes,
+		removedNodes,
+		previousSibling,
+		nextSibling,
+		attributeName,
+		attributeNamespace,
+		oldValue,
+	);
 }
 exports.create_mutationRecord = create_mutationRecord;
 /**
@@ -297,7 +346,7 @@ exports.create_mutationRecord = create_mutationRecord;
  * @param attribute - associated attribute
  */
 function create_domTokenList(element, attribute) {
-    return DOMTokenListImpl_1.DOMTokenListImpl._create(element, attribute);
+	return DOMTokenListImpl_1.DOMTokenListImpl._create(element, attribute);
 }
 exports.create_domTokenList = create_domTokenList;
 //# sourceMappingURL=CreateAlgorithm.js.map

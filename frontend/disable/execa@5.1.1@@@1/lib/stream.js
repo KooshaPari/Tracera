@@ -1,7 +1,6 @@
-'use strict';
-const isStream = require('is-stream');
-const getStream = require('get-stream');
-const mergeStream = require('merge-stream');
+const isStream = require("is-stream");
+const getStream = require("get-stream");
+const mergeStream = require("merge-stream");
 
 // `input` option
 const handleInput = (spawned, input) => {
@@ -19,7 +18,7 @@ const handleInput = (spawned, input) => {
 };
 
 // `all` interleaves `stdout` and `stderr`
-const makeAllStream = (spawned, {all}) => {
+const makeAllStream = (spawned, { all }) => {
 	if (!all || (!spawned.stdout && !spawned.stderr)) {
 		return;
 	}
@@ -52,39 +51,60 @@ const getBufferedData = async (stream, streamPromise) => {
 	}
 };
 
-const getStreamPromise = (stream, {encoding, buffer, maxBuffer}) => {
+const getStreamPromise = (stream, { encoding, buffer, maxBuffer }) => {
 	if (!stream || !buffer) {
 		return;
 	}
 
 	if (encoding) {
-		return getStream(stream, {encoding, maxBuffer});
+		return getStream(stream, { encoding, maxBuffer });
 	}
 
-	return getStream.buffer(stream, {maxBuffer});
+	return getStream.buffer(stream, { maxBuffer });
 };
 
 // Retrieve result of child process: exit code, signal, error, streams (stdout/stderr/all)
-const getSpawnedResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) => {
-	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
-	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
-	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
+const getSpawnedResult = async (
+	{ stdout, stderr, all },
+	{ encoding, buffer, maxBuffer },
+	processDone,
+) => {
+	const stdoutPromise = getStreamPromise(stdout, {
+		encoding,
+		buffer,
+		maxBuffer,
+	});
+	const stderrPromise = getStreamPromise(stderr, {
+		encoding,
+		buffer,
+		maxBuffer,
+	});
+	const allPromise = getStreamPromise(all, {
+		encoding,
+		buffer,
+		maxBuffer: maxBuffer * 2,
+	});
 
 	try {
-		return await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
+		return await Promise.all([
+			processDone,
+			stdoutPromise,
+			stderrPromise,
+			allPromise,
+		]);
 	} catch (error) {
 		return Promise.all([
-			{error, signal: error.signal, timedOut: error.timedOut},
+			{ error, signal: error.signal, timedOut: error.timedOut },
 			getBufferedData(stdout, stdoutPromise),
 			getBufferedData(stderr, stderrPromise),
-			getBufferedData(all, allPromise)
+			getBufferedData(all, allPromise),
 		]);
 	}
 };
 
-const validateInputSync = ({input}) => {
+const validateInputSync = ({ input }) => {
 	if (isStream(input)) {
-		throw new TypeError('The `input` option cannot be a stream in sync mode');
+		throw new TypeError("The `input` option cannot be a stream in sync mode");
 	}
 };
 
@@ -92,6 +112,5 @@ module.exports = {
 	handleInput,
 	makeAllStream,
 	getSpawnedResult,
-	validateInputSync
+	validateInputSync,
 };
-

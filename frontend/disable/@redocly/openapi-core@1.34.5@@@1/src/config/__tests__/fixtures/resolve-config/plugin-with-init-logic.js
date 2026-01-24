@@ -1,9 +1,9 @@
-var util = require('util');
+var util = require("util");
 
 module.exports = function pluginWithInitLogic() {
-  util.deprecate(() => null);
+	util.deprecate(() => null);
 
-  return {
-    id: 'test-plugin',
-  };
+	return {
+		id: "test-plugin",
+	};
 };

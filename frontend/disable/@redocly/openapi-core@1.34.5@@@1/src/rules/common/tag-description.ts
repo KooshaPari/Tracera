@@ -1,11 +1,10 @@
-import { validateDefinedAndNonEmpty } from '../utils';
-
-import type { Oas3Rule, Oas2Rule } from '../../visitors';
+import type { Oas2Rule, Oas3Rule } from "../../visitors";
+import { validateDefinedAndNonEmpty } from "../utils";
 
 export const TagDescription: Oas3Rule | Oas2Rule = () => {
-  return {
-    Tag(tag, ctx) {
-      validateDefinedAndNonEmpty('description', tag, ctx);
-    },
-  };
+	return {
+		Tag(tag, ctx) {
+			validateDefinedAndNonEmpty("description", tag, ctx);
+		},
+	};
 };

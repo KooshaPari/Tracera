@@ -1,7 +1,7 @@
 declare global {
-    interface Object {
-        should: Chai.Assertion;
-    }
+	interface Object {
+		should: Chai.Assertion;
+	}
 }
 
 export {};

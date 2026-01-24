@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = compose;
 
-var _seq = require('./seq.js');
+var _seq = require("./seq.js");
 
 var _seq2 = _interopRequireDefault(_seq);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Creates a function which is a composition of the passed asynchronous
@@ -50,6 +50,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function compose(...args) {
-    return (0, _seq2.default)(...args.reverse());
+	return (0, _seq2.default)(...args.reverse());
 }
 module.exports = exports.default;

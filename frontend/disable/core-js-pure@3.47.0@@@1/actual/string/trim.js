@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/string/trim');
+"use strict";
+var parent = require("../../stable/string/trim");
 
 module.exports = parent;

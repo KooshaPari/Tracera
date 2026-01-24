@@ -1,76 +1,81 @@
-'use strict';
-
-const Assert = require('./assert');
-
+const Assert = require("./assert");
 
 const internals = {};
 
+module.exports = (obj, chain, options) => {
+	if (chain === false || chain === null || chain === undefined) {
+		return obj;
+	}
 
-module.exports = function (obj, chain, options) {
+	options = options || {};
+	if (typeof options === "string") {
+		options = { separator: options };
+	}
 
-    if (chain === false ||
-        chain === null ||
-        chain === undefined) {
+	const isChainArray = Array.isArray(chain);
 
-        return obj;
-    }
+	Assert(
+		!isChainArray || !options.separator,
+		"Separator option is not valid for array-based chain",
+	);
 
-    options = options || {};
-    if (typeof options === 'string') {
-        options = { separator: options };
-    }
+	const path = isChainArray ? chain : chain.split(options.separator || ".");
+	let ref = obj;
+	for (let i = 0; i < path.length; ++i) {
+		let key = path[i];
+		const type = options.iterables && internals.iterables(ref);
 
-    const isChainArray = Array.isArray(chain);
+		if (Array.isArray(ref) || type === "set") {
+			const number = Number(key);
+			if (Number.isInteger(number)) {
+				key = number < 0 ? ref.length + number : number;
+			}
+		}
 
-    Assert(!isChainArray || !options.separator, 'Separator option is not valid for array-based chain');
+		if (
+			!ref ||
+			(typeof ref === "function" && options.functions === false) || // Defaults to true
+			(!type && ref[key] === undefined)
+		) {
+			Assert(
+				!options.strict || i + 1 === path.length,
+				"Missing segment",
+				key,
+				"in reach path ",
+				chain,
+			);
+			Assert(
+				typeof ref === "object" ||
+					options.functions === true ||
+					typeof ref !== "function",
+				"Invalid segment",
+				key,
+				"in reach path ",
+				chain,
+			);
+			ref = options.default;
+			break;
+		}
 
-    const path = isChainArray ? chain : chain.split(options.separator || '.');
-    let ref = obj;
-    for (let i = 0; i < path.length; ++i) {
-        let key = path[i];
-        const type = options.iterables && internals.iterables(ref);
+		if (!type) {
+			ref = ref[key];
+		} else if (type === "set") {
+			ref = [...ref][key];
+		} else {
+			// type === 'map'
+			ref = ref.get(key);
+		}
+	}
 
-        if (Array.isArray(ref) ||
-            type === 'set') {
-
-            const number = Number(key);
-            if (Number.isInteger(number)) {
-                key = number < 0 ? ref.length + number : number;
-            }
-        }
-
-        if (!ref ||
-            typeof ref === 'function' && options.functions === false ||         // Defaults to true
-            !type && ref[key] === undefined) {
-
-            Assert(!options.strict || i + 1 === path.length, 'Missing segment', key, 'in reach path ', chain);
-            Assert(typeof ref === 'object' || options.functions === true || typeof ref !== 'function', 'Invalid segment', key, 'in reach path ', chain);
-            ref = options.default;
-            break;
-        }
-
-        if (!type) {
-            ref = ref[key];
-        }
-        else if (type === 'set') {
-            ref = [...ref][key];
-        }
-        else {  // type === 'map'
-            ref = ref.get(key);
-        }
-    }
-
-    return ref;
+	return ref;
 };
 
+internals.iterables = (ref) => {
+	if (ref instanceof Set) {
+		return "set";
+	}
 
-internals.iterables = function (ref) {
-
-    if (ref instanceof Set) {
-        return 'set';
-    }
-
-    if (ref instanceof Map) {
-        return 'map';
-    }
+	if (ref instanceof Map) {
+		return "map";
+	}
 };

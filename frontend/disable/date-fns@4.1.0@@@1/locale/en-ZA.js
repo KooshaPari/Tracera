@@ -13,16 +13,16 @@ import { formatLong } from "./en-ZA/_lib/formatLong.js";
  * @author Shaila Kavrakova [@shaykav](https://github.com/shaykav)
  */
 export const enZA = {
-  code: "en-ZA",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0, // Sunday is the first day of the week.
-    firstWeekContainsDate: 1, // The week that contains Jan 1st is the first week of the year.
-  },
+	code: "en-ZA",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0, // Sunday is the first day of the week.
+		firstWeekContainsDate: 1, // The week that contains Jan 1st is the first week of the year.
+	},
 };
 
 // Fallback for modularized imports:

@@ -19,7 +19,7 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isPast(date) {
-  return +toDate(date) < Date.now();
+	return +toDate(date) < Date.now();
 }
 
 // Fallback for modularized imports:

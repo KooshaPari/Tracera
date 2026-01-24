@@ -14,14 +14,14 @@ var _index5 = require("./sr-Latn/_lib/match.cjs");
  * @author Igor Radivojević [@rogyvoje](https://github.com/rogyvoje)
  */
 const srLatn = (exports.srLatn = {
-  code: "sr-Latn",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "sr-Latn",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 });

@@ -25,6 +25,6 @@ var _index = require("./constants.cjs");
  * //=> 1
  */
 function millisecondsToMinutes(milliseconds) {
-  const minutes = milliseconds / _index.millisecondsInMinute;
-  return Math.trunc(minutes);
+	const minutes = milliseconds / _index.millisecondsInMinute;
+	return Math.trunc(minutes);
 }

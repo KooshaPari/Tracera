@@ -1,1 +1,1 @@
-export * from '../../../dist/adapters/node-http/_export';
+export * from "../../../dist/adapters/node-http/_export";

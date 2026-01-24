@@ -1,5 +1,5 @@
 try {
-  module.exports = require('react-native-b4a')
+	module.exports = require("react-native-b4a");
 } catch {
-  module.exports = require('./browser')
+	module.exports = require("./browser");
 }

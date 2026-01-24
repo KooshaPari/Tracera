@@ -1,1 +1,1 @@
-module.exports = require('../../dist/adapters/zodFileSchema');
+module.exports = require("../../dist/adapters/zodFileSchema");

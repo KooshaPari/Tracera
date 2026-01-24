@@ -1,11 +1,11 @@
-import type { Maybe } from './jsutils/Maybe';
-import type { Source } from './language/source';
+import type { Maybe } from "./jsutils/Maybe";
+import type { Source } from "./language/source";
 import type {
-  GraphQLFieldResolver,
-  GraphQLTypeResolver,
-} from './type/definition';
-import type { GraphQLSchema } from './type/schema';
-import type { ExecutionResult } from './execution/execute';
+	GraphQLFieldResolver,
+	GraphQLTypeResolver,
+} from "./type/definition";
+import type { GraphQLSchema } from "./type/schema";
+import type { ExecutionResult } from "./execution/execute";
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a
@@ -46,16 +46,16 @@ import type { ExecutionResult } from './execution/execute';
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export interface GraphQLArgs {
-  schema: GraphQLSchema;
-  source: string | Source;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+	schema: GraphQLSchema;
+	source: string | Source;
+	rootValue?: unknown;
+	contextValue?: unknown;
+	variableValues?: Maybe<{
+		readonly [variable: string]: unknown;
+	}>;
+	operationName?: Maybe<string>;
+	fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+	typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
 /**

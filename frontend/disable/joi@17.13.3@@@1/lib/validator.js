@@ -1,750 +1,830 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
+const Clone = require("@hapi/hoek/lib/clone");
+const Ignore = require("@hapi/hoek/lib/ignore");
+const Reach = require("@hapi/hoek/lib/reach");
 
-const Assert = require('@hapi/hoek/lib/assert');
-const Clone = require('@hapi/hoek/lib/clone');
-const Ignore = require('@hapi/hoek/lib/ignore');
-const Reach = require('@hapi/hoek/lib/reach');
-
-const Common = require('./common');
-const Errors = require('./errors');
-const State = require('./state');
-
+const Common = require("./common");
+const Errors = require("./errors");
+const State = require("./state");
 
 const internals = {
-    result: Symbol('result')
+	result: Symbol("result"),
 };
 
+exports.entry = (value, schema, prefs) => {
+	let settings = Common.defaults;
+	if (prefs) {
+		Assert(
+			prefs.warnings === undefined,
+			"Cannot override warnings preference in synchronous validation",
+		);
+		Assert(
+			prefs.artifacts === undefined,
+			"Cannot override artifacts preference in synchronous validation",
+		);
+		settings = Common.preferences(Common.defaults, prefs);
+	}
 
-exports.entry = function (value, schema, prefs) {
+	const result = internals.entry(value, schema, settings);
+	Assert(
+		!result.mainstay.externals.length,
+		"Schema with external rules must use validateAsync()",
+	);
+	const outcome = { value: result.value };
 
-    let settings = Common.defaults;
-    if (prefs) {
-        Assert(prefs.warnings === undefined, 'Cannot override warnings preference in synchronous validation');
-        Assert(prefs.artifacts === undefined, 'Cannot override artifacts preference in synchronous validation');
-        settings = Common.preferences(Common.defaults, prefs);
-    }
+	if (result.error) {
+		outcome.error = result.error;
+	}
 
-    const result = internals.entry(value, schema, settings);
-    Assert(!result.mainstay.externals.length, 'Schema with external rules must use validateAsync()');
-    const outcome = { value: result.value };
+	if (result.mainstay.warnings.length) {
+		outcome.warning = Errors.details(result.mainstay.warnings);
+	}
 
-    if (result.error) {
-        outcome.error = result.error;
-    }
+	if (result.mainstay.debug) {
+		outcome.debug = result.mainstay.debug;
+	}
 
-    if (result.mainstay.warnings.length) {
-        outcome.warning = Errors.details(result.mainstay.warnings);
-    }
+	if (result.mainstay.artifacts) {
+		outcome.artifacts = result.mainstay.artifacts;
+	}
 
-    if (result.mainstay.debug) {
-        outcome.debug = result.mainstay.debug;
-    }
-
-    if (result.mainstay.artifacts) {
-        outcome.artifacts = result.mainstay.artifacts;
-    }
-
-    return outcome;
+	return outcome;
 };
 
+exports.entryAsync = async (value, schema, prefs) => {
+	let settings = Common.defaults;
+	if (prefs) {
+		settings = Common.preferences(Common.defaults, prefs);
+	}
 
-exports.entryAsync = async function (value, schema, prefs) {
+	const result = internals.entry(value, schema, settings);
+	const mainstay = result.mainstay;
+	if (result.error) {
+		if (mainstay.debug) {
+			result.error.debug = mainstay.debug;
+		}
 
-    let settings = Common.defaults;
-    if (prefs) {
-        settings = Common.preferences(Common.defaults, prefs);
-    }
+		throw result.error;
+	}
 
-    const result = internals.entry(value, schema, settings);
-    const mainstay = result.mainstay;
-    if (result.error) {
-        if (mainstay.debug) {
-            result.error.debug = mainstay.debug;
-        }
+	if (mainstay.externals.length) {
+		let root = result.value;
+		const errors = [];
+		for (const external of mainstay.externals) {
+			const path = external.state.path;
+			const linked =
+				external.schema.type === "link"
+					? mainstay.links.get(external.schema)
+					: null;
+			let node = root;
+			let key;
+			let parent;
 
-        throw result.error;
-    }
+			const ancestors = path.length ? [root] : [];
+			const original = path.length ? Reach(value, path) : value;
 
-    if (mainstay.externals.length) {
-        let root = result.value;
-        const errors = [];
-        for (const external of mainstay.externals) {
-            const path = external.state.path;
-            const linked = external.schema.type === 'link' ? mainstay.links.get(external.schema) : null;
-            let node = root;
-            let key;
-            let parent;
+			if (path.length) {
+				key = path[path.length - 1];
 
-            const ancestors = path.length ? [root] : [];
-            const original = path.length ? Reach(value, path) : value;
+				let current = root;
+				for (const segment of path.slice(0, -1)) {
+					current = current[segment];
+					ancestors.unshift(current);
+				}
 
-            if (path.length) {
-                key = path[path.length - 1];
+				parent = ancestors[0];
+				node = parent[key];
+			}
 
-                let current = root;
-                for (const segment of path.slice(0, -1)) {
-                    current = current[segment];
-                    ancestors.unshift(current);
-                }
+			try {
+				const createError = (code, local) =>
+					(linked || external.schema).$_createError(
+						code,
+						node,
+						local,
+						external.state,
+						settings,
+					);
+				const output = await external.method(node, {
+					schema: external.schema,
+					linked,
+					state: external.state,
+					prefs,
+					original,
+					error: createError,
+					errorsArray: internals.errorsArray,
+					warn: (code, local) =>
+						mainstay.warnings.push(
+							(linked || external.schema).$_createError(
+								code,
+								node,
+								local,
+								external.state,
+								settings,
+							),
+						),
+					message: (messages, local) =>
+						(linked || external.schema).$_createError(
+							"external",
+							node,
+							local,
+							external.state,
+							settings,
+							{ messages },
+						),
+				});
 
-                parent = ancestors[0];
-                node = parent[key];
-            }
+				if (output === undefined || output === node) {
+					continue;
+				}
 
-            try {
-                const createError = (code, local) => (linked || external.schema).$_createError(code, node, local, external.state, settings);
-                const output = await external.method(node, {
-                    schema: external.schema,
-                    linked,
-                    state: external.state,
-                    prefs,
-                    original,
-                    error: createError,
-                    errorsArray: internals.errorsArray,
-                    warn: (code, local) => mainstay.warnings.push((linked || external.schema).$_createError(code, node, local, external.state, settings)),
-                    message: (messages, local) => (linked || external.schema).$_createError('external', node, local, external.state, settings, { messages })
-                });
+				if (output instanceof Errors.Report) {
+					mainstay.tracer.log(
+						external.schema,
+						external.state,
+						"rule",
+						"external",
+						"error",
+					);
+					errors.push(output);
 
-                if (output === undefined ||
-                    output === node) {
+					if (settings.abortEarly) {
+						break;
+					}
 
-                    continue;
-                }
+					continue;
+				}
 
-                if (output instanceof Errors.Report) {
-                    mainstay.tracer.log(external.schema, external.state, 'rule', 'external', 'error');
-                    errors.push(output);
+				if (Array.isArray(output) && output[Common.symbols.errors]) {
+					mainstay.tracer.log(
+						external.schema,
+						external.state,
+						"rule",
+						"external",
+						"error",
+					);
+					errors.push(...output);
 
-                    if (settings.abortEarly) {
-                        break;
-                    }
+					if (settings.abortEarly) {
+						break;
+					}
 
-                    continue;
-                }
+					continue;
+				}
 
-                if (Array.isArray(output) &&
-                    output[Common.symbols.errors]) {
-                    mainstay.tracer.log(external.schema, external.state, 'rule', 'external', 'error');
-                    errors.push(...output);
+				if (parent) {
+					mainstay.tracer.value(
+						external.state,
+						"rule",
+						node,
+						output,
+						"external",
+					);
+					parent[key] = output;
+				} else {
+					mainstay.tracer.value(
+						external.state,
+						"rule",
+						root,
+						output,
+						"external",
+					);
+					root = output;
+				}
+			} catch (err) {
+				if (settings.errors.label) {
+					err.message += ` (${external.label})`; // Change message to include path
+				}
 
-                    if (settings.abortEarly) {
-                        break;
-                    }
+				throw err;
+			}
+		}
 
-                    continue;
-                }
+		result.value = root;
 
-                if (parent) {
-                    mainstay.tracer.value(external.state, 'rule', node, output, 'external');
-                    parent[key] = output;
-                }
-                else {
-                    mainstay.tracer.value(external.state, 'rule', root, output, 'external');
-                    root = output;
-                }
-            }
-            catch (err) {
-                if (settings.errors.label) {
-                    err.message += ` (${(external.label)})`;       // Change message to include path
-                }
+		if (errors.length) {
+			result.error = Errors.process(errors, value, settings);
 
-                throw err;
-            }
-        }
+			if (mainstay.debug) {
+				result.error.debug = mainstay.debug;
+			}
 
-        result.value = root;
+			throw result.error;
+		}
+	}
 
-        if (errors.length) {
-            result.error = Errors.process(errors, value, settings);
+	if (!settings.warnings && !settings.debug && !settings.artifacts) {
+		return result.value;
+	}
 
-            if (mainstay.debug) {
-                result.error.debug = mainstay.debug;
-            }
+	const outcome = { value: result.value };
+	if (mainstay.warnings.length) {
+		outcome.warning = Errors.details(mainstay.warnings);
+	}
 
-            throw result.error;
-        }
-    }
+	if (mainstay.debug) {
+		outcome.debug = mainstay.debug;
+	}
 
-    if (!settings.warnings &&
-        !settings.debug &&
-        !settings.artifacts) {
+	if (mainstay.artifacts) {
+		outcome.artifacts = mainstay.artifacts;
+	}
 
-        return result.value;
-    }
-
-    const outcome = { value: result.value };
-    if (mainstay.warnings.length) {
-        outcome.warning = Errors.details(mainstay.warnings);
-    }
-
-    if (mainstay.debug) {
-        outcome.debug = mainstay.debug;
-    }
-
-    if (mainstay.artifacts) {
-        outcome.artifacts = mainstay.artifacts;
-    }
-
-    return outcome;
+	return outcome;
 };
-
 
 internals.Mainstay = class {
+	constructor(tracer, debug, links) {
+		this.externals = [];
+		this.warnings = [];
+		this.tracer = tracer;
+		this.debug = debug;
+		this.links = links;
+		this.shadow = null;
+		this.artifacts = null;
 
-    constructor(tracer, debug, links) {
+		this._snapshots = [];
+	}
 
-        this.externals = [];
-        this.warnings = [];
-        this.tracer = tracer;
-        this.debug = debug;
-        this.links = links;
-        this.shadow = null;
-        this.artifacts = null;
+	snapshot() {
+		this._snapshots.push({
+			externals: this.externals.slice(),
+			warnings: this.warnings.slice(),
+		});
+	}
 
-        this._snapshots = [];
-    }
+	restore() {
+		const snapshot = this._snapshots.pop();
+		this.externals = snapshot.externals;
+		this.warnings = snapshot.warnings;
+	}
 
-    snapshot() {
-
-        this._snapshots.push({
-            externals: this.externals.slice(),
-            warnings: this.warnings.slice()
-        });
-    }
-
-    restore() {
-
-        const snapshot = this._snapshots.pop();
-        this.externals = snapshot.externals;
-        this.warnings = snapshot.warnings;
-    }
-
-    commit() {
-
-        this._snapshots.pop();
-    }
+	commit() {
+		this._snapshots.pop();
+	}
 };
 
+internals.entry = (value, schema, prefs) => {
+	// Prepare state
 
-internals.entry = function (value, schema, prefs) {
+	const { tracer, cleanup } = internals.tracer(schema, prefs);
+	const debug = prefs.debug ? [] : null;
+	const links = schema._ids._schemaChain ? new Map() : null;
+	const mainstay = new internals.Mainstay(tracer, debug, links);
+	const schemas = schema._ids._schemaChain ? [{ schema }] : null;
+	const state = new State([], [], { mainstay, schemas });
 
-    // Prepare state
+	// Validate value
 
-    const { tracer, cleanup } = internals.tracer(schema, prefs);
-    const debug = prefs.debug ? [] : null;
-    const links = schema._ids._schemaChain ? new Map() : null;
-    const mainstay = new internals.Mainstay(tracer, debug, links);
-    const schemas = schema._ids._schemaChain ? [{ schema }] : null;
-    const state = new State([], [], { mainstay, schemas });
+	const result = exports.validate(value, schema, state, prefs);
 
-    // Validate value
+	// Process value and errors
 
-    const result = exports.validate(value, schema, state, prefs);
+	if (cleanup) {
+		schema.$_root.untrace();
+	}
 
-    // Process value and errors
-
-    if (cleanup) {
-        schema.$_root.untrace();
-    }
-
-    const error = Errors.process(result.errors, value, prefs);
-    return { value: result.value, error, mainstay };
+	const error = Errors.process(result.errors, value, prefs);
+	return { value: result.value, error, mainstay };
 };
 
+internals.tracer = (schema, prefs) => {
+	if (schema.$_root._tracer) {
+		return { tracer: schema.$_root._tracer._register(schema) };
+	}
 
-internals.tracer = function (schema, prefs) {
+	if (prefs.debug) {
+		Assert(schema.$_root.trace, "Debug mode not supported");
+		return { tracer: schema.$_root.trace()._register(schema), cleanup: true };
+	}
 
-    if (schema.$_root._tracer) {
-        return { tracer: schema.$_root._tracer._register(schema) };
-    }
-
-    if (prefs.debug) {
-        Assert(schema.$_root.trace, 'Debug mode not supported');
-        return { tracer: schema.$_root.trace()._register(schema), cleanup: true };
-    }
-
-    return { tracer: internals.ignore };
+	return { tracer: internals.ignore };
 };
 
+exports.validate = (value, schema, state, prefs, overrides = {}) => {
+	if (schema.$_terms.whens) {
+		schema = schema._generate(value, state, prefs).schema;
+	}
 
-exports.validate = function (value, schema, state, prefs, overrides = {}) {
+	// Setup state and settings
 
-    if (schema.$_terms.whens) {
-        schema = schema._generate(value, state, prefs).schema;
-    }
+	if (schema._preferences) {
+		prefs = internals.prefs(schema, prefs);
+	}
 
-    // Setup state and settings
+	// Cache
 
-    if (schema._preferences) {
-        prefs = internals.prefs(schema, prefs);
-    }
+	if (schema._cache && prefs.cache) {
+		const result = schema._cache.get(value);
+		state.mainstay.tracer.debug(state, "validate", "cached", !!result);
+		if (result) {
+			return result;
+		}
+	}
 
-    // Cache
+	// Helpers
 
-    if (schema._cache &&
-        prefs.cache) {
+	const createError = (code, local, localState) =>
+		schema.$_createError(code, value, local, localState || state, prefs);
+	const helpers = {
+		original: value,
+		prefs,
+		schema,
+		state,
+		error: createError,
+		errorsArray: internals.errorsArray,
+		warn: (code, local, localState) =>
+			state.mainstay.warnings.push(createError(code, local, localState)),
+		message: (messages, local) =>
+			schema.$_createError("custom", value, local, state, prefs, { messages }),
+	};
 
-        const result = schema._cache.get(value);
-        state.mainstay.tracer.debug(state, 'validate', 'cached', !!result);
-        if (result) {
-            return result;
-        }
-    }
+	// Prepare
 
-    // Helpers
+	state.mainstay.tracer.entry(schema, state);
 
-    const createError = (code, local, localState) => schema.$_createError(code, value, local, localState || state, prefs);
-    const helpers = {
-        original: value,
-        prefs,
-        schema,
-        state,
-        error: createError,
-        errorsArray: internals.errorsArray,
-        warn: (code, local, localState) => state.mainstay.warnings.push(createError(code, local, localState)),
-        message: (messages, local) => schema.$_createError('custom', value, local, state, prefs, { messages })
-    };
+	const def = schema._definition;
+	if (def.prepare && value !== undefined && prefs.convert) {
+		const prepared = def.prepare(value, helpers);
+		if (prepared) {
+			state.mainstay.tracer.value(state, "prepare", value, prepared.value);
+			if (prepared.errors) {
+				return internals.finalize(
+					prepared.value,
+					[].concat(prepared.errors),
+					helpers,
+				); // Prepare error always aborts early
+			}
 
-    // Prepare
+			value = prepared.value;
+		}
+	}
 
-    state.mainstay.tracer.entry(schema, state);
+	// Type coercion
 
-    const def = schema._definition;
-    if (def.prepare &&
-        value !== undefined &&
-        prefs.convert) {
+	if (
+		def.coerce &&
+		value !== undefined &&
+		prefs.convert &&
+		(!def.coerce.from || def.coerce.from.includes(typeof value))
+	) {
+		const coerced = def.coerce.method(value, helpers);
+		if (coerced) {
+			state.mainstay.tracer.value(state, "coerced", value, coerced.value);
+			if (coerced.errors) {
+				return internals.finalize(
+					coerced.value,
+					[].concat(coerced.errors),
+					helpers,
+				); // Coerce error always aborts early
+			}
 
-        const prepared = def.prepare(value, helpers);
-        if (prepared) {
-            state.mainstay.tracer.value(state, 'prepare', value, prepared.value);
-            if (prepared.errors) {
-                return internals.finalize(prepared.value, [].concat(prepared.errors), helpers);         // Prepare error always aborts early
-            }
+			value = coerced.value;
+		}
+	}
 
-            value = prepared.value;
-        }
-    }
+	// Empty value
 
-    // Type coercion
+	const empty = schema._flags.empty;
+	if (
+		empty &&
+		empty.$_match(
+			internals.trim(value, schema),
+			state.nest(empty),
+			Common.defaults,
+		)
+	) {
+		state.mainstay.tracer.value(state, "empty", value, undefined);
+		value = undefined;
+	}
 
-    if (def.coerce &&
-        value !== undefined &&
-        prefs.convert &&
-        (!def.coerce.from || def.coerce.from.includes(typeof value))) {
+	// Presence requirements (required, optional, forbidden)
 
-        const coerced = def.coerce.method(value, helpers);
-        if (coerced) {
-            state.mainstay.tracer.value(state, 'coerced', value, coerced.value);
-            if (coerced.errors) {
-                return internals.finalize(coerced.value, [].concat(coerced.errors), helpers);           // Coerce error always aborts early
-            }
+	const presence =
+		overrides.presence ||
+		schema._flags.presence ||
+		(schema._flags._endedSwitch ? null : prefs.presence);
+	if (value === undefined) {
+		if (presence === "forbidden") {
+			return internals.finalize(value, null, helpers);
+		}
 
-            value = coerced.value;
-        }
-    }
+		if (presence === "required") {
+			return internals.finalize(
+				value,
+				[schema.$_createError("any.required", value, null, state, prefs)],
+				helpers,
+			);
+		}
 
-    // Empty value
+		if (presence === "optional") {
+			if (schema._flags.default !== Common.symbols.deepDefault) {
+				return internals.finalize(value, null, helpers);
+			}
 
-    const empty = schema._flags.empty;
-    if (empty &&
-        empty.$_match(internals.trim(value, schema), state.nest(empty), Common.defaults)) {
+			state.mainstay.tracer.value(state, "default", value, {});
+			value = {};
+		}
+	} else if (presence === "forbidden") {
+		return internals.finalize(
+			value,
+			[schema.$_createError("any.unknown", value, null, state, prefs)],
+			helpers,
+		);
+	}
 
-        state.mainstay.tracer.value(state, 'empty', value, undefined);
-        value = undefined;
-    }
+	// Allowed values
 
-    // Presence requirements (required, optional, forbidden)
+	const errors = [];
 
-    const presence = overrides.presence || schema._flags.presence || (schema._flags._endedSwitch ? null : prefs.presence);
-    if (value === undefined) {
-        if (presence === 'forbidden') {
-            return internals.finalize(value, null, helpers);
-        }
+	if (schema._valids) {
+		const match = schema._valids.get(
+			value,
+			state,
+			prefs,
+			schema._flags.insensitive,
+		);
+		if (match) {
+			if (prefs.convert) {
+				state.mainstay.tracer.value(state, "valids", value, match.value);
+				value = match.value;
+			}
 
-        if (presence === 'required') {
-            return internals.finalize(value, [schema.$_createError('any.required', value, null, state, prefs)], helpers);
-        }
+			state.mainstay.tracer.filter(schema, state, "valid", match);
+			return internals.finalize(value, null, helpers);
+		}
 
-        if (presence === 'optional') {
-            if (schema._flags.default !== Common.symbols.deepDefault) {
-                return internals.finalize(value, null, helpers);
-            }
+		if (schema._flags.only) {
+			const report = schema.$_createError(
+				"any.only",
+				value,
+				{ valids: schema._valids.values({ display: true }) },
+				state,
+				prefs,
+			);
+			if (prefs.abortEarly) {
+				return internals.finalize(value, [report], helpers);
+			}
 
-            state.mainstay.tracer.value(state, 'default', value, {});
-            value = {};
-        }
-    }
-    else if (presence === 'forbidden') {
-        return internals.finalize(value, [schema.$_createError('any.unknown', value, null, state, prefs)], helpers);
-    }
+			errors.push(report);
+		}
+	}
 
-    // Allowed values
+	// Denied values
 
-    const errors = [];
+	if (schema._invalids) {
+		const match = schema._invalids.get(
+			value,
+			state,
+			prefs,
+			schema._flags.insensitive,
+		);
+		if (match) {
+			state.mainstay.tracer.filter(schema, state, "invalid", match);
+			const report = schema.$_createError(
+				"any.invalid",
+				value,
+				{ invalids: schema._invalids.values({ display: true }) },
+				state,
+				prefs,
+			);
+			if (prefs.abortEarly) {
+				return internals.finalize(value, [report], helpers);
+			}
 
-    if (schema._valids) {
-        const match = schema._valids.get(value, state, prefs, schema._flags.insensitive);
-        if (match) {
-            if (prefs.convert) {
-                state.mainstay.tracer.value(state, 'valids', value, match.value);
-                value = match.value;
-            }
+			errors.push(report);
+		}
+	}
 
-            state.mainstay.tracer.filter(schema, state, 'valid', match);
-            return internals.finalize(value, null, helpers);
-        }
+	// Base type
 
-        if (schema._flags.only) {
-            const report = schema.$_createError('any.only', value, { valids: schema._valids.values({ display: true }) }, state, prefs);
-            if (prefs.abortEarly) {
-                return internals.finalize(value, [report], helpers);
-            }
+	if (def.validate) {
+		const base = def.validate(value, helpers);
+		if (base) {
+			state.mainstay.tracer.value(state, "base", value, base.value);
+			value = base.value;
 
-            errors.push(report);
-        }
-    }
+			if (base.errors) {
+				if (!Array.isArray(base.errors)) {
+					errors.push(base.errors);
+					return internals.finalize(value, errors, helpers); // Base error always aborts early
+				}
 
-    // Denied values
+				if (base.errors.length) {
+					errors.push(...base.errors);
+					return internals.finalize(value, errors, helpers); // Base error always aborts early
+				}
+			}
+		}
+	}
 
-    if (schema._invalids) {
-        const match = schema._invalids.get(value, state, prefs, schema._flags.insensitive);
-        if (match) {
-            state.mainstay.tracer.filter(schema, state, 'invalid', match);
-            const report = schema.$_createError('any.invalid', value, { invalids: schema._invalids.values({ display: true }) }, state, prefs);
-            if (prefs.abortEarly) {
-                return internals.finalize(value, [report], helpers);
-            }
+	// Validate tests
 
-            errors.push(report);
-        }
-    }
+	if (!schema._rules.length) {
+		return internals.finalize(value, errors, helpers);
+	}
 
-    // Base type
-
-    if (def.validate) {
-        const base = def.validate(value, helpers);
-        if (base) {
-            state.mainstay.tracer.value(state, 'base', value, base.value);
-            value = base.value;
-
-            if (base.errors) {
-                if (!Array.isArray(base.errors)) {
-                    errors.push(base.errors);
-                    return internals.finalize(value, errors, helpers);          // Base error always aborts early
-                }
-
-                if (base.errors.length) {
-                    errors.push(...base.errors);
-                    return internals.finalize(value, errors, helpers);          // Base error always aborts early
-                }
-            }
-        }
-    }
-
-    // Validate tests
-
-    if (!schema._rules.length) {
-        return internals.finalize(value, errors, helpers);
-    }
-
-    return internals.rules(value, errors, helpers);
+	return internals.rules(value, errors, helpers);
 };
 
+internals.rules = (value, errors, helpers) => {
+	const { schema, state, prefs } = helpers;
 
-internals.rules = function (value, errors, helpers) {
+	for (const rule of schema._rules) {
+		const definition = schema._definition.rules[rule.method];
 
-    const { schema, state, prefs } = helpers;
+		// Skip rules that are also applied in coerce step
 
-    for (const rule of schema._rules) {
-        const definition = schema._definition.rules[rule.method];
+		if (definition.convert && prefs.convert) {
+			state.mainstay.tracer.log(schema, state, "rule", rule.name, "full");
+			continue;
+		}
 
-        // Skip rules that are also applied in coerce step
+		// Resolve references
 
-        if (definition.convert &&
-            prefs.convert) {
+		let ret;
+		let args = rule.args;
+		if (rule._resolve.length) {
+			args = Object.assign({}, args); // Shallow copy
+			for (const key of rule._resolve) {
+				const resolver = definition.argsByName.get(key);
 
-            state.mainstay.tracer.log(schema, state, 'rule', rule.name, 'full');
-            continue;
-        }
+				const resolved = args[key].resolve(value, state, prefs);
+				const normalized = resolver.normalize
+					? resolver.normalize(resolved)
+					: resolved;
 
-        // Resolve references
+				const invalid = Common.validateArg(normalized, null, resolver);
+				if (invalid) {
+					ret = schema.$_createError(
+						"any.ref",
+						resolved,
+						{ arg: key, ref: args[key], reason: invalid },
+						state,
+						prefs,
+					);
+					break;
+				}
 
-        let ret;
-        let args = rule.args;
-        if (rule._resolve.length) {
-            args = Object.assign({}, args);                                     // Shallow copy
-            for (const key of rule._resolve) {
-                const resolver = definition.argsByName.get(key);
+				args[key] = normalized;
+			}
+		}
 
-                const resolved = args[key].resolve(value, state, prefs);
-                const normalized = resolver.normalize ? resolver.normalize(resolved) : resolved;
+		// Test rule
 
-                const invalid = Common.validateArg(normalized, null, resolver);
-                if (invalid) {
-                    ret = schema.$_createError('any.ref', resolved, { arg: key, ref: args[key], reason: invalid }, state, prefs);
-                    break;
-                }
+		ret = ret || definition.validate(value, helpers, args, rule); // Use ret if already set to reference error
 
-                args[key] = normalized;
-            }
-        }
+		const result = internals.rule(ret, rule);
+		if (result.errors) {
+			state.mainstay.tracer.log(schema, state, "rule", rule.name, "error");
 
-        // Test rule
+			if (rule.warn) {
+				state.mainstay.warnings.push(...result.errors);
+				continue;
+			}
 
-        ret = ret || definition.validate(value, helpers, args, rule);           // Use ret if already set to reference error
+			if (prefs.abortEarly) {
+				return internals.finalize(value, result.errors, helpers);
+			}
 
-        const result = internals.rule(ret, rule);
-        if (result.errors) {
-            state.mainstay.tracer.log(schema, state, 'rule', rule.name, 'error');
+			errors.push(...result.errors);
+		} else {
+			state.mainstay.tracer.log(schema, state, "rule", rule.name, "pass");
+			state.mainstay.tracer.value(
+				state,
+				"rule",
+				value,
+				result.value,
+				rule.name,
+			);
+			value = result.value;
+		}
+	}
 
-            if (rule.warn) {
-                state.mainstay.warnings.push(...result.errors);
-                continue;
-            }
-
-            if (prefs.abortEarly) {
-                return internals.finalize(value, result.errors, helpers);
-            }
-
-            errors.push(...result.errors);
-        }
-        else {
-            state.mainstay.tracer.log(schema, state, 'rule', rule.name, 'pass');
-            state.mainstay.tracer.value(state, 'rule', value, result.value, rule.name);
-            value = result.value;
-        }
-    }
-
-    return internals.finalize(value, errors, helpers);
+	return internals.finalize(value, errors, helpers);
 };
 
+internals.rule = (ret, rule) => {
+	if (ret instanceof Errors.Report) {
+		internals.error(ret, rule);
+		return { errors: [ret], value: null };
+	}
 
-internals.rule = function (ret, rule) {
+	if (Array.isArray(ret) && ret[Common.symbols.errors]) {
+		ret.forEach((report) => internals.error(report, rule));
+		return { errors: ret, value: null };
+	}
 
-    if (ret instanceof Errors.Report) {
-        internals.error(ret, rule);
-        return { errors: [ret], value: null };
-    }
-
-    if (Array.isArray(ret) &&
-        ret[Common.symbols.errors]) {
-
-        ret.forEach((report) => internals.error(report, rule));
-        return { errors: ret, value: null };
-    }
-
-    return { errors: null, value: ret };
+	return { errors: null, value: ret };
 };
 
+internals.error = (report, rule) => {
+	if (rule.message) {
+		report._setTemplate(rule.message);
+	}
 
-internals.error = function (report, rule) {
-
-    if (rule.message) {
-        report._setTemplate(rule.message);
-    }
-
-    return report;
+	return report;
 };
 
+internals.finalize = (value, errors, helpers) => {
+	errors = errors || [];
+	const { schema, state, prefs } = helpers;
 
-internals.finalize = function (value, errors, helpers) {
+	// Failover value
 
-    errors = errors || [];
-    const { schema, state, prefs } = helpers;
+	if (errors.length) {
+		const failover = internals.default("failover", undefined, errors, helpers);
+		if (failover !== undefined) {
+			state.mainstay.tracer.value(state, "failover", value, failover);
+			value = failover;
+			errors = [];
+		}
+	}
 
-    // Failover value
+	// Error override
 
-    if (errors.length) {
-        const failover = internals.default('failover', undefined, errors, helpers);
-        if (failover !== undefined) {
-            state.mainstay.tracer.value(state, 'failover', value, failover);
-            value = failover;
-            errors = [];
-        }
-    }
+	if (errors.length && schema._flags.error) {
+		if (typeof schema._flags.error === "function") {
+			errors = schema._flags.error(errors);
+			if (!Array.isArray(errors)) {
+				errors = [errors];
+			}
 
-    // Error override
+			for (const error of errors) {
+				Assert(
+					error instanceof Error || error instanceof Errors.Report,
+					"error() must return an Error object",
+				);
+			}
+		} else {
+			errors = [schema._flags.error];
+		}
+	}
 
-    if (errors.length &&
-        schema._flags.error) {
+	// Default
 
-        if (typeof schema._flags.error === 'function') {
-            errors = schema._flags.error(errors);
-            if (!Array.isArray(errors)) {
-                errors = [errors];
-            }
+	if (value === undefined) {
+		const defaulted = internals.default("default", value, errors, helpers);
+		state.mainstay.tracer.value(state, "default", value, defaulted);
+		value = defaulted;
+	}
 
-            for (const error of errors) {
-                Assert(error instanceof Error || error instanceof Errors.Report, 'error() must return an Error object');
-            }
-        }
-        else {
-            errors = [schema._flags.error];
-        }
-    }
+	// Cast
 
-    // Default
+	if (schema._flags.cast && value !== undefined) {
+		const caster = schema._definition.cast[schema._flags.cast];
+		if (caster.from(value)) {
+			const casted = caster.to(value, helpers);
+			state.mainstay.tracer.value(
+				state,
+				"cast",
+				value,
+				casted,
+				schema._flags.cast,
+			);
+			value = casted;
+		}
+	}
 
-    if (value === undefined) {
-        const defaulted = internals.default('default', value, errors, helpers);
-        state.mainstay.tracer.value(state, 'default', value, defaulted);
-        value = defaulted;
-    }
+	// Externals
 
-    // Cast
+	if (
+		schema.$_terms.externals &&
+		prefs.externals &&
+		prefs._externals !== false
+	) {
+		// Disabled for matching
 
-    if (schema._flags.cast &&
-        value !== undefined) {
+		for (const { method } of schema.$_terms.externals) {
+			state.mainstay.externals.push({
+				method,
+				schema,
+				state,
+				label: Errors.label(schema._flags, state, prefs),
+			});
+		}
+	}
 
-        const caster = schema._definition.cast[schema._flags.cast];
-        if (caster.from(value)) {
-            const casted = caster.to(value, helpers);
-            state.mainstay.tracer.value(state, 'cast', value, casted, schema._flags.cast);
-            value = casted;
-        }
-    }
+	// Result
 
-    // Externals
+	const result = { value, errors: errors.length ? errors : null };
 
-    if (schema.$_terms.externals &&
-        prefs.externals &&
-        prefs._externals !== false) {                       // Disabled for matching
+	if (schema._flags.result) {
+		result.value =
+			schema._flags.result === "strip" ? undefined : /* raw */ helpers.original;
+		state.mainstay.tracer.value(
+			state,
+			schema._flags.result,
+			value,
+			result.value,
+		);
+		state.shadow(value, schema._flags.result);
+	}
 
-        for (const { method } of schema.$_terms.externals) {
-            state.mainstay.externals.push({ method, schema, state, label: Errors.label(schema._flags, state, prefs) });
-        }
-    }
+	// Cache
 
-    // Result
+	if (schema._cache && prefs.cache !== false && !schema._refs.length) {
+		schema._cache.set(helpers.original, result);
+	}
 
-    const result = { value, errors: errors.length ? errors : null };
+	// Artifacts
 
-    if (schema._flags.result) {
-        result.value = schema._flags.result === 'strip' ? undefined : /* raw */ helpers.original;
-        state.mainstay.tracer.value(state, schema._flags.result, value, result.value);
-        state.shadow(value, schema._flags.result);
-    }
+	if (
+		value !== undefined &&
+		!result.errors &&
+		schema._flags.artifact !== undefined
+	) {
+		state.mainstay.artifacts = state.mainstay.artifacts || new Map();
+		if (!state.mainstay.artifacts.has(schema._flags.artifact)) {
+			state.mainstay.artifacts.set(schema._flags.artifact, []);
+		}
 
-    // Cache
+		state.mainstay.artifacts.get(schema._flags.artifact).push(state.path);
+	}
 
-    if (schema._cache &&
-        prefs.cache !== false &&
-        !schema._refs.length) {
-
-        schema._cache.set(helpers.original, result);
-    }
-
-    // Artifacts
-
-    if (value !== undefined &&
-        !result.errors &&
-        schema._flags.artifact !== undefined) {
-
-        state.mainstay.artifacts = state.mainstay.artifacts || new Map();
-        if (!state.mainstay.artifacts.has(schema._flags.artifact)) {
-            state.mainstay.artifacts.set(schema._flags.artifact, []);
-        }
-
-        state.mainstay.artifacts.get(schema._flags.artifact).push(state.path);
-    }
-
-    return result;
+	return result;
 };
 
+internals.prefs = (schema, prefs) => {
+	const isDefaultOptions = prefs === Common.defaults;
+	if (isDefaultOptions && schema._preferences[Common.symbols.prefs]) {
+		return schema._preferences[Common.symbols.prefs];
+	}
 
-internals.prefs = function (schema, prefs) {
+	prefs = Common.preferences(prefs, schema._preferences);
+	if (isDefaultOptions) {
+		schema._preferences[Common.symbols.prefs] = prefs;
+	}
 
-    const isDefaultOptions = prefs === Common.defaults;
-    if (isDefaultOptions &&
-        schema._preferences[Common.symbols.prefs]) {
-
-        return schema._preferences[Common.symbols.prefs];
-    }
-
-    prefs = Common.preferences(prefs, schema._preferences);
-    if (isDefaultOptions) {
-        schema._preferences[Common.symbols.prefs] = prefs;
-    }
-
-    return prefs;
+	return prefs;
 };
 
+internals.default = (flag, value, errors, helpers) => {
+	const { schema, state, prefs } = helpers;
+	const source = schema._flags[flag];
+	if (prefs.noDefaults || source === undefined) {
+		return value;
+	}
 
-internals.default = function (flag, value, errors, helpers) {
+	state.mainstay.tracer.log(schema, state, "rule", flag, "full");
 
-    const { schema, state, prefs } = helpers;
-    const source = schema._flags[flag];
-    if (prefs.noDefaults ||
-        source === undefined) {
+	if (!source) {
+		return source;
+	}
 
-        return value;
-    }
+	if (typeof source === "function") {
+		const args = source.length ? [Clone(state.ancestors[0]), helpers] : [];
 
-    state.mainstay.tracer.log(schema, state, 'rule', flag, 'full');
+		try {
+			return source(...args);
+		} catch (err) {
+			errors.push(
+				schema.$_createError(`any.${flag}`, null, { error: err }, state, prefs),
+			);
+			return;
+		}
+	}
 
-    if (!source) {
-        return source;
-    }
+	if (typeof source !== "object") {
+		return source;
+	}
 
-    if (typeof source === 'function') {
-        const args = source.length ? [Clone(state.ancestors[0]), helpers] : [];
+	if (source[Common.symbols.literal]) {
+		return source.literal;
+	}
 
-        try {
-            return source(...args);
-        }
-        catch (err) {
-            errors.push(schema.$_createError(`any.${flag}`, null, { error: err }, state, prefs));
-            return;
-        }
-    }
+	if (Common.isResolvable(source)) {
+		return source.resolve(value, state, prefs);
+	}
 
-    if (typeof source !== 'object') {
-        return source;
-    }
-
-    if (source[Common.symbols.literal]) {
-        return source.literal;
-    }
-
-    if (Common.isResolvable(source)) {
-        return source.resolve(value, state, prefs);
-    }
-
-    return Clone(source);
+	return Clone(source);
 };
 
+internals.trim = (value, schema) => {
+	if (typeof value !== "string") {
+		return value;
+	}
 
-internals.trim = function (value, schema) {
+	const trim = schema.$_getRule("trim");
+	if (!trim || !trim.args.enabled) {
+		return value;
+	}
 
-    if (typeof value !== 'string') {
-        return value;
-    }
-
-    const trim = schema.$_getRule('trim');
-    if (!trim ||
-        !trim.args.enabled) {
-
-        return value;
-    }
-
-    return value.trim();
+	return value.trim();
 };
-
 
 internals.ignore = {
-    active: false,
-    debug: Ignore,
-    entry: Ignore,
-    filter: Ignore,
-    log: Ignore,
-    resolve: Ignore,
-    value: Ignore
+	active: false,
+	debug: Ignore,
+	entry: Ignore,
+	filter: Ignore,
+	log: Ignore,
+	resolve: Ignore,
+	value: Ignore,
 };
 
-
-internals.errorsArray = function () {
-
-    const errors = [];
-    errors[Common.symbols.errors] = true;
-    return errors;
+internals.errorsArray = () => {
+	const errors = [];
+	errors[Common.symbols.errors] = true;
+	return errors;
 };

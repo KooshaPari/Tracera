@@ -7,7 +7,10 @@ import Tuple from "./Tuple";
  *
  * @param ctor - Which `Promise` implementation to use. Defaults to the native implementation.
  */
-declare function PromiseEach<Ps extends Tuple<PromiseLike<any> | any>>(promises: Ps, ctor?: PromiseConstructor): Promise<{
-    [K in keyof Ps]: Ps[K] extends PromiseLike<infer T> ? T : Ps[K];
+declare function PromiseEach<Ps extends Tuple<PromiseLike<any> | any>>(
+	promises: Ps,
+	ctor?: PromiseConstructor,
+): Promise<{
+	[K in keyof Ps]: Ps[K] extends PromiseLike<infer T> ? T : Ps[K];
 }>;
 export default PromiseEach;

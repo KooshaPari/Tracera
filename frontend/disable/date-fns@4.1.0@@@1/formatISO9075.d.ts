@@ -3,8 +3,8 @@ import type { ContextOptions, DateArg, ISOFormatOptions } from "./types.js";
  * The {@link formatISO9075} function options.
  */
 export interface FormatISO9075Options
-  extends ISOFormatOptions,
-    ContextOptions<Date> {}
+	extends ISOFormatOptions,
+		ContextOptions<Date> {}
 /**
  * @name formatISO9075
  * @category Common Helpers
@@ -41,6 +41,6 @@ export interface FormatISO9075Options
  * //=> '19:00:52'
  */
 export declare function formatISO9075(
-  date: DateArg<Date> & {},
-  options?: FormatISO9075Options,
+	date: DateArg<Date> & {},
+	options?: FormatISO9075Options,
 ): string;

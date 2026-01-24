@@ -1,18 +1,18 @@
-export { rootRoute, index, route, layout, physical } from './api'
+export { index, layout, physical, rootRoute, route } from "./api";
 export type {
-  LayoutRoute,
-  Route,
-  IndexRoute,
-  PhysicalSubtree,
-  VirtualRootRoute,
-  VirtualRouteNode,
-} from './types'
+	ConfigExport,
+	ConfigFn,
+	ConfigFnObject,
+	ConfigFnPromise,
+	VirtualRouteSubtreeConfig,
+} from "./defineConfig";
 
-export { defineVirtualSubtreeConfig } from './defineConfig'
+export { defineVirtualSubtreeConfig } from "./defineConfig";
 export type {
-  ConfigExport,
-  ConfigFn,
-  ConfigFnObject,
-  ConfigFnPromise,
-  VirtualRouteSubtreeConfig,
-} from './defineConfig'
+	IndexRoute,
+	LayoutRoute,
+	PhysicalSubtree,
+	Route,
+	VirtualRootRoute,
+	VirtualRouteNode,
+} from "./types";

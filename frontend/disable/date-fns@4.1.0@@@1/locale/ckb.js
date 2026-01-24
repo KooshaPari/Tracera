@@ -13,16 +13,16 @@ import { match } from "./ckb/_lib/match.js";
  * @author Revan Sarbast [@Revan99]{@link https://github.com/Revan99}
  */
 export const ckb = {
-  code: "ckb",
-  formatDistance,
-  formatLong,
-  formatRelative,
-  localize,
-  match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ckb",
+	formatDistance,
+	formatLong,
+	formatRelative,
+	localize,
+	match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

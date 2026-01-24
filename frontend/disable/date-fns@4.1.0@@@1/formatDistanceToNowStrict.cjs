@@ -80,9 +80,9 @@ var _index2 = require("./formatDistanceStrict.cjs");
  * //=> '1 jaro'
  */
 function formatDistanceToNowStrict(date, options) {
-  return (0, _index2.formatDistanceStrict)(
-    date,
-    (0, _index.constructNow)(date),
-    options,
-  );
+	return (0, _index2.formatDistanceStrict)(
+		date,
+		(0, _index.constructNow)(date),
+		options,
+	);
 }

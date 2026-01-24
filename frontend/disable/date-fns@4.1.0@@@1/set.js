@@ -41,20 +41,20 @@ import { toDate } from "./toDate.js";
  * //=> Mon Sep 01 2014 12:23:45
  */
 export function set(date, values, options) {
-  let _date = toDate(date, options?.in);
+	let _date = toDate(date, options?.in);
 
-  // Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
-  if (isNaN(+_date)) return constructFrom(options?.in || date, NaN);
+	// Check if date is Invalid Date because Date.prototype.setFullYear ignores the value of Invalid Date
+	if (isNaN(+_date)) return constructFrom(options?.in || date, NaN);
 
-  if (values.year != null) _date.setFullYear(values.year);
-  if (values.month != null) _date = setMonth(_date, values.month);
-  if (values.date != null) _date.setDate(values.date);
-  if (values.hours != null) _date.setHours(values.hours);
-  if (values.minutes != null) _date.setMinutes(values.minutes);
-  if (values.seconds != null) _date.setSeconds(values.seconds);
-  if (values.milliseconds != null) _date.setMilliseconds(values.milliseconds);
+	if (values.year != null) _date.setFullYear(values.year);
+	if (values.month != null) _date = setMonth(_date, values.month);
+	if (values.date != null) _date.setDate(values.date);
+	if (values.hours != null) _date.setHours(values.hours);
+	if (values.minutes != null) _date.setMinutes(values.minutes);
+	if (values.seconds != null) _date.setSeconds(values.seconds);
+	if (values.milliseconds != null) _date.setMilliseconds(values.milliseconds);
 
-  return _date;
+	return _date;
 }
 
 // Fallback for modularized imports:

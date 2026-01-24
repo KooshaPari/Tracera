@@ -22,6 +22,6 @@ export interface GetYearOptions extends ContextOptions<Date> {}
  * //=> 2014
  */
 export declare function getYear(
-  date: DateArg<Date> & {},
-  options?: GetYearOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetYearOptions | undefined,
 ): number;

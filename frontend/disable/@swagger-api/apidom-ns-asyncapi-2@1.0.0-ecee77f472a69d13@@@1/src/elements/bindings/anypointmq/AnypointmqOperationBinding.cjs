@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class AnypointmqOperationBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'anypointmqOperationBinding';
-    this.classes.push('operation-binding');
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "anypointmqOperationBinding";
+		this.classes.push("operation-binding");
+	}
 }
-var _default = exports.default = AnypointmqOperationBinding;
+var _default = (exports.default = AnypointmqOperationBinding);

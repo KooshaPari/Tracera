@@ -1,27 +1,31 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('license-strict', () => {
-  it('should report on info.license with no url or identifier for OpenAPI 3.1', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("license-strict", () => {
+	it("should report on info.license with no url or identifier for OpenAPI 3.1", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.1.0
           info:
             license:
               name: MIT
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'info-license-strict': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "info-license-strict": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -38,68 +42,68 @@ describe('license-strict', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on info.license with url for OpenAPI 3.1', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on info.license with url for OpenAPI 3.1", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.1.0
           info:
             license:
               name: MIT
               url: google.com
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'info-license-strict': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "info-license-strict": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on info.license with identifier', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on info.license with identifier", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.1.0
           info:
             license:
               name: MIT
               identifier: MIT
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'info-license-strict': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "info-license-strict": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report on info.license with no url for AsyncAPI 3.0', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on info.license with no url for AsyncAPI 3.0", async () => {
+		const document = parseYamlToDocument(
+			outdent`
             asyncapi: 3.0.0
             info:
               license:
                 name: MIT
           `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'info-license-strict': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "info-license-strict": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -116,26 +120,26 @@ describe('license-strict', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on info.license with url for AsyncAPI 3.0', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on info.license with url for AsyncAPI 3.0", async () => {
+		const document = parseYamlToDocument(
+			outdent`
             asyncapi: 3.0.0
             info:
               license:
                 name: MIT
                 url: google.com
           `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'info-license-strict': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { "info-license-strict": "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

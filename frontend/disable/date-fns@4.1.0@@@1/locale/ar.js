@@ -13,16 +13,16 @@ import { match } from "./ar/_lib/match.js";
  * @author Koussay Haj Kacem [@essana3](https://github.com/essana3)
  */
 export const ar = {
-  code: "ar",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 6 /* Saturday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "ar",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 6 /* Saturday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

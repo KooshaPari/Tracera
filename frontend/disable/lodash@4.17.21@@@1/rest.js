@@ -1,8 +1,8 @@
-var baseRest = require('./_baseRest'),
-    toInteger = require('./toInteger');
+var baseRest = require("./_baseRest"),
+	toInteger = require("./toInteger");
 
 /** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
+var FUNC_ERROR_TEXT = "Expected a function";
 
 /**
  * Creates a function that invokes `func` with the `this` binding of the
@@ -30,11 +30,11 @@ var FUNC_ERROR_TEXT = 'Expected a function';
  * // => 'hello fred, barney, & pebbles'
  */
 function rest(func, start) {
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  start = start === undefined ? start : toInteger(start);
-  return baseRest(func, start);
+	if (typeof func != "function") {
+		throw new TypeError(FUNC_ERROR_TEXT);
+	}
+	start = start === undefined ? start : toInteger(start);
+	return baseRest(func, start);
 }
 
 module.exports = rest;

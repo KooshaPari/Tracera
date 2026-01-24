@@ -2,132 +2,132 @@
  * Tests for useSearch hook
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useSearch } from '../../hooks/useSearch'
-import { createWrapper } from '../utils/test-utils'
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useSearch } from "../../hooks/useSearch";
+import { createWrapper } from "../utils/test-utils";
 
-describe('useSearch', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    // Don't use fake timers - causes issues with async React Query hooks
-  })
+describe("useSearch", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		// Don't use fake timers - causes issues with async React Query hooks
+	});
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 
-  it('should initialize with default query', () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should initialize with default query", () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    expect(result.current.query).toEqual({
-      q: '',
-      page: 1,
-      per_page: 20,
-    })
-  })
+		expect(result.current.query).toEqual({
+			q: "",
+			page: 1,
+			per_page: 20,
+		});
+	});
 
-  it('should update search text', () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should update search text", () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    act(() => {
-      result.current.setSearchText('test query')
-    })
+		act(() => {
+			result.current.setSearchText("test query");
+		});
 
-    expect(result.current.query.q).toBe('test query')
-    expect(result.current.query.page).toBe(1) // Should reset page
-  })
+		expect(result.current.query.q).toBe("test query");
+		expect(result.current.query.page).toBe(1); // Should reset page
+	});
 
-  it('should debounce search query', async () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should debounce search query", async () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    act(() => {
-      result.current.setSearchText('test')
-    })
+		act(() => {
+			result.current.setSearchText("test");
+		});
 
-    // Should not fetch immediately
-    expect(result.current.isLoading).toBe(false)
+		// Should not fetch immediately
+		expect(result.current.isLoading).toBe(false);
 
-    // Verify search text was set
-    expect(result.current.query.q).toBe('test')
-  })
+		// Verify search text was set
+		expect(result.current.query.q).toBe("test");
+	});
 
-  it('should update page', () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should update page", () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    act(() => {
-      result.current.setPage(2)
-    })
+		act(() => {
+			result.current.setPage(2);
+		});
 
-    expect(result.current.query.page).toBe(2)
-  })
+		expect(result.current.query.page).toBe(2);
+	});
 
-  it('should clear search', () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should clear search", () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    act(() => {
-      result.current.setSearchText('test')
-      result.current.setPage(3)
-    })
+		act(() => {
+			result.current.setSearchText("test");
+			result.current.setPage(3);
+		});
 
-    act(() => {
-      result.current.clearSearch()
-    })
+		act(() => {
+			result.current.clearSearch();
+		});
 
-    expect(result.current.query).toEqual({
-      q: '',
-      page: 1,
-      per_page: 20,
-    })
-  })
+		expect(result.current.query).toEqual({
+			q: "",
+			page: 1,
+			per_page: 20,
+		});
+	});
 
-  it('should update query with partial updates', () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should update query with partial updates", () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    act(() => {
-      result.current.updateQuery({
-        types: ['feature' as any],
-        statuses: ['in_progress' as any],
-      })
-    })
+		act(() => {
+			result.current.updateQuery({
+				types: ["feature" as any],
+				statuses: ["in_progress" as any],
+			});
+		});
 
-    expect(result.current.query.types).toEqual(['feature'])
-    expect(result.current.query.statuses).toEqual(['in_progress'])
-  })
+		expect(result.current.query.types).toEqual(["feature"]);
+		expect(result.current.query.statuses).toEqual(["in_progress"]);
+	});
 
-  it('should not fetch with empty query', () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should not fetch with empty query", () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    // With real timers, just verify initial state is correct
-    expect(result.current.isLoading).toBe(false)
-  })
+		// With real timers, just verify initial state is correct
+		expect(result.current.isLoading).toBe(false);
+	});
 
-  it('should fetch results when query is not empty', async () => {
-    const { result } = renderHook(() => useSearch(), {
-      wrapper: createWrapper(),
-    })
+	it("should fetch results when query is not empty", async () => {
+		const { result } = renderHook(() => useSearch(), {
+			wrapper: createWrapper(),
+		});
 
-    act(() => {
-      result.current.setSearchText('test')
-    })
+		act(() => {
+			result.current.setSearchText("test");
+		});
 
-    // Verify query updated
-    expect(result.current.query.q).toBe('test')
-    // Search is not immediately empty anymore
-    expect(result.current.query.q).toBeTruthy()
-  }, 10000)
-})
+		// Verify query updated
+		expect(result.current.query.q).toBe("test");
+		// Search is not immediately empty anymore
+		expect(result.current.query.q).toBeTruthy();
+	}, 10000);
+});

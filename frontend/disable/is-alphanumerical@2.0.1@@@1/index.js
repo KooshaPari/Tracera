@@ -1,5 +1,5 @@
-import {isAlphabetical} from 'is-alphabetical'
-import {isDecimal} from 'is-decimal'
+import { isAlphabetical } from "is-alphabetical";
+import { isDecimal } from "is-decimal";
 
 /**
  * Check if the given character code, or the character code at the first
@@ -9,5 +9,5 @@ import {isDecimal} from 'is-decimal'
  * @returns {boolean} Whether `character` is alphanumerical.
  */
 export function isAlphanumerical(character) {
-  return isAlphabetical(character) || isDecimal(character)
+	return isAlphabetical(character) || isDecimal(character);
 }

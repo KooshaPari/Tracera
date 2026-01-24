@@ -1,8 +1,8 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { DocumentNode } from '../language/ast';
-import type { GraphQLFieldResolver } from '../type/definition';
-import type { GraphQLSchema } from '../type/schema';
-import type { ExecutionArgs, ExecutionResult } from './execute';
+import type { Maybe } from "../jsutils/Maybe";
+import type { DocumentNode } from "../language/ast";
+import type { GraphQLFieldResolver } from "../type/definition";
+import type { GraphQLSchema } from "../type/schema";
+import type { ExecutionArgs, ExecutionResult } from "./execute";
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -25,7 +25,7 @@ import type { ExecutionArgs, ExecutionResult } from './execute';
  * Accepts either an object with named arguments, or individual arguments.
  */
 export declare function subscribe(
-  args: ExecutionArgs,
+	args: ExecutionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
@@ -56,17 +56,17 @@ export declare function subscribe(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export declare function createSourceEventStream(
-  args: ExecutionArgs,
+	args: ExecutionArgs,
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;
 /** @deprecated will be removed in next major version in favor of named arguments */
 export declare function createSourceEventStream(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>,
-  operationName?: Maybe<string>,
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+	schema: GraphQLSchema,
+	document: DocumentNode,
+	rootValue?: unknown,
+	contextValue?: unknown,
+	variableValues?: Maybe<{
+		readonly [variable: string]: unknown;
+	}>,
+	operationName?: Maybe<string>,
+	subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;

@@ -11,9 +11,9 @@
 var MAX_SAFE_INTEGER = 9007199254740991;
 
 /** `Object#toString` result references. */
-var argsTag = '[object Arguments]',
-    funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]';
+var argsTag = "[object Arguments]",
+	funcTag = "[object Function]",
+	genTag = "[object GeneratorFunction]";
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -50,9 +50,13 @@ var propertyIsEnumerable = objectProto.propertyIsEnumerable;
  * // => false
  */
 function isArguments(value) {
-  // Safari 8.1 makes `arguments.callee` enumerable in strict mode.
-  return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') &&
-    (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
+	// Safari 8.1 makes `arguments.callee` enumerable in strict mode.
+	return (
+		isArrayLikeObject(value) &&
+		hasOwnProperty.call(value, "callee") &&
+		(!propertyIsEnumerable.call(value, "callee") ||
+			objectToString.call(value) == argsTag)
+	);
 }
 
 /**
@@ -81,7 +85,7 @@ function isArguments(value) {
  * // => false
  */
 function isArrayLike(value) {
-  return value != null && isLength(value.length) && !isFunction(value);
+	return value != null && isLength(value.length) && !isFunction(value);
 }
 
 /**
@@ -110,7 +114,7 @@ function isArrayLike(value) {
  * // => false
  */
 function isArrayLikeObject(value) {
-  return isObjectLike(value) && isArrayLike(value);
+	return isObjectLike(value) && isArrayLike(value);
 }
 
 /**
@@ -131,10 +135,10 @@ function isArrayLikeObject(value) {
  * // => false
  */
 function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 8-9 which returns 'object' for typed array and other constructors.
-  var tag = isObject(value) ? objectToString.call(value) : '';
-  return tag == funcTag || tag == genTag;
+	// The use of `Object#toString` avoids issues with the `typeof` operator
+	// in Safari 8-9 which returns 'object' for typed array and other constructors.
+	var tag = isObject(value) ? objectToString.call(value) : "";
+	return tag == funcTag || tag == genTag;
 }
 
 /**
@@ -164,8 +168,12 @@ function isFunction(value) {
  * // => false
  */
 function isLength(value) {
-  return typeof value == 'number' &&
-    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	return (
+		typeof value == "number" &&
+		value > -1 &&
+		value % 1 == 0 &&
+		value <= MAX_SAFE_INTEGER
+	);
 }
 
 /**
@@ -194,8 +202,8 @@ function isLength(value) {
  * // => false
  */
 function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
+	var type = typeof value;
+	return !!value && (type == "object" || type == "function");
 }
 
 /**
@@ -223,7 +231,7 @@ function isObject(value) {
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+	return !!value && typeof value == "object";
 }
 
 module.exports = isArguments;

@@ -4,24 +4,24 @@ Basic foreground colors.
 [More colors here.](https://github.com/chalk/chalk/blob/master/readme.md#256-and-truecolor-color-support)
 */
 declare type ForegroundColor =
-	| 'black'
-	| 'red'
-	| 'green'
-	| 'yellow'
-	| 'blue'
-	| 'magenta'
-	| 'cyan'
-	| 'white'
-	| 'gray'
-	| 'grey'
-	| 'blackBright'
-	| 'redBright'
-	| 'greenBright'
-	| 'yellowBright'
-	| 'blueBright'
-	| 'magentaBright'
-	| 'cyanBright'
-	| 'whiteBright';
+	| "black"
+	| "red"
+	| "green"
+	| "yellow"
+	| "blue"
+	| "magenta"
+	| "cyan"
+	| "white"
+	| "gray"
+	| "grey"
+	| "blackBright"
+	| "redBright"
+	| "greenBright"
+	| "yellowBright"
+	| "blueBright"
+	| "magentaBright"
+	| "cyanBright"
+	| "whiteBright";
 
 /**
 Basic background colors.
@@ -29,24 +29,24 @@ Basic background colors.
 [More colors here.](https://github.com/chalk/chalk/blob/master/readme.md#256-and-truecolor-color-support)
 */
 declare type BackgroundColor =
-	| 'bgBlack'
-	| 'bgRed'
-	| 'bgGreen'
-	| 'bgYellow'
-	| 'bgBlue'
-	| 'bgMagenta'
-	| 'bgCyan'
-	| 'bgWhite'
-	| 'bgGray'
-	| 'bgGrey'
-	| 'bgBlackBright'
-	| 'bgRedBright'
-	| 'bgGreenBright'
-	| 'bgYellowBright'
-	| 'bgBlueBright'
-	| 'bgMagentaBright'
-	| 'bgCyanBright'
-	| 'bgWhiteBright';
+	| "bgBlack"
+	| "bgRed"
+	| "bgGreen"
+	| "bgYellow"
+	| "bgBlue"
+	| "bgMagenta"
+	| "bgCyan"
+	| "bgWhite"
+	| "bgGray"
+	| "bgGrey"
+	| "bgBlackBright"
+	| "bgRedBright"
+	| "bgGreenBright"
+	| "bgYellowBright"
+	| "bgBlueBright"
+	| "bgMagentaBright"
+	| "bgCyanBright"
+	| "bgWhiteBright";
 
 /**
 Basic colors.
@@ -56,15 +56,15 @@ Basic colors.
 declare type Color = ForegroundColor | BackgroundColor;
 
 declare type Modifiers =
-	| 'reset'
-	| 'bold'
-	| 'dim'
-	| 'italic'
-	| 'underline'
-	| 'inverse'
-	| 'hidden'
-	| 'strikethrough'
-	| 'visible';
+	| "reset"
+	| "bold"
+	| "dim"
+	| "italic"
+	| "underline"
+	| "inverse"
+	| "hidden"
+	| "strikethrough"
+	| "visible";
 
 declare namespace chalk {
 	/**
@@ -402,14 +402,15 @@ Call the last one as a method with a string argument.
 Order doesn't matter, and later styles take precedent in case of a conflict.
 This simply means that `chalk.red.yellow.green` is equivalent to `chalk.green`.
 */
-declare const chalk: chalk.Chalk & chalk.ChalkFunction & {
-	supportsColor: chalk.ColorSupport | false;
-	Level: chalk.Level;
-	Color: Color;
-	ForegroundColor: ForegroundColor;
-	BackgroundColor: BackgroundColor;
-	Modifiers: Modifiers;
-	stderr: chalk.Chalk & {supportsColor: chalk.ColorSupport | false};
-};
+declare const chalk: chalk.Chalk &
+	chalk.ChalkFunction & {
+		supportsColor: chalk.ColorSupport | false;
+		Level: chalk.Level;
+		Color: Color;
+		ForegroundColor: ForegroundColor;
+		BackgroundColor: BackgroundColor;
+		Modifiers: Modifiers;
+		stderr: chalk.Chalk & { supportsColor: chalk.ColorSupport | false };
+	};
 
 export = chalk;

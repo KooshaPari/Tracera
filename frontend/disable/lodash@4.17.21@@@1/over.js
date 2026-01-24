@@ -1,5 +1,5 @@
-var arrayMap = require('./_arrayMap'),
-    createOver = require('./_createOver');
+var arrayMap = require("./_arrayMap"),
+	createOver = require("./_createOver");
 
 /**
  * Creates a function that invokes `iteratees` with the arguments it receives

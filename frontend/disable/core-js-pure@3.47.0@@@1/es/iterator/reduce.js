@@ -1,8 +1,8 @@
-'use strict';
-require('../../modules/es.object.to-string');
-require('../../modules/es.iterator.constructor');
-require('../../modules/es.iterator.reduce');
+"use strict";
+require("../../modules/es.object.to-string");
+require("../../modules/es.iterator.constructor");
+require("../../modules/es.iterator.reduce");
 
-var entryUnbind = require('../../internals/entry-unbind');
+var entryUnbind = require("../../internals/entry-unbind");
 
-module.exports = entryUnbind('Iterator', 'reduce');
+module.exports = entryUnbind("Iterator", "reduce");

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/data-view');
+"use strict";
+module.exports = require("../../full/data-view");

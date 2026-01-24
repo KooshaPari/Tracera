@@ -1,40 +1,50 @@
-'use strict';
-const fs = require('fs');
-const path = require('path');
-const hasha = require('hasha');
-const makeDir = require('make-dir');
-const writeFileAtomic = require('write-file-atomic');
-const packageHash = require('package-hash');
+const fs = require("fs");
+const path = require("path");
+const hasha = require("hasha");
+const makeDir = require("make-dir");
+const writeFileAtomic = require("write-file-atomic");
+const packageHash = require("package-hash");
 
-let ownHash = '';
+let ownHash = "";
 function getOwnHash() {
-	ownHash = packageHash.sync(path.join(__dirname, 'package.json'));
+	ownHash = packageHash.sync(path.join(__dirname, "package.json"));
 	return ownHash;
 }
 
 function wrap(opts) {
 	if (!(opts.factory || opts.transform) || (opts.factory && opts.transform)) {
-		throw new Error('Specify factory or transform but not both');
+		throw new Error("Specify factory or transform but not both");
 	}
 
-	if (typeof opts.cacheDir !== 'string' && !opts.disableCache) {
-		throw new Error('cacheDir must be a string');
+	if (typeof opts.cacheDir !== "string" && !opts.disableCache) {
+		throw new Error("cacheDir must be a string");
 	}
 
 	opts = {
-		ext: '',
-		salt: '',
+		ext: "",
+		salt: "",
 		hashData: () => [],
-		filenamePrefix: () => '',
+		filenamePrefix: () => "",
 		onHash: () => {},
-		...opts
+		...opts,
 	};
 
 	let transformFn = opts.transform;
-	const {factory, cacheDir, shouldTransform, disableCache, hashData, onHash, filenamePrefix, ext, salt} = opts;
+	const {
+		factory,
+		cacheDir,
+		shouldTransform,
+		disableCache,
+		hashData,
+		onHash,
+		filenamePrefix,
+		ext,
+		salt,
+	} = opts;
 	const cacheDirCreated = opts.createCacheDir === false;
 	let created = transformFn && cacheDirCreated;
-	const encoding = opts.encoding === 'buffer' ? undefined : opts.encoding || 'utf8';
+	const encoding =
+		opts.encoding === "buffer" ? undefined : opts.encoding || "utf8";
 
 	function transform(input, metadata, hash) {
 		if (!created) {
@@ -52,7 +62,7 @@ function wrap(opts) {
 		return transformFn(input, metadata, hash);
 	}
 
-	return function (input, metadata) {
+	return (input, metadata) => {
 		if (shouldTransform && !shouldTransform(input, metadata)) {
 			return input;
 		}
@@ -65,10 +75,13 @@ function wrap(opts) {
 			ownHash || getOwnHash(),
 			input,
 			salt,
-			...[].concat(hashData(input, metadata))
+			...[].concat(hashData(input, metadata)),
 		];
-		const hash = hasha(data, {algorithm: 'sha256'});
-		const cachedPath = path.join(cacheDir, filenamePrefix(metadata) + hash + ext);
+		const hash = hasha(data, { algorithm: "sha256" });
+		const cachedPath = path.join(
+			cacheDir,
+			filenamePrefix(metadata) + hash + ext,
+		);
 
 		onHash(input, metadata, hash);
 
@@ -84,7 +97,7 @@ function wrap(opts) {
 				}
 
 				try {
-					writeFileAtomic.sync(cachedPath, result, {encoding});
+					writeFileAtomic.sync(cachedPath, result, { encoding });
 					return result;
 				} catch (error) {
 					/* Likely https://github.com/npm/write-file-atomic/issues/28

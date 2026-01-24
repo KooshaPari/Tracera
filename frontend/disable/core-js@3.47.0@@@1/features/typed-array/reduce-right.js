@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/reduce-right');
+"use strict";
+module.exports = require("../../full/typed-array/reduce-right");

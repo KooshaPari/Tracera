@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-timer` (CommonJS)
 // See upstream license: https://github.com/d3/d3-timer/blob/main/LICENSE
 //

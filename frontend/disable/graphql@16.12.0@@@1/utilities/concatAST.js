@@ -1,11 +1,9 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.concatAST = concatAST;
 
-var _kinds = require('../language/kinds.js');
+var _kinds = require("../language/kinds.js");
 
 /**
  * Provided a collection of ASTs, presumably each from different files,
@@ -13,14 +11,14 @@ var _kinds = require('../language/kinds.js');
  * GraphQL source files which together represent one conceptual application.
  */
 function concatAST(documents) {
-  const definitions = [];
+	const definitions = [];
 
-  for (const doc of documents) {
-    definitions.push(...doc.definitions);
-  }
+	for (const doc of documents) {
+		definitions.push(...doc.definitions);
+	}
 
-  return {
-    kind: _kinds.Kind.DOCUMENT,
-    definitions,
-  };
+	return {
+		kind: _kinds.Kind.DOCUMENT,
+		definitions,
+	};
 }

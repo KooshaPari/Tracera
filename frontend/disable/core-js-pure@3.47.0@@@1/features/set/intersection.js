@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/set/intersection');
+"use strict";
+module.exports = require("../../full/set/intersection");

@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> 45
  */
 function getMinutes(date, options) {
-  return (0, _index.toDate)(date, options?.in).getMinutes();
+	return (0, _index.toDate)(date, options?.in).getMinutes();
 }

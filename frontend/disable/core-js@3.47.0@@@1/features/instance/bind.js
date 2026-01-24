@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/bind');
+"use strict";
+module.exports = require("../../full/instance/bind");

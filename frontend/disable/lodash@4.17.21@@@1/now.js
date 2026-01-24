@@ -1,4 +1,4 @@
-var root = require('./_root');
+var root = require("./_root");
 
 /**
  * Gets the timestamp of the number of milliseconds that have elapsed since
@@ -16,8 +16,6 @@ var root = require('./_root');
  * }, _.now());
  * // => Logs the number of milliseconds it took for the deferred invocation.
  */
-var now = function() {
-  return root.Date.now();
-};
+var now = () => root.Date.now();
 
 module.exports = now;

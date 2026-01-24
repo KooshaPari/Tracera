@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 var _minim = require("minim");
 exports.ObjectElement = _minim.ObjectElement;
@@ -15,17 +16,29 @@ var _Annotation = _interopRequireDefault(require("../elements/Annotation.cjs"));
 exports.AnnotationElement = _Annotation.default;
 var _Comment = _interopRequireDefault(require("../elements/Comment.cjs"));
 exports.CommentElement = _Comment.default;
-var _ParseResult = _interopRequireDefault(require("../elements/ParseResult.cjs"));
+var _ParseResult = _interopRequireDefault(
+	require("../elements/ParseResult.cjs"),
+);
 exports.ParseResultElement = _ParseResult.default;
 var _index = require("./index.cjs");
-_minim.ObjectElement.refract = (0, _index.createRefractor)(_minim.ObjectElement);
+_minim.ObjectElement.refract = (0, _index.createRefractor)(
+	_minim.ObjectElement,
+);
 _minim.ArrayElement.refract = (0, _index.createRefractor)(_minim.ArrayElement);
-_minim.StringElement.refract = (0, _index.createRefractor)(_minim.StringElement);
-_minim.BooleanElement.refract = (0, _index.createRefractor)(_minim.BooleanElement);
+_minim.StringElement.refract = (0, _index.createRefractor)(
+	_minim.StringElement,
+);
+_minim.BooleanElement.refract = (0, _index.createRefractor)(
+	_minim.BooleanElement,
+);
 _minim.NullElement.refract = (0, _index.createRefractor)(_minim.NullElement);
-_minim.NumberElement.refract = (0, _index.createRefractor)(_minim.NumberElement);
+_minim.NumberElement.refract = (0, _index.createRefractor)(
+	_minim.NumberElement,
+);
 _minim.LinkElement.refract = (0, _index.createRefractor)(_minim.LinkElement);
 _minim.RefElement.refract = (0, _index.createRefractor)(_minim.RefElement);
 _Annotation.default.refract = (0, _index.createRefractor)(_Annotation.default);
 _Comment.default.refract = (0, _index.createRefractor)(_Comment.default);
-_ParseResult.default.refract = (0, _index.createRefractor)(_ParseResult.default);
+_ParseResult.default.refract = (0, _index.createRefractor)(
+	_ParseResult.default,
+);

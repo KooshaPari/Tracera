@@ -43,14 +43,17 @@ export declare const isURI: (uri: string) => boolean;
  * @public
  */
 export interface ToFileSystemPathOptions {
-    keepFileProtocol?: boolean;
-    isWindows?: WindowsPredicate;
+	keepFileProtocol?: boolean;
+	isWindows?: WindowsPredicate;
 }
 /**
  * Converts a URL to a local filesystem path.
  * @public
  */
-export declare const toFileSystemPath: (uri: string, options?: ToFileSystemPathOptions) => string;
+export declare const toFileSystemPath: (
+	uri: string,
+	options?: ToFileSystemPathOptions,
+) => string;
 /**
  * Converts a filesystem path to a properly-encoded URL.
  *

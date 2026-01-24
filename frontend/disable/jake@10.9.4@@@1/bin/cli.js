@@ -15,15 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 // Try to load a local jake
 try {
-  require(`${ process.cwd() }/node_modules/jake`);
-}
-// If that fails, likely running globally
-catch(e) {
-  require('../lib/jake');
+	require(`${process.cwd()}/node_modules/jake`);
+} catch (e) {
+	// If that fails, likely running globally
+	require("../lib/jake");
 }
 
 var args = process.argv.slice(2);

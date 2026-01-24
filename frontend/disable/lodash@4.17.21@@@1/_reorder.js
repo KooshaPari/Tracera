@@ -1,5 +1,5 @@
-var copyArray = require('./_copyArray'),
-    isIndex = require('./_isIndex');
+var copyArray = require("./_copyArray"),
+	isIndex = require("./_isIndex");
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeMin = Math.min;
@@ -15,15 +15,15 @@ var nativeMin = Math.min;
  * @returns {Array} Returns `array`.
  */
 function reorder(array, indexes) {
-  var arrLength = array.length,
-      length = nativeMin(indexes.length, arrLength),
-      oldArray = copyArray(array);
+	var arrLength = array.length,
+		length = nativeMin(indexes.length, arrLength),
+		oldArray = copyArray(array);
 
-  while (length--) {
-    var index = indexes[length];
-    array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
-  }
-  return array;
+	while (length--) {
+		var index = indexes[length];
+		array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
+	}
+	return array;
 }
 
 module.exports = reorder;

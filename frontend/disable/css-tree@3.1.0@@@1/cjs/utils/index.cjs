@@ -1,13 +1,11 @@
-'use strict';
+"use strict";
 
-const clone = require('./clone.cjs');
-const ident = require('./ident.cjs');
-const List = require('./List.cjs');
-const names = require('./names.cjs');
-const string = require('./string.cjs');
-const url = require('./url.cjs');
-
-
+const clone = require("./clone.cjs");
+const ident = require("./ident.cjs");
+const List = require("./List.cjs");
+const names = require("./names.cjs");
+const string = require("./string.cjs");
+const url = require("./url.cjs");
 
 exports.clone = clone.clone;
 exports.ident = ident;

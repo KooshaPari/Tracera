@@ -1,48 +1,48 @@
 {
-  "name": "@tracertm/env-manager",
-  "version": "1.0.0",
-  "description": "Environment variable manager for TraceRTM frontend",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./config": {
-      "import": "./dist/config.js",
-      "types": "./dist/config.d.ts"
-    }
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "biome check src",
-    "lint:fix": "biome check --write src",
-    "format": "biome format --write src",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": [
-    "environment",
-    "config",
-    "env",
-    "tracertm"
-  ],
-  "author": "TraceRTM",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^22.10.2",
-    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
-    "vitest": "^4.0.14"
-  },
-  "peerDependencies": {
-    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
-  }
+	"name": "@tracertm/env-manager",
+	"version": "1.0.0",
+	"description": "Environment variable manager for TraceRTM frontend",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./config": {
+			"import": "./dist/config.js",
+			"types": "./dist/config.d.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"src"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"test": "vitest",
+		"test:coverage": "vitest --coverage",
+		"lint": "biome check src",
+		"lint:fix": "biome check --write src",
+		"format": "biome format --write src",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"environment",
+		"config",
+		"env",
+		"tracertm"
+	],
+	"author": "TraceRTM",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^22.10.2",
+		"typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
+		"vitest": "^4.0.14"
+	},
+	"peerDependencies": {
+		"typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
+	}
 }

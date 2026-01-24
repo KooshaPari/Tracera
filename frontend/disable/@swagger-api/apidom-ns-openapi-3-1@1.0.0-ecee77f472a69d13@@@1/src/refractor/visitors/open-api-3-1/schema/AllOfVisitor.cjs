@@ -7,9 +7,9 @@ var _apidomNsJsonSchema = require("@swagger-api/apidom-ns-json-schema-2020-12");
  * @public
  */
 class AllOfVisitor extends _apidomNsJsonSchema.AllOfVisitor {
-  constructor(options) {
-    super(options);
-    this.passingOptionsNames.push('parent');
-  }
+	constructor(options) {
+		super(options);
+		this.passingOptionsNames.push("parent");
+	}
 }
-var _default = exports.default = AllOfVisitor;
+var _default = (exports.default = AllOfVisitor);

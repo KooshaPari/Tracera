@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfQuarter} function options.
  */
 export interface EndOfQuarterOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfQuarter
  * @category Quarter Helpers
@@ -27,9 +27,9 @@ export interface EndOfQuarterOptions<DateType extends Date = Date>
  * //=> Tue Sep 30 2014 23:59:59.999
  */
 export declare function endOfQuarter<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EndOfQuarterOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: EndOfQuarterOptions<ResultDate> | undefined,
 ): ResultDate;

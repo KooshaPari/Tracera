@@ -2,146 +2,146 @@
 exports.formatDistance = void 0;
 
 function futureSeconds(text) {
-  return text.replace(/sekuntia?/, "sekunnin");
+	return text.replace(/sekuntia?/, "sekunnin");
 }
 
 function futureMinutes(text) {
-  return text.replace(/minuuttia?/, "minuutin");
+	return text.replace(/minuuttia?/, "minuutin");
 }
 
 function futureHours(text) {
-  return text.replace(/tuntia?/, "tunnin");
+	return text.replace(/tuntia?/, "tunnin");
 }
 
 function futureDays(text) {
-  return text.replace(/päivää?/, "päivän");
+	return text.replace(/päivää?/, "päivän");
 }
 
 function futureWeeks(text) {
-  return text.replace(/(viikko|viikkoa)/, "viikon");
+	return text.replace(/(viikko|viikkoa)/, "viikon");
 }
 
 function futureMonths(text) {
-  return text.replace(/(kuukausi|kuukautta)/, "kuukauden");
+	return text.replace(/(kuukausi|kuukautta)/, "kuukauden");
 }
 
 function futureYears(text) {
-  return text.replace(/(vuosi|vuotta)/, "vuoden");
+	return text.replace(/(vuosi|vuotta)/, "vuoden");
 }
 
 const formatDistanceLocale = {
-  lessThanXSeconds: {
-    one: "alle sekunti",
-    other: "alle {{count}} sekuntia",
-    futureTense: futureSeconds,
-  },
+	lessThanXSeconds: {
+		one: "alle sekunti",
+		other: "alle {{count}} sekuntia",
+		futureTense: futureSeconds,
+	},
 
-  xSeconds: {
-    one: "sekunti",
-    other: "{{count}} sekuntia",
-    futureTense: futureSeconds,
-  },
+	xSeconds: {
+		one: "sekunti",
+		other: "{{count}} sekuntia",
+		futureTense: futureSeconds,
+	},
 
-  halfAMinute: {
-    one: "puoli minuuttia",
-    other: "puoli minuuttia",
-    futureTense: (_text) => "puolen minuutin",
-  },
+	halfAMinute: {
+		one: "puoli minuuttia",
+		other: "puoli minuuttia",
+		futureTense: (_text) => "puolen minuutin",
+	},
 
-  lessThanXMinutes: {
-    one: "alle minuutti",
-    other: "alle {{count}} minuuttia",
-    futureTense: futureMinutes,
-  },
+	lessThanXMinutes: {
+		one: "alle minuutti",
+		other: "alle {{count}} minuuttia",
+		futureTense: futureMinutes,
+	},
 
-  xMinutes: {
-    one: "minuutti",
-    other: "{{count}} minuuttia",
-    futureTense: futureMinutes,
-  },
+	xMinutes: {
+		one: "minuutti",
+		other: "{{count}} minuuttia",
+		futureTense: futureMinutes,
+	},
 
-  aboutXHours: {
-    one: "noin tunti",
-    other: "noin {{count}} tuntia",
-    futureTense: futureHours,
-  },
+	aboutXHours: {
+		one: "noin tunti",
+		other: "noin {{count}} tuntia",
+		futureTense: futureHours,
+	},
 
-  xHours: {
-    one: "tunti",
-    other: "{{count}} tuntia",
-    futureTense: futureHours,
-  },
+	xHours: {
+		one: "tunti",
+		other: "{{count}} tuntia",
+		futureTense: futureHours,
+	},
 
-  xDays: {
-    one: "päivä",
-    other: "{{count}} päivää",
-    futureTense: futureDays,
-  },
+	xDays: {
+		one: "päivä",
+		other: "{{count}} päivää",
+		futureTense: futureDays,
+	},
 
-  aboutXWeeks: {
-    one: "noin viikko",
-    other: "noin {{count}} viikkoa",
-    futureTense: futureWeeks,
-  },
+	aboutXWeeks: {
+		one: "noin viikko",
+		other: "noin {{count}} viikkoa",
+		futureTense: futureWeeks,
+	},
 
-  xWeeks: {
-    one: "viikko",
-    other: "{{count}} viikkoa",
-    futureTense: futureWeeks,
-  },
+	xWeeks: {
+		one: "viikko",
+		other: "{{count}} viikkoa",
+		futureTense: futureWeeks,
+	},
 
-  aboutXMonths: {
-    one: "noin kuukausi",
-    other: "noin {{count}} kuukautta",
-    futureTense: futureMonths,
-  },
+	aboutXMonths: {
+		one: "noin kuukausi",
+		other: "noin {{count}} kuukautta",
+		futureTense: futureMonths,
+	},
 
-  xMonths: {
-    one: "kuukausi",
-    other: "{{count}} kuukautta",
-    futureTense: futureMonths,
-  },
+	xMonths: {
+		one: "kuukausi",
+		other: "{{count}} kuukautta",
+		futureTense: futureMonths,
+	},
 
-  aboutXYears: {
-    one: "noin vuosi",
-    other: "noin {{count}} vuotta",
-    futureTense: futureYears,
-  },
+	aboutXYears: {
+		one: "noin vuosi",
+		other: "noin {{count}} vuotta",
+		futureTense: futureYears,
+	},
 
-  xYears: {
-    one: "vuosi",
-    other: "{{count}} vuotta",
-    futureTense: futureYears,
-  },
+	xYears: {
+		one: "vuosi",
+		other: "{{count}} vuotta",
+		futureTense: futureYears,
+	},
 
-  overXYears: {
-    one: "yli vuosi",
-    other: "yli {{count}} vuotta",
-    futureTense: futureYears,
-  },
+	overXYears: {
+		one: "yli vuosi",
+		other: "yli {{count}} vuotta",
+		futureTense: futureYears,
+	},
 
-  almostXYears: {
-    one: "lähes vuosi",
-    other: "lähes {{count}} vuotta",
-    futureTense: futureYears,
-  },
+	almostXYears: {
+		one: "lähes vuosi",
+		other: "lähes {{count}} vuotta",
+		futureTense: futureYears,
+	},
 };
 
 const formatDistance = (token, count, options) => {
-  const tokenValue = formatDistanceLocale[token];
-  const result =
-    count === 1
-      ? tokenValue.one
-      : tokenValue.other.replace("{{count}}", String(count));
+	const tokenValue = formatDistanceLocale[token];
+	const result =
+		count === 1
+			? tokenValue.one
+			: tokenValue.other.replace("{{count}}", String(count));
 
-  if (options?.addSuffix) {
-    if (options.comparison && options.comparison > 0) {
-      return tokenValue.futureTense(result) + " kuluttua";
-    } else {
-      return result + " sitten";
-    }
-  }
+	if (options?.addSuffix) {
+		if (options.comparison && options.comparison > 0) {
+			return tokenValue.futureTense(result) + " kuluttua";
+		} else {
+			return result + " sitten";
+		}
+	}
 
-  return result;
+	return result;
 };
 exports.formatDistance = formatDistance;

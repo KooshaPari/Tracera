@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link startOfMonth} function options.
  */
 export interface StartOfMonthOptions<ResultDate extends Date>
-  extends ContextOptions<ResultDate> {}
+	extends ContextOptions<ResultDate> {}
 /**
  * @name startOfMonth
  * @category Month Helpers
@@ -28,9 +28,9 @@ export interface StartOfMonthOptions<ResultDate extends Date>
  * //=> Mon Sep 01 2014 00:00:00
  */
 export declare function startOfMonth<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: StartOfMonthOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: StartOfMonthOptions<ResultDate> | undefined,
 ): ResultDate;

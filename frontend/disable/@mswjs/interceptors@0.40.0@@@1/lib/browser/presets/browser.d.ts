@@ -1,9 +1,9 @@
-import { FetchInterceptor } from '../interceptors/fetch/index.js';
-import { XMLHttpRequestInterceptor } from '../interceptors/XMLHttpRequest/index.js';
-import '../glossary-f7ee1c9d.js';
-import '../Interceptor-af98b768.js';
-import '@open-draft/logger';
-import 'strict-event-emitter';
+import { FetchInterceptor } from "../interceptors/fetch/index.js";
+import { XMLHttpRequestInterceptor } from "../interceptors/XMLHttpRequest/index.js";
+import "../glossary-f7ee1c9d.js";
+import "../Interceptor-af98b768.js";
+import "@open-draft/logger";
+import "strict-event-emitter";
 
 /**
  * The default preset provisions the interception of requests

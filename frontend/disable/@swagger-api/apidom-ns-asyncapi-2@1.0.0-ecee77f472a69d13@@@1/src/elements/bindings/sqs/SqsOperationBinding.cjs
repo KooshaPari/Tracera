@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class SqsOperationBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'sqsOperationBinding';
-    this.classes.push('operation-binding');
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "sqsOperationBinding";
+		this.classes.push("operation-binding");
+	}
 }
-var _default = exports.default = SqsOperationBinding;
+var _default = (exports.default = SqsOperationBinding);

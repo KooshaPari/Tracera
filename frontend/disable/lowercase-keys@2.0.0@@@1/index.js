@@ -1,5 +1,4 @@
-'use strict';
-module.exports = object => {
+module.exports = (object) => {
 	const result = {};
 
 	for (const [key, value] of Object.entries(object)) {

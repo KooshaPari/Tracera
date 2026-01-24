@@ -19,7 +19,7 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isAfter(date, dateToCompare) {
-  return +toDate(date) > +toDate(dateToCompare);
+	return +toDate(date) > +toDate(dateToCompare);
 }
 
 // Fallback for modularized imports:

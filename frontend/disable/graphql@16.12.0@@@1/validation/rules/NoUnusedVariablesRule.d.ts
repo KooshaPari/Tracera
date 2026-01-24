@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * No unused variables
  *
@@ -9,5 +9,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-All-Variables-Used
  */
 export declare function NoUnusedVariablesRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

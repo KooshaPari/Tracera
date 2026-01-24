@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Mon Sep 01 2014 11:30:40.300
  */
 function setMilliseconds(date, milliseconds, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setMilliseconds(milliseconds);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setMilliseconds(milliseconds);
+	return _date;
 }

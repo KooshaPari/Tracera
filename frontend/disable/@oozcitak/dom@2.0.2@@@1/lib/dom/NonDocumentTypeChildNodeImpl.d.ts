@@ -4,9 +4,11 @@ import { Element, NonDocumentTypeChildNode } from "./interfaces";
  * other than doctypes. This mixin is implemented by {@link Element} and
  * {@link CharacterData}.
  */
-export declare class NonDocumentTypeChildNodeImpl implements NonDocumentTypeChildNode {
-    /** @inheritdoc */
-    get previousElementSibling(): Element | null;
-    /** @inheritdoc */
-    get nextElementSibling(): Element | null;
+export declare class NonDocumentTypeChildNodeImpl
+	implements NonDocumentTypeChildNode
+{
+	/** @inheritdoc */
+	get previousElementSibling(): Element | null;
+	/** @inheritdoc */
+	get nextElementSibling(): Element | null;
 }

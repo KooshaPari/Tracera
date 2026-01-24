@@ -6,4 +6,6 @@ export type PathType = "file" | "dir" | "symlink";
  * @param fileInfo A FileInfo describes a file and is returned by `stat`,
  *                 `lstat`
  */
-export declare function getFileInfoType(fileInfo: dntShim.Deno.FileInfo): PathType | undefined;
+export declare function getFileInfoType(
+	fileInfo: dntShim.Deno.FileInfo,
+): PathType | undefined;

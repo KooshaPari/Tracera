@@ -1,19 +1,17 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.SchemaCoordinateLexer = void 0;
 
-var _syntaxError = require('../error/syntaxError.js');
+var _syntaxError = require("../error/syntaxError.js");
 
-var _ast = require('./ast.js');
+var _ast = require("./ast.js");
 
-var _characterClasses = require('./characterClasses.js');
+var _characterClasses = require("./characterClasses.js");
 
-var _lexer = require('./lexer.js');
+var _lexer = require("./lexer.js");
 
-var _tokenKind = require('./tokenKind.js');
+var _tokenKind = require("./tokenKind.js");
 
 /**
  * Given a Source schema coordinate, creates a Lexer for that source.
@@ -24,71 +22,71 @@ var _tokenKind = require('./tokenKind.js');
  * whenever called.
  */
 class SchemaCoordinateLexer {
-  /**
-   * The previously focused non-ignored token.
-   */
+	/**
+	 * The previously focused non-ignored token.
+	 */
 
-  /**
-   * The currently focused non-ignored token.
-   */
+	/**
+	 * The currently focused non-ignored token.
+	 */
 
-  /**
-   * The (1-indexed) line containing the current token.
-   * Since a schema coordinate may not contain newline, this value is always 1.
-   */
-  line = 1;
-  /**
-   * The character offset at which the current line begins.
-   * Since a schema coordinate may not contain newline, this value is always 0.
-   */
+	/**
+	 * The (1-indexed) line containing the current token.
+	 * Since a schema coordinate may not contain newline, this value is always 1.
+	 */
+	line = 1;
+	/**
+	 * The character offset at which the current line begins.
+	 * Since a schema coordinate may not contain newline, this value is always 0.
+	 */
 
-  lineStart = 0;
+	lineStart = 0;
 
-  constructor(source) {
-    const startOfFileToken = new _ast.Token(
-      _tokenKind.TokenKind.SOF,
-      0,
-      0,
-      0,
-      0,
-    );
-    this.source = source;
-    this.lastToken = startOfFileToken;
-    this.token = startOfFileToken;
-  }
+	constructor(source) {
+		const startOfFileToken = new _ast.Token(
+			_tokenKind.TokenKind.SOF,
+			0,
+			0,
+			0,
+			0,
+		);
+		this.source = source;
+		this.lastToken = startOfFileToken;
+		this.token = startOfFileToken;
+	}
 
-  get [Symbol.toStringTag]() {
-    return 'SchemaCoordinateLexer';
-  }
-  /**
-   * Advances the token stream to the next non-ignored token.
-   */
+	get [Symbol.toStringTag]() {
+		return "SchemaCoordinateLexer";
+	}
+	/**
+	 * Advances the token stream to the next non-ignored token.
+	 */
 
-  advance() {
-    this.lastToken = this.token;
-    const token = (this.token = this.lookahead());
-    return token;
-  }
-  /**
-   * Looks ahead and returns the next non-ignored token, but does not change
-   * the current Lexer token.
-   */
+	advance() {
+		this.lastToken = this.token;
+		const token = (this.token = this.lookahead());
+		return token;
+	}
+	/**
+	 * Looks ahead and returns the next non-ignored token, but does not change
+	 * the current Lexer token.
+	 */
 
-  lookahead() {
-    let token = this.token;
+	lookahead() {
+		let token = this.token;
 
-    if (token.kind !== _tokenKind.TokenKind.EOF) {
-      // Read the next token and form a link in the token linked-list.
-      const nextToken = readNextToken(this, token.end); // @ts-expect-error next is only mutable during parsing.
+		if (token.kind !== _tokenKind.TokenKind.EOF) {
+			// Read the next token and form a link in the token linked-list.
+			const nextToken = readNextToken(this, token.end); // @ts-expect-error next is only mutable during parsing.
 
-      token.next = nextToken; // @ts-expect-error prev is only mutable during parsing.
+			token.next = nextToken; // @ts-expect-error prev is only mutable during parsing.
 
-      nextToken.prev = token;
-      token = nextToken;
-    }
+			nextToken.prev = token;
+			token = nextToken;
+		}
 
-    return token;
-  }
+		return token;
+	}
 }
 /**
  * Gets the next token from the source starting at the given position.
@@ -97,75 +95,75 @@ class SchemaCoordinateLexer {
 exports.SchemaCoordinateLexer = SchemaCoordinateLexer;
 
 function readNextToken(lexer, start) {
-  const body = lexer.source.body;
-  const bodyLength = body.length;
-  const position = start;
+	const body = lexer.source.body;
+	const bodyLength = body.length;
+	const position = start;
 
-  if (position < bodyLength) {
-    const code = body.charCodeAt(position);
+	if (position < bodyLength) {
+		const code = body.charCodeAt(position);
 
-    switch (code) {
-      case 0x002e:
-        // .
-        return (0, _lexer.createToken)(
-          lexer,
-          _tokenKind.TokenKind.DOT,
-          position,
-          position + 1,
-        );
+		switch (code) {
+			case 0x002e:
+				// .
+				return (0, _lexer.createToken)(
+					lexer,
+					_tokenKind.TokenKind.DOT,
+					position,
+					position + 1,
+				);
 
-      case 0x0028:
-        // (
-        return (0, _lexer.createToken)(
-          lexer,
-          _tokenKind.TokenKind.PAREN_L,
-          position,
-          position + 1,
-        );
+			case 0x0028:
+				// (
+				return (0, _lexer.createToken)(
+					lexer,
+					_tokenKind.TokenKind.PAREN_L,
+					position,
+					position + 1,
+				);
 
-      case 0x0029:
-        // )
-        return (0, _lexer.createToken)(
-          lexer,
-          _tokenKind.TokenKind.PAREN_R,
-          position,
-          position + 1,
-        );
+			case 0x0029:
+				// )
+				return (0, _lexer.createToken)(
+					lexer,
+					_tokenKind.TokenKind.PAREN_R,
+					position,
+					position + 1,
+				);
 
-      case 0x003a:
-        // :
-        return (0, _lexer.createToken)(
-          lexer,
-          _tokenKind.TokenKind.COLON,
-          position,
-          position + 1,
-        );
+			case 0x003a:
+				// :
+				return (0, _lexer.createToken)(
+					lexer,
+					_tokenKind.TokenKind.COLON,
+					position,
+					position + 1,
+				);
 
-      case 0x0040:
-        // @
-        return (0, _lexer.createToken)(
-          lexer,
-          _tokenKind.TokenKind.AT,
-          position,
-          position + 1,
-        );
-    } // Name
+			case 0x0040:
+				// @
+				return (0, _lexer.createToken)(
+					lexer,
+					_tokenKind.TokenKind.AT,
+					position,
+					position + 1,
+				);
+		} // Name
 
-    if ((0, _characterClasses.isNameStart)(code)) {
-      return (0, _lexer.readName)(lexer, position);
-    }
+		if ((0, _characterClasses.isNameStart)(code)) {
+			return (0, _lexer.readName)(lexer, position);
+		}
 
-    throw (0, _syntaxError.syntaxError)(
-      lexer.source,
-      position,
-      `Invalid character: ${(0, _lexer.printCodePointAt)(lexer, position)}.`,
-    );
-  }
+		throw (0, _syntaxError.syntaxError)(
+			lexer.source,
+			position,
+			`Invalid character: ${(0, _lexer.printCodePointAt)(lexer, position)}.`,
+		);
+	}
 
-  return (0, _lexer.createToken)(
-    lexer,
-    _tokenKind.TokenKind.EOF,
-    bodyLength,
-    bodyLength,
-  );
+	return (0, _lexer.createToken)(
+		lexer,
+		_tokenKind.TokenKind.EOF,
+		bodyLength,
+		bodyLength,
+	);
 }

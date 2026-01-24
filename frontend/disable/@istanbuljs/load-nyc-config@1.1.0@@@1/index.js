@@ -1,12 +1,10 @@
-'use strict';
-
-const fs = require('fs');
-const path = require('path');
-const {promisify} = require('util');
-const camelcase = require('camelcase');
-const findUp = require('find-up');
-const resolveFrom = require('resolve-from');
-const getPackageType = require('get-package-type');
+const fs = require("fs");
+const path = require("path");
+const { promisify } = require("util");
+const camelcase = require("camelcase");
+const findUp = require("find-up");
+const resolveFrom = require("resolve-from");
+const getPackageType = require("get-package-type");
 
 const readFile = promisify(fs.readFile);
 
@@ -17,13 +15,13 @@ function isLoading() {
 }
 
 const standardConfigFiles = [
-	'.nycrc',
-	'.nycrc.json',
-	'.nycrc.yml',
-	'.nycrc.yaml',
-	'nyc.config.js',
-	'nyc.config.cjs',
-	'nyc.config.mjs'
+	".nycrc",
+	".nycrc.json",
+	".nycrc.yml",
+	".nycrc.yaml",
+	"nyc.config.js",
+	"nyc.config.cjs",
+	"nyc.config.mjs",
 ];
 
 function camelcasedConfig(config) {
@@ -37,22 +35,22 @@ function camelcasedConfig(config) {
 
 async function findPackage(options) {
 	const cwd = options.cwd || process.env.NYC_CWD || process.cwd();
-	const pkgPath = await findUp('package.json', {cwd});
+	const pkgPath = await findUp("package.json", { cwd });
 	if (pkgPath) {
-		const pkgConfig = JSON.parse(await readFile(pkgPath, 'utf8')).nyc || {};
-		if ('cwd' in pkgConfig) {
+		const pkgConfig = JSON.parse(await readFile(pkgPath, "utf8")).nyc || {};
+		if ("cwd" in pkgConfig) {
 			pkgConfig.cwd = path.resolve(path.dirname(pkgPath), pkgConfig.cwd);
 		}
 
 		return {
 			cwd: path.dirname(pkgPath),
-			pkgConfig
+			pkgConfig,
 		};
 	}
 
 	return {
 		cwd,
-		pkgConfig: {}
+		pkgConfig: {},
 	};
 }
 
@@ -63,23 +61,23 @@ async function actualLoad(configFile) {
 
 	const configExt = path.extname(configFile).toLowerCase();
 	switch (configExt) {
-		case '.js':
+		case ".js":
 			/* istanbul ignore next: coverage for 13.2.0+ is shown in load-esm.js */
-			if (await getPackageType(configFile) === 'module') {
-				return require('./load-esm')(configFile);
+			if ((await getPackageType(configFile)) === "module") {
+				return require("./load-esm")(configFile);
 			}
 
-			/* fallthrough */
-		case '.cjs':
+		/* fallthrough */
+		case ".cjs":
 			return require(configFile);
 		/* istanbul ignore next: coverage for 13.2.0+ is shown in load-esm.js */
-		case '.mjs':
-			return require('./load-esm')(configFile);
-		case '.yml':
-		case '.yaml':
-			return require('js-yaml').load(await readFile(configFile, 'utf8'));
+		case ".mjs":
+			return require("./load-esm")(configFile);
+		case ".yml":
+		case ".yaml":
+			return require("js-yaml").load(await readFile(configFile, "utf8"));
 		default:
-			return JSON.parse(await readFile(configFile, 'utf8'));
+			return JSON.parse(await readFile(configFile, "utf8"));
 	}
 }
 
@@ -98,19 +96,22 @@ async function loadFile(configFile) {
 
 async function applyExtends(config, filename, loopCheck = new Set()) {
 	config = camelcasedConfig(config);
-	if ('extends' in config) {
+	if ("extends" in config) {
 		const extConfigs = [].concat(config.extends);
-		if (extConfigs.some(e => typeof e !== 'string')) {
+		if (extConfigs.some((e) => typeof e !== "string")) {
 			throw new TypeError(`${filename} contains an invalid 'extends' option`);
 		}
 
 		delete config.extends;
 		const filePath = path.dirname(filename);
 		for (const extConfig of extConfigs) {
-			const configFile = resolveFrom.silent(filePath, extConfig) ||
-				resolveFrom.silent(filePath, './' + extConfig);
+			const configFile =
+				resolveFrom.silent(filePath, extConfig) ||
+				resolveFrom.silent(filePath, "./" + extConfig);
 			if (!configFile) {
-				throw new Error(`Could not resolve configuration file ${extConfig} from ${path.dirname(filename)}.`);
+				throw new Error(
+					`Could not resolve configuration file ${extConfig} from ${path.dirname(filename)}.`,
+				);
 			}
 
 			if (loopCheck.has(configFile)) {
@@ -121,14 +122,17 @@ async function applyExtends(config, filename, loopCheck = new Set()) {
 
 			// eslint-disable-next-line no-await-in-loop
 			const configLoaded = await loadFile(configFile);
-			if ('cwd' in configLoaded) {
-				configLoaded.cwd = path.resolve(path.dirname(configFile), configLoaded.cwd);
+			if ("cwd" in configLoaded) {
+				configLoaded.cwd = path.resolve(
+					path.dirname(configFile),
+					configLoaded.cwd,
+				);
 			}
 
 			Object.assign(
 				config,
 				// eslint-disable-next-line no-await-in-loop
-				await applyExtends(configLoaded, configFile, loopCheck)
+				await applyExtends(configLoaded, configFile, loopCheck),
 			);
 		}
 	}
@@ -137,20 +141,22 @@ async function applyExtends(config, filename, loopCheck = new Set()) {
 }
 
 async function loadNycConfig(options = {}) {
-	const {cwd, pkgConfig} = await findPackage(options);
+	const { cwd, pkgConfig } = await findPackage(options);
 	const configFiles = [].concat(options.nycrcPath || standardConfigFiles);
-	const configFile = await findUp(configFiles, {cwd});
+	const configFile = await findUp(configFiles, { cwd });
 	if (options.nycrcPath && !configFile) {
-		throw new Error(`Requested configuration file ${options.nycrcPath} not found`);
+		throw new Error(
+			`Requested configuration file ${options.nycrcPath} not found`,
+		);
 	}
 
 	const config = {
 		cwd,
-		...(await applyExtends(pkgConfig, path.join(cwd, 'package.json'))),
-		...(await applyExtends(await loadFile(configFile), configFile))
+		...(await applyExtends(pkgConfig, path.join(cwd, "package.json"))),
+		...(await applyExtends(await loadFile(configFile), configFile)),
 	};
 
-	const arrayFields = ['require', 'extension', 'exclude', 'include'];
+	const arrayFields = ["require", "extension", "exclude", "include"];
 	for (const arrayField of arrayFields) {
 		if (config[arrayField]) {
 			config[arrayField] = [].concat(config[arrayField]);
@@ -162,5 +168,5 @@ async function loadNycConfig(options = {}) {
 
 module.exports = {
 	loadNycConfig,
-	isLoading
+	isLoading,
 };

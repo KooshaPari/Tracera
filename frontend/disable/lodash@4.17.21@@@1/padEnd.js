@@ -1,7 +1,7 @@
-var createPadding = require('./_createPadding'),
-    stringSize = require('./_stringSize'),
-    toInteger = require('./toInteger'),
-    toString = require('./toString');
+var createPadding = require("./_createPadding"),
+	stringSize = require("./_stringSize"),
+	toInteger = require("./toInteger"),
+	toString = require("./toString");
 
 /**
  * Pads `string` on the right side if it's shorter than `length`. Padding
@@ -27,13 +27,13 @@ var createPadding = require('./_createPadding'),
  * // => 'abc'
  */
 function padEnd(string, length, chars) {
-  string = toString(string);
-  length = toInteger(length);
+	string = toString(string);
+	length = toInteger(length);
 
-  var strLength = length ? stringSize(string) : 0;
-  return (length && strLength < length)
-    ? (string + createPadding(length - strLength, chars))
-    : string;
+	var strLength = length ? stringSize(string) : 0;
+	return length && strLength < length
+		? string + createPadding(length - strLength, chars)
+		: string;
 }
 
 module.exports = padEnd;

@@ -18,4 +18,6 @@ import type { Reader } from "../io/types.js";
  *
  * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} directly.
  */
-export declare function readerFromStreamReader(streamReader: dntShim.ReadableStreamDefaultReader<Uint8Array>): Reader;
+export declare function readerFromStreamReader(
+	streamReader: dntShim.ReadableStreamDefaultReader<Uint8Array>,
+): Reader;

@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../../actual/string/virtual/blink');
+"use strict";
+var parent = require("../../../actual/string/virtual/blink");
 
 module.exports = parent;

@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    baseUniq = require('./_baseUniq');
+var baseIteratee = require("./_baseIteratee"),
+	baseUniq = require("./_baseUniq");
 
 /**
  * This method is like `_.uniq` except that it accepts `iteratee` which is
@@ -25,7 +25,9 @@ var baseIteratee = require('./_baseIteratee'),
  * // => [{ 'x': 1 }, { 'x': 2 }]
  */
 function uniqBy(array, iteratee) {
-  return (array && array.length) ? baseUniq(array, baseIteratee(iteratee, 2)) : [];
+	return array && array.length
+		? baseUniq(array, baseIteratee(iteratee, 2))
+		: [];
 }
 
 module.exports = uniqBy;

@@ -34,12 +34,12 @@ var _index4 = require("./toDate.cjs");
  * //=> 6
  */
 function getWeeksInMonth(date, options) {
-  const contextDate = (0, _index4.toDate)(date, options?.in);
-  return (
-    (0, _index.differenceInCalendarWeeks)(
-      (0, _index2.lastDayOfMonth)(contextDate, options),
-      (0, _index3.startOfMonth)(contextDate, options),
-      options,
-    ) + 1
-  );
+	const contextDate = (0, _index4.toDate)(date, options?.in);
+	return (
+		(0, _index.differenceInCalendarWeeks)(
+			(0, _index2.lastDayOfMonth)(contextDate, options),
+			(0, _index3.startOfMonth)(contextDate, options),
+			options,
+		) + 1
+	);
 }

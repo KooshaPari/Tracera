@@ -4,17 +4,17 @@
  * destination is a subdirectory of the source.
  */
 export declare class SubdirectoryMoveError extends Error {
-    /** Constructs a new instance. */
-    constructor(src: string | URL, dest: string | URL);
+	/** Constructs a new instance. */
+	constructor(src: string | URL, dest: string | URL);
 }
 /** Options for {@linkcode move} and {@linkcode moveSync}. */
 export interface MoveOptions {
-    /**
-     * Whether the destination file should be overwritten if it already exists.
-     *
-     * @default {false}
-     */
-    overwrite?: boolean;
+	/**
+	 * Whether the destination file should be overwritten if it already exists.
+	 *
+	 * @default {false}
+	 */
+	overwrite?: boolean;
 }
 /**
  * Moves a file or directory.
@@ -26,7 +26,11 @@ export interface MoveOptions {
  * move("./foo", "./bar"); // returns a promise
  * ```
  */
-export declare function move(src: string | URL, dest: string | URL, { overwrite }?: MoveOptions): Promise<void>;
+export declare function move(
+	src: string | URL,
+	dest: string | URL,
+	{ overwrite }?: MoveOptions,
+): Promise<void>;
 /**
  * Moves a file or directory synchronously.
  *
@@ -37,4 +41,8 @@ export declare function move(src: string | URL, dest: string | URL, { overwrite 
  * moveSync("./foo", "./bar"); // void
  * ```
  */
-export declare function moveSync(src: string | URL, dest: string | URL, { overwrite }?: MoveOptions): void;
+export declare function moveSync(
+	src: string | URL,
+	dest: string | URL,
+	{ overwrite }?: MoveOptions,
+): void;

@@ -90,9 +90,9 @@ var _index2 = require("./formatDistance.cjs");
  * //=> 'pli ol 1 jaro'
  */
 function formatDistanceToNow(date, options) {
-  return (0, _index2.formatDistance)(
-    date,
-    (0, _index.constructNow)(date),
-    options,
-  );
+	return (0, _index2.formatDistance)(
+		date,
+		(0, _index.constructNow)(date),
+		options,
+	);
 }

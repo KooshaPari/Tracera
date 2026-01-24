@@ -12,12 +12,12 @@ export declare function removeSubsets(nodes: AnyNode[]): AnyNode[];
  * @category Helpers
  * @see {@link http://dom.spec.whatwg.org/#dom-node-comparedocumentposition}
  */
-export declare const enum DocumentPosition {
-    DISCONNECTED = 1,
-    PRECEDING = 2,
-    FOLLOWING = 4,
-    CONTAINS = 8,
-    CONTAINED_BY = 16
+export declare enum DocumentPosition {
+	DISCONNECTED = 1,
+	PRECEDING = 2,
+	FOLLOWING = 4,
+	CONTAINS = 8,
+	CONTAINED_BY = 16,
 }
 /**
  * Compare the position of one node against another node in any other document,
@@ -45,7 +45,10 @@ export declare const enum DocumentPosition {
  * See http://dom.spec.whatwg.org/#dom-node-comparedocumentposition for
  * a description of these values.
  */
-export declare function compareDocumentPosition(nodeA: AnyNode, nodeB: AnyNode): number;
+export declare function compareDocumentPosition(
+	nodeA: AnyNode,
+	nodeB: AnyNode,
+): number;
 /**
  * Sort an array of nodes based on their relative position in the document,
  * removing any duplicate nodes. If the array contains nodes that do not belong

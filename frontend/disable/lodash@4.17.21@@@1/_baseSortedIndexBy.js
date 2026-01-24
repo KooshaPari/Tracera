@@ -1,12 +1,12 @@
-var isSymbol = require('./isSymbol');
+var isSymbol = require("./isSymbol");
 
 /** Used as references for the maximum length and index of an array. */
 var MAX_ARRAY_LENGTH = 4294967295,
-    MAX_ARRAY_INDEX = MAX_ARRAY_LENGTH - 1;
+	MAX_ARRAY_INDEX = MAX_ARRAY_LENGTH - 1;
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeFloor = Math.floor,
-    nativeMin = Math.min;
+	nativeMin = Math.min;
 
 /**
  * The base implementation of `_.sortedIndexBy` and `_.sortedLastIndexBy`
@@ -22,46 +22,50 @@ var nativeFloor = Math.floor,
  *  into `array`.
  */
 function baseSortedIndexBy(array, value, iteratee, retHighest) {
-  var low = 0,
-      high = array == null ? 0 : array.length;
-  if (high === 0) {
-    return 0;
-  }
+	var low = 0,
+		high = array == null ? 0 : array.length;
+	if (high === 0) {
+		return 0;
+	}
 
-  value = iteratee(value);
-  var valIsNaN = value !== value,
-      valIsNull = value === null,
-      valIsSymbol = isSymbol(value),
-      valIsUndefined = value === undefined;
+	value = iteratee(value);
+	var valIsNaN = value !== value,
+		valIsNull = value === null,
+		valIsSymbol = isSymbol(value),
+		valIsUndefined = value === undefined;
 
-  while (low < high) {
-    var mid = nativeFloor((low + high) / 2),
-        computed = iteratee(array[mid]),
-        othIsDefined = computed !== undefined,
-        othIsNull = computed === null,
-        othIsReflexive = computed === computed,
-        othIsSymbol = isSymbol(computed);
+	while (low < high) {
+		var mid = nativeFloor((low + high) / 2),
+			computed = iteratee(array[mid]),
+			othIsDefined = computed !== undefined,
+			othIsNull = computed === null,
+			othIsReflexive = computed === computed,
+			othIsSymbol = isSymbol(computed);
 
-    if (valIsNaN) {
-      var setLow = retHighest || othIsReflexive;
-    } else if (valIsUndefined) {
-      setLow = othIsReflexive && (retHighest || othIsDefined);
-    } else if (valIsNull) {
-      setLow = othIsReflexive && othIsDefined && (retHighest || !othIsNull);
-    } else if (valIsSymbol) {
-      setLow = othIsReflexive && othIsDefined && !othIsNull && (retHighest || !othIsSymbol);
-    } else if (othIsNull || othIsSymbol) {
-      setLow = false;
-    } else {
-      setLow = retHighest ? (computed <= value) : (computed < value);
-    }
-    if (setLow) {
-      low = mid + 1;
-    } else {
-      high = mid;
-    }
-  }
-  return nativeMin(high, MAX_ARRAY_INDEX);
+		if (valIsNaN) {
+			var setLow = retHighest || othIsReflexive;
+		} else if (valIsUndefined) {
+			setLow = othIsReflexive && (retHighest || othIsDefined);
+		} else if (valIsNull) {
+			setLow = othIsReflexive && othIsDefined && (retHighest || !othIsNull);
+		} else if (valIsSymbol) {
+			setLow =
+				othIsReflexive &&
+				othIsDefined &&
+				!othIsNull &&
+				(retHighest || !othIsSymbol);
+		} else if (othIsNull || othIsSymbol) {
+			setLow = false;
+		} else {
+			setLow = retHighest ? computed <= value : computed < value;
+		}
+		if (setLow) {
+			low = mid + 1;
+		} else {
+			high = mid;
+		}
+	}
+	return nativeMin(high, MAX_ARRAY_INDEX);
 }
 
 module.exports = baseSortedIndexBy;

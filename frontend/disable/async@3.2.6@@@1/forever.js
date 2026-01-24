@@ -1,26 +1,26 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _onlyOnce = require('./internal/onlyOnce.js');
+var _onlyOnce = require("./internal/onlyOnce.js");
 
 var _onlyOnce2 = _interopRequireDefault(_onlyOnce);
 
-var _ensureAsync = require('./ensureAsync.js');
+var _ensureAsync = require("./ensureAsync.js");
 
 var _ensureAsync2 = _interopRequireDefault(_ensureAsync);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Calls the asynchronous function `fn` with a callback parameter that allows it
@@ -54,15 +54,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * );
  */
 function forever(fn, errback) {
-    var done = (0, _onlyOnce2.default)(errback);
-    var task = (0, _wrapAsync2.default)((0, _ensureAsync2.default)(fn));
+	var done = (0, _onlyOnce2.default)(errback);
+	var task = (0, _wrapAsync2.default)((0, _ensureAsync2.default)(fn));
 
-    function next(err) {
-        if (err) return done(err);
-        if (err === false) return;
-        task(next);
-    }
-    return next();
+	function next(err) {
+		if (err) return done(err);
+		if (err === false) return;
+		task(next);
+	}
+	return next();
 }
 exports.default = (0, _awaitify2.default)(forever, 2);
 module.exports = exports.default;

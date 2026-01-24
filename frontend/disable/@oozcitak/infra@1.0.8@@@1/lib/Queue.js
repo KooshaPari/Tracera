@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Appends the given item to the queue.
@@ -7,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @param item - an item
  */
 function enqueue(list, item) {
-    list.push(item);
+	list.push(item);
 }
 exports.enqueue = enqueue;
 /**
@@ -16,7 +15,7 @@ exports.enqueue = enqueue;
  * @param list - a list
  */
 function dequeue(list) {
-    return list.shift() || null;
+	return list.shift() || null;
 }
 exports.dequeue = dequeue;
 //# sourceMappingURL=Queue.js.map

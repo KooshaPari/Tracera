@@ -8,20 +8,16 @@
  * @public
  */
 export class Point {
-  static type = 'point';
-  type = Point.type;
-  row;
-  column;
-  char;
-  constructor({
-    row,
-    column,
-    char
-  }) {
-    this.row = row;
-    this.column = column;
-    this.char = char;
-  }
+	static type = "point";
+	type = Point.type;
+	row;
+	column;
+	char;
+	constructor({ row, column, char }) {
+		this.row = row;
+		this.column = column;
+		this.char = char;
+	}
 }
 
 /**
@@ -32,16 +28,13 @@ export class Point {
  * @public
  */
 class Position {
-  static type = 'position';
-  type = Position.type;
-  start;
-  end;
-  constructor({
-    start,
-    end
-  }) {
-    this.start = start;
-    this.end = end;
-  }
+	static type = "position";
+	type = Position.type;
+	start;
+	end;
+	constructor({ start, end }) {
+		this.start = start;
+		this.end = end;
+	}
 }
 export default Position;

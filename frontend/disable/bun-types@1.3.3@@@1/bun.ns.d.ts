@@ -1,5 +1,5 @@
 import * as BunModule from "bun";
 
 declare global {
-  export import Bun = BunModule;
+	export import Bun = BunModule;
 }

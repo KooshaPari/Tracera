@@ -4,16 +4,16 @@ export type AbortControllerEsque = new () => AbortControllerInstanceEsque;
  * Allows you to abort one or more requests.
  */
 export interface AbortControllerInstanceEsque {
-  /**
-   * The AbortSignal object associated with this object.
-   */
-  readonly signal: AbortSignal;
+	/**
+	 * The AbortSignal object associated with this object.
+	 */
+	readonly signal: AbortSignal;
 
-  /**
-   * Sets this object's AbortSignal's aborted flag and signals to
-   * any observers that the associated activity is to be aborted.
-   */
-  abort(): void;
+	/**
+	 * Sets this object's AbortSignal's aborted flag and signals to
+	 * any observers that the associated activity is to be aborted.
+	 */
+	abort(): void;
 }
 
 /**
@@ -24,8 +24,8 @@ export interface AbortControllerInstanceEsque {
  * interface, go ahead and add it.
  */
 export type FetchEsque = (
-  input: RequestInfo | URL | string,
-  init?: RequestInit | RequestInitEsque,
+	input: RequestInfo | URL | string,
+	init?: RequestInit | RequestInitEsque,
 ) => Promise<ResponseEsque>;
 
 /**
@@ -33,12 +33,12 @@ export type FetchEsque = (
  * their own fetch types, such as undici and node-fetch.
  */
 export type NativeFetchEsque = (
-  url: URL | string,
-  init?: NodeFetchRequestInitEsque,
+	url: URL | string,
+	init?: NodeFetchRequestInitEsque,
 ) => Promise<ResponseEsque>;
 
 export interface NodeFetchRequestInitEsque {
-  body?: string;
+	body?: string;
 }
 
 /**
@@ -49,25 +49,25 @@ export interface NodeFetchRequestInitEsque {
  * interface, go ahead and add it.
  */
 export interface RequestInitEsque {
-  /**
-   * Sets the request's body.
-   */
-  body?: FormData | ReadableStream | string | null;
+	/**
+	 * Sets the request's body.
+	 */
+	body?: FormData | ReadableStream | string | null;
 
-  /**
-   * Sets the request's associated headers.
-   */
-  headers?: [string, string][] | Record<string, string>;
+	/**
+	 * Sets the request's associated headers.
+	 */
+	headers?: [string, string][] | Record<string, string>;
 
-  /**
-   * The request's HTTP-style method.
-   */
-  method?: string;
+	/**
+	 * The request's HTTP-style method.
+	 */
+	method?: string;
 
-  /**
-   * Sets the request's signal.
-   */
-  signal?: AbortSignal | null;
+	/**
+	 * Sets the request's signal.
+	 */
+	signal?: AbortSignal | null;
 }
 
 /**
@@ -75,7 +75,7 @@ export interface RequestInitEsque {
  * @see ReadableStream from lib.dom.d.ts
  */
 export type WebReadableStreamEsque = {
-  getReader: () => ReadableStreamDefaultReader<Uint8Array>;
+	getReader: () => ReadableStreamDefaultReader<Uint8Array>;
 };
 
 /**
@@ -83,14 +83,14 @@ export type WebReadableStreamEsque = {
  * @see Response from lib.dom.d.ts
  */
 export interface ResponseEsque {
-  readonly body?: NodeJS.ReadableStream | WebReadableStreamEsque | null;
-  /**
-   * @remarks
-   * The built-in Response::json() method returns Promise<any>, but
-   * that's not as type-safe as unknown. We use unknown because we're
-   * more type-safe. You do want more type safety, right? 😉
-   */
-  json(): Promise<unknown>;
+	readonly body?: NodeJS.ReadableStream | WebReadableStreamEsque | null;
+	/**
+	 * @remarks
+	 * The built-in Response::json() method returns Promise<any>, but
+	 * that's not as type-safe as unknown. We use unknown because we're
+	 * more type-safe. You do want more type safety, right? 😉
+	 */
+	json(): Promise<unknown>;
 }
 
 /**

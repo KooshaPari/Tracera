@@ -37,9 +37,9 @@ import { differenceInMilliseconds } from "./differenceInMilliseconds.js";
  * //=> -1
  */
 export function differenceInMinutes(dateLeft, dateRight, options) {
-  const diff =
-    differenceInMilliseconds(dateLeft, dateRight) / millisecondsInMinute;
-  return getRoundingMethod(options?.roundingMethod)(diff);
+	const diff =
+		differenceInMilliseconds(dateLeft, dateRight) / millisecondsInMinute;
+	return getRoundingMethod(options?.roundingMethod)(diff);
 }
 
 // Fallback for modularized imports:

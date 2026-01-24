@@ -44,10 +44,10 @@ import { toDate } from "./toDate.js";
  * //=> Sun Jan 4 2004 00:00:00
  */
 export function setWeek(date, week, options) {
-  const date_ = toDate(date, options?.in);
-  const diff = getWeek(date_, options) - week;
-  date_.setDate(date_.getDate() - diff * 7);
-  return toDate(date_, options?.in);
+	const date_ = toDate(date, options?.in);
+	const diff = getWeek(date_, options) - week;
+	date_.setDate(date_.getDate() - diff * 7);
+	return toDate(date_, options?.in);
 }
 
 // Fallback for modularized imports:

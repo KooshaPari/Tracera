@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> 1100
  */
 function differenceInMilliseconds(laterDate, earlierDate) {
-  return +(0, _index.toDate)(laterDate) - +(0, _index.toDate)(earlierDate);
+	return +(0, _index.toDate)(laterDate) - +(0, _index.toDate)(earlierDate);
 }

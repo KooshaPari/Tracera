@@ -5,9 +5,9 @@ type SourceColumn = number;
 type NamesIndex = number;
 
 export type SourceMapSegment =
-  | [GeneratedColumn]
-  | [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn]
-  | [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn, NamesIndex];
+	| [GeneratedColumn]
+	| [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn]
+	| [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn, NamesIndex];
 
 export const COLUMN = 0;
 export const SOURCES_INDEX = 1;

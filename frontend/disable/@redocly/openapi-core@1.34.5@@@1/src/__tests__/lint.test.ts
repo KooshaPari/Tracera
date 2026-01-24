@@ -1,16 +1,19 @@
-import * as path from 'path';
-import { outdent } from 'outdent';
-
-import { lintFromString, lintConfig, lintDocument, lint } from '../lint';
-import { BaseResolver } from '../resolve';
-import { createConfig, loadConfig } from '../config/load';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../__tests__/utils';
-import { detectSpec } from '../oas-types';
-import { rootRedoclyConfigSchema } from '@redocly/config';
-import { createConfigTypes } from '../types/redocly-yaml';
+import { rootRedoclyConfigSchema } from "@redocly/config";
+import { outdent } from "outdent";
+import * as path from "path";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../__tests__/utils";
+import { createConfig, loadConfig } from "../config/load";
+import { lint, lintConfig, lintDocument, lintFromString } from "../lint";
+import { detectSpec } from "../oas-types";
+import { BaseResolver } from "../resolve";
+import { createConfigTypes } from "../types/redocly-yaml";
 
 const testPortalConfig = parseYamlToDocument(
-  outdent`
+	outdent`
     licenseKey: 123 # Must be a string
 
     apis:
@@ -261,14 +264,14 @@ const testPortalConfig = parseYamlToDocument(
             minimumLevel: Silver
 
   `,
-  ''
+	"",
 );
 
-describe('lint', () => {
-  it('lintFromString should work', async () => {
-    const results = await lintFromString({
-      absoluteRef: '/test/spec.yaml',
-      source: outdent`
+describe("lint", () => {
+	it("lintFromString should work", async () => {
+		const results = await lintFromString({
+			absoluteRef: "/test/spec.yaml",
+			source: outdent`
         openapi: 3.0.0
         info:
           title: Test API
@@ -280,10 +283,12 @@ describe('lint', () => {
           - url: http://redocly-example.com
         paths: {}
       `,
-      config: await loadConfig({ configPath: path.join(__dirname, 'fixtures/redocly.yaml') }),
-    });
+			config: await loadConfig({
+				configPath: path.join(__dirname, "fixtures/redocly.yaml"),
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -301,18 +306,19 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('lint should work', async () => {
-    const results = await lint({
-      ref: path.join(__dirname, 'fixtures/lint/openapi.yaml'),
-      config: await loadConfig({
-        configPath: path.join(__dirname, 'fixtures/redocly.yaml'),
-      }),
-    });
+	it("lint should work", async () => {
+		const results = await lint({
+			ref: path.join(__dirname, "fixtures/lint/openapi.yaml"),
+			config: await loadConfig({
+				configPath: path.join(__dirname, "fixtures/redocly.yaml"),
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, path.join(__dirname, 'fixtures/lint/')))
-      .toMatchInlineSnapshot(`
+		expect(
+			replaceSourceWithRef(results, path.join(__dirname, "fixtures/lint/")),
+		).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -330,11 +336,11 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('lintConfig should work', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("lintConfig should work", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         apis: error string
         plugins:
           - './local-plugin.js'
@@ -359,12 +365,12 @@ describe('lint', () => {
             showConsole: true # Not expected anymore
             layout: wrong-option
       `,
-      ''
-    );
-    const config = await createConfig({});
-    const results = await lintConfig({ document, config });
+			"",
+		);
+		const config = await createConfig({});
+		const results = await lintConfig({ document, config });
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -396,23 +402,23 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('lintConfig should detect wrong fields and suggest correct ones', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("lintConfig should detect wrong fields and suggest correct ones", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         api:
           name@version:
             root: ./file.yaml
         rules:
           operation-2xx-response: warn
       `,
-      ''
-    );
-    const config = await createConfig({});
-    const results = await lintConfig({ document, config });
+			"",
+		);
+		const config = await createConfig({});
+		const results = await lintConfig({ document, config });
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -435,11 +441,11 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('lintConfig should work with legacy fields - referenceDocs', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("lintConfig should work with legacy fields - referenceDocs", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         apis:
           entry:
             root: ./file.yaml
@@ -448,12 +454,12 @@ describe('lint', () => {
         referenceDocs:
           showConsole: true
       `,
-      ''
-    );
-    const config = await createConfig({});
-    const results = await lintConfig({ document, config });
+			"",
+		);
+		const config = await createConfig({});
+		const results = await lintConfig({ document, config });
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -471,11 +477,11 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it("'plugins' shouldn't be allowed in 'apis'", async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("'plugins' shouldn't be allowed in 'apis'", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         apis:
           main:
             root: ./main.yaml
@@ -484,12 +490,12 @@ describe('lint', () => {
         plugins:
         - './local-plugin.js'
       `,
-      ''
-    );
-    const config = await createConfig({});
-    const results = await lintConfig({ document, config });
+			"",
+		);
+		const config = await createConfig({});
+		const results = await lintConfig({ document, config });
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -507,14 +513,14 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('lintConfig should detect wrong fields in the default configuration after merging with the portal config schema', async () => {
-    const document = testPortalConfig;
-    const config = await createConfig({});
-    const results = await lintConfig({ document, config });
+	it("lintConfig should detect wrong fields in the default configuration after merging with the portal config schema", async () => {
+		const document = testPortalConfig;
+		const config = await createConfig({});
+		const results = await lintConfig({ document, config });
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -1111,25 +1117,25 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('lintConfig should alternate its behavior when supplied externalConfigTypes', async () => {
-    const document = testPortalConfig;
-    const config = await createConfig({});
-    const results = await lintConfig({
-      document,
-      externalConfigTypes: createConfigTypes(
-        {
-          type: 'object',
-          properties: { theme: rootRedoclyConfigSchema.properties.theme },
-          additionalProperties: false,
-        },
-        config
-      ),
-      config,
-    });
+	it("lintConfig should alternate its behavior when supplied externalConfigTypes", async () => {
+		const document = testPortalConfig;
+		const config = await createConfig({});
+		const results = await lintConfig({
+			document,
+			externalConfigTypes: createConfigTypes(
+				{
+					type: "object",
+					properties: { theme: rootRedoclyConfigSchema.properties.theme },
+					additionalProperties: false,
+				},
+				config,
+			),
+			config,
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -1371,11 +1377,11 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it("'const' can have any type", async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("'const' can have any type", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: "3.1.0"
         info:
           version: 1.0.0
@@ -1402,63 +1408,69 @@ describe('lint', () => {
                         type: string
                         const: ABC
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { spec: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { spec: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('detect OpenAPI should throw an error when version is not string', () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("detect OpenAPI should throw an error when version is not string", () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0
       `,
-      ''
-    );
-    expect(() => detectSpec(testDocument.parsed)).toThrow(
-      `Invalid OpenAPI version: should be a string but got "number"`
-    );
-  });
+			"",
+		);
+		expect(() => detectSpec(testDocument.parsed)).toThrow(
+			`Invalid OpenAPI version: should be a string but got "number"`,
+		);
+	});
 
-  it('detect unsupported OpenAPI version', () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("detect unsupported OpenAPI version", () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
         openapi: 1.0.4
       `,
-      ''
-    );
-    expect(() => detectSpec(testDocument.parsed)).toThrow(`Unsupported OpenAPI version: 1.0.4`);
-  });
+			"",
+		);
+		expect(() => detectSpec(testDocument.parsed)).toThrow(
+			`Unsupported OpenAPI version: 1.0.4`,
+		);
+	});
 
-  it('detect unsupported AsyncAPI version', () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("detect unsupported AsyncAPI version", () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
         asyncapi: 1.0.4
       `,
-      ''
-    );
-    expect(() => detectSpec(testDocument.parsed)).toThrow(`Unsupported AsyncAPI version: 1.0.4`);
-  });
+			"",
+		);
+		expect(() => detectSpec(testDocument.parsed)).toThrow(
+			`Unsupported AsyncAPI version: 1.0.4`,
+		);
+	});
 
-  it('detect unsupported spec format', () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("detect unsupported spec format", () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
         notapi: 3.1.0
       `,
-      ''
-    );
-    expect(() => detectSpec(testDocument.parsed)).toThrow(`Unsupported specification`);
-  });
+			"",
+		);
+		expect(() => detectSpec(testDocument.parsed)).toThrow(
+			`Unsupported specification`,
+		);
+	});
 
-  it("spec rule shouldn't throw an error for named callback", async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("spec rule shouldn't throw an error for named callback", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         info:
           title: Callback test
@@ -1481,22 +1493,22 @@ describe('lint', () => {
                     '200':
                       description: callback successfully processed
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { spec: 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: { spec: "error" } }),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should ignore error because ignore file passed', async () => {
-    const absoluteRef = path.join(__dirname, 'fixtures/openapi.yaml');
-    const document = parseYamlToDocument(
-      outdent`
+	it("should ignore error because ignore file passed", async () => {
+		const absoluteRef = path.join(__dirname, "fixtures/openapi.yaml");
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         info:
           version: 1.0.0
@@ -1515,37 +1527,37 @@ describe('lint', () => {
                   summary: Exist
                   description: example description
       `,
-      absoluteRef
-    );
+			absoluteRef,
+		);
 
-    const configFilePath = path.join(__dirname, 'fixtures');
+		const configFilePath = path.join(__dirname, "fixtures");
 
-    const result = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { 'operation-operationId': 'error' },
-        decorators: undefined,
-        configPath: configFilePath,
-      }),
-    });
-    expect(result).toHaveLength(1);
-    expect(result).toMatchObject([
-      {
-        ignored: true,
-        location: [{ pointer: '#/paths/~1pets~1{petId}/post/operationId' }],
-        message: 'Operation object should contain `operationId` field.',
-        ruleId: 'operation-operationId',
-        severity: 'error',
-      },
-    ]);
-    expect(result[0]).toHaveProperty('ignored', true);
-    expect(result[0]).toHaveProperty('ruleId', 'operation-operationId');
-  });
+		const result = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-operationId": "error" },
+				decorators: undefined,
+				configPath: configFilePath,
+			}),
+		});
+		expect(result).toHaveLength(1);
+		expect(result).toMatchObject([
+			{
+				ignored: true,
+				location: [{ pointer: "#/paths/~1pets~1{petId}/post/operationId" }],
+				message: "Operation object should contain `operationId` field.",
+				ruleId: "operation-operationId",
+				severity: "error",
+			},
+		]);
+		expect(result[0]).toHaveProperty("ignored", true);
+		expect(result[0]).toHaveProperty("ruleId", "operation-operationId");
+	});
 
-  it('should throw an error for dependentRequired not expected here - OAS 3.0.x', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should throw an error for dependentRequired not expected here - OAS 3.0.x", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.3
         info:
           title: test json schema validation keyword - dependentRequired
@@ -1581,22 +1593,28 @@ describe('lint', () => {
                 name:
                 - age
       `,
-      ''
-    );
+			"",
+		);
 
-    const configFilePath = path.join(__dirname, '..', '..', '..', 'redocly.yaml');
+		const configFilePath = path.join(
+			__dirname,
+			"..",
+			"..",
+			"..",
+			"redocly.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { spec: 'error' },
-        decorators: undefined,
-        configPath: configFilePath,
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { spec: "error" },
+				decorators: undefined,
+				configPath: configFilePath,
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -1617,11 +1635,11 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not throw an error for dependentRequired not expected here - OAS 3.1.x', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not throw an error for dependentRequired not expected here - OAS 3.1.x", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         info:
           title: test json schema validation keyword - dependentRequired
@@ -1657,27 +1675,33 @@ describe('lint', () => {
                 name:
                 - age
       `,
-      ''
-    );
+			"",
+		);
 
-    const configFilePath = path.join(__dirname, '..', '..', '..', 'redocly.yaml');
+		const configFilePath = path.join(
+			__dirname,
+			"..",
+			"..",
+			"..",
+			"redocly.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { spec: 'error' },
-        decorators: undefined,
-        configPath: configFilePath,
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { spec: "error" },
+				decorators: undefined,
+				configPath: configFilePath,
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should throw an error for $schema not expected here - OAS 3.0.x', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should throw an error for $schema not expected here - OAS 3.0.x", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.4
         info:
           title: test json schema validation keyword $schema - should use an OAS Schema, not JSON Schema
@@ -1696,22 +1720,28 @@ describe('lint', () => {
                         type: object
                         properties: {}
       `,
-      ''
-    );
+			"",
+		);
 
-    const configFilePath = path.join(__dirname, '..', '..', '..', 'redocly.yaml');
+		const configFilePath = path.join(
+			__dirname,
+			"..",
+			"..",
+			"..",
+			"redocly.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { spec: 'error' },
-        decorators: undefined,
-        configPath: configFilePath,
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { spec: "error" },
+				decorators: undefined,
+				configPath: configFilePath,
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -1729,11 +1759,11 @@ describe('lint', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should allow for $schema to be defined - OAS 3.1.x', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should allow for $schema to be defined - OAS 3.1.x", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.1
         info:
           title: test json schema validation keyword $schema - should allow a JSON Schema
@@ -1752,21 +1782,27 @@ describe('lint', () => {
                         type: object
                         properties: {}
       `,
-      ''
-    );
+			"",
+		);
 
-    const configFilePath = path.join(__dirname, '..', '..', '..', 'redocly.yaml');
+		const configFilePath = path.join(
+			__dirname,
+			"..",
+			"..",
+			"..",
+			"redocly.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { spec: 'error' },
-        decorators: undefined,
-        configPath: configFilePath,
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { spec: "error" },
+				decorators: undefined,
+				configPath: configFilePath,
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

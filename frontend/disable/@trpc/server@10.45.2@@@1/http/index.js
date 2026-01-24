@@ -1,1 +1,1 @@
-module.exports = require('../dist/http');
+module.exports = require("../dist/http");

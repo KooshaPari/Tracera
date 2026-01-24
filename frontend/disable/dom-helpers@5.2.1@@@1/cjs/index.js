@@ -1,5 +1,3 @@
-"use strict";
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 exports.__esModule = true;
@@ -54,7 +52,9 @@ var _css = _interopRequireDefault(require("./css"));
 
 exports.style = _css.default;
 
-var _filterEventHandler = _interopRequireDefault(require("./filterEventHandler"));
+var _filterEventHandler = _interopRequireDefault(
+	require("./filterEventHandler"),
+);
 
 exports.filter = _filterEventHandler.default;
 
@@ -134,7 +134,9 @@ var _removeClass = _interopRequireDefault(require("./removeClass"));
 
 exports.removeClass = _removeClass.default;
 
-var _removeEventListener = _interopRequireDefault(require("./removeEventListener"));
+var _removeEventListener = _interopRequireDefault(
+	require("./removeEventListener"),
+);
 
 exports.removeEventListener = _removeEventListener.default;
 
@@ -182,50 +184,50 @@ var _width = _interopRequireDefault(require("./width"));
 
 exports.width = _width.default;
 var _default = {
-  addEventListener: _addEventListener.default,
-  removeEventListener: _removeEventListener.default,
-  triggerEvent: _triggerEvent.default,
-  animate: _animate.default,
-  filter: _filterEventHandler.default,
-  listen: _listen.default,
-  style: _css.default,
-  getComputedStyle: _getComputedStyle.default,
-  attribute: _attribute.default,
-  activeElement: _activeElement.default,
-  ownerDocument: _ownerDocument.default,
-  ownerWindow: _ownerWindow.default,
-  requestAnimationFrame: _animationFrame.request,
-  cancelAnimationFrame: _animationFrame.cancel,
-  matches: _matches.default,
-  height: _height.default,
-  width: _width.default,
-  offset: _offset.default,
-  offsetParent: _offsetParent.default,
-  position: _position.default,
-  contains: _contains.default,
-  scrollbarSize: _scrollbarSize.default,
-  scrollLeft: _scrollLeft.default,
-  scrollParent: _scrollParent.default,
-  scrollTo: _scrollTo.default,
-  scrollTop: _scrollTop.default,
-  querySelectorAll: _querySelectorAll.default,
-  closest: _closest.default,
-  addClass: _addClass.default,
-  removeClass: _removeClass.default,
-  hasClass: _hasClass.default,
-  toggleClass: _toggleClass.default,
-  transitionEnd: _transitionEnd.default,
-  childNodes: _childNodes.default,
-  childElements: _childElements.default,
-  nextUntil: _nextUntil.default,
-  parents: _parents.default,
-  siblings: _siblings.default,
-  clear: _clear.default,
-  insertAfter: _insertAfter.default,
-  isInput: _isInput.default,
-  isVisible: _isVisible.default,
-  prepend: _prepend.default,
-  remove: _remove.default,
-  text: _text.default
+	addEventListener: _addEventListener.default,
+	removeEventListener: _removeEventListener.default,
+	triggerEvent: _triggerEvent.default,
+	animate: _animate.default,
+	filter: _filterEventHandler.default,
+	listen: _listen.default,
+	style: _css.default,
+	getComputedStyle: _getComputedStyle.default,
+	attribute: _attribute.default,
+	activeElement: _activeElement.default,
+	ownerDocument: _ownerDocument.default,
+	ownerWindow: _ownerWindow.default,
+	requestAnimationFrame: _animationFrame.request,
+	cancelAnimationFrame: _animationFrame.cancel,
+	matches: _matches.default,
+	height: _height.default,
+	width: _width.default,
+	offset: _offset.default,
+	offsetParent: _offsetParent.default,
+	position: _position.default,
+	contains: _contains.default,
+	scrollbarSize: _scrollbarSize.default,
+	scrollLeft: _scrollLeft.default,
+	scrollParent: _scrollParent.default,
+	scrollTo: _scrollTo.default,
+	scrollTop: _scrollTop.default,
+	querySelectorAll: _querySelectorAll.default,
+	closest: _closest.default,
+	addClass: _addClass.default,
+	removeClass: _removeClass.default,
+	hasClass: _hasClass.default,
+	toggleClass: _toggleClass.default,
+	transitionEnd: _transitionEnd.default,
+	childNodes: _childNodes.default,
+	childElements: _childElements.default,
+	nextUntil: _nextUntil.default,
+	parents: _parents.default,
+	siblings: _siblings.default,
+	clear: _clear.default,
+	insertAfter: _insertAfter.default,
+	isInput: _isInput.default,
+	isVisible: _isVisible.default,
+	prepend: _prepend.default,
+	remove: _remove.default,
+	text: _text.default,
 };
 exports.default = _default;

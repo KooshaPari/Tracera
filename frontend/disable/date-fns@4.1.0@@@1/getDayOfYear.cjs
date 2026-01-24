@@ -27,11 +27,11 @@ var _index3 = require("./toDate.cjs");
  * //=> 183
  */
 function getDayOfYear(date, options) {
-  const _date = (0, _index3.toDate)(date, options?.in);
-  const diff = (0, _index.differenceInCalendarDays)(
-    _date,
-    (0, _index2.startOfYear)(_date),
-  );
-  const dayOfYear = diff + 1;
-  return dayOfYear;
+	const _date = (0, _index3.toDate)(date, options?.in);
+	const diff = (0, _index.differenceInCalendarDays)(
+		_date,
+		(0, _index2.startOfYear)(_date),
+	);
+	const dayOfYear = diff + 1;
+	return dayOfYear;
 }

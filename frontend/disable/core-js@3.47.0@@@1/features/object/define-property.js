@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/define-property');
+"use strict";
+module.exports = require("../../full/object/define-property");

@@ -1,8 +1,8 @@
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from "../../language/visitor";
 import type {
-  SDLValidationContext,
-  ValidationContext,
-} from '../ValidationContext';
+	SDLValidationContext,
+	ValidationContext,
+} from "../ValidationContext";
 /**
  * Known directives
  *
@@ -12,5 +12,5 @@ import type {
  * See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
  */
 export declare function KnownDirectivesRule(
-  context: ValidationContext | SDLValidationContext,
+	context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

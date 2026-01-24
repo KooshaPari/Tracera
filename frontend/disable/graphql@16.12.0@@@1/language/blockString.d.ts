@@ -7,7 +7,7 @@
  * @internal
  */
 export declare function dedentBlockStringLines(
-  lines: ReadonlyArray<string>,
+	lines: ReadonlyArray<string>,
 ): Array<string>;
 /**
  * @internal
@@ -21,8 +21,8 @@ export declare function isPrintableAsBlockString(value: string): boolean;
  * @internal
  */
 export declare function printBlockString(
-  value: string,
-  options?: {
-    minimize?: boolean;
-  },
+	value: string,
+	options?: {
+		minimize?: boolean;
+	},
 ): string;

@@ -5,24 +5,22 @@
  * MIT Licensed
  */
 
-'use strict'
-
 /**
  * Module dependencies.
  * @private
  */
 
-var EventEmitter = require('events').EventEmitter
-var ReadStream = require('fs').ReadStream
-var Stream = require('stream')
-var Zlib = require('zlib')
+var EventEmitter = require("events").EventEmitter;
+var ReadStream = require("fs").ReadStream;
+var Stream = require("stream");
+var Zlib = require("zlib");
 
 /**
  * Module exports.
  * @public
  */
 
-module.exports = destroy
+module.exports = destroy;
 
 /**
  * Destroy the given stream, and optionally suppress any future `error` events.
@@ -32,21 +30,21 @@ module.exports = destroy
  * @public
  */
 
-function destroy (stream, suppress) {
-  if (isFsReadStream(stream)) {
-    destroyReadStream(stream)
-  } else if (isZlibStream(stream)) {
-    destroyZlibStream(stream)
-  } else if (hasDestroy(stream)) {
-    stream.destroy()
-  }
+function destroy(stream, suppress) {
+	if (isFsReadStream(stream)) {
+		destroyReadStream(stream);
+	} else if (isZlibStream(stream)) {
+		destroyZlibStream(stream);
+	} else if (hasDestroy(stream)) {
+		stream.destroy();
+	}
 
-  if (isEventEmitter(stream) && suppress) {
-    stream.removeAllListeners('error')
-    stream.addListener('error', noop)
-  }
+	if (isEventEmitter(stream) && suppress) {
+		stream.removeAllListeners("error");
+		stream.addListener("error", noop);
+	}
 
-  return stream
+	return stream;
 }
 
 /**
@@ -56,13 +54,13 @@ function destroy (stream, suppress) {
  * @private
  */
 
-function destroyReadStream (stream) {
-  stream.destroy()
+function destroyReadStream(stream) {
+	stream.destroy();
 
-  if (typeof stream.close === 'function') {
-    // node.js core bug work-around
-    stream.on('open', onOpenClose)
-  }
+	if (typeof stream.close === "function") {
+		// node.js core bug work-around
+		stream.on("open", onOpenClose);
+	}
 }
 
 /**
@@ -75,18 +73,18 @@ function destroyReadStream (stream) {
  * @private
  */
 
-function closeZlibStream (stream) {
-  if (stream._hadError === true) {
-    var prop = stream._binding === null
-      ? '_binding'
-      : '_handle'
+function closeZlibStream(stream) {
+	if (stream._hadError === true) {
+		var prop = stream._binding === null ? "_binding" : "_handle";
 
-    stream[prop] = {
-      close: function () { this[prop] = null }
-    }
-  }
+		stream[prop] = {
+			close: function () {
+				this[prop] = null;
+			},
+		};
+	}
 
-  stream.close()
+	stream.close();
 }
 
 /**
@@ -105,35 +103,38 @@ function closeZlibStream (stream) {
  * @private
  */
 
-function destroyZlibStream (stream) {
-  if (typeof stream.destroy === 'function') {
-    // node.js core bug work-around
-    // istanbul ignore if: node.js 0.8
-    if (stream._binding) {
-      // node.js < 0.10.0
-      stream.destroy()
-      if (stream._processing) {
-        stream._needDrain = true
-        stream.once('drain', onDrainClearBinding)
-      } else {
-        stream._binding.clear()
-      }
-    } else if (stream._destroy && stream._destroy !== Stream.Transform.prototype._destroy) {
-      // node.js >= 12, ^11.1.0, ^10.15.1
-      stream.destroy()
-    } else if (stream._destroy && typeof stream.close === 'function') {
-      // node.js 7, 8
-      stream.destroyed = true
-      stream.close()
-    } else {
-      // fallback
-      // istanbul ignore next
-      stream.destroy()
-    }
-  } else if (typeof stream.close === 'function') {
-    // node.js < 8 fallback
-    closeZlibStream(stream)
-  }
+function destroyZlibStream(stream) {
+	if (typeof stream.destroy === "function") {
+		// node.js core bug work-around
+		// istanbul ignore if: node.js 0.8
+		if (stream._binding) {
+			// node.js < 0.10.0
+			stream.destroy();
+			if (stream._processing) {
+				stream._needDrain = true;
+				stream.once("drain", onDrainClearBinding);
+			} else {
+				stream._binding.clear();
+			}
+		} else if (
+			stream._destroy &&
+			stream._destroy !== Stream.Transform.prototype._destroy
+		) {
+			// node.js >= 12, ^11.1.0, ^10.15.1
+			stream.destroy();
+		} else if (stream._destroy && typeof stream.close === "function") {
+			// node.js 7, 8
+			stream.destroyed = true;
+			stream.close();
+		} else {
+			// fallback
+			// istanbul ignore next
+			stream.destroy();
+		}
+	} else if (typeof stream.close === "function") {
+		// node.js < 8 fallback
+		closeZlibStream(stream);
+	}
 }
 
 /**
@@ -141,9 +142,8 @@ function destroyZlibStream (stream) {
  * @private
  */
 
-function hasDestroy (stream) {
-  return stream instanceof Stream &&
-    typeof stream.destroy === 'function'
+function hasDestroy(stream) {
+	return stream instanceof Stream && typeof stream.destroy === "function";
 }
 
 /**
@@ -151,8 +151,8 @@ function hasDestroy (stream) {
  * @private
  */
 
-function isEventEmitter (val) {
-  return val instanceof EventEmitter
+function isEventEmitter(val) {
+	return val instanceof EventEmitter;
 }
 
 /**
@@ -160,8 +160,8 @@ function isEventEmitter (val) {
  * @private
  */
 
-function isFsReadStream (stream) {
-  return stream instanceof ReadStream
+function isFsReadStream(stream) {
+	return stream instanceof ReadStream;
 }
 
 /**
@@ -169,14 +169,16 @@ function isFsReadStream (stream) {
  * @private
  */
 
-function isZlibStream (stream) {
-  return stream instanceof Zlib.Gzip ||
-    stream instanceof Zlib.Gunzip ||
-    stream instanceof Zlib.Deflate ||
-    stream instanceof Zlib.DeflateRaw ||
-    stream instanceof Zlib.Inflate ||
-    stream instanceof Zlib.InflateRaw ||
-    stream instanceof Zlib.Unzip
+function isZlibStream(stream) {
+	return (
+		stream instanceof Zlib.Gzip ||
+		stream instanceof Zlib.Gunzip ||
+		stream instanceof Zlib.Deflate ||
+		stream instanceof Zlib.DeflateRaw ||
+		stream instanceof Zlib.Inflate ||
+		stream instanceof Zlib.InflateRaw ||
+		stream instanceof Zlib.Unzip
+	);
 }
 
 /**
@@ -184,7 +186,7 @@ function isZlibStream (stream) {
  * @private
  */
 
-function noop () {}
+function noop() {}
 
 /**
  * On drain handler to clear binding.
@@ -192,8 +194,8 @@ function noop () {}
  */
 
 // istanbul ignore next: node.js 0.8
-function onDrainClearBinding () {
-  this._binding.clear()
+function onDrainClearBinding() {
+	this._binding.clear();
 }
 
 /**
@@ -201,9 +203,9 @@ function onDrainClearBinding () {
  * @private
  */
 
-function onOpenClose () {
-  if (typeof this.fd === 'number') {
-    // actually close down the fd
-    this.close()
-  }
+function onOpenClose() {
+	if (typeof this.fd === "number") {
+		// actually close down the fd
+		this.close();
+	}
 }

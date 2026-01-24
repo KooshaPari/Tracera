@@ -29,8 +29,8 @@ var _index4 = require("./subDays.cjs");
  * //=> true
  */
 function isYesterday(date, options) {
-  return (0, _index3.isSameDay)(
-    (0, _index.constructFrom)(options?.in || date, date),
-    (0, _index4.subDays)((0, _index2.constructNow)(options?.in || date), 1),
-  );
+	return (0, _index3.isSameDay)(
+		(0, _index.constructFrom)(options?.in || date, date),
+		(0, _index4.subDays)((0, _index2.constructNow)(options?.in || date), 1),
+	);
 }

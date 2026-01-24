@@ -1,36 +1,36 @@
 import {
-    WhiteSpace,
-    Delim,
-    Ident,
-    Function as FunctionToken,
-    Url,
-    BadUrl,
-    AtKeyword,
-    Hash,
-    Percentage,
-    Dimension,
-    Number as NumberToken,
-    String as StringToken,
-    Colon,
-    LeftParenthesis,
-    RightParenthesis,
-    CDC
-} from '../tokenizer/index.js';
+	AtKeyword,
+	BadUrl,
+	CDC,
+	Colon,
+	Delim,
+	Dimension,
+	Function as FunctionToken,
+	Hash,
+	Ident,
+	LeftParenthesis,
+	Number as NumberToken,
+	Percentage,
+	RightParenthesis,
+	String as StringToken,
+	Url,
+	WhiteSpace,
+} from "../tokenizer/index.js";
 
-const PLUSSIGN = 0x002B;    // U+002B PLUS SIGN (+)
-const HYPHENMINUS = 0x002D; // U+002D HYPHEN-MINUS (-)
+const PLUSSIGN = 0x002b; // U+002B PLUS SIGN (+)
+const HYPHENMINUS = 0x002d; // U+002D HYPHEN-MINUS (-)
 
 const code = (type, value) => {
-    if (type === Delim) {
-        type = value;
-    }
+	if (type === Delim) {
+		type = value;
+	}
 
-    if (typeof type === 'string') {
-        const charCode = type.charCodeAt(0);
-        return charCode > 0x7F ? 0x8000 : charCode << 8;
-    }
+	if (typeof type === "string") {
+		const charCode = type.charCodeAt(0);
+		return charCode > 0x7f ? 0x8000 : charCode << 8;
+	}
 
-    return type;
+	return type;
 };
 
 // https://www.w3.org/TR/css-syntax-3/#serialization
@@ -40,142 +40,142 @@ const code = (type, value) => {
 // which may be collapsed into a single token.
 
 const specPairs = [
-    [Ident, Ident],
-    [Ident, FunctionToken],
-    [Ident, Url],
-    [Ident, BadUrl],
-    [Ident, '-'],
-    [Ident, NumberToken],
-    [Ident, Percentage],
-    [Ident, Dimension],
-    [Ident, CDC],
-    [Ident, LeftParenthesis],
+	[Ident, Ident],
+	[Ident, FunctionToken],
+	[Ident, Url],
+	[Ident, BadUrl],
+	[Ident, "-"],
+	[Ident, NumberToken],
+	[Ident, Percentage],
+	[Ident, Dimension],
+	[Ident, CDC],
+	[Ident, LeftParenthesis],
 
-    [AtKeyword, Ident],
-    [AtKeyword, FunctionToken],
-    [AtKeyword, Url],
-    [AtKeyword, BadUrl],
-    [AtKeyword, '-'],
-    [AtKeyword, NumberToken],
-    [AtKeyword, Percentage],
-    [AtKeyword, Dimension],
-    [AtKeyword, CDC],
+	[AtKeyword, Ident],
+	[AtKeyword, FunctionToken],
+	[AtKeyword, Url],
+	[AtKeyword, BadUrl],
+	[AtKeyword, "-"],
+	[AtKeyword, NumberToken],
+	[AtKeyword, Percentage],
+	[AtKeyword, Dimension],
+	[AtKeyword, CDC],
 
-    [Hash, Ident],
-    [Hash, FunctionToken],
-    [Hash, Url],
-    [Hash, BadUrl],
-    [Hash, '-'],
-    [Hash, NumberToken],
-    [Hash, Percentage],
-    [Hash, Dimension],
-    [Hash, CDC],
+	[Hash, Ident],
+	[Hash, FunctionToken],
+	[Hash, Url],
+	[Hash, BadUrl],
+	[Hash, "-"],
+	[Hash, NumberToken],
+	[Hash, Percentage],
+	[Hash, Dimension],
+	[Hash, CDC],
 
-    [Dimension, Ident],
-    [Dimension, FunctionToken],
-    [Dimension, Url],
-    [Dimension, BadUrl],
-    [Dimension, '-'],
-    [Dimension, NumberToken],
-    [Dimension, Percentage],
-    [Dimension, Dimension],
-    [Dimension, CDC],
+	[Dimension, Ident],
+	[Dimension, FunctionToken],
+	[Dimension, Url],
+	[Dimension, BadUrl],
+	[Dimension, "-"],
+	[Dimension, NumberToken],
+	[Dimension, Percentage],
+	[Dimension, Dimension],
+	[Dimension, CDC],
 
-    ['#', Ident],
-    ['#', FunctionToken],
-    ['#', Url],
-    ['#', BadUrl],
-    ['#', '-'],
-    ['#', NumberToken],
-    ['#', Percentage],
-    ['#', Dimension],
-    ['#', CDC], // https://github.com/w3c/csswg-drafts/pull/6874
+	["#", Ident],
+	["#", FunctionToken],
+	["#", Url],
+	["#", BadUrl],
+	["#", "-"],
+	["#", NumberToken],
+	["#", Percentage],
+	["#", Dimension],
+	["#", CDC], // https://github.com/w3c/csswg-drafts/pull/6874
 
-    ['-', Ident],
-    ['-', FunctionToken],
-    ['-', Url],
-    ['-', BadUrl],
-    ['-', '-'],
-    ['-', NumberToken],
-    ['-', Percentage],
-    ['-', Dimension],
-    ['-', CDC], // https://github.com/w3c/csswg-drafts/pull/6874
+	["-", Ident],
+	["-", FunctionToken],
+	["-", Url],
+	["-", BadUrl],
+	["-", "-"],
+	["-", NumberToken],
+	["-", Percentage],
+	["-", Dimension],
+	["-", CDC], // https://github.com/w3c/csswg-drafts/pull/6874
 
-    [NumberToken, Ident],
-    [NumberToken, FunctionToken],
-    [NumberToken, Url],
-    [NumberToken, BadUrl],
-    [NumberToken, NumberToken],
-    [NumberToken, Percentage],
-    [NumberToken, Dimension],
-    [NumberToken, '%'],
-    [NumberToken, CDC], // https://github.com/w3c/csswg-drafts/pull/6874
+	[NumberToken, Ident],
+	[NumberToken, FunctionToken],
+	[NumberToken, Url],
+	[NumberToken, BadUrl],
+	[NumberToken, NumberToken],
+	[NumberToken, Percentage],
+	[NumberToken, Dimension],
+	[NumberToken, "%"],
+	[NumberToken, CDC], // https://github.com/w3c/csswg-drafts/pull/6874
 
-    ['@', Ident],
-    ['@', FunctionToken],
-    ['@', Url],
-    ['@', BadUrl],
-    ['@', '-'],
-    ['@', CDC], // https://github.com/w3c/csswg-drafts/pull/6874
+	["@", Ident],
+	["@", FunctionToken],
+	["@", Url],
+	["@", BadUrl],
+	["@", "-"],
+	["@", CDC], // https://github.com/w3c/csswg-drafts/pull/6874
 
-    ['.', NumberToken],
-    ['.', Percentage],
-    ['.', Dimension],
+	[".", NumberToken],
+	[".", Percentage],
+	[".", Dimension],
 
-    ['+', NumberToken],
-    ['+', Percentage],
-    ['+', Dimension],
+	["+", NumberToken],
+	["+", Percentage],
+	["+", Dimension],
 
-    ['/', '*']
+	["/", "*"],
 ];
 // validate with scripts/generate-safe
 const safePairs = specPairs.concat([
-    [Ident, Hash],
+	[Ident, Hash],
 
-    [Dimension, Hash],
+	[Dimension, Hash],
 
-    [Hash, Hash],
+	[Hash, Hash],
 
-    [AtKeyword, LeftParenthesis],
-    [AtKeyword, StringToken],
-    [AtKeyword, Colon],
+	[AtKeyword, LeftParenthesis],
+	[AtKeyword, StringToken],
+	[AtKeyword, Colon],
 
-    [Percentage, Percentage],
-    [Percentage, Dimension],
-    [Percentage, FunctionToken],
-    [Percentage, '-'],
+	[Percentage, Percentage],
+	[Percentage, Dimension],
+	[Percentage, FunctionToken],
+	[Percentage, "-"],
 
-    [RightParenthesis, Ident],
-    [RightParenthesis, FunctionToken],
-    [RightParenthesis, Percentage],
-    [RightParenthesis, Dimension],
-    [RightParenthesis, Hash],
-    [RightParenthesis, '-']
+	[RightParenthesis, Ident],
+	[RightParenthesis, FunctionToken],
+	[RightParenthesis, Percentage],
+	[RightParenthesis, Dimension],
+	[RightParenthesis, Hash],
+	[RightParenthesis, "-"],
 ]);
 
 function createMap(pairs) {
-    const isWhiteSpaceRequired = new Set(
-        pairs.map(([prev, next]) => (code(prev) << 16 | code(next)))
-    );
+	const isWhiteSpaceRequired = new Set(
+		pairs.map(([prev, next]) => (code(prev) << 16) | code(next)),
+	);
 
-    return function(prevCode, type, value) {
-        const nextCode = code(type, value);
-        const nextCharCode = value.charCodeAt(0);
-        const emitWs =
-            (nextCharCode === HYPHENMINUS &&
-                type !== Ident &&
-                type !== FunctionToken &&
-                type !== CDC) ||
-            (nextCharCode === PLUSSIGN)
-                ? isWhiteSpaceRequired.has(prevCode << 16 | nextCharCode << 8)
-                : isWhiteSpaceRequired.has(prevCode << 16 | nextCode);
+	return function (prevCode, type, value) {
+		const nextCode = code(type, value);
+		const nextCharCode = value.charCodeAt(0);
+		const emitWs =
+			(nextCharCode === HYPHENMINUS &&
+				type !== Ident &&
+				type !== FunctionToken &&
+				type !== CDC) ||
+			nextCharCode === PLUSSIGN
+				? isWhiteSpaceRequired.has((prevCode << 16) | (nextCharCode << 8))
+				: isWhiteSpaceRequired.has((prevCode << 16) | nextCode);
 
-        if (emitWs) {
-            this.emit(' ', WhiteSpace, true);
-        }
+		if (emitWs) {
+			this.emit(" ", WhiteSpace, true);
+		}
 
-        return nextCode;
-    };
+		return nextCode;
+	};
 }
 
 export const spec = createMap(specPairs);

@@ -9,6 +9,6 @@
  * ```
  */
 export declare class AssertionError extends Error {
-    /** Constructs a new instance. */
-    constructor(message: string);
+	/** Constructs a new instance. */
+	constructor(message: string);
 }

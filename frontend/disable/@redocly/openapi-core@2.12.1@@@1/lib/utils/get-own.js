@@ -1,4 +1,4 @@
 export function getOwn(obj, key) {
-    return obj.hasOwnProperty(key) ? obj[key] : undefined;
+	return Object.hasOwn(obj, key) ? obj[key] : undefined;
 }
 //# sourceMappingURL=get-own.js.map

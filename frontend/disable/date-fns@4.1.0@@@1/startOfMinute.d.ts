@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link startOfMinute} function options.
  */
 export interface StartOfMinuteOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name startOfMinute
  * @category Minute Helpers
@@ -27,9 +27,9 @@ export interface StartOfMinuteOptions<DateType extends Date = Date>
  * //=> Mon Dec 01 2014 22:15:00
  */
 export declare function startOfMinute<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: StartOfMinuteOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: StartOfMinuteOptions<ResultDate> | undefined,
 ): ResultDate;

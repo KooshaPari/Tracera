@@ -1,11 +1,13 @@
-"use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
+var __importStar =
+	(this && this.__importStar) ||
+	((mod) => {
+		if (mod && mod.__esModule) return mod;
+		var result = {};
+		if (mod != null)
+			for (var k in mod) if (Object.hasOwn(mod, k)) result[k] = mod[k];
+		result["default"] = mod;
+		return result;
+	});
 Object.defineProperty(exports, "__esModule", { value: true });
 var base64 = __importStar(require("./Base64"));
 exports.base64 = base64;

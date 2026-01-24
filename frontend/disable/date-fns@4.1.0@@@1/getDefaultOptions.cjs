@@ -28,5 +28,5 @@ var _index = require("./_lib/defaultOptions.cjs");
  * //=> { weekStarsOn: 1, firstWeekContainsDate: 4 }
  */
 function getDefaultOptions() {
-  return Object.assign({}, (0, _index.getDefaultOptions)());
+	return Object.assign({}, (0, _index.getDefaultOptions)());
 }

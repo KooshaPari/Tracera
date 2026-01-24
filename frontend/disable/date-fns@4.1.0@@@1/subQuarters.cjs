@@ -29,5 +29,5 @@ var _index = require("./addQuarters.cjs");
  * //=> Sun Dec 01 2013 00:00:00
  */
 function subQuarters(date, amount, options) {
-  return (0, _index.addQuarters)(date, -amount, options);
+	return (0, _index.addQuarters)(date, -amount, options);
 }

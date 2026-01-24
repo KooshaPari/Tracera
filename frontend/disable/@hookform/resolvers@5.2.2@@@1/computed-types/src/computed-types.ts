@@ -1,21 +1,21 @@
-import { toNestErrors, validateFieldsNatively } from '@hookform/resolvers';
-import { ValidationError } from 'computed-types';
-import FunctionType from 'computed-types/lib/schema/FunctionType';
-import type { FieldErrors, FieldValues, Resolver } from 'react-hook-form';
+import { toNestErrors, validateFieldsNatively } from "@hookform/resolvers";
+import type { ValidationError } from "computed-types";
+import type FunctionType from "computed-types/lib/schema/FunctionType";
+import type { FieldErrors, FieldValues, Resolver } from "react-hook-form";
 
 const isValidationError = (error: any): error is ValidationError =>
-  error.errors != null;
+	error.errors != null;
 
 function parseErrorSchema(computedTypesError: ValidationError) {
-  const parsedErrors: FieldErrors = {};
-  return (computedTypesError.errors || []).reduce((acc, error) => {
-    acc[error.path.join('.')] = {
-      type: error.error.name,
-      message: error.error.message,
-    };
+	const parsedErrors: FieldErrors = {};
+	return (computedTypesError.errors || []).reduce((acc, error) => {
+		acc[error.path.join(".")] = {
+			type: error.error.name,
+			message: error.error.message,
+		};
 
-    return acc;
-  }, parsedErrors);
+		return acc;
+	}, parsedErrors);
 }
 
 /**
@@ -33,29 +33,29 @@ function parseErrorSchema(computedTypesError: ValidationError) {
  * });
  */
 export function computedTypesResolver<
-  Input extends FieldValues,
-  Context,
-  Output,
+	Input extends FieldValues,
+	Context,
+	Output,
 >(schema: FunctionType<Output, [Input]>): Resolver<Input, Context, Output> {
-  return async (values, _, options) => {
-    try {
-      const data = await schema(values);
+	return async (values, _, options) => {
+		try {
+			const data = await schema(values);
 
-      options.shouldUseNativeValidation && validateFieldsNatively({}, options);
+			options.shouldUseNativeValidation && validateFieldsNatively({}, options);
 
-      return {
-        errors: {},
-        values: data,
-      };
-    } catch (error: any) {
-      if (isValidationError(error)) {
-        return {
-          values: {},
-          errors: toNestErrors(parseErrorSchema(error), options),
-        };
-      }
+			return {
+				errors: {},
+				values: data,
+			};
+		} catch (error: any) {
+			if (isValidationError(error)) {
+				return {
+					values: {},
+					errors: toNestErrors(parseErrorSchema(error), options),
+				};
+			}
 
-      throw error;
-    }
-  };
+			throw error;
+		}
+	};
 }

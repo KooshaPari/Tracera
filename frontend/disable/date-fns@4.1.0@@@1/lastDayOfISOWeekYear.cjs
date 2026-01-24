@@ -34,12 +34,12 @@ var _index3 = require("./startOfISOWeek.cjs");
  * //=> Sun Jan 01 2006 00:00:00
  */
 function lastDayOfISOWeekYear(date, options) {
-  const year = (0, _index2.getISOWeekYear)(date, options);
-  const fourthOfJanuary = (0, _index.constructFrom)(options?.in || date, 0);
-  fourthOfJanuary.setFullYear(year + 1, 0, 4);
-  fourthOfJanuary.setHours(0, 0, 0, 0);
+	const year = (0, _index2.getISOWeekYear)(date, options);
+	const fourthOfJanuary = (0, _index.constructFrom)(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(year + 1, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
 
-  const date_ = (0, _index3.startOfISOWeek)(fourthOfJanuary, options);
-  date_.setDate(date_.getDate() - 1);
-  return date_;
+	const date_ = (0, _index3.startOfISOWeek)(fourthOfJanuary, options);
+	date_.setDate(date_.getDate() - 1);
+	return date_;
 }

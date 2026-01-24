@@ -1,6 +1,6 @@
-'use strict';
-var globalThis = require('../internals/global-this');
-var isCallable = require('../internals/is-callable');
+"use strict";
+var globalThis = require("../internals/global-this");
+var isCallable = require("../internals/is-callable");
 
 var WeakMap = globalThis.WeakMap;
 

@@ -49,28 +49,28 @@ import { toDate } from "./toDate.js";
  * //=> Thu Jul 10 2014 08:00:00
  */
 export function roundToNearestHours(date, options) {
-  const nearestTo = options?.nearestTo ?? 1;
+	const nearestTo = options?.nearestTo ?? 1;
 
-  if (nearestTo < 1 || nearestTo > 12)
-    return constructFrom(options?.in || date, NaN);
+	if (nearestTo < 1 || nearestTo > 12)
+		return constructFrom(options?.in || date, NaN);
 
-  const date_ = toDate(date, options?.in);
-  const fractionalMinutes = date_.getMinutes() / 60;
-  const fractionalSeconds = date_.getSeconds() / 60 / 60;
-  const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60 / 60;
-  const hours =
-    date_.getHours() +
-    fractionalMinutes +
-    fractionalSeconds +
-    fractionalMilliseconds;
+	const date_ = toDate(date, options?.in);
+	const fractionalMinutes = date_.getMinutes() / 60;
+	const fractionalSeconds = date_.getSeconds() / 60 / 60;
+	const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60 / 60;
+	const hours =
+		date_.getHours() +
+		fractionalMinutes +
+		fractionalSeconds +
+		fractionalMilliseconds;
 
-  const method = options?.roundingMethod ?? "round";
-  const roundingMethod = getRoundingMethod(method);
+	const method = options?.roundingMethod ?? "round";
+	const roundingMethod = getRoundingMethod(method);
 
-  const roundedHours = roundingMethod(hours / nearestTo) * nearestTo;
+	const roundedHours = roundingMethod(hours / nearestTo) * nearestTo;
 
-  date_.setHours(roundedHours, 0, 0, 0);
-  return date_;
+	date_.setHours(roundedHours, 0, 0, 0);
+	return date_;
 }
 
 // Fallback for modularized imports:

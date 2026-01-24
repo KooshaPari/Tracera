@@ -18,7 +18,7 @@ import { toDate } from "./toDate.js";
  * //=> 1330512305
  */
 export function getUnixTime(date) {
-  return Math.trunc(+toDate(date) / 1000);
+	return Math.trunc(+toDate(date) / 1000);
 }
 
 // Fallback for modularized imports:

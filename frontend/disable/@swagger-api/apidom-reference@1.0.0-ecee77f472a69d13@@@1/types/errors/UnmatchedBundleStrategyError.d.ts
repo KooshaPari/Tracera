@@ -1,7 +1,6 @@
-import BundleError from './BundleError.ts';
+import BundleError from "./BundleError.ts";
 /**
  * @public
  */
-declare class UnmatchedBundleStrategyError extends BundleError {
-}
+declare class UnmatchedBundleStrategyError extends BundleError {}
 export default UnmatchedBundleStrategyError;

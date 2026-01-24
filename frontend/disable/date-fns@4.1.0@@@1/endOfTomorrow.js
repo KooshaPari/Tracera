@@ -25,15 +25,15 @@ import { constructNow } from "./constructNow.js";
  * //=> Tue Oct 7 2014 23:59:59.999
  */
 export function endOfTomorrow(options) {
-  const now = constructNow(options?.in);
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const day = now.getDate();
+	const now = constructNow(options?.in);
+	const year = now.getFullYear();
+	const month = now.getMonth();
+	const day = now.getDate();
 
-  const date = constructNow(options?.in);
-  date.setFullYear(year, month, day + 1);
-  date.setHours(23, 59, 59, 999);
-  return options?.in ? options.in(date) : date;
+	const date = constructNow(options?.in);
+	date.setFullYear(year, month, day + 1);
+	date.setHours(23, 59, 59, 999);
+	return options?.in ? options.in(date) : date;
 }
 
 // Fallback for modularized imports:

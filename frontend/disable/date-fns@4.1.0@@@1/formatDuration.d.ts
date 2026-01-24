@@ -3,13 +3,13 @@ import type { Duration, DurationUnit, LocalizedOptions } from "./types.js";
  * The {@link formatDuration} function options.
  */
 export interface FormatDurationOptions
-  extends LocalizedOptions<"formatDistance"> {
-  /** The array of units to format */
-  format?: DurationUnit[];
-  /** Should be zeros be included in the output? */
-  zero?: boolean;
-  /** The delimiter string to use */
-  delimiter?: string;
+	extends LocalizedOptions<"formatDistance"> {
+	/** The array of units to format */
+	format?: DurationUnit[];
+	/** Should be zeros be included in the output? */
+	zero?: boolean;
+	/** The delimiter string to use */
+	delimiter?: string;
 }
 /**
  * @name formatDuration
@@ -70,6 +70,6 @@ export interface FormatDurationOptions
  * //=> '2 years, 9 months, 3 weeks'
  */
 export declare function formatDuration(
-  duration: Duration,
-  options?: FormatDurationOptions,
+	duration: Duration,
+	options?: FormatDurationOptions,
 ): string;

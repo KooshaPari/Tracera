@@ -1,6 +1,6 @@
-var arrayLikeKeys = require('./_arrayLikeKeys'),
-    baseKeys = require('./_baseKeys'),
-    isArrayLike = require('./isArrayLike');
+var arrayLikeKeys = require("./_arrayLikeKeys"),
+	baseKeys = require("./_baseKeys"),
+	isArrayLike = require("./isArrayLike");
 
 /**
  * Creates an array of the own enumerable property names of `object`.
@@ -31,7 +31,7 @@ var arrayLikeKeys = require('./_arrayLikeKeys'),
  * // => ['0', '1']
  */
 function keys(object) {
-  return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
+	return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
 }
 
 module.exports = keys;

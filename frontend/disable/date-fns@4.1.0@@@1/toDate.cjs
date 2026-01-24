@@ -41,6 +41,6 @@ var _index = require("./constructFrom.cjs");
  * //=> Tue Feb 11 2014 11:30:30
  */
 function toDate(argument, context) {
-  // [TODO] Get rid of `toDate` or `constructFrom`?
-  return (0, _index.constructFrom)(context || argument, argument);
+	// [TODO] Get rid of `toDate` or `constructFrom`?
+	return (0, _index.constructFrom)(context || argument, argument);
 }

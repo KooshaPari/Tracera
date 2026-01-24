@@ -7,22 +7,22 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class SolaceServerBinding extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'solaceServerBinding';
-    this.classes.push('server-binding');
-  }
-  get bindingVersion() {
-    return this.get('bindingVersion');
-  }
-  set bindingVersion(bindingVersion) {
-    this.set('bindingVersion', bindingVersion);
-  }
-  get msgVpn() {
-    return this.get('msgVpn');
-  }
-  set msgVpn(msgVpn) {
-    this.set('msgVpn', msgVpn);
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "solaceServerBinding";
+		this.classes.push("server-binding");
+	}
+	get bindingVersion() {
+		return this.get("bindingVersion");
+	}
+	set bindingVersion(bindingVersion) {
+		this.set("bindingVersion", bindingVersion);
+	}
+	get msgVpn() {
+		return this.get("msgVpn");
+	}
+	set msgVpn(msgVpn) {
+		this.set("msgVpn", msgVpn);
+	}
 }
-var _default = exports.default = SolaceServerBinding;
+var _default = (exports.default = SolaceServerBinding);

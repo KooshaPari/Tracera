@@ -1,4 +1,9 @@
-import { Node, AbstractRange, DocumentFragment, Range } from "../dom/interfaces";
+import {
+	Node,
+	AbstractRange,
+	DocumentFragment,
+	Range,
+} from "../dom/interfaces";
 /**
  * Determines if the node's start boundary point is at its end boundary
  * point.
@@ -18,14 +23,20 @@ export declare function range_root(range: AbstractRange): Node;
  * @param node - a node
  * @param range - a range
  */
-export declare function range_isContained(node: Node, range: AbstractRange): boolean;
+export declare function range_isContained(
+	node: Node,
+	range: AbstractRange,
+): boolean;
 /**
  * Determines if a node is partially contained in a range.
  *
  * @param node - a node
  * @param range - a range
  */
-export declare function range_isPartiallyContained(node: Node, range: AbstractRange): boolean;
+export declare function range_isPartiallyContained(
+	node: Node,
+	range: AbstractRange,
+): boolean;
 /**
  * Sets the start boundary point of a range.
  *
@@ -33,7 +44,11 @@ export declare function range_isPartiallyContained(node: Node, range: AbstractRa
  * @param node - a node
  * @param offset - an offset into node
  */
-export declare function range_setTheStart(range: AbstractRange, node: Node, offset: number): void;
+export declare function range_setTheStart(
+	range: AbstractRange,
+	node: Node,
+	offset: number,
+): void;
 /**
  * Sets the end boundary point of a range.
  *
@@ -41,7 +56,11 @@ export declare function range_setTheStart(range: AbstractRange, node: Node, offs
  * @param node - a node
  * @param offset - an offset into node
  */
-export declare function range_setTheEnd(range: AbstractRange, node: Node, offset: number): void;
+export declare function range_setTheEnd(
+	range: AbstractRange,
+	node: Node,
+	offset: number,
+): void;
 /**
  * Selects a node.
  *
@@ -60,7 +79,9 @@ export declare function range_extract(range: AbstractRange): DocumentFragment;
  *
  * @param range - a range
  */
-export declare function range_cloneTheContents(range: AbstractRange): DocumentFragment;
+export declare function range_cloneTheContents(
+	range: AbstractRange,
+): DocumentFragment;
 /**
  * Inserts a node into a range at the start boundary point.
  *
@@ -79,4 +100,6 @@ export declare function range_getContainedNodes(range: Range): Iterable<Node>;
  *
  * @param range - a range
  */
-export declare function range_getPartiallyContainedNodes(range: Range): Iterable<Node>;
+export declare function range_getPartiallyContainedNodes(
+	range: Range,
+): Iterable<Node>;

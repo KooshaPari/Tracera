@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/to-reversed');
+"use strict";
+module.exports = require("../../full/instance/to-reversed");

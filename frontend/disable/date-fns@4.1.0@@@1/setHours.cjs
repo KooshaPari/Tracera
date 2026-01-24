@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Mon Sep 01 2014 04:30:00
  */
 function setHours(date, hours, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setHours(hours);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setHours(hours);
+	return _date;
 }

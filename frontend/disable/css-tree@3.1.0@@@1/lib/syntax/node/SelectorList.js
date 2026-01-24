@@ -1,35 +1,32 @@
-import { Comma } from '../../tokenizer/index.js';
+import { Comma } from "../../tokenizer/index.js";
 
-export const name = 'SelectorList';
-export const walkContext = 'selector';
+export const name = "SelectorList";
+export const walkContext = "selector";
 export const structure = {
-    children: [[
-        'Selector',
-        'Raw'
-    ]]
+	children: [["Selector", "Raw"]],
 };
 
 export function parse() {
-    const children = this.createList();
+	const children = this.createList();
 
-    while (!this.eof) {
-        children.push(this.Selector());
+	while (!this.eof) {
+		children.push(this.Selector());
 
-        if (this.tokenType === Comma) {
-            this.next();
-            continue;
-        }
+		if (this.tokenType === Comma) {
+			this.next();
+			continue;
+		}
 
-        break;
-    }
+		break;
+	}
 
-    return {
-        type: 'SelectorList',
-        loc: this.getLocationFromList(children),
-        children
-    };
+	return {
+		type: "SelectorList",
+		loc: this.getLocationFromList(children),
+		children,
+	};
 }
 
 export function generate(node) {
-    this.children(node, () => this.token(Comma, ','));
+	this.children(node, () => this.token(Comma, ","));
 }

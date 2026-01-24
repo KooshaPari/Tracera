@@ -28,8 +28,8 @@ var _index3 = require("./isSameYear.cjs");
  * //=> true
  */
 function isThisYear(date, options) {
-  return (0, _index3.isSameYear)(
-    (0, _index.constructFrom)(options?.in || date, date),
-    (0, _index2.constructNow)(options?.in || date),
-  );
+	return (0, _index3.isSameYear)(
+		(0, _index.constructFrom)(options?.in || date, date),
+		(0, _index2.constructNow)(options?.in || date),
+	);
 }

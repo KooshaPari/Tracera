@@ -20,5 +20,5 @@ var _index = require("./constants.cjs");
  * //=> 120000
  */
 function minutesToMilliseconds(minutes) {
-  return Math.trunc(minutes * _index.millisecondsInMinute);
+	return Math.trunc(minutes * _index.millisecondsInMinute);
 }

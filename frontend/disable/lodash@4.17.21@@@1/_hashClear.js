@@ -1,4 +1,4 @@
-var nativeCreate = require('./_nativeCreate');
+var nativeCreate = require("./_nativeCreate");
 
 /**
  * Removes all key-value entries from the hash.
@@ -8,8 +8,8 @@ var nativeCreate = require('./_nativeCreate');
  * @memberOf Hash
  */
 function hashClear() {
-  this.__data__ = nativeCreate ? nativeCreate(null) : {};
-  this.size = 0;
+	this.__data__ = nativeCreate ? nativeCreate(null) : {};
+	this.size = 0;
 }
 
 module.exports = hashClear;

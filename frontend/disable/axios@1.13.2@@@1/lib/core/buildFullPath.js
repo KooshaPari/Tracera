@@ -1,7 +1,5 @@
-'use strict';
-
-import isAbsoluteURL from '../helpers/isAbsoluteURL.js';
-import combineURLs from '../helpers/combineURLs.js';
+import combineURLs from "../helpers/combineURLs.js";
+import isAbsoluteURL from "../helpers/isAbsoluteURL.js";
 
 /**
  * Creates a new URL by combining the baseURL with the requestedURL,
@@ -13,10 +11,14 @@ import combineURLs from '../helpers/combineURLs.js';
  *
  * @returns {string} The combined full path
  */
-export default function buildFullPath(baseURL, requestedURL, allowAbsoluteUrls) {
-  let isRelativeUrl = !isAbsoluteURL(requestedURL);
-  if (baseURL && (isRelativeUrl || allowAbsoluteUrls == false)) {
-    return combineURLs(baseURL, requestedURL);
-  }
-  return requestedURL;
+export default function buildFullPath(
+	baseURL,
+	requestedURL,
+	allowAbsoluteUrls,
+) {
+	const isRelativeUrl = !isAbsoluteURL(requestedURL);
+	if (baseURL && (isRelativeUrl || allowAbsoluteUrls == false)) {
+		return combineURLs(baseURL, requestedURL);
+	}
+	return requestedURL;
 }

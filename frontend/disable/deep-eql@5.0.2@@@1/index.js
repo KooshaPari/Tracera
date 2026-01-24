@@ -6,42 +6,42 @@
  */
 
 function type(obj) {
-  if (typeof obj === 'undefined') {
-    return 'undefined';
-  }
+	if (typeof obj === "undefined") {
+		return "undefined";
+	}
 
-  if (obj === null) {
-    return 'null';
-  }
+	if (obj === null) {
+		return "null";
+	}
 
-  const stringTag = obj[Symbol.toStringTag];
-  if (typeof stringTag === 'string') {
-    return stringTag;
-  }
-  const sliceStart = 8;
-  const sliceEnd = -1;
-  return Object.prototype.toString.call(obj).slice(sliceStart, sliceEnd);
+	const stringTag = obj[Symbol.toStringTag];
+	if (typeof stringTag === "string") {
+		return stringTag;
+	}
+	const sliceStart = 8;
+	const sliceEnd = -1;
+	return Object.prototype.toString.call(obj).slice(sliceStart, sliceEnd);
 }
 
 function FakeMap() {
-  this._key = 'chai/deep-eql__' + Math.random() + Date.now();
+	this._key = "chai/deep-eql__" + Math.random() + Date.now();
 }
 
 FakeMap.prototype = {
-  get: function get(key) {
-    return key[this._key];
-  },
-  set: function set(key, value) {
-    if (Object.isExtensible(key)) {
-      Object.defineProperty(key, this._key, {
-        value: value,
-        configurable: true,
-      });
-    }
-  },
+	get: function get(key) {
+		return key[this._key];
+	},
+	set: function set(key, value) {
+		if (Object.isExtensible(key)) {
+			Object.defineProperty(key, this._key, {
+				value: value,
+				configurable: true,
+			});
+		}
+	},
 };
 
-export var MemoizeMap = typeof WeakMap === 'function' ? WeakMap : FakeMap;
+export var MemoizeMap = typeof WeakMap === "function" ? WeakMap : FakeMap;
 /*!
  * Check to see if the MemoizeMap has recorded a result of the two operands
  *
@@ -49,20 +49,24 @@ export var MemoizeMap = typeof WeakMap === 'function' ? WeakMap : FakeMap;
  * @param {Mixed} rightHandOperand
  * @param {MemoizeMap} memoizeMap
  * @returns {Boolean|null} result
-*/
+ */
 function memoizeCompare(leftHandOperand, rightHandOperand, memoizeMap) {
-  // Technically, WeakMap keys can *only* be objects, not primitives.
-  if (!memoizeMap || isPrimitive(leftHandOperand) || isPrimitive(rightHandOperand)) {
-    return null;
-  }
-  var leftHandMap = memoizeMap.get(leftHandOperand);
-  if (leftHandMap) {
-    var result = leftHandMap.get(rightHandOperand);
-    if (typeof result === 'boolean') {
-      return result;
-    }
-  }
-  return null;
+	// Technically, WeakMap keys can *only* be objects, not primitives.
+	if (
+		!memoizeMap ||
+		isPrimitive(leftHandOperand) ||
+		isPrimitive(rightHandOperand)
+	) {
+		return null;
+	}
+	var leftHandMap = memoizeMap.get(leftHandOperand);
+	if (leftHandMap) {
+		var result = leftHandMap.get(rightHandOperand);
+		if (typeof result === "boolean") {
+			return result;
+		}
+	}
+	return null;
 }
 
 /*!
@@ -72,20 +76,24 @@ function memoizeCompare(leftHandOperand, rightHandOperand, memoizeMap) {
  * @param {Mixed} rightHandOperand
  * @param {MemoizeMap} memoizeMap
  * @param {Boolean} result
-*/
+ */
 function memoizeSet(leftHandOperand, rightHandOperand, memoizeMap, result) {
-  // Technically, WeakMap keys can *only* be objects, not primitives.
-  if (!memoizeMap || isPrimitive(leftHandOperand) || isPrimitive(rightHandOperand)) {
-    return;
-  }
-  var leftHandMap = memoizeMap.get(leftHandOperand);
-  if (leftHandMap) {
-    leftHandMap.set(rightHandOperand, result);
-  } else {
-    leftHandMap = new MemoizeMap();
-    leftHandMap.set(rightHandOperand, result);
-    memoizeMap.set(leftHandOperand, leftHandMap);
-  }
+	// Technically, WeakMap keys can *only* be objects, not primitives.
+	if (
+		!memoizeMap ||
+		isPrimitive(leftHandOperand) ||
+		isPrimitive(rightHandOperand)
+	) {
+		return;
+	}
+	var leftHandMap = memoizeMap.get(leftHandOperand);
+	if (leftHandMap) {
+		leftHandMap.set(rightHandOperand, result);
+	} else {
+		leftHandMap = new MemoizeMap();
+		leftHandMap.set(rightHandOperand, result);
+		memoizeMap.set(leftHandOperand, leftHandMap);
+	}
 }
 
 /*!
@@ -107,18 +115,18 @@ export default deepEqual;
  * @return {Boolean} equal match
  */
 function deepEqual(leftHandOperand, rightHandOperand, options) {
-  // If we have a comparator, we can't assume anything; so bail to its check first.
-  if (options && options.comparator) {
-    return extensiveDeepEqual(leftHandOperand, rightHandOperand, options);
-  }
+	// If we have a comparator, we can't assume anything; so bail to its check first.
+	if (options && options.comparator) {
+		return extensiveDeepEqual(leftHandOperand, rightHandOperand, options);
+	}
 
-  var simpleResult = simpleEqual(leftHandOperand, rightHandOperand);
-  if (simpleResult !== null) {
-    return simpleResult;
-  }
+	var simpleResult = simpleEqual(leftHandOperand, rightHandOperand);
+	if (simpleResult !== null) {
+		return simpleResult;
+	}
 
-  // Deeper comparisons are pushed through to a larger function
-  return extensiveDeepEqual(leftHandOperand, rightHandOperand, options);
+	// Deeper comparisons are pushed through to a larger function
+	return extensiveDeepEqual(leftHandOperand, rightHandOperand, options);
 }
 
 /**
@@ -128,27 +136,29 @@ function deepEqual(leftHandOperand, rightHandOperand, options) {
  * @return {Boolean|null} equal match
  */
 function simpleEqual(leftHandOperand, rightHandOperand) {
-  // Equal references (except for Numbers) can be returned early
-  if (leftHandOperand === rightHandOperand) {
-    // Handle +-0 cases
-    return leftHandOperand !== 0 || 1 / leftHandOperand === 1 / rightHandOperand;
-  }
+	// Equal references (except for Numbers) can be returned early
+	if (leftHandOperand === rightHandOperand) {
+		// Handle +-0 cases
+		return (
+			leftHandOperand !== 0 || 1 / leftHandOperand === 1 / rightHandOperand
+		);
+	}
 
-  // handle NaN cases
-  if (
-    leftHandOperand !== leftHandOperand && // eslint-disable-line no-self-compare
-    rightHandOperand !== rightHandOperand // eslint-disable-line no-self-compare
-  ) {
-    return true;
-  }
+	// handle NaN cases
+	if (
+		leftHandOperand !== leftHandOperand && // eslint-disable-line no-self-compare
+		rightHandOperand !== rightHandOperand // eslint-disable-line no-self-compare
+	) {
+		return true;
+	}
 
-  // Anything that is not an 'object', i.e. symbols, functions, booleans, numbers,
-  // strings, and undefined, can be compared by reference.
-  if (isPrimitive(leftHandOperand) || isPrimitive(rightHandOperand)) {
-    // Easy out b/c it would have passed the first equality check
-    return false;
-  }
-  return null;
+	// Anything that is not an 'object', i.e. symbols, functions, booleans, numbers,
+	// strings, and undefined, can be compared by reference.
+	if (isPrimitive(leftHandOperand) || isPrimitive(rightHandOperand)) {
+		// Easy out b/c it would have passed the first equality check
+		return false;
+	}
+	return null;
 }
 
 /*!
@@ -164,107 +174,147 @@ function simpleEqual(leftHandOperand, rightHandOperand) {
  * @return {Boolean} equal match
 */
 function extensiveDeepEqual(leftHandOperand, rightHandOperand, options) {
-  options = options || {};
-  options.memoize = options.memoize === false ? false : options.memoize || new MemoizeMap();
-  var comparator = options && options.comparator;
+	options = options || {};
+	options.memoize =
+		options.memoize === false ? false : options.memoize || new MemoizeMap();
+	var comparator = options && options.comparator;
 
-  // Check if a memoized result exists.
-  var memoizeResultLeft = memoizeCompare(leftHandOperand, rightHandOperand, options.memoize);
-  if (memoizeResultLeft !== null) {
-    return memoizeResultLeft;
-  }
-  var memoizeResultRight = memoizeCompare(rightHandOperand, leftHandOperand, options.memoize);
-  if (memoizeResultRight !== null) {
-    return memoizeResultRight;
-  }
+	// Check if a memoized result exists.
+	var memoizeResultLeft = memoizeCompare(
+		leftHandOperand,
+		rightHandOperand,
+		options.memoize,
+	);
+	if (memoizeResultLeft !== null) {
+		return memoizeResultLeft;
+	}
+	var memoizeResultRight = memoizeCompare(
+		rightHandOperand,
+		leftHandOperand,
+		options.memoize,
+	);
+	if (memoizeResultRight !== null) {
+		return memoizeResultRight;
+	}
 
-  // If a comparator is present, use it.
-  if (comparator) {
-    var comparatorResult = comparator(leftHandOperand, rightHandOperand);
-    // Comparators may return null, in which case we want to go back to default behavior.
-    if (comparatorResult === false || comparatorResult === true) {
-      memoizeSet(leftHandOperand, rightHandOperand, options.memoize, comparatorResult);
-      return comparatorResult;
-    }
-    // To allow comparators to override *any* behavior, we ran them first. Since it didn't decide
-    // what to do, we need to make sure to return the basic tests first before we move on.
-    var simpleResult = simpleEqual(leftHandOperand, rightHandOperand);
-    if (simpleResult !== null) {
-      // Don't memoize this, it takes longer to set/retrieve than to just compare.
-      return simpleResult;
-    }
-  }
+	// If a comparator is present, use it.
+	if (comparator) {
+		var comparatorResult = comparator(leftHandOperand, rightHandOperand);
+		// Comparators may return null, in which case we want to go back to default behavior.
+		if (comparatorResult === false || comparatorResult === true) {
+			memoizeSet(
+				leftHandOperand,
+				rightHandOperand,
+				options.memoize,
+				comparatorResult,
+			);
+			return comparatorResult;
+		}
+		// To allow comparators to override *any* behavior, we ran them first. Since it didn't decide
+		// what to do, we need to make sure to return the basic tests first before we move on.
+		var simpleResult = simpleEqual(leftHandOperand, rightHandOperand);
+		if (simpleResult !== null) {
+			// Don't memoize this, it takes longer to set/retrieve than to just compare.
+			return simpleResult;
+		}
+	}
 
-  var leftHandType = type(leftHandOperand);
-  if (leftHandType !== type(rightHandOperand)) {
-    memoizeSet(leftHandOperand, rightHandOperand, options.memoize, false);
-    return false;
-  }
+	var leftHandType = type(leftHandOperand);
+	if (leftHandType !== type(rightHandOperand)) {
+		memoizeSet(leftHandOperand, rightHandOperand, options.memoize, false);
+		return false;
+	}
 
-  // Temporarily set the operands in the memoize object to prevent blowing the stack
-  memoizeSet(leftHandOperand, rightHandOperand, options.memoize, true);
+	// Temporarily set the operands in the memoize object to prevent blowing the stack
+	memoizeSet(leftHandOperand, rightHandOperand, options.memoize, true);
 
-  var result = extensiveDeepEqualByType(leftHandOperand, rightHandOperand, leftHandType, options);
-  memoizeSet(leftHandOperand, rightHandOperand, options.memoize, result);
-  return result;
+	var result = extensiveDeepEqualByType(
+		leftHandOperand,
+		rightHandOperand,
+		leftHandType,
+		options,
+	);
+	memoizeSet(leftHandOperand, rightHandOperand, options.memoize, result);
+	return result;
 }
 
-function extensiveDeepEqualByType(leftHandOperand, rightHandOperand, leftHandType, options) {
-  switch (leftHandType) {
-    case 'String':
-    case 'Number':
-    case 'Boolean':
-    case 'Date':
-      // If these types are their instance types (e.g. `new Number`) then re-deepEqual against their values
-      return deepEqual(leftHandOperand.valueOf(), rightHandOperand.valueOf());
-    case 'Promise':
-    case 'Symbol':
-    case 'function':
-    case 'WeakMap':
-    case 'WeakSet':
-      return leftHandOperand === rightHandOperand;
-    case 'Error':
-      return keysEqual(leftHandOperand, rightHandOperand, [ 'name', 'message', 'code' ], options);
-    case 'Arguments':
-    case 'Int8Array':
-    case 'Uint8Array':
-    case 'Uint8ClampedArray':
-    case 'Int16Array':
-    case 'Uint16Array':
-    case 'Int32Array':
-    case 'Uint32Array':
-    case 'Float32Array':
-    case 'Float64Array':
-    case 'Array':
-      return iterableEqual(leftHandOperand, rightHandOperand, options);
-    case 'RegExp':
-      return regexpEqual(leftHandOperand, rightHandOperand);
-    case 'Generator':
-      return generatorEqual(leftHandOperand, rightHandOperand, options);
-    case 'DataView':
-      return iterableEqual(new Uint8Array(leftHandOperand.buffer), new Uint8Array(rightHandOperand.buffer), options);
-    case 'ArrayBuffer':
-      return iterableEqual(new Uint8Array(leftHandOperand), new Uint8Array(rightHandOperand), options);
-    case 'Set':
-      return entriesEqual(leftHandOperand, rightHandOperand, options);
-    case 'Map':
-      return entriesEqual(leftHandOperand, rightHandOperand, options);
-    case 'Temporal.PlainDate':
-    case 'Temporal.PlainTime':
-    case 'Temporal.PlainDateTime':
-    case 'Temporal.Instant':
-    case 'Temporal.ZonedDateTime':
-    case 'Temporal.PlainYearMonth':
-    case 'Temporal.PlainMonthDay':
-      return leftHandOperand.equals(rightHandOperand);
-    case 'Temporal.Duration':
-      return leftHandOperand.total('nanoseconds') === rightHandOperand.total('nanoseconds');
-    case 'Temporal.TimeZone':
-    case 'Temporal.Calendar':
-      return leftHandOperand.toString() === rightHandOperand.toString();
-    default:
-      return objectEqual(leftHandOperand, rightHandOperand, options);
-  }
+function extensiveDeepEqualByType(
+	leftHandOperand,
+	rightHandOperand,
+	leftHandType,
+	options,
+) {
+	switch (leftHandType) {
+		case "String":
+		case "Number":
+		case "Boolean":
+		case "Date":
+			// If these types are their instance types (e.g. `new Number`) then re-deepEqual against their values
+			return deepEqual(leftHandOperand.valueOf(), rightHandOperand.valueOf());
+		case "Promise":
+		case "Symbol":
+		case "function":
+		case "WeakMap":
+		case "WeakSet":
+			return leftHandOperand === rightHandOperand;
+		case "Error":
+			return keysEqual(
+				leftHandOperand,
+				rightHandOperand,
+				["name", "message", "code"],
+				options,
+			);
+		case "Arguments":
+		case "Int8Array":
+		case "Uint8Array":
+		case "Uint8ClampedArray":
+		case "Int16Array":
+		case "Uint16Array":
+		case "Int32Array":
+		case "Uint32Array":
+		case "Float32Array":
+		case "Float64Array":
+		case "Array":
+			return iterableEqual(leftHandOperand, rightHandOperand, options);
+		case "RegExp":
+			return regexpEqual(leftHandOperand, rightHandOperand);
+		case "Generator":
+			return generatorEqual(leftHandOperand, rightHandOperand, options);
+		case "DataView":
+			return iterableEqual(
+				new Uint8Array(leftHandOperand.buffer),
+				new Uint8Array(rightHandOperand.buffer),
+				options,
+			);
+		case "ArrayBuffer":
+			return iterableEqual(
+				new Uint8Array(leftHandOperand),
+				new Uint8Array(rightHandOperand),
+				options,
+			);
+		case "Set":
+			return entriesEqual(leftHandOperand, rightHandOperand, options);
+		case "Map":
+			return entriesEqual(leftHandOperand, rightHandOperand, options);
+		case "Temporal.PlainDate":
+		case "Temporal.PlainTime":
+		case "Temporal.PlainDateTime":
+		case "Temporal.Instant":
+		case "Temporal.ZonedDateTime":
+		case "Temporal.PlainYearMonth":
+		case "Temporal.PlainMonthDay":
+			return leftHandOperand.equals(rightHandOperand);
+		case "Temporal.Duration":
+			return (
+				leftHandOperand.total("nanoseconds") ===
+				rightHandOperand.total("nanoseconds")
+			);
+		case "Temporal.TimeZone":
+		case "Temporal.Calendar":
+			return leftHandOperand.toString() === rightHandOperand.toString();
+		default:
+			return objectEqual(leftHandOperand, rightHandOperand, options);
+	}
 }
 
 /*!
@@ -276,7 +326,7 @@ function extensiveDeepEqualByType(leftHandOperand, rightHandOperand, leftHandTyp
  */
 
 function regexpEqual(leftHandOperand, rightHandOperand) {
-  return leftHandOperand.toString() === rightHandOperand.toString();
+	return leftHandOperand.toString() === rightHandOperand.toString();
 }
 
 /*!
@@ -289,27 +339,27 @@ function regexpEqual(leftHandOperand, rightHandOperand) {
  */
 
 function entriesEqual(leftHandOperand, rightHandOperand, options) {
-  try {
-    // IE11 doesn't support Set#entries or Set#@@iterator, so we need manually populate using Set#forEach
-    if (leftHandOperand.size !== rightHandOperand.size) {
-      return false;
-    }
-    if (leftHandOperand.size === 0) {
-      return true;
-    }
-  } catch (sizeError) {
-    // things that aren't actual Maps or Sets will throw here
-    return false;
-  }
-  var leftHandItems = [];
-  var rightHandItems = [];
-  leftHandOperand.forEach(function gatherEntries(key, value) {
-    leftHandItems.push([ key, value ]);
-  });
-  rightHandOperand.forEach(function gatherEntries(key, value) {
-    rightHandItems.push([ key, value ]);
-  });
-  return iterableEqual(leftHandItems.sort(), rightHandItems.sort(), options);
+	try {
+		// IE11 doesn't support Set#entries or Set#@@iterator, so we need manually populate using Set#forEach
+		if (leftHandOperand.size !== rightHandOperand.size) {
+			return false;
+		}
+		if (leftHandOperand.size === 0) {
+			return true;
+		}
+	} catch (sizeError) {
+		// things that aren't actual Maps or Sets will throw here
+		return false;
+	}
+	var leftHandItems = [];
+	var rightHandItems = [];
+	leftHandOperand.forEach(function gatherEntries(key, value) {
+		leftHandItems.push([key, value]);
+	});
+	rightHandOperand.forEach(function gatherEntries(key, value) {
+		rightHandItems.push([key, value]);
+	});
+	return iterableEqual(leftHandItems.sort(), rightHandItems.sort(), options);
 }
 
 /*!
@@ -322,20 +372,23 @@ function entriesEqual(leftHandOperand, rightHandOperand, options) {
  */
 
 function iterableEqual(leftHandOperand, rightHandOperand, options) {
-  var length = leftHandOperand.length;
-  if (length !== rightHandOperand.length) {
-    return false;
-  }
-  if (length === 0) {
-    return true;
-  }
-  var index = -1;
-  while (++index < length) {
-    if (deepEqual(leftHandOperand[index], rightHandOperand[index], options) === false) {
-      return false;
-    }
-  }
-  return true;
+	var length = leftHandOperand.length;
+	if (length !== rightHandOperand.length) {
+		return false;
+	}
+	if (length === 0) {
+		return true;
+	}
+	var index = -1;
+	while (++index < length) {
+		if (
+			deepEqual(leftHandOperand[index], rightHandOperand[index], options) ===
+			false
+		) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /*!
@@ -348,7 +401,11 @@ function iterableEqual(leftHandOperand, rightHandOperand, options) {
  */
 
 function generatorEqual(leftHandOperand, rightHandOperand, options) {
-  return iterableEqual(getGeneratorEntries(leftHandOperand), getGeneratorEntries(rightHandOperand), options);
+	return iterableEqual(
+		getGeneratorEntries(leftHandOperand),
+		getGeneratorEntries(rightHandOperand),
+		options,
+	);
 }
 
 /*!
@@ -358,10 +415,12 @@ function generatorEqual(leftHandOperand, rightHandOperand, options) {
  * @return {Boolean} `true` if the object has an @@iterator function.
  */
 function hasIteratorFunction(target) {
-  return typeof Symbol !== 'undefined' &&
-    typeof target === 'object' &&
-    typeof Symbol.iterator !== 'undefined' &&
-    typeof target[Symbol.iterator] === 'function';
+	return (
+		typeof Symbol !== "undefined" &&
+		typeof target === "object" &&
+		typeof Symbol.iterator !== "undefined" &&
+		typeof target[Symbol.iterator] === "function"
+	);
 }
 
 /*!
@@ -372,14 +431,14 @@ function hasIteratorFunction(target) {
  * @returns {Array} an array of entries from the @@iterator function
  */
 function getIteratorEntries(target) {
-  if (hasIteratorFunction(target)) {
-    try {
-      return getGeneratorEntries(target[Symbol.iterator]());
-    } catch (iteratorError) {
-      return [];
-    }
-  }
-  return [];
+	if (hasIteratorFunction(target)) {
+		try {
+			return getGeneratorEntries(target[Symbol.iterator]());
+		} catch (iteratorError) {
+			return [];
+		}
+	}
+	return [];
 }
 
 /*!
@@ -389,13 +448,13 @@ function getIteratorEntries(target) {
  * @returns {Array} an array of entries from the Generator.
  */
 function getGeneratorEntries(generator) {
-  var generatorResult = generator.next();
-  var accumulator = [ generatorResult.value ];
-  while (generatorResult.done === false) {
-    generatorResult = generator.next();
-    accumulator.push(generatorResult.value);
-  }
-  return accumulator;
+	var generatorResult = generator.next();
+	var accumulator = [generatorResult.value];
+	while (generatorResult.done === false) {
+		generatorResult = generator.next();
+		accumulator.push(generatorResult.value);
+	}
+	return accumulator;
 }
 
 /*!
@@ -405,23 +464,23 @@ function getGeneratorEntries(generator) {
  * @returns {Array} an array of own and inherited enumerable keys from the target.
  */
 function getEnumerableKeys(target) {
-  var keys = [];
-  for (var key in target) {
-    keys.push(key);
-  }
-  return keys;
+	var keys = [];
+	for (var key in target) {
+		keys.push(key);
+	}
+	return keys;
 }
 
 function getEnumerableSymbols(target) {
-  var keys = [];
-  var allKeys = Object.getOwnPropertySymbols(target);
-  for (var i = 0; i < allKeys.length; i += 1) {
-    var key = allKeys[i];
-    if (Object.getOwnPropertyDescriptor(target, key).enumerable) {
-      keys.push(key);
-    }
-  }
-  return keys;
+	var keys = [];
+	var allKeys = Object.getOwnPropertySymbols(target);
+	for (var i = 0; i < allKeys.length; i += 1) {
+		var key = allKeys[i];
+		if (Object.getOwnPropertyDescriptor(target, key).enumerable) {
+			keys.push(key);
+		}
+	}
+	return keys;
 }
 
 /*!
@@ -435,16 +494,22 @@ function getEnumerableSymbols(target) {
  * @return {Boolean} result
  */
 function keysEqual(leftHandOperand, rightHandOperand, keys, options) {
-  var length = keys.length;
-  if (length === 0) {
-    return true;
-  }
-  for (var i = 0; i < length; i += 1) {
-    if (deepEqual(leftHandOperand[keys[i]], rightHandOperand[keys[i]], options) === false) {
-      return false;
-    }
-  }
-  return true;
+	var length = keys.length;
+	if (length === 0) {
+		return true;
+	}
+	for (var i = 0; i < length; i += 1) {
+		if (
+			deepEqual(
+				leftHandOperand[keys[i]],
+				rightHandOperand[keys[i]],
+				options,
+			) === false
+		) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /*!
@@ -457,36 +522,46 @@ function keysEqual(leftHandOperand, rightHandOperand, keys, options) {
  * @return {Boolean} result
  */
 function objectEqual(leftHandOperand, rightHandOperand, options) {
-  var leftHandKeys = getEnumerableKeys(leftHandOperand);
-  var rightHandKeys = getEnumerableKeys(rightHandOperand);
-  var leftHandSymbols = getEnumerableSymbols(leftHandOperand);
-  var rightHandSymbols = getEnumerableSymbols(rightHandOperand);
-  leftHandKeys = leftHandKeys.concat(leftHandSymbols);
-  rightHandKeys = rightHandKeys.concat(rightHandSymbols);
+	var leftHandKeys = getEnumerableKeys(leftHandOperand);
+	var rightHandKeys = getEnumerableKeys(rightHandOperand);
+	var leftHandSymbols = getEnumerableSymbols(leftHandOperand);
+	var rightHandSymbols = getEnumerableSymbols(rightHandOperand);
+	leftHandKeys = leftHandKeys.concat(leftHandSymbols);
+	rightHandKeys = rightHandKeys.concat(rightHandSymbols);
 
-  if (leftHandKeys.length && leftHandKeys.length === rightHandKeys.length) {
-    if (iterableEqual(mapSymbols(leftHandKeys).sort(), mapSymbols(rightHandKeys).sort()) === false) {
-      return false;
-    }
-    return keysEqual(leftHandOperand, rightHandOperand, leftHandKeys, options);
-  }
+	if (leftHandKeys.length && leftHandKeys.length === rightHandKeys.length) {
+		if (
+			iterableEqual(
+				mapSymbols(leftHandKeys).sort(),
+				mapSymbols(rightHandKeys).sort(),
+			) === false
+		) {
+			return false;
+		}
+		return keysEqual(leftHandOperand, rightHandOperand, leftHandKeys, options);
+	}
 
-  var leftHandEntries = getIteratorEntries(leftHandOperand);
-  var rightHandEntries = getIteratorEntries(rightHandOperand);
-  if (leftHandEntries.length && leftHandEntries.length === rightHandEntries.length) {
-    leftHandEntries.sort();
-    rightHandEntries.sort();
-    return iterableEqual(leftHandEntries, rightHandEntries, options);
-  }
+	var leftHandEntries = getIteratorEntries(leftHandOperand);
+	var rightHandEntries = getIteratorEntries(rightHandOperand);
+	if (
+		leftHandEntries.length &&
+		leftHandEntries.length === rightHandEntries.length
+	) {
+		leftHandEntries.sort();
+		rightHandEntries.sort();
+		return iterableEqual(leftHandEntries, rightHandEntries, options);
+	}
 
-  if (leftHandKeys.length === 0 &&
-      leftHandEntries.length === 0 &&
-      rightHandKeys.length === 0 &&
-      rightHandEntries.length === 0) {
-    return true;
-  }
+	if (
+		leftHandKeys.length === 0 &&
+		leftHandEntries.length === 0 &&
+		rightHandKeys.length === 0 &&
+		rightHandEntries.length === 0
+	) {
+		return true;
+	}
 
-  return false;
+	return false;
 }
 
 /*!
@@ -499,15 +574,15 @@ function objectEqual(leftHandOperand, rightHandOperand, options) {
  * @return {Boolean} result
  */
 function isPrimitive(value) {
-  return value === null || typeof value !== 'object';
+	return value === null || typeof value !== "object";
 }
 
 function mapSymbols(arr) {
-  return arr.map(function mapSymbol(entry) {
-    if (typeof entry === 'symbol') {
-      return entry.toString();
-    }
+	return arr.map(function mapSymbol(entry) {
+		if (typeof entry === "symbol") {
+			return entry.toString();
+		}
 
-    return entry;
-  });
+		return entry;
+	});
 }

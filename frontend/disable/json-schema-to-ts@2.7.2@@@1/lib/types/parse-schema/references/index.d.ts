@@ -4,6 +4,12 @@ import type { ParseSchemaOptions } from "../index";
 import type { ParseDefinitionSchema } from "./definitions";
 import type { ParseExternalReferenceSchema } from "./references";
 export declare type ReferenceSchema = JSONSchema7 & {
-    $ref: string;
+	$ref: string;
 };
-export declare type ParseReferenceSchema<Sc extends ReferenceSchema, O extends ParseSchemaOptions, R extends string[] = Split<Sc["$ref"], "#">> = R[0] extends "" ? ParseDefinitionSchema<Sc, O, R[1]> : ParseExternalReferenceSchema<Sc, O, R[0], R[1]>;
+export declare type ParseReferenceSchema<
+	Sc extends ReferenceSchema,
+	O extends ParseSchemaOptions,
+	R extends string[] = Split<Sc["$ref"], "#">,
+> = R[0] extends ""
+	? ParseDefinitionSchema<Sc, O, R[1]>
+	: ParseExternalReferenceSchema<Sc, O, R[0], R[1]>;

@@ -1,11 +1,11 @@
-import { makeConfig, parseYamlToDocument } from '../../../../__tests__/utils';
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import { makeConfig, parseYamlToDocument } from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 spec-components-invalid-map-name', () => {
-  it('should report about invalid keys inside components', async () => {
-    const document = parseYamlToDocument(outdent`
+describe("Oas3 spec-components-invalid-map-name", () => {
+	it("should report about invalid keys inside components", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.0
       info:
         version: 3.0.0
@@ -27,17 +27,17 @@ describe('Oas3 spec-components-invalid-map-name', () => {
             type: integer
             format: int64     
 		`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'spec-components-invalid-map-name': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"spec-components-invalid-map-name": "error",
+				},
+			}),
+		});
 
-    expect(results).toMatchInlineSnapshot(`
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -185,10 +185,10 @@ describe('Oas3 spec-components-invalid-map-name', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report a key of the example does not match the regular expression', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report a key of the example does not match the regular expression", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.0
       info:
         version: 3.0.0
@@ -206,21 +206,21 @@ describe('Oas3 spec-components-invalid-map-name', () => {
                       description: 'Some description'
                       value: 21
 		`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'spec-components-invalid-map-name': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"spec-components-invalid-map-name": "error",
+				},
+			}),
+		});
 
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report invalid keys inside nested examples', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report invalid keys inside nested examples", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.0
       info:
         version: 3.0.0
@@ -235,17 +235,17 @@ describe('Oas3 spec-components-invalid-map-name', () => {
                 description: 'Some description'
                 value: 21 
 		`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'spec-components-invalid-map-name': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"spec-components-invalid-map-name": "error",
+				},
+			}),
+		});
 
-    expect(results).toMatchInlineSnapshot(`
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -278,5 +278,5 @@ describe('Oas3 spec-components-invalid-map-name', () => {
         },
       ]
     `);
-  });
+	});
 });

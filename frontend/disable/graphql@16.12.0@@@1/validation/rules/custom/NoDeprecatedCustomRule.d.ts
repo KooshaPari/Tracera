@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../../language/visitor';
-import type { ValidationContext } from '../../ValidationContext';
+import type { ASTVisitor } from "../../../language/visitor";
+import type { ValidationContext } from "../../ValidationContext";
 /**
  * No deprecated
  *
@@ -11,5 +11,5 @@ import type { ValidationContext } from '../../ValidationContext';
  * necessarily to forbid their use when querying a service.
  */
 export declare function NoDeprecatedCustomRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

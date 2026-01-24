@@ -9,45 +9,45 @@ var _utils = require("../utils.cjs");
 
 // ISO week of year
 class ISOWeekParser extends _Parser.Parser {
-  priority = 100;
+	priority = 100;
 
-  parse(dateString, token, match) {
-    switch (token) {
-      case "I":
-        return (0, _utils.parseNumericPattern)(
-          _constants.numericPatterns.week,
-          dateString,
-        );
-      case "Io":
-        return match.ordinalNumber(dateString, { unit: "week" });
-      default:
-        return (0, _utils.parseNDigits)(token.length, dateString);
-    }
-  }
+	parse(dateString, token, match) {
+		switch (token) {
+			case "I":
+				return (0, _utils.parseNumericPattern)(
+					_constants.numericPatterns.week,
+					dateString,
+				);
+			case "Io":
+				return match.ordinalNumber(dateString, { unit: "week" });
+			default:
+				return (0, _utils.parseNDigits)(token.length, dateString);
+		}
+	}
 
-  validate(_date, value) {
-    return value >= 1 && value <= 53;
-  }
+	validate(_date, value) {
+		return value >= 1 && value <= 53;
+	}
 
-  set(date, _flags, value) {
-    return (0, _index2.startOfISOWeek)((0, _index.setISOWeek)(date, value));
-  }
+	set(date, _flags, value) {
+		return (0, _index2.startOfISOWeek)((0, _index.setISOWeek)(date, value));
+	}
 
-  incompatibleTokens = [
-    "y",
-    "Y",
-    "u",
-    "q",
-    "Q",
-    "M",
-    "L",
-    "w",
-    "d",
-    "D",
-    "e",
-    "c",
-    "t",
-    "T",
-  ];
+	incompatibleTokens = [
+		"y",
+		"Y",
+		"u",
+		"q",
+		"Q",
+		"M",
+		"L",
+		"w",
+		"d",
+		"D",
+		"e",
+		"c",
+		"t",
+		"T",
+	];
 }
 exports.ISOWeekParser = ISOWeekParser;

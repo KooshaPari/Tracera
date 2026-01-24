@@ -19,41 +19,39 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var common = require('./common');
-var test = require('tape');
-var assert = require('assert');
-var EventEmitter = require('../').EventEmitter;
-var util = require('util');
+var common = require("./common");
+var test = require("tape");
+var assert = require("assert");
+var EventEmitter = require("../").EventEmitter;
+var util = require("util");
 
 util.inherits(MyEE, EventEmitter);
 
 function MyEE(cb) {
-  this.once(1, cb);
-  this.emit(1);
-  this.removeAllListeners();
-  EventEmitter.call(this);
+	this.once(1, cb);
+	this.emit(1);
+	this.removeAllListeners();
+	EventEmitter.call(this);
 }
 
 var myee = new MyEE(common.mustCall());
 
-
 util.inherits(ErrorEE, EventEmitter);
 function ErrorEE() {
-  this.emit('error', new Error('blerg'));
+	this.emit("error", new Error("blerg"));
 }
 
-assert.throws(function() {
-  new ErrorEE();
+assert.throws(() => {
+	new ErrorEE();
 }, /blerg/);
 
-test.onFinish(function() {
-  assert.ok(!(myee._events instanceof Object));
-  assert.strictEqual(Object.keys(myee._events).length, 0);
+test.onFinish(() => {
+	assert.ok(!(myee._events instanceof Object));
+	assert.strictEqual(Object.keys(myee._events).length, 0);
 });
 
-
 function MyEE2() {
-  EventEmitter.call(this);
+	EventEmitter.call(this);
 }
 
 MyEE2.prototype = new EventEmitter();
@@ -61,6 +59,6 @@ MyEE2.prototype = new EventEmitter();
 var ee1 = new MyEE2();
 var ee2 = new MyEE2();
 
-ee1.on('x', function() {});
+ee1.on("x", () => {});
 
-assert.strictEqual(ee2.listenerCount('x'), 0);
+assert.strictEqual(ee2.listenerCount("x"), 0);

@@ -1,12 +1,22 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.abs = void 0;
 exports.acos = acos;
 exports.asin = asin;
-exports.tau = exports.sqrt = exports.sin = exports.pi = exports.min = exports.max = exports.halfPi = exports.epsilon = exports.cos = exports.atan2 = void 0;
+exports.tau =
+	exports.sqrt =
+	exports.sin =
+	exports.pi =
+	exports.min =
+	exports.max =
+	exports.halfPi =
+	exports.epsilon =
+	exports.cos =
+	exports.atan2 =
+		void 0;
 const abs = Math.abs;
 exports.abs = abs;
 const atan2 = Math.atan2;
@@ -31,9 +41,9 @@ const tau = 2 * pi;
 exports.tau = tau;
 
 function acos(x) {
-  return x > 1 ? 0 : x < -1 ? pi : Math.acos(x);
+	return x > 1 ? 0 : x < -1 ? pi : Math.acos(x);
 }
 
 function asin(x) {
-  return x >= 1 ? halfPi : x <= -1 ? -halfPi : Math.asin(x);
+	return x >= 1 ? halfPi : x <= -1 ? -halfPi : Math.asin(x);
 }

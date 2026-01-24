@@ -4,11 +4,14 @@ exports.__esModule = true;
 exports.default = void 0;
 var _apgLite = require("../../../apg-lite.cjs");
 const cookiePair = (state, chars, phraseIndex, phraseLength, data) => {
-  if (state === _apgLite.identifiers.SEM_PRE) {
-    data.push(['cookie-pair', _apgLite.utilities.charsToString(chars, phraseIndex, phraseLength)]);
-  } else if (state === _apgLite.identifiers.SEM_POST) {
-    /* not used in this example */
-  }
-  return _apgLite.identifiers.SEM_OK;
+	if (state === _apgLite.identifiers.SEM_PRE) {
+		data.push([
+			"cookie-pair",
+			_apgLite.utilities.charsToString(chars, phraseIndex, phraseLength),
+		]);
+	} else if (state === _apgLite.identifiers.SEM_POST) {
+		/* not used in this example */
+	}
+	return _apgLite.identifiers.SEM_OK;
 };
-var _default = exports.default = cookiePair;
+var _default = (exports.default = cookiePair);

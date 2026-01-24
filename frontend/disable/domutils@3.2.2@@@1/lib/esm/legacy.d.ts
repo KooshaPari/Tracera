@@ -8,10 +8,13 @@ import type { ElementType } from "domelementtype";
  * @category Legacy Query Functions
  */
 export interface TestElementOpts {
-    tag_name?: string | ((name: string) => boolean);
-    tag_type?: string | ((name: string) => boolean);
-    tag_contains?: string | ((data?: string) => boolean);
-    [attributeName: string]: undefined | string | ((attributeValue: string) => boolean);
+	tag_name?: string | ((name: string) => boolean);
+	tag_type?: string | ((name: string) => boolean);
+	tag_contains?: string | ((data?: string) => boolean);
+	[attributeName: string]:
+		| undefined
+		| string
+		| ((attributeValue: string) => boolean);
 }
 /**
  * Checks whether a node matches the description in `options`.
@@ -21,7 +24,10 @@ export interface TestElementOpts {
  * @param node The element to test.
  * @returns Whether the element matches the description in `options`.
  */
-export declare function testElement(options: TestElementOpts, node: AnyNode): boolean;
+export declare function testElement(
+	options: TestElementOpts,
+	node: AnyNode,
+): boolean;
 /**
  * Returns all nodes that match `options`.
  *
@@ -32,7 +38,12 @@ export declare function testElement(options: TestElementOpts, node: AnyNode): bo
  * @param limit Maximum number of nodes to return.
  * @returns All nodes that match `options`.
  */
-export declare function getElements(options: TestElementOpts, nodes: AnyNode | AnyNode[], recurse: boolean, limit?: number): AnyNode[];
+export declare function getElements(
+	options: TestElementOpts,
+	nodes: AnyNode | AnyNode[],
+	recurse: boolean,
+	limit?: number,
+): AnyNode[];
 /**
  * Returns the node with the supplied ID.
  *
@@ -42,7 +53,11 @@ export declare function getElements(options: TestElementOpts, nodes: AnyNode | A
  * @param recurse Also consider child nodes.
  * @returns The node with the supplied ID.
  */
-export declare function getElementById(id: string | ((id: string) => boolean), nodes: AnyNode | AnyNode[], recurse?: boolean): Element | null;
+export declare function getElementById(
+	id: string | ((id: string) => boolean),
+	nodes: AnyNode | AnyNode[],
+	recurse?: boolean,
+): Element | null;
 /**
  * Returns all nodes with the supplied `tagName`.
  *
@@ -53,7 +68,12 @@ export declare function getElementById(id: string | ((id: string) => boolean), n
  * @param limit Maximum number of nodes to return.
  * @returns All nodes with the supplied `tagName`.
  */
-export declare function getElementsByTagName(tagName: string | ((name: string) => boolean), nodes: AnyNode | AnyNode[], recurse?: boolean, limit?: number): Element[];
+export declare function getElementsByTagName(
+	tagName: string | ((name: string) => boolean),
+	nodes: AnyNode | AnyNode[],
+	recurse?: boolean,
+	limit?: number,
+): Element[];
 /**
  * Returns all nodes with the supplied `className`.
  *
@@ -64,7 +84,12 @@ export declare function getElementsByTagName(tagName: string | ((name: string) =
  * @param limit Maximum number of nodes to return.
  * @returns All nodes with the supplied `className`.
  */
-export declare function getElementsByClassName(className: string | ((name: string) => boolean), nodes: AnyNode | AnyNode[], recurse?: boolean, limit?: number): Element[];
+export declare function getElementsByClassName(
+	className: string | ((name: string) => boolean),
+	nodes: AnyNode | AnyNode[],
+	recurse?: boolean,
+	limit?: number,
+): Element[];
 /**
  * Returns all nodes with the supplied `type`.
  *
@@ -75,5 +100,10 @@ export declare function getElementsByClassName(className: string | ((name: strin
  * @param limit Maximum number of nodes to return.
  * @returns All nodes with the supplied `type`.
  */
-export declare function getElementsByTagType(type: ElementType | ((type: ElementType) => boolean), nodes: AnyNode | AnyNode[], recurse?: boolean, limit?: number): AnyNode[];
+export declare function getElementsByTagType(
+	type: ElementType | ((type: ElementType) => boolean),
+	nodes: AnyNode | AnyNode[],
+	recurse?: boolean,
+	limit?: number,
+): AnyNode[];
 //# sourceMappingURL=legacy.d.ts.map

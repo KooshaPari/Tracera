@@ -1,0 +1,192 @@
+---
+title: "Caching"
+description: "Caching strategies and implementation in TraceRTM"
+keywords: [caching, redis, performance, optimization]
+---
+
+# Caching
+
+Caching strategies to improve performance in TraceRTM.
+
+## Cache Backends
+
+### Redis Cache
+
+```python
+import redis.asyncio as redis
+
+redis_client = redis.from_url("redis://localhost:6379")
+
+async def get_cached_item(item_id: str):
+    """Get item from cache."""
+    cached = await redis_client.get(f"item:{item_id}")
+    if cached:
+        return json.loads(cached)
+    return None
+
+async def cache_item(item_id: str, item: dict, ttl: int = 3600):
+    """Cache item with TTL."""
+    await redis_client.setex(
+        f"item:{item_id}",
+        ttl,
+        json.dumps(item)
+    )
+```
+
+### In-Memory Cache
+
+```python
+from functools import lru_cache
+from typing import Optional
+
+@lru_cache(maxsize=1000)
+def get_cached_config(key: str) -> Optional[str]:
+    """Cache configuration values."""
+    return config_manager.get(key)
+```
+
+## Cache Patterns
+
+### Cache-Aside
+
+```python
+async def get_item_with_cache(item_id: str):
+    """Get item with cache-aside pattern."""
+    # Check cache
+    cached = await redis_client.get(f"item:{item_id}")
+    if cached:
+        return json.loads(cached)
+    
+    # Cache miss - fetch from database
+    item = await item_repo.get_by_id(item_id)
+    
+    # Store in cache
+    if item:
+        await redis_client.setex(
+            f"item:{item_id}",
+            3600,
+            json.dumps(item)
+        )
+    
+    return item
+```
+
+### Write-Through
+
+```python
+async def create_item_with_cache(data: dict):
+    """Create item with write-through cache."""
+    # Create in database
+    item = await item_repo.create(data)
+    
+    # Write to cache
+    await redis_client.setex(
+        f"item:{item.id}",
+        3600,
+        json.dumps(item)
+    )
+    
+    return item
+```
+
+### Write-Behind
+
+```python
+async def update_item_with_cache(item_id: str, data: dict):
+    """Update item with write-behind cache."""
+    # Update cache immediately
+    await redis_client.setex(
+        f"item:{item_id}",
+        3600,
+        json.dumps(data)
+    )
+    
+    # Queue database update
+    await queue.enqueue("update_item_db", item_id, data)
+    
+    return data
+```
+
+## Cache Invalidation
+
+### Time-Based Expiration
+
+```python
+# Set TTL
+await redis_client.setex("item:123", 3600, json.dumps(item))
+
+# Or use expire
+await redis_client.set("item:123", json.dumps(item))
+await redis_client.expire("item:123", 3600)
+```
+
+### Event-Based Invalidation
+
+```python
+@event_bus.subscribe("item.updated")
+async def invalidate_item_cache(event: dict):
+    """Invalidate cache on item update."""
+    item_id = event["item_id"]
+    await redis_client.delete(f"item:{item_id}")
+    
+    # Invalidate related caches
+    await redis_client.delete(f"items:project:{event['project_id']}")
+```
+
+### Tag-Based Invalidation
+
+```python
+# Cache with tags
+await redis_client.setex(
+    f"item:{item_id}",
+    3600,
+    json.dumps(item)
+)
+await redis_client.sadd(f"tag:project:{project_id}", f"item:{item_id}")
+
+# Invalidate by tag
+items = await redis_client.smembers(f"tag:project:{project_id}")
+for item_key in items:
+    await redis_client.delete(item_key)
+await redis_client.delete(f"tag:project:{project_id}")
+```
+
+## Cache Keys
+
+### Key Naming Convention
+
+```python
+# Pattern: {resource}:{identifier}
+"item:item_123"
+"project:proj_456"
+"user:user_789"
+
+# Pattern: {resource}:{filter}:{value}
+"items:project:proj_123"
+"items:status:active"
+"items:view:requirements"
+```
+
+## Cache Warming
+
+### Preload Cache
+
+```python
+async def warm_cache(project_id: str):
+    """Preload cache with frequently accessed data."""
+    # Get active items
+    items = await item_repo.list_by_status(project_id, "active")
+    
+    # Cache all items
+    for item in items:
+        await redis_client.setex(
+            f"item:{item.id}",
+            3600,
+            json.dumps(item)
+        )
+```
+
+## Related Documentation
+
+- [Redis Cache](./06a-redis-cache) - Redis implementation details
+- [Query Optimization](./03a-query-optimization) - Query performance

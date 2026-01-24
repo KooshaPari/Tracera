@@ -1,23 +1,23 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { Path } from '../jsutils/Path';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import type { GraphQLFormattedError } from '../error/GraphQLError';
-import { GraphQLError } from '../error/GraphQLError';
+import type { Maybe } from "../jsutils/Maybe";
+import type { ObjMap } from "../jsutils/ObjMap";
+import type { Path } from "../jsutils/Path";
+import type { PromiseOrValue } from "../jsutils/PromiseOrValue";
+import type { GraphQLFormattedError } from "../error/GraphQLError";
+import { GraphQLError } from "../error/GraphQLError";
 import type {
-  DocumentNode,
-  FieldNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../language/ast';
+	DocumentNode,
+	FieldNode,
+	FragmentDefinitionNode,
+	OperationDefinitionNode,
+} from "../language/ast";
 import type {
-  GraphQLField,
-  GraphQLFieldResolver,
-  GraphQLObjectType,
-  GraphQLResolveInfo,
-  GraphQLTypeResolver,
-} from '../type/definition';
-import type { GraphQLSchema } from '../type/schema';
+	GraphQLField,
+	GraphQLFieldResolver,
+	GraphQLObjectType,
+	GraphQLResolveInfo,
+	GraphQLTypeResolver,
+} from "../type/definition";
+import type { GraphQLSchema } from "../type/schema";
 /**
  * Terminology
  *
@@ -44,18 +44,18 @@ import type { GraphQLSchema } from '../type/schema';
  * and the fragments defined in the query document
  */
 export interface ExecutionContext {
-  schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDefinitionNode>;
-  rootValue: unknown;
-  contextValue: unknown;
-  operation: OperationDefinitionNode;
-  variableValues: {
-    [variable: string]: unknown;
-  };
-  fieldResolver: GraphQLFieldResolver<any, any>;
-  typeResolver: GraphQLTypeResolver<any, any>;
-  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errors: Array<GraphQLError>;
+	schema: GraphQLSchema;
+	fragments: ObjMap<FragmentDefinitionNode>;
+	rootValue: unknown;
+	contextValue: unknown;
+	operation: OperationDefinitionNode;
+	variableValues: {
+		[variable: string]: unknown;
+	};
+	fieldResolver: GraphQLFieldResolver<any, any>;
+	typeResolver: GraphQLTypeResolver<any, any>;
+	subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+	errors: Array<GraphQLError>;
 }
 /**
  * The result of GraphQL execution.
@@ -65,38 +65,38 @@ export interface ExecutionContext {
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
+	TData = ObjMap<unknown>,
+	TExtensions = ObjMap<unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
+	errors?: ReadonlyArray<GraphQLError>;
+	data?: TData | null;
+	extensions?: TExtensions;
 }
 export interface FormattedExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
+	TData = ObjMap<unknown>,
+	TExtensions = ObjMap<unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: TData | null;
-  extensions?: TExtensions;
+	errors?: ReadonlyArray<GraphQLFormattedError>;
+	data?: TData | null;
+	extensions?: TExtensions;
 }
 export interface ExecutionArgs {
-  schema: GraphQLSchema;
-  document: DocumentNode;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  /** Additional execution options. */
-  options?: {
-    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
-    maxCoercionErrors?: number;
-  };
+	schema: GraphQLSchema;
+	document: DocumentNode;
+	rootValue?: unknown;
+	contextValue?: unknown;
+	variableValues?: Maybe<{
+		readonly [variable: string]: unknown;
+	}>;
+	operationName?: Maybe<string>;
+	fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+	typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+	subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+	/** Additional execution options. */
+	options?: {
+		/** Set the maximum number of errors allowed for coercing (defaults to 50). */
+		maxCoercionErrors?: number;
+	};
 }
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -109,7 +109,7 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export declare function execute(
-  args: ExecutionArgs,
+	args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult>;
 /**
  * Also implements the "Executing requests" section of the GraphQL specification.
@@ -124,11 +124,11 @@ export declare function executeSync(args: ExecutionArgs): ExecutionResult;
  * @internal
  */
 export declare function assertValidExecutionArguments(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rawVariableValues: Maybe<{
-    readonly [variable: string]: unknown;
-  }>,
+	schema: GraphQLSchema,
+	document: DocumentNode,
+	rawVariableValues: Maybe<{
+		readonly [variable: string]: unknown;
+	}>,
 ): void;
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -139,17 +139,17 @@ export declare function assertValidExecutionArguments(
  * @internal
  */
 export declare function buildExecutionContext(
-  args: ExecutionArgs,
+	args: ExecutionArgs,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
 /**
  * @internal
  */
 export declare function buildResolveInfo(
-  exeContext: ExecutionContext,
-  fieldDef: GraphQLField<unknown, unknown>,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  parentType: GraphQLObjectType,
-  path: Path,
+	exeContext: ExecutionContext,
+	fieldDef: GraphQLField<unknown, unknown>,
+	fieldNodes: ReadonlyArray<FieldNode>,
+	parentType: GraphQLObjectType,
+	path: Path,
 ): GraphQLResolveInfo;
 /**
  * If a resolveType function is not given, then a default resolve behavior is
@@ -169,8 +169,8 @@ export declare const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
  * of calling that function while passing along args and context value.
  */
 export declare const defaultFieldResolver: GraphQLFieldResolver<
-  unknown,
-  unknown
+	unknown,
+	unknown
 >;
 /**
  * This method looks up the field on the given type definition.
@@ -184,7 +184,7 @@ export declare const defaultFieldResolver: GraphQLFieldResolver<
  * @internal
  */
 export declare function getFieldDef(
-  schema: GraphQLSchema,
-  parentType: GraphQLObjectType,
-  fieldNode: FieldNode,
+	schema: GraphQLSchema,
+	parentType: GraphQLObjectType,
+	fieldNode: FieldNode,
 ): Maybe<GraphQLField<unknown, unknown>>;

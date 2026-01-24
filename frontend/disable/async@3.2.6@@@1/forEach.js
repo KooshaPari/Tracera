@@ -1,26 +1,26 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _eachOf = require('./eachOf.js');
+var _eachOf = require("./eachOf.js");
 
 var _eachOf2 = _interopRequireDefault(_eachOf);
 
-var _withoutIndex = require('./internal/withoutIndex.js');
+var _withoutIndex = require("./internal/withoutIndex.js");
 
 var _withoutIndex2 = _interopRequireDefault(_withoutIndex);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Applies the function `iteratee` to each item in `coll`, in parallel.
@@ -122,7 +122,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function eachLimit(coll, iteratee, callback) {
-    return (0, _eachOf2.default)(coll, (0, _withoutIndex2.default)((0, _wrapAsync2.default)(iteratee)), callback);
+	return (0, _eachOf2.default)(
+		coll,
+		(0, _withoutIndex2.default)((0, _wrapAsync2.default)(iteratee)),
+		callback,
+	);
 }
 
 exports.default = (0, _awaitify2.default)(eachLimit, 3);

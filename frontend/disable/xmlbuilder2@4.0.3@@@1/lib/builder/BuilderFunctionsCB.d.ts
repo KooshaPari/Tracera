@@ -1,4 +1,4 @@
-import { XMLBuilderCB, XMLBuilderCBCreateOptions } from '../interfaces';
+import { XMLBuilderCB, XMLBuilderCBCreateOptions } from "../interfaces";
 /**
  * Creates an XML builder which serializes the document in chunks.
  *
@@ -6,7 +6,9 @@ import { XMLBuilderCB, XMLBuilderCBCreateOptions } from '../interfaces';
  *
  * @returns callback builder
  */
-export declare function createCB(options?: XMLBuilderCBCreateOptions): XMLBuilderCB;
+export declare function createCB(
+	options?: XMLBuilderCBCreateOptions,
+): XMLBuilderCB;
 /**
  * Creates an XML builder which serializes the fragment in chunks.
  *
@@ -14,4 +16,6 @@ export declare function createCB(options?: XMLBuilderCBCreateOptions): XMLBuilde
  *
  * @returns callback builder
  */
-export declare function fragmentCB(options?: XMLBuilderCBCreateOptions): XMLBuilderCB;
+export declare function fragmentCB(
+	options?: XMLBuilderCBCreateOptions,
+): XMLBuilderCB;

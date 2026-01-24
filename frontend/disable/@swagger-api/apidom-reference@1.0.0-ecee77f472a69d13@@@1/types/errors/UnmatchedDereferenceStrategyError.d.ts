@@ -1,7 +1,6 @@
-import DereferenceError from './DereferenceError.ts';
+import DereferenceError from "./DereferenceError.ts";
 /**
  * @public
  */
-declare class UnmatchedDereferenceStrategyError extends DereferenceError {
-}
+declare class UnmatchedDereferenceStrategyError extends DereferenceError {}
 export default UnmatchedDereferenceStrategyError;

@@ -1,5 +1,5 @@
-import {Resolver, promises as dnsPromises, lookup} from 'dns';
-import {Agent} from 'http';
+import { Resolver, promises as dnsPromises, lookup } from "dns";
+import { Agent } from "http";
 
 type AsyncResolver = dnsPromises.Resolver;
 
@@ -8,7 +8,11 @@ export type IPFamily = 4 | 6;
 type TPromise<T> = T | Promise<T>;
 
 export interface CacheInstance {
-	set(hostname: string, entries: EntryObject[], ttl: number): TPromise<void | boolean | this>;
+	set(
+		hostname: string,
+		entries: EntryObject[],
+		ttl: number,
+	): TPromise<void | boolean | this>;
 	get(hostname: string): TPromise<EntryObject[] | undefined>;
 	delete(hostname: string): TPromise<boolean>;
 	clear(): TPromise<void>;
@@ -99,14 +103,47 @@ export default class CacheableLookup {
 	/**
 	 * @see https://nodejs.org/api/dns.html#dns_dns_lookup_hostname_options_callback
 	 */
-	lookup(hostname: string, family: IPFamily, callback: (error: NodeJS.ErrnoException, address: string, family: IPFamily) => void): void;
-	lookup(hostname: string, callback: (error: NodeJS.ErrnoException, address: string, family: IPFamily) => void): void;
-	lookup(hostname: string, options: LookupOptions & {all: true}, callback: (error: NodeJS.ErrnoException, result: ReadonlyArray<EntryObject>) => void): void;
-	lookup(hostname: string, options: LookupOptions, callback: (error: NodeJS.ErrnoException, address: string, family: IPFamily) => void): void;
+	lookup(
+		hostname: string,
+		family: IPFamily,
+		callback: (
+			error: NodeJS.ErrnoException,
+			address: string,
+			family: IPFamily,
+		) => void,
+	): void;
+	lookup(
+		hostname: string,
+		callback: (
+			error: NodeJS.ErrnoException,
+			address: string,
+			family: IPFamily,
+		) => void,
+	): void;
+	lookup(
+		hostname: string,
+		options: LookupOptions & { all: true },
+		callback: (
+			error: NodeJS.ErrnoException,
+			result: ReadonlyArray<EntryObject>,
+		) => void,
+	): void;
+	lookup(
+		hostname: string,
+		options: LookupOptions,
+		callback: (
+			error: NodeJS.ErrnoException,
+			address: string,
+			family: IPFamily,
+		) => void,
+	): void;
 	/**
 	 * The asynchronous version of `dns.lookup(…)`.
 	 */
-	lookupAsync(hostname: string, options: LookupOptions & {all: true}): Promise<ReadonlyArray<EntryObject>>;
+	lookupAsync(
+		hostname: string,
+		options: LookupOptions & { all: true },
+	): Promise<ReadonlyArray<EntryObject>>;
 	lookupAsync(hostname: string, options: LookupOptions): Promise<EntryObject>;
 	lookupAsync(hostname: string): Promise<EntryObject>;
 	lookupAsync(hostname: string, family: IPFamily): Promise<EntryObject>;

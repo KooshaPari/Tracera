@@ -5,6 +5,6 @@ var _index = require("../quartersToMonths.cjs");
 var _index2 = require("./_lib/convertToFP.cjs"); // This file is generated automatically by `scripts/build/fp.ts`. Please, don't change it.
 
 const quartersToMonths = (exports.quartersToMonths = (0, _index2.convertToFP)(
-  _index.quartersToMonths,
-  1,
+	_index.quartersToMonths,
+	1,
 ));

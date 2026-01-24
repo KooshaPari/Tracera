@@ -31,13 +31,13 @@ var _index = require("./_lib/normalizeDates.cjs");
  * //=> false
  */
 function isSameMonth(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    laterDate_.getFullYear() === earlierDate_.getFullYear() &&
-    laterDate_.getMonth() === earlierDate_.getMonth()
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		laterDate_.getFullYear() === earlierDate_.getFullYear() &&
+		laterDate_.getMonth() === earlierDate_.getMonth()
+	);
 }

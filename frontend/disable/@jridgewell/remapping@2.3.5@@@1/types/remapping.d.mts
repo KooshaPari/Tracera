@@ -1,6 +1,15 @@
-import SourceMap from './source-map.mts';
-import type { SourceMapInput, SourceMapLoader, Options } from './types.mts';
-export type { SourceMapSegment, EncodedSourceMap, EncodedSourceMap as RawSourceMap, DecodedSourceMap, SourceMapInput, SourceMapLoader, LoaderContext, Options, } from './types.mts';
+import SourceMap from "./source-map.mts";
+import type { SourceMapInput, SourceMapLoader, Options } from "./types.mts";
+export type {
+	SourceMapSegment,
+	EncodedSourceMap,
+	EncodedSourceMap as RawSourceMap,
+	DecodedSourceMap,
+	SourceMapInput,
+	SourceMapLoader,
+	LoaderContext,
+	Options,
+} from "./types.mts";
 export type { SourceMap };
 /**
  * Traces through all the mappings in the root sourcemap, through the sources
@@ -17,5 +26,9 @@ export type { SourceMap };
  * Pass `decodedMappings` to receive a SourceMap with decoded (instead of
  * VLQ encoded) mappings.
  */
-export default function remapping(input: SourceMapInput | SourceMapInput[], loader: SourceMapLoader, options?: boolean | Options): SourceMap;
+export default function remapping(
+	input: SourceMapInput | SourceMapInput[],
+	loader: SourceMapLoader,
+	options?: boolean | Options,
+): SourceMap;
 //# sourceMappingURL=remapping.d.ts.map

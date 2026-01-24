@@ -1,5 +1,5 @@
-import {type LiteralUnion} from 'type-fest';
-import {type BoxStyle, type Boxes as CLIBoxes} from 'cli-boxes';
+import { type LiteralUnion } from "type-fest";
+import { type BoxStyle, type Boxes as CLIBoxes } from "cli-boxes";
 
 /**
 All box styles.
@@ -56,25 +56,25 @@ export type Options = {
 	Color of the box border.
 	*/
 	readonly borderColor?: LiteralUnion<
-	| 'black'
-	| 'red'
-	| 'green'
-	| 'yellow'
-	| 'blue'
-	| 'magenta'
-	| 'cyan'
-	| 'white'
-	| 'gray'
-	| 'grey'
-	| 'blackBright'
-	| 'redBright'
-	| 'greenBright'
-	| 'yellowBright'
-	| 'blueBright'
-	| 'magentaBright'
-	| 'cyanBright'
-	| 'whiteBright',
-	string
+		| "black"
+		| "red"
+		| "green"
+		| "yellow"
+		| "blue"
+		| "magenta"
+		| "cyan"
+		| "white"
+		| "gray"
+		| "grey"
+		| "blackBright"
+		| "redBright"
+		| "greenBright"
+		| "yellowBright"
+		| "blueBright"
+		| "magentaBright"
+		| "cyanBright"
+		| "whiteBright",
+		string
 	>;
 
 	/**
@@ -110,29 +110,29 @@ export type Options = {
 
 	@default 'left'
 	*/
-	readonly float?: 'left' | 'right' | 'center';
+	readonly float?: "left" | "right" | "center";
 
 	/**
 	Color of the background.
 	*/
 	readonly backgroundColor?: LiteralUnion<
-	| 'black'
-	| 'red'
-	| 'green'
-	| 'yellow'
-	| 'blue'
-	| 'magenta'
-	| 'cyan'
-	| 'white'
-	| 'blackBright'
-	| 'redBright'
-	| 'greenBright'
-	| 'yellowBright'
-	| 'blueBright'
-	| 'magentaBright'
-	| 'cyanBright'
-	| 'whiteBright',
-	string
+		| "black"
+		| "red"
+		| "green"
+		| "yellow"
+		| "blue"
+		| "magenta"
+		| "cyan"
+		| "white"
+		| "blackBright"
+		| "redBright"
+		| "greenBright"
+		| "yellowBright"
+		| "blueBright"
+		| "magentaBright"
+		| "cyanBright"
+		| "whiteBright",
+		string
 	>;
 
 	/**
@@ -141,14 +141,14 @@ export type Options = {
 	@default 'left'
 	@deprecated Use `textAlignment` instead.
 	*/
-	readonly align?: 'left' | 'right' | 'center';
+	readonly align?: "left" | "right" | "center";
 
 	/**
 	Align the text in the box based on the widest line.
 
 	@default 'left'
 	*/
-	readonly textAlignment?: 'left' | 'right' | 'center';
+	readonly textAlignment?: "left" | "right" | "center";
 
 	/**
 	Display a title at the top of the box.
@@ -182,7 +182,7 @@ export type Options = {
 	// └───────────────┘
 	```
 	*/
-	readonly titleAlignment?: 'left' | 'right' | 'center';
+	readonly titleAlignment?: "left" | "right" | "center";
 
 	/**
 	Set a fixed width for the box.
@@ -234,7 +234,9 @@ export type Options = {
 	}));
 	```
 	*/
-	readonly fullscreen?: boolean | ((width: number, height: number) => [width: number, height: number]);
+	readonly fullscreen?:
+		| boolean
+		| ((width: number, height: number) => [width: number, height: number]);
 };
 
 /**

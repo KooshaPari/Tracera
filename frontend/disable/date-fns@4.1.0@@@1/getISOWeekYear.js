@@ -27,26 +27,26 @@ import { toDate } from "./toDate.js";
  * //=> 2004
  */
 export function getISOWeekYear(date, options) {
-  const _date = toDate(date, options?.in);
-  const year = _date.getFullYear();
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
 
-  const fourthOfJanuaryOfNextYear = constructFrom(_date, 0);
-  fourthOfJanuaryOfNextYear.setFullYear(year + 1, 0, 4);
-  fourthOfJanuaryOfNextYear.setHours(0, 0, 0, 0);
-  const startOfNextYear = startOfISOWeek(fourthOfJanuaryOfNextYear);
+	const fourthOfJanuaryOfNextYear = constructFrom(_date, 0);
+	fourthOfJanuaryOfNextYear.setFullYear(year + 1, 0, 4);
+	fourthOfJanuaryOfNextYear.setHours(0, 0, 0, 0);
+	const startOfNextYear = startOfISOWeek(fourthOfJanuaryOfNextYear);
 
-  const fourthOfJanuaryOfThisYear = constructFrom(_date, 0);
-  fourthOfJanuaryOfThisYear.setFullYear(year, 0, 4);
-  fourthOfJanuaryOfThisYear.setHours(0, 0, 0, 0);
-  const startOfThisYear = startOfISOWeek(fourthOfJanuaryOfThisYear);
+	const fourthOfJanuaryOfThisYear = constructFrom(_date, 0);
+	fourthOfJanuaryOfThisYear.setFullYear(year, 0, 4);
+	fourthOfJanuaryOfThisYear.setHours(0, 0, 0, 0);
+	const startOfThisYear = startOfISOWeek(fourthOfJanuaryOfThisYear);
 
-  if (_date.getTime() >= startOfNextYear.getTime()) {
-    return year + 1;
-  } else if (_date.getTime() >= startOfThisYear.getTime()) {
-    return year;
-  } else {
-    return year - 1;
-  }
+	if (_date.getTime() >= startOfNextYear.getTime()) {
+		return year + 1;
+	} else if (_date.getTime() >= startOfThisYear.getTime()) {
+		return year;
+	} else {
+		return year - 1;
+	}
 }
 
 // Fallback for modularized imports:

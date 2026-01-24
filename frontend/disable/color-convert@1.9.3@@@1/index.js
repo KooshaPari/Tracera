@@ -1,5 +1,5 @@
-var conversions = require('./conversions');
-var route = require('./route');
+var conversions = require("./conversions");
+var route = require("./route");
 
 var convert = {};
 
@@ -19,7 +19,7 @@ function wrapRaw(fn) {
 	};
 
 	// preserve .conversion property if there is one
-	if ('conversion' in fn) {
+	if ("conversion" in fn) {
 		wrappedFn.conversion = fn.conversion;
 	}
 
@@ -41,7 +41,7 @@ function wrapRounded(fn) {
 		// we're assuming the result is an array here.
 		// see notice in conversions.js; don't use box types
 		// in conversion functions.
-		if (typeof result === 'object') {
+		if (typeof result === "object") {
 			for (var len = result.length, i = 0; i < len; i++) {
 				result[i] = Math.round(result[i]);
 			}
@@ -51,23 +51,27 @@ function wrapRounded(fn) {
 	};
 
 	// preserve .conversion property if there is one
-	if ('conversion' in fn) {
+	if ("conversion" in fn) {
 		wrappedFn.conversion = fn.conversion;
 	}
 
 	return wrappedFn;
 }
 
-models.forEach(function (fromModel) {
+models.forEach((fromModel) => {
 	convert[fromModel] = {};
 
-	Object.defineProperty(convert[fromModel], 'channels', {value: conversions[fromModel].channels});
-	Object.defineProperty(convert[fromModel], 'labels', {value: conversions[fromModel].labels});
+	Object.defineProperty(convert[fromModel], "channels", {
+		value: conversions[fromModel].channels,
+	});
+	Object.defineProperty(convert[fromModel], "labels", {
+		value: conversions[fromModel].labels,
+	});
 
 	var routes = route(fromModel);
 	var routeModels = Object.keys(routes);
 
-	routeModels.forEach(function (toModel) {
+	routeModels.forEach((toModel) => {
 		var fn = routes[toModel];
 
 		convert[fromModel][toModel] = wrapRounded(fn);

@@ -32,13 +32,13 @@ var _index2 = require("./startOfQuarter.cjs");
  * //=> false
  */
 function isSameQuarter(laterDate, earlierDate, options) {
-  const [dateLeft_, dateRight_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    +(0, _index2.startOfQuarter)(dateLeft_) ===
-    +(0, _index2.startOfQuarter)(dateRight_)
-  );
+	const [dateLeft_, dateRight_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		+(0, _index2.startOfQuarter)(dateLeft_) ===
+		+(0, _index2.startOfQuarter)(dateRight_)
+	);
 }

@@ -1,12 +1,10 @@
-'use strict'
+const { stringify } = require("jsonfile/utils");
+const { outputFileSync } = require("../output");
 
-const { stringify } = require('jsonfile/utils')
-const { outputFileSync } = require('../output')
+function outputJsonSync(file, data, options) {
+	const str = stringify(data, options);
 
-function outputJsonSync (file, data, options) {
-  const str = stringify(data, options)
-
-  outputFileSync(file, str, options)
+	outputFileSync(file, str, options);
 }
 
-module.exports = outputJsonSync
+module.exports = outputJsonSync;

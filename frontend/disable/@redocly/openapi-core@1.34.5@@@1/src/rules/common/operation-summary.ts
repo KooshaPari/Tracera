@@ -1,14 +1,13 @@
-import { validateDefinedAndNonEmpty } from '../utils';
-
-import type { Oas3Rule, Oas2Rule } from '../../visitors';
-import type { UserContext } from '../../walk';
-import type { Oas2Operation } from '../../typings/swagger';
-import type { Oas3Operation } from '../../typings/openapi';
+import type { Oas3Operation } from "../../typings/openapi";
+import type { Oas2Operation } from "../../typings/swagger";
+import type { Oas2Rule, Oas3Rule } from "../../visitors";
+import type { UserContext } from "../../walk";
+import { validateDefinedAndNonEmpty } from "../utils";
 
 export const OperationSummary: Oas3Rule | Oas2Rule = () => {
-  return {
-    Operation(operation: Oas2Operation | Oas3Operation, ctx: UserContext) {
-      validateDefinedAndNonEmpty('summary', operation, ctx);
-    },
-  };
+	return {
+		Operation(operation: Oas2Operation | Oas3Operation, ctx: UserContext) {
+			validateDefinedAndNonEmpty("summary", operation, ctx);
+		},
+	};
 };

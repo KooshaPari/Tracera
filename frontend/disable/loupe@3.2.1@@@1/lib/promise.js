@@ -1,2 +1,2 @@
-const getPromiseValue = () => 'Promise{…}';
+const getPromiseValue = () => "Promise{…}";
 export default getPromiseValue;

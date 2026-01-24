@@ -1,26 +1,26 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _once = require('./internal/once.js');
+var _once = require("./internal/once.js");
 
 var _once2 = _interopRequireDefault(_once);
 
-var _onlyOnce = require('./internal/onlyOnce.js');
+var _onlyOnce = require("./internal/onlyOnce.js");
 
 var _onlyOnce2 = _interopRequireDefault(_onlyOnce);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Runs the `tasks` array of functions in series, each passing their results to
@@ -80,25 +80,28 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * }
  */
 function waterfall(tasks, callback) {
-    callback = (0, _once2.default)(callback);
-    if (!Array.isArray(tasks)) return callback(new Error('First argument to waterfall must be an array of functions'));
-    if (!tasks.length) return callback();
-    var taskIndex = 0;
+	callback = (0, _once2.default)(callback);
+	if (!Array.isArray(tasks))
+		return callback(
+			new Error("First argument to waterfall must be an array of functions"),
+		);
+	if (!tasks.length) return callback();
+	var taskIndex = 0;
 
-    function nextTask(args) {
-        var task = (0, _wrapAsync2.default)(tasks[taskIndex++]);
-        task(...args, (0, _onlyOnce2.default)(next));
-    }
+	function nextTask(args) {
+		var task = (0, _wrapAsync2.default)(tasks[taskIndex++]);
+		task(...args, (0, _onlyOnce2.default)(next));
+	}
 
-    function next(err, ...args) {
-        if (err === false) return;
-        if (err || taskIndex === tasks.length) {
-            return callback(err, ...args);
-        }
-        nextTask(args);
-    }
+	function next(err, ...args) {
+		if (err === false) return;
+		if (err || taskIndex === tasks.length) {
+			return callback(err, ...args);
+		}
+		nextTask(args);
+	}
 
-    nextTask([]);
+	nextTask([]);
 }
 
 exports.default = (0, _awaitify2.default)(waterfall);

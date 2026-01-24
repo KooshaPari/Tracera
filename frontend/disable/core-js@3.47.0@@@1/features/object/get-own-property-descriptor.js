@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/get-own-property-descriptor');
+"use strict";
+module.exports = require("../../full/object/get-own-property-descriptor");

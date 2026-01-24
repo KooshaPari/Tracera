@@ -1,12 +1,12 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = colors;
 
 function colors(s) {
-  return s.match(/.{6}/g).map(function (x) {
-    return "#" + x;
-  });
+	return s.match(/.{6}/g).map(function (x) {
+		return "#" + x;
+	});
 }

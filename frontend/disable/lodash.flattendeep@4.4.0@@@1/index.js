@@ -9,21 +9,23 @@
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0,
-    MAX_SAFE_INTEGER = 9007199254740991;
+	MAX_SAFE_INTEGER = 9007199254740991;
 
 /** `Object#toString` result references. */
-var argsTag = '[object Arguments]',
-    funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]';
+var argsTag = "[object Arguments]",
+	funcTag = "[object Function]",
+	genTag = "[object GeneratorFunction]";
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+var freeGlobal =
+	typeof global == "object" && global && global.Object === Object && global;
 
 /** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+var freeSelf =
+	typeof self == "object" && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
-var root = freeGlobal || freeSelf || Function('return this')();
+var root = freeGlobal || freeSelf || Function("return this")();
 
 /**
  * Appends the elements of `values` to `array`.
@@ -34,14 +36,14 @@ var root = freeGlobal || freeSelf || Function('return this')();
  * @returns {Array} Returns `array`.
  */
 function arrayPush(array, values) {
-  var index = -1,
-      length = values.length,
-      offset = array.length;
+	var index = -1,
+		length = values.length,
+		offset = array.length;
 
-  while (++index < length) {
-    array[offset + index] = values[index];
-  }
-  return array;
+	while (++index < length) {
+		array[offset + index] = values[index];
+	}
+	return array;
 }
 
 /** Used for built-in method references. */
@@ -59,8 +61,8 @@ var objectToString = objectProto.toString;
 
 /** Built-in value references. */
 var Symbol = root.Symbol,
-    propertyIsEnumerable = objectProto.propertyIsEnumerable,
-    spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined;
+	propertyIsEnumerable = objectProto.propertyIsEnumerable,
+	spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined;
 
 /**
  * The base implementation of `_.flatten` with support for restricting flattening.
@@ -74,26 +76,26 @@ var Symbol = root.Symbol,
  * @returns {Array} Returns the new flattened array.
  */
 function baseFlatten(array, depth, predicate, isStrict, result) {
-  var index = -1,
-      length = array.length;
+	var index = -1,
+		length = array.length;
 
-  predicate || (predicate = isFlattenable);
-  result || (result = []);
+	predicate || (predicate = isFlattenable);
+	result || (result = []);
 
-  while (++index < length) {
-    var value = array[index];
-    if (depth > 0 && predicate(value)) {
-      if (depth > 1) {
-        // Recursively flatten arrays (susceptible to call stack limits).
-        baseFlatten(value, depth - 1, predicate, isStrict, result);
-      } else {
-        arrayPush(result, value);
-      }
-    } else if (!isStrict) {
-      result[result.length] = value;
-    }
-  }
-  return result;
+	while (++index < length) {
+		var value = array[index];
+		if (depth > 0 && predicate(value)) {
+			if (depth > 1) {
+				// Recursively flatten arrays (susceptible to call stack limits).
+				baseFlatten(value, depth - 1, predicate, isStrict, result);
+			} else {
+				arrayPush(result, value);
+			}
+		} else if (!isStrict) {
+			result[result.length] = value;
+		}
+	}
+	return result;
 }
 
 /**
@@ -104,8 +106,11 @@ function baseFlatten(array, depth, predicate, isStrict, result) {
  * @returns {boolean} Returns `true` if `value` is flattenable, else `false`.
  */
 function isFlattenable(value) {
-  return isArray(value) || isArguments(value) ||
-    !!(spreadableSymbol && value && value[spreadableSymbol]);
+	return (
+		isArray(value) ||
+		isArguments(value) ||
+		!!(spreadableSymbol && value && value[spreadableSymbol])
+	);
 }
 
 /**
@@ -123,8 +128,8 @@ function isFlattenable(value) {
  * // => [1, 2, 3, 4, 5]
  */
 function flattenDeep(array) {
-  var length = array ? array.length : 0;
-  return length ? baseFlatten(array, INFINITY) : [];
+	var length = array ? array.length : 0;
+	return length ? baseFlatten(array, INFINITY) : [];
 }
 
 /**
@@ -146,9 +151,13 @@ function flattenDeep(array) {
  * // => false
  */
 function isArguments(value) {
-  // Safari 8.1 makes `arguments.callee` enumerable in strict mode.
-  return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') &&
-    (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
+	// Safari 8.1 makes `arguments.callee` enumerable in strict mode.
+	return (
+		isArrayLikeObject(value) &&
+		hasOwnProperty.call(value, "callee") &&
+		(!propertyIsEnumerable.call(value, "callee") ||
+			objectToString.call(value) == argsTag)
+	);
 }
 
 /**
@@ -202,7 +211,7 @@ var isArray = Array.isArray;
  * // => false
  */
 function isArrayLike(value) {
-  return value != null && isLength(value.length) && !isFunction(value);
+	return value != null && isLength(value.length) && !isFunction(value);
 }
 
 /**
@@ -231,7 +240,7 @@ function isArrayLike(value) {
  * // => false
  */
 function isArrayLikeObject(value) {
-  return isObjectLike(value) && isArrayLike(value);
+	return isObjectLike(value) && isArrayLike(value);
 }
 
 /**
@@ -252,10 +261,10 @@ function isArrayLikeObject(value) {
  * // => false
  */
 function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 8-9 which returns 'object' for typed array and other constructors.
-  var tag = isObject(value) ? objectToString.call(value) : '';
-  return tag == funcTag || tag == genTag;
+	// The use of `Object#toString` avoids issues with the `typeof` operator
+	// in Safari 8-9 which returns 'object' for typed array and other constructors.
+	var tag = isObject(value) ? objectToString.call(value) : "";
+	return tag == funcTag || tag == genTag;
 }
 
 /**
@@ -285,8 +294,12 @@ function isFunction(value) {
  * // => false
  */
 function isLength(value) {
-  return typeof value == 'number' &&
-    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+	return (
+		typeof value == "number" &&
+		value > -1 &&
+		value % 1 == 0 &&
+		value <= MAX_SAFE_INTEGER
+	);
 }
 
 /**
@@ -315,8 +328,8 @@ function isLength(value) {
  * // => false
  */
 function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
+	var type = typeof value;
+	return !!value && (type == "object" || type == "function");
 }
 
 /**
@@ -344,7 +357,7 @@ function isObject(value) {
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+	return !!value && typeof value == "object";
 }
 
 module.exports = flattenDeep;

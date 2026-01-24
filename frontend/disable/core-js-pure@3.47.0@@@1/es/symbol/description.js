@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.symbol.description');
+"use strict";
+require("../../modules/es.symbol.description");

@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.typed-array.copy-within');
+"use strict";
+require("../../modules/es.typed-array.copy-within");

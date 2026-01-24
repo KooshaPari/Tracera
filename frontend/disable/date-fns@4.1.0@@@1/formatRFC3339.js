@@ -34,47 +34,47 @@ import { toDate } from "./toDate.js";
  * //=> '2019-09-18T19:00:52.234Z'
  */
 export function formatRFC3339(date, options) {
-  const date_ = toDate(date, options?.in);
+	const date_ = toDate(date, options?.in);
 
-  if (!isValid(date_)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (!isValid(date_)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  const fractionDigits = options?.fractionDigits ?? 0;
+	const fractionDigits = options?.fractionDigits ?? 0;
 
-  const day = addLeadingZeros(date_.getDate(), 2);
-  const month = addLeadingZeros(date_.getMonth() + 1, 2);
-  const year = date_.getFullYear();
+	const day = addLeadingZeros(date_.getDate(), 2);
+	const month = addLeadingZeros(date_.getMonth() + 1, 2);
+	const year = date_.getFullYear();
 
-  const hour = addLeadingZeros(date_.getHours(), 2);
-  const minute = addLeadingZeros(date_.getMinutes(), 2);
-  const second = addLeadingZeros(date_.getSeconds(), 2);
+	const hour = addLeadingZeros(date_.getHours(), 2);
+	const minute = addLeadingZeros(date_.getMinutes(), 2);
+	const second = addLeadingZeros(date_.getSeconds(), 2);
 
-  let fractionalSecond = "";
-  if (fractionDigits > 0) {
-    const milliseconds = date_.getMilliseconds();
-    const fractionalSeconds = Math.trunc(
-      milliseconds * Math.pow(10, fractionDigits - 3),
-    );
-    fractionalSecond = "." + addLeadingZeros(fractionalSeconds, fractionDigits);
-  }
+	let fractionalSecond = "";
+	if (fractionDigits > 0) {
+		const milliseconds = date_.getMilliseconds();
+		const fractionalSeconds = Math.trunc(
+			milliseconds * 10 ** (fractionDigits - 3),
+		);
+		fractionalSecond = "." + addLeadingZeros(fractionalSeconds, fractionDigits);
+	}
 
-  let offset = "";
-  const tzOffset = date_.getTimezoneOffset();
+	let offset = "";
+	const tzOffset = date_.getTimezoneOffset();
 
-  if (tzOffset !== 0) {
-    const absoluteOffset = Math.abs(tzOffset);
-    const hourOffset = addLeadingZeros(Math.trunc(absoluteOffset / 60), 2);
-    const minuteOffset = addLeadingZeros(absoluteOffset % 60, 2);
-    // If less than 0, the sign is +, because it is ahead of time.
-    const sign = tzOffset < 0 ? "+" : "-";
+	if (tzOffset !== 0) {
+		const absoluteOffset = Math.abs(tzOffset);
+		const hourOffset = addLeadingZeros(Math.trunc(absoluteOffset / 60), 2);
+		const minuteOffset = addLeadingZeros(absoluteOffset % 60, 2);
+		// If less than 0, the sign is +, because it is ahead of time.
+		const sign = tzOffset < 0 ? "+" : "-";
 
-    offset = `${sign}${hourOffset}:${minuteOffset}`;
-  } else {
-    offset = "Z";
-  }
+		offset = `${sign}${hourOffset}:${minuteOffset}`;
+	} else {
+		offset = "Z";
+	}
 
-  return `${year}-${month}-${day}T${hour}:${minute}:${second}${fractionalSecond}${offset}`;
+	return `${year}-${month}-${day}T${hour}:${minute}:${second}${fractionalSecond}${offset}`;
 }
 
 // Fallback for modularized imports:

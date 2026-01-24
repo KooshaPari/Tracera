@@ -3,9 +3,17 @@
 	"version": "4.0.2",
 	"description": "A module to smooth-scroll web pages and scrollable elements (like DIVs)",
 	"main": "zenscroll.js",
-	"files": ["zenscroll.js", "zenscroll-min.js"],
+	"files": [
+		"zenscroll.js",
+		"zenscroll-min.js"
+	],
 	"homepage": "https://zengabor.github.io/zenscroll/",
-	"keywords": ["animation", "scroll", "anchor", "ux"],
+	"keywords": [
+		"animation",
+		"scroll",
+		"anchor",
+		"ux"
+	],
 	"license": "Unlicense",
 	"author": "Gabor Lenard (http://www.gaborlenard.com)",
 	"repository": {

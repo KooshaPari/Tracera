@@ -5,7 +5,12 @@ import { Element, Document, Node } from "../dom/interfaces";
  * @param name - element name
  * @param namespace - namespace
  */
-export declare function document_elementInterface(name: string, namespace: string | null): (new (...args: any[]) => Element);
+export declare function document_elementInterface(
+	name: string,
+	namespace: string | null,
+): new (
+	...args: any[]
+) => Element;
 /**
  * Creates a new element node.
  * See: https://dom.spec.whatwg.org/#internal-createelementns-steps
@@ -15,9 +20,16 @@ export declare function document_elementInterface(name: string, namespace: strin
  * @param qualifiedName - qualified name
  * @param options - element options
  */
-export declare function document_internalCreateElementNS(document: Document, namespace: string | null, qualifiedName: string, options?: string | {
-    is: string;
-}): Element;
+export declare function document_internalCreateElementNS(
+	document: Document,
+	namespace: string | null,
+	qualifiedName: string,
+	options?:
+		| string
+		| {
+				is: string;
+		  },
+): Element;
 /**
  * Removes `node` and its subtree from its document and changes
  * its owner document to `document` so that it can be inserted

@@ -1,13 +1,20 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 exports.default = void 0;
 var _tsMixer = require("ts-mixer");
 var _apidomCore = require("@swagger-api/apidom-core");
-var _FallbackVisitor = _interopRequireDefault(require("../../FallbackVisitor.cjs"));
-var _SpecificationVisitor = _interopRequireDefault(require("../../SpecificationVisitor.cjs"));
-var _RequirementLevel = _interopRequireDefault(require("../../../../elements/RequirementLevel.cjs"));
+var _FallbackVisitor = _interopRequireDefault(
+	require("../../FallbackVisitor.cjs"),
+);
+var _SpecificationVisitor = _interopRequireDefault(
+	require("../../SpecificationVisitor.cjs"),
+);
+var _RequirementLevel = _interopRequireDefault(
+	require("../../../../elements/RequirementLevel.cjs"),
+);
 /**
  * @public
  */
@@ -15,12 +22,17 @@ var _RequirementLevel = _interopRequireDefault(require("../../../../elements/Req
 /**
  * @public
  */
-class RequirementLevelVisitor extends (0, _tsMixer.Mixin)(_SpecificationVisitor.default, _FallbackVisitor.default) {
-  StringElement(stringElement) {
-    const requirementLevelElement = new _RequirementLevel.default((0, _apidomCore.toValue)(stringElement));
-    this.copyMetaAndAttributes(stringElement, requirementLevelElement);
-    this.element = requirementLevelElement;
-    return _apidomCore.BREAK;
-  }
+class RequirementLevelVisitor extends (0, _tsMixer.Mixin)(
+	_SpecificationVisitor.default,
+	_FallbackVisitor.default,
+) {
+	StringElement(stringElement) {
+		const requirementLevelElement = new _RequirementLevel.default(
+			(0, _apidomCore.toValue)(stringElement),
+		);
+		this.copyMetaAndAttributes(stringElement, requirementLevelElement);
+		this.element = requirementLevelElement;
+		return _apidomCore.BREAK;
+	}
 }
-var _default = exports.default = RequirementLevelVisitor;
+var _default = (exports.default = RequirementLevelVisitor);

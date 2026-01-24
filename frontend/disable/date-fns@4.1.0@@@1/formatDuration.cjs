@@ -9,13 +9,13 @@ var _index2 = require("./_lib/defaultOptions.cjs");
  */
 
 const defaultFormat = [
-  "years",
-  "months",
-  "weeks",
-  "days",
-  "hours",
-  "minutes",
-  "seconds",
+	"years",
+	"months",
+	"weeks",
+	"days",
+	"hours",
+	"minutes",
+	"seconds",
 ];
 
 /**
@@ -77,27 +77,27 @@ const defaultFormat = [
  * //=> '2 years, 9 months, 3 weeks'
  */
 function formatDuration(duration, options) {
-  const defaultOptions = (0, _index2.getDefaultOptions)();
-  const locale =
-    options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
-  const format = options?.format ?? defaultFormat;
-  const zero = options?.zero ?? false;
-  const delimiter = options?.delimiter ?? " ";
+	const defaultOptions = (0, _index2.getDefaultOptions)();
+	const locale =
+		options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
+	const format = options?.format ?? defaultFormat;
+	const zero = options?.zero ?? false;
+	const delimiter = options?.delimiter ?? " ";
 
-  if (!locale.formatDistance) {
-    return "";
-  }
+	if (!locale.formatDistance) {
+		return "";
+	}
 
-  const result = format
-    .reduce((acc, unit) => {
-      const token = `x${unit.replace(/(^.)/, (m) => m.toUpperCase())}`;
-      const value = duration[unit];
-      if (value !== undefined && (zero || duration[unit])) {
-        return acc.concat(locale.formatDistance(token, value));
-      }
-      return acc;
-    }, [])
-    .join(delimiter);
+	const result = format
+		.reduce((acc, unit) => {
+			const token = `x${unit.replace(/(^.)/, (m) => m.toUpperCase())}`;
+			const value = duration[unit];
+			if (value !== undefined && (zero || duration[unit])) {
+				return acc.concat(locale.formatDistance(token, value));
+			}
+			return acc;
+		}, [])
+		.join(delimiter);
 
-  return result;
+	return result;
 }

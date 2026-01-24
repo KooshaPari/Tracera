@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link subBusinessDays} function options.
  */
 export interface SubBusinessDaysOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name subBusinessDays
  * @category Day Helpers
@@ -27,10 +27,10 @@ export interface SubBusinessDaysOptions<DateType extends Date = Date>
  * //=> Mon Aug 18 2014 00:00:00 (skipped weekend days)
  */
 export declare function subBusinessDays<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: SubBusinessDaysOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: SubBusinessDaysOptions<ResultDate> | undefined,
 ): ResultDate;

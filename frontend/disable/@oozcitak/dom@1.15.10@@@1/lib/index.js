@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var dom_1 = require("./dom");
 dom_1.dom.setFeatures(true);

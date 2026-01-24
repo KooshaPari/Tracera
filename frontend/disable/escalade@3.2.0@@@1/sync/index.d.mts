@@ -3,7 +3,4 @@ export type Callback = (
 	files: string[],
 ) => string | false | void;
 
-export default function (
-	directory: string,
-	callback: Callback,
-): string | void;
+export default function (directory: string, callback: Callback): string | void;

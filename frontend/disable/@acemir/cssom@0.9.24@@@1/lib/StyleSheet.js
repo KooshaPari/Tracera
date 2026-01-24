@@ -1,9 +1,8 @@
 //.CommonJS
 var CSSOM = {
-	MediaList: require("./MediaList").MediaList
+	MediaList: require("./MediaList").MediaList,
 };
 ///CommonJS
-
 
 /**
  * @constructor
@@ -16,22 +15,22 @@ CSSOM.StyleSheet = function StyleSheet() {
 
 Object.defineProperties(CSSOM.StyleSheet.prototype, {
 	media: {
-		get: function() {
+		get: function () {
 			return this.__media;
 		},
-		set: function(value) {
+		set: function (value) {
 			if (typeof value === "string") {
 				this.__media.mediaText = value;
 			} else {
 				this.__media = value;
 			}
-		}
+		},
 	},
 	parentStyleSheet: {
-		get: function() {
+		get: function () {
 			return this.__parentStyleSheet;
-		}
-	}
+		},
+	},
 });
 
 //.CommonJS

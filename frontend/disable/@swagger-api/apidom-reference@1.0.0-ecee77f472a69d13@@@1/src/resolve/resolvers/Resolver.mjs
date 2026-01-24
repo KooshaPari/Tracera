@@ -6,11 +6,9 @@
  * @public
  */
 class Resolver {
-  name;
-  constructor({
-    name
-  }) {
-    this.name = name;
-  }
+	name;
+	constructor({ name }) {
+		this.name = name;
+	}
 }
 export default Resolver;

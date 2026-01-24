@@ -1,7 +1,9 @@
 declare function getComputedStyle_2(element: Element): CSSStyleDeclaration;
-export { getComputedStyle_2 as getComputedStyle }
+export { getComputedStyle_2 as getComputedStyle };
 
-export declare function getContainingBlock(element: Element): HTMLElement | null;
+export declare function getContainingBlock(
+	element: Element,
+): HTMLElement | null;
 
 export declare function getDocumentElement(node: Node | Window): HTMLElement;
 
@@ -12,17 +14,23 @@ export declare function getNearestOverflowAncestor(node: Node): HTMLElement;
 export declare function getNodeName(node: Node | Window): string;
 
 export declare function getNodeScroll(element: Element | Window): {
-    scrollLeft: number;
-    scrollTop: number;
+	scrollLeft: number;
+	scrollTop: number;
 };
 
-export declare function getOverflowAncestors(node: Node, list?: OverflowAncestors, traverseIframes?: boolean): OverflowAncestors;
+export declare function getOverflowAncestors(
+	node: Node,
+	list?: OverflowAncestors,
+	traverseIframes?: boolean,
+): OverflowAncestors;
 
 export declare function getParentNode(node: Node): Node;
 
 export declare function getWindow(node: any): typeof window;
 
-export declare function isContainingBlock(elementOrCss: Element | CSSStyleDeclaration): boolean;
+export declare function isContainingBlock(
+	elementOrCss: Element | CSSStyleDeclaration,
+): boolean;
 
 export declare function isElement(value: unknown): value is Element;
 
@@ -43,5 +51,3 @@ export declare function isTopLayer(element: Element): boolean;
 export declare function isWebKit(): boolean;
 
 declare type OverflowAncestors = Array<Element | Window | VisualViewport>;
-
-export { }

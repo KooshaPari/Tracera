@@ -1,66 +1,70 @@
-import { toNestErrors, validateFieldsNatively } from '@hookform/resolvers';
-import { SimpleErrorReporter, VineValidator, errors } from '@vinejs/vine';
+import { toNestErrors, validateFieldsNatively } from "@hookform/resolvers";
 import {
-  ConstructableSchema,
-  ValidationOptions,
-} from '@vinejs/vine/build/src/types';
+	errors,
+	type SimpleErrorReporter,
+	type VineValidator,
+} from "@vinejs/vine";
+import type {
+	ConstructableSchema,
+	ValidationOptions,
+} from "@vinejs/vine/build/src/types";
 import {
-  FieldError,
-  FieldErrors,
-  FieldValues,
-  Resolver,
-  appendErrors,
-} from 'react-hook-form';
+	appendErrors,
+	type FieldError,
+	type FieldErrors,
+	type FieldValues,
+	type Resolver,
+} from "react-hook-form";
 
 function parseErrorSchema(
-  vineErrors: SimpleErrorReporter['errors'],
-  validateAllFieldCriteria: boolean,
+	vineErrors: SimpleErrorReporter["errors"],
+	validateAllFieldCriteria: boolean,
 ) {
-  const schemaErrors: Record<string, FieldError> = {};
+	const schemaErrors: Record<string, FieldError> = {};
 
-  for (; vineErrors.length; ) {
-    const error = vineErrors[0];
-    const path = error.field;
+	for (; vineErrors.length; ) {
+		const error = vineErrors[0];
+		const path = error.field;
 
-    if (!(path in schemaErrors)) {
-      schemaErrors[path] = { message: error.message, type: error.rule };
-    }
+		if (!(path in schemaErrors)) {
+			schemaErrors[path] = { message: error.message, type: error.rule };
+		}
 
-    if (validateAllFieldCriteria) {
-      const { types } = schemaErrors[path];
-      const messages = types && types[error.rule];
+		if (validateAllFieldCriteria) {
+			const { types } = schemaErrors[path];
+			const messages = types && types[error.rule];
 
-      schemaErrors[path] = appendErrors(
-        path,
-        validateAllFieldCriteria,
-        schemaErrors,
-        error.rule,
-        messages ? [...(messages as string[]), error.message] : error.message,
-      ) as FieldError;
-    }
+			schemaErrors[path] = appendErrors(
+				path,
+				validateAllFieldCriteria,
+				schemaErrors,
+				error.rule,
+				messages ? [...(messages as string[]), error.message] : error.message,
+			) as FieldError;
+		}
 
-    vineErrors.shift();
-  }
+		vineErrors.shift();
+	}
 
-  return schemaErrors;
+	return schemaErrors;
 }
 
 export function vineResolver<Input extends FieldValues, Context, Output>(
-  schema: VineValidator<ConstructableSchema<Input, Output, Output>, any>,
-  schemaOptions?: ValidationOptions<any>,
-  resolverOptions?: {
-    mode?: 'async' | 'sync';
-    raw?: false;
-  },
+	schema: VineValidator<ConstructableSchema<Input, Output, Output>, any>,
+	schemaOptions?: ValidationOptions<any>,
+	resolverOptions?: {
+		mode?: "async" | "sync";
+		raw?: false;
+	},
 ): Resolver<Input, Context, Output>;
 
 export function vineResolver<Input extends FieldValues, Context, Output>(
-  schema: VineValidator<ConstructableSchema<Input, Output, Output>, any>,
-  schemaOptions: ValidationOptions<any> | undefined,
-  resolverOptions: {
-    mode?: 'async' | 'sync';
-    raw: true;
-  },
+	schema: VineValidator<ConstructableSchema<Input, Output, Output>, any>,
+	schemaOptions: ValidationOptions<any> | undefined,
+	resolverOptions: {
+		mode?: "async" | "sync";
+		raw: true;
+	},
 ): Resolver<Input, Context, Input>;
 
 /**
@@ -83,36 +87,36 @@ export function vineResolver<Input extends FieldValues, Context, Output>(
  * });
  */
 export function vineResolver<Input extends FieldValues, Context, Output>(
-  schema: VineValidator<ConstructableSchema<Input, Output, Output>, any>,
-  schemaOptions?: ValidationOptions<any>,
-  resolverOptions: { raw?: boolean } = {},
+	schema: VineValidator<ConstructableSchema<Input, Output, Output>, any>,
+	schemaOptions?: ValidationOptions<any>,
+	resolverOptions: { raw?: boolean } = {},
 ): Resolver<Input, Context, Output | Input> {
-  return async (values, _, options) => {
-    try {
-      const data = await schema.validate(values, schemaOptions);
+	return async (values, _, options) => {
+		try {
+			const data = await schema.validate(values, schemaOptions);
 
-      options.shouldUseNativeValidation && validateFieldsNatively({}, options);
+			options.shouldUseNativeValidation && validateFieldsNatively({}, options);
 
-      return {
-        errors: {} as FieldErrors,
-        values: resolverOptions.raw ? Object.assign({}, values) : data,
-      };
-    } catch (error: any) {
-      if (error instanceof errors.E_VALIDATION_ERROR) {
-        return {
-          values: {},
-          errors: toNestErrors(
-            parseErrorSchema(
-              error.messages,
-              !options.shouldUseNativeValidation &&
-                options.criteriaMode === 'all',
-            ),
-            options,
-          ),
-        };
-      }
+			return {
+				errors: {} as FieldErrors,
+				values: resolverOptions.raw ? Object.assign({}, values) : data,
+			};
+		} catch (error: any) {
+			if (error instanceof errors.E_VALIDATION_ERROR) {
+				return {
+					values: {},
+					errors: toNestErrors(
+						parseErrorSchema(
+							error.messages,
+							!options.shouldUseNativeValidation &&
+								options.criteriaMode === "all",
+						),
+						options,
+					),
+				};
+			}
 
-      throw error;
-    }
-  };
+			throw error;
+		}
+	};
 }

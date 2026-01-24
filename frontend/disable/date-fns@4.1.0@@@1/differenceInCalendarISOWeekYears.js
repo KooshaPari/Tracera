@@ -30,18 +30,18 @@ import { getISOWeekYear } from "./getISOWeekYear.js";
  * //=> 2
  */
 export function differenceInCalendarISOWeekYears(
-  laterDate,
-  earlierDate,
-  options,
+	laterDate,
+	earlierDate,
+	options,
 ) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    getISOWeekYear(laterDate_, options) - getISOWeekYear(earlierDate_, options)
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		getISOWeekYear(laterDate_, options) - getISOWeekYear(earlierDate_, options)
+	);
 }
 
 // Fallback for modularized imports:

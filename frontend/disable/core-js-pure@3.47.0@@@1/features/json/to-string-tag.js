@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/json/to-string-tag');
+"use strict";
+module.exports = require("../../full/json/to-string-tag");

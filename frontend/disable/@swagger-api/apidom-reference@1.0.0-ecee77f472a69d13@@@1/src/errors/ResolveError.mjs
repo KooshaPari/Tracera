@@ -1,4 +1,4 @@
-import { ApiDOMError } from '@swagger-api/apidom-error';
+import { ApiDOMError } from "@swagger-api/apidom-error";
 
 /**
  * @public

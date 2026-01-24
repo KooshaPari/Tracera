@@ -26,11 +26,11 @@ var _index2 = require("./toDate.cjs");
  * //=> 29
  */
 function getDaysInMonth(date, options) {
-  const _date = (0, _index2.toDate)(date, options?.in);
-  const year = _date.getFullYear();
-  const monthIndex = _date.getMonth();
-  const lastDayOfMonth = (0, _index.constructFrom)(_date, 0);
-  lastDayOfMonth.setFullYear(year, monthIndex + 1, 0);
-  lastDayOfMonth.setHours(0, 0, 0, 0);
-  return lastDayOfMonth.getDate();
+	const _date = (0, _index2.toDate)(date, options?.in);
+	const year = _date.getFullYear();
+	const monthIndex = _date.getMonth();
+	const lastDayOfMonth = (0, _index.constructFrom)(_date, 0);
+	lastDayOfMonth.setFullYear(year, monthIndex + 1, 0);
+	lastDayOfMonth.setHours(0, 0, 0, 0);
+	return lastDayOfMonth.getDate();
 }

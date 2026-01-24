@@ -1,8 +1,9 @@
-import { Mixin } from 'ts-mixer';
-import { always } from 'ramda';
-import MapVisitor from "../../generics/MapVisitor.mjs";
-import FallbackVisitor from "../../FallbackVisitor.mjs";
+import { always } from "ramda";
+import { Mixin } from "ts-mixer";
 import LinkParametersElement from "../../../../elements/nces/LinkParameters.mjs";
+import FallbackVisitor from "../../FallbackVisitor.mjs";
+import MapVisitor from "../../generics/MapVisitor.mjs";
+
 /**
  * @public
  */
@@ -10,10 +11,10 @@ import LinkParametersElement from "../../../../elements/nces/LinkParameters.mjs"
  * @public
  */
 class ParametersVisitor extends Mixin(MapVisitor, FallbackVisitor) {
-  constructor(options) {
-    super(options);
-    this.element = new LinkParametersElement();
-    this.specPath = always(['value']);
-  }
+	constructor(options) {
+		super(options);
+		this.element = new LinkParametersElement();
+		this.specPath = always(["value"]);
+	}
 }
 export default ParametersVisitor;

@@ -18,9 +18,9 @@
  * @public
  */
 export function getOwnEnumerablePropertySymbols(obj) {
-  if (typeof Object.getOwnPropertySymbols !== 'function') return [];
+	if (typeof Object.getOwnPropertySymbols !== "function") return [];
 
-  return Object.getOwnPropertySymbols(obj).filter(function (sym) {
-    return Object.getOwnPropertyDescriptor(obj, sym).enumerable;
-  });
+	return Object.getOwnPropertySymbols(obj).filter(
+		(sym) => Object.getOwnPropertyDescriptor(obj, sym).enumerable,
+	);
 }

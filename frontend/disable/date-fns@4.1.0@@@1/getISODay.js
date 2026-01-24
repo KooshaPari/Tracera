@@ -26,8 +26,8 @@ import { toDate } from "./toDate.js";
  * //=> 7
  */
 export function getISODay(date, options) {
-  const day = toDate(date, options?.in).getDay();
-  return day === 0 ? 7 : day;
+	const day = toDate(date, options?.in).getDay();
+	return day === 0 ? 7 : day;
 }
 
 // Fallback for modularized imports:

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/pad-end');
+"use strict";
+module.exports = require("../../full/string/pad-end");

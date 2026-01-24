@@ -1,4 +1,3 @@
-"use strict";
 /*--------------------------------------------------------------------------
 
 @sinclair/typebox/value
@@ -40,60 +39,65 @@ const check_1 = require("./check");
 const delta_1 = require("./delta");
 /** Provides functions to perform structural updates to JavaScript values */
 var Value;
-(function (Value) {
-    function Cast(...args) {
-        const [schema, references, value] = args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
-        return cast_1.ValueCast.Cast(schema, references, value);
-    }
-    Value.Cast = Cast;
-    function Create(...args) {
-        const [schema, references] = args.length === 2 ? [args[0], args[1]] : [args[0], []];
-        return create_1.ValueCreate.Create(schema, references);
-    }
-    Value.Create = Create;
-    function Check(...args) {
-        const [schema, references, value] = args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
-        return check_1.ValueCheck.Check(schema, references, value);
-    }
-    Value.Check = Check;
-    function Convert(...args) {
-        const [schema, references, value] = args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
-        return convert_1.ValueConvert.Convert(schema, references, value);
-    }
-    Value.Convert = Convert;
-    /** Returns a structural clone of the given value */
-    function Clone(value) {
-        return clone_1.ValueClone.Clone(value);
-    }
-    Value.Clone = Clone;
-    function Errors(...args) {
-        const [schema, references, value] = args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
-        return index_1.ValueErrors.Errors(schema, references, value);
-    }
-    Value.Errors = Errors;
-    /** Returns true if left and right values are structurally equal */
-    function Equal(left, right) {
-        return equal_1.ValueEqual.Equal(left, right);
-    }
-    Value.Equal = Equal;
-    /** Returns edits to transform the current value into the next value */
-    function Diff(current, next) {
-        return delta_1.ValueDelta.Diff(current, next);
-    }
-    Value.Diff = Diff;
-    /** Returns a FNV1A-64 non cryptographic hash of the given value */
-    function Hash(value) {
-        return hash_1.ValueHash.Create(value);
-    }
-    Value.Hash = Hash;
-    /** Returns a new value with edits applied to the given value */
-    function Patch(current, edits) {
-        return delta_1.ValueDelta.Patch(current, edits);
-    }
-    Value.Patch = Patch;
-    /** Performs a deep mutable value assignment while retaining internal references. */
-    function Mutate(current, next) {
-        mutate_1.ValueMutate.Mutate(current, next);
-    }
-    Value.Mutate = Mutate;
-})(Value = exports.Value || (exports.Value = {}));
+((Value) => {
+	function Cast(...args) {
+		const [schema, references, value] =
+			args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
+		return cast_1.ValueCast.Cast(schema, references, value);
+	}
+	Value.Cast = Cast;
+	function Create(...args) {
+		const [schema, references] =
+			args.length === 2 ? [args[0], args[1]] : [args[0], []];
+		return create_1.ValueCreate.Create(schema, references);
+	}
+	Value.Create = Create;
+	function Check(...args) {
+		const [schema, references, value] =
+			args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
+		return check_1.ValueCheck.Check(schema, references, value);
+	}
+	Value.Check = Check;
+	function Convert(...args) {
+		const [schema, references, value] =
+			args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
+		return convert_1.ValueConvert.Convert(schema, references, value);
+	}
+	Value.Convert = Convert;
+	/** Returns a structural clone of the given value */
+	function Clone(value) {
+		return clone_1.ValueClone.Clone(value);
+	}
+	Value.Clone = Clone;
+	function Errors(...args) {
+		const [schema, references, value] =
+			args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
+		return index_1.ValueErrors.Errors(schema, references, value);
+	}
+	Value.Errors = Errors;
+	/** Returns true if left and right values are structurally equal */
+	function Equal(left, right) {
+		return equal_1.ValueEqual.Equal(left, right);
+	}
+	Value.Equal = Equal;
+	/** Returns edits to transform the current value into the next value */
+	function Diff(current, next) {
+		return delta_1.ValueDelta.Diff(current, next);
+	}
+	Value.Diff = Diff;
+	/** Returns a FNV1A-64 non cryptographic hash of the given value */
+	function Hash(value) {
+		return hash_1.ValueHash.Create(value);
+	}
+	Value.Hash = Hash;
+	/** Returns a new value with edits applied to the given value */
+	function Patch(current, edits) {
+		return delta_1.ValueDelta.Patch(current, edits);
+	}
+	Value.Patch = Patch;
+	/** Performs a deep mutable value assignment while retaining internal references. */
+	function Mutate(current, next) {
+		mutate_1.ValueMutate.Mutate(current, next);
+	}
+	Value.Mutate = Mutate;
+})((Value = exports.Value || (exports.Value = {})));

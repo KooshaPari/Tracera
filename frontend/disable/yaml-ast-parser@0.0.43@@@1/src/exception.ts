@@ -1,53 +1,52 @@
-
-import Mark=require("./mark")
-'use strict';
+import Mark = require("./mark");
+("use strict");
 class YAMLException {
+	message: string;
+	reason: string;
+	name: string;
+	mark: Mark;
+	isWarning: boolean;
 
-  message:string
-  reason:string
-  name:string
-  mark:Mark
-  isWarning:boolean
+	private static CLASS_IDENTIFIER = "yaml-ast-parser.YAMLException";
 
-  private static CLASS_IDENTIFIER = "yaml-ast-parser.YAMLException";
+	public static isInstance(instance: any): instance is YAMLException {
+		if (
+			instance != null &&
+			instance.getClassIdentifier &&
+			typeof instance.getClassIdentifier == "function"
+		) {
+			for (const currentIdentifier of instance.getClassIdentifier()) {
+				if (currentIdentifier == YAMLException.CLASS_IDENTIFIER) return true;
+			}
+		}
 
-  public static isInstance(instance : any) : instance is YAMLException {
-    if(instance != null && instance.getClassIdentifier
-        && typeof(instance.getClassIdentifier) == "function"){
+		return false;
+	}
 
-      for (let currentIdentifier of instance.getClassIdentifier()){
-        if(currentIdentifier == YAMLException.CLASS_IDENTIFIER) return true;
-      }
-    }
+	public getClassIdentifier(): string[] {
+		var superIdentifiers = [];
 
-    return false;
-  }
+		return superIdentifiers.concat(YAMLException.CLASS_IDENTIFIER);
+	}
 
-  public getClassIdentifier() : string[] {
-    var superIdentifiers = [];
+	constructor(reason: string, mark: Mark = null, isWarning = false) {
+		this.name = "YAMLException";
+		this.reason = reason;
+		this.mark = mark;
+		this.message = this.toString(false);
+		this.isWarning = isWarning;
+	}
 
-    return superIdentifiers.concat(YAMLException.CLASS_IDENTIFIER);
-  }
+	toString(compact: boolean = false) {
+		var result;
 
-  constructor(reason:string, mark:Mark=null,isWarning=false) {
-    this.name = 'YAMLException';
-    this.reason = reason;
-    this.mark = mark;
-    this.message = this.toString(false);
-    this.isWarning = isWarning;
-  }
+		result = "JS-YAML: " + (this.reason || "(unknown reason)");
 
-  toString(compact:boolean=false){
-    var result;
+		if (!compact && this.mark) {
+			result += " " + this.mark.toString();
+		}
 
-    result = 'JS-YAML: ' + (this.reason || '(unknown reason)');
-
-    if (!compact && this.mark) {
-      result += ' ' + this.mark.toString();
-    }
-
-    return result;
-
-  }
+		return result;
+	}
 }
-export=YAMLException
+export = YAMLException;

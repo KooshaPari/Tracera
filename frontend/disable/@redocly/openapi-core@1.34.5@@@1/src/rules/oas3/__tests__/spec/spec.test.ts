@@ -1,26 +1,32 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef } from '../../../../../__tests__/utils';
-import { StyleguideConfig, defaultPlugin, resolvePlugins, resolvePreset } from '../../../../config';
+import { outdent } from "outdent";
+import {
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../../__tests__/utils";
+import type { Plugin, ResolvedStyleguideConfig } from "../../../../config";
+import {
+	defaultPlugin,
+	resolvePlugins,
+	resolvePreset,
+	StyleguideConfig,
+} from "../../../../config";
+import { lintDocument } from "../../../../lint";
+import { BaseResolver } from "../../../../resolve";
 
-import { BaseResolver } from '../../../../resolve';
+describe("Oas3 Structural visitor basic", () => {
+	let plugins: Plugin[];
+	let presets: ResolvedStyleguideConfig;
+	let allConfig: StyleguideConfig;
 
-import type { Plugin, ResolvedStyleguideConfig } from '../../../../config';
+	beforeAll(async () => {
+		plugins = await resolvePlugins([defaultPlugin]);
+		presets = resolvePreset("all", plugins);
+		allConfig = new StyleguideConfig({ ...presets, plugins });
+	});
 
-describe('Oas3 Structural visitor basic', () => {
-  let plugins: Plugin[];
-  let presets: ResolvedStyleguideConfig;
-  let allConfig: StyleguideConfig;
-
-  beforeAll(async () => {
-    plugins = await resolvePlugins([defaultPlugin]);
-    presets = resolvePreset('all', plugins);
-    allConfig = new StyleguideConfig({ ...presets, plugins });
-  });
-
-  it('should report wrong types', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report wrong types", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           tags:
             - 25.3
@@ -44,16 +50,16 @@ describe('Oas3 Structural visitor basic', () => {
             license: invalid
           paths: {}
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: allConfig,
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: allConfig,
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -158,11 +164,11 @@ describe('Oas3 Structural visitor basic', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report unexpected properties', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report unexpected properties", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components1: 1
           info:
@@ -178,16 +184,16 @@ describe('Oas3 Structural visitor basic', () => {
               x-test: vendor
           paths: {}
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: allConfig,
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: allConfig,
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -234,11 +240,11 @@ describe('Oas3 Structural visitor basic', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report required properties missing', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report required properties missing", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           info:
             version: '1.0'
@@ -249,16 +255,16 @@ describe('Oas3 Structural visitor basic', () => {
             contact:
               name: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: allConfig,
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: allConfig,
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": undefined,
@@ -303,5 +309,5 @@ describe('Oas3 Structural visitor basic', () => {
         },
       ]
     `);
-  });
+	});
 });

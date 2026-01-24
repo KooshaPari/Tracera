@@ -1,11 +1,15 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Arazzo criteria-unique', () => {
-  const document = parseYamlToDocument(
-    outdent`
+describe("Arazzo criteria-unique", () => {
+	const document = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.1'
       info:
         title: Cool API
@@ -76,19 +80,19 @@ describe('Arazzo criteria-unique', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  it('should report when the duplicated criteria exists', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: { 'criteria-unique': 'error' },
-      }),
-    });
+	it("should report when the duplicated criteria exists", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "criteria-unique": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -144,17 +148,17 @@ describe('Arazzo criteria-unique', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report when the duplicated criteria exists', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {},
-      }),
-    });
+	it("should not report when the duplicated criteria exists", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

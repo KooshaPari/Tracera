@@ -1,4 +1,4 @@
-'use strict';
-require('../../modules/es.number.min-safe-integer');
+"use strict";
+require("../../modules/es.number.min-safe-integer");
 
-module.exports = -0x1FFFFFFFFFFFFF;
+module.exports = -0x1fffffffffffff;

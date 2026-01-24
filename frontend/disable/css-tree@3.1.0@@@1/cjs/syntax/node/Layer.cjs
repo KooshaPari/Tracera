@@ -1,32 +1,32 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
-const FULLSTOP = 0x002E; // U+002E FULL STOP (.)
+const FULLSTOP = 0x002e; // U+002E FULL STOP (.)
 
-const name = 'Layer';
+const name = "Layer";
 const structure = {
-    name: String
+	name: String,
 };
 
 function parse() {
-    let tokenStart = this.tokenStart;
-    let name = this.consume(types.Ident);
+	const tokenStart = this.tokenStart;
+	let name = this.consume(types.Ident);
 
-    while (this.isDelim(FULLSTOP)) {
-        this.eat(types.Delim);
-        name += '.' + this.consume(types.Ident);
-    }
+	while (this.isDelim(FULLSTOP)) {
+		this.eat(types.Delim);
+		name += "." + this.consume(types.Ident);
+	}
 
-    return {
-        type: 'Layer',
-        loc: this.getLocation(tokenStart, this.tokenStart),
-        name
-    };
+	return {
+		type: "Layer",
+		loc: this.getLocation(tokenStart, this.tokenStart),
+		name,
+	};
 }
 
 function generate(node) {
-    this.tokenize(node.name);
+	this.tokenize(node.name);
 }
 
 exports.generate = generate;

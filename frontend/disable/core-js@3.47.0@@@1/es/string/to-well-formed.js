@@ -1,4 +1,7 @@
-'use strict';
-require('../../modules/es.string.to-well-formed');
+"use strict";
+require("../../modules/es.string.to-well-formed");
 
-module.exports = require('../../internals/entry-unbind')('String', 'toWellFormed');
+module.exports = require("../../internals/entry-unbind")(
+	"String",
+	"toWellFormed",
+);

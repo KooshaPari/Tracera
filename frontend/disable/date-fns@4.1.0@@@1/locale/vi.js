@@ -13,16 +13,16 @@ import { match } from "./vi/_lib/match.js";
  * @author Leroy Hopson [@lihop](https://github.com/lihop)
  */
 export const vi = {
-  code: "vi",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1 /* First week of new year contains Jan 1st  */,
-  },
+	code: "vi",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1 /* First week of new year contains Jan 1st  */,
+	},
 };
 
 // Fallback for modularized imports:

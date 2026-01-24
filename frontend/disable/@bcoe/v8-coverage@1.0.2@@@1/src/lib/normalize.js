@@ -1,7 +1,7 @@
 const {
-  compareFunctionCovs,
-  compareRangeCovs,
-  compareScriptCovs,
+	compareFunctionCovs,
+	compareRangeCovs,
+	compareScriptCovs,
 } = require("./compare");
 const { RangeTree } = require("./range-tree");
 
@@ -16,10 +16,10 @@ const { RangeTree } = require("./range-tree");
  * @param processCov Process coverage to normalize.
  */
 function normalizeProcessCov(processCov) {
-  processCov.result.sort(compareScriptCovs);
-  for (const [scriptId, scriptCov] of processCov.result.entries()) {
-    scriptCov.scriptId = scriptId.toString(10);
-  }
+	processCov.result.sort(compareScriptCovs);
+	for (const [scriptId, scriptCov] of processCov.result.entries()) {
+		scriptCov.scriptId = scriptId.toString(10);
+	}
 }
 
 /**
@@ -31,10 +31,10 @@ function normalizeProcessCov(processCov) {
  * @param processCov Process coverage to normalize.
  */
 function deepNormalizeProcessCov(processCov) {
-  for (const scriptCov of processCov.result) {
-    deepNormalizeScriptCov(scriptCov);
-  }
-  normalizeProcessCov(processCov);
+	for (const scriptCov of processCov.result) {
+		deepNormalizeScriptCov(scriptCov);
+	}
+	normalizeProcessCov(processCov);
 }
 
 /**
@@ -46,7 +46,7 @@ function deepNormalizeProcessCov(processCov) {
  * @param scriptCov Script coverage to normalize.
  */
 function normalizeScriptCov(scriptCov) {
-  scriptCov.functions.sort(compareFunctionCovs);
+	scriptCov.functions.sort(compareFunctionCovs);
 }
 
 /**
@@ -58,10 +58,10 @@ function normalizeScriptCov(scriptCov) {
  * @param scriptCov Script coverage to normalize.
  */
 function deepNormalizeScriptCov(scriptCov) {
-  for (const funcCov of scriptCov.functions) {
-    normalizeFunctionCov(funcCov);
-  }
-  normalizeScriptCov(scriptCov);
+	for (const funcCov of scriptCov.functions) {
+		normalizeFunctionCov(funcCov);
+	}
+	normalizeScriptCov(scriptCov);
 }
 
 /**
@@ -73,24 +73,24 @@ function deepNormalizeScriptCov(scriptCov) {
  * @param funcCov Function coverage to normalize.
  */
 function normalizeFunctionCov(funcCov) {
-  funcCov.ranges.sort(compareRangeCovs);
-  const tree = RangeTree.fromSortedRanges(funcCov.ranges);
-  normalizeRangeTree(tree);
-  funcCov.ranges = tree.toRanges();
+	funcCov.ranges.sort(compareRangeCovs);
+	const tree = RangeTree.fromSortedRanges(funcCov.ranges);
+	normalizeRangeTree(tree);
+	funcCov.ranges = tree.toRanges();
 }
 
 /**
  * @internal
  */
 function normalizeRangeTree(tree) {
-  tree.normalize();
+	tree.normalize();
 }
 
 module.exports = {
-  normalizeProcessCov,
-  deepNormalizeProcessCov,
-  normalizeScriptCov,
-  deepNormalizeScriptCov,
-  normalizeFunctionCov,
-  normalizeRangeTree,
+	normalizeProcessCov,
+	deepNormalizeProcessCov,
+	normalizeScriptCov,
+	deepNormalizeScriptCov,
+	normalizeFunctionCov,
+	normalizeRangeTree,
 };

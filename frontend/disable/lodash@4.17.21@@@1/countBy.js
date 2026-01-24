@@ -1,5 +1,5 @@
-var baseAssignValue = require('./_baseAssignValue'),
-    createAggregator = require('./_createAggregator');
+var baseAssignValue = require("./_baseAssignValue"),
+	createAggregator = require("./_createAggregator");
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -29,12 +29,12 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * _.countBy(['one', 'two', 'three'], 'length');
  * // => { '3': 2, '5': 1 }
  */
-var countBy = createAggregator(function(result, value, key) {
-  if (hasOwnProperty.call(result, key)) {
-    ++result[key];
-  } else {
-    baseAssignValue(result, key, 1);
-  }
+var countBy = createAggregator((result, value, key) => {
+	if (hasOwnProperty.call(result, key)) {
+		++result[key];
+	} else {
+		baseAssignValue(result, key, 1);
+	}
 });
 
 module.exports = countBy;

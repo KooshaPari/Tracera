@@ -23,9 +23,9 @@ import { toDate } from "./toDate.js";
  * //=> 3
  */
 export function getQuarter(date, options) {
-  const _date = toDate(date, options?.in);
-  const quarter = Math.trunc(_date.getMonth() / 3) + 1;
-  return quarter;
+	const _date = toDate(date, options?.in);
+	const quarter = Math.trunc(_date.getMonth() / 3) + 1;
+	return quarter;
 }
 
 // Fallback for modularized imports:

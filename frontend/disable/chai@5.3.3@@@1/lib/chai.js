@@ -4,19 +4,19 @@
  * MIT Licensed
  */
 
-import * as util from './chai/utils/index.js';
-import {AssertionError} from 'assertion-error';
-import {config} from './chai/config.js';
-import './chai/core/assertions.js';
-import {expect} from './chai/interface/expect.js';
-import {Assertion} from './chai/assertion.js';
-import * as should from './chai/interface/should.js';
-import {assert} from './chai/interface/assert.js';
+import { AssertionError } from "assertion-error";
+import { config } from "./chai/config.js";
+import * as util from "./chai/utils/index.js";
+import "./chai/core/assertions.js";
+import { Assertion } from "./chai/assertion.js";
+import { assert } from "./chai/interface/assert.js";
+import { expect } from "./chai/interface/expect.js";
+import * as should from "./chai/interface/should.js";
 
 const used = [];
 
 // Assertion Error
-export {AssertionError};
+export { AssertionError };
 
 /**
  * # .use(function)
@@ -28,39 +28,36 @@ export {AssertionError};
  * @public
  */
 export function use(fn) {
-  const exports = {
-    use,
-    AssertionError,
-    util,
-    config,
-    expect,
-    assert,
-    Assertion,
-    ...should
-  };
+	const exports = {
+		use,
+		AssertionError,
+		util,
+		config,
+		expect,
+		assert,
+		Assertion,
+		...should,
+	};
 
-  if (!~used.indexOf(fn)) {
-    fn(exports, util);
-    used.push(fn);
-  }
+	if (!~used.indexOf(fn)) {
+		fn(exports, util);
+		used.push(fn);
+	}
 
-  return exports;
+	return exports;
 }
 
 // Utility Functions
-export {util};
+export { util };
 
 // Configuration
-export {config};
+export { config };
 
 // Primary `Assertion` prototype
-export * from './chai/assertion.js';
-
-// Expect interface
-export * from './chai/interface/expect.js';
-
-// Should interface
-export * from './chai/interface/should.js';
-
+export * from "./chai/assertion.js";
 // Assert interface
-export * from './chai/interface/assert.js';
+export * from "./chai/interface/assert.js";
+// Expect interface
+export * from "./chai/interface/expect.js";
+// Should interface
+export * from "./chai/interface/should.js";

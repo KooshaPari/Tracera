@@ -1,150 +1,141 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
 
-const Assert = require('@hapi/hoek/lib/assert');
-
-const Any = require('./any');
-const Common = require('../common');
-const Values = require('../values');
-
+const Any = require("./any");
+const Common = require("../common");
+const Values = require("../values");
 
 const internals = {};
 
-
-internals.isBool = function (value) {
-
-    return typeof value === 'boolean';
-};
-
+internals.isBool = (value) => typeof value === "boolean";
 
 module.exports = Any.extend({
+	type: "boolean",
 
-    type: 'boolean',
+	flags: {
+		sensitive: { default: false },
+	},
 
-    flags: {
+	terms: {
+		falsy: {
+			init: null,
+			manifest: "values",
+		},
 
-        sensitive: { default: false }
-    },
+		truthy: {
+			init: null,
+			manifest: "values",
+		},
+	},
 
-    terms: {
+	coerce(value, { schema }) {
+		if (typeof value === "boolean") {
+			return;
+		}
 
-        falsy: {
-            init: null,
-            manifest: 'values'
-        },
+		if (typeof value === "string") {
+			const normalized = schema._flags.sensitive ? value : value.toLowerCase();
+			value =
+				normalized === "true" ? true : normalized === "false" ? false : value;
+		}
 
-        truthy: {
-            init: null,
-            manifest: 'values'
-        }
-    },
+		if (typeof value !== "boolean") {
+			value =
+				(schema.$_terms.truthy &&
+					schema.$_terms.truthy.has(
+						value,
+						null,
+						null,
+						!schema._flags.sensitive,
+					)) ||
+				(schema.$_terms.falsy &&
+				schema.$_terms.falsy.has(value, null, null, !schema._flags.sensitive)
+					? false
+					: value);
+		}
 
-    coerce(value, { schema }) {
+		return { value };
+	},
 
-        if (typeof value === 'boolean') {
-            return;
-        }
+	validate(value, { error }) {
+		if (typeof value !== "boolean") {
+			return { value, errors: error("boolean.base") };
+		}
+	},
 
-        if (typeof value === 'string') {
-            const normalized = schema._flags.sensitive ? value : value.toLowerCase();
-            value = normalized === 'true' ? true : (normalized === 'false' ? false : value);
-        }
+	rules: {
+		truthy: {
+			method(...values) {
+				Common.verifyFlat(values, "truthy");
 
-        if (typeof value !== 'boolean') {
-            value = schema.$_terms.truthy && schema.$_terms.truthy.has(value, null, null, !schema._flags.sensitive) ||
-                (schema.$_terms.falsy && schema.$_terms.falsy.has(value, null, null, !schema._flags.sensitive) ? false : value);
-        }
+				const obj = this.clone();
+				obj.$_terms.truthy = obj.$_terms.truthy || new Values();
 
-        return { value };
-    },
+				for (let i = 0; i < values.length; ++i) {
+					const value = values[i];
 
-    validate(value, { error }) {
+					Assert(value !== undefined, "Cannot call truthy with undefined");
+					obj.$_terms.truthy.add(value);
+				}
 
-        if (typeof value !== 'boolean') {
-            return { value, errors: error('boolean.base') };
-        }
-    },
+				return obj;
+			},
+		},
 
-    rules: {
-        truthy: {
-            method(...values) {
+		falsy: {
+			method(...values) {
+				Common.verifyFlat(values, "falsy");
 
-                Common.verifyFlat(values, 'truthy');
+				const obj = this.clone();
+				obj.$_terms.falsy = obj.$_terms.falsy || new Values();
 
-                const obj = this.clone();
-                obj.$_terms.truthy = obj.$_terms.truthy || new Values();
+				for (let i = 0; i < values.length; ++i) {
+					const value = values[i];
 
-                for (let i = 0; i < values.length; ++i) {
-                    const value = values[i];
+					Assert(value !== undefined, "Cannot call falsy with undefined");
+					obj.$_terms.falsy.add(value);
+				}
 
-                    Assert(value !== undefined, 'Cannot call truthy with undefined');
-                    obj.$_terms.truthy.add(value);
-                }
+				return obj;
+			},
+		},
 
-                return obj;
-            }
-        },
+		sensitive: {
+			method(enabled = true) {
+				return this.$_setFlag("sensitive", enabled);
+			},
+		},
+	},
 
-        falsy: {
-            method(...values) {
+	cast: {
+		number: {
+			from: internals.isBool,
+			to(value, helpers) {
+				return value ? 1 : 0;
+			},
+		},
+		string: {
+			from: internals.isBool,
+			to(value, helpers) {
+				return value ? "true" : "false";
+			},
+		},
+	},
 
-                Common.verifyFlat(values, 'falsy');
+	manifest: {
+		build(obj, desc) {
+			if (desc.truthy) {
+				obj = obj.truthy(...desc.truthy);
+			}
 
-                const obj = this.clone();
-                obj.$_terms.falsy = obj.$_terms.falsy || new Values();
+			if (desc.falsy) {
+				obj = obj.falsy(...desc.falsy);
+			}
 
-                for (let i = 0; i < values.length; ++i) {
-                    const value = values[i];
+			return obj;
+		},
+	},
 
-                    Assert(value !== undefined, 'Cannot call falsy with undefined');
-                    obj.$_terms.falsy.add(value);
-                }
-
-                return obj;
-            }
-        },
-
-        sensitive: {
-            method(enabled = true) {
-
-                return this.$_setFlag('sensitive', enabled);
-            }
-        }
-    },
-
-    cast: {
-        number: {
-            from: internals.isBool,
-            to(value, helpers) {
-
-                return value ? 1 : 0;
-            }
-        },
-        string: {
-            from: internals.isBool,
-            to(value, helpers) {
-
-                return value ? 'true' : 'false';
-            }
-        }
-    },
-
-    manifest: {
-
-        build(obj, desc) {
-
-            if (desc.truthy) {
-                obj = obj.truthy(...desc.truthy);
-            }
-
-            if (desc.falsy) {
-                obj = obj.falsy(...desc.falsy);
-            }
-
-            return obj;
-        }
-    },
-
-    messages: {
-        'boolean.base': '{{#label}} must be a boolean'
-    }
+	messages: {
+		"boolean.base": "{{#label}} must be a boolean",
+	},
 });

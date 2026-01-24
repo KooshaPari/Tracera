@@ -22,6 +22,6 @@ export interface IsThursdayOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isThursday(
-  date: DateArg<Date> & {},
-  options?: IsThursdayOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsThursdayOptions | undefined,
 ): boolean;

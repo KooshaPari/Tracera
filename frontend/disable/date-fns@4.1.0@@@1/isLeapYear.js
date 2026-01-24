@@ -19,9 +19,9 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isLeapYear(date, options) {
-  const _date = toDate(date, options?.in);
-  const year = _date.getFullYear();
-  return year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
+	return year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
 }
 
 // Fallback for modularized imports:

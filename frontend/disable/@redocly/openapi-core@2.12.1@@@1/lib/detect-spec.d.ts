@@ -1,5 +1,16 @@
-import type { SpecMajorVersion, SpecVersion } from './oas-types';
-export declare const specVersions: readonly ["oas2", "oas3_0", "oas3_1", "oas3_2", "async2", "async3", "arazzo1", "overlay1"];
-export declare function getMajorSpecVersion(version: SpecVersion): SpecMajorVersion;
+import type { SpecMajorVersion, SpecVersion } from "./oas-types";
+export declare const specVersions: readonly [
+	"oas2",
+	"oas3_0",
+	"oas3_1",
+	"oas3_2",
+	"async2",
+	"async3",
+	"arazzo1",
+	"overlay1",
+];
+export declare function getMajorSpecVersion(
+	version: SpecVersion,
+): SpecMajorVersion;
 export declare function detectSpec(root: unknown): SpecVersion;
 //# sourceMappingURL=detect-spec.d.ts.map

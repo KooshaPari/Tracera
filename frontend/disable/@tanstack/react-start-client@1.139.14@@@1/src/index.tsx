@@ -1,2 +1,2 @@
-export { StartClient } from './StartClient'
-export { renderRsc } from './renderRSC'
+export { renderRsc } from "./renderRSC";
+export { StartClient } from "./StartClient";

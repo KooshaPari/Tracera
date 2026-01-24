@@ -1,7 +1,7 @@
-import type { TypedArray } from 'which-typed-array';
+import type { TypedArray } from "which-typed-array";
 
 declare namespace isTypedArray {
-    export { TypedArray };
+	export { TypedArray };
 }
 
 declare function isTypedArray(value: unknown): value is isTypedArray.TypedArray;

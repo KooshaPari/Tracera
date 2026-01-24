@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/weak-map/of');
+"use strict";
+module.exports = require("../../full/weak-map/of");

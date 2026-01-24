@@ -1,476 +1,506 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
+const Clone = require("@hapi/hoek/lib/clone");
 
-const Assert = require('@hapi/hoek/lib/assert');
-const Clone = require('@hapi/hoek/lib/clone');
-
-const Common = require('./common');
-const Messages = require('./messages');
-const Ref = require('./ref');
-const Template = require('./template');
+const Common = require("./common");
+const Messages = require("./messages");
+const Ref = require("./ref");
+const Template = require("./template");
 
 let Schemas;
 
-
 const internals = {};
 
+exports.describe = (schema) => {
+	const def = schema._definition;
 
-exports.describe = function (schema) {
+	// Type
 
-    const def = schema._definition;
+	const desc = {
+		type: schema.type,
+		flags: {},
+		rules: [],
+	};
 
-    // Type
+	// Flags
 
-    const desc = {
-        type: schema.type,
-        flags: {},
-        rules: []
-    };
+	for (const flag in schema._flags) {
+		if (flag[0] !== "_") {
+			desc.flags[flag] = internals.describe(schema._flags[flag]);
+		}
+	}
 
-    // Flags
+	if (!Object.keys(desc.flags).length) {
+		delete desc.flags;
+	}
 
-    for (const flag in schema._flags) {
-        if (flag[0] !== '_') {
-            desc.flags[flag] = internals.describe(schema._flags[flag]);
-        }
-    }
+	// Preferences
 
-    if (!Object.keys(desc.flags).length) {
-        delete desc.flags;
-    }
+	if (schema._preferences) {
+		desc.preferences = Clone(schema._preferences, { shallow: ["messages"] });
+		delete desc.preferences[Common.symbols.prefs];
+		if (desc.preferences.messages) {
+			desc.preferences.messages = Messages.decompile(desc.preferences.messages);
+		}
+	}
 
-    // Preferences
+	// Allow / Invalid
 
-    if (schema._preferences) {
-        desc.preferences = Clone(schema._preferences, { shallow: ['messages'] });
-        delete desc.preferences[Common.symbols.prefs];
-        if (desc.preferences.messages) {
-            desc.preferences.messages = Messages.decompile(desc.preferences.messages);
-        }
-    }
+	if (schema._valids) {
+		desc.allow = schema._valids.describe();
+	}
 
-    // Allow / Invalid
+	if (schema._invalids) {
+		desc.invalid = schema._invalids.describe();
+	}
 
-    if (schema._valids) {
-        desc.allow = schema._valids.describe();
-    }
+	// Rules
 
-    if (schema._invalids) {
-        desc.invalid = schema._invalids.describe();
-    }
+	for (const rule of schema._rules) {
+		const ruleDef = def.rules[rule.name];
+		if (ruleDef.manifest === false) {
+			// Defaults to true
+			continue;
+		}
 
-    // Rules
+		const item = { name: rule.name };
 
-    for (const rule of schema._rules) {
-        const ruleDef = def.rules[rule.name];
-        if (ruleDef.manifest === false) {                           // Defaults to true
-            continue;
-        }
+		for (const custom in def.modifiers) {
+			if (rule[custom] !== undefined) {
+				item[custom] = internals.describe(rule[custom]);
+			}
+		}
 
-        const item = { name: rule.name };
+		if (rule.args) {
+			item.args = {};
+			for (const key in rule.args) {
+				const arg = rule.args[key];
+				if (key === "options" && !Object.keys(arg).length) {
+					continue;
+				}
 
-        for (const custom in def.modifiers) {
-            if (rule[custom] !== undefined) {
-                item[custom] = internals.describe(rule[custom]);
-            }
-        }
+				item.args[key] = internals.describe(arg, { assign: key });
+			}
 
-        if (rule.args) {
-            item.args = {};
-            for (const key in rule.args) {
-                const arg = rule.args[key];
-                if (key === 'options' &&
-                    !Object.keys(arg).length) {
+			if (!Object.keys(item.args).length) {
+				delete item.args;
+			}
+		}
 
-                    continue;
-                }
+		desc.rules.push(item);
+	}
 
-                item.args[key] = internals.describe(arg, { assign: key });
-            }
+	if (!desc.rules.length) {
+		delete desc.rules;
+	}
 
-            if (!Object.keys(item.args).length) {
-                delete item.args;
-            }
-        }
+	// Terms (must be last to verify no name conflicts)
 
-        desc.rules.push(item);
-    }
+	for (const term in schema.$_terms) {
+		if (term[0] === "_") {
+			continue;
+		}
 
-    if (!desc.rules.length) {
-        delete desc.rules;
-    }
+		Assert(
+			!desc[term],
+			"Cannot describe schema due to internal name conflict with",
+			term,
+		);
 
-    // Terms (must be last to verify no name conflicts)
+		const items = schema.$_terms[term];
+		if (!items) {
+			continue;
+		}
 
-    for (const term in schema.$_terms) {
-        if (term[0] === '_') {
-            continue;
-        }
+		if (items instanceof Map) {
+			if (items.size) {
+				desc[term] = [...items.entries()];
+			}
 
-        Assert(!desc[term], 'Cannot describe schema due to internal name conflict with', term);
+			continue;
+		}
 
-        const items = schema.$_terms[term];
-        if (!items) {
-            continue;
-        }
+		if (Common.isValues(items)) {
+			desc[term] = items.describe();
+			continue;
+		}
 
-        if (items instanceof Map) {
-            if (items.size) {
-                desc[term] = [...items.entries()];
-            }
+		Assert(def.terms[term], "Term", term, "missing configuration");
+		const manifest = def.terms[term].manifest;
+		const mapped = typeof manifest === "object";
+		if (!items.length && !mapped) {
+			continue;
+		}
 
-            continue;
-        }
+		const normalized = [];
+		for (const item of items) {
+			normalized.push(internals.describe(item));
+		}
 
-        if (Common.isValues(items)) {
-            desc[term] = items.describe();
-            continue;
-        }
+		// Mapped
 
-        Assert(def.terms[term], 'Term', term, 'missing configuration');
-        const manifest = def.terms[term].manifest;
-        const mapped = typeof manifest === 'object';
-        if (!items.length &&
-            !mapped) {
+		if (mapped) {
+			const { from, to } = manifest.mapped;
+			desc[term] = {};
+			for (const item of normalized) {
+				desc[term][item[to]] = item[from];
+			}
 
-            continue;
-        }
+			continue;
+		}
 
-        const normalized = [];
-        for (const item of items) {
-            normalized.push(internals.describe(item));
-        }
+		// Single
 
-        // Mapped
+		if (manifest === "single") {
+			Assert(
+				normalized.length === 1,
+				"Term",
+				term,
+				"contains more than one item",
+			);
+			desc[term] = normalized[0];
+			continue;
+		}
 
-        if (mapped) {
-            const { from, to } = manifest.mapped;
-            desc[term] = {};
-            for (const item of normalized) {
-                desc[term][item[to]] = item[from];
-            }
+		// Array
 
-            continue;
-        }
+		desc[term] = normalized;
+	}
 
-        // Single
-
-        if (manifest === 'single') {
-            Assert(normalized.length === 1, 'Term', term, 'contains more than one item');
-            desc[term] = normalized[0];
-            continue;
-        }
-
-        // Array
-
-        desc[term] = normalized;
-    }
-
-    internals.validate(schema.$_root, desc);
-    return desc;
+	internals.validate(schema.$_root, desc);
+	return desc;
 };
 
+internals.describe = (item, options = {}) => {
+	if (Array.isArray(item)) {
+		return item.map(internals.describe);
+	}
 
-internals.describe = function (item, options = {}) {
+	if (item === Common.symbols.deepDefault) {
+		return { special: "deep" };
+	}
 
-    if (Array.isArray(item)) {
-        return item.map(internals.describe);
-    }
+	if (typeof item !== "object" || item === null) {
+		return item;
+	}
 
-    if (item === Common.symbols.deepDefault) {
-        return { special: 'deep' };
-    }
+	if (options.assign === "options") {
+		return Clone(item);
+	}
 
-    if (typeof item !== 'object' ||
-        item === null) {
+	if (Buffer && Buffer.isBuffer(item)) {
+		// $lab:coverage:ignore$
+		return { buffer: item.toString("binary") };
+	}
 
-        return item;
-    }
+	if (item instanceof Date) {
+		return item.toISOString();
+	}
 
-    if (options.assign === 'options') {
-        return Clone(item);
-    }
+	if (item instanceof Error) {
+		return item;
+	}
 
-    if (Buffer && Buffer.isBuffer(item)) {                          // $lab:coverage:ignore$
-        return { buffer: item.toString('binary') };
-    }
+	if (item instanceof RegExp) {
+		if (options.assign === "regex") {
+			return item.toString();
+		}
 
-    if (item instanceof Date) {
-        return item.toISOString();
-    }
+		return { regex: item.toString() };
+	}
 
-    if (item instanceof Error) {
-        return item;
-    }
+	if (item[Common.symbols.literal]) {
+		return { function: item.literal };
+	}
 
-    if (item instanceof RegExp) {
-        if (options.assign === 'regex') {
-            return item.toString();
-        }
+	if (typeof item.describe === "function") {
+		if (options.assign === "ref") {
+			return item.describe().ref;
+		}
 
-        return { regex: item.toString() };
-    }
+		return item.describe();
+	}
 
-    if (item[Common.symbols.literal]) {
-        return { function: item.literal };
-    }
+	const normalized = {};
+	for (const key in item) {
+		const value = item[key];
+		if (value === undefined) {
+			continue;
+		}
 
-    if (typeof item.describe === 'function') {
-        if (options.assign === 'ref') {
-            return item.describe().ref;
-        }
+		normalized[key] = internals.describe(value, { assign: key });
+	}
 
-        return item.describe();
-    }
-
-    const normalized = {};
-    for (const key in item) {
-        const value = item[key];
-        if (value === undefined) {
-            continue;
-        }
-
-        normalized[key] = internals.describe(value, { assign: key });
-    }
-
-    return normalized;
+	return normalized;
 };
 
-
-exports.build = function (joi, desc) {
-
-    const builder = new internals.Builder(joi);
-    return builder.parse(desc);
+exports.build = (joi, desc) => {
+	const builder = new internals.Builder(joi);
+	return builder.parse(desc);
 };
-
 
 internals.Builder = class {
+	constructor(joi) {
+		this.joi = joi;
+	}
 
-    constructor(joi) {
+	parse(desc) {
+		internals.validate(this.joi, desc);
 
-        this.joi = joi;
-    }
+		// Type
 
-    parse(desc) {
+		let schema = this.joi[desc.type]()._bare();
+		const def = schema._definition;
 
-        internals.validate(this.joi, desc);
+		// Flags
 
-        // Type
+		if (desc.flags) {
+			for (const flag in desc.flags) {
+				const setter = (def.flags[flag] && def.flags[flag].setter) || flag;
+				Assert(
+					typeof schema[setter] === "function",
+					"Invalid flag",
+					flag,
+					"for type",
+					desc.type,
+				);
+				schema = schema[setter](this.build(desc.flags[flag]));
+			}
+		}
 
-        let schema = this.joi[desc.type]()._bare();
-        const def = schema._definition;
+		// Preferences
 
-        // Flags
+		if (desc.preferences) {
+			schema = schema.preferences(this.build(desc.preferences));
+		}
 
-        if (desc.flags) {
-            for (const flag in desc.flags) {
-                const setter = def.flags[flag] && def.flags[flag].setter || flag;
-                Assert(typeof schema[setter] === 'function', 'Invalid flag', flag, 'for type', desc.type);
-                schema = schema[setter](this.build(desc.flags[flag]));
-            }
-        }
+		// Allow / Invalid
 
-        // Preferences
+		if (desc.allow) {
+			schema = schema.allow(...this.build(desc.allow));
+		}
 
-        if (desc.preferences) {
-            schema = schema.preferences(this.build(desc.preferences));
-        }
+		if (desc.invalid) {
+			schema = schema.invalid(...this.build(desc.invalid));
+		}
 
-        // Allow / Invalid
+		// Rules
 
-        if (desc.allow) {
-            schema = schema.allow(...this.build(desc.allow));
-        }
+		if (desc.rules) {
+			for (const rule of desc.rules) {
+				Assert(
+					typeof schema[rule.name] === "function",
+					"Invalid rule",
+					rule.name,
+					"for type",
+					desc.type,
+				);
 
-        if (desc.invalid) {
-            schema = schema.invalid(...this.build(desc.invalid));
-        }
+				const args = [];
+				if (rule.args) {
+					const built = {};
+					for (const key in rule.args) {
+						built[key] = this.build(rule.args[key], { assign: key });
+					}
 
-        // Rules
+					const keys = Object.keys(built);
+					const definition = def.rules[rule.name].args;
+					if (definition) {
+						Assert(
+							keys.length <= definition.length,
+							"Invalid number of arguments for",
+							desc.type,
+							rule.name,
+							"(expected up to",
+							definition.length,
+							", found",
+							keys.length,
+							")",
+						);
+						for (const { name } of definition) {
+							args.push(built[name]);
+						}
+					} else {
+						Assert(
+							keys.length === 1,
+							"Invalid number of arguments for",
+							desc.type,
+							rule.name,
+							"(expected up to 1, found",
+							keys.length,
+							")",
+						);
+						args.push(built[keys[0]]);
+					}
+				}
 
-        if (desc.rules) {
-            for (const rule of desc.rules) {
-                Assert(typeof schema[rule.name] === 'function', 'Invalid rule', rule.name, 'for type', desc.type);
+				// Apply
 
-                const args = [];
-                if (rule.args) {
-                    const built = {};
-                    for (const key in rule.args) {
-                        built[key] = this.build(rule.args[key], { assign: key });
-                    }
+				schema = schema[rule.name](...args);
 
-                    const keys = Object.keys(built);
-                    const definition = def.rules[rule.name].args;
-                    if (definition) {
-                        Assert(keys.length <= definition.length, 'Invalid number of arguments for', desc.type, rule.name, '(expected up to', definition.length, ', found', keys.length, ')');
-                        for (const { name } of definition) {
-                            args.push(built[name]);
-                        }
-                    }
-                    else {
-                        Assert(keys.length === 1, 'Invalid number of arguments for', desc.type, rule.name, '(expected up to 1, found', keys.length, ')');
-                        args.push(built[keys[0]]);
-                    }
-                }
+				// Ruleset
 
-                // Apply
+				const options = {};
+				for (const custom in def.modifiers) {
+					if (rule[custom] !== undefined) {
+						options[custom] = this.build(rule[custom]);
+					}
+				}
 
-                schema = schema[rule.name](...args);
+				if (Object.keys(options).length) {
+					schema = schema.rule(options);
+				}
+			}
+		}
 
-                // Ruleset
+		// Terms
 
-                const options = {};
-                for (const custom in def.modifiers) {
-                    if (rule[custom] !== undefined) {
-                        options[custom] = this.build(rule[custom]);
-                    }
-                }
+		const terms = {};
+		for (const key in desc) {
+			if (
+				[
+					"allow",
+					"flags",
+					"invalid",
+					"whens",
+					"preferences",
+					"rules",
+					"type",
+				].includes(key)
+			) {
+				continue;
+			}
 
-                if (Object.keys(options).length) {
-                    schema = schema.rule(options);
-                }
-            }
-        }
+			Assert(def.terms[key], "Term", key, "missing configuration");
+			const manifest = def.terms[key].manifest;
 
-        // Terms
+			if (manifest === "schema") {
+				terms[key] = desc[key].map((item) => this.parse(item));
+				continue;
+			}
 
-        const terms = {};
-        for (const key in desc) {
-            if (['allow', 'flags', 'invalid', 'whens', 'preferences', 'rules', 'type'].includes(key)) {
-                continue;
-            }
+			if (manifest === "values") {
+				terms[key] = desc[key].map((item) => this.build(item));
+				continue;
+			}
 
-            Assert(def.terms[key], 'Term', key, 'missing configuration');
-            const manifest = def.terms[key].manifest;
+			if (manifest === "single") {
+				terms[key] = this.build(desc[key]);
+				continue;
+			}
 
-            if (manifest === 'schema') {
-                terms[key] = desc[key].map((item) => this.parse(item));
-                continue;
-            }
+			if (typeof manifest === "object") {
+				terms[key] = {};
+				for (const name in desc[key]) {
+					const value = desc[key][name];
+					terms[key][name] = this.parse(value);
+				}
 
-            if (manifest === 'values') {
-                terms[key] = desc[key].map((item) => this.build(item));
-                continue;
-            }
+				continue;
+			}
 
-            if (manifest === 'single') {
-                terms[key] = this.build(desc[key]);
-                continue;
-            }
+			terms[key] = this.build(desc[key]);
+		}
 
-            if (typeof manifest === 'object') {
-                terms[key] = {};
-                for (const name in desc[key]) {
-                    const value = desc[key][name];
-                    terms[key][name] = this.parse(value);
-                }
+		if (desc.whens) {
+			terms.whens = desc.whens.map((when) => this.build(when));
+		}
 
-                continue;
-            }
+		schema = def.manifest.build(schema, terms);
+		schema.$_temp.ruleset = false;
+		return schema;
+	}
 
-            terms[key] = this.build(desc[key]);
-        }
+	build(desc, options = {}) {
+		if (desc === null) {
+			return null;
+		}
 
-        if (desc.whens) {
-            terms.whens = desc.whens.map((when) => this.build(when));
-        }
+		if (Array.isArray(desc)) {
+			return desc.map((item) => this.build(item));
+		}
 
-        schema = def.manifest.build(schema, terms);
-        schema.$_temp.ruleset = false;
-        return schema;
-    }
+		if (desc instanceof Error) {
+			return desc;
+		}
 
-    build(desc, options = {}) {
+		if (options.assign === "options") {
+			return Clone(desc);
+		}
 
-        if (desc === null) {
-            return null;
-        }
+		if (options.assign === "regex") {
+			return internals.regex(desc);
+		}
 
-        if (Array.isArray(desc)) {
-            return desc.map((item) => this.build(item));
-        }
+		if (options.assign === "ref") {
+			return Ref.build(desc);
+		}
 
-        if (desc instanceof Error) {
-            return desc;
-        }
+		if (typeof desc !== "object") {
+			return desc;
+		}
 
-        if (options.assign === 'options') {
-            return Clone(desc);
-        }
+		if (Object.keys(desc).length === 1) {
+			if (desc.buffer) {
+				Assert(Buffer, "Buffers are not supported");
+				return Buffer && Buffer.from(desc.buffer, "binary"); // $lab:coverage:ignore$
+			}
 
-        if (options.assign === 'regex') {
-            return internals.regex(desc);
-        }
+			if (desc.function) {
+				return { [Common.symbols.literal]: true, literal: desc.function };
+			}
 
-        if (options.assign === 'ref') {
-            return Ref.build(desc);
-        }
+			if (desc.override) {
+				return Common.symbols.override;
+			}
 
-        if (typeof desc !== 'object') {
-            return desc;
-        }
+			if (desc.ref) {
+				return Ref.build(desc.ref);
+			}
 
-        if (Object.keys(desc).length === 1) {
-            if (desc.buffer) {
-                Assert(Buffer, 'Buffers are not supported');
-                return Buffer && Buffer.from(desc.buffer, 'binary');                    // $lab:coverage:ignore$
-            }
+			if (desc.regex) {
+				return internals.regex(desc.regex);
+			}
 
-            if (desc.function) {
-                return { [Common.symbols.literal]: true, literal: desc.function };
-            }
+			if (desc.special) {
+				Assert(
+					["deep"].includes(desc.special),
+					"Unknown special value",
+					desc.special,
+				);
+				return Common.symbols.deepDefault;
+			}
 
-            if (desc.override) {
-                return Common.symbols.override;
-            }
+			if (desc.value) {
+				return Clone(desc.value);
+			}
+		}
 
-            if (desc.ref) {
-                return Ref.build(desc.ref);
-            }
+		if (desc.type) {
+			return this.parse(desc);
+		}
 
-            if (desc.regex) {
-                return internals.regex(desc.regex);
-            }
+		if (desc.template) {
+			return Template.build(desc);
+		}
 
-            if (desc.special) {
-                Assert(['deep'].includes(desc.special), 'Unknown special value', desc.special);
-                return Common.symbols.deepDefault;
-            }
+		const normalized = {};
+		for (const key in desc) {
+			normalized[key] = this.build(desc[key], { assign: key });
+		}
 
-            if (desc.value) {
-                return Clone(desc.value);
-            }
-        }
-
-        if (desc.type) {
-            return this.parse(desc);
-        }
-
-        if (desc.template) {
-            return Template.build(desc);
-        }
-
-        const normalized = {};
-        for (const key in desc) {
-            normalized[key] = this.build(desc[key], { assign: key });
-        }
-
-        return normalized;
-    }
+		return normalized;
+	}
 };
 
-
-internals.regex = function (string) {
-
-    const end = string.lastIndexOf('/');
-    const exp = string.slice(1, end);
-    const flags = string.slice(end + 1);
-    return new RegExp(exp, flags);
+internals.regex = (string) => {
+	const end = string.lastIndexOf("/");
+	const exp = string.slice(1, end);
+	const flags = string.slice(end + 1);
+	return new RegExp(exp, flags);
 };
 
+internals.validate = (joi, desc) => {
+	Schemas = Schemas || require("./schemas");
 
-internals.validate = function (joi, desc) {
-
-    Schemas = Schemas || require('./schemas');
-
-    joi.assert(desc, Schemas.description);
+	joi.assert(desc, Schemas.description);
 };

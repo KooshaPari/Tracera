@@ -1,5 +1,5 @@
-var baseRest = require('./_baseRest'),
-    unzip = require('./unzip');
+var baseRest = require("./_baseRest"),
+	unzip = require("./unzip");
 
 /**
  * Creates an array of grouped elements, the first of which contains the

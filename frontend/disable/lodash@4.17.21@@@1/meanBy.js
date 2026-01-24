@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    baseMean = require('./_baseMean');
+var baseIteratee = require("./_baseIteratee"),
+	baseMean = require("./_baseMean");
 
 /**
  * This method is like `_.mean` except that it accepts `iteratee` which is
@@ -25,7 +25,7 @@ var baseIteratee = require('./_baseIteratee'),
  * // => 5
  */
 function meanBy(array, iteratee) {
-  return baseMean(array, baseIteratee(iteratee, 2));
+	return baseMean(array, baseIteratee(iteratee, 2));
 }
 
 module.exports = meanBy;

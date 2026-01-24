@@ -1,24 +1,24 @@
-'use strict';
-const TEMPLATE_REGEX = /(?:\\(u[a-f\d]{4}|x[a-f\d]{2}|.))|(?:\{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(\})|((?:.|[\r\n\f])+?)/gi;
+const TEMPLATE_REGEX =
+	/(?:\\(u[a-f\d]{4}|x[a-f\d]{2}|.))|(?:\{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(\})|((?:.|[\r\n\f])+?)/gi;
 const STYLE_REGEX = /(?:^|\.)(\w+)(?:\(([^)]*)\))?/g;
 const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
 const ESCAPE_REGEX = /\\(u[a-f\d]{4}|x[a-f\d]{2}|.)|([^\\])/gi;
 
 const ESCAPES = new Map([
-	['n', '\n'],
-	['r', '\r'],
-	['t', '\t'],
-	['b', '\b'],
-	['f', '\f'],
-	['v', '\v'],
-	['0', '\0'],
-	['\\', '\\'],
-	['e', '\u001B'],
-	['a', '\u0007']
+	["n", "\n"],
+	["r", "\r"],
+	["t", "\t"],
+	["b", "\b"],
+	["f", "\f"],
+	["v", "\v"],
+	["0", "\0"],
+	["\\", "\\"],
+	["e", "\u001B"],
+	["a", "\u0007"],
 ]);
 
 function unescape(c) {
-	if ((c[0] === 'u' && c.length === 5) || (c[0] === 'x' && c.length === 3)) {
+	if ((c[0] === "u" && c.length === 5) || (c[0] === "x" && c.length === 3)) {
 		return String.fromCharCode(parseInt(c.slice(1), 16));
 	}
 
@@ -34,9 +34,15 @@ function parseArguments(name, args) {
 		if (!isNaN(chunk)) {
 			results.push(Number(chunk));
 		} else if ((matches = chunk.match(STRING_REGEX))) {
-			results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, chr) => escape ? unescape(escape) : chr));
+			results.push(
+				matches[2].replace(ESCAPE_REGEX, (m, escape, chr) =>
+					escape ? unescape(escape) : chr,
+				),
+			);
 		} else {
-			throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name}')`);
+			throw new Error(
+				`Invalid Chalk template style argument: ${chunk} (in style '${name}')`,
+			);
 		}
 	}
 
@@ -100,16 +106,16 @@ module.exports = (chalk, tmp) => {
 		if (escapeChar) {
 			chunk.push(unescape(escapeChar));
 		} else if (style) {
-			const str = chunk.join('');
+			const str = chunk.join("");
 			chunk = [];
 			chunks.push(styles.length === 0 ? str : buildStyle(chalk, styles)(str));
-			styles.push({inverse, styles: parseStyle(style)});
+			styles.push({ inverse, styles: parseStyle(style) });
 		} else if (close) {
 			if (styles.length === 0) {
-				throw new Error('Found extraneous } in Chalk template literal');
+				throw new Error("Found extraneous } in Chalk template literal");
 			}
 
-			chunks.push(buildStyle(chalk, styles)(chunk.join('')));
+			chunks.push(buildStyle(chalk, styles)(chunk.join("")));
 			chunk = [];
 			styles.pop();
 		} else {
@@ -117,12 +123,12 @@ module.exports = (chalk, tmp) => {
 		}
 	});
 
-	chunks.push(chunk.join(''));
+	chunks.push(chunk.join(""));
 
 	if (styles.length > 0) {
-		const errMsg = `Chalk template literal is missing ${styles.length} closing bracket${styles.length === 1 ? '' : 's'} (\`}\`)`;
+		const errMsg = `Chalk template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`;
 		throw new Error(errMsg);
 	}
 
-	return chunks.join('');
+	return chunks.join("");
 };

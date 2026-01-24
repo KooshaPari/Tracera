@@ -1,6 +1,6 @@
-var baseForRight = require('./_baseForRight'),
-    castFunction = require('./_castFunction'),
-    keysIn = require('./keysIn');
+var baseForRight = require("./_baseForRight"),
+	castFunction = require("./_castFunction"),
+	keysIn = require("./keysIn");
 
 /**
  * This method is like `_.forIn` except that it iterates over properties of
@@ -29,9 +29,9 @@ var baseForRight = require('./_baseForRight'),
  * // => Logs 'c', 'b', then 'a' assuming `_.forIn` logs 'a', 'b', then 'c'.
  */
 function forInRight(object, iteratee) {
-  return object == null
-    ? object
-    : baseForRight(object, castFunction(iteratee), keysIn);
+	return object == null
+		? object
+		: baseForRight(object, castFunction(iteratee), keysIn);
 }
 
 module.exports = forInRight;

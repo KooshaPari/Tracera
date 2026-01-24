@@ -32,7 +32,11 @@ declare const matcher: {
 	//=> ['bar']
 	```
 	*/
-	(inputs: readonly string[], patterns: readonly string[], options?: matcher.Options): string[];
+	(
+		inputs: readonly string[],
+		patterns: readonly string[],
+		options?: matcher.Options,
+	): string[];
 
 	/**
 	It matches even across newlines. For example, `foo*r` will match `foo\nbar`.
@@ -79,7 +83,11 @@ declare const matcher: {
 	//=> false
 	```
 	*/
-	isMatch: (input: string | readonly string[], pattern: string | readonly string[], options?: matcher.Options) => boolean;
+	isMatch: (
+		input: string | readonly string[],
+		pattern: string | readonly string[],
+		options?: matcher.Options,
+	) => boolean;
 };
 
 export = matcher;

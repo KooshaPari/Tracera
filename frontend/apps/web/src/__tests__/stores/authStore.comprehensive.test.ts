@@ -3,495 +3,503 @@
  * Tests authentication state management, login/logout, and persistence
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { useAuthStore, type User } from '../../stores/authStore'
-
-describe('AuthStore', () => {
-  beforeEach(() => {
-    // Reset store before each test
-    useAuthStore.setState({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-    })
-    // Clear localStorage
-    localStorage.clear()
-  })
-
-  const mockUser: User = {
-    id: 'user-1',
-    email: 'test@example.com',
-    name: 'Test User',
-    avatar: 'https://example.com/avatar.jpg',
-    role: 'admin',
-    metadata: { department: 'Engineering' },
-  }
-
-  describe('initial state', () => {
-    it('should have null user initially', () => {
-      const { user } = useAuthStore.getState()
-      expect(user).toBeNull()
-    })
-
-    it('should have null token initially', () => {
-      const { token } = useAuthStore.getState()
-      expect(token).toBeNull()
-    })
-
-    it('should not be authenticated initially', () => {
-      const { isAuthenticated } = useAuthStore.getState()
-      expect(isAuthenticated).toBe(false)
-    })
-
-    it('should not be loading initially', () => {
-      const { isLoading } = useAuthStore.getState()
-      expect(isLoading).toBe(false)
-    })
-  })
-
-  describe('setUser', () => {
-    it('should set user', () => {
-      const { setUser } = useAuthStore.getState()
-      setUser(mockUser)
-
-      const { user } = useAuthStore.getState()
-      expect(user).toEqual(mockUser)
-    })
-
-    it('should set isAuthenticated to true when user is set', () => {
-      const { setUser } = useAuthStore.getState()
-      setUser(mockUser)
-
-      const { isAuthenticated } = useAuthStore.getState()
-      expect(isAuthenticated).toBe(true)
-    })
-
-    it('should set isAuthenticated to false when user is null', () => {
-      const { setUser } = useAuthStore.getState()
-      setUser(mockUser)
-      setUser(null)
-
-      const { isAuthenticated } = useAuthStore.getState()
-      expect(isAuthenticated).toBe(false)
-    })
-
-    it('should handle partial user data', () => {
-      const { setUser } = useAuthStore.getState()
-      const partialUser: User = {
-        id: 'user-1',
-        email: 'test@example.com',
-      }
-      setUser(partialUser)
-
-      const { user } = useAuthStore.getState()
-      expect(user).toEqual(partialUser)
-      expect(user?.name).toBeUndefined()
-    })
-
-    it('should overwrite existing user', () => {
-      const { setUser } = useAuthStore.getState()
-      setUser(mockUser)
-
-      const newUser: User = {
-        id: 'user-2',
-        email: 'new@example.com',
-      }
-      setUser(newUser)
-
-      const { user } = useAuthStore.getState()
-      expect(user).toEqual(newUser)
-    })
-  })
-
-  describe('setToken', () => {
-    it('should set token in state', () => {
-      const { setToken } = useAuthStore.getState()
-      setToken('test-token')
-
-      const { token } = useAuthStore.getState()
-      expect(token).toBe('test-token')
-    })
-
-    it('should store token in localStorage', () => {
-      const { setToken } = useAuthStore.getState()
-      setToken('test-token')
-
-      expect(localStorage.getItem('auth_token')).toBe('test-token')
-    })
-
-    it('should remove token from localStorage when null', () => {
-      const { setToken } = useAuthStore.getState()
-      setToken('test-token')
-      setToken(null)
-
-      expect(localStorage.getItem('auth_token')).toBeNull()
-    })
-
-    it('should clear token from state when null', () => {
-      const { setToken } = useAuthStore.getState()
-      setToken('test-token')
-      setToken(null)
-
-      const { token } = useAuthStore.getState()
-      expect(token).toBeNull()
-    })
-
-    it('should handle empty string token', () => {
-      const { setToken } = useAuthStore.getState()
-      setToken('')
-
-      // Empty string is falsy, should be treated as null
-      expect(localStorage.getItem('auth_token')).toBeNull()
-      expect(useAuthStore.getState().token).toBeNull()
-    })
-  })
-
-  describe('login', () => {
-    it('should set loading state during login', async () => {
-      const { login } = useAuthStore.getState()
-
-      // Note: In the mock implementation, login completes synchronously
-      // so we can only verify the final state after completion
-      await login('test@example.com', 'password')
-
-      // Loading should be false after completion
-      expect(useAuthStore.getState().isLoading).toBe(false)
-      // User should be set after successful login
-      expect(useAuthStore.getState().user).not.toBeNull()
-    })
-
-    it('should set user and token on successful login', async () => {
-      const { login } = useAuthStore.getState()
-      await login('test@example.com', 'password')
-
-      const { user, token, isAuthenticated } = useAuthStore.getState()
-      expect(user).not.toBeNull()
-      expect(user?.email).toBe('test@example.com')
-      expect(token).not.toBeNull()
-      expect(isAuthenticated).toBe(true)
-    })
-
-    it('should derive username from email', async () => {
-      const { login } = useAuthStore.getState()
-      await login('john.doe@example.com', 'password')
-
-      const { user } = useAuthStore.getState()
-      expect(user?.name).toBe('john.doe')
-    })
-
-    it('should handle login errors', async () => {
-      // This is a mock implementation, so it doesn't actually fail
-      // But in a real implementation, we'd test error handling
-      const { login } = useAuthStore.getState()
-
-      await expect(login('test@example.com', 'password')).resolves.toBeUndefined()
-    })
-
-    it('should clear loading state on error', async () => {
-      // Mock a failing login by temporarily replacing the login function
-      const originalLogin = useAuthStore.getState().login
-
-      useAuthStore.setState({
-        login: async () => {
-          useAuthStore.setState({ isLoading: true })
-          try {
-            throw new Error('Login failed')
-          } finally {
-            useAuthStore.setState({ isLoading: false })
-          }
-        }
-      })
-
-      await expect(useAuthStore.getState().login('test@example.com', 'wrong')).rejects.toThrow()
-      expect(useAuthStore.getState().isLoading).toBe(false)
-
-      // Restore original
-      useAuthStore.setState({ login: originalLogin })
-    })
-
-    it('should persist token to localStorage', async () => {
-      const { login } = useAuthStore.getState()
-      await login('test@example.com', 'password')
-
-      expect(localStorage.getItem('auth_token')).not.toBeNull()
-    })
-  })
-
-  describe('logout', () => {
-    it('should clear user', () => {
-      const { setUser, logout } = useAuthStore.getState()
-      setUser(mockUser)
-      logout()
-
-      const { user } = useAuthStore.getState()
-      expect(user).toBeNull()
-    })
-
-    it('should clear token', () => {
-      const { setToken, logout } = useAuthStore.getState()
-      setToken('test-token')
-      logout()
-
-      const { token } = useAuthStore.getState()
-      expect(token).toBeNull()
-    })
-
-    it('should set isAuthenticated to false', () => {
-      const { setUser, logout } = useAuthStore.getState()
-      setUser(mockUser)
-      logout()
-
-      const { isAuthenticated } = useAuthStore.getState()
-      expect(isAuthenticated).toBe(false)
-    })
-
-    it('should remove token from localStorage', () => {
-      const { setToken, logout } = useAuthStore.getState()
-      setToken('test-token')
-      logout()
-
-      expect(localStorage.getItem('auth_token')).toBeNull()
-    })
-
-    it('should handle logout when already logged out', () => {
-      const { logout } = useAuthStore.getState()
-
-      expect(() => logout()).not.toThrow()
-
-      const { user, token, isAuthenticated } = useAuthStore.getState()
-      expect(user).toBeNull()
-      expect(token).toBeNull()
-      expect(isAuthenticated).toBe(false)
-    })
-  })
-
-  describe('refreshToken', () => {
-    it('should not throw error', async () => {
-      const { refreshToken } = useAuthStore.getState()
-
-      await expect(refreshToken()).resolves.not.toThrow()
-    })
-
-    it('should log message about not being implemented', async () => {
-      const consoleSpy = vi.spyOn(console, 'log')
-      const { refreshToken } = useAuthStore.getState()
-
-      await refreshToken()
-
-      expect(consoleSpy).toHaveBeenCalledWith('Token refresh not implemented yet')
-      consoleSpy.mockRestore()
-    })
-  })
-
-  describe('updateProfile', () => {
-    it('should update user profile', () => {
-      const { setUser, updateProfile } = useAuthStore.getState()
-      setUser(mockUser)
-
-      updateProfile({ name: 'Updated Name' })
-
-      const { user } = useAuthStore.getState()
-      expect(user?.name).toBe('Updated Name')
-    })
-
-    it('should preserve unchanged fields', () => {
-      const { setUser, updateProfile } = useAuthStore.getState()
-      setUser(mockUser)
-
-      updateProfile({ name: 'Updated Name' })
-
-      const { user } = useAuthStore.getState()
-      expect(user?.email).toBe('test@example.com')
-      expect(user?.id).toBe('user-1')
-    })
-
-    it('should handle multiple field updates', () => {
-      const { setUser, updateProfile } = useAuthStore.getState()
-      setUser(mockUser)
-
-      updateProfile({
-        name: 'New Name',
-        avatar: 'https://example.com/new-avatar.jpg',
-        role: 'user',
-      })
-
-      const { user } = useAuthStore.getState()
-      expect(user?.name).toBe('New Name')
-      expect(user?.avatar).toBe('https://example.com/new-avatar.jpg')
-      expect(user?.role).toBe('user')
-    })
-
-    it('should handle updating metadata', () => {
-      const { setUser, updateProfile } = useAuthStore.getState()
-      setUser(mockUser)
-
-      updateProfile({
-        metadata: { department: 'Sales', location: 'NYC' },
-      })
-
-      const { user } = useAuthStore.getState()
-      expect(user?.metadata).toEqual({ department: 'Sales', location: 'NYC' })
-    })
-
-    it('should do nothing if no user is set', () => {
-      const { updateProfile } = useAuthStore.getState()
-
-      expect(() => updateProfile({ name: 'Test' })).not.toThrow()
-
-      const { user } = useAuthStore.getState()
-      expect(user).toBeNull()
-    })
-
-    it('should handle empty updates', () => {
-      const { setUser, updateProfile } = useAuthStore.getState()
-      setUser(mockUser)
-
-      updateProfile({})
-
-      const { user } = useAuthStore.getState()
-      expect(user).toEqual(mockUser)
-    })
-  })
-
-  describe('persistence', () => {
-    it('should persist user to localStorage', () => {
-      const { setUser } = useAuthStore.getState()
-      setUser(mockUser)
-
-      // Check if data is persisted
-      const stored = localStorage.getItem('tracertm-auth-store')
-      expect(stored).not.toBeNull()
-
-      const parsed = JSON.parse(stored!)
-      expect(parsed.state.user).toEqual(mockUser)
-    })
-
-    it('should persist authentication state', () => {
-      const { setUser } = useAuthStore.getState()
-      setUser(mockUser)
-
-      const stored = localStorage.getItem('tracertm-auth-store')
-      const parsed = JSON.parse(stored!)
-      expect(parsed.state.isAuthenticated).toBe(true)
-    })
-
-    it('should not persist isLoading state', () => {
-      useAuthStore.setState({ isLoading: true })
-
-      const stored = localStorage.getItem('tracertm-auth-store')
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        expect(parsed.state.isLoading).toBeUndefined()
-      }
-    })
-  })
-
-  describe('edge cases', () => {
-    it('should handle rapid state changes', () => {
-      const { setUser } = useAuthStore.getState()
-
-      for (let i = 0; i < 100; i++) {
-        setUser({ id: `user-${i}`, email: `user${i}@example.com` })
-      }
-
-      const { user } = useAuthStore.getState()
-      expect(user?.id).toBe('user-99')
-    })
-
-    it('should handle concurrent login/logout', async () => {
-      const { login, logout } = useAuthStore.getState()
-
-      const loginPromise = login('test@example.com', 'password')
-      await loginPromise
-      logout()
-
-      // State should reflect the last operation
-      const { user, isAuthenticated } = useAuthStore.getState()
-      expect(user).toBeNull() // Logout completed last
-      expect(isAuthenticated).toBe(false)
-    })
-
-    it('should handle user with minimal data', () => {
-      const { setUser } = useAuthStore.getState()
-      const minimalUser: User = {
-        id: '1',
-        email: 'user@example.com',
-      }
-
-      setUser(minimalUser)
-
-      const { user, isAuthenticated } = useAuthStore.getState()
-      expect(user).toEqual(minimalUser)
-      expect(isAuthenticated).toBe(true)
-    })
-
-    it('should handle user with maximum data', () => {
-      const { setUser } = useAuthStore.getState()
-      const maximalUser: User = {
-        id: '1',
-        email: 'user@example.com',
-        name: 'Test User',
-        avatar: 'https://example.com/avatar.jpg',
-        role: 'super_admin',
-        metadata: {
-          department: 'Engineering',
-          team: 'Platform',
-          location: 'Remote',
-          timezone: 'UTC',
-          custom_field_1: 'value1',
-          custom_field_2: 'value2',
-        },
-      }
-
-      setUser(maximalUser)
-
-      const { user } = useAuthStore.getState()
-      expect(user).toEqual(maximalUser)
-    })
-
-    it('should handle special characters in email', async () => {
-      const { login } = useAuthStore.getState()
-      await login('test+tag@example.com', 'password')
-
-      const { user } = useAuthStore.getState()
-      expect(user?.email).toBe('test+tag@example.com')
-      expect(user?.name).toBe('test+tag')
-    })
-
-    it('should handle very long email', async () => {
-      const { login } = useAuthStore.getState()
-      const longEmail = 'a'.repeat(50) + '@example.com'
-      await login(longEmail, 'password')
-
-      const { user } = useAuthStore.getState()
-      expect(user?.email).toBe(longEmail)
-    })
-  })
-
-  describe('type safety', () => {
-    it('should enforce User type for setUser', () => {
-      const { setUser } = useAuthStore.getState()
-
-      // Valid user
-      expect(() => setUser({
-        id: '1',
-        email: 'test@example.com',
-      })).not.toThrow()
-
-      // Null is valid
-      expect(() => setUser(null)).not.toThrow()
-    })
-
-    it('should allow optional User fields', () => {
-      const { setUser } = useAuthStore.getState()
-
-      const userWithoutOptional: User = {
-        id: '1',
-        email: 'test@example.com',
-      }
-
-      expect(() => setUser(userWithoutOptional)).not.toThrow()
-    })
-  })
-})
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { type User, useAuthStore } from "../../stores/authStore";
+
+describe("AuthStore", () => {
+	beforeEach(() => {
+		// Reset store before each test
+		useAuthStore.setState({
+			user: null,
+			token: null,
+			isAuthenticated: false,
+			isLoading: false,
+		});
+		// Clear localStorage
+		localStorage.clear();
+	});
+
+	const mockUser: User = {
+		id: "user-1",
+		email: "test@example.com",
+		name: "Test User",
+		avatar: "https://example.com/avatar.jpg",
+		role: "admin",
+		metadata: { department: "Engineering" },
+	};
+
+	describe("initial state", () => {
+		it("should have null user initially", () => {
+			const { user } = useAuthStore.getState();
+			expect(user).toBeNull();
+		});
+
+		it("should have null token initially", () => {
+			const { token } = useAuthStore.getState();
+			expect(token).toBeNull();
+		});
+
+		it("should not be authenticated initially", () => {
+			const { isAuthenticated } = useAuthStore.getState();
+			expect(isAuthenticated).toBe(false);
+		});
+
+		it("should not be loading initially", () => {
+			const { isLoading } = useAuthStore.getState();
+			expect(isLoading).toBe(false);
+		});
+	});
+
+	describe("setUser", () => {
+		it("should set user", () => {
+			const { setUser } = useAuthStore.getState();
+			setUser(mockUser);
+
+			const { user } = useAuthStore.getState();
+			expect(user).toEqual(mockUser);
+		});
+
+		it("should set isAuthenticated to true when user is set", () => {
+			const { setUser } = useAuthStore.getState();
+			setUser(mockUser);
+
+			const { isAuthenticated } = useAuthStore.getState();
+			expect(isAuthenticated).toBe(true);
+		});
+
+		it("should set isAuthenticated to false when user is null", () => {
+			const { setUser } = useAuthStore.getState();
+			setUser(mockUser);
+			setUser(null);
+
+			const { isAuthenticated } = useAuthStore.getState();
+			expect(isAuthenticated).toBe(false);
+		});
+
+		it("should handle partial user data", () => {
+			const { setUser } = useAuthStore.getState();
+			const partialUser: User = {
+				id: "user-1",
+				email: "test@example.com",
+			};
+			setUser(partialUser);
+
+			const { user } = useAuthStore.getState();
+			expect(user).toEqual(partialUser);
+			expect(user?.name).toBeUndefined();
+		});
+
+		it("should overwrite existing user", () => {
+			const { setUser } = useAuthStore.getState();
+			setUser(mockUser);
+
+			const newUser: User = {
+				id: "user-2",
+				email: "new@example.com",
+			};
+			setUser(newUser);
+
+			const { user } = useAuthStore.getState();
+			expect(user).toEqual(newUser);
+		});
+	});
+
+	describe("setToken", () => {
+		it("should set token in state", () => {
+			const { setToken } = useAuthStore.getState();
+			setToken("test-token");
+
+			const { token } = useAuthStore.getState();
+			expect(token).toBe("test-token");
+		});
+
+		it("should store token in localStorage", () => {
+			const { setToken } = useAuthStore.getState();
+			setToken("test-token");
+
+			expect(localStorage.getItem("auth_token")).toBe("test-token");
+		});
+
+		it("should remove token from localStorage when null", () => {
+			const { setToken } = useAuthStore.getState();
+			setToken("test-token");
+			setToken(null);
+
+			expect(localStorage.getItem("auth_token")).toBeNull();
+		});
+
+		it("should clear token from state when null", () => {
+			const { setToken } = useAuthStore.getState();
+			setToken("test-token");
+			setToken(null);
+
+			const { token } = useAuthStore.getState();
+			expect(token).toBeNull();
+		});
+
+		it("should handle empty string token", () => {
+			const { setToken } = useAuthStore.getState();
+			setToken("");
+
+			// Empty string is falsy, should be treated as null
+			expect(localStorage.getItem("auth_token")).toBeNull();
+			expect(useAuthStore.getState().token).toBeNull();
+		});
+	});
+
+	describe("login", () => {
+		it("should set loading state during login", async () => {
+			const { login } = useAuthStore.getState();
+
+			// Note: In the mock implementation, login completes synchronously
+			// so we can only verify the final state after completion
+			await login("test@example.com", "password");
+
+			// Loading should be false after completion
+			expect(useAuthStore.getState().isLoading).toBe(false);
+			// User should be set after successful login
+			expect(useAuthStore.getState().user).not.toBeNull();
+		});
+
+		it("should set user and token on successful login", async () => {
+			const { login } = useAuthStore.getState();
+			await login("test@example.com", "password");
+
+			const { user, token, isAuthenticated } = useAuthStore.getState();
+			expect(user).not.toBeNull();
+			expect(user?.email).toBe("test@example.com");
+			expect(token).not.toBeNull();
+			expect(isAuthenticated).toBe(true);
+		});
+
+		it("should derive username from email", async () => {
+			const { login } = useAuthStore.getState();
+			await login("john.doe@example.com", "password");
+
+			const { user } = useAuthStore.getState();
+			expect(user?.name).toBe("john.doe");
+		});
+
+		it("should handle login errors", async () => {
+			// This is a mock implementation, so it doesn't actually fail
+			// But in a real implementation, we'd test error handling
+			const { login } = useAuthStore.getState();
+
+			await expect(
+				login("test@example.com", "password"),
+			).resolves.toBeUndefined();
+		});
+
+		it("should clear loading state on error", async () => {
+			// Mock a failing login by temporarily replacing the login function
+			const originalLogin = useAuthStore.getState().login;
+
+			useAuthStore.setState({
+				login: async () => {
+					useAuthStore.setState({ isLoading: true });
+					try {
+						throw new Error("Login failed");
+					} finally {
+						useAuthStore.setState({ isLoading: false });
+					}
+				},
+			});
+
+			await expect(
+				useAuthStore.getState().login("test@example.com", "wrong"),
+			).rejects.toThrow();
+			expect(useAuthStore.getState().isLoading).toBe(false);
+
+			// Restore original
+			useAuthStore.setState({ login: originalLogin });
+		});
+
+		it("should persist token to localStorage", async () => {
+			const { login } = useAuthStore.getState();
+			await login("test@example.com", "password");
+
+			expect(localStorage.getItem("auth_token")).not.toBeNull();
+		});
+	});
+
+	describe("logout", () => {
+		it("should clear user", () => {
+			const { setUser, logout } = useAuthStore.getState();
+			setUser(mockUser);
+			logout();
+
+			const { user } = useAuthStore.getState();
+			expect(user).toBeNull();
+		});
+
+		it("should clear token", () => {
+			const { setToken, logout } = useAuthStore.getState();
+			setToken("test-token");
+			logout();
+
+			const { token } = useAuthStore.getState();
+			expect(token).toBeNull();
+		});
+
+		it("should set isAuthenticated to false", () => {
+			const { setUser, logout } = useAuthStore.getState();
+			setUser(mockUser);
+			logout();
+
+			const { isAuthenticated } = useAuthStore.getState();
+			expect(isAuthenticated).toBe(false);
+		});
+
+		it("should remove token from localStorage", () => {
+			const { setToken, logout } = useAuthStore.getState();
+			setToken("test-token");
+			logout();
+
+			expect(localStorage.getItem("auth_token")).toBeNull();
+		});
+
+		it("should handle logout when already logged out", () => {
+			const { logout } = useAuthStore.getState();
+
+			expect(() => logout()).not.toThrow();
+
+			const { user, token, isAuthenticated } = useAuthStore.getState();
+			expect(user).toBeNull();
+			expect(token).toBeNull();
+			expect(isAuthenticated).toBe(false);
+		});
+	});
+
+	describe("refreshToken", () => {
+		it("should not throw error", async () => {
+			const { refreshToken } = useAuthStore.getState();
+
+			await expect(refreshToken()).resolves.not.toThrow();
+		});
+
+		it("should log message about not being implemented", async () => {
+			const consoleSpy = vi.spyOn(console, "log");
+			const { refreshToken } = useAuthStore.getState();
+
+			await refreshToken();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Token refresh not implemented yet",
+			);
+			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("updateProfile", () => {
+		it("should update user profile", () => {
+			const { setUser, updateProfile } = useAuthStore.getState();
+			setUser(mockUser);
+
+			updateProfile({ name: "Updated Name" });
+
+			const { user } = useAuthStore.getState();
+			expect(user?.name).toBe("Updated Name");
+		});
+
+		it("should preserve unchanged fields", () => {
+			const { setUser, updateProfile } = useAuthStore.getState();
+			setUser(mockUser);
+
+			updateProfile({ name: "Updated Name" });
+
+			const { user } = useAuthStore.getState();
+			expect(user?.email).toBe("test@example.com");
+			expect(user?.id).toBe("user-1");
+		});
+
+		it("should handle multiple field updates", () => {
+			const { setUser, updateProfile } = useAuthStore.getState();
+			setUser(mockUser);
+
+			updateProfile({
+				name: "New Name",
+				avatar: "https://example.com/new-avatar.jpg",
+				role: "user",
+			});
+
+			const { user } = useAuthStore.getState();
+			expect(user?.name).toBe("New Name");
+			expect(user?.avatar).toBe("https://example.com/new-avatar.jpg");
+			expect(user?.role).toBe("user");
+		});
+
+		it("should handle updating metadata", () => {
+			const { setUser, updateProfile } = useAuthStore.getState();
+			setUser(mockUser);
+
+			updateProfile({
+				metadata: { department: "Sales", location: "NYC" },
+			});
+
+			const { user } = useAuthStore.getState();
+			expect(user?.metadata).toEqual({ department: "Sales", location: "NYC" });
+		});
+
+		it("should do nothing if no user is set", () => {
+			const { updateProfile } = useAuthStore.getState();
+
+			expect(() => updateProfile({ name: "Test" })).not.toThrow();
+
+			const { user } = useAuthStore.getState();
+			expect(user).toBeNull();
+		});
+
+		it("should handle empty updates", () => {
+			const { setUser, updateProfile } = useAuthStore.getState();
+			setUser(mockUser);
+
+			updateProfile({});
+
+			const { user } = useAuthStore.getState();
+			expect(user).toEqual(mockUser);
+		});
+	});
+
+	describe("persistence", () => {
+		it("should persist user to localStorage", () => {
+			const { setUser } = useAuthStore.getState();
+			setUser(mockUser);
+
+			// Check if data is persisted
+			const stored = localStorage.getItem("tracertm-auth-store");
+			expect(stored).not.toBeNull();
+
+			const parsed = JSON.parse(stored!);
+			expect(parsed.state.user).toEqual(mockUser);
+		});
+
+		it("should persist authentication state", () => {
+			const { setUser } = useAuthStore.getState();
+			setUser(mockUser);
+
+			const stored = localStorage.getItem("tracertm-auth-store");
+			const parsed = JSON.parse(stored!);
+			expect(parsed.state.isAuthenticated).toBe(true);
+		});
+
+		it("should not persist isLoading state", () => {
+			useAuthStore.setState({ isLoading: true });
+
+			const stored = localStorage.getItem("tracertm-auth-store");
+			if (stored) {
+				const parsed = JSON.parse(stored);
+				expect(parsed.state.isLoading).toBeUndefined();
+			}
+		});
+	});
+
+	describe("edge cases", () => {
+		it("should handle rapid state changes", () => {
+			const { setUser } = useAuthStore.getState();
+
+			for (let i = 0; i < 100; i++) {
+				setUser({ id: `user-${i}`, email: `user${i}@example.com` });
+			}
+
+			const { user } = useAuthStore.getState();
+			expect(user?.id).toBe("user-99");
+		});
+
+		it("should handle concurrent login/logout", async () => {
+			const { login, logout } = useAuthStore.getState();
+
+			const loginPromise = login("test@example.com", "password");
+			await loginPromise;
+			logout();
+
+			// State should reflect the last operation
+			const { user, isAuthenticated } = useAuthStore.getState();
+			expect(user).toBeNull(); // Logout completed last
+			expect(isAuthenticated).toBe(false);
+		});
+
+		it("should handle user with minimal data", () => {
+			const { setUser } = useAuthStore.getState();
+			const minimalUser: User = {
+				id: "1",
+				email: "user@example.com",
+			};
+
+			setUser(minimalUser);
+
+			const { user, isAuthenticated } = useAuthStore.getState();
+			expect(user).toEqual(minimalUser);
+			expect(isAuthenticated).toBe(true);
+		});
+
+		it("should handle user with maximum data", () => {
+			const { setUser } = useAuthStore.getState();
+			const maximalUser: User = {
+				id: "1",
+				email: "user@example.com",
+				name: "Test User",
+				avatar: "https://example.com/avatar.jpg",
+				role: "super_admin",
+				metadata: {
+					department: "Engineering",
+					team: "Platform",
+					location: "Remote",
+					timezone: "UTC",
+					custom_field_1: "value1",
+					custom_field_2: "value2",
+				},
+			};
+
+			setUser(maximalUser);
+
+			const { user } = useAuthStore.getState();
+			expect(user).toEqual(maximalUser);
+		});
+
+		it("should handle special characters in email", async () => {
+			const { login } = useAuthStore.getState();
+			await login("test+tag@example.com", "password");
+
+			const { user } = useAuthStore.getState();
+			expect(user?.email).toBe("test+tag@example.com");
+			expect(user?.name).toBe("test+tag");
+		});
+
+		it("should handle very long email", async () => {
+			const { login } = useAuthStore.getState();
+			const longEmail = `${"a".repeat(50)}@example.com`;
+			await login(longEmail, "password");
+
+			const { user } = useAuthStore.getState();
+			expect(user?.email).toBe(longEmail);
+		});
+	});
+
+	describe("type safety", () => {
+		it("should enforce User type for setUser", () => {
+			const { setUser } = useAuthStore.getState();
+
+			// Valid user
+			expect(() =>
+				setUser({
+					id: "1",
+					email: "test@example.com",
+				}),
+			).not.toThrow();
+
+			// Null is valid
+			expect(() => setUser(null)).not.toThrow();
+		});
+
+		it("should allow optional User fields", () => {
+			const { setUser } = useAuthStore.getState();
+
+			const userWithoutOptional: User = {
+				id: "1",
+				email: "test@example.com",
+			};
+
+			expect(() => setUser(userWithoutOptional)).not.toThrow();
+		});
+	});
+});

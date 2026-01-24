@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/error/is-error');
+"use strict";
+var parent = require("../../actual/error/is-error");
 
 module.exports = parent;

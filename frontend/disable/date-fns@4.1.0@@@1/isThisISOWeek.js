@@ -28,10 +28,10 @@ import { isSameISOWeek } from "./isSameISOWeek.js";
  * //=> true
  */
 export function isThisISOWeek(date, options) {
-  return isSameISOWeek(
-    constructFrom(options?.in || date, date),
-    constructNow(options?.in || date),
-  );
+	return isSameISOWeek(
+		constructFrom(options?.in || date, date),
+		constructNow(options?.in || date),
+	);
 }
 
 // Fallback for modularized imports:

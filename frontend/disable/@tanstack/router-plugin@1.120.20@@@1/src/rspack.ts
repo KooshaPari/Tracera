@@ -1,10 +1,9 @@
-import { createRspackPlugin } from 'unplugin'
-
-import { configSchema } from './core/config'
-import { unpluginRouterCodeSplitterFactory } from './core/router-code-splitter-plugin'
-import { unpluginRouterGeneratorFactory } from './core/router-generator-plugin'
-import { unpluginRouterComposedFactory } from './core/router-composed-plugin'
-import type { Config } from './core/config'
+import { createRspackPlugin } from "unplugin";
+import type { Config } from "./core/config";
+import { configSchema } from "./core/config";
+import { unpluginRouterCodeSplitterFactory } from "./core/router-code-splitter-plugin";
+import { unpluginRouterComposedFactory } from "./core/router-composed-plugin";
+import { unpluginRouterGeneratorFactory } from "./core/router-generator-plugin";
 
 /**
  * @example
@@ -20,8 +19,8 @@ import type { Config } from './core/config'
  * ```
  */
 const TanStackRouterGeneratorRspack = /* #__PURE__ */ createRspackPlugin(
-  unpluginRouterGeneratorFactory,
-)
+	unpluginRouterGeneratorFactory,
+);
 
 /**
  * @example
@@ -37,8 +36,8 @@ const TanStackRouterGeneratorRspack = /* #__PURE__ */ createRspackPlugin(
  * ```
  */
 const TanStackRouterCodeSplitterRspack = /* #__PURE__ */ createRspackPlugin(
-  unpluginRouterCodeSplitterFactory,
-)
+	unpluginRouterCodeSplitterFactory,
+);
 
 /**
  * @example
@@ -54,14 +53,14 @@ const TanStackRouterCodeSplitterRspack = /* #__PURE__ */ createRspackPlugin(
  * ```
  */
 const TanStackRouterRspack = /* #__PURE__ */ createRspackPlugin(
-  unpluginRouterComposedFactory,
-)
+	unpluginRouterComposedFactory,
+);
 
-export default TanStackRouterRspack
+export default TanStackRouterRspack;
 export {
-  configSchema,
-  TanStackRouterRspack,
-  TanStackRouterGeneratorRspack,
-  TanStackRouterCodeSplitterRspack,
-}
-export type { Config }
+	configSchema,
+	TanStackRouterRspack,
+	TanStackRouterGeneratorRspack,
+	TanStackRouterCodeSplitterRspack,
+};
+export type { Config };

@@ -1,4 +1,4 @@
-var isArrayLikeObject = require('./isArrayLikeObject');
+var isArrayLikeObject = require("./isArrayLikeObject");
 
 /**
  * Casts `value` to an empty array if it's not an array like object.
@@ -8,7 +8,7 @@ var isArrayLikeObject = require('./isArrayLikeObject');
  * @returns {Array|Object} Returns the cast array-like object.
  */
 function castArrayLikeObject(value) {
-  return isArrayLikeObject(value) ? value : [];
+	return isArrayLikeObject(value) ? value : [];
 }
 
 module.exports = castArrayLikeObject;

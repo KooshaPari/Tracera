@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/reflect/prevent-extensions');
+"use strict";
+var parent = require("../../actual/reflect/prevent-extensions");
 
 module.exports = parent;

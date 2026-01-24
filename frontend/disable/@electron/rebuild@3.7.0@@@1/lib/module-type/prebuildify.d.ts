@@ -1,4 +1,4 @@
-import { NativeModule } from '.';
+import { NativeModule } from ".";
 export declare function determineNativePrebuildArch(arch: string): string;
 /**
  * The extension of `prebuildify`-generated native modules, after the last `.`. This value differs
@@ -6,6 +6,6 @@ export declare function determineNativePrebuildArch(arch: string): string;
  */
 export declare function determineNativePrebuildExtension(arch: string): string;
 export declare class Prebuildify extends NativeModule {
-    usesTool(): Promise<boolean>;
-    findPrebuiltModule(): Promise<boolean>;
+	usesTool(): Promise<boolean>;
+	findPrebuiltModule(): Promise<boolean>;
 }

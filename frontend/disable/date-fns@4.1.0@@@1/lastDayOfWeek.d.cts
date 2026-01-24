@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link lastDayOfWeek} function options.
  */
 export interface LastDayOfWeekOptions<DateType extends Date = Date>
-  extends LocalizedOptions<"options">,
-    WeekOptions,
-    ContextOptions<DateType> {}
+	extends LocalizedOptions<"options">,
+		WeekOptions,
+		ContextOptions<DateType> {}
 /**
  * @name lastDayOfWeek
  * @category Week Helpers
@@ -29,9 +29,9 @@ export interface LastDayOfWeekOptions<DateType extends Date = Date>
  * @returns The last day of a week
  */
 export declare function lastDayOfWeek<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: LastDayOfWeekOptions<ResultDate>,
+	date: DateArg<DateType>,
+	options?: LastDayOfWeekOptions<ResultDate>,
 ): ResultDate;

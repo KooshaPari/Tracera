@@ -1,27 +1,29 @@
-'use strict';
+"use strict";
 
-const path = require('path');
-const {promisify} = require('util');
-const readFile = promisify(require('fs').readFile);
+const path = require("path");
+const { promisify } = require("util");
+const readFile = promisify(require("fs").readFile);
 
-const isNodeModules = require('./is-node-modules.cjs');
-const resultsCache = require('./cache.cjs');
+const isNodeModules = require("./is-node-modules.cjs");
+const resultsCache = require("./cache.cjs");
 
 const promiseCache = new Map();
 
 async function getDirectoryTypeActual(directory) {
 	if (isNodeModules(directory)) {
-		return 'commonjs';
+		return "commonjs";
 	}
 
 	try {
-		return JSON.parse(await readFile(path.resolve(directory, 'package.json'))).type || 'commonjs';
-	} catch (_) {
-	}
+		return (
+			JSON.parse(await readFile(path.resolve(directory, "package.json")))
+				.type || "commonjs"
+		);
+	} catch (_) {}
 
 	const parent = path.dirname(directory);
 	if (parent === directory) {
-		return 'commonjs';
+		return "commonjs";
 	}
 
 	return getDirectoryType(parent);

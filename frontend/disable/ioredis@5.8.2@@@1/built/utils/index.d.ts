@@ -12,7 +12,10 @@ import Debug from "./debug";
  * expect(res).to.eql(['foo', ['bar']])
  * ```
  */
-export declare function convertBufferToString(value: any, encoding?: BufferEncoding): any;
+export declare function convertBufferToString(
+	value: any,
+	encoding?: BufferEncoding,
+): any;
 /**
  * Convert a list of results to node-style
  *
@@ -23,7 +26,9 @@ export declare function convertBufferToString(value: any, encoding?: BufferEncod
  * expect(output).to.eql([[null, 'a'], [null, 'b'], [new Error('c')], [null, 'd'])
  * ```
  */
-export declare function wrapMultiResult(arr: unknown[] | null): unknown[][] | null;
+export declare function wrapMultiResult(
+	arr: unknown[] | null,
+): unknown[][] | null;
 /**
  * Detect if the argument is a int
  * @example
@@ -54,7 +59,10 @@ export declare function packObject(array: any[]): Record<string, any>;
 /**
  * Return a callback with timeout
  */
-export declare function timeout<T>(callback: Callback<T>, timeout: number): Callback<T>;
+export declare function timeout<T>(
+	callback: Callback<T>,
+	timeout: number,
+): Callback<T>;
 /**
  * Convert an object to an array
  * @example
@@ -63,7 +71,9 @@ export declare function timeout<T>(callback: Callback<T>, timeout: number): Call
  * ['a', '1']
  * ```
  */
-export declare function convertObjectToArray<T>(obj: Record<string, T>): (string | T)[];
+export declare function convertObjectToArray<T>(
+	obj: Record<string, T>,
+): (string | T)[];
 /**
  * Convert a map to an array
  * @example
@@ -84,15 +94,19 @@ export declare function toArg(arg: any): string;
  * @param friendlyStack the stack that more meaningful
  * @param filterPath only show stacks with the specified path
  */
-export declare function optimizeErrorStack(error: Error, friendlyStack: string, filterPath: string): Error;
+export declare function optimizeErrorStack(
+	error: Error,
+	friendlyStack: string,
+	filterPath: string,
+): Error;
 /**
  * Parse the redis protocol url
  */
 export declare function parseURL(url: string): Record<string, unknown>;
 interface TLSOptions {
-    port: number;
-    host: string;
-    [key: string]: any;
+	port: number;
+	host: string;
+	[key: string]: any;
 }
 /**
  * Resolve TLS profile shortcut in connection options
@@ -119,6 +133,6 @@ export declare function zipMap<K, V>(keys: K[], values: V[]): Map<K, V>;
  * @returns {Promise<{version: string} | null>} Package metadata or null if unavailable
  */
 export declare function getPackageMeta(): Promise<{
-    version: string;
+	version: string;
 }>;
 export { Debug, defaults, noop };

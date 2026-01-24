@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 30 2014 00:00:00
  */
 function setDate(date, dayOfMonth, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setDate(dayOfMonth);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setDate(dayOfMonth);
+	return _date;
 }

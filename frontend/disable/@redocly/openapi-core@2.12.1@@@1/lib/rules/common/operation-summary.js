@@ -1,9 +1,9 @@
-import { validateDefinedAndNonEmpty } from '../utils.js';
+import { validateDefinedAndNonEmpty } from "../utils.js";
 export const OperationSummary = () => {
-    return {
-        Operation(operation, ctx) {
-            validateDefinedAndNonEmpty('summary', operation, ctx);
-        },
-    };
+	return {
+		Operation(operation, ctx) {
+			validateDefinedAndNonEmpty("summary", operation, ctx);
+		},
+	};
 };
 //# sourceMappingURL=operation-summary.js.map

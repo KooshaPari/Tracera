@@ -25,6 +25,6 @@ var _index = require("./constants.cjs");
  * //=> 2
  */
 function minutesToHours(minutes) {
-  const hours = minutes / _index.minutesInHour;
-  return Math.trunc(hours);
+	const hours = minutes / _index.minutesInHour;
+	return Math.trunc(hours);
 }

@@ -1,22 +1,33 @@
-let FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM, isTTY=true;
-if (typeof process !== 'undefined') {
+let FORCE_COLOR,
+	NODE_DISABLE_COLORS,
+	NO_COLOR,
+	TERM,
+	isTTY = true;
+if (typeof process !== "undefined") {
 	({ FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM } = process.env || {});
 	isTTY = process.stdout && process.stdout.isTTY;
 }
 
-const $ = exports.$ = {
-	enabled: !NODE_DISABLE_COLORS && NO_COLOR == null && TERM !== 'dumb' && (
-		FORCE_COLOR != null && FORCE_COLOR !== '0' || isTTY
-	)
-}
+const $ = (exports.$ = {
+	enabled:
+		!NODE_DISABLE_COLORS &&
+		NO_COLOR == null &&
+		TERM !== "dumb" &&
+		((FORCE_COLOR != null && FORCE_COLOR !== "0") || isTTY),
+});
 
 function init(x, y) {
-	let rgx = new RegExp(`\\x1b\\[${y}m`, 'g');
-	let open = `\x1b[${x}m`, close = `\x1b[${y}m`;
+	const rgx = new RegExp(`\\x1b\\[${y}m`, "g");
+	const open = `\x1b[${x}m`,
+		close = `\x1b[${y}m`;
 
-	return function (txt) {
+	return (txt) => {
 		if (!$.enabled || txt == null) return txt;
-		return open + (!!~(''+txt).indexOf(close) ? txt.replace(rgx, close + open) : txt) + close;
+		return (
+			open +
+			(~("" + txt).indexOf(close) ? txt.replace(rgx, close + open) : txt) +
+			close
+		);
 	};
 }
 

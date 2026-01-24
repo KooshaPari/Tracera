@@ -3,8 +3,8 @@ import type { ContextOptions, DateArg, ISOFormatOptions } from "./types.js";
  * The {@link formatISO} function options.
  */
 export interface FormatISOOptions
-  extends ISOFormatOptions,
-    ContextOptions<Date> {}
+	extends ISOFormatOptions,
+		ContextOptions<Date> {}
 /**
  * @name formatISO
  * @category Common Helpers
@@ -41,6 +41,6 @@ export interface FormatISOOptions
  * //=> '19:00:52Z'
  */
 export declare function formatISO(
-  date: DateArg<Date> & {},
-  options?: FormatISOOptions,
+	date: DateArg<Date> & {},
+	options?: FormatISOOptions,
 ): string;

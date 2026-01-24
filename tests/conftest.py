@@ -129,7 +129,7 @@ async def async_db_session(db_session):
     yield db_session
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def project_factory(db_session):
     """
     Factory for creating test projects using ProjectRepository.
@@ -137,16 +137,16 @@ def project_factory(db_session):
     This ensures projects are created using the same code path as production,
     providing more realistic test coverage.
     """
-    async def create_project(name="Test Project", description="Test project", metadata=None):
-        from tracertm.repositories.project_repository import ProjectRepository
-        repo = ProjectRepository(db_session)
-        project = await repo.create(name=name, description=description, metadata=metadata)
-        await db_session.flush()
+    def create_project(name="Test Project", description="Test project", metadata=None):
+        from tracertm.models.project import Project
+        project = Project(name=name, description=description, metadata=metadata or {})
+        db_session.add(project)
+        db_session.flush()
         return project
     return create_project
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def item_factory(db_session):
     """
     Factory for creating test items using ItemRepository.
@@ -154,7 +154,7 @@ def item_factory(db_session):
     This ensures items are created using the same code path as production,
     providing more realistic test coverage.
     """
-    async def create_item(
+    def create_item(
         project_id,
         title="Test Item",
         view="FEATURE",
@@ -162,9 +162,8 @@ def item_factory(db_session):
         status="todo",
         **kwargs
     ):
-        from tracertm.repositories.item_repository import ItemRepository
-        repo = ItemRepository(db_session)
-        item = await repo.create(
+        from tracertm.models.item import Item
+        item = Item(
             project_id=project_id,
             title=title,
             view=view,
@@ -172,7 +171,8 @@ def item_factory(db_session):
             status=status,
             **kwargs
         )
-        await db_session.flush()
+        db_session.add(item)
+        db_session.flush()
         return item
     return create_item
 

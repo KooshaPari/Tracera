@@ -1,23 +1,23 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = memoize;
 
-var _setImmediate = require('./internal/setImmediate.js');
+var _setImmediate = require("./internal/setImmediate.js");
 
 var _setImmediate2 = _interopRequireDefault(_setImmediate);
 
-var _initialParams = require('./internal/initialParams.js');
+var _initialParams = require("./internal/initialParams.js");
 
 var _initialParams2 = _interopRequireDefault(_initialParams);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Caches the results of an async function. When creating a hash to store
@@ -59,33 +59,33 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *     // callback
  * });
  */
-function memoize(fn, hasher = v => v) {
-    var memo = Object.create(null);
-    var queues = Object.create(null);
-    var _fn = (0, _wrapAsync2.default)(fn);
-    var memoized = (0, _initialParams2.default)((args, callback) => {
-        var key = hasher(...args);
-        if (key in memo) {
-            (0, _setImmediate2.default)(() => callback(null, ...memo[key]));
-        } else if (key in queues) {
-            queues[key].push(callback);
-        } else {
-            queues[key] = [callback];
-            _fn(...args, (err, ...resultArgs) => {
-                // #1465 don't memoize if an error occurred
-                if (!err) {
-                    memo[key] = resultArgs;
-                }
-                var q = queues[key];
-                delete queues[key];
-                for (var i = 0, l = q.length; i < l; i++) {
-                    q[i](err, ...resultArgs);
-                }
-            });
-        }
-    });
-    memoized.memo = memo;
-    memoized.unmemoized = fn;
-    return memoized;
+function memoize(fn, hasher = (v) => v) {
+	var memo = Object.create(null);
+	var queues = Object.create(null);
+	var _fn = (0, _wrapAsync2.default)(fn);
+	var memoized = (0, _initialParams2.default)((args, callback) => {
+		var key = hasher(...args);
+		if (key in memo) {
+			(0, _setImmediate2.default)(() => callback(null, ...memo[key]));
+		} else if (key in queues) {
+			queues[key].push(callback);
+		} else {
+			queues[key] = [callback];
+			_fn(...args, (err, ...resultArgs) => {
+				// #1465 don't memoize if an error occurred
+				if (!err) {
+					memo[key] = resultArgs;
+				}
+				var q = queues[key];
+				delete queues[key];
+				for (var i = 0, l = q.length; i < l; i++) {
+					q[i](err, ...resultArgs);
+				}
+			});
+		}
+	});
+	memoized.memo = memo;
+	memoized.unmemoized = fn;
+	return memoized;
 }
 module.exports = exports.default;

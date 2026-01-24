@@ -1,8 +1,8 @@
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from "../../language/visitor";
 import type {
-  SDLValidationContext,
-  ValidationContext,
-} from '../ValidationContext';
+	SDLValidationContext,
+	ValidationContext,
+} from "../ValidationContext";
 /**
  * Provided required arguments
  *
@@ -10,11 +10,11 @@ import type {
  * default value) field arguments have been provided.
  */
 export declare function ProvidedRequiredArgumentsRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;
 /**
  * @internal
  */
 export declare function ProvidedRequiredArgumentsOnDirectivesRule(
-  context: ValidationContext | SDLValidationContext,
+	context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

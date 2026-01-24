@@ -1,5 +1,5 @@
-var baseSlice = require('./_baseSlice'),
-    toInteger = require('./toInteger');
+var baseSlice = require("./_baseSlice"),
+	toInteger = require("./toInteger");
 
 /**
  * Creates a slice of `array` with `n` elements taken from the end.
@@ -27,13 +27,13 @@ var baseSlice = require('./_baseSlice'),
  * // => []
  */
 function takeRight(array, n, guard) {
-  var length = array == null ? 0 : array.length;
-  if (!length) {
-    return [];
-  }
-  n = (guard || n === undefined) ? 1 : toInteger(n);
-  n = length - n;
-  return baseSlice(array, n < 0 ? 0 : n, length);
+	var length = array == null ? 0 : array.length;
+	if (!length) {
+		return [];
+	}
+	n = guard || n === undefined ? 1 : toInteger(n);
+	n = length - n;
+	return baseSlice(array, n < 0 ? 0 : n, length);
 }
 
 module.exports = takeRight;

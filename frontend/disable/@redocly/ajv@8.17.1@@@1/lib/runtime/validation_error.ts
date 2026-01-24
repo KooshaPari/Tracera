@@ -1,13 +1,13 @@
-import type {ErrorObject} from "../types"
+import type { ErrorObject } from "../types";
 
 export default class ValidationError extends Error {
-  readonly errors: Partial<ErrorObject>[]
-  readonly ajv: true
-  readonly validation: true
+	readonly errors: Partial<ErrorObject>[];
+	readonly ajv: true;
+	readonly validation: true;
 
-  constructor(errors: Partial<ErrorObject>[]) {
-    super("validation failed")
-    this.errors = errors
-    this.ajv = this.validation = true
-  }
+	constructor(errors: Partial<ErrorObject>[]) {
+		super("validation failed");
+		this.errors = errors;
+		this.ajv = this.validation = true;
+	}
 }

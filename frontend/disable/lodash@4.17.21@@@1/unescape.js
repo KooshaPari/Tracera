@@ -1,9 +1,9 @@
-var toString = require('./toString'),
-    unescapeHtmlChar = require('./_unescapeHtmlChar');
+var toString = require("./toString"),
+	unescapeHtmlChar = require("./_unescapeHtmlChar");
 
 /** Used to match HTML entities and HTML characters. */
 var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g,
-    reHasEscapedHtml = RegExp(reEscapedHtml.source);
+	reHasEscapedHtml = RegExp(reEscapedHtml.source);
 
 /**
  * The inverse of `_.escape`; this method converts the HTML entities
@@ -25,10 +25,10 @@ var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g,
  * // => 'fred, barney, & pebbles'
  */
 function unescape(string) {
-  string = toString(string);
-  return (string && reHasEscapedHtml.test(string))
-    ? string.replace(reEscapedHtml, unescapeHtmlChar)
-    : string;
+	string = toString(string);
+	return string && reHasEscapedHtml.test(string)
+		? string.replace(reEscapedHtml, unescapeHtmlChar)
+		: string;
 }
 
 module.exports = unescape;

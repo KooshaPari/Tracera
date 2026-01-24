@@ -22,6 +22,6 @@ export interface GetQuarterOptions extends ContextOptions<Date> {}
  * //=> 3
  */
 export declare function getQuarter(
-  date: DateArg<Date> & {},
-  options?: GetQuarterOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetQuarterOptions | undefined,
 ): number;

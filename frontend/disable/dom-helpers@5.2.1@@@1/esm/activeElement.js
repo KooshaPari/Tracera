@@ -1,4 +1,4 @@
-import ownerDocument from './ownerDocument';
+import ownerDocument from "./ownerDocument";
 /**
  * Returns the actively focused element safely.
  *
@@ -6,20 +6,20 @@ import ownerDocument from './ownerDocument';
  */
 
 export default function activeElement(doc) {
-  if (doc === void 0) {
-    doc = ownerDocument();
-  }
+	if (doc === void 0) {
+		doc = ownerDocument();
+	}
 
-  // Support: IE 9 only
-  // IE9 throws an "Unspecified error" accessing document.activeElement from an <iframe>
-  try {
-    var active = doc.activeElement; // IE11 returns a seemingly empty object in some cases when accessing
-    // document.activeElement from an <iframe>
+	// Support: IE 9 only
+	// IE9 throws an "Unspecified error" accessing document.activeElement from an <iframe>
+	try {
+		var active = doc.activeElement; // IE11 returns a seemingly empty object in some cases when accessing
+		// document.activeElement from an <iframe>
 
-    if (!active || !active.nodeName) return null;
-    return active;
-  } catch (e) {
-    /* ie throws if no active element */
-    return doc.body;
-  }
+		if (!active || !active.nodeName) return null;
+		return active;
+	} catch (e) {
+		/* ie throws if no active element */
+		return doc.body;
+	}
 }

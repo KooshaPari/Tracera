@@ -1,6 +1,5 @@
-import { startOfISOWeekYear } from "./startOfISOWeekYear.js";
-
 import { normalizeDates } from "./_lib/normalizeDates.js";
+import { startOfISOWeekYear } from "./startOfISOWeekYear.js";
 
 /**
  * The {@link isSameISOWeekYear} function options.
@@ -28,12 +27,12 @@ import { normalizeDates } from "./_lib/normalizeDates.js";
  * //=> true
  */
 export function isSameISOWeekYear(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return +startOfISOWeekYear(laterDate_) === +startOfISOWeekYear(earlierDate_);
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return +startOfISOWeekYear(laterDate_) === +startOfISOWeekYear(earlierDate_);
 }
 
 // Fallback for modularized imports:

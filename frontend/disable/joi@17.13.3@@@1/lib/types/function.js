@@ -1,93 +1,91 @@
-'use strict';
+const Assert = require("@hapi/hoek/lib/assert");
 
-const Assert = require('@hapi/hoek/lib/assert');
-
-const Keys = require('./keys');
-
+const Keys = require("./keys");
 
 const internals = {};
 
-
 module.exports = Keys.extend({
+	type: "function",
 
-    type: 'function',
+	properties: {
+		typeof: "function",
+	},
 
-    properties: {
-        typeof: 'function'
-    },
+	rules: {
+		arity: {
+			method(n) {
+				Assert(
+					Number.isSafeInteger(n) && n >= 0,
+					"n must be a positive integer",
+				);
 
-    rules: {
-        arity: {
-            method(n) {
+				return this.$_addRule({ name: "arity", args: { n } });
+			},
+			validate(value, helpers, { n }) {
+				if (value.length === n) {
+					return value;
+				}
 
-                Assert(Number.isSafeInteger(n) && n >= 0, 'n must be a positive integer');
+				return helpers.error("function.arity", { n });
+			},
+		},
 
-                return this.$_addRule({ name: 'arity', args: { n } });
-            },
-            validate(value, helpers, { n }) {
+		class: {
+			method() {
+				return this.$_addRule("class");
+			},
+			validate(value, helpers) {
+				if (/^\s*class\s/.test(value.toString())) {
+					return value;
+				}
 
-                if (value.length === n) {
-                    return value;
-                }
+				return helpers.error("function.class", { value });
+			},
+		},
 
-                return helpers.error('function.arity', { n });
-            }
-        },
+		minArity: {
+			method(n) {
+				Assert(
+					Number.isSafeInteger(n) && n > 0,
+					"n must be a strict positive integer",
+				);
 
-        class: {
-            method() {
+				return this.$_addRule({ name: "minArity", args: { n } });
+			},
+			validate(value, helpers, { n }) {
+				if (value.length >= n) {
+					return value;
+				}
 
-                return this.$_addRule('class');
-            },
-            validate(value, helpers) {
+				return helpers.error("function.minArity", { n });
+			},
+		},
 
-                if ((/^\s*class\s/).test(value.toString())) {
-                    return value;
-                }
+		maxArity: {
+			method(n) {
+				Assert(
+					Number.isSafeInteger(n) && n >= 0,
+					"n must be a positive integer",
+				);
 
-                return helpers.error('function.class', { value });
-            }
-        },
+				return this.$_addRule({ name: "maxArity", args: { n } });
+			},
+			validate(value, helpers, { n }) {
+				if (value.length <= n) {
+					return value;
+				}
 
-        minArity: {
-            method(n) {
+				return helpers.error("function.maxArity", { n });
+			},
+		},
+	},
 
-                Assert(Number.isSafeInteger(n) && n > 0, 'n must be a strict positive integer');
-
-                return this.$_addRule({ name: 'minArity', args: { n } });
-            },
-            validate(value, helpers, { n }) {
-
-                if (value.length >= n) {
-                    return value;
-                }
-
-                return helpers.error('function.minArity', { n });
-            }
-        },
-
-        maxArity: {
-            method(n) {
-
-                Assert(Number.isSafeInteger(n) && n >= 0, 'n must be a positive integer');
-
-                return this.$_addRule({ name: 'maxArity', args: { n } });
-            },
-            validate(value, helpers, { n }) {
-
-                if (value.length <= n) {
-                    return value;
-                }
-
-                return helpers.error('function.maxArity', { n });
-            }
-        }
-    },
-
-    messages: {
-        'function.arity': '{{#label}} must have an arity of {{#n}}',
-        'function.class': '{{#label}} must be a class',
-        'function.maxArity': '{{#label}} must have an arity lesser or equal to {{#n}}',
-        'function.minArity': '{{#label}} must have an arity greater or equal to {{#n}}'
-    }
+	messages: {
+		"function.arity": "{{#label}} must have an arity of {{#n}}",
+		"function.class": "{{#label}} must be a class",
+		"function.maxArity":
+			"{{#label}} must have an arity lesser or equal to {{#n}}",
+		"function.minArity":
+			"{{#label}} must have an arity greater or equal to {{#n}}",
+	},
 });

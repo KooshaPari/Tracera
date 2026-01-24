@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = mapValues;
 
-var _mapValuesLimit = require('./mapValuesLimit.js');
+var _mapValuesLimit = require("./mapValuesLimit.js");
 
 var _mapValuesLimit2 = _interopRequireDefault(_mapValuesLimit);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * A relative of [`map`]{@link module:Collections.map}, designed for use with objects.
@@ -147,6 +147,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function mapValues(obj, iteratee, callback) {
-    return (0, _mapValuesLimit2.default)(obj, Infinity, iteratee, callback);
+	return (0, _mapValuesLimit2.default)(obj, Infinity, iteratee, callback);
 }
 module.exports = exports.default;

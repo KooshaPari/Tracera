@@ -1,39 +1,51 @@
-import { visit, dereference, refract as baseRefract, dispatchRefractorPlugins } from '@swagger-api/apidom-core';
-import { path } from 'ramda';
+import {
+	refract as baseRefract,
+	dereference,
+	dispatchRefractorPlugins,
+	visit,
+} from "@swagger-api/apidom-core";
+import { path } from "ramda";
+import { getNodeType, keyMap } from "../traversal/visitor.mjs";
 import specification from "./specification.mjs";
-import { keyMap, getNodeType } from "../traversal/visitor.mjs";
 import createToolbox from "./toolbox.mjs";
-const refract = (value, {
-  specPath = ['visitors', 'document', 'objects', 'OpenApi', '$visitor'],
-  plugins = []
-} = {}) => {
-  const element = baseRefract(value);
-  const resolvedSpec = dereference(specification);
 
-  /**
-   * This is where generic ApiDOM becomes semantic (namespace applied).
-   * We don't allow consumers to hook into this translation.
-   * Though we allow consumers to define their onw plugins on already transformed ApiDOM.
-   */
-  const RootVisitorClass = path(specPath, resolvedSpec);
-  const rootVisitor = new RootVisitorClass({
-    specObj: resolvedSpec
-  });
-  visit(element, rootVisitor);
+const refract = (
+	value,
+	{
+		specPath = ["visitors", "document", "objects", "OpenApi", "$visitor"],
+		plugins = [],
+	} = {},
+) => {
+	const element = baseRefract(value);
+	const resolvedSpec = dereference(specification);
 
-  /**
-   * Running plugins visitors means extra single traversal === performance hit.
-   */
-  return dispatchRefractorPlugins(rootVisitor.element, plugins, {
-    toolboxCreator: createToolbox,
-    visitorOptions: {
-      keyMap,
-      nodeTypeGetter: getNodeType
-    }
-  });
+	/**
+	 * This is where generic ApiDOM becomes semantic (namespace applied).
+	 * We don't allow consumers to hook into this translation.
+	 * Though we allow consumers to define their onw plugins on already transformed ApiDOM.
+	 */
+	const RootVisitorClass = path(specPath, resolvedSpec);
+	const rootVisitor = new RootVisitorClass({
+		specObj: resolvedSpec,
+	});
+	visit(element, rootVisitor);
+
+	/**
+	 * Running plugins visitors means extra single traversal === performance hit.
+	 */
+	return dispatchRefractorPlugins(rootVisitor.element, plugins, {
+		toolboxCreator: createToolbox,
+		visitorOptions: {
+			keyMap,
+			nodeTypeGetter: getNodeType,
+		},
+	});
 };
-export const createRefractor = specPath => (value, options = {}) => refract(value, {
-  specPath,
-  ...options
-});
+export const createRefractor =
+	(specPath) =>
+	(value, options = {}) =>
+		refract(value, {
+			specPath,
+			...options,
+		});
 export default refract;

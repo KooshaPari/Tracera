@@ -29,15 +29,15 @@ import { normalizeDates } from "./_lib/normalizeDates.js";
  * //=> false
  */
 export function isSameMonth(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    laterDate_.getFullYear() === earlierDate_.getFullYear() &&
-    laterDate_.getMonth() === earlierDate_.getMonth()
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		laterDate_.getFullYear() === earlierDate_.getFullYear() &&
+		laterDate_.getMonth() === earlierDate_.getMonth()
+	);
 }
 
 // Fallback for modularized imports:

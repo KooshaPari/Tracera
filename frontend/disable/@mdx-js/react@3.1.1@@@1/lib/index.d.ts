@@ -6,7 +6,9 @@
  * @returns {MDXComponents}
  *   Current components.
  */
-export function useMDXComponents(components?: Readonly<MDXComponents> | MergeComponents | null | undefined): MDXComponents;
+export function useMDXComponents(
+	components?: Readonly<MDXComponents> | MergeComponents | null | undefined,
+): MDXComponents;
 /**
  * Provider for MDX context.
  *
@@ -20,24 +22,26 @@ export function MDXProvider(properties: Readonly<Props>): React.ReactElement;
 /**
  * Custom merge function.
  */
-export type MergeComponents = (currentComponents: Readonly<MDXComponents>) => MDXComponents;
+export type MergeComponents = (
+	currentComponents: Readonly<MDXComponents>,
+) => MDXComponents;
 /**
  * Configuration for `MDXProvider`.
  */
 export type Props = {
-    /**
-     * Children (optional).
-     */
-    children?: React.ReactNode | null | undefined;
-    /**
-     * Additional components to use or a function that creates them (optional).
-     */
-    components?: Readonly<MDXComponents> | MergeComponents | null | undefined;
-    /**
-     * Turn off outer component context (default: `false`).
-     */
-    disableParentContext?: boolean | null | undefined;
+	/**
+	 * Children (optional).
+	 */
+	children?: React.ReactNode | null | undefined;
+	/**
+	 * Additional components to use or a function that creates them (optional).
+	 */
+	components?: Readonly<MDXComponents> | MergeComponents | null | undefined;
+	/**
+	 * Turn off outer component context (default: `false`).
+	 */
+	disableParentContext?: boolean | null | undefined;
 };
-import type { MDXComponents } from 'mdx/types.js';
-import React from 'react';
+import type { MDXComponents } from "mdx/types.js";
+import React from "react";
 //# sourceMappingURL=index.d.ts.map

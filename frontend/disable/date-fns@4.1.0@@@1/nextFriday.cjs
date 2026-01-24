@@ -28,5 +28,5 @@ var _index = require("./nextDay.cjs");
  * //=> Fri Mar 27 2020 00:00:00
  */
 function nextFriday(date, options) {
-  return (0, _index.nextDay)(date, 5, options);
+	return (0, _index.nextDay)(date, 5, options);
 }

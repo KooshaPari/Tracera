@@ -1,1 +1,1 @@
-export default class ExtendableError extends Error { }
+export default class ExtendableError extends Error {}

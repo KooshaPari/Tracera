@@ -1,5 +1,5 @@
-'use strict';
-require('../../modules/es.string.bold');
-var entryUnbind = require('../../internals/entry-unbind');
+"use strict";
+require("../../modules/es.string.bold");
+var entryUnbind = require("../../internals/entry-unbind");
 
-module.exports = entryUnbind('String', 'bold');
+module.exports = entryUnbind("String", "bold");

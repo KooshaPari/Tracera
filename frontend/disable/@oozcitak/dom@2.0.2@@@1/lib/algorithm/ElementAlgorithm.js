@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.element_has = element_has;
 exports.element_change = element_change;
@@ -6,12 +5,14 @@ exports.element_append = element_append;
 exports.element_remove = element_remove;
 exports.element_replace = element_replace;
 exports.element_getAnAttributeByName = element_getAnAttributeByName;
-exports.element_getAnAttributeByNamespaceAndLocalName = element_getAnAttributeByNamespaceAndLocalName;
+exports.element_getAnAttributeByNamespaceAndLocalName =
+	element_getAnAttributeByNamespaceAndLocalName;
 exports.element_getAnAttributeValue = element_getAnAttributeValue;
 exports.element_setAnAttribute = element_setAnAttribute;
 exports.element_setAnAttributeValue = element_setAnAttributeValue;
 exports.element_removeAnAttributeByName = element_removeAnAttributeByName;
-exports.element_removeAnAttributeByNamespaceAndLocalName = element_removeAnAttributeByNamespaceAndLocalName;
+exports.element_removeAnAttributeByNamespaceAndLocalName =
+	element_removeAnAttributeByNamespaceAndLocalName;
 exports.element_createAnElement = element_createAnElement;
 exports.element_insertAdjacent = element_insertAdjacent;
 const DOMImpl_1 = require("../dom/DOMImpl");
@@ -32,10 +33,10 @@ const DocumentAlgorithm_1 = require("./DocumentAlgorithm");
  * @param element - an element node
  */
 function element_has(attribute, element) {
-    /**
-     * An element has an attribute A if its attribute list contains A.
-     */
-    return element._attributeList._asArray().indexOf(attribute) !== -1;
+	/**
+	 * An element has an attribute A if its attribute list contains A.
+	 */
+	return element._attributeList._asArray().indexOf(attribute) !== -1;
 }
 /**
  * Changes the value of an attribute node.
@@ -45,33 +46,49 @@ function element_has(attribute, element) {
  * @param value - attribute value
  */
 function element_change(attribute, element, value) {
-    /**
-     * 1. Queue an attribute mutation record for element with attribute’s
-     * local name, attribute’s namespace, and attribute’s value.
-     */
-    if (DOMImpl_1.dom.features.mutationObservers) {
-        (0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(element, attribute._localName, attribute._namespace, attribute._value);
-    }
-    /**
-     * 2. If element is custom, then enqueue a custom element callback reaction
-     * with element, callback name "attributeChangedCallback", and an argument
-     * list containing attribute’s local name, attribute’s value, value, and
-     * attribute’s namespace.
-     */
-    if (DOMImpl_1.dom.features.customElements) {
-        if (util_1.Guard.isCustomElementNode(element)) {
-            (0, CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(element, "attributeChangedCallback", [attribute._localName, attribute._value, value, attribute._namespace]);
-        }
-    }
-    /**
-     * 3. Run the attribute change steps with element, attribute’s local name,
-     * attribute’s value, value, and attribute’s namespace.
-     * 4. Set attribute’s value to value.
-     */
-    if (DOMImpl_1.dom.features.steps) {
-        (0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(element, attribute._localName, attribute._value, value, attribute._namespace);
-    }
-    attribute._value = value;
+	/**
+	 * 1. Queue an attribute mutation record for element with attribute’s
+	 * local name, attribute’s namespace, and attribute’s value.
+	 */
+	if (DOMImpl_1.dom.features.mutationObservers) {
+		(0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(
+			element,
+			attribute._localName,
+			attribute._namespace,
+			attribute._value,
+		);
+	}
+	/**
+	 * 2. If element is custom, then enqueue a custom element callback reaction
+	 * with element, callback name "attributeChangedCallback", and an argument
+	 * list containing attribute’s local name, attribute’s value, value, and
+	 * attribute’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.customElements) {
+		if (util_1.Guard.isCustomElementNode(element)) {
+			(0,
+			CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(
+				element,
+				"attributeChangedCallback",
+				[attribute._localName, attribute._value, value, attribute._namespace],
+			);
+		}
+	}
+	/**
+	 * 3. Run the attribute change steps with element, attribute’s local name,
+	 * attribute’s value, value, and attribute’s namespace.
+	 * 4. Set attribute’s value to value.
+	 */
+	if (DOMImpl_1.dom.features.steps) {
+		(0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(
+			element,
+			attribute._localName,
+			attribute._value,
+			value,
+			attribute._namespace,
+		);
+	}
+	attribute._value = value;
 }
 /**
  * Appends an attribute to an element node.
@@ -80,42 +97,62 @@ function element_change(attribute, element, value) {
  * @param element - an element to receive the attribute
  */
 function element_append(attribute, element) {
-    /**
-     * 1. Queue an attribute mutation record for element with attribute’s
-     * local name, attribute’s namespace, and null.
-     */
-    if (DOMImpl_1.dom.features.mutationObservers) {
-        (0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(element, attribute._localName, attribute._namespace, null);
-    }
-    /**
-     * 2. If element is custom, then enqueue a custom element callback reaction
-     * with element, callback name "attributeChangedCallback", and an argument
-     * list containing attribute’s local name, null, attribute’s value, and
-     * attribute’s namespace.
-     */
-    if (DOMImpl_1.dom.features.customElements) {
-        if (util_1.Guard.isCustomElementNode(element)) {
-            (0, CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(element, "attributeChangedCallback", [attribute._localName, null, attribute._value, attribute._namespace]);
-        }
-    }
-    /**
-     * 3. Run the attribute change steps with element, attribute’s local name,
-     * null, attribute’s value, and attribute’s namespace.
-     */
-    if (DOMImpl_1.dom.features.steps) {
-        (0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(element, attribute._localName, null, attribute._value, attribute._namespace);
-    }
-    /**
-     * 4. Append attribute to element’s attribute list.
-     * 5. Set attribute’s element to element.
-     */
-    element._attributeList._asArray().push(attribute);
-    attribute._element = element;
-    // mark that the document has namespaces
-    if (!element._nodeDocument._hasNamespaces && (attribute._namespace !== null ||
-        attribute._namespacePrefix !== null || attribute._localName === "xmlns")) {
-        element._nodeDocument._hasNamespaces = true;
-    }
+	/**
+	 * 1. Queue an attribute mutation record for element with attribute’s
+	 * local name, attribute’s namespace, and null.
+	 */
+	if (DOMImpl_1.dom.features.mutationObservers) {
+		(0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(
+			element,
+			attribute._localName,
+			attribute._namespace,
+			null,
+		);
+	}
+	/**
+	 * 2. If element is custom, then enqueue a custom element callback reaction
+	 * with element, callback name "attributeChangedCallback", and an argument
+	 * list containing attribute’s local name, null, attribute’s value, and
+	 * attribute’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.customElements) {
+		if (util_1.Guard.isCustomElementNode(element)) {
+			(0,
+			CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(
+				element,
+				"attributeChangedCallback",
+				[attribute._localName, null, attribute._value, attribute._namespace],
+			);
+		}
+	}
+	/**
+	 * 3. Run the attribute change steps with element, attribute’s local name,
+	 * null, attribute’s value, and attribute’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.steps) {
+		(0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(
+			element,
+			attribute._localName,
+			null,
+			attribute._value,
+			attribute._namespace,
+		);
+	}
+	/**
+	 * 4. Append attribute to element’s attribute list.
+	 * 5. Set attribute’s element to element.
+	 */
+	element._attributeList._asArray().push(attribute);
+	attribute._element = element;
+	// mark that the document has namespaces
+	if (
+		!element._nodeDocument._hasNamespaces &&
+		(attribute._namespace !== null ||
+			attribute._namespacePrefix !== null ||
+			attribute._localName === "xmlns")
+	) {
+		element._nodeDocument._hasNamespaces = true;
+	}
 }
 /**
  * Removes an attribute from an element node.
@@ -124,38 +161,54 @@ function element_append(attribute, element) {
  * @param element - an element to receive the attribute
  */
 function element_remove(attribute, element) {
-    /**
-     * 1. Queue an attribute mutation record for element with attribute’s
-     * local name, attribute’s namespace, and attribute’s value.
-     */
-    if (DOMImpl_1.dom.features.mutationObservers) {
-        (0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(element, attribute._localName, attribute._namespace, attribute._value);
-    }
-    /**
-     * 2. If element is custom, then enqueue a custom element callback reaction
-     * with element, callback name "attributeChangedCallback", and an argument
-     * list containing attribute’s local name, attribute’s value, null,
-     * and attribute’s namespace.
-     */
-    if (DOMImpl_1.dom.features.customElements) {
-        if (util_1.Guard.isCustomElementNode(element)) {
-            (0, CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(element, "attributeChangedCallback", [attribute._localName, attribute._value, null, attribute._namespace]);
-        }
-    }
-    /**
-     * 3. Run the attribute change steps with element, attribute’s local name,
-     * attribute’s value, null, and attribute’s namespace.
-     */
-    if (DOMImpl_1.dom.features.steps) {
-        (0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(element, attribute._localName, attribute._value, null, attribute._namespace);
-    }
-    /**
-     * 3. Remove attribute from element’s attribute list.
-     * 5. Set attribute’s element to null.
-     */
-    const index = element._attributeList._asArray().indexOf(attribute);
-    element._attributeList._asArray().splice(index, 1);
-    attribute._element = null;
+	/**
+	 * 1. Queue an attribute mutation record for element with attribute’s
+	 * local name, attribute’s namespace, and attribute’s value.
+	 */
+	if (DOMImpl_1.dom.features.mutationObservers) {
+		(0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(
+			element,
+			attribute._localName,
+			attribute._namespace,
+			attribute._value,
+		);
+	}
+	/**
+	 * 2. If element is custom, then enqueue a custom element callback reaction
+	 * with element, callback name "attributeChangedCallback", and an argument
+	 * list containing attribute’s local name, attribute’s value, null,
+	 * and attribute’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.customElements) {
+		if (util_1.Guard.isCustomElementNode(element)) {
+			(0,
+			CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(
+				element,
+				"attributeChangedCallback",
+				[attribute._localName, attribute._value, null, attribute._namespace],
+			);
+		}
+	}
+	/**
+	 * 3. Run the attribute change steps with element, attribute’s local name,
+	 * attribute’s value, null, and attribute’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.steps) {
+		(0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(
+			element,
+			attribute._localName,
+			attribute._value,
+			null,
+			attribute._namespace,
+		);
+	}
+	/**
+	 * 3. Remove attribute from element’s attribute list.
+	 * 5. Set attribute’s element to null.
+	 */
+	const index = element._attributeList._asArray().indexOf(attribute);
+	element._attributeList._asArray().splice(index, 1);
+	attribute._element = null;
 }
 /**
  * Replaces an attribute with another of an element node.
@@ -165,47 +218,72 @@ function element_remove(attribute, element) {
  * @param element - an element to receive the attribute
  */
 function element_replace(oldAttr, newAttr, element) {
-    /**
-     * 1. Queue an attribute mutation record for element with oldAttr’s
-     * local name, oldAttr’s namespace, and oldAttr’s value.
-     */
-    if (DOMImpl_1.dom.features.mutationObservers) {
-        (0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(element, oldAttr._localName, oldAttr._namespace, oldAttr._value);
-    }
-    /**
-     * 2. If element is custom, then enqueue a custom element callback reaction
-     * with element, callback name "attributeChangedCallback", and an argument
-     * list containing oldAttr’s local name, oldAttr’s value, newAttr’s value,
-     * and oldAttr’s namespace.
-     */
-    if (DOMImpl_1.dom.features.customElements) {
-        if (util_1.Guard.isCustomElementNode(element)) {
-            (0, CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(element, "attributeChangedCallback", [oldAttr._localName, oldAttr._value, newAttr._value, oldAttr._namespace]);
-        }
-    }
-    /**
-     * 3. Run the attribute change steps with element, oldAttr’s local name,
-     * oldAttr’s value, newAttr’s value, and oldAttr’s namespace.
-     */
-    if (DOMImpl_1.dom.features.steps) {
-        (0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(element, oldAttr._localName, oldAttr._value, newAttr._value, oldAttr._namespace);
-    }
-    /**
-     * 4. Replace oldAttr by newAttr in element’s attribute list.
-     * 5. Set oldAttr’s element to null.
-     * 6. Set newAttr’s element to element.
-     */
-    const index = element._attributeList._asArray().indexOf(oldAttr);
-    if (index !== -1) {
-        element._attributeList._asArray()[index] = newAttr;
-    }
-    oldAttr._element = null;
-    newAttr._element = element;
-    // mark that the document has namespaces
-    if (!element._nodeDocument._hasNamespaces && (newAttr._namespace !== null ||
-        newAttr._namespacePrefix !== null || newAttr._localName === "xmlns")) {
-        element._nodeDocument._hasNamespaces = true;
-    }
+	/**
+	 * 1. Queue an attribute mutation record for element with oldAttr’s
+	 * local name, oldAttr’s namespace, and oldAttr’s value.
+	 */
+	if (DOMImpl_1.dom.features.mutationObservers) {
+		(0, MutationObserverAlgorithm_1.observer_queueAttributeMutationRecord)(
+			element,
+			oldAttr._localName,
+			oldAttr._namespace,
+			oldAttr._value,
+		);
+	}
+	/**
+	 * 2. If element is custom, then enqueue a custom element callback reaction
+	 * with element, callback name "attributeChangedCallback", and an argument
+	 * list containing oldAttr’s local name, oldAttr’s value, newAttr’s value,
+	 * and oldAttr’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.customElements) {
+		if (util_1.Guard.isCustomElementNode(element)) {
+			(0,
+			CustomElementAlgorithm_1.customElement_enqueueACustomElementCallbackReaction)(
+				element,
+				"attributeChangedCallback",
+				[
+					oldAttr._localName,
+					oldAttr._value,
+					newAttr._value,
+					oldAttr._namespace,
+				],
+			);
+		}
+	}
+	/**
+	 * 3. Run the attribute change steps with element, oldAttr’s local name,
+	 * oldAttr’s value, newAttr’s value, and oldAttr’s namespace.
+	 */
+	if (DOMImpl_1.dom.features.steps) {
+		(0, DOMAlgorithm_1.dom_runAttributeChangeSteps)(
+			element,
+			oldAttr._localName,
+			oldAttr._value,
+			newAttr._value,
+			oldAttr._namespace,
+		);
+	}
+	/**
+	 * 4. Replace oldAttr by newAttr in element’s attribute list.
+	 * 5. Set oldAttr’s element to null.
+	 * 6. Set newAttr’s element to element.
+	 */
+	const index = element._attributeList._asArray().indexOf(oldAttr);
+	if (index !== -1) {
+		element._attributeList._asArray()[index] = newAttr;
+	}
+	oldAttr._element = null;
+	newAttr._element = element;
+	// mark that the document has namespaces
+	if (
+		!element._nodeDocument._hasNamespaces &&
+		(newAttr._namespace !== null ||
+			newAttr._namespacePrefix !== null ||
+			newAttr._localName === "xmlns")
+	) {
+		element._nodeDocument._hasNamespaces = true;
+	}
 }
 /**
  * Retrieves an attribute with the given name from an element node.
@@ -214,16 +292,23 @@ function element_replace(oldAttr, newAttr, element) {
  * @param element - an element to receive the attribute
  */
 function element_getAnAttributeByName(qualifiedName, element) {
-    /**
-     * 1. If element is in the HTML namespace and its node document is an HTML
-     * document, then set qualifiedName to qualifiedName in ASCII lowercase.
-     * 2. Return the first attribute in element’s attribute list whose qualified
-     * name is qualifiedName, and null otherwise.
-     */
-    if (element._namespace === infra_1.namespace.HTML && element._nodeDocument._type === "html") {
-        qualifiedName = qualifiedName.toLowerCase();
-    }
-    return element._attributeList._asArray().find(attr => attr._qualifiedName === qualifiedName) || null;
+	/**
+	 * 1. If element is in the HTML namespace and its node document is an HTML
+	 * document, then set qualifiedName to qualifiedName in ASCII lowercase.
+	 * 2. Return the first attribute in element’s attribute list whose qualified
+	 * name is qualifiedName, and null otherwise.
+	 */
+	if (
+		element._namespace === infra_1.namespace.HTML &&
+		element._nodeDocument._type === "html"
+	) {
+		qualifiedName = qualifiedName.toLowerCase();
+	}
+	return (
+		element._attributeList
+			._asArray()
+			.find((attr) => attr._qualifiedName === qualifiedName) || null
+	);
 }
 /**
  * Retrieves an attribute with the given namespace and local name from an
@@ -233,14 +318,24 @@ function element_getAnAttributeByName(qualifiedName, element) {
  * @param localName - an attribute local name
  * @param element - an element to receive the attribute
  */
-function element_getAnAttributeByNamespaceAndLocalName(namespace, localName, element) {
-    /**
-     * 1. If namespace is the empty string, set it to null.
-     * 2. Return the attribute in element’s attribute list whose namespace is
-     * namespace and local name is localName, if any, and null otherwise.
-     */
-    const ns = namespace || null;
-    return element._attributeList._asArray().find(attr => attr._namespace === ns && attr._localName === localName) || null;
+function element_getAnAttributeByNamespaceAndLocalName(
+	namespace,
+	localName,
+	element,
+) {
+	/**
+	 * 1. If namespace is the empty string, set it to null.
+	 * 2. Return the attribute in element’s attribute list whose namespace is
+	 * namespace and local name is localName, if any, and null otherwise.
+	 */
+	const ns = namespace || null;
+	return (
+		element._attributeList
+			._asArray()
+			.find(
+				(attr) => attr._namespace === ns && attr._localName === localName,
+			) || null
+	);
 }
 /**
  * Retrieves an attribute's value with the given name namespace and local
@@ -250,18 +345,20 @@ function element_getAnAttributeByNamespaceAndLocalName(namespace, localName, ele
  * @param localName - an attribute local name
  * @param namespace - an attribute namespace
  */
-function element_getAnAttributeValue(element, localName, namespace = '') {
-    /**
-     * 1. Let attr be the result of getting an attribute given namespace,
-     * localName, and element.
-     * 2. If attr is null, then return the empty string.
-     * 3. Return attr’s value.
-     */
-    const attr = element_getAnAttributeByNamespaceAndLocalName(namespace, localName, element);
-    if (attr === null)
-        return '';
-    else
-        return attr._value;
+function element_getAnAttributeValue(element, localName, namespace = "") {
+	/**
+	 * 1. Let attr be the result of getting an attribute given namespace,
+	 * localName, and element.
+	 * 2. If attr is null, then return the empty string.
+	 * 3. Return attr’s value.
+	 */
+	const attr = element_getAnAttributeByNamespaceAndLocalName(
+		namespace,
+		localName,
+		element,
+	);
+	if (attr === null) return "";
+	else return attr._value;
 }
 /**
  * Sets an attribute of an element node.
@@ -270,28 +367,32 @@ function element_getAnAttributeValue(element, localName, namespace = '') {
  * @param element - an element to receive the attribute
  */
 function element_setAnAttribute(attr, element) {
-    /**
-     * 1. If attr’s element is neither null nor element, throw an
-     * "InUseAttributeError" DOMException.
-     * 2. Let oldAttr be the result of getting an attribute given attr’s
-     * namespace, attr’s local name, and element.
-     * 3. If oldAttr is attr, return attr.
-     * 4. If oldAttr is non-null, replace it by attr in element.
-     * 5. Otherwise, append attr to element.
-     * 6. Return oldAttr.
-     */
-    if (attr._element !== null && attr._element !== element)
-        throw new DOMException_1.InUseAttributeError(`This attribute already exists in the document: ${attr._qualifiedName} as a child of ${attr._element._qualifiedName}.`);
-    const oldAttr = element_getAnAttributeByNamespaceAndLocalName(attr._namespace || '', attr._localName, element);
-    if (oldAttr === attr)
-        return attr;
-    if (oldAttr !== null) {
-        element_replace(oldAttr, attr, element);
-    }
-    else {
-        element_append(attr, element);
-    }
-    return oldAttr;
+	/**
+	 * 1. If attr’s element is neither null nor element, throw an
+	 * "InUseAttributeError" DOMException.
+	 * 2. Let oldAttr be the result of getting an attribute given attr’s
+	 * namespace, attr’s local name, and element.
+	 * 3. If oldAttr is attr, return attr.
+	 * 4. If oldAttr is non-null, replace it by attr in element.
+	 * 5. Otherwise, append attr to element.
+	 * 6. Return oldAttr.
+	 */
+	if (attr._element !== null && attr._element !== element)
+		throw new DOMException_1.InUseAttributeError(
+			`This attribute already exists in the document: ${attr._qualifiedName} as a child of ${attr._element._qualifiedName}.`,
+		);
+	const oldAttr = element_getAnAttributeByNamespaceAndLocalName(
+		attr._namespace || "",
+		attr._localName,
+		element,
+	);
+	if (oldAttr === attr) return attr;
+	if (oldAttr !== null) {
+		element_replace(oldAttr, attr, element);
+	} else {
+		element_append(attr, element);
+	}
+	return oldAttr;
 }
 /**
  * Sets an attribute's value of an element node.
@@ -302,28 +403,41 @@ function element_setAnAttribute(attr, element) {
  * @param prefix - an attribute prefix
  * @param namespace - an attribute namespace
  */
-function element_setAnAttributeValue(element, localName, value, prefix = null, namespace = null) {
-    /**
-     * 1. If prefix is not given, set it to null.
-     * 2. If namespace is not given, set it to null.
-     * 3. Let attribute be the result of getting an attribute given namespace,
-     * localName, and element.
-     * 4. If attribute is null, create an attribute whose namespace is
-     * namespace, namespace prefix is prefix, local name is localName, value
-     * is value, and node document is element’s node document, then append this
-     * attribute to element, and then return.
-     * 5. Change attribute from element to value.
-     */
-    const attribute = element_getAnAttributeByNamespaceAndLocalName(namespace || '', localName, element);
-    if (attribute === null) {
-        const newAttr = (0, CreateAlgorithm_1.create_attr)(element._nodeDocument, localName);
-        newAttr._namespace = namespace;
-        newAttr._namespacePrefix = prefix;
-        newAttr._value = value;
-        element_append(newAttr, element);
-        return;
-    }
-    element_change(attribute, element, value);
+function element_setAnAttributeValue(
+	element,
+	localName,
+	value,
+	prefix = null,
+	namespace = null,
+) {
+	/**
+	 * 1. If prefix is not given, set it to null.
+	 * 2. If namespace is not given, set it to null.
+	 * 3. Let attribute be the result of getting an attribute given namespace,
+	 * localName, and element.
+	 * 4. If attribute is null, create an attribute whose namespace is
+	 * namespace, namespace prefix is prefix, local name is localName, value
+	 * is value, and node document is element’s node document, then append this
+	 * attribute to element, and then return.
+	 * 5. Change attribute from element to value.
+	 */
+	const attribute = element_getAnAttributeByNamespaceAndLocalName(
+		namespace || "",
+		localName,
+		element,
+	);
+	if (attribute === null) {
+		const newAttr = (0, CreateAlgorithm_1.create_attr)(
+			element._nodeDocument,
+			localName,
+		);
+		newAttr._namespace = namespace;
+		newAttr._namespacePrefix = prefix;
+		newAttr._value = value;
+		element_append(newAttr, element);
+		return;
+	}
+	element_change(attribute, element, value);
 }
 /**
  * Removes an attribute with the given name from an element node.
@@ -332,17 +446,17 @@ function element_setAnAttributeValue(element, localName, value, prefix = null, n
  * @param element - an element to receive the attribute
  */
 function element_removeAnAttributeByName(qualifiedName, element) {
-    /**
-     * 1. Let attr be the result of getting an attribute given qualifiedName
-     * and element.
-     * 2. If attr is non-null, remove it from element.
-     * 3. Return attr.
-     */
-    const attr = element_getAnAttributeByName(qualifiedName, element);
-    if (attr !== null) {
-        element_remove(attr, element);
-    }
-    return attr;
+	/**
+	 * 1. Let attr be the result of getting an attribute given qualifiedName
+	 * and element.
+	 * 2. If attr is non-null, remove it from element.
+	 * 3. Return attr.
+	 */
+	const attr = element_getAnAttributeByName(qualifiedName, element);
+	if (attr !== null) {
+		element_remove(attr, element);
+	}
+	return attr;
 }
 /**
  * Removes an attribute with the given namespace and local name from an
@@ -352,17 +466,25 @@ function element_removeAnAttributeByName(qualifiedName, element) {
  * @param localName - an attribute local name
  * @param element - an element to receive the attribute
  */
-function element_removeAnAttributeByNamespaceAndLocalName(namespace, localName, element) {
-    /**
-     * 1. Let attr be the result of getting an attribute given namespace, localName, and element.
-     * 2. If attr is non-null, remove it from element.
-     * 3. Return attr.
-     */
-    const attr = element_getAnAttributeByNamespaceAndLocalName(namespace, localName, element);
-    if (attr !== null) {
-        element_remove(attr, element);
-    }
-    return attr;
+function element_removeAnAttributeByNamespaceAndLocalName(
+	namespace,
+	localName,
+	element,
+) {
+	/**
+	 * 1. Let attr be the result of getting an attribute given namespace, localName, and element.
+	 * 2. If attr is non-null, remove it from element.
+	 * 3. Return attr.
+	 */
+	const attr = element_getAnAttributeByNamespaceAndLocalName(
+		namespace,
+		localName,
+		element,
+	);
+	if (attr !== null) {
+		element_remove(attr, element);
+	}
+	return attr;
 }
 /**
  * Creates an element node.
@@ -375,184 +497,236 @@ function element_removeAnAttributeByNamespaceAndLocalName(namespace, localName, 
  * @param is - the "is" value
  * @param synchronousCustomElementsFlag - synchronous custom elements flag
  */
-function element_createAnElement(document, localName, namespace, prefix = null, is = null, synchronousCustomElementsFlag = false) {
-    /**
-     * 1. If prefix was not given, let prefix be null.
-     * 2. If is was not given, let is be null.
-     * 3. Let result be null.
-     */
-    let result = null;
-    if (!DOMImpl_1.dom.features.customElements) {
-        result = (0, CreateAlgorithm_1.create_element)(document, localName, namespace, prefix);
-        result._customElementState = "uncustomized";
-        result._customElementDefinition = null;
-        result._is = is;
-        return result;
-    }
-    /**
-     * 4. Let definition be the result of looking up a custom element definition
-     * given document, namespace, localName, and is.
-     */
-    const definition = (0, CustomElementAlgorithm_1.customElement_lookUpACustomElementDefinition)(document, namespace, localName, is);
-    if (definition !== null && definition.name !== definition.localName) {
-        /**
-        * 5. If definition is non-null, and definition’s name is not equal to
-        * its local name (i.e., definition represents a customized built-in
-        * element), then:
-          * 5.1. Let interface be the element interface for localName and the HTML
-          * namespace.
-          * 5.2. Set result to a new element that implements interface, with no
-          * attributes, namespace set to the HTML namespace, namespace prefix
-          * set to prefix, local name set to localName, custom element state set
-          * to "undefined", custom element definition set to null, is value set
-          * to is, and node document set to document.
-          * 5.3. If the synchronous custom elements flag is set, upgrade element
-          * using definition.
-          * 5.4. Otherwise, enqueue a custom element upgrade reaction given result
-          * and definition.
-          */
-        const elemenInterface = (0, DocumentAlgorithm_1.document_elementInterface)(localName, infra_1.namespace.HTML);
-        result = new elemenInterface();
-        result._localName = localName;
-        result._namespace = infra_1.namespace.HTML;
-        result._namespacePrefix = prefix;
-        result._customElementState = "undefined";
-        result._customElementDefinition = null;
-        result._is = is;
-        result._nodeDocument = document;
-        if (synchronousCustomElementsFlag) {
-            (0, CustomElementAlgorithm_1.customElement_upgrade)(definition, result);
-        }
-        else {
-            (0, CustomElementAlgorithm_1.customElement_enqueueACustomElementUpgradeReaction)(result, definition);
-        }
-    }
-    else if (definition !== null) {
-        /**
-         * 6. Otherwise, if definition is non-null, then:
-         */
-        if (synchronousCustomElementsFlag) {
-            /**
-             * 6.1. If the synchronous custom elements flag is set, then run these
-             * steps while catching any exceptions:
-             */
-            try {
-                /**
-                 * 6.1.1. Let C be definition’s constructor.
-                 * 6.1.2. Set result to the result of constructing C, with no arguments.
-                 * 6.1.3. Assert: result’s custom element state and custom element definition
-                 * are initialized.
-                 * 6.1.4. Assert: result’s namespace is the HTML namespace.
-                 * _Note:_ IDL enforces that result is an HTMLElement object, which all
-                 * use the HTML namespace.
-                 */
-                const C = definition.constructor;
-                const result = new C();
-                console.assert(result._customElementState !== undefined);
-                console.assert(result._customElementDefinition !== undefined);
-                console.assert(result._namespace === infra_1.namespace.HTML);
-                /**
-                 * 6.1.5. If result’s attribute list is not empty, then throw a
-                 * "NotSupportedError" DOMException.
-                 * 6.1.6. If result has children, then throw a "NotSupportedError"
-                 * DOMException.
-                 * 6.1.7. If result’s parent is not null, then throw a
-                 * "NotSupportedError" DOMException.
-                 * 6.1.8. If result’s node document is not document, then throw a
-                 * "NotSupportedError" DOMException.
-                 * 6.1.9. If result’s local name is not equal to localName, then throw
-                 * a "NotSupportedError" DOMException.
-                 */
-                if (result._attributeList.length !== 0)
-                    throw new DOMException_1.NotSupportedError("Custom element already has attributes.");
-                if (result._children.size !== 0)
-                    throw new DOMException_1.NotSupportedError("Custom element already has child nodes.");
-                if (result._parent !== null)
-                    throw new DOMException_1.NotSupportedError("Custom element already has a parent node.");
-                if (result._nodeDocument !== document)
-                    throw new DOMException_1.NotSupportedError("Custom element is already in a document.");
-                if (result._localName !== localName)
-                    throw new DOMException_1.NotSupportedError("Custom element has a different local name.");
-                /**
-                 * 6.1.10. Set result’s namespace prefix to prefix.
-                 * 6.1.11. Set result’s is value to null.
-                 */
-                result._namespacePrefix = prefix;
-                result._is = null;
-            }
-            catch (e) {
-                /**
-                 * If any of these steps threw an exception, then:
-                 * - Report the exception.
-                 * - Set result to a new element that implements the HTMLUnknownElement
-                 * interface, with no attributes, namespace set to the HTML namespace,
-                 * namespace prefix set to prefix, local name set to localName, custom
-                 * element state set to "failed", custom element definition set to null,
-                 * is value set to null, and node document set to document.
-                 */
-                // TODO: Report the exception
-                result = (0, CreateAlgorithm_1.create_htmlUnknownElement)(document, localName, infra_1.namespace.HTML, prefix);
-                result._customElementState = "failed";
-                result._customElementDefinition = null;
-                result._is = null;
-            }
-        }
-        else {
-            /**
-             * 6.2. Otherwise:
-             * 6.2.1. Set result to a new element that implements the HTMLElement
-             * interface, with no attributes, namespace set to the HTML namespace,
-             * namespace prefix set to prefix, local name set to localName, custom
-             * element state set to "undefined", custom element definition set to
-             * null, is value set to null, and node document set to document.
-             * 6.2.2. Enqueue a custom element upgrade reaction given result and
-             * definition.
-             */
-            result = (0, CreateAlgorithm_1.create_htmlElement)(document, localName, infra_1.namespace.HTML, prefix);
-            result._customElementState = "undefined";
-            result._customElementDefinition = null;
-            result._is = null;
-            (0, CustomElementAlgorithm_1.customElement_enqueueACustomElementUpgradeReaction)(result, definition);
-        }
-    }
-    else {
-        /**
-         * 7. Otherwise:
-         * 7.1. Let interface be the element interface for localName and
-         * namespace.
-         * 7.2. Set result to a new element that implements interface, with no
-         * attributes, namespace set to namespace, namespace prefix set to prefix,
-         * local name set to localName, custom element state set to
-         * "uncustomized", custom element definition set to null, is value set to
-         * is, and node document set to document.
-         */
-        const elementInterface = (0, DocumentAlgorithm_1.document_elementInterface)(localName, namespace);
-        result = new elementInterface();
-        result._localName = localName;
-        result._namespace = namespace;
-        result._namespacePrefix = prefix;
-        result._customElementState = "uncustomized";
-        result._customElementDefinition = null;
-        result._is = is;
-        result._nodeDocument = document;
-        /**
-         * 7.3. If namespace is the HTML namespace, and either localName is a
-         * valid custom element name or is is non-null, then set result’s
-         * custom element state to "undefined".
-         */
-        if (namespace === infra_1.namespace.HTML && (is !== null ||
-            (0, CustomElementAlgorithm_1.customElement_isValidCustomElementName)(localName))) {
-            result._customElementState = "undefined";
-        }
-    }
-    /* istanbul ignore next */
-    if (result === null) {
-        throw new Error("Unable to create element.");
-    }
-    /**
-     * 8. Returns result
-     */
-    return result;
+function element_createAnElement(
+	document,
+	localName,
+	namespace,
+	prefix = null,
+	is = null,
+	synchronousCustomElementsFlag = false,
+) {
+	/**
+	 * 1. If prefix was not given, let prefix be null.
+	 * 2. If is was not given, let is be null.
+	 * 3. Let result be null.
+	 */
+	let result = null;
+	if (!DOMImpl_1.dom.features.customElements) {
+		result = (0, CreateAlgorithm_1.create_element)(
+			document,
+			localName,
+			namespace,
+			prefix,
+		);
+		result._customElementState = "uncustomized";
+		result._customElementDefinition = null;
+		result._is = is;
+		return result;
+	}
+	/**
+	 * 4. Let definition be the result of looking up a custom element definition
+	 * given document, namespace, localName, and is.
+	 */
+	const definition = (0,
+	CustomElementAlgorithm_1.customElement_lookUpACustomElementDefinition)(
+		document,
+		namespace,
+		localName,
+		is,
+	);
+	if (definition !== null && definition.name !== definition.localName) {
+		/**
+		 * 5. If definition is non-null, and definition’s name is not equal to
+		 * its local name (i.e., definition represents a customized built-in
+		 * element), then:
+		 * 5.1. Let interface be the element interface for localName and the HTML
+		 * namespace.
+		 * 5.2. Set result to a new element that implements interface, with no
+		 * attributes, namespace set to the HTML namespace, namespace prefix
+		 * set to prefix, local name set to localName, custom element state set
+		 * to "undefined", custom element definition set to null, is value set
+		 * to is, and node document set to document.
+		 * 5.3. If the synchronous custom elements flag is set, upgrade element
+		 * using definition.
+		 * 5.4. Otherwise, enqueue a custom element upgrade reaction given result
+		 * and definition.
+		 */
+		const elemenInterface = (0, DocumentAlgorithm_1.document_elementInterface)(
+			localName,
+			infra_1.namespace.HTML,
+		);
+		result = new elemenInterface();
+		result._localName = localName;
+		result._namespace = infra_1.namespace.HTML;
+		result._namespacePrefix = prefix;
+		result._customElementState = "undefined";
+		result._customElementDefinition = null;
+		result._is = is;
+		result._nodeDocument = document;
+		if (synchronousCustomElementsFlag) {
+			(0, CustomElementAlgorithm_1.customElement_upgrade)(definition, result);
+		} else {
+			(0,
+			CustomElementAlgorithm_1.customElement_enqueueACustomElementUpgradeReaction)(
+				result,
+				definition,
+			);
+		}
+	} else if (definition !== null) {
+		/**
+		 * 6. Otherwise, if definition is non-null, then:
+		 */
+		if (synchronousCustomElementsFlag) {
+			/**
+			 * 6.1. If the synchronous custom elements flag is set, then run these
+			 * steps while catching any exceptions:
+			 */
+			try {
+				/**
+				 * 6.1.1. Let C be definition’s constructor.
+				 * 6.1.2. Set result to the result of constructing C, with no arguments.
+				 * 6.1.3. Assert: result’s custom element state and custom element definition
+				 * are initialized.
+				 * 6.1.4. Assert: result’s namespace is the HTML namespace.
+				 * _Note:_ IDL enforces that result is an HTMLElement object, which all
+				 * use the HTML namespace.
+				 */
+				const C = definition.constructor;
+				const result = new C();
+				console.assert(result._customElementState !== undefined);
+				console.assert(result._customElementDefinition !== undefined);
+				console.assert(result._namespace === infra_1.namespace.HTML);
+				/**
+				 * 6.1.5. If result’s attribute list is not empty, then throw a
+				 * "NotSupportedError" DOMException.
+				 * 6.1.6. If result has children, then throw a "NotSupportedError"
+				 * DOMException.
+				 * 6.1.7. If result’s parent is not null, then throw a
+				 * "NotSupportedError" DOMException.
+				 * 6.1.8. If result’s node document is not document, then throw a
+				 * "NotSupportedError" DOMException.
+				 * 6.1.9. If result’s local name is not equal to localName, then throw
+				 * a "NotSupportedError" DOMException.
+				 */
+				if (result._attributeList.length !== 0)
+					throw new DOMException_1.NotSupportedError(
+						"Custom element already has attributes.",
+					);
+				if (result._children.size !== 0)
+					throw new DOMException_1.NotSupportedError(
+						"Custom element already has child nodes.",
+					);
+				if (result._parent !== null)
+					throw new DOMException_1.NotSupportedError(
+						"Custom element already has a parent node.",
+					);
+				if (result._nodeDocument !== document)
+					throw new DOMException_1.NotSupportedError(
+						"Custom element is already in a document.",
+					);
+				if (result._localName !== localName)
+					throw new DOMException_1.NotSupportedError(
+						"Custom element has a different local name.",
+					);
+				/**
+				 * 6.1.10. Set result’s namespace prefix to prefix.
+				 * 6.1.11. Set result’s is value to null.
+				 */
+				result._namespacePrefix = prefix;
+				result._is = null;
+			} catch (e) {
+				/**
+				 * If any of these steps threw an exception, then:
+				 * - Report the exception.
+				 * - Set result to a new element that implements the HTMLUnknownElement
+				 * interface, with no attributes, namespace set to the HTML namespace,
+				 * namespace prefix set to prefix, local name set to localName, custom
+				 * element state set to "failed", custom element definition set to null,
+				 * is value set to null, and node document set to document.
+				 */
+				// TODO: Report the exception
+				result = (0, CreateAlgorithm_1.create_htmlUnknownElement)(
+					document,
+					localName,
+					infra_1.namespace.HTML,
+					prefix,
+				);
+				result._customElementState = "failed";
+				result._customElementDefinition = null;
+				result._is = null;
+			}
+		} else {
+			/**
+			 * 6.2. Otherwise:
+			 * 6.2.1. Set result to a new element that implements the HTMLElement
+			 * interface, with no attributes, namespace set to the HTML namespace,
+			 * namespace prefix set to prefix, local name set to localName, custom
+			 * element state set to "undefined", custom element definition set to
+			 * null, is value set to null, and node document set to document.
+			 * 6.2.2. Enqueue a custom element upgrade reaction given result and
+			 * definition.
+			 */
+			result = (0, CreateAlgorithm_1.create_htmlElement)(
+				document,
+				localName,
+				infra_1.namespace.HTML,
+				prefix,
+			);
+			result._customElementState = "undefined";
+			result._customElementDefinition = null;
+			result._is = null;
+			(0,
+			CustomElementAlgorithm_1.customElement_enqueueACustomElementUpgradeReaction)(
+				result,
+				definition,
+			);
+		}
+	} else {
+		/**
+		 * 7. Otherwise:
+		 * 7.1. Let interface be the element interface for localName and
+		 * namespace.
+		 * 7.2. Set result to a new element that implements interface, with no
+		 * attributes, namespace set to namespace, namespace prefix set to prefix,
+		 * local name set to localName, custom element state set to
+		 * "uncustomized", custom element definition set to null, is value set to
+		 * is, and node document set to document.
+		 */
+		const elementInterface = (0, DocumentAlgorithm_1.document_elementInterface)(
+			localName,
+			namespace,
+		);
+		result = new elementInterface();
+		result._localName = localName;
+		result._namespace = namespace;
+		result._namespacePrefix = prefix;
+		result._customElementState = "uncustomized";
+		result._customElementDefinition = null;
+		result._is = is;
+		result._nodeDocument = document;
+		/**
+		 * 7.3. If namespace is the HTML namespace, and either localName is a
+		 * valid custom element name or is is non-null, then set result’s
+		 * custom element state to "undefined".
+		 */
+		if (
+			namespace === infra_1.namespace.HTML &&
+			(is !== null ||
+				(0, CustomElementAlgorithm_1.customElement_isValidCustomElementName)(
+					localName,
+				))
+		) {
+			result._customElementState = "undefined";
+		}
+	}
+	/* istanbul ignore next */
+	if (result === null) {
+		throw new Error("Unable to create element.");
+	}
+	/**
+	 * 8. Returns result
+	 */
+	return result;
 }
 /**
  * Inserts a new node adjacent to this element.
@@ -566,37 +740,49 @@ function element_createAnElement(document, localName, namespace, prefix = null, 
  * @param node - node to insert
  */
 function element_insertAdjacent(element, where, node) {
-    /**
-     * - "beforebegin"
-     * If element’s parent is null, return null.
-     * Return the result of pre-inserting node into element’s parent before
-     * element.
-     * - "afterbegin"
-     * Return the result of pre-inserting node into element before element’s
-     * first child.
-     * - "beforeend"
-     * Return the result of pre-inserting node into element before null.
-     * - "afterend"
-     * If element’s parent is null, return null.
-     * Return the result of pre-inserting node into element’s parent before element’s next sibling.
-     * - Otherwise
-     * Throw a "SyntaxError" DOMException.
-     */
-    switch (where.toLowerCase()) {
-        case 'beforebegin':
-            if (element._parent === null)
-                return null;
-            return (0, MutationAlgorithm_1.mutation_preInsert)(node, element._parent, element);
-        case 'afterbegin':
-            return (0, MutationAlgorithm_1.mutation_preInsert)(node, element, element._firstChild);
-        case 'beforeend':
-            return (0, MutationAlgorithm_1.mutation_preInsert)(node, element, null);
-        case 'afterend':
-            if (element._parent === null)
-                return null;
-            return (0, MutationAlgorithm_1.mutation_preInsert)(node, element._parent, element._nextSibling);
-        default:
-            throw new DOMException_1.SyntaxError(`Invalid 'where' argument. "beforebegin", "afterbegin", "beforeend" or "afterend" expected`);
-    }
+	/**
+	 * - "beforebegin"
+	 * If element’s parent is null, return null.
+	 * Return the result of pre-inserting node into element’s parent before
+	 * element.
+	 * - "afterbegin"
+	 * Return the result of pre-inserting node into element before element’s
+	 * first child.
+	 * - "beforeend"
+	 * Return the result of pre-inserting node into element before null.
+	 * - "afterend"
+	 * If element’s parent is null, return null.
+	 * Return the result of pre-inserting node into element’s parent before element’s next sibling.
+	 * - Otherwise
+	 * Throw a "SyntaxError" DOMException.
+	 */
+	switch (where.toLowerCase()) {
+		case "beforebegin":
+			if (element._parent === null) return null;
+			return (0, MutationAlgorithm_1.mutation_preInsert)(
+				node,
+				element._parent,
+				element,
+			);
+		case "afterbegin":
+			return (0, MutationAlgorithm_1.mutation_preInsert)(
+				node,
+				element,
+				element._firstChild,
+			);
+		case "beforeend":
+			return (0, MutationAlgorithm_1.mutation_preInsert)(node, element, null);
+		case "afterend":
+			if (element._parent === null) return null;
+			return (0, MutationAlgorithm_1.mutation_preInsert)(
+				node,
+				element._parent,
+				element._nextSibling,
+			);
+		default:
+			throw new DOMException_1.SyntaxError(
+				`Invalid 'where' argument. "beforebegin", "afterbegin", "beforeend" or "afterend" expected`,
+			);
+	}
 }
 //# sourceMappingURL=ElementAlgorithm.js.map

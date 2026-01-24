@@ -29,7 +29,7 @@ import { constructFrom } from "./constructFrom.js";
  * }
  */
 export function constructNow(date) {
-  return constructFrom(date, Date.now());
+	return constructFrom(date, Date.now());
 }
 
 // Fallback for modularized imports:

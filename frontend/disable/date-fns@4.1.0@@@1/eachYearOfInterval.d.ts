@@ -3,8 +3,8 @@ import type { ContextOptions, Interval, StepOptions } from "./types.js";
  * The {@link eachYearOfInterval} function options.
  */
 export interface EachYearOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachYearOfInterval} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the date argument,
@@ -12,16 +12,16 @@ export interface EachYearOfIntervalOptions<DateType extends Date = Date>
  * a context function is passed, it uses the context function return type.
  */
 export type EachYearOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachYearOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachYearOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachYearOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachYearOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachYearOfInterval
@@ -53,9 +53,9 @@ export type EachYearOfIntervalResult<
  * // ]
  */
 export declare function eachYearOfInterval<
-  IntervalType extends Interval,
-  Options extends EachYearOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachYearOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachYearOfIntervalResult<IntervalType, Options>;

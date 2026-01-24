@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class OperationMessage extends _apidomCore.ArrayElement {
-  static primaryClass = 'operation-message';
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.classes.push(OperationMessage.primaryClass);
-  }
+	static primaryClass = "operation-message";
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.classes.push(OperationMessage.primaryClass);
+	}
 }
-var _default = exports.default = OperationMessage;
+var _default = (exports.default = OperationMessage);

@@ -3,9 +3,9 @@ import type { ContextOptions } from "./types.js";
  * The {@link parseISO} function options.
  */
 export interface ParseISOOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {
-  /** The additional number of digits in the extended year format */
-  additionalDigits?: 0 | 1 | 2;
+	extends ContextOptions<DateType> {
+	/** The additional number of digits in the extended year format */
+	additionalDigits?: 0 | 1 | 2;
 }
 /**
  * @name parseISO
@@ -41,6 +41,6 @@ export interface ParseISOOptions<DateType extends Date = Date>
  * //=> Fri Apr 11 2014 00:00:00
  */
 export declare function parseISO<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(argument: string, options?: ParseISOOptions<ResultDate>): ResultDate;

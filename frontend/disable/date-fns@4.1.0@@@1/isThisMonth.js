@@ -26,10 +26,10 @@ import { isSameMonth } from "./isSameMonth.js";
  * //=> true
  */
 export function isThisMonth(date, options) {
-  return isSameMonth(
-    constructFrom(options?.in || date, date),
-    constructNow(options?.in || date),
-  );
+	return isSameMonth(
+		constructFrom(options?.in || date, date),
+		constructNow(options?.in || date),
+	);
 }
 
 // Fallback for modularized imports:

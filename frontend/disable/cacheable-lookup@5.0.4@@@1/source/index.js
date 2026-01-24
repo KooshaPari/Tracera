@@ -1,29 +1,28 @@
-'use strict';
 const {
 	V4MAPPED,
 	ADDRCONFIG,
 	ALL,
-	promises: {
-		Resolver: AsyncResolver
-	},
-	lookup: dnsLookup
-} = require('dns');
-const {promisify} = require('util');
-const os = require('os');
+	promises: { Resolver: AsyncResolver },
+	lookup: dnsLookup,
+} = require("dns");
+const { promisify } = require("util");
+const os = require("os");
 
-const kCacheableLookupCreateConnection = Symbol('cacheableLookupCreateConnection');
-const kCacheableLookupInstance = Symbol('cacheableLookupInstance');
-const kExpires = Symbol('expires');
+const kCacheableLookupCreateConnection = Symbol(
+	"cacheableLookupCreateConnection",
+);
+const kCacheableLookupInstance = Symbol("cacheableLookupInstance");
+const kExpires = Symbol("expires");
 
-const supportsALL = typeof ALL === 'number';
+const supportsALL = typeof ALL === "number";
 
-const verifyAgent = agent => {
-	if (!(agent && typeof agent.createConnection === 'function')) {
-		throw new Error('Expected an Agent instance as the first argument');
+const verifyAgent = (agent) => {
+	if (!(agent && typeof agent.createConnection === "function")) {
+		throw new Error("Expected an Agent instance as the first argument");
 	}
 };
 
-const map4to6 = entries => {
+const map4to6 = (entries) => {
 	for (const entry of entries) {
 		if (entry.family === 6) {
 			continue;
@@ -44,27 +43,27 @@ const getIfaceInfo = () => {
 				continue;
 			}
 
-			if (iface.family === 'IPv6') {
+			if (iface.family === "IPv6") {
 				has6 = true;
 			} else {
 				has4 = true;
 			}
 
 			if (has4 && has6) {
-				return {has4, has6};
+				return { has4, has6 };
 			}
 		}
 	}
 
-	return {has4, has6};
+	return { has4, has6 };
 };
 
-const isIterable = map => {
+const isIterable = (map) => {
 	return Symbol.iterator in map;
 };
 
-const ttl = {ttl: true};
-const all = {all: true};
+const ttl = { ttl: true };
+const all = { all: true };
 
 class CacheableLookup {
 	constructor({
@@ -73,7 +72,7 @@ class CacheableLookup {
 		fallbackDuration = 3600,
 		errorTtl = 0.15,
 		resolver = new AsyncResolver(),
-		lookup = dnsLookup
+		lookup = dnsLookup,
 	} = {}) {
 		this.maxTtl = maxTtl;
 		this.errorTtl = errorTtl;
@@ -126,40 +125,46 @@ class CacheableLookup {
 	}
 
 	lookup(hostname, options, callback) {
-		if (typeof options === 'function') {
+		if (typeof options === "function") {
 			callback = options;
 			options = {};
-		} else if (typeof options === 'number') {
+		} else if (typeof options === "number") {
 			options = {
-				family: options
+				family: options,
 			};
 		}
 
 		if (!callback) {
-			throw new Error('Callback must be a function.');
+			throw new Error("Callback must be a function.");
 		}
 
 		// eslint-disable-next-line promise/prefer-await-to-then
-		this.lookupAsync(hostname, options).then(result => {
+		this.lookupAsync(hostname, options).then((result) => {
 			if (options.all) {
 				callback(null, result);
 			} else {
-				callback(null, result.address, result.family, result.expires, result.ttl);
+				callback(
+					null,
+					result.address,
+					result.family,
+					result.expires,
+					result.ttl,
+				);
 			}
 		}, callback);
 	}
 
 	async lookupAsync(hostname, options = {}) {
-		if (typeof options === 'number') {
+		if (typeof options === "number") {
 			options = {
-				family: options
+				family: options,
 			};
 		}
 
 		let cached = await this.query(hostname);
 
 		if (options.family === 6) {
-			const filtered = cached.filter(entry => entry.family === 6);
+			const filtered = cached.filter((entry) => entry.family === 6);
 
 			if (options.hints & V4MAPPED) {
 				if ((supportsALL && options.hints & ALL) || filtered.length === 0) {
@@ -171,17 +176,19 @@ class CacheableLookup {
 				cached = filtered;
 			}
 		} else if (options.family === 4) {
-			cached = cached.filter(entry => entry.family === 4);
+			cached = cached.filter((entry) => entry.family === 4);
 		}
 
 		if (options.hints & ADDRCONFIG) {
-			const {_iface} = this;
-			cached = cached.filter(entry => entry.family === 6 ? _iface.has6 : _iface.has4);
+			const { _iface } = this;
+			cached = cached.filter((entry) =>
+				entry.family === 6 ? _iface.has6 : _iface.has4,
+			);
 		}
 
 		if (cached.length === 0) {
 			const error = new Error(`cacheableLookup ENOTFOUND ${hostname}`);
-			error.code = 'ENOTFOUND';
+			error.code = "ENOTFOUND";
 			error.hostname = hostname;
 
 			throw error;
@@ -214,19 +221,19 @@ class CacheableLookup {
 			}
 		}
 
-		cached = cached.map(entry => {
-			return {...entry};
+		cached = cached.map((entry) => {
+			return { ...entry };
 		});
 
 		return cached;
 	}
 
 	async _resolve(hostname) {
-		const wrap = async promise => {
+		const wrap = async (promise) => {
 			try {
 				return await promise;
 			} catch (error) {
-				if (error.code === 'ENODATA' || error.code === 'ENOTFOUND') {
+				if (error.code === "ENODATA" || error.code === "ENOTFOUND") {
 					return [];
 				}
 
@@ -235,10 +242,11 @@ class CacheableLookup {
 		};
 
 		// ANY is unsafe as it doesn't trigger new queries in the underlying server.
-		const [A, AAAA] = await Promise.all([
-			this._resolve4(hostname, ttl),
-			this._resolve6(hostname, ttl)
-		].map(promise => wrap(promise)));
+		const [A, AAAA] = await Promise.all(
+			[this._resolve4(hostname, ttl), this._resolve6(hostname, ttl)].map(
+				(promise) => wrap(promise),
+			),
+		);
 
 		let aTtl = 0;
 		let aaaaTtl = 0;
@@ -248,14 +256,14 @@ class CacheableLookup {
 
 		for (const entry of A) {
 			entry.family = 4;
-			entry.expires = now + (entry.ttl * 1000);
+			entry.expires = now + entry.ttl * 1000;
 
 			aTtl = Math.max(aTtl, entry.ttl);
 		}
 
 		for (const entry of AAAA) {
 			entry.family = 6;
-			entry.expires = now + (entry.ttl * 1000);
+			entry.expires = now + entry.ttl * 1000;
 
 			aaaaTtl = Math.max(aaaaTtl, entry.ttl);
 		}
@@ -271,28 +279,25 @@ class CacheableLookup {
 		}
 
 		return {
-			entries: [
-				...A,
-				...AAAA
-			],
-			cacheTtl
+			entries: [...A, ...AAAA],
+			cacheTtl,
 		};
 	}
 
 	async _lookup(hostname) {
 		try {
 			const entries = await this._dnsLookup(hostname, {
-				all: true
+				all: true,
 			});
 
 			return {
 				entries,
-				cacheTtl: 0
+				cacheTtl: 0,
 			};
 		} catch (_) {
 			return {
 				entries: [],
-				cacheTtl: 0
+				cacheTtl: 0,
 			};
 		}
 	}
@@ -306,7 +311,9 @@ class CacheableLookup {
 				await this._cache.set(hostname, data, cacheTtl);
 			} catch (error) {
 				this.lookupAsync = async () => {
-					const cacheError = new Error('Cache Error. Please recreate the CacheableLookup instance.');
+					const cacheError = new Error(
+						"Cache Error. Please recreate the CacheableLookup instance.",
+					);
 					cacheError.cause = error;
 
 					throw cacheError;
@@ -335,7 +342,8 @@ class CacheableLookup {
 			}
 		}
 
-		const cacheTtl = query.entries.length === 0 ? this.errorTtl : query.cacheTtl;
+		const cacheTtl =
+			query.entries.length === 0 ? this.errorTtl : query.cacheTtl;
 		await this._set(hostname, query.entries, cacheTtl);
 
 		return query.entries;
@@ -382,14 +390,14 @@ class CacheableLookup {
 		verifyAgent(agent);
 
 		if (kCacheableLookupCreateConnection in agent) {
-			throw new Error('CacheableLookup has been already installed');
+			throw new Error("CacheableLookup has been already installed");
 		}
 
 		agent[kCacheableLookupCreateConnection] = agent.createConnection;
 		agent[kCacheableLookupInstance] = this;
 
 		agent.createConnection = (options, callback) => {
-			if (!('lookup' in options)) {
+			if (!("lookup" in options)) {
 				options.lookup = this.lookup;
 			}
 
@@ -402,7 +410,9 @@ class CacheableLookup {
 
 		if (agent[kCacheableLookupCreateConnection]) {
 			if (agent[kCacheableLookupInstance] !== this) {
-				throw new Error('The agent is not owned by this CacheableLookup instance');
+				throw new Error(
+					"The agent is not owned by this CacheableLookup instance",
+				);
 			}
 
 			agent.createConnection = agent[kCacheableLookupCreateConnection];
@@ -413,11 +423,14 @@ class CacheableLookup {
 	}
 
 	updateInterfaceInfo() {
-		const {_iface} = this;
+		const { _iface } = this;
 
 		this._iface = getIfaceInfo();
 
-		if ((_iface.has4 && !this._iface.has4) || (_iface.has6 && !this._iface.has6)) {
+		if (
+			(_iface.has4 && !this._iface.has4) ||
+			(_iface.has6 && !this._iface.has6)
+		) {
 			this._cache.clear();
 		}
 	}

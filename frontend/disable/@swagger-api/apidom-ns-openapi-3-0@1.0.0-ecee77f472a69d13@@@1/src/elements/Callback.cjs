@@ -7,9 +7,9 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class Callback extends _apidomCore.ObjectElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'callback';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "callback";
+	}
 }
-var _default = exports.default = Callback;
+var _default = (exports.default = Callback);

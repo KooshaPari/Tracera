@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/math/fround');
+"use strict";
+var parent = require("../../stable/math/fround");
 
 module.exports = parent;

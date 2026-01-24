@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/set/join');
+"use strict";
+module.exports = require("../../full/set/join");

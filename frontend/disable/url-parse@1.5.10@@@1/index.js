@@ -1,13 +1,14 @@
-'use strict';
+"use strict";
 
-var required = require('requires-port')
-  , qs = require('querystringify')
-  , controlOrWhitespace = /^[\x00-\x20\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+/
-  , CRHTLF = /[\n\r\t]/g
-  , slashes = /^[A-Za-z][A-Za-z0-9+-.]*:\/\//
-  , port = /:\d+$/
-  , protocolre = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\\/]+)?([\S\s]*)/i
-  , windowsDriveLetter = /^[a-zA-Z]:/;
+var required = require("requires-port"),
+	qs = require("querystringify"),
+	controlOrWhitespace =
+		/^[\x00-\x20\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+/,
+	CRHTLF = /[\n\r\t]/g,
+	slashes = /^[A-Za-z][A-Za-z0-9+-.]*:\/\//,
+	port = /:\d+$/,
+	protocolre = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\\/]+)?([\S\s]*)/i,
+	windowsDriveLetter = /^[a-zA-Z]:/;
 
 /**
  * Remove control characters and whitespace from the beginning of a string.
@@ -18,7 +19,7 @@ var required = require('requires-port')
  * @public
  */
 function trimLeft(str) {
-  return (str ? str : '').toString().replace(controlOrWhitespace, '');
+	return (str ? str : "").toString().replace(controlOrWhitespace, "");
 }
 
 /**
@@ -34,16 +35,17 @@ function trimLeft(str) {
  * 4. `toLowerCase` the resulting value.
  */
 var rules = [
-  ['#', 'hash'],                        // Extract from the back.
-  ['?', 'query'],                       // Extract from the back.
-  function sanitize(address, url) {     // Sanitize what is left of the address
-    return isSpecial(url.protocol) ? address.replace(/\\/g, '/') : address;
-  },
-  ['/', 'pathname'],                    // Extract from the back.
-  ['@', 'auth', 1],                     // Extract from the front.
-  [NaN, 'host', undefined, 1, 1],       // Set left over value.
-  [/:(\d*)$/, 'port', undefined, 1],    // RegExp the back.
-  [NaN, 'hostname', undefined, 1, 1]    // Set left over.
+	["#", "hash"], // Extract from the back.
+	["?", "query"], // Extract from the back.
+	function sanitize(address, url) {
+		// Sanitize what is left of the address
+		return isSpecial(url.protocol) ? address.replace(/\\/g, "/") : address;
+	},
+	["/", "pathname"], // Extract from the back.
+	["@", "auth", 1], // Extract from the front.
+	[NaN, "host", undefined, 1, 1], // Set left over value.
+	[/:(\d*)$/, "port", undefined, 1], // RegExp the back.
+	[NaN, "hostname", undefined, 1, 1], // Set left over.
 ];
 
 /**
@@ -69,37 +71,37 @@ var ignore = { hash: 1, query: 1 };
  * @public
  */
 function lolcation(loc) {
-  var globalVar;
+	var globalVar;
 
-  if (typeof window !== 'undefined') globalVar = window;
-  else if (typeof global !== 'undefined') globalVar = global;
-  else if (typeof self !== 'undefined') globalVar = self;
-  else globalVar = {};
+	if (typeof window !== "undefined") globalVar = window;
+	else if (typeof global !== "undefined") globalVar = global;
+	else if (typeof self !== "undefined") globalVar = self;
+	else globalVar = {};
 
-  var location = globalVar.location || {};
-  loc = loc || location;
+	var location = globalVar.location || {};
+	loc = loc || location;
 
-  var finaldestination = {}
-    , type = typeof loc
-    , key;
+	var finaldestination = {},
+		type = typeof loc,
+		key;
 
-  if ('blob:' === loc.protocol) {
-    finaldestination = new Url(unescape(loc.pathname), {});
-  } else if ('string' === type) {
-    finaldestination = new Url(loc, {});
-    for (key in ignore) delete finaldestination[key];
-  } else if ('object' === type) {
-    for (key in loc) {
-      if (key in ignore) continue;
-      finaldestination[key] = loc[key];
-    }
+	if ("blob:" === loc.protocol) {
+		finaldestination = new Url(unescape(loc.pathname), {});
+	} else if ("string" === type) {
+		finaldestination = new Url(loc, {});
+		for (key in ignore) delete finaldestination[key];
+	} else if ("object" === type) {
+		for (key in loc) {
+			if (key in ignore) continue;
+			finaldestination[key] = loc[key];
+		}
 
-    if (finaldestination.slashes === undefined) {
-      finaldestination.slashes = slashes.test(loc.href);
-    }
-  }
+		if (finaldestination.slashes === undefined) {
+			finaldestination.slashes = slashes.test(loc.href);
+		}
+	}
 
-  return finaldestination;
+	return finaldestination;
 }
 
 /**
@@ -110,14 +112,14 @@ function lolcation(loc) {
  * @private
  */
 function isSpecial(scheme) {
-  return (
-    scheme === 'file:' ||
-    scheme === 'ftp:' ||
-    scheme === 'http:' ||
-    scheme === 'https:' ||
-    scheme === 'ws:' ||
-    scheme === 'wss:'
-  );
+	return (
+		scheme === "file:" ||
+		scheme === "ftp:" ||
+		scheme === "http:" ||
+		scheme === "https:" ||
+		scheme === "ws:" ||
+		scheme === "wss:"
+	);
 }
 
 /**
@@ -137,54 +139,54 @@ function isSpecial(scheme) {
  * @private
  */
 function extractProtocol(address, location) {
-  address = trimLeft(address);
-  address = address.replace(CRHTLF, '');
-  location = location || {};
+	address = trimLeft(address);
+	address = address.replace(CRHTLF, "");
+	location = location || {};
 
-  var match = protocolre.exec(address);
-  var protocol = match[1] ? match[1].toLowerCase() : '';
-  var forwardSlashes = !!match[2];
-  var otherSlashes = !!match[3];
-  var slashesCount = 0;
-  var rest;
+	var match = protocolre.exec(address);
+	var protocol = match[1] ? match[1].toLowerCase() : "";
+	var forwardSlashes = !!match[2];
+	var otherSlashes = !!match[3];
+	var slashesCount = 0;
+	var rest;
 
-  if (forwardSlashes) {
-    if (otherSlashes) {
-      rest = match[2] + match[3] + match[4];
-      slashesCount = match[2].length + match[3].length;
-    } else {
-      rest = match[2] + match[4];
-      slashesCount = match[2].length;
-    }
-  } else {
-    if (otherSlashes) {
-      rest = match[3] + match[4];
-      slashesCount = match[3].length;
-    } else {
-      rest = match[4]
-    }
-  }
+	if (forwardSlashes) {
+		if (otherSlashes) {
+			rest = match[2] + match[3] + match[4];
+			slashesCount = match[2].length + match[3].length;
+		} else {
+			rest = match[2] + match[4];
+			slashesCount = match[2].length;
+		}
+	} else {
+		if (otherSlashes) {
+			rest = match[3] + match[4];
+			slashesCount = match[3].length;
+		} else {
+			rest = match[4];
+		}
+	}
 
-  if (protocol === 'file:') {
-    if (slashesCount >= 2) {
-      rest = rest.slice(2);
-    }
-  } else if (isSpecial(protocol)) {
-    rest = match[4];
-  } else if (protocol) {
-    if (forwardSlashes) {
-      rest = rest.slice(2);
-    }
-  } else if (slashesCount >= 2 && isSpecial(location.protocol)) {
-    rest = match[4];
-  }
+	if (protocol === "file:") {
+		if (slashesCount >= 2) {
+			rest = rest.slice(2);
+		}
+	} else if (isSpecial(protocol)) {
+		rest = match[4];
+	} else if (protocol) {
+		if (forwardSlashes) {
+			rest = rest.slice(2);
+		}
+	} else if (slashesCount >= 2 && isSpecial(location.protocol)) {
+		rest = match[4];
+	}
 
-  return {
-    protocol: protocol,
-    slashes: forwardSlashes || isSpecial(protocol),
-    slashesCount: slashesCount,
-    rest: rest
-  };
+	return {
+		protocol: protocol,
+		slashes: forwardSlashes || isSpecial(protocol),
+		slashesCount: slashesCount,
+		rest: rest,
+	};
 }
 
 /**
@@ -196,31 +198,31 @@ function extractProtocol(address, location) {
  * @private
  */
 function resolve(relative, base) {
-  if (relative === '') return base;
+	if (relative === "") return base;
 
-  var path = (base || '/').split('/').slice(0, -1).concat(relative.split('/'))
-    , i = path.length
-    , last = path[i - 1]
-    , unshift = false
-    , up = 0;
+	var path = (base || "/").split("/").slice(0, -1).concat(relative.split("/")),
+		i = path.length,
+		last = path[i - 1],
+		unshift = false,
+		up = 0;
 
-  while (i--) {
-    if (path[i] === '.') {
-      path.splice(i, 1);
-    } else if (path[i] === '..') {
-      path.splice(i, 1);
-      up++;
-    } else if (up) {
-      if (i === 0) unshift = true;
-      path.splice(i, 1);
-      up--;
-    }
-  }
+	while (i--) {
+		if (path[i] === ".") {
+			path.splice(i, 1);
+		} else if (path[i] === "..") {
+			path.splice(i, 1);
+			up++;
+		} else if (up) {
+			if (i === 0) unshift = true;
+			path.splice(i, 1);
+			up--;
+		}
+	}
 
-  if (unshift) path.unshift('');
-  if (last === '.' || last === '..') path.push('');
+	if (unshift) path.unshift("");
+	if (last === "." || last === "..") path.push("");
 
-  return path.join('/');
+	return path.join("/");
 }
 
 /**
@@ -238,172 +240,176 @@ function resolve(relative, base) {
  * @private
  */
 function Url(address, location, parser) {
-  address = trimLeft(address);
-  address = address.replace(CRHTLF, '');
+	address = trimLeft(address);
+	address = address.replace(CRHTLF, "");
 
-  if (!(this instanceof Url)) {
-    return new Url(address, location, parser);
-  }
+	if (!(this instanceof Url)) {
+		return new Url(address, location, parser);
+	}
 
-  var relative, extracted, parse, instruction, index, key
-    , instructions = rules.slice()
-    , type = typeof location
-    , url = this
-    , i = 0;
+	var relative,
+		extracted,
+		parse,
+		instruction,
+		index,
+		key,
+		instructions = rules.slice(),
+		type = typeof location,
+		url = this,
+		i = 0;
 
-  //
-  // The following if statements allows this module two have compatibility with
-  // 2 different API:
-  //
-  // 1. Node.js's `url.parse` api which accepts a URL, boolean as arguments
-  //    where the boolean indicates that the query string should also be parsed.
-  //
-  // 2. The `URL` interface of the browser which accepts a URL, object as
-  //    arguments. The supplied object will be used as default values / fall-back
-  //    for relative paths.
-  //
-  if ('object' !== type && 'string' !== type) {
-    parser = location;
-    location = null;
-  }
+	//
+	// The following if statements allows this module two have compatibility with
+	// 2 different API:
+	//
+	// 1. Node.js's `url.parse` api which accepts a URL, boolean as arguments
+	//    where the boolean indicates that the query string should also be parsed.
+	//
+	// 2. The `URL` interface of the browser which accepts a URL, object as
+	//    arguments. The supplied object will be used as default values / fall-back
+	//    for relative paths.
+	//
+	if ("object" !== type && "string" !== type) {
+		parser = location;
+		location = null;
+	}
 
-  if (parser && 'function' !== typeof parser) parser = qs.parse;
+	if (parser && "function" !== typeof parser) parser = qs.parse;
 
-  location = lolcation(location);
+	location = lolcation(location);
 
-  //
-  // Extract protocol information before running the instructions.
-  //
-  extracted = extractProtocol(address || '', location);
-  relative = !extracted.protocol && !extracted.slashes;
-  url.slashes = extracted.slashes || relative && location.slashes;
-  url.protocol = extracted.protocol || location.protocol || '';
-  address = extracted.rest;
+	//
+	// Extract protocol information before running the instructions.
+	//
+	extracted = extractProtocol(address || "", location);
+	relative = !extracted.protocol && !extracted.slashes;
+	url.slashes = extracted.slashes || (relative && location.slashes);
+	url.protocol = extracted.protocol || location.protocol || "";
+	address = extracted.rest;
 
-  //
-  // When the authority component is absent the URL starts with a path
-  // component.
-  //
-  if (
-    extracted.protocol === 'file:' && (
-      extracted.slashesCount !== 2 || windowsDriveLetter.test(address)) ||
-    (!extracted.slashes &&
-      (extracted.protocol ||
-        extracted.slashesCount < 2 ||
-        !isSpecial(url.protocol)))
-  ) {
-    instructions[3] = [/(.*)/, 'pathname'];
-  }
+	//
+	// When the authority component is absent the URL starts with a path
+	// component.
+	//
+	if (
+		(extracted.protocol === "file:" &&
+			(extracted.slashesCount !== 2 || windowsDriveLetter.test(address))) ||
+		(!extracted.slashes &&
+			(extracted.protocol ||
+				extracted.slashesCount < 2 ||
+				!isSpecial(url.protocol)))
+	) {
+		instructions[3] = [/(.*)/, "pathname"];
+	}
 
-  for (; i < instructions.length; i++) {
-    instruction = instructions[i];
+	for (; i < instructions.length; i++) {
+		instruction = instructions[i];
 
-    if (typeof instruction === 'function') {
-      address = instruction(address, url);
-      continue;
-    }
+		if (typeof instruction === "function") {
+			address = instruction(address, url);
+			continue;
+		}
 
-    parse = instruction[0];
-    key = instruction[1];
+		parse = instruction[0];
+		key = instruction[1];
 
-    if (parse !== parse) {
-      url[key] = address;
-    } else if ('string' === typeof parse) {
-      index = parse === '@'
-        ? address.lastIndexOf(parse)
-        : address.indexOf(parse);
+		if (parse !== parse) {
+			url[key] = address;
+		} else if ("string" === typeof parse) {
+			index =
+				parse === "@" ? address.lastIndexOf(parse) : address.indexOf(parse);
 
-      if (~index) {
-        if ('number' === typeof instruction[2]) {
-          url[key] = address.slice(0, index);
-          address = address.slice(index + instruction[2]);
-        } else {
-          url[key] = address.slice(index);
-          address = address.slice(0, index);
-        }
-      }
-    } else if ((index = parse.exec(address))) {
-      url[key] = index[1];
-      address = address.slice(0, index.index);
-    }
+			if (~index) {
+				if ("number" === typeof instruction[2]) {
+					url[key] = address.slice(0, index);
+					address = address.slice(index + instruction[2]);
+				} else {
+					url[key] = address.slice(index);
+					address = address.slice(0, index);
+				}
+			}
+		} else if ((index = parse.exec(address))) {
+			url[key] = index[1];
+			address = address.slice(0, index.index);
+		}
 
-    url[key] = url[key] || (
-      relative && instruction[3] ? location[key] || '' : ''
-    );
+		url[key] =
+			url[key] || (relative && instruction[3] ? location[key] || "" : "");
 
-    //
-    // Hostname, host and protocol should be lowercased so they can be used to
-    // create a proper `origin`.
-    //
-    if (instruction[4]) url[key] = url[key].toLowerCase();
-  }
+		//
+		// Hostname, host and protocol should be lowercased so they can be used to
+		// create a proper `origin`.
+		//
+		if (instruction[4]) url[key] = url[key].toLowerCase();
+	}
 
-  //
-  // Also parse the supplied query string in to an object. If we're supplied
-  // with a custom parser as function use that instead of the default build-in
-  // parser.
-  //
-  if (parser) url.query = parser(url.query);
+	//
+	// Also parse the supplied query string in to an object. If we're supplied
+	// with a custom parser as function use that instead of the default build-in
+	// parser.
+	//
+	if (parser) url.query = parser(url.query);
 
-  //
-  // If the URL is relative, resolve the pathname against the base URL.
-  //
-  if (
-      relative
-    && location.slashes
-    && url.pathname.charAt(0) !== '/'
-    && (url.pathname !== '' || location.pathname !== '')
-  ) {
-    url.pathname = resolve(url.pathname, location.pathname);
-  }
+	//
+	// If the URL is relative, resolve the pathname against the base URL.
+	//
+	if (
+		relative &&
+		location.slashes &&
+		url.pathname.charAt(0) !== "/" &&
+		(url.pathname !== "" || location.pathname !== "")
+	) {
+		url.pathname = resolve(url.pathname, location.pathname);
+	}
 
-  //
-  // Default to a / for pathname if none exists. This normalizes the URL
-  // to always have a /
-  //
-  if (url.pathname.charAt(0) !== '/' && isSpecial(url.protocol)) {
-    url.pathname = '/' + url.pathname;
-  }
+	//
+	// Default to a / for pathname if none exists. This normalizes the URL
+	// to always have a /
+	//
+	if (url.pathname.charAt(0) !== "/" && isSpecial(url.protocol)) {
+		url.pathname = "/" + url.pathname;
+	}
 
-  //
-  // We should not add port numbers if they are already the default port number
-  // for a given protocol. As the host also contains the port number we're going
-  // override it with the hostname which contains no port number.
-  //
-  if (!required(url.port, url.protocol)) {
-    url.host = url.hostname;
-    url.port = '';
-  }
+	//
+	// We should not add port numbers if they are already the default port number
+	// for a given protocol. As the host also contains the port number we're going
+	// override it with the hostname which contains no port number.
+	//
+	if (!required(url.port, url.protocol)) {
+		url.host = url.hostname;
+		url.port = "";
+	}
 
-  //
-  // Parse down the `auth` for the username and password.
-  //
-  url.username = url.password = '';
+	//
+	// Parse down the `auth` for the username and password.
+	//
+	url.username = url.password = "";
 
-  if (url.auth) {
-    index = url.auth.indexOf(':');
+	if (url.auth) {
+		index = url.auth.indexOf(":");
 
-    if (~index) {
-      url.username = url.auth.slice(0, index);
-      url.username = encodeURIComponent(decodeURIComponent(url.username));
+		if (~index) {
+			url.username = url.auth.slice(0, index);
+			url.username = encodeURIComponent(decodeURIComponent(url.username));
 
-      url.password = url.auth.slice(index + 1);
-      url.password = encodeURIComponent(decodeURIComponent(url.password))
-    } else {
-      url.username = encodeURIComponent(decodeURIComponent(url.auth));
-    }
+			url.password = url.auth.slice(index + 1);
+			url.password = encodeURIComponent(decodeURIComponent(url.password));
+		} else {
+			url.username = encodeURIComponent(decodeURIComponent(url.auth));
+		}
 
-    url.auth = url.password ? url.username +':'+ url.password : url.username;
-  }
+		url.auth = url.password ? url.username + ":" + url.password : url.username;
+	}
 
-  url.origin = url.protocol !== 'file:' && isSpecial(url.protocol) && url.host
-    ? url.protocol +'//'+ url.host
-    : 'null';
+	url.origin =
+		url.protocol !== "file:" && isSpecial(url.protocol) && url.host
+			? url.protocol + "//" + url.host
+			: "null";
 
-  //
-  // The href is just the compiled result.
-  //
-  url.href = url.toString();
+	//
+	// The href is just the compiled result.
+	//
+	url.href = url.toString();
 }
 
 /**
@@ -420,99 +426,100 @@ function Url(address, location, parser) {
  * @public
  */
 function set(part, value, fn) {
-  var url = this;
+	var url = this;
 
-  switch (part) {
-    case 'query':
-      if ('string' === typeof value && value.length) {
-        value = (fn || qs.parse)(value);
-      }
+	switch (part) {
+		case "query":
+			if ("string" === typeof value && value.length) {
+				value = (fn || qs.parse)(value);
+			}
 
-      url[part] = value;
-      break;
+			url[part] = value;
+			break;
 
-    case 'port':
-      url[part] = value;
+		case "port":
+			url[part] = value;
 
-      if (!required(value, url.protocol)) {
-        url.host = url.hostname;
-        url[part] = '';
-      } else if (value) {
-        url.host = url.hostname +':'+ value;
-      }
+			if (!required(value, url.protocol)) {
+				url.host = url.hostname;
+				url[part] = "";
+			} else if (value) {
+				url.host = url.hostname + ":" + value;
+			}
 
-      break;
+			break;
 
-    case 'hostname':
-      url[part] = value;
+		case "hostname":
+			url[part] = value;
 
-      if (url.port) value += ':'+ url.port;
-      url.host = value;
-      break;
+			if (url.port) value += ":" + url.port;
+			url.host = value;
+			break;
 
-    case 'host':
-      url[part] = value;
+		case "host":
+			url[part] = value;
 
-      if (port.test(value)) {
-        value = value.split(':');
-        url.port = value.pop();
-        url.hostname = value.join(':');
-      } else {
-        url.hostname = value;
-        url.port = '';
-      }
+			if (port.test(value)) {
+				value = value.split(":");
+				url.port = value.pop();
+				url.hostname = value.join(":");
+			} else {
+				url.hostname = value;
+				url.port = "";
+			}
 
-      break;
+			break;
 
-    case 'protocol':
-      url.protocol = value.toLowerCase();
-      url.slashes = !fn;
-      break;
+		case "protocol":
+			url.protocol = value.toLowerCase();
+			url.slashes = !fn;
+			break;
 
-    case 'pathname':
-    case 'hash':
-      if (value) {
-        var char = part === 'pathname' ? '/' : '#';
-        url[part] = value.charAt(0) !== char ? char + value : value;
-      } else {
-        url[part] = value;
-      }
-      break;
+		case "pathname":
+		case "hash":
+			if (value) {
+				var char = part === "pathname" ? "/" : "#";
+				url[part] = value.charAt(0) !== char ? char + value : value;
+			} else {
+				url[part] = value;
+			}
+			break;
 
-    case 'username':
-    case 'password':
-      url[part] = encodeURIComponent(value);
-      break;
+		case "username":
+		case "password":
+			url[part] = encodeURIComponent(value);
+			break;
 
-    case 'auth':
-      var index = value.indexOf(':');
+		case "auth":
+			var index = value.indexOf(":");
 
-      if (~index) {
-        url.username = value.slice(0, index);
-        url.username = encodeURIComponent(decodeURIComponent(url.username));
+			if (~index) {
+				url.username = value.slice(0, index);
+				url.username = encodeURIComponent(decodeURIComponent(url.username));
 
-        url.password = value.slice(index + 1);
-        url.password = encodeURIComponent(decodeURIComponent(url.password));
-      } else {
-        url.username = encodeURIComponent(decodeURIComponent(value));
-      }
-  }
+				url.password = value.slice(index + 1);
+				url.password = encodeURIComponent(decodeURIComponent(url.password));
+			} else {
+				url.username = encodeURIComponent(decodeURIComponent(value));
+			}
+	}
 
-  for (var i = 0; i < rules.length; i++) {
-    var ins = rules[i];
+	for (var i = 0; i < rules.length; i++) {
+		var ins = rules[i];
 
-    if (ins[4]) url[ins[1]] = url[ins[1]].toLowerCase();
-  }
+		if (ins[4]) url[ins[1]] = url[ins[1]].toLowerCase();
+	}
 
-  url.auth = url.password ? url.username +':'+ url.password : url.username;
+	url.auth = url.password ? url.username + ":" + url.password : url.username;
 
-  url.origin = url.protocol !== 'file:' && isSpecial(url.protocol) && url.host
-    ? url.protocol +'//'+ url.host
-    : 'null';
+	url.origin =
+		url.protocol !== "file:" && isSpecial(url.protocol) && url.host
+			? url.protocol + "//" + url.host
+			: "null";
 
-  url.href = url.toString();
+	url.href = url.toString();
 
-  return url;
+	return url;
 }
 
 /**
@@ -523,56 +530,56 @@ function set(part, value, fn) {
  * @public
  */
 function toString(stringify) {
-  if (!stringify || 'function' !== typeof stringify) stringify = qs.stringify;
+	if (!stringify || "function" !== typeof stringify) stringify = qs.stringify;
 
-  var query
-    , url = this
-    , host = url.host
-    , protocol = url.protocol;
+	var query,
+		url = this,
+		host = url.host,
+		protocol = url.protocol;
 
-  if (protocol && protocol.charAt(protocol.length - 1) !== ':') protocol += ':';
+	if (protocol && protocol.charAt(protocol.length - 1) !== ":") protocol += ":";
 
-  var result =
-    protocol +
-    ((url.protocol && url.slashes) || isSpecial(url.protocol) ? '//' : '');
+	var result =
+		protocol +
+		((url.protocol && url.slashes) || isSpecial(url.protocol) ? "//" : "");
 
-  if (url.username) {
-    result += url.username;
-    if (url.password) result += ':'+ url.password;
-    result += '@';
-  } else if (url.password) {
-    result += ':'+ url.password;
-    result += '@';
-  } else if (
-    url.protocol !== 'file:' &&
-    isSpecial(url.protocol) &&
-    !host &&
-    url.pathname !== '/'
-  ) {
-    //
-    // Add back the empty userinfo, otherwise the original invalid URL
-    // might be transformed into a valid one with `url.pathname` as host.
-    //
-    result += '@';
-  }
+	if (url.username) {
+		result += url.username;
+		if (url.password) result += ":" + url.password;
+		result += "@";
+	} else if (url.password) {
+		result += ":" + url.password;
+		result += "@";
+	} else if (
+		url.protocol !== "file:" &&
+		isSpecial(url.protocol) &&
+		!host &&
+		url.pathname !== "/"
+	) {
+		//
+		// Add back the empty userinfo, otherwise the original invalid URL
+		// might be transformed into a valid one with `url.pathname` as host.
+		//
+		result += "@";
+	}
 
-  //
-  // Trailing colon is removed from `url.host` when it is parsed. If it still
-  // ends with a colon, then add back the trailing colon that was removed. This
-  // prevents an invalid URL from being transformed into a valid one.
-  //
-  if (host[host.length - 1] === ':' || (port.test(url.hostname) && !url.port)) {
-    host += ':';
-  }
+	//
+	// Trailing colon is removed from `url.host` when it is parsed. If it still
+	// ends with a colon, then add back the trailing colon that was removed. This
+	// prevents an invalid URL from being transformed into a valid one.
+	//
+	if (host[host.length - 1] === ":" || (port.test(url.hostname) && !url.port)) {
+		host += ":";
+	}
 
-  result += host + url.pathname;
+	result += host + url.pathname;
 
-  query = 'object' === typeof url.query ? stringify(url.query) : url.query;
-  if (query) result += '?' !== query.charAt(0) ? '?'+ query : query;
+	query = "object" === typeof url.query ? stringify(url.query) : url.query;
+	if (query) result += "?" !== query.charAt(0) ? "?" + query : query;
 
-  if (url.hash) result += url.hash;
+	if (url.hash) result += url.hash;
 
-  return result;
+	return result;
 }
 
 Url.prototype = { set: set, toString: toString };

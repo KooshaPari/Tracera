@@ -1,2 +1,4 @@
-'use strict';
-module.exports = function () { /* empty */ };
+"use strict";
+module.exports = () => {
+	/* empty */
+};

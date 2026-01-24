@@ -1,5 +1,5 @@
-'use strict';
+"use strict";
 
-const { version } = require('../package.json');
+const { version } = require("../package.json");
 
 exports.version = version;

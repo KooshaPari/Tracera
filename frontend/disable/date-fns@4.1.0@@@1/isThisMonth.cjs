@@ -28,8 +28,8 @@ var _index3 = require("./isSameMonth.cjs");
  * //=> true
  */
 function isThisMonth(date, options) {
-  return (0, _index3.isSameMonth)(
-    (0, _index.constructFrom)(options?.in || date, date),
-    (0, _index2.constructNow)(options?.in || date),
-  );
+	return (0, _index3.isSameMonth)(
+		(0, _index.constructFrom)(options?.in || date, date),
+		(0, _index2.constructNow)(options?.in || date),
+	);
 }

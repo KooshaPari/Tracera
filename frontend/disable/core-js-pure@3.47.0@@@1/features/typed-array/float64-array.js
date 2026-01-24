@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/float64-array');
+"use strict";
+module.exports = require("../../full/typed-array/float64-array");

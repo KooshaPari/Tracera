@@ -1,4 +1,4 @@
-var arrayMap = require('./_arrayMap');
+var arrayMap = require("./_arrayMap");
 
 /**
  * The base implementation of `_.toPairs` and `_.toPairsIn` which creates an array
@@ -10,9 +10,7 @@ var arrayMap = require('./_arrayMap');
  * @returns {Object} Returns the key-value pairs.
  */
 function baseToPairs(object, props) {
-  return arrayMap(props, function(key) {
-    return [key, object[key]];
-  });
+	return arrayMap(props, (key) => [key, object[key]]);
 }
 
 module.exports = baseToPairs;

@@ -163,6 +163,13 @@ class ConfigManager:
         Returns:
             Configuration value or None if not found
         """
+        # Check environment variables first (highest precedence)
+        if key == "database_url":
+            # Check both TRACERTM_DATABASE_URL and DATABASE_URL
+            db_url = os.getenv("TRACERTM_DATABASE_URL") or os.getenv("DATABASE_URL")
+            if db_url:
+                return db_url
+        
         # Determine config file
         config_path = self.projects_dir / project_id / "config.yaml" if project_id else self.config_path
 
@@ -174,6 +181,32 @@ class ConfigManager:
             config_data = yaml.safe_load(f) or {}
 
         return config_data.get(key)
+
+    def get_config(self, project_id: str | None = None) -> dict[str, Any]:
+        """
+        Return the resolved configuration as a dictionary for tests and callers
+        that expect a simple mapping.
+
+        This method is intentionally tolerant of missing on-disk config files;
+        it will fall back to an empty dictionary rather than raising.
+        """
+        try:
+            loaded = self.load(project_id=project_id)
+            if hasattr(loaded, "model_dump"):
+                return loaded.model_dump()
+            return dict(loaded)
+        except Exception:
+            # Return whatever values we can read without failing the caller
+            keys = [
+                "database_url",
+                "current_project_id",
+                "current_project_name",
+                "default_view",
+                "output_format",
+                "max_agents",
+                "log_level",
+            ]
+            return {key: self.get(key, project_id=project_id) for key in keys}
 
     def _save_config(self, config: Config, path: Path) -> None:
         """Save config to YAML file."""
@@ -187,6 +220,7 @@ class ConfigManager:
         # Map environment variables to config keys
         env_mapping = {
             "TRACERTM_DATABASE_URL": "database_url",
+            "DATABASE_URL": "database_url",  # Also check standard DATABASE_URL
             "TRACERTM_CURRENT_PROJECT_ID": "current_project_id",
             "TRACERTM_DEFAULT_VIEW": "default_view",
             "TRACERTM_OUTPUT_FORMAT": "output_format",
@@ -201,5 +235,8 @@ class ConfigManager:
                 if config_key == "max_agents":
                     value = int(value)
                 env_config[config_key] = value
+                # If we found database_url from DATABASE_URL, don't override with TRACERTM_DATABASE_URL
+                if config_key == "database_url" and env_var == "DATABASE_URL":
+                    break
 
         return env_config

@@ -2,12 +2,15 @@
 Custom SQLAlchemy types for TraceRTM.
 """
 
+from typing import Any
+
 from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.engine.interfaces import Dialect
 from sqlalchemy.types import TypeDecorator
 
 
-class JSONType(TypeDecorator):
+class JSONType(TypeDecorator[dict[str, Any]]):
     """
     JSON type that uses JSONB for PostgreSQL and JSON for other databases.
 
@@ -17,7 +20,7 @@ class JSONType(TypeDecorator):
     impl = JSON
     cache_ok = True
 
-    def load_dialect_impl(self, dialect):
+    def load_dialect_impl(self, dialect: Dialect) -> Any:
         """Load the appropriate type for the dialect."""
         if dialect.name == "postgresql":
             return dialect.type_descriptor(JSONB())

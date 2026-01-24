@@ -1,12 +1,17 @@
-import { Stats } from 'fs';
-import { IOptions } from './types/glob';
+import { Stats } from "fs";
+import { IOptions } from "./types/glob";
 export type CrawledFileType = {
-    type: 'file' | 'directory' | 'link';
-    stat: Stats;
-    transformed?: {
-        path: string;
-        stat: Stats;
-    };
+	type: "file" | "directory" | "link";
+	stat: Stats;
+	transformed?: {
+		path: string;
+		stat: Stats;
+	};
 };
-export declare function determineFileType(filename: string): Promise<CrawledFileType | null>;
-export declare function crawl(dir: string, options: IOptions): Promise<readonly [string[], Record<string, CrawledFileType>]>;
+export declare function determineFileType(
+	filename: string,
+): Promise<CrawledFileType | null>;
+export declare function crawl(
+	dir: string,
+	options: IOptions,
+): Promise<readonly [string[], Record<string, CrawledFileType>]>;

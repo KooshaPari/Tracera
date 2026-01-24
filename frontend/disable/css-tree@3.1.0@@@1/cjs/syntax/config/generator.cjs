@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
-const indexGenerate = require('../node/index-generate.cjs');
+const indexGenerate = require("../node/index-generate.cjs");
 
 const config = {
-    node: indexGenerate
+	node: indexGenerate,
 };
 
 module.exports = config;

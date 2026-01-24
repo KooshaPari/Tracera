@@ -1,6 +1,9 @@
-import {on, once} from 'node:events';
-import {PassThrough as PassThroughStream, getDefaultHighWaterMark} from 'node:stream';
-import {finished} from 'node:stream/promises';
+import { on, once } from "node:events";
+import {
+	getDefaultHighWaterMark,
+	PassThrough as PassThroughStream,
+} from "node:stream";
+import { finished } from "node:stream/promises";
 
 export default function mergeStreams(streams) {
 	if (!Array.isArray(streams)) {
@@ -11,7 +14,9 @@ export default function mergeStreams(streams) {
 		validateStream(stream);
 	}
 
-	const objectMode = streams.some(({readableObjectMode}) => readableObjectMode);
+	const objectMode = streams.some(
+		({ readableObjectMode }) => readableObjectMode,
+	);
 	const highWaterMark = getHighWaterMark(streams, objectMode);
 	const passThroughStream = new MergedStream({
 		objectMode,
@@ -32,8 +37,8 @@ const getHighWaterMark = (streams, objectMode) => {
 	}
 
 	const highWaterMarks = streams
-		.filter(({readableObjectMode}) => readableObjectMode === objectMode)
-		.map(({readableHighWaterMark}) => readableHighWaterMark);
+		.filter(({ readableObjectMode }) => readableObjectMode === objectMode)
+		.map(({ readableHighWaterMark }) => readableHighWaterMark);
 	return Math.max(...highWaterMarks);
 };
 
@@ -42,7 +47,7 @@ class MergedStream extends PassThroughStream {
 	#ended = new Set([]);
 	#aborted = new Set([]);
 	#onFinished;
-	#unpipeEvent = Symbol('unpipe');
+	#unpipeEvent = Symbol("unpipe");
 	#streamPromises = new WeakMap();
 
 	add(stream) {
@@ -54,7 +59,11 @@ class MergedStream extends PassThroughStream {
 
 		this.#streams.add(stream);
 
-		this.#onFinished ??= onMergedStreamFinished(this, this.#streams, this.#unpipeEvent);
+		this.#onFinished ??= onMergedStreamFinished(
+			this,
+			this.#streams,
+			this.#unpipeEvent,
+		);
 		const streamPromise = endWhenStreamsDone({
 			passThroughStream: this,
 			stream,
@@ -66,7 +75,7 @@ class MergedStream extends PassThroughStream {
 		});
 		this.#streamPromises.set(stream, streamPromise);
 
-		stream.pipe(this, {end: false});
+		stream.pipe(this, { end: false });
 	}
 
 	async remove(stream) {
@@ -89,7 +98,11 @@ class MergedStream extends PassThroughStream {
 	}
 }
 
-const onMergedStreamFinished = async (passThroughStream, streams, unpipeEvent) => {
+const onMergedStreamFinished = async (
+	passThroughStream,
+	streams,
+	unpipeEvent,
+) => {
 	updateMaxListeners(passThroughStream, PASSTHROUGH_LISTENERS_COUNT);
 	const controller = new AbortController();
 
@@ -104,30 +117,47 @@ const onMergedStreamFinished = async (passThroughStream, streams, unpipeEvent) =
 	}
 };
 
-const onMergedStreamEnd = async (passThroughStream, {signal}) => {
+const onMergedStreamEnd = async (passThroughStream, { signal }) => {
 	try {
-		await finished(passThroughStream, {signal, cleanup: true});
+		await finished(passThroughStream, { signal, cleanup: true });
 	} catch (error) {
 		errorOrAbortStream(passThroughStream, error);
 		throw error;
 	}
 };
 
-const onInputStreamsUnpipe = async (passThroughStream, streams, unpipeEvent, {signal}) => {
-	for await (const [unpipedStream] of on(passThroughStream, 'unpipe', {signal})) {
+const onInputStreamsUnpipe = async (
+	passThroughStream,
+	streams,
+	unpipeEvent,
+	{ signal },
+) => {
+	for await (const [unpipedStream] of on(passThroughStream, "unpipe", {
+		signal,
+	})) {
 		if (streams.has(unpipedStream)) {
 			unpipedStream.emit(unpipeEvent);
 		}
 	}
 };
 
-const validateStream = stream => {
-	if (typeof stream?.pipe !== 'function') {
-		throw new TypeError(`Expected a readable stream, got: \`${typeof stream}\`.`);
+const validateStream = (stream) => {
+	if (typeof stream?.pipe !== "function") {
+		throw new TypeError(
+			`Expected a readable stream, got: \`${typeof stream}\`.`,
+		);
 	}
 };
 
-const endWhenStreamsDone = async ({passThroughStream, stream, streams, ended, aborted, onFinished, unpipeEvent}) => {
+const endWhenStreamsDone = async ({
+	passThroughStream,
+	stream,
+	streams,
+	ended,
+	aborted,
+	onFinished,
+	unpipeEvent,
+}) => {
 	updateMaxListeners(passThroughStream, PASSTHROUGH_LISTENERS_PER_STREAM);
 	const controller = new AbortController();
 
@@ -165,7 +195,7 @@ const endWhenStreamsDone = async ({passThroughStream, stream, streams, ended, ab
 	}
 };
 
-const afterMergedStreamFinished = async (onFinished, stream, {signal}) => {
+const afterMergedStreamFinished = async (onFinished, stream, { signal }) => {
 	try {
 		await onFinished;
 		if (!signal.aborted) {
@@ -178,7 +208,14 @@ const afterMergedStreamFinished = async (onFinished, stream, {signal}) => {
 	}
 };
 
-const onInputStreamEnd = async ({passThroughStream, stream, streams, ended, aborted, controller: {signal}}) => {
+const onInputStreamEnd = async ({
+	passThroughStream,
+	stream,
+	streams,
+	ended,
+	aborted,
+	controller: { signal },
+}) => {
 	try {
 		await finished(stream, {
 			signal,
@@ -202,11 +239,18 @@ const onInputStreamEnd = async ({passThroughStream, stream, streams, ended, abor
 	}
 };
 
-const onInputStreamUnpipe = async ({stream, streams, ended, aborted, unpipeEvent, controller: {signal}}) => {
-	await once(stream, unpipeEvent, {signal});
+const onInputStreamUnpipe = async ({
+	stream,
+	streams,
+	ended,
+	aborted,
+	unpipeEvent,
+	controller: { signal },
+}) => {
+	await once(stream, unpipeEvent, { signal });
 
 	if (!stream.readable) {
-		return once(signal, 'abort', {signal});
+		return once(signal, "abort", { signal });
 	}
 
 	streams.delete(stream);
@@ -214,7 +258,7 @@ const onInputStreamUnpipe = async ({stream, streams, ended, aborted, unpipeEvent
 	aborted.delete(stream);
 };
 
-const endStream = stream => {
+const endStream = (stream) => {
 	if (stream.writable) {
 		stream.end();
 	}
@@ -229,9 +273,9 @@ const errorOrAbortStream = (stream, error) => {
 };
 
 // This is the error thrown by `finished()` on `stream.destroy()`
-const isAbortError = error => error?.code === 'ERR_STREAM_PREMATURE_CLOSE';
+const isAbortError = (error) => error?.code === "ERR_STREAM_PREMATURE_CLOSE";
 
-const abortStream = stream => {
+const abortStream = (stream) => {
 	if (stream.readable || stream.writable) {
 		stream.destroy();
 	}
@@ -241,7 +285,7 @@ const abortStream = stream => {
 // We take care of error handling on user behalf, so we do not want this to happen.
 const errorStream = (stream, error) => {
 	if (!stream.destroyed) {
-		stream.once('error', noop);
+		stream.once("error", noop);
 		stream.destroy(error);
 	}
 };

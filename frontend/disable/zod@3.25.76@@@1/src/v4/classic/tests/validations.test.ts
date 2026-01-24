@@ -3,11 +3,11 @@ import { expect, test } from "vitest";
 import * as z from "zod/v4";
 
 test("string length", async () => {
-  try {
-    await z.string().length(4).parseAsync("asd");
-  } catch (err) {
-    // ("String must contain exactly 4 character(s)");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.string().length(4).parseAsync("asd");
+	} catch (err) {
+		// ("String must contain exactly 4 character(s)");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -20,13 +20,13 @@ test("string length", async () => {
         },
       ]
     `);
-  }
+	}
 
-  try {
-    await z.string().length(4).parseAsync("asdaa");
-  } catch (err) {
-    // ("String must contain exactly 4 character(s)");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.string().length(4).parseAsync("asdaa");
+	} catch (err) {
+		// ("String must contain exactly 4 character(s)");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -39,15 +39,15 @@ test("string length", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("string min/max", async () => {
-  try {
-    await z.string().min(4).parseAsync("asd");
-  } catch (err) {
-    // ("String must contain at least 4 character(s)");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.string().min(4).parseAsync("asd");
+	} catch (err) {
+		// ("String must contain at least 4 character(s)");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -59,15 +59,15 @@ test("string min/max", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("string max", async () => {
-  try {
-    await z.string().max(4).parseAsync("aasdfsdfsd");
-  } catch (err) {
-    // ("String must contain at most 4 character(s)");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.string().max(4).parseAsync("aasdfsdfsd");
+	} catch (err) {
+		// ("String must contain at most 4 character(s)");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -79,15 +79,15 @@ test("string max", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number min", async () => {
-  try {
-    await z.number().min(3).parseAsync(2);
-  } catch (err) {
-    // ("Number must be greater than or equal to 3");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().min(3).parseAsync(2);
+	} catch (err) {
+		// ("Number must be greater than or equal to 3");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -99,15 +99,15 @@ test("number min", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number gte", async () => {
-  try {
-    await z.number().gte(3).parseAsync(2);
-  } catch (err) {
-    // ("Number must be greater than or equal to 3");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().gte(3).parseAsync(2);
+	} catch (err) {
+		// ("Number must be greater than or equal to 3");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -119,15 +119,15 @@ test("number gte", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number gt", async () => {
-  try {
-    await z.number().gt(3).parseAsync(3);
-  } catch (err) {
-    // ("Number must be greater than or equal to 3");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().gt(3).parseAsync(3);
+	} catch (err) {
+		// ("Number must be greater than or equal to 3");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -139,15 +139,15 @@ test("number gt", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number max", async () => {
-  try {
-    await z.number().max(3).parseAsync(4);
-  } catch (err) {
-    // ("Number must be less than or equal to 3");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().max(3).parseAsync(4);
+	} catch (err) {
+		// ("Number must be less than or equal to 3");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -159,15 +159,15 @@ test("number max", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number lte", async () => {
-  try {
-    await z.number().lte(3).parseAsync(4);
-  } catch (err) {
-    // ("Number must be less than or equal to 3");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().lte(3).parseAsync(4);
+	} catch (err) {
+		// ("Number must be less than or equal to 3");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -179,15 +179,15 @@ test("number lte", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number lt", async () => {
-  try {
-    await z.number().lt(3).parseAsync(3);
-  } catch (err) {
-    // ("Number must be less than or equal to 3");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().lt(3).parseAsync(3);
+	} catch (err) {
+		// ("Number must be less than or equal to 3");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -199,15 +199,15 @@ test("number lt", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number nonnegative", async () => {
-  try {
-    await z.number().nonnegative().parseAsync(-1);
-  } catch (err) {
-    // ("Number must be greater than or equal to 0");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().nonnegative().parseAsync(-1);
+	} catch (err) {
+		// ("Number must be greater than or equal to 0");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -219,15 +219,15 @@ test("number nonnegative", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number nonpositive", async () => {
-  try {
-    await z.number().nonpositive().parseAsync(1);
-  } catch (err) {
-    // ("Number must be less than or equal to 0");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().nonpositive().parseAsync(1);
+	} catch (err) {
+		// ("Number must be less than or equal to 0");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -239,15 +239,15 @@ test("number nonpositive", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number negative", async () => {
-  try {
-    await z.number().negative().parseAsync(1);
-  } catch (err) {
-    // ("Number must be less than 0");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().negative().parseAsync(1);
+	} catch (err) {
+		// ("Number must be less than 0");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_big",
@@ -259,15 +259,15 @@ test("number negative", async () => {
         },
       ]
     `);
-  }
+	}
 });
 
 test("number positive", async () => {
-  try {
-    await z.number().positive().parseAsync(-1);
-  } catch (err) {
-    // ("Number must be greater than 0");
-    expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
+	try {
+		await z.number().positive().parseAsync(-1);
+	} catch (err) {
+		// ("Number must be greater than 0");
+		expect((err as z.ZodError).issues).toMatchInlineSnapshot(`
       [
         {
           "code": "too_small",
@@ -279,5 +279,5 @@ test("number positive", async () => {
         },
       ]
     `);
-  }
+	}
 });

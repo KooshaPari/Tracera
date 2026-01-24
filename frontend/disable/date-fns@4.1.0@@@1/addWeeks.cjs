@@ -29,5 +29,5 @@ var _index = require("./addDays.cjs");
  * //=> Mon Sep 29 2014 00:00:00
  */
 function addWeeks(date, amount, options) {
-  return (0, _index.addDays)(date, amount * 7, options);
+	return (0, _index.addDays)(date, amount * 7, options);
 }

@@ -1,225 +1,220 @@
-'use strict';
-
-const Assert = require('@hapi/hoek/lib/assert');
-
+const Assert = require("@hapi/hoek/lib/assert");
 
 const internals = {};
 
-
 exports.Sorter = class {
+	constructor() {
+		this._items = [];
+		this.nodes = [];
+	}
 
-    constructor() {
+	add(nodes, options) {
+		options = options || {};
 
-        this._items = [];
-        this.nodes = [];
-    }
+		// Validate rules
 
-    add(nodes, options) {
+		const before = [].concat(options.before || []);
+		const after = [].concat(options.after || []);
+		const group = options.group || "?";
+		const sort = options.sort || 0; // Used for merging only
 
-        options = options || {};
+		Assert(!before.includes(group), `Item cannot come before itself: ${group}`);
+		Assert(!before.includes("?"), "Item cannot come before unassociated items");
+		Assert(!after.includes(group), `Item cannot come after itself: ${group}`);
+		Assert(!after.includes("?"), "Item cannot come after unassociated items");
 
-        // Validate rules
+		if (!Array.isArray(nodes)) {
+			nodes = [nodes];
+		}
 
-        const before = [].concat(options.before || []);
-        const after = [].concat(options.after || []);
-        const group = options.group || '?';
-        const sort = options.sort || 0;                   // Used for merging only
+		for (const node of nodes) {
+			const item = {
+				seq: this._items.length,
+				sort,
+				before,
+				after,
+				group,
+				node,
+			};
 
-        Assert(!before.includes(group), `Item cannot come before itself: ${group}`);
-        Assert(!before.includes('?'), 'Item cannot come before unassociated items');
-        Assert(!after.includes(group), `Item cannot come after itself: ${group}`);
-        Assert(!after.includes('?'), 'Item cannot come after unassociated items');
+			this._items.push(item);
+		}
 
-        if (!Array.isArray(nodes)) {
-            nodes = [nodes];
-        }
+		// Insert event
 
-        for (const node of nodes) {
-            const item = {
-                seq: this._items.length,
-                sort,
-                before,
-                after,
-                group,
-                node
-            };
+		if (!options.manual) {
+			const valid = this._sort();
+			Assert(
+				valid,
+				"item",
+				group !== "?" ? `added into group ${group}` : "",
+				"created a dependencies error",
+			);
+		}
 
-            this._items.push(item);
-        }
+		return this.nodes;
+	}
 
-        // Insert event
+	merge(others) {
+		if (!Array.isArray(others)) {
+			others = [others];
+		}
 
-        if (!options.manual) {
-            const valid = this._sort();
-            Assert(valid, 'item', group !== '?' ? `added into group ${group}` : '', 'created a dependencies error');
-        }
+		for (const other of others) {
+			if (other) {
+				for (const item of other._items) {
+					this._items.push(Object.assign({}, item)); // Shallow cloned
+				}
+			}
+		}
 
-        return this.nodes;
-    }
+		// Sort items
 
-    merge(others) {
+		this._items.sort(internals.mergeSort);
+		for (let i = 0; i < this._items.length; ++i) {
+			this._items[i].seq = i;
+		}
 
-        if (!Array.isArray(others)) {
-            others = [others];
-        }
+		const valid = this._sort();
+		Assert(valid, "merge created a dependencies error");
 
-        for (const other of others) {
-            if (other) {
-                for (const item of other._items) {
-                    this._items.push(Object.assign({}, item));      // Shallow cloned
-                }
-            }
-        }
+		return this.nodes;
+	}
 
-        // Sort items
+	sort() {
+		const valid = this._sort();
+		Assert(valid, "sort created a dependencies error");
 
-        this._items.sort(internals.mergeSort);
-        for (let i = 0; i < this._items.length; ++i) {
-            this._items[i].seq = i;
-        }
+		return this.nodes;
+	}
 
-        const valid = this._sort();
-        Assert(valid, 'merge created a dependencies error');
+	_sort() {
+		// Construct graph
 
-        return this.nodes;
-    }
+		const graph = {};
+		const graphAfters = Object.create(null); // A prototype can bungle lookups w/ false positives
+		const groups = Object.create(null);
 
-    sort() {
+		for (const item of this._items) {
+			const seq = item.seq; // Unique across all items
+			const group = item.group;
 
-        const valid = this._sort();
-        Assert(valid, 'sort created a dependencies error');
+			// Determine Groups
 
-        return this.nodes;
-    }
+			groups[group] = groups[group] || [];
+			groups[group].push(seq);
 
-    _sort() {
+			// Build intermediary graph using 'before'
 
-        // Construct graph
+			graph[seq] = item.before;
 
-        const graph = {};
-        const graphAfters = Object.create(null);            // A prototype can bungle lookups w/ false positives
-        const groups = Object.create(null);
+			// Build second intermediary graph with 'after'
 
-        for (const item of this._items) {
-            const seq = item.seq;                           // Unique across all items
-            const group = item.group;
+			for (const after of item.after) {
+				graphAfters[after] = graphAfters[after] || [];
+				graphAfters[after].push(seq);
+			}
+		}
 
-            // Determine Groups
+		// Expand intermediary graph
 
-            groups[group] = groups[group] || [];
-            groups[group].push(seq);
+		for (const node in graph) {
+			const expandedGroups = [];
 
-            // Build intermediary graph using 'before'
+			for (const graphNodeItem in graph[node]) {
+				const group = graph[node][graphNodeItem];
+				groups[group] = groups[group] || [];
+				expandedGroups.push(...groups[group]);
+			}
 
-            graph[seq] = item.before;
+			graph[node] = expandedGroups;
+		}
 
-            // Build second intermediary graph with 'after'
+		// Merge intermediary graph using graphAfters into final graph
 
-            for (const after of item.after) {
-                graphAfters[after] = graphAfters[after] || [];
-                graphAfters[after].push(seq);
-            }
-        }
+		for (const group in graphAfters) {
+			if (groups[group]) {
+				for (const node of groups[group]) {
+					graph[node].push(...graphAfters[group]);
+				}
+			}
+		}
 
-        // Expand intermediary graph
+		// Compile ancestors
 
-        for (const node in graph) {
-            const expandedGroups = [];
+		const ancestors = {};
+		for (const node in graph) {
+			const children = graph[node];
+			for (const child of children) {
+				ancestors[child] = ancestors[child] || [];
+				ancestors[child].push(node);
+			}
+		}
 
-            for (const graphNodeItem in graph[node]) {
-                const group = graph[node][graphNodeItem];
-                groups[group] = groups[group] || [];
-                expandedGroups.push(...groups[group]);
-            }
+		// Topo sort
 
-            graph[node] = expandedGroups;
-        }
+		const visited = {};
+		const sorted = [];
 
-        // Merge intermediary graph using graphAfters into final graph
+		for (let i = 0; i < this._items.length; ++i) {
+			// Looping through item.seq values out of order
+			let next = i;
 
-        for (const group in graphAfters) {
-            if (groups[group]) {
-                for (const node of groups[group]) {
-                    graph[node].push(...graphAfters[group]);
-                }
-            }
-        }
+			if (ancestors[i]) {
+				next = null;
+				for (let j = 0; j < this._items.length; ++j) {
+					// As above, these are item.seq values
+					if (visited[j] === true) {
+						continue;
+					}
 
-        // Compile ancestors
+					if (!ancestors[j]) {
+						ancestors[j] = [];
+					}
 
-        const ancestors = {};
-        for (const node in graph) {
-            const children = graph[node];
-            for (const child of children) {
-                ancestors[child] = ancestors[child] || [];
-                ancestors[child].push(node);
-            }
-        }
+					const shouldSeeCount = ancestors[j].length;
+					let seenCount = 0;
+					for (let k = 0; k < shouldSeeCount; ++k) {
+						if (visited[ancestors[j][k]]) {
+							++seenCount;
+						}
+					}
 
-        // Topo sort
+					if (seenCount === shouldSeeCount) {
+						next = j;
+						break;
+					}
+				}
+			}
 
-        const visited = {};
-        const sorted = [];
+			if (next !== null) {
+				visited[next] = true;
+				sorted.push(next);
+			}
+		}
 
-        for (let i = 0; i < this._items.length; ++i) {          // Looping through item.seq values out of order
-            let next = i;
+		if (sorted.length !== this._items.length) {
+			return false;
+		}
 
-            if (ancestors[i]) {
-                next = null;
-                for (let j = 0; j < this._items.length; ++j) {  // As above, these are item.seq values
-                    if (visited[j] === true) {
-                        continue;
-                    }
+		const seqIndex = {};
+		for (const item of this._items) {
+			seqIndex[item.seq] = item;
+		}
 
-                    if (!ancestors[j]) {
-                        ancestors[j] = [];
-                    }
+		this._items = [];
+		this.nodes = [];
 
-                    const shouldSeeCount = ancestors[j].length;
-                    let seenCount = 0;
-                    for (let k = 0; k < shouldSeeCount; ++k) {
-                        if (visited[ancestors[j][k]]) {
-                            ++seenCount;
-                        }
-                    }
+		for (const value of sorted) {
+			const sortedItem = seqIndex[value];
+			this.nodes.push(sortedItem.node);
+			this._items.push(sortedItem);
+		}
 
-                    if (seenCount === shouldSeeCount) {
-                        next = j;
-                        break;
-                    }
-                }
-            }
-
-            if (next !== null) {
-                visited[next] = true;
-                sorted.push(next);
-            }
-        }
-
-        if (sorted.length !== this._items.length) {
-            return false;
-        }
-
-        const seqIndex = {};
-        for (const item of this._items) {
-            seqIndex[item.seq] = item;
-        }
-
-        this._items = [];
-        this.nodes = [];
-
-        for (const value of sorted) {
-            const sortedItem = seqIndex[value];
-            this.nodes.push(sortedItem.node);
-            this._items.push(sortedItem);
-        }
-
-        return true;
-    }
+		return true;
+	}
 };
 
-
 internals.mergeSort = (a, b) => {
-
-    return a.sort === b.sort ? 0 : (a.sort < b.sort ? -1 : 1);
+	return a.sort === b.sort ? 0 : a.sort < b.sort ? -1 : 1;
 };

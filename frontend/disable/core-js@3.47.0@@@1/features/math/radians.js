@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/radians');
+"use strict";
+module.exports = require("../../full/math/radians");

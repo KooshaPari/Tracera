@@ -1,2 +1,2 @@
-export * from './fetchRequestHandler';
-export * from './types';
+export * from "./fetchRequestHandler";
+export * from "./types";

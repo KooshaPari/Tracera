@@ -8,7 +8,11 @@ export { default as Command } from "./Command";
 /**
  * @ignore
  */
-export { default as RedisCommander, Result, ClientContext, } from "./utils/RedisCommander";
+export {
+	default as RedisCommander,
+	Result,
+	ClientContext,
+} from "./utils/RedisCommander";
 /**
  * @ignore
  */
@@ -24,18 +28,33 @@ export { default as AbstractConnector } from "./connectors/AbstractConnector";
 /**
  * @ignore
  */
-export { default as SentinelConnector, SentinelIterator, } from "./connectors/SentinelConnector";
+export {
+	default as SentinelConnector,
+	SentinelIterator,
+} from "./connectors/SentinelConnector";
 /**
  * @ignore
  */
 export { Callback } from "./types";
-export { SentinelAddress, SentinelConnectionOptions, } from "./connectors/SentinelConnector";
+export {
+	SentinelAddress,
+	SentinelConnectionOptions,
+} from "./connectors/SentinelConnector";
 export { StandaloneConnectionOptions } from "./connectors/StandaloneConnector";
 export { RedisOptions, CommonRedisOptions } from "./redis/RedisOptions";
 export { ClusterNode } from "./cluster";
-export { ClusterOptions, DNSLookupFunction, DNSResolveSrvFunction, NatMap, } from "./cluster/ClusterOptions";
+export {
+	ClusterOptions,
+	DNSLookupFunction,
+	DNSResolveSrvFunction,
+	NatMap,
+} from "./cluster/ClusterOptions";
 export { NodeRole } from "./cluster/util";
-export type { RedisKey, RedisValue, ChainableCommander, } from "./utils/RedisCommander";
+export type {
+	RedisKey,
+	RedisValue,
+	ChainableCommander,
+} from "./utils/RedisCommander";
 export declare const ReplyError: any;
 /**
  * @ignore

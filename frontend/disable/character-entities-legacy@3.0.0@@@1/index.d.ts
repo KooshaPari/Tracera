@@ -3,4 +3,4 @@
  *
  * @type {Array<string>}
  */
-export const characterEntitiesLegacy: Array<string>
+export const characterEntitiesLegacy: Array<string>;

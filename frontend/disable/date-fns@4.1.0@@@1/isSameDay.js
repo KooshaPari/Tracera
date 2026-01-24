@@ -35,12 +35,12 @@ import { startOfDay } from "./startOfDay.js";
  * //=> false
  */
 export function isSameDay(laterDate, earlierDate, options) {
-  const [dateLeft_, dateRight_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return +startOfDay(dateLeft_) === +startOfDay(dateRight_);
+	const [dateLeft_, dateRight_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return +startOfDay(dateLeft_) === +startOfDay(dateRight_);
 }
 
 // Fallback for modularized imports:

@@ -1,6 +1,6 @@
-var baseIsMap = require('./_baseIsMap'),
-    baseUnary = require('./_baseUnary'),
-    nodeUtil = require('./_nodeUtil');
+var baseIsMap = require("./_baseIsMap"),
+	baseUnary = require("./_baseUnary"),
+	nodeUtil = require("./_nodeUtil");
 
 /* Node.js helper references. */
 var nodeIsMap = nodeUtil && nodeUtil.isMap;

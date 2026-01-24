@@ -1,27 +1,27 @@
-'use strict';
-const stringWidth = require('string-width');
-const stripAnsi = require('strip-ansi');
-const ansiStyles = require('ansi-styles');
+"use strict";
+const stringWidth = require("string-width");
+const stripAnsi = require("strip-ansi");
+const ansiStyles = require("ansi-styles");
 
-const ESCAPES = new Set([
-	'\u001B',
-	'\u009B'
-]);
+const ESCAPES = new Set(["\u001B", "\u009B"]);
 
 const END_CODE = 39;
 
-const ANSI_ESCAPE_BELL = '\u0007';
-const ANSI_CSI = '[';
-const ANSI_OSC = ']';
-const ANSI_SGR_TERMINATOR = 'm';
+const ANSI_ESCAPE_BELL = "\u0007";
+const ANSI_CSI = "[";
+const ANSI_OSC = "]";
+const ANSI_SGR_TERMINATOR = "m";
 const ANSI_ESCAPE_LINK = `${ANSI_OSC}8;;`;
 
-const wrapAnsi = code => `${ESCAPES.values().next().value}${ANSI_CSI}${code}${ANSI_SGR_TERMINATOR}`;
-const wrapAnsiHyperlink = uri => `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${uri}${ANSI_ESCAPE_BELL}`;
+const wrapAnsi = (code) =>
+	`${ESCAPES.values().next().value}${ANSI_CSI}${code}${ANSI_SGR_TERMINATOR}`;
+const wrapAnsiHyperlink = (uri) =>
+	`${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${uri}${ANSI_ESCAPE_BELL}`;
 
 // Calculate the length of words split on ' ', ignoring
 // the extra characters added by ansi escape codes
-const wordLengths = string => string.split(' ').map(character => stringWidth(character));
+const wordLengths = (string) =>
+	string.split(" ").map((character) => stringWidth(character));
 
 // Wrap a long word across multiple rows
 // Ansi escape codes do not count towards length
@@ -44,7 +44,10 @@ const wrapWord = (rows, word, columns) => {
 
 		if (ESCAPES.has(character)) {
 			isInsideEscape = true;
-			isInsideLinkEscape = characters.slice(index + 1).join('').startsWith(ANSI_ESCAPE_LINK);
+			isInsideLinkEscape = characters
+				.slice(index + 1)
+				.join("")
+				.startsWith(ANSI_ESCAPE_LINK);
 		}
 
 		if (isInsideEscape) {
@@ -63,7 +66,7 @@ const wrapWord = (rows, word, columns) => {
 		visible += characterLength;
 
 		if (visible === columns && index < characters.length - 1) {
-			rows.push('');
+			rows.push("");
 			visible = 0;
 		}
 	}
@@ -76,8 +79,8 @@ const wrapWord = (rows, word, columns) => {
 };
 
 // Trims spaces from a string ignoring invisible sequences
-const stringVisibleTrimSpacesRight = string => {
-	const words = string.split(' ');
+const stringVisibleTrimSpacesRight = (string) => {
+	const words = string.split(" ");
 	let last = words.length;
 
 	while (last > 0) {
@@ -92,7 +95,7 @@ const stringVisibleTrimSpacesRight = string => {
 		return string;
 	}
 
-	return words.slice(0, last).join(' ') + words.slice(last).join('');
+	return words.slice(0, last).join(" ") + words.slice(last).join("");
 };
 
 // The wrap-ansi module can be invoked in either 'hard' or 'soft' wrap mode
@@ -101,18 +104,18 @@ const stringVisibleTrimSpacesRight = string => {
 //
 // 'soft' allows long words to expand past the column length
 const exec = (string, columns, options = {}) => {
-	if (options.trim !== false && string.trim() === '') {
-		return '';
+	if (options.trim !== false && string.trim() === "") {
+		return "";
 	}
 
-	let returnValue = '';
+	let returnValue = "";
 	let escapeCode;
 	let escapeUrl;
 
 	const lengths = wordLengths(string);
-	let rows = [''];
+	let rows = [""];
 
-	for (const [index, word] of string.split(' ').entries()) {
+	for (const [index, word] of string.split(" ").entries()) {
 		if (options.trim !== false) {
 			rows[rows.length - 1] = rows[rows.length - 1].trimStart();
 		}
@@ -120,38 +123,46 @@ const exec = (string, columns, options = {}) => {
 		let rowLength = stringWidth(rows[rows.length - 1]);
 
 		if (index !== 0) {
-			if (rowLength >= columns && (options.wordWrap === false || options.trim === false)) {
+			if (
+				rowLength >= columns &&
+				(options.wordWrap === false || options.trim === false)
+			) {
 				// If we start with a new word but the current row length equals the length of the columns, add a new row
-				rows.push('');
+				rows.push("");
 				rowLength = 0;
 			}
 
 			if (rowLength > 0 || options.trim === false) {
-				rows[rows.length - 1] += ' ';
+				rows[rows.length - 1] += " ";
 				rowLength++;
 			}
 		}
 
 		// In 'hard' wrap mode, the length of a line is never allowed to extend past 'columns'
 		if (options.hard && lengths[index] > columns) {
-			const remainingColumns = (columns - rowLength);
-			const breaksStartingThisLine = 1 + Math.floor((lengths[index] - remainingColumns - 1) / columns);
+			const remainingColumns = columns - rowLength;
+			const breaksStartingThisLine =
+				1 + Math.floor((lengths[index] - remainingColumns - 1) / columns);
 			const breaksStartingNextLine = Math.floor((lengths[index] - 1) / columns);
 			if (breaksStartingNextLine < breaksStartingThisLine) {
-				rows.push('');
+				rows.push("");
 			}
 
 			wrapWord(rows, word, columns);
 			continue;
 		}
 
-		if (rowLength + lengths[index] > columns && rowLength > 0 && lengths[index] > 0) {
+		if (
+			rowLength + lengths[index] > columns &&
+			rowLength > 0 &&
+			lengths[index] > 0
+		) {
 			if (options.wordWrap === false && rowLength < columns) {
 				wrapWord(rows, word, columns);
 				continue;
 			}
 
-			rows.push('');
+			rows.push("");
 		}
 
 		if (rowLength + lengths[index] > columns && options.wordWrap === false) {
@@ -166,13 +177,15 @@ const exec = (string, columns, options = {}) => {
 		rows = rows.map(stringVisibleTrimSpacesRight);
 	}
 
-	const pre = [...rows.join('\n')];
+	const pre = [...rows.join("\n")];
 
 	for (const [index, character] of pre.entries()) {
 		returnValue += character;
 
 		if (ESCAPES.has(character)) {
-			const {groups} = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`).exec(pre.slice(index).join('')) || {groups: {}};
+			const { groups } = new RegExp(
+				`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`,
+			).exec(pre.slice(index).join("")) || { groups: {} };
 			if (groups.code !== undefined) {
 				const code = Number.parseFloat(groups.code);
 				escapeCode = code === END_CODE ? undefined : code;
@@ -183,15 +196,15 @@ const exec = (string, columns, options = {}) => {
 
 		const code = ansiStyles.codes.get(Number(escapeCode));
 
-		if (pre[index + 1] === '\n') {
+		if (pre[index + 1] === "\n") {
 			if (escapeUrl) {
-				returnValue += wrapAnsiHyperlink('');
+				returnValue += wrapAnsiHyperlink("");
 			}
 
 			if (escapeCode && code) {
 				returnValue += wrapAnsi(code);
 			}
-		} else if (character === '\n') {
+		} else if (character === "\n") {
 			if (escapeCode && code) {
 				returnValue += wrapAnsi(escapeCode);
 			}
@@ -209,8 +222,8 @@ const exec = (string, columns, options = {}) => {
 module.exports = (string, columns, options) => {
 	return String(string)
 		.normalize()
-		.replace(/\r\n/g, '\n')
-		.split('\n')
-		.map(line => exec(line, columns, options))
-		.join('\n');
+		.replace(/\r\n/g, "\n")
+		.split("\n")
+		.map((line) => exec(line, columns, options))
+		.join("\n");
 };

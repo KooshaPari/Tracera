@@ -1,8 +1,8 @@
-import { runWorker } from './worker';
-import terser from './module';
+import terser from "./module";
+import { runWorker } from "./worker";
 
 runWorker();
 
-export * from './type';
+export * from "./type";
 
 export default terser;

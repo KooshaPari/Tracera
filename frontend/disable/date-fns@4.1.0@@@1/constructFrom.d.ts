@@ -35,9 +35,9 @@ import type { ConstructableDate, ContextFn, DateArg } from "./types.js";
  * }
  */
 export declare function constructFrom<
-  DateType extends Date | ConstructableDate,
-  ResultDate extends Date = DateType,
+	DateType extends Date | ConstructableDate,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType> | ContextFn<ResultDate> | undefined,
-  value: DateArg<Date> & {},
+	date: DateArg<DateType> | ContextFn<ResultDate> | undefined,
+	value: DateArg<Date> & {},
 ): ResultDate;

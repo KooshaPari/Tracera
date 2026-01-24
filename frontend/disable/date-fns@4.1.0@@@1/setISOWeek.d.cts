@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setISOWeek} function options.
  */
 export interface SetISOWeekOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setISOWeek
  * @category ISO Week Helpers
@@ -29,10 +29,10 @@ export interface SetISOWeekOptions<DateType extends Date = Date>
  * //=> Sat Jan 01 2005 00:00:00
  */
 export declare function setISOWeek<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  week: number,
-  options?: SetISOWeekOptions<ResultDate>,
+	date: DateArg<DateType>,
+	week: number,
+	options?: SetISOWeekOptions<ResultDate>,
 ): ResultDate;

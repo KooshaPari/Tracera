@@ -13,7 +13,10 @@
  * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
-export declare function ensureLink(src: string | URL, dest: string | URL): Promise<void>;
+export declare function ensureLink(
+	src: string | URL,
+	dest: string | URL,
+): Promise<void>;
 /**
  * Ensures that the hard link exists.
  * If the directory structure does not exist, it is created.
@@ -28,4 +31,7 @@ export declare function ensureLink(src: string | URL, dest: string | URL): Promi
  * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
-export declare function ensureLinkSync(src: string | URL, dest: string | URL): void;
+export declare function ensureLinkSync(
+	src: string | URL,
+	dest: string | URL,
+): void;

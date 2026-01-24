@@ -1,91 +1,101 @@
 export {
-  BundleOutputFormat,
-  readFileFromUrl,
-  slash,
-  doesYamlFileExist,
-  isTruthy,
-  getProxyAgent,
-  pause,
-} from './utils';
-export { Oas3_1Types } from './types/oas3_1';
-export { Arazzo1Types } from './types/arazzo';
-export { Oas3Types } from './types/oas3';
-export { Oas2Types } from './types/oas2';
-export { AsyncApi2Types } from './types/asyncapi2';
-export { AsyncApi3Types } from './types/asyncapi3';
-export { ConfigTypes } from './types/redocly-yaml';
+	bundle,
+	bundleDocument,
+	bundleFromString,
+	mapTypeToComponent,
+} from "./bundle";
+export {
+	CONFIG_FILE_NAMES,
+	Config,
+	createConfig,
+	findConfig,
+	getConfig,
+	getMergedConfig,
+	IGNORE_FILE,
+	loadConfig,
+	RawConfig,
+	RawUniversalConfig,
+	Region,
+	ResolvedApi,
+	RuleSeverity,
+	StyleguideConfig,
+	transformConfig,
+} from "./config";
+export { getAstNodeByPointer, getLineColLocation } from "./format/codeframes";
+export {
+	formatProblems,
+	getTotals,
+	OutputFormat,
+	Totals,
+} from "./format/format";
+export { parseYaml, stringifyYaml } from "./js-yaml";
+export {
+	lint,
+	lint as validate,
+	lintConfig,
+	lintDocument,
+	lintFromString,
+} from "./lint";
+export {
+	detectSpec,
+	getMajorSpecVersion,
+	getTypes,
+	SpecMajorVersion,
+	SpecVersion,
+} from "./oas-types";
+export { RedoclyClient } from "./redocly";
+export * from "./redocly/domains";
+export { isAbsoluteUrl, isRef, unescapePointer } from "./ref-utils";
+export {
+	BaseResolver,
+	Document,
+	makeDocumentFromString,
+	ResolveError,
+	resolveDocument,
+	Source,
+	YamlParseError,
+} from "./resolve";
+export { Stats } from "./rules/other/stats";
+export { normalizeTypes } from "./types";
+export { Arazzo1Types } from "./types/arazzo";
+export { AsyncApi2Types } from "./types/asyncapi2";
+export { AsyncApi3Types } from "./types/asyncapi3";
+export { Oas2Types } from "./types/oas2";
+export { Oas3Types } from "./types/oas3";
+export { Oas3_1Types } from "./types/oas3_1";
+export { ConfigTypes } from "./types/redocly-yaml";
+export type { StatsAccumulator, StatsName } from "./typings/common";
 export type {
-  Oas3Definition,
-  Oas3_1Definition,
-  Oas3Components,
-  Oas3_1Components,
-  Oas3PathItem,
-  Oas3Paths,
-  Oas3ComponentName,
-  Oas3Schema,
-  Oas3_1Schema,
-  Oas3Tag,
-  Referenced,
-  OasRef,
-} from './typings/openapi';
-export type { Oas2Definition } from './typings/swagger';
-export type { StatsAccumulator, StatsName } from './typings/common';
-export { normalizeTypes } from './types';
-export { Stats } from './rules/other/stats';
-
+	Oas3_1Components,
+	Oas3_1Definition,
+	Oas3_1Schema,
+	Oas3ComponentName,
+	Oas3Components,
+	Oas3Definition,
+	Oas3PathItem,
+	Oas3Paths,
+	Oas3Schema,
+	Oas3Tag,
+	OasRef,
+	Referenced,
+} from "./typings/openapi";
+export type { Oas2Definition } from "./typings/swagger";
 export {
-  Config,
-  StyleguideConfig,
-  RawConfig,
-  RawUniversalConfig,
-  IGNORE_FILE,
-  Region,
-  getMergedConfig,
-  transformConfig,
-  loadConfig,
-  getConfig,
-  findConfig,
-  CONFIG_FILE_NAMES,
-  RuleSeverity,
-  createConfig,
-  ResolvedApi,
-} from './config';
-
-export { RedoclyClient } from './redocly';
-
-export * from './redocly/domains';
-
+	BundleOutputFormat,
+	doesYamlFileExist,
+	getProxyAgent,
+	isTruthy,
+	pause,
+	readFileFromUrl,
+	slash,
+} from "./utils";
+export { normalizeVisitors } from "./visitors";
 export {
-  Source,
-  BaseResolver,
-  Document,
-  resolveDocument,
-  ResolveError,
-  YamlParseError,
-  makeDocumentFromString,
-} from './resolve';
-export { parseYaml, stringifyYaml } from './js-yaml';
-export { unescapePointer, isRef, isAbsoluteUrl } from './ref-utils';
-export {
-  SpecMajorVersion,
-  getMajorSpecVersion,
-  SpecVersion,
-  detectSpec,
-  getTypes,
-} from './oas-types';
-export { normalizeVisitors } from './visitors';
-
-export {
-  WalkContext,
-  walkDocument,
-  NormalizedProblem,
-  ProblemSeverity,
-  LineColLocationObject,
-  LocationObject,
-  Loc,
-} from './walk';
-
-export { getAstNodeByPointer, getLineColLocation } from './format/codeframes';
-export { formatProblems, OutputFormat, getTotals, Totals } from './format/format';
-export { lint, lint as validate, lintDocument, lintFromString, lintConfig } from './lint';
-export { bundle, bundleDocument, mapTypeToComponent, bundleFromString } from './bundle';
+	LineColLocationObject,
+	Loc,
+	LocationObject,
+	NormalizedProblem,
+	ProblemSeverity,
+	WalkContext,
+	walkDocument,
+} from "./walk";

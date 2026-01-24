@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _mapLimit = require('./mapLimit.js');
+var _mapLimit = require("./mapLimit.js");
 
 var _mapLimit2 = _interopRequireDefault(_mapLimit);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`concat`]{@link module:Collections.concat} but runs a maximum of `limit` async operations at a time.
@@ -39,22 +39,27 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns A Promise, if no callback is passed
  */
 function concatLimit(coll, limit, iteratee, callback) {
-    var _iteratee = (0, _wrapAsync2.default)(iteratee);
-    return (0, _mapLimit2.default)(coll, limit, (val, iterCb) => {
-        _iteratee(val, (err, ...args) => {
-            if (err) return iterCb(err);
-            return iterCb(err, args);
-        });
-    }, (err, mapResults) => {
-        var result = [];
-        for (var i = 0; i < mapResults.length; i++) {
-            if (mapResults[i]) {
-                result = result.concat(...mapResults[i]);
-            }
-        }
+	var _iteratee = (0, _wrapAsync2.default)(iteratee);
+	return (0, _mapLimit2.default)(
+		coll,
+		limit,
+		(val, iterCb) => {
+			_iteratee(val, (err, ...args) => {
+				if (err) return iterCb(err);
+				return iterCb(err, args);
+			});
+		},
+		(err, mapResults) => {
+			var result = [];
+			for (var i = 0; i < mapResults.length; i++) {
+				if (mapResults[i]) {
+					result = result.concat(...mapResults[i]);
+				}
+			}
 
-        return callback(err, result);
-    });
+			return callback(err, result);
+		},
+	);
 }
 exports.default = (0, _awaitify2.default)(concatLimit, 4);
 module.exports = exports.default;

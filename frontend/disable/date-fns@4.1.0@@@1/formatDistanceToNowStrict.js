@@ -78,7 +78,7 @@ import { formatDistanceStrict } from "./formatDistanceStrict.js";
  * //=> '1 jaro'
  */
 export function formatDistanceToNowStrict(date, options) {
-  return formatDistanceStrict(date, constructNow(date), options);
+	return formatDistanceStrict(date, constructNow(date), options);
 }
 
 // Fallback for modularized imports:

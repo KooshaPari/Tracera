@@ -3,8 +3,8 @@ import type { ContextOptions, DateArg, RoundingOptions } from "./types.js";
  * The {@link differenceInHours} function options.
  */
 export interface DifferenceInHoursOptions
-  extends RoundingOptions,
-    ContextOptions<Date> {}
+	extends RoundingOptions,
+		ContextOptions<Date> {}
 /**
  * @name differenceInHours
  * @category Hour Helpers
@@ -28,7 +28,7 @@ export interface DifferenceInHoursOptions
  * //=> 12
  */
 export declare function differenceInHours(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInHoursOptions,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInHoursOptions,
 ): number;

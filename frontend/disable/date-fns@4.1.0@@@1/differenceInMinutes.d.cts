@@ -34,7 +34,7 @@ export interface DifferenceInMinutesOptions extends RoundingOptions {}
  * //=> -1
  */
 export declare function differenceInMinutes(
-  dateLeft: DateArg<Date> & {},
-  dateRight: DateArg<Date> & {},
-  options?: DifferenceInMinutesOptions,
+	dateLeft: DateArg<Date> & {},
+	dateRight: DateArg<Date> & {},
+	options?: DifferenceInMinutesOptions,
 ): number;

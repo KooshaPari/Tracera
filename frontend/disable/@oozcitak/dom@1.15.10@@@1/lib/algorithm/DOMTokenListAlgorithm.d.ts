@@ -6,7 +6,10 @@ import { DOMTokenList } from "../dom/interfaces";
  * @param tokenList - a token list
  * @param token - a token
  */
-export declare function tokenList_validationSteps(tokenList: DOMTokenList, token: string): boolean;
+export declare function tokenList_validationSteps(
+	tokenList: DOMTokenList,
+	token: string,
+): boolean;
 /**
  * Updates the value of the token lists' associated attribute.
  *
@@ -18,4 +21,6 @@ export declare function tokenList_updateSteps(tokenList: DOMTokenList): void;
  *
  * @param tokenList - a token list
  */
-export declare function tokenList_serializeSteps(tokenList: DOMTokenList): string;
+export declare function tokenList_serializeSteps(
+	tokenList: DOMTokenList,
+): string;

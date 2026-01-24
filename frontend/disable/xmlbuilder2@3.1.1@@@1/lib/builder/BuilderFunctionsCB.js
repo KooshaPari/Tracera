@@ -9,7 +9,7 @@ var _1 = require(".");
  * @returns callback builder
  */
 function createCB(options) {
-    return new _1.XMLBuilderCBImpl(options);
+	return new _1.XMLBuilderCBImpl(options);
 }
 exports.createCB = createCB;
 /**
@@ -20,7 +20,7 @@ exports.createCB = createCB;
  * @returns callback builder
  */
 function fragmentCB(options) {
-    return new _1.XMLBuilderCBImpl(options, true);
+	return new _1.XMLBuilderCBImpl(options, true);
 }
 exports.fragmentCB = fragmentCB;
 //# sourceMappingURL=BuilderFunctionsCB.js.map

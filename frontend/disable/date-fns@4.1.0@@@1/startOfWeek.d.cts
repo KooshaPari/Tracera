@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link startOfWeek} function options.
  */
 export interface StartOfWeekOptions<DateType extends Date = Date>
-  extends LocalizedOptions<"options">,
-    WeekOptions,
-    ContextOptions<DateType> {}
+	extends LocalizedOptions<"options">,
+		WeekOptions,
+		ContextOptions<DateType> {}
 /**
  * @name startOfWeek
  * @category Week Helpers
@@ -39,9 +39,9 @@ export interface StartOfWeekOptions<DateType extends Date = Date>
  * //=> Mon Sep 01 2014 00:00:00
  */
 export declare function startOfWeek<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: StartOfWeekOptions<ResultDate>,
+	date: DateArg<DateType>,
+	options?: StartOfWeekOptions<ResultDate>,
 ): ResultDate;

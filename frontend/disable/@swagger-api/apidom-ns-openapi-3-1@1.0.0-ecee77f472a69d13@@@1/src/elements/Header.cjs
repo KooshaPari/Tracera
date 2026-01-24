@@ -7,11 +7,11 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class Header extends _apidomNsOpenapi.HeaderElement {
-  get schema() {
-    return this.get('schema');
-  }
-  set schema(schema) {
-    this.set('schema', schema);
-  }
+	get schema() {
+		return this.get("schema");
+	}
+	set schema(schema) {
+		this.set("schema", schema);
+	}
 }
-var _default = exports.default = Header;
+var _default = (exports.default = Header);

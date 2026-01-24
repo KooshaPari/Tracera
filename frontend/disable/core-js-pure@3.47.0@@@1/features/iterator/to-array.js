@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/iterator/to-array');
+"use strict";
+module.exports = require("../../full/iterator/to-array");

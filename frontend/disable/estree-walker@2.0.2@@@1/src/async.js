@@ -1,5 +1,5 @@
 // @ts-check
-import { WalkerBase } from './walker.js';
+import { WalkerBase } from "./walker.js";
 
 /** @typedef { import('estree').BaseNode} BaseNode */
 /** @typedef { import('./walker').WalkerContext} WalkerContext */
@@ -72,10 +72,9 @@ export class AsyncWalker extends WalkerBase {
 				const value = node[key];
 
 				if (typeof value !== "object") {
-					continue;
 				} else if (Array.isArray(value)) {
 					for (let i = 0; i < value.length; i += 1) {
-						if (value[i] !== null && typeof value[i].type === 'string') {
+						if (value[i] !== null && typeof value[i].type === "string") {
 							if (!(await this.visit(value[i], node, key, i))) {
 								// removed
 								i--;

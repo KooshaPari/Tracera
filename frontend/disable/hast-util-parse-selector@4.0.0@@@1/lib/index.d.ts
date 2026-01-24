@@ -16,12 +16,29 @@
  * @returns {Element & {tagName: ExtractTagName<Selector, DefaultTagName>}}
  *   Built element.
  */
-export function parseSelector<Selector extends string, DefaultTagName extends string = "div">(selector?: Selector | null | undefined, defaultTagName?: DefaultTagName | null | undefined): import("hast").Element & {
-    tagName: ExtractTagName<Selector, DefaultTagName>;
+export function parseSelector<
+	Selector extends string,
+	DefaultTagName extends string = "div",
+>(
+	selector?: Selector | null | undefined,
+	defaultTagName?: DefaultTagName | null | undefined,
+): import("hast").Element & {
+	tagName: ExtractTagName<Selector, DefaultTagName>;
 };
-export type Element = import('hast').Element;
-export type Properties = import('hast').Properties;
+export type Element = import("hast").Element;
+export type Properties = import("hast").Properties;
 /**
  * Extract tag name from a simple selector.
  */
-export type ExtractTagName<SimpleSelector extends string, DefaultTagName extends string> = SimpleSelector extends "" ? DefaultTagName : SimpleSelector extends `${infer TagName}.${infer Rest}` ? ExtractTagName<TagName, DefaultTagName> : SimpleSelector extends `${infer TagName_1}#${infer Rest_1}` ? ExtractTagName<TagName_1, DefaultTagName> : SimpleSelector extends string ? SimpleSelector : DefaultTagName;
+export type ExtractTagName<
+	SimpleSelector extends string,
+	DefaultTagName extends string,
+> = SimpleSelector extends ""
+	? DefaultTagName
+	: SimpleSelector extends `${infer TagName}.${infer Rest}`
+		? ExtractTagName<TagName, DefaultTagName>
+		: SimpleSelector extends `${infer TagName_1}#${infer Rest_1}`
+			? ExtractTagName<TagName_1, DefaultTagName>
+			: SimpleSelector extends string
+				? SimpleSelector
+				: DefaultTagName;

@@ -1,0 +1,952 @@
+---
+title: "Backend Architecture"
+description: "FastAPI application architecture, service layer design, and API patterns in TraceRTM"
+---
+
+# Backend Architecture
+
+TraceRTM's backend is built with FastAPI and follows a clean, layered architecture optimized for both human developers and AI agents.
+
+## Technology Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **FastAPI** | High-performance async web framework |
+| **Python 3.11+** | Modern Python with type hints |
+| **SQLAlchemy 2.0** | Async ORM with type support |
+| **Pydantic v2** | Data validation and serialization |
+| **Alembic** | Database migrations |
+| **Celery** | Distributed task queue |
+| **Redis** | Caching and pub/sub |
+| **pytest** | Testing framework |
+
+---
+
+## Project Structure
+
+```
+src/tracertm/
+├── api/                    # API layer
+│   ├── main.py             # FastAPI application
+│   ├── routers/            # API route handlers
+│   │   ├── projects.py
+│   │   ├── items.py
+│   │   ├── links.py
+│   │   ├── reports.py
+│   │   └── auth.py
+│   ├── middleware/         # Request middleware
+│   ├── dependencies.py     # Dependency injection
+│   └── schemas/            # Pydantic schemas
+├── core/                   # Core business logic
+│   ├── config.py           # Configuration
+│   ├── security.py         # Security utilities
+│   └── exceptions.py       # Custom exceptions
+├── services/               # Business logic layer
+│   ├── project_service.py
+│   ├── item_service.py
+│   ├── link_service.py
+│   ├── search_service.py
+│   └── report_service.py
+├── repositories/           # Data access layer
+│   ├── base.py
+│   ├── project_repository.py
+│   ├── item_repository.py
+│   └── link_repository.py
+├── models/                 # SQLAlchemy models
+│   ├── base.py
+│   ├── project.py
+│   ├── item.py
+│   ├── link.py
+│   └── user.py
+├── tasks/                  # Celery tasks
+│   ├── export_tasks.py
+│   ├── import_tasks.py
+│   └── sync_tasks.py
+└── utils/                  # Utilities
+    ├── pagination.py
+    └── validators.py
+```
+
+---
+
+## Layered Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      API Layer                               │
+│  (Routers, Schemas, Middleware, Dependencies)               │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Service Layer                             │
+│  (Business Logic, Validation, Orchestration)                │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Repository Layer                            │
+│  (Data Access, Query Building, Caching)                     │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Data Layer                               │
+│  (PostgreSQL, Neo4j, Redis, Meilisearch)                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## API Layer
+
+### FastAPI Application
+
+```python
+# api/main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
+from tracertm.api.routers import projects, items, links, reports, auth
+from tracertm.api.middleware import LoggingMiddleware, RateLimitMiddleware
+from tracertm.core.config import settings
+from tracertm.core.database import init_db
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await init_db()
+    yield
+    # Shutdown
+    await cleanup()
+
+app = FastAPI(
+    title="TraceRTM API",
+    description="Requirements Traceability Management API",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan,
+)
+
+# Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(RateLimitMiddleware)
+
+# Routers
+app.include_router(auth.router, prefix="/v1/auth", tags=["auth"])
+app.include_router(projects.router, prefix="/v1/projects", tags=["projects"])
+app.include_router(items.router, prefix="/v1/items", tags=["items"])
+app.include_router(links.router, prefix="/v1/links", tags=["links"])
+app.include_router(reports.router, prefix="/v1/reports", tags=["reports"])
+```
+
+### Route Handlers
+
+```python
+# api/routers/items.py
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Annotated
+
+from tracertm.api.dependencies import get_item_service, get_current_user
+from tracertm.api.schemas.items import (
+    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse
+)
+from tracertm.services.item_service import ItemService
+from tracertm.models.user import User
+
+router = APIRouter()
+
+@router.get("", response_model=ItemListResponse)
+async def list_items(
+    project_id: str,
+    type: str | None = None,
+    status: str | None = None,
+    priority: str | None = None,
+    tags: list[str] | None = Query(None),
+    search: str | None = None,
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    service: Annotated[ItemService, Depends(get_item_service)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> ItemListResponse:
+    """List items in a project with filtering and pagination."""
+    filters = ItemFilters(
+        type=type,
+        status=status,
+        priority=priority,
+        tags=tags,
+        search=search,
+    )
+    return await service.list_items(
+        project_id=project_id,
+        filters=filters,
+        pagination=Pagination(limit=limit, offset=offset),
+        user_id=user.id,
+    )
+
+@router.post("", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
+async def create_item(
+    project_id: str,
+    data: ItemCreate,
+    service: Annotated[ItemService, Depends(get_item_service)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> ItemResponse:
+    """Create a new item in a project."""
+    return await service.create_item(
+        project_id=project_id,
+        data=data,
+        user_id=user.id,
+    )
+
+@router.get("/{item_id}", response_model=ItemResponse)
+async def get_item(
+    item_id: str,
+    service: Annotated[ItemService, Depends(get_item_service)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> ItemResponse:
+    """Get an item by ID."""
+    item = await service.get_item(item_id, user_id=user.id)
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Item {item_id} not found",
+        )
+    return item
+
+@router.patch("/{item_id}", response_model=ItemResponse)
+async def update_item(
+    item_id: str,
+    data: ItemUpdate,
+    service: Annotated[ItemService, Depends(get_item_service)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> ItemResponse:
+    """Update an item."""
+    return await service.update_item(
+        item_id=item_id,
+        data=data,
+        user_id=user.id,
+    )
+
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_item(
+    item_id: str,
+    service: Annotated[ItemService, Depends(get_item_service)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> None:
+    """Delete an item."""
+    await service.delete_item(item_id, user_id=user.id)
+```
+
+### Pydantic Schemas
+
+```python
+# api/schemas/items.py
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+from typing import Any
+
+class ItemBase(BaseModel):
+    type: str = Field(..., description="Item type (requirement, test_case, etc.)")
+    title: str = Field(..., min_length=1, max_length=500)
+    description: str | None = Field(None, max_length=10000)
+    priority: str | None = Field(None)
+    status: str | None = Field(None)
+    tags: list[str] = Field(default_factory=list)
+    assignee_id: str | None = Field(None)
+    parent_id: str | None = Field(None)
+    due_date: datetime | None = Field(None)
+    custom_fields: dict[str, Any] = Field(default_factory=dict)
+
+class ItemCreate(ItemBase):
+    """Schema for creating an item."""
+    pass
+
+class ItemUpdate(BaseModel):
+    """Schema for updating an item. All fields optional."""
+    type: str | None = None
+    title: str | None = Field(None, min_length=1, max_length=500)
+    description: str | None = None
+    priority: str | None = None
+    status: str | None = None
+    tags: list[str] | None = None
+    assignee_id: str | None = None
+    parent_id: str | None = None
+    due_date: datetime | None = None
+    custom_fields: dict[str, Any] | None = None
+
+class ItemResponse(ItemBase):
+    """Schema for item response."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    project_id: str
+    key: str
+    status_category: str
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+    version: int
+
+class ItemListResponse(BaseModel):
+    """Paginated list of items."""
+    data: list[ItemResponse]
+    total: int
+    limit: int
+    offset: int
+    has_more: bool
+```
+
+---
+
+## Service Layer
+
+### Service Pattern
+
+```python
+# services/item_service.py
+from typing import Protocol
+from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.link_repository import LinkRepository
+from tracertm.services.search_service import SearchService
+from tracertm.services.event_service import EventService
+from tracertm.api.schemas.items import ItemCreate, ItemUpdate, ItemResponse
+from tracertm.core.exceptions import PermissionDenied, ValidationError
+
+class ItemService:
+    """Service for item business logic."""
+
+    def __init__(
+        self,
+        item_repo: ItemRepository,
+        link_repo: LinkRepository,
+        search_service: SearchService,
+        event_service: EventService,
+    ):
+        self.item_repo = item_repo
+        self.link_repo = link_repo
+        self.search_service = search_service
+        self.event_service = event_service
+
+    async def create_item(
+        self,
+        project_id: str,
+        data: ItemCreate,
+        user_id: str,
+    ) -> ItemResponse:
+        """Create a new item with validation and indexing."""
+        # Validate project access
+        await self._check_project_access(project_id, user_id, "write")
+
+        # Validate item type for project
+        await self._validate_item_type(project_id, data.type)
+
+        # Generate item key
+        key = await self._generate_item_key(project_id)
+
+        # Resolve initial status from workflow
+        status = await self._get_initial_status(project_id, data.type)
+
+        # Create item
+        item = await self.item_repo.create(
+            project_id=project_id,
+            key=key,
+            status=status,
+            created_by=user_id,
+            **data.model_dump(),
+        )
+
+        # Index in search
+        await self.search_service.index_item(item)
+
+        # Emit event
+        await self.event_service.emit(
+            "item.created",
+            project_id=project_id,
+            item_id=item.id,
+            user_id=user_id,
+        )
+
+        return ItemResponse.model_validate(item)
+
+    async def list_items(
+        self,
+        project_id: str,
+        filters: ItemFilters,
+        pagination: Pagination,
+        user_id: str,
+    ) -> ItemListResponse:
+        """List items with filtering and pagination."""
+        await self._check_project_access(project_id, user_id, "read")
+
+        if filters.search:
+            # Use search service for text queries
+            results = await self.search_service.search_items(
+                project_id=project_id,
+                query=filters.search,
+                filters=filters,
+                pagination=pagination,
+            )
+            return results
+
+        # Use repository for direct queries
+        items, total = await self.item_repo.list(
+            project_id=project_id,
+            filters=filters,
+            pagination=pagination,
+        )
+
+        return ItemListResponse(
+            data=[ItemResponse.model_validate(i) for i in items],
+            total=total,
+            limit=pagination.limit,
+            offset=pagination.offset,
+            has_more=pagination.offset + len(items) < total,
+        )
+
+    async def transition_item(
+        self,
+        item_id: str,
+        transition: str,
+        user_id: str,
+        comment: str | None = None,
+    ) -> ItemResponse:
+        """Transition item to new status via workflow."""
+        item = await self.item_repo.get_by_id(item_id)
+        if not item:
+            raise ItemNotFound(item_id)
+
+        await self._check_project_access(item.project_id, user_id, "write")
+
+        # Validate transition
+        workflow = await self._get_workflow(item.project_id, item.type)
+        new_status = workflow.get_target_status(item.status, transition)
+        if not new_status:
+            raise ValidationError(
+                f"Invalid transition '{transition}' from status '{item.status}'"
+            )
+
+        # Update item
+        item = await self.item_repo.update(
+            item_id,
+            status=new_status,
+            status_category=workflow.get_status_category(new_status),
+        )
+
+        # Record transition history
+        await self._record_transition(
+            item_id=item_id,
+            from_status=item.status,
+            to_status=new_status,
+            transition=transition,
+            user_id=user_id,
+            comment=comment,
+        )
+
+        # Emit event
+        await self.event_service.emit(
+            "item.transitioned",
+            project_id=item.project_id,
+            item_id=item_id,
+            from_status=item.status,
+            to_status=new_status,
+            user_id=user_id,
+        )
+
+        return ItemResponse.model_validate(item)
+
+    async def _check_project_access(
+        self,
+        project_id: str,
+        user_id: str,
+        permission: str,
+    ) -> None:
+        """Check user has required permission on project."""
+        # Implementation
+        pass
+
+    async def _generate_item_key(self, project_id: str) -> str:
+        """Generate next item key for project."""
+        project = await self.project_repo.get_by_id(project_id)
+        next_number = await self.item_repo.get_next_key_number(project_id)
+        return f"{project.key}-{next_number}"
+```
+
+---
+
+## Repository Layer
+
+### Base Repository
+
+```python
+# repositories/base.py
+from typing import TypeVar, Generic, Type
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
+from tracertm.models.base import Base
+
+ModelT = TypeVar("ModelT", bound=Base)
+
+class BaseRepository(Generic[ModelT]):
+    """Base repository with common CRUD operations."""
+
+    def __init__(self, session: AsyncSession, model: Type[ModelT]):
+        self.session = session
+        self.model = model
+
+    async def get_by_id(self, id: str) -> ModelT | None:
+        """Get entity by ID."""
+        stmt = select(self.model).where(self.model.id == id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create(self, **kwargs) -> ModelT:
+        """Create new entity."""
+        entity = self.model(**kwargs)
+        self.session.add(entity)
+        await self.session.flush()
+        await self.session.refresh(entity)
+        return entity
+
+    async def update(self, id: str, **kwargs) -> ModelT | None:
+        """Update entity by ID."""
+        entity = await self.get_by_id(id)
+        if entity:
+            for key, value in kwargs.items():
+                if value is not None:
+                    setattr(entity, key, value)
+            await self.session.flush()
+            await self.session.refresh(entity)
+        return entity
+
+    async def delete(self, id: str) -> bool:
+        """Delete entity by ID."""
+        entity = await self.get_by_id(id)
+        if entity:
+            await self.session.delete(entity)
+            return True
+        return False
+```
+
+### Item Repository
+
+```python
+# repositories/item_repository.py
+from sqlalchemy import select, func, and_
+from sqlalchemy.orm import selectinload
+
+from tracertm.repositories.base import BaseRepository
+from tracertm.models.item import Item
+
+class ItemRepository(BaseRepository[Item]):
+    """Repository for Item data access."""
+
+    def __init__(self, session: AsyncSession):
+        super().__init__(session, Item)
+
+    async def list(
+        self,
+        project_id: str,
+        filters: ItemFilters | None = None,
+        pagination: Pagination | None = None,
+    ) -> tuple[list[Item], int]:
+        """List items with filtering and pagination."""
+        # Base query
+        stmt = select(Item).where(Item.project_id == project_id)
+
+        # Apply filters
+        if filters:
+            if filters.type:
+                stmt = stmt.where(Item.type == filters.type)
+            if filters.status:
+                stmt = stmt.where(Item.status == filters.status)
+            if filters.priority:
+                stmt = stmt.where(Item.priority == filters.priority)
+            if filters.tags:
+                stmt = stmt.where(Item.tags.overlap(filters.tags))
+            if filters.assignee_id:
+                stmt = stmt.where(Item.assignee_id == filters.assignee_id)
+
+        # Count total
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total = await self.session.scalar(count_stmt)
+
+        # Apply pagination
+        if pagination:
+            stmt = stmt.offset(pagination.offset).limit(pagination.limit)
+
+        # Order by
+        stmt = stmt.order_by(Item.created_at.desc())
+
+        # Execute
+        result = await self.session.execute(stmt)
+        items = result.scalars().all()
+
+        return list(items), total or 0
+
+    async def get_with_links(self, item_id: str) -> Item | None:
+        """Get item with preloaded links."""
+        stmt = (
+            select(Item)
+            .where(Item.id == item_id)
+            .options(
+                selectinload(Item.source_links),
+                selectinload(Item.target_links),
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_next_key_number(self, project_id: str) -> int:
+        """Get next key number for project."""
+        stmt = (
+            select(func.max(Item.key_number))
+            .where(Item.project_id == project_id)
+        )
+        result = await self.session.scalar(stmt)
+        return (result or 0) + 1
+
+    async def bulk_create(self, items: list[dict]) -> list[Item]:
+        """Create multiple items efficiently."""
+        entities = [Item(**item) for item in items]
+        self.session.add_all(entities)
+        await self.session.flush()
+        for entity in entities:
+            await self.session.refresh(entity)
+        return entities
+```
+
+---
+
+## SQLAlchemy Models
+
+```python
+# models/item.py
+from sqlalchemy import Column, String, Text, DateTime, Integer, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
+from tracertm.models.base import Base, generate_id
+
+class Item(Base):
+    """Item model representing requirements, tests, etc."""
+
+    __tablename__ = "items"
+
+    # Primary key
+    id = Column(String(36), primary_key=True, default=generate_id)
+
+    # Foreign keys
+    project_id = Column(
+        String(36),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    parent_id = Column(
+        String(36),
+        ForeignKey("items.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    assignee_id = Column(
+        String(36),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_by = Column(
+        String(36),
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    # Item fields
+    key = Column(String(50), nullable=False, index=True)
+    key_number = Column(Integer, nullable=False)
+    type = Column(String(50), nullable=False, index=True)
+    title = Column(String(500), nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(String(50), nullable=False, index=True)
+    status_category = Column(String(50), nullable=False)
+    priority = Column(String(20), nullable=True, index=True)
+    tags = Column(ARRAY(String), default=list)
+    due_date = Column(DateTime, nullable=True)
+    custom_fields = Column(JSONB, default=dict)
+
+    # Versioning
+    version = Column(Integer, default=1, nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    project = relationship("Project", back_populates="items")
+    parent = relationship("Item", remote_side=[id], back_populates="children")
+    children = relationship("Item", back_populates="parent")
+    assignee = relationship("User", foreign_keys=[assignee_id])
+    creator = relationship("User", foreign_keys=[created_by])
+    source_links = relationship(
+        "Link",
+        foreign_keys="Link.source_id",
+        back_populates="source",
+        cascade="all, delete-orphan",
+    )
+    target_links = relationship(
+        "Link",
+        foreign_keys="Link.target_id",
+        back_populates="target",
+        cascade="all, delete-orphan",
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_items_project_type", "project_id", "type"),
+        Index("ix_items_project_status", "project_id", "status"),
+        Index("ix_items_project_key", "project_id", "key", unique=True),
+    )
+```
+
+---
+
+## Dependency Injection
+
+```python
+# api/dependencies.py
+from typing import Annotated, AsyncGenerator
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.core.database import get_session
+from tracertm.core.security import decode_token
+from tracertm.services.item_service import ItemService
+from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.link_repository import LinkRepository
+
+security = HTTPBearer()
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Get database session."""
+    async with get_session() as session:
+        yield session
+
+async def get_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    """Get current authenticated user."""
+    try:
+        payload = decode_token(credentials.credentials)
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )
+
+        user = await db.get(User, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+            )
+
+        return user
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
+async def get_item_service(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ItemService:
+    """Get item service with dependencies."""
+    item_repo = ItemRepository(db)
+    link_repo = LinkRepository(db)
+    search_service = SearchService()  # From service locator
+    event_service = EventService()
+
+    return ItemService(
+        item_repo=item_repo,
+        link_repo=link_repo,
+        search_service=search_service,
+        event_service=event_service,
+    )
+```
+
+---
+
+## Background Tasks
+
+### Celery Configuration
+
+```python
+# tasks/celery_app.py
+from celery import Celery
+from tracertm.core.config import settings
+
+celery_app = Celery(
+    "tracertm",
+    broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
+)
+
+celery_app.conf.update(
+    task_serializer="json",
+    accept_content=["json"],
+    result_serializer="json",
+    timezone="UTC",
+    enable_utc=True,
+    task_routes={
+        "tracertm.tasks.export_tasks.*": {"queue": "exports"},
+        "tracertm.tasks.import_tasks.*": {"queue": "imports"},
+        "tracertm.tasks.sync_tasks.*": {"queue": "sync"},
+    },
+)
+```
+
+### Task Definitions
+
+```python
+# tasks/export_tasks.py
+from celery import shared_task
+from tracertm.services.export_service import ExportService
+
+@shared_task(bind=True, max_retries=3)
+def export_project(self, project_id: str, format: str, user_id: str):
+    """Export project data to specified format."""
+    try:
+        service = ExportService()
+        result = service.export_project(
+            project_id=project_id,
+            format=format,
+            user_id=user_id,
+        )
+        return {"status": "completed", "file_url": result.file_url}
+    except Exception as exc:
+        self.retry(exc=exc, countdown=60)
+```
+
+---
+
+## Error Handling
+
+```python
+# core/exceptions.py
+from fastapi import HTTPException, status
+
+class TraceRTMException(Exception):
+    """Base exception for TraceRTM."""
+    pass
+
+class NotFoundError(TraceRTMException):
+    """Resource not found."""
+    def __init__(self, resource: str, id: str):
+        self.resource = resource
+        self.id = id
+        super().__init__(f"{resource} with id {id} not found")
+
+class PermissionDenied(TraceRTMException):
+    """User lacks required permission."""
+    pass
+
+class ValidationError(TraceRTMException):
+    """Validation error."""
+    pass
+
+# Exception handlers
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+async def not_found_handler(request: Request, exc: NotFoundError):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={
+            "error": "not_found",
+            "message": str(exc),
+            "resource": exc.resource,
+            "id": exc.id,
+        },
+    )
+
+async def permission_denied_handler(request: Request, exc: PermissionDenied):
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={
+            "error": "permission_denied",
+            "message": str(exc),
+        },
+    )
+```
+
+---
+
+## Testing
+
+```python
+# tests/test_item_service.py
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+
+from tracertm.services.item_service import ItemService
+from tracertm.api.schemas.items import ItemCreate
+
+@pytest.fixture
+def item_service():
+    """Create item service with mocked dependencies."""
+    return ItemService(
+        item_repo=AsyncMock(),
+        link_repo=AsyncMock(),
+        search_service=AsyncMock(),
+        event_service=AsyncMock(),
+    )
+
+@pytest.mark.asyncio
+async def test_create_item(item_service):
+    """Test item creation."""
+    # Setup
+    item_service.item_repo.create.return_value = MagicMock(
+        id="item_123",
+        project_id="proj_123",
+        key="PROJ-1",
+        type="requirement",
+        title="Test Item",
+    )
+
+    # Execute
+    result = await item_service.create_item(
+        project_id="proj_123",
+        data=ItemCreate(type="requirement", title="Test Item"),
+        user_id="user_123",
+    )
+
+    # Assert
+    assert result.id == "item_123"
+    assert result.key == "PROJ-1"
+    item_service.search_service.index_item.assert_called_once()
+    item_service.event_service.emit.assert_called_once()
+```
+
+---
+
+## Related Documentation
+
+- [Architecture Overview](/docs/development/architecture/overview) - System architecture
+- [Database Design](/docs/development/architecture/database) - Data model
+- [API Reference](/docs/api-reference/rest-api) - REST API documentation
+- [Testing](/docs/development/setup/testing) - Test strategies

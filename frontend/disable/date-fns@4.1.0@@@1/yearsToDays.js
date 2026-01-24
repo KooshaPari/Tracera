@@ -18,7 +18,7 @@ import { daysInYear } from "./constants.js";
  * //=> 730
  */
 export function yearsToDays(years) {
-  return Math.trunc(years * daysInYear);
+	return Math.trunc(years * daysInYear);
 }
 
 // Fallback for modularized imports:

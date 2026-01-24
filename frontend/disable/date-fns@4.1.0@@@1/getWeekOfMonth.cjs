@@ -29,26 +29,26 @@ var _index5 = require("./toDate.cjs");
  * //=> 2
  */
 function getWeekOfMonth(date, options) {
-  const defaultOptions = (0, _index.getDefaultOptions)();
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const defaultOptions = (0, _index.getDefaultOptions)();
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const currentDayOfMonth = (0, _index2.getDate)(
-    (0, _index5.toDate)(date, options?.in),
-  );
-  if (isNaN(currentDayOfMonth)) return NaN;
+	const currentDayOfMonth = (0, _index2.getDate)(
+		(0, _index5.toDate)(date, options?.in),
+	);
+	if (isNaN(currentDayOfMonth)) return NaN;
 
-  const startWeekDay = (0, _index3.getDay)(
-    (0, _index4.startOfMonth)(date, options),
-  );
+	const startWeekDay = (0, _index3.getDay)(
+		(0, _index4.startOfMonth)(date, options),
+	);
 
-  let lastDayOfFirstWeek = weekStartsOn - startWeekDay;
-  if (lastDayOfFirstWeek <= 0) lastDayOfFirstWeek += 7;
+	let lastDayOfFirstWeek = weekStartsOn - startWeekDay;
+	if (lastDayOfFirstWeek <= 0) lastDayOfFirstWeek += 7;
 
-  const remainingDaysAfterFirstWeek = currentDayOfMonth - lastDayOfFirstWeek;
-  return Math.ceil(remainingDaysAfterFirstWeek / 7) + 1;
+	const remainingDaysAfterFirstWeek = currentDayOfMonth - lastDayOfFirstWeek;
+	return Math.ceil(remainingDaysAfterFirstWeek / 7) + 1;
 }

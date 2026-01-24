@@ -1,13 +1,16 @@
-'use strict';
-const path = require('path');
-const js = require('default-require-extensions/js');
+const path = require("path");
+const js = require("default-require-extensions/js");
 
 module.exports = appendTransform;
 
 let count = 0;
 
 // eslint-disable-next-line node/no-deprecated-api
-function appendTransform(transform, ext = '.js', extensions = require.extensions) {
+function appendTransform(
+	transform,
+	ext = ".js",
+	extensions = require.extensions,
+) {
 	// Generate a unique key for this transform
 	const key = path.join(__dirname, count.toString());
 	count++;
@@ -15,38 +18,40 @@ function appendTransform(transform, ext = '.js', extensions = require.extensions
 	let forwardGet;
 	let forwardSet;
 
-	const descriptor = Object.getOwnPropertyDescriptor(extensions, ext) || {value: js, configurable: true};
+	const descriptor = Object.getOwnPropertyDescriptor(extensions, ext) || {
+		value: js,
+		configurable: true,
+	};
 
 	if (
-		((descriptor.get || descriptor.set) && !(descriptor.get && descriptor.set)) ||
+		((descriptor.get || descriptor.set) &&
+			!(descriptor.get && descriptor.set)) ||
 		!descriptor.configurable
 	) {
-		throw new Error('Somebody did bad things to require.extensions["' + ext + '"]');
+		throw new Error(
+			'Somebody did bad things to require.extensions["' + ext + '"]',
+		);
 	}
 
 	if (descriptor.get) {
 		// Wrap a previous append-transform install and pass through to the getter/setter pair it created
-		forwardGet = function () {
-			return descriptor.get();
-		};
+		forwardGet = () => descriptor.get();
 
-		forwardSet = function (val) {
+		forwardSet = (val) => {
 			descriptor.set(val);
 			return forwardGet();
 		};
 	} else {
-		forwardGet = function () {
-			return descriptor.value;
-		};
+		forwardGet = () => descriptor.value;
 
-		forwardSet = function (val) {
+		forwardSet = (val) => {
 			descriptor.value = val;
 			return val;
 		};
 	}
 
 	function wrapCustomHook(hook) {
-		return function (module, filename) {
+		return (module, filename) => {
 			// We wrap every added extension, but we only apply the transform to the one on top of the stack
 			if (!module[key]) {
 				module[key] = true;
@@ -86,6 +91,6 @@ function appendTransform(transform, ext = '.js', extensions = require.extensions
 		configurable: true,
 		enumerable: true,
 		get: forwardGet,
-		set: setCurrentHook
+		set: setCurrentHook,
 	});
 }

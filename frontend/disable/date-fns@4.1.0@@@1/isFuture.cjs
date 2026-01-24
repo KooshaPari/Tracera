@@ -21,5 +21,5 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isFuture(date) {
-  return +(0, _index.toDate)(date) > Date.now();
+	return +(0, _index.toDate)(date) > Date.now();
 }

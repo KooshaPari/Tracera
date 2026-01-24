@@ -1,1 +1,1 @@
-module.exports = require('../../dist/links/formDataLink');
+module.exports = require("../../dist/links/formDataLink");

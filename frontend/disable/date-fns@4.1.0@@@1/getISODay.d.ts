@@ -25,6 +25,6 @@ export interface GetISODayOptions extends ContextOptions<Date> {}
  * //=> 7
  */
 export declare function getISODay(
-  date: DateArg<Date> & {},
-  options?: GetISODayOptions,
+	date: DateArg<Date> & {},
+	options?: GetISODayOptions,
 ): number;

@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setYear} function options.
  */
 export interface SetYearOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setYear
  * @category Year Helpers
@@ -27,10 +27,10 @@ export interface SetYearOptions<DateType extends Date = Date>
  * //=> Sun Sep 01 2013 00:00:00
  */
 export declare function setYear<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  year: number,
-  options?: SetYearOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	year: number,
+	options?: SetYearOptions<ResultDate> | undefined,
 ): ResultDate;

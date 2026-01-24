@@ -1,53 +1,53 @@
 import {
-  regExpToken,
-  NONE,
-  COLOR,
-  LENGTH,
-  UNSUPPORTED_LENGTH_UNIT,
-  SPACE,
-} from '../tokenTypes'
+	COLOR,
+	LENGTH,
+	NONE,
+	regExpToken,
+	SPACE,
+	UNSUPPORTED_LENGTH_UNIT,
+} from "../tokenTypes";
 
-const BORDER_STYLE = regExpToken(/^(solid|dashed|dotted)$/)
+const BORDER_STYLE = regExpToken(/^(solid|dashed|dotted)$/);
 
-const defaultBorderWidth = 1
-const defaultBorderColor = 'black'
-const defaultBorderStyle = 'solid'
+const defaultBorderWidth = 1;
+const defaultBorderColor = "black";
+const defaultBorderStyle = "solid";
 
-export default tokenStream => {
-  let borderWidth
-  let borderColor
-  let borderStyle
+export default (tokenStream) => {
+	let borderWidth;
+	let borderColor;
+	let borderStyle;
 
-  if (tokenStream.matches(NONE)) {
-    tokenStream.expectEmpty()
-    return { borderWidth: 0, borderColor: 'black', borderStyle: 'solid' }
-  }
+	if (tokenStream.matches(NONE)) {
+		tokenStream.expectEmpty();
+		return { borderWidth: 0, borderColor: "black", borderStyle: "solid" };
+	}
 
-  let partsParsed = 0
-  while (partsParsed < 3 && tokenStream.hasTokens()) {
-    if (partsParsed !== 0) tokenStream.expect(SPACE)
+	let partsParsed = 0;
+	while (partsParsed < 3 && tokenStream.hasTokens()) {
+		if (partsParsed !== 0) tokenStream.expect(SPACE);
 
-    if (
-      borderWidth === undefined &&
-      tokenStream.matches(LENGTH, UNSUPPORTED_LENGTH_UNIT)
-    ) {
-      borderWidth = tokenStream.lastValue
-    } else if (borderColor === undefined && tokenStream.matches(COLOR)) {
-      borderColor = tokenStream.lastValue
-    } else if (borderStyle === undefined && tokenStream.matches(BORDER_STYLE)) {
-      borderStyle = tokenStream.lastValue
-    } else {
-      tokenStream.throw()
-    }
+		if (
+			borderWidth === undefined &&
+			tokenStream.matches(LENGTH, UNSUPPORTED_LENGTH_UNIT)
+		) {
+			borderWidth = tokenStream.lastValue;
+		} else if (borderColor === undefined && tokenStream.matches(COLOR)) {
+			borderColor = tokenStream.lastValue;
+		} else if (borderStyle === undefined && tokenStream.matches(BORDER_STYLE)) {
+			borderStyle = tokenStream.lastValue;
+		} else {
+			tokenStream.throw();
+		}
 
-    partsParsed += 1
-  }
+		partsParsed += 1;
+	}
 
-  tokenStream.expectEmpty()
+	tokenStream.expectEmpty();
 
-  if (borderWidth === undefined) borderWidth = defaultBorderWidth
-  if (borderColor === undefined) borderColor = defaultBorderColor
-  if (borderStyle === undefined) borderStyle = defaultBorderStyle
+	if (borderWidth === undefined) borderWidth = defaultBorderWidth;
+	if (borderColor === undefined) borderColor = defaultBorderColor;
+	if (borderStyle === undefined) borderStyle = defaultBorderStyle;
 
-  return { borderWidth, borderColor, borderStyle }
-}
+	return { borderWidth, borderColor, borderStyle };
+};

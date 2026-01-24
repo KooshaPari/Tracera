@@ -5,44 +5,44 @@
  * Licensed under the MIT license.
  * https://github.com/archiverjs/node-compress-commons/blob/master/LICENSE-MIT
  */
-var inherits = require('util').inherits;
-var normalizePath = require('normalize-path');
+var inherits = require("util").inherits;
+var normalizePath = require("normalize-path");
 
-var ArchiveEntry = require('../archive-entry');
-var GeneralPurposeBit = require('./general-purpose-bit');
-var UnixStat = require('./unix-stat');
+var ArchiveEntry = require("../archive-entry");
+var GeneralPurposeBit = require("./general-purpose-bit");
+var UnixStat = require("./unix-stat");
 
-var constants = require('./constants');
-var zipUtil = require('./util');
+var constants = require("./constants");
+var zipUtil = require("./util");
 
-var ZipArchiveEntry = module.exports = function(name) {
-  if (!(this instanceof ZipArchiveEntry)) {
-    return new ZipArchiveEntry(name);
-  }
+var ZipArchiveEntry = (module.exports = function (name) {
+	if (!(this instanceof ZipArchiveEntry)) {
+		return new ZipArchiveEntry(name);
+	}
 
-  ArchiveEntry.call(this);
+	ArchiveEntry.call(this);
 
-  this.platform = constants.PLATFORM_FAT;
-  this.method = -1;
+	this.platform = constants.PLATFORM_FAT;
+	this.method = -1;
 
-  this.name = null;
-  this.size = 0;
-  this.csize = 0;
-  this.gpb = new GeneralPurposeBit();
-  this.crc = 0;
-  this.time = -1;
+	this.name = null;
+	this.size = 0;
+	this.csize = 0;
+	this.gpb = new GeneralPurposeBit();
+	this.crc = 0;
+	this.time = -1;
 
-  this.minver = constants.MIN_VERSION_INITIAL;
-  this.mode = -1;
-  this.extra = null;
-  this.exattr = 0;
-  this.inattr = 0;
-  this.comment = null;
+	this.minver = constants.MIN_VERSION_INITIAL;
+	this.mode = -1;
+	this.extra = null;
+	this.exattr = 0;
+	this.inattr = 0;
+	this.comment = null;
 
-  if (name) {
-    this.setName(name);
-  }
-};
+	if (name) {
+		this.setName(name);
+	}
+});
 
 inherits(ZipArchiveEntry, ArchiveEntry);
 
@@ -51,8 +51,8 @@ inherits(ZipArchiveEntry, ArchiveEntry);
  *
  * @returns {Buffer}
  */
-ZipArchiveEntry.prototype.getCentralDirectoryExtra = function() {
-  return this.getExtra();
+ZipArchiveEntry.prototype.getCentralDirectoryExtra = function () {
+	return this.getExtra();
 };
 
 /**
@@ -60,8 +60,8 @@ ZipArchiveEntry.prototype.getCentralDirectoryExtra = function() {
  *
  * @returns {string}
  */
-ZipArchiveEntry.prototype.getComment = function() {
-  return this.comment !== null ? this.comment : '';
+ZipArchiveEntry.prototype.getComment = function () {
+	return this.comment !== null ? this.comment : "";
 };
 
 /**
@@ -69,8 +69,8 @@ ZipArchiveEntry.prototype.getComment = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getCompressedSize = function() {
-  return this.csize;
+ZipArchiveEntry.prototype.getCompressedSize = function () {
+	return this.csize;
 };
 
 /**
@@ -78,8 +78,8 @@ ZipArchiveEntry.prototype.getCompressedSize = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getCrc = function() {
-  return this.crc;
+ZipArchiveEntry.prototype.getCrc = function () {
+	return this.crc;
 };
 
 /**
@@ -87,8 +87,8 @@ ZipArchiveEntry.prototype.getCrc = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getExternalAttributes = function() {
-  return this.exattr;
+ZipArchiveEntry.prototype.getExternalAttributes = function () {
+	return this.exattr;
 };
 
 /**
@@ -96,8 +96,8 @@ ZipArchiveEntry.prototype.getExternalAttributes = function() {
  *
  * @returns {Buffer}
  */
-ZipArchiveEntry.prototype.getExtra = function() {
-  return this.extra !== null ? this.extra : constants.EMPTY;
+ZipArchiveEntry.prototype.getExtra = function () {
+	return this.extra !== null ? this.extra : constants.EMPTY;
 };
 
 /**
@@ -105,8 +105,8 @@ ZipArchiveEntry.prototype.getExtra = function() {
  *
  * @returns {GeneralPurposeBit}
  */
-ZipArchiveEntry.prototype.getGeneralPurposeBit = function() {
-  return this.gpb;
+ZipArchiveEntry.prototype.getGeneralPurposeBit = function () {
+	return this.gpb;
 };
 
 /**
@@ -114,8 +114,8 @@ ZipArchiveEntry.prototype.getGeneralPurposeBit = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getInternalAttributes = function() {
-  return this.inattr;
+ZipArchiveEntry.prototype.getInternalAttributes = function () {
+	return this.inattr;
 };
 
 /**
@@ -123,8 +123,8 @@ ZipArchiveEntry.prototype.getInternalAttributes = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getLastModifiedDate = function() {
-  return this.getTime();
+ZipArchiveEntry.prototype.getLastModifiedDate = function () {
+	return this.getTime();
 };
 
 /**
@@ -132,8 +132,8 @@ ZipArchiveEntry.prototype.getLastModifiedDate = function() {
  *
  * @returns {Buffer}
  */
-ZipArchiveEntry.prototype.getLocalFileDataExtra = function() {
-  return this.getExtra();
+ZipArchiveEntry.prototype.getLocalFileDataExtra = function () {
+	return this.getExtra();
 };
 
 /**
@@ -141,8 +141,8 @@ ZipArchiveEntry.prototype.getLocalFileDataExtra = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getMethod = function() {
-  return this.method;
+ZipArchiveEntry.prototype.getMethod = function () {
+	return this.method;
 };
 
 /**
@@ -150,8 +150,8 @@ ZipArchiveEntry.prototype.getMethod = function() {
  *
  * @returns {string}
  */
-ZipArchiveEntry.prototype.getName = function() {
-  return this.name;
+ZipArchiveEntry.prototype.getName = function () {
+	return this.name;
 };
 
 /**
@@ -159,8 +159,8 @@ ZipArchiveEntry.prototype.getName = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getPlatform = function() {
-  return this.platform;
+ZipArchiveEntry.prototype.getPlatform = function () {
+	return this.platform;
 };
 
 /**
@@ -168,8 +168,8 @@ ZipArchiveEntry.prototype.getPlatform = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getSize = function() {
-  return this.size;
+ZipArchiveEntry.prototype.getSize = function () {
+	return this.size;
 };
 
 /**
@@ -177,8 +177,8 @@ ZipArchiveEntry.prototype.getSize = function() {
  *
  * @returns {number|Date}
  */
-ZipArchiveEntry.prototype.getTime = function() {
-  return this.time !== -1 ? zipUtil.dosToDate(this.time) : -1;
+ZipArchiveEntry.prototype.getTime = function () {
+	return this.time !== -1 ? zipUtil.dosToDate(this.time) : -1;
 };
 
 /**
@@ -186,8 +186,8 @@ ZipArchiveEntry.prototype.getTime = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getTimeDos = function() {
-  return this.time !== -1 ? this.time : 0;
+ZipArchiveEntry.prototype.getTimeDos = function () {
+	return this.time !== -1 ? this.time : 0;
 };
 
 /**
@@ -195,8 +195,11 @@ ZipArchiveEntry.prototype.getTimeDos = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getUnixMode = function() {
-  return this.platform !== constants.PLATFORM_UNIX ? 0 : ((this.getExternalAttributes() >> constants.SHORT_SHIFT) & constants.SHORT_MASK);
+ZipArchiveEntry.prototype.getUnixMode = function () {
+	return this.platform !== constants.PLATFORM_UNIX
+		? 0
+		: (this.getExternalAttributes() >> constants.SHORT_SHIFT) &
+				constants.SHORT_MASK;
 };
 
 /**
@@ -204,8 +207,8 @@ ZipArchiveEntry.prototype.getUnixMode = function() {
  *
  * @returns {number}
  */
-ZipArchiveEntry.prototype.getVersionNeededToExtract = function() {
-  return this.minver;
+ZipArchiveEntry.prototype.getVersionNeededToExtract = function () {
+	return this.minver;
 };
 
 /**
@@ -213,12 +216,12 @@ ZipArchiveEntry.prototype.getVersionNeededToExtract = function() {
  *
  * @param comment
  */
-ZipArchiveEntry.prototype.setComment = function(comment) {
-  if (Buffer.byteLength(comment) !== comment.length) {
-    this.getGeneralPurposeBit().useUTF8ForNames(true);
-  }
+ZipArchiveEntry.prototype.setComment = function (comment) {
+	if (Buffer.byteLength(comment) !== comment.length) {
+		this.getGeneralPurposeBit().useUTF8ForNames(true);
+	}
 
-  this.comment = comment;
+	this.comment = comment;
 };
 
 /**
@@ -226,12 +229,12 @@ ZipArchiveEntry.prototype.setComment = function(comment) {
  *
  * @param size
  */
-ZipArchiveEntry.prototype.setCompressedSize = function(size) {
-  if (size < 0) {
-    throw new Error('invalid entry compressed size');
-  }
+ZipArchiveEntry.prototype.setCompressedSize = function (size) {
+	if (size < 0) {
+		throw new Error("invalid entry compressed size");
+	}
 
-  this.csize = size;
+	this.csize = size;
 };
 
 /**
@@ -239,12 +242,12 @@ ZipArchiveEntry.prototype.setCompressedSize = function(size) {
  *
  * @param crc
  */
-ZipArchiveEntry.prototype.setCrc = function(crc) {
-  if (crc < 0) {
-    throw new Error('invalid entry crc32');
-  }
+ZipArchiveEntry.prototype.setCrc = function (crc) {
+	if (crc < 0) {
+		throw new Error("invalid entry crc32");
+	}
 
-  this.crc = crc;
+	this.crc = crc;
 };
 
 /**
@@ -252,8 +255,8 @@ ZipArchiveEntry.prototype.setCrc = function(crc) {
  *
  * @param attr
  */
-ZipArchiveEntry.prototype.setExternalAttributes = function(attr) {
-  this.exattr = attr >>> 0;
+ZipArchiveEntry.prototype.setExternalAttributes = function (attr) {
+	this.exattr = attr >>> 0;
 };
 
 /**
@@ -261,8 +264,8 @@ ZipArchiveEntry.prototype.setExternalAttributes = function(attr) {
  *
  * @param extra
  */
-ZipArchiveEntry.prototype.setExtra = function(extra) {
-  this.extra = extra;
+ZipArchiveEntry.prototype.setExtra = function (extra) {
+	this.extra = extra;
 };
 
 /**
@@ -270,12 +273,12 @@ ZipArchiveEntry.prototype.setExtra = function(extra) {
  *
  * @param gpb
  */
-ZipArchiveEntry.prototype.setGeneralPurposeBit = function(gpb) {
-  if (!(gpb instanceof GeneralPurposeBit)) {
-    throw new Error('invalid entry GeneralPurposeBit');
-  }
+ZipArchiveEntry.prototype.setGeneralPurposeBit = function (gpb) {
+	if (!(gpb instanceof GeneralPurposeBit)) {
+		throw new Error("invalid entry GeneralPurposeBit");
+	}
 
-  this.gpb = gpb;
+	this.gpb = gpb;
 };
 
 /**
@@ -283,8 +286,8 @@ ZipArchiveEntry.prototype.setGeneralPurposeBit = function(gpb) {
  *
  * @param attr
  */
-ZipArchiveEntry.prototype.setInternalAttributes = function(attr) {
-  this.inattr = attr;
+ZipArchiveEntry.prototype.setInternalAttributes = function (attr) {
+	this.inattr = attr;
 };
 
 /**
@@ -292,12 +295,12 @@ ZipArchiveEntry.prototype.setInternalAttributes = function(attr) {
  *
  * @param method
  */
-ZipArchiveEntry.prototype.setMethod = function(method) {
-  if (method < 0) {
-    throw new Error('invalid entry compression method');
-  }
+ZipArchiveEntry.prototype.setMethod = function (method) {
+	if (method < 0) {
+		throw new Error("invalid entry compression method");
+	}
 
-  this.method = method;
+	this.method = method;
 };
 
 /**
@@ -306,20 +309,20 @@ ZipArchiveEntry.prototype.setMethod = function(method) {
  * @param name
  * @param prependSlash
  */
-ZipArchiveEntry.prototype.setName = function(name, prependSlash = false) {
-  name = normalizePath(name, false)
-    .replace(/^\w+:/, '')
-    .replace(/^(\.\.\/|\/)+/, '');
+ZipArchiveEntry.prototype.setName = function (name, prependSlash = false) {
+	name = normalizePath(name, false)
+		.replace(/^\w+:/, "")
+		.replace(/^(\.\.\/|\/)+/, "");
 
-  if (prependSlash) {
-    name = `/${name}`;
-  }
+	if (prependSlash) {
+		name = `/${name}`;
+	}
 
-  if (Buffer.byteLength(name) !== name.length) {
-    this.getGeneralPurposeBit().useUTF8ForNames(true);
-  }
+	if (Buffer.byteLength(name) !== name.length) {
+		this.getGeneralPurposeBit().useUTF8ForNames(true);
+	}
 
-  this.name = name;
+	this.name = name;
 };
 
 /**
@@ -327,8 +330,8 @@ ZipArchiveEntry.prototype.setName = function(name, prependSlash = false) {
  *
  * @param platform
  */
-ZipArchiveEntry.prototype.setPlatform = function(platform) {
-  this.platform = platform;
+ZipArchiveEntry.prototype.setPlatform = function (platform) {
+	this.platform = platform;
 };
 
 /**
@@ -336,12 +339,12 @@ ZipArchiveEntry.prototype.setPlatform = function(platform) {
  *
  * @param size
  */
-ZipArchiveEntry.prototype.setSize = function(size) {
-  if (size < 0) {
-    throw new Error('invalid entry size');
-  }
+ZipArchiveEntry.prototype.setSize = function (size) {
+	if (size < 0) {
+		throw new Error("invalid entry size");
+	}
 
-  this.size = size;
+	this.size = size;
 };
 
 /**
@@ -350,12 +353,12 @@ ZipArchiveEntry.prototype.setSize = function(size) {
  * @param time
  * @param forceLocalTime
  */
-ZipArchiveEntry.prototype.setTime = function(time, forceLocalTime) {
-  if (!(time instanceof Date)) {
-    throw new Error('invalid entry time');
-  }
+ZipArchiveEntry.prototype.setTime = function (time, forceLocalTime) {
+	if (!(time instanceof Date)) {
+		throw new Error("invalid entry time");
+	}
 
-  this.time = zipUtil.dateToDos(time, forceLocalTime);
+	this.time = zipUtil.dateToDos(time, forceLocalTime);
 };
 
 /**
@@ -363,15 +366,17 @@ ZipArchiveEntry.prototype.setTime = function(time, forceLocalTime) {
  *
  * @param mode
  */
-ZipArchiveEntry.prototype.setUnixMode = function(mode) {
-  mode |= this.isDirectory() ? constants.S_IFDIR : constants.S_IFREG;
+ZipArchiveEntry.prototype.setUnixMode = function (mode) {
+	mode |= this.isDirectory() ? constants.S_IFDIR : constants.S_IFREG;
 
-  var extattr = 0;
-  extattr |= (mode << constants.SHORT_SHIFT) | (this.isDirectory() ? constants.S_DOS_D : constants.S_DOS_A);
+	var extattr = 0;
+	extattr |=
+		(mode << constants.SHORT_SHIFT) |
+		(this.isDirectory() ? constants.S_DOS_D : constants.S_DOS_A);
 
-  this.setExternalAttributes(extattr);
-  this.mode = mode & constants.MODE_MASK;
-  this.platform = constants.PLATFORM_UNIX;
+	this.setExternalAttributes(extattr);
+	this.mode = mode & constants.MODE_MASK;
+	this.platform = constants.PLATFORM_UNIX;
 };
 
 /**
@@ -379,8 +384,8 @@ ZipArchiveEntry.prototype.setUnixMode = function(mode) {
  *
  * @param minver
  */
-ZipArchiveEntry.prototype.setVersionNeededToExtract = function(minver) {
-  this.minver = minver;
+ZipArchiveEntry.prototype.setVersionNeededToExtract = function (minver) {
+	this.minver = minver;
 };
 
 /**
@@ -388,8 +393,8 @@ ZipArchiveEntry.prototype.setVersionNeededToExtract = function(minver) {
  *
  * @returns {boolean}
  */
-ZipArchiveEntry.prototype.isDirectory = function() {
-  return this.getName().slice(-1) === '/';
+ZipArchiveEntry.prototype.isDirectory = function () {
+	return this.getName().slice(-1) === "/";
 };
 
 /**
@@ -399,8 +404,8 @@ ZipArchiveEntry.prototype.isDirectory = function() {
  *
  * @returns {boolean}
  */
-ZipArchiveEntry.prototype.isUnixSymlink = function() {
-  return (this.getUnixMode() & UnixStat.FILE_TYPE_FLAG) === UnixStat.LINK_FLAG;
+ZipArchiveEntry.prototype.isUnixSymlink = function () {
+	return (this.getUnixMode() & UnixStat.FILE_TYPE_FLAG) === UnixStat.LINK_FLAG;
 };
 
 /**
@@ -408,6 +413,8 @@ ZipArchiveEntry.prototype.isUnixSymlink = function() {
  *
  * @returns {boolean}
  */
-ZipArchiveEntry.prototype.isZip64 = function() {
-  return this.csize > constants.ZIP64_MAGIC || this.size > constants.ZIP64_MAGIC;
+ZipArchiveEntry.prototype.isZip64 = function () {
+	return (
+		this.csize > constants.ZIP64_MAGIC || this.size > constants.ZIP64_MAGIC
+	);
 };

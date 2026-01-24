@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/set/symmetric-difference');
+"use strict";
+module.exports = require("../../full/set/symmetric-difference");

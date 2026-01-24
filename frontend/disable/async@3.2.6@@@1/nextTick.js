@@ -1,10 +1,8 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _setImmediate = require('./internal/setImmediate.js');
+var _setImmediate = require("./internal/setImmediate.js");
 
 /**
  * Calls `callback` on a later loop around the event loop. In Node.js this just
@@ -39,13 +37,12 @@ var _setImmediate = require('./internal/setImmediate.js');
  */
 var _defer; /* istanbul ignore file */
 
-
 if (_setImmediate.hasNextTick) {
-    _defer = process.nextTick;
+	_defer = process.nextTick;
 } else if (_setImmediate.hasSetImmediate) {
-    _defer = setImmediate;
+	_defer = setImmediate;
 } else {
-    _defer = _setImmediate.fallback;
+	_defer = _setImmediate.fallback;
 }
 
 exports.default = (0, _setImmediate.wrap)(_defer);

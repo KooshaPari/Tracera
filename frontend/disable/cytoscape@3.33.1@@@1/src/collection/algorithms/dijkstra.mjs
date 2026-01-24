@@ -1,133 +1,130 @@
-import * as is from '../../is.mjs';
-import Heap from '../../heap.mjs';
-import { defaults } from '../../util/index.mjs';
+import Heap from "../../heap.mjs";
+import * as is from "../../is.mjs";
+import { defaults } from "../../util/index.mjs";
 
 const dijkstraDefaults = defaults({
-  root: null,
-  weight: edge => 1,
-  directed: false
+	root: null,
+	weight: (edge) => 1,
+	directed: false,
 });
 
-let elesfn = ({
+const elesfn = {
+	dijkstra: function (options) {
+		if (!is.plainObject(options)) {
+			const args = arguments;
 
-  dijkstra: function( options ){
-    if( !is.plainObject(options) ){
-      let args = arguments;
+			options = { root: args[0], weight: args[1], directed: args[2] };
+		}
 
-      options = { root: args[0], weight: args[1], directed: args[2] };
-    }
+		const { root, weight, directed } = dijkstraDefaults(options);
+		const weightFn = weight;
+		const source = is.string(root) ? this.filter(root)[0] : root[0];
+		const dist = {};
+		const prev = {};
+		const knownDist = {};
 
-    let { root, weight, directed } = dijkstraDefaults(options);
+		const { nodes, edges } = this.byGroup();
+		edges.unmergeBy((ele) => ele.isLoop());
 
-    let eles = this;
-    let weightFn = weight;
-    let source = is.string( root ) ? this.filter( root )[0] : root[0];
-    let dist = {};
-    let prev = {};
-    let knownDist = {};
+		const getDist = (node) => dist[node.id()];
 
-    let { nodes, edges } = this.byGroup();
-    edges.unmergeBy( ele => ele.isLoop() );
+		const setDist = (node, d) => {
+			dist[node.id()] = d;
 
-    let getDist = node => dist[ node.id() ];
+			Q.updateItem(node);
+		};
 
-    let setDist = ( node, d ) => {
-      dist[ node.id() ] = d;
+		const Q = new Heap((a, b) => getDist(a) - getDist(b));
 
-      Q.updateItem( node );
-    };
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
 
-    let Q = new Heap( (a, b) => getDist(a) - getDist(b) );
+			dist[node.id()] = node.same(source) ? 0 : Infinity;
+			Q.push(node);
+		}
 
-    for( let i = 0; i < nodes.length; i++ ){
-      let node = nodes[ i ];
+		const distBetween = (u, v) => {
+			const uvs = (directed ? u.edgesTo(v) : u.edgesWith(v)).intersect(edges);
+			let smallestDistance = Infinity;
+			let smallestEdge;
 
-      dist[ node.id() ] = node.same( source ) ? 0 : Infinity;
-      Q.push( node );
-    }
+			for (let i = 0; i < uvs.length; i++) {
+				const edge = uvs[i];
+				const weight = weightFn(edge);
 
-    let distBetween = ( u, v ) => {
-      let uvs = ( directed ? u.edgesTo(v) : u.edgesWith(v) ).intersect( edges );
-      let smallestDistance = Infinity;
-      let smallestEdge;
+				if (weight < smallestDistance || !smallestEdge) {
+					smallestDistance = weight;
+					smallestEdge = edge;
+				}
+			}
 
-      for( let i = 0; i < uvs.length; i++ ){
-        let edge = uvs[ i ];
-        let weight = weightFn( edge );
+			return {
+				edge: smallestEdge,
+				dist: smallestDistance,
+			};
+		};
 
-        if( weight < smallestDistance || !smallestEdge ){
-          smallestDistance = weight;
-          smallestEdge = edge;
-        }
-      }
+		while (Q.size() > 0) {
+			const u = Q.pop();
+			const smalletsDist = getDist(u);
+			const uid = u.id();
 
-      return {
-        edge: smallestEdge,
-        dist: smallestDistance
-      };
-    };
+			knownDist[uid] = smalletsDist;
 
-    while( Q.size() > 0 ){
-      let u = Q.pop();
-      let smalletsDist = getDist( u );
-      let uid = u.id();
+			if (smalletsDist === Infinity) {
+				continue;
+			}
 
-      knownDist[ uid ] = smalletsDist;
+			const neighbors = u.neighborhood().intersect(nodes);
+			for (let i = 0; i < neighbors.length; i++) {
+				const v = neighbors[i];
+				const vid = v.id();
+				const vDist = distBetween(u, v);
 
-      if( smalletsDist === Infinity ){
-        continue;
-      }
+				const alt = smalletsDist + vDist.dist;
 
-      let neighbors = u.neighborhood().intersect( nodes );
-      for( let i = 0; i < neighbors.length; i++ ){
-        let v = neighbors[ i ];
-        let vid = v.id();
-        let vDist = distBetween( u, v );
+				if (alt < getDist(v)) {
+					setDist(v, alt);
 
-        let alt = smalletsDist + vDist.dist;
+					prev[vid] = {
+						node: u,
+						edge: vDist.edge,
+					};
+				}
+			} // for
+		} // while
 
-        if( alt < getDist( v ) ){
-          setDist( v, alt );
+		return {
+			distanceTo: (node) => {
+				const target = is.string(node) ? nodes.filter(node)[0] : node[0];
 
-          prev[ vid ] = {
-            node: u,
-            edge: vDist.edge
-          };
-        }
-      } // for
-    } // while
+				return knownDist[target.id()];
+			},
 
-    return {
-      distanceTo: function( node ){
-        let target = is.string( node ) ? nodes.filter( node )[0] : node[0];
+			pathTo: (node) => {
+				const target = is.string(node) ? nodes.filter(node)[0] : node[0];
+				const S = [];
+				let u = target;
+				let uid = u.id();
 
-        return knownDist[ target.id() ];
-      },
+				if (target.length > 0) {
+					S.unshift(target);
 
-      pathTo: function( node ){
-        let target = is.string( node ) ? nodes.filter( node )[0] : node[0];
-        let S = [];
-        let u = target;
-        let uid = u.id();
+					while (prev[uid]) {
+						const p = prev[uid];
 
-        if( target.length > 0 ){
-          S.unshift( target );
+						S.unshift(p.edge);
+						S.unshift(p.node);
 
-          while( prev[ uid ] ){
-            let p = prev[ uid ];
+						u = p.node;
+						uid = u.id();
+					}
+				}
 
-            S.unshift( p.edge );
-            S.unshift( p.node );
-
-            u = p.node;
-            uid = u.id();
-          }
-        }
-
-        return eles.spawn( S );
-      }
-    };
-  }
-});
+				return this.spawn(S);
+			},
+		};
+	},
+};
 
 export default elesfn;

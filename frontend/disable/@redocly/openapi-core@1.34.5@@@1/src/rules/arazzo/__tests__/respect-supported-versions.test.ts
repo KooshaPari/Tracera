@@ -1,11 +1,15 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Arazzo respect-supported-versions', () => {
-  const documentWithUnsupportedVersion = parseYamlToDocument(
-    outdent`
+describe("Arazzo respect-supported-versions", () => {
+	const documentWithUnsupportedVersion = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.2'
       info:
         title: Cool API
@@ -30,11 +34,11 @@ describe('Arazzo respect-supported-versions', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  const documentWithSupportedVersion = parseYamlToDocument(
-    outdent`
+	const documentWithSupportedVersion = parseYamlToDocument(
+		outdent`
       arazzo: '1.0.1'
       info:
         title: Cool API
@@ -59,19 +63,19 @@ describe('Arazzo respect-supported-versions', () => {
               successCriteria:
                 - condition: $statusCode == 200
     `,
-    'arazzo.yaml'
-  );
+		"arazzo.yaml",
+	);
 
-  it('should report on arazzo version error', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document: documentWithUnsupportedVersion,
-      config: await makeConfig({
-        rules: { 'respect-supported-versions': 'error' },
-      }),
-    });
+	it("should report on arazzo version error", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document: documentWithUnsupportedVersion,
+			config: await makeConfig({
+				rules: { "respect-supported-versions": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -88,29 +92,29 @@ describe('Arazzo respect-supported-versions', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on arazzo version error when supported version is used', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document: documentWithSupportedVersion,
-      config: await makeConfig({
-        rules: { 'respect-supported-versions': 'error' },
-      }),
-    });
+	it("should not report on arazzo version error when supported version is used", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document: documentWithSupportedVersion,
+			config: await makeConfig({
+				rules: { "respect-supported-versions": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on arazzo version error when rule is not configured', async () => {
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document: documentWithSupportedVersion,
-      config: await makeConfig({
-        rules: {},
-      }),
-    });
+	it("should not report on arazzo version error when rule is not configured", async () => {
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document: documentWithSupportedVersion,
+			config: await makeConfig({
+				rules: {},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

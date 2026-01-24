@@ -1,9 +1,9 @@
-import { outdent } from 'outdent';
-import { lintDoc } from './utils';
+import { outdent } from "outdent";
+import { lintDoc } from "./utils";
 
-describe('OpenAPI Schema 2.0', () => {
-  it('should report if the title of the API is empty ', async () => {
-    const source = outdent`
+describe("OpenAPI Schema 2.0", () => {
+	it("should report if the title of the API is empty ", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title:
@@ -17,11 +17,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/title",
@@ -29,10 +29,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the description field is not string.', async () => {
-    const source = outdent`
+	it("should report if in the description field is not string.", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition.
@@ -47,11 +47,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/description",
@@ -59,10 +59,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the termsOfService field is not string', async () => {
-    const source = outdent`
+	it("should report if in the termsOfService field is not string", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -77,11 +77,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/termsOfService",
@@ -89,10 +89,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if the Contact Object is valid', async () => {
-    const source = outdent`
+	it("should not report if the Contact Object is valid", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -111,15 +111,15 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if in the Contact Object in URL field is not string', async () => {
-    const source = outdent`
+	it("should report if in the Contact Object in URL field is not string", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -137,11 +137,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/contact/url",
@@ -149,10 +149,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the Contact Object in email field is not string', async () => {
-    const source = outdent`
+	it("should report if in the Contact Object in email field is not string", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -170,11 +170,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/contact/email",
@@ -182,10 +182,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if the License Object is valid', async () => {
-    const source = outdent`
+	it("should not report if the License Object is valid", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -202,15 +202,15 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if the License Object missing field Name', async () => {
-    const source = outdent`
+	it("should report if the License Object missing field Name", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -226,11 +226,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/license",
@@ -238,10 +238,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the URL field of the License Object is not string', async () => {
-    const source = outdent`
+	it("should report if in the URL field of the License Object is not string", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -258,11 +258,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/license/url",
@@ -270,10 +270,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if the URL field of the License Object is not provided', async () => {
-    const source = outdent`
+	it("should not report if the URL field of the License Object is not provided", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -289,15 +289,15 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if the Version field is not provided', async () => {
-    const source = outdent`
+	it("should report if the Version field is not provided", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Example OpenAPI 3 definition.
@@ -310,11 +310,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info",
@@ -322,10 +322,10 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the Version field is not string', async () => {
-    const source = outdent`
+	it("should report if in the Version field is not string", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         version:
@@ -339,11 +339,11 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/version",
@@ -351,5 +351,5 @@ describe('OpenAPI Schema 2.0', () => {
         },
       ]
     `);
-  });
+	});
 });

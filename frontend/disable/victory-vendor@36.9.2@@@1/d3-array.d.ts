@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-array` (TypeScript)
 //
 // Export the type definitions for this package:

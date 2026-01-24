@@ -1,6 +1,4 @@
-'use strict'
-
-const u = require('universalify').fromCallback
+const u = require("universalify").fromCallback;
 module.exports = {
-  move: u(require('./move'))
-}
+	move: u(require("./move")),
+};

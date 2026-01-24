@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = cargo;
 
-var _queue = require('./internal/queue.js');
+var _queue = require("./internal/queue.js");
 
 var _queue2 = _interopRequireDefault(_queue);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Creates a `cargoQueue` object with the specified payload. Tasks added to the
@@ -66,6 +66,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function cargo(worker, concurrency, payload) {
-    return (0, _queue2.default)(worker, concurrency, payload);
+	return (0, _queue2.default)(worker, concurrency, payload);
 }
 module.exports = exports.default;

@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/array/find-index');
+"use strict";
+var parent = require("../../stable/array/find-index");
 
 module.exports = parent;

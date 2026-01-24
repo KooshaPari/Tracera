@@ -21,10 +21,10 @@ Y18N.prototype.__ = function () {
   }
   var args = Array.prototype.slice.call(arguments)
   var str = args.shift()
-  var cb = function () {} // start with noop.
+  var cb = () => {} // start with noop.
 
   if (typeof args[args.length - 1] === 'function') cb = args.pop()
-  cb = cb || function () {} // noop.
+  cb = cb || (() => {} // noop.) // noop.
 
   if (!this.cache[this.locale]) this._readLocaleFile()
 
@@ -46,7 +46,7 @@ Y18N.prototype.__ = function () {
 Y18N.prototype._taggedLiteral = function (parts) {
   var args = arguments
   var str = ''
-  parts.forEach(function (part, i) {
+  parts.forEach((part, i) => {
     var arg = args[i + 1]
     str += part
     if (typeof arg !== 'undefined') {
@@ -62,7 +62,6 @@ Y18N.prototype._enqueueWrite = function (work) {
 }
 
 Y18N.prototype._processWriteQueue = function () {
-  var _this = this
   var work = this.writeQueue[0]
 
   // destructure the enqueued work.
@@ -73,9 +72,9 @@ Y18N.prototype._processWriteQueue = function () {
   var languageFile = this._resolveLocaleFile(directory, locale)
   var serializedLocale = JSON.stringify(this.cache[locale], null, 2)
 
-  fs.writeFile(languageFile, serializedLocale, 'utf-8', function (err) {
-    _this.writeQueue.shift()
-    if (_this.writeQueue.length > 0) _this._processWriteQueue()
+  fs.writeFile(languageFile, serializedLocale, 'utf-8', (err) => {
+    this.writeQueue.shift()
+    if (this.writeQueue.length > 0) this._processWriteQueue()
     cb(err)
   })
 }
@@ -110,7 +109,7 @@ Y18N.prototype._resolveLocaleFile = function (directory, locale) {
 
 // this only exists because fs.existsSync() "will be deprecated"
 // see https://nodejs.org/api/fs.html#fs_fs_existssync_path
-Y18N.prototype._fileExistsSync = function (file) {
+Y18N.prototype._fileExistsSync = (file) => {
   try {
     return fs.statSync(file).isFile()
   } catch (err) {
@@ -124,7 +123,7 @@ Y18N.prototype.__n = function () {
   var plural = args.shift()
   var quantity = args.shift()
 
-  var cb = function () {} // start with noop.
+  var cb = () => {} // start with noop.
   if (typeof args[args.length - 1] === 'function') cb = args.pop()
 
   if (!this.cache[this.locale]) this._readLocaleFile()
@@ -173,7 +172,7 @@ Y18N.prototype.updateLocale = function (obj) {
   }
 }
 
-module.exports = function (opts) {
+module.exports = (opts) => {
   var y18n = new Y18N(opts)
 
   // bind all functions to y18n, so that

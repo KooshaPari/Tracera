@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/find-last');
+"use strict";
+module.exports = require("../../full/typed-array/find-last");

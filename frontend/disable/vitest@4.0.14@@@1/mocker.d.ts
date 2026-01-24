@@ -1,1 +1,1 @@
-export * from './dist/mocker.js'
+export * from "./dist/mocker.js";

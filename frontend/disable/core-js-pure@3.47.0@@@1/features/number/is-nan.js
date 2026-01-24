@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/number/is-nan');
+"use strict";
+module.exports = require("../../full/number/is-nan");

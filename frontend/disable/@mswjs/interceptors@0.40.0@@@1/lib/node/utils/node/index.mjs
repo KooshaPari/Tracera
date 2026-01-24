@@ -1,10 +1,7 @@
 import {
-  getClientRequestBodyStream,
-  setRawRequestBodyStream
+	getClientRequestBodyStream,
+	setRawRequestBodyStream,
 } from "../../chunk-GKN5RBVR.mjs";
 import "../../chunk-YWNGXXUQ.mjs";
-export {
-  getClientRequestBodyStream,
-  setRawRequestBodyStream
-};
+export { getClientRequestBodyStream, setRawRequestBodyStream };
 //# sourceMappingURL=index.mjs.map

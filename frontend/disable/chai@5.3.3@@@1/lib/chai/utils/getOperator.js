@@ -1,15 +1,15 @@
-import {flag} from './flag.js';
-import {type} from './type-detect.js';
+import { flag } from "./flag.js";
+import { type } from "./type-detect.js";
 
 /**
  * @param {unknown} obj
  * @returns {boolean}
  */
 function isObjectType(obj) {
-  let objectType = type(obj);
-  let objectTypes = ['Array', 'Object', 'Function'];
+	const objectType = type(obj);
+	const objectTypes = ["Array", "Object", "Function"];
 
-  return objectTypes.indexOf(objectType) !== -1;
+	return objectTypes.indexOf(objectType) !== -1;
 }
 
 /**
@@ -29,30 +29,30 @@ function isObjectType(obj) {
  * @public
  */
 export function getOperator(obj, args) {
-  let operator = flag(obj, 'operator');
-  let negate = flag(obj, 'negate');
-  let expected = args[3];
-  let msg = negate ? args[2] : args[1];
+	const operator = flag(obj, "operator");
+	const negate = flag(obj, "negate");
+	const expected = args[3];
+	let msg = negate ? args[2] : args[1];
 
-  if (operator) {
-    return operator;
-  }
+	if (operator) {
+		return operator;
+	}
 
-  if (typeof msg === 'function') msg = msg();
+	if (typeof msg === "function") msg = msg();
 
-  msg = msg || '';
-  if (!msg) {
-    return undefined;
-  }
+	msg = msg || "";
+	if (!msg) {
+		return undefined;
+	}
 
-  if (/\shave\s/.test(msg)) {
-    return undefined;
-  }
+	if (/\shave\s/.test(msg)) {
+		return undefined;
+	}
 
-  let isObject = isObjectType(expected);
-  if (/\snot\s/.test(msg)) {
-    return isObject ? 'notDeepStrictEqual' : 'notStrictEqual';
-  }
+	const isObject = isObjectType(expected);
+	if (/\snot\s/.test(msg)) {
+		return isObject ? "notDeepStrictEqual" : "notStrictEqual";
+	}
 
-  return isObject ? 'deepStrictEqual' : 'strictEqual';
+	return isObject ? "deepStrictEqual" : "strictEqual";
 }

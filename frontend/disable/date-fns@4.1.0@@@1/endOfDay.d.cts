@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfDay} function options.
  */
 export interface EndOfDayOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfDay
  * @category Day Helpers
@@ -27,9 +27,9 @@ export interface EndOfDayOptions<DateType extends Date = Date>
  * //=> Tue Sep 02 2014 23:59:59.999
  */
 export declare function endOfDay<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EndOfDayOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	options?: EndOfDayOptions<ResultDate> | undefined,
 ): ResultDate;

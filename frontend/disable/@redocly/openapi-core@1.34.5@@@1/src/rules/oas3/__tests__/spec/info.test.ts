@@ -1,9 +1,9 @@
-import { outdent } from 'outdent';
-import { validateDoc } from './utils';
+import { outdent } from "outdent";
+import { validateDoc } from "./utils";
 
-describe('OpenAPI Schema', () => {
-  it('should report if the title of the API is empty ', async () => {
-    const source = outdent`
+describe("OpenAPI Schema", () => {
+	it("should report if the title of the API is empty ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title:
@@ -20,11 +20,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/title",
@@ -32,10 +32,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the description field is not string.', async () => {
-    const source = outdent`
+	it("should report if in the description field is not string.", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition.
@@ -53,11 +53,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/description",
@@ -65,10 +65,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the termsOfService field is not string', async () => {
-    const source = outdent`
+	it("should report if in the termsOfService field is not string", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -86,11 +86,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/termsOfService",
@@ -98,10 +98,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if the Contact Object is valid', async () => {
-    const source = outdent`
+	it("should not report if the Contact Object is valid", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -123,15 +123,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if in the Contact Object in URL field is not string', async () => {
-    const source = outdent`
+	it("should report if in the Contact Object in URL field is not string", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -152,11 +152,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/contact/url",
@@ -164,10 +164,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the Contact Object in email field is not string', async () => {
-    const source = outdent`
+	it("should report if in the Contact Object in email field is not string", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -188,11 +188,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/contact/email",
@@ -200,10 +200,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if the License Object is valid', async () => {
-    const source = outdent`
+	it("should not report if the License Object is valid", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -223,15 +223,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if the License Object missing field Name', async () => {
-    const source = outdent`
+	it("should report if the License Object missing field Name", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -250,11 +250,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/license",
@@ -262,10 +262,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the URL field of the License Object is not string', async () => {
-    const source = outdent`
+	it("should report if in the URL field of the License Object is not string", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -285,11 +285,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/license/url",
@@ -297,10 +297,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if the URL field of the License Object is not provided', async () => {
-    const source = outdent`
+	it("should not report if the URL field of the License Object is not provided", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -319,15 +319,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if the Version field is not provided', async () => {
-    const source = outdent`
+	it("should report if the Version field is not provided", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition.
@@ -343,11 +343,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info",
@@ -355,10 +355,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if in the Version field is not string', async () => {
-    const source = outdent`
+	it("should report if in the Version field is not string", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         version:
@@ -375,11 +375,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/info/version",
@@ -387,5 +387,5 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 });

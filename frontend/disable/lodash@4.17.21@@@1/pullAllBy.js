@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    basePullAll = require('./_basePullAll');
+var baseIteratee = require("./_baseIteratee"),
+	basePullAll = require("./_basePullAll");
 
 /**
  * This method is like `_.pullAll` except that it accepts `iteratee` which is
@@ -25,9 +25,9 @@ var baseIteratee = require('./_baseIteratee'),
  * // => [{ 'x': 2 }]
  */
 function pullAllBy(array, values, iteratee) {
-  return (array && array.length && values && values.length)
-    ? basePullAll(array, values, baseIteratee(iteratee, 2))
-    : array;
+	return array && array.length && values && values.length
+		? basePullAll(array, values, baseIteratee(iteratee, 2))
+		: array;
 }
 
 module.exports = pullAllBy;

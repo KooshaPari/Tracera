@@ -21,12 +21,12 @@
  *   Turn off outer component context (default: `false`).
  */
 
-import React from 'react'
+import React from "react";
 
 /** @type {Readonly<MDXComponents>} */
-const emptyComponents = {}
+const emptyComponents = {};
 
-const MDXContext = React.createContext(emptyComponents)
+const MDXContext = React.createContext(emptyComponents);
 
 /**
  * Get current components from the MDX Context.
@@ -37,20 +37,17 @@ const MDXContext = React.createContext(emptyComponents)
  *   Current components.
  */
 export function useMDXComponents(components) {
-  const contextComponents = React.useContext(MDXContext)
+	const contextComponents = React.useContext(MDXContext);
 
-  // Memoize to avoid unnecessary top-level context changes
-  return React.useMemo(
-    function () {
-      // Custom merge via a function prop
-      if (typeof components === 'function') {
-        return components(contextComponents)
-      }
+	// Memoize to avoid unnecessary top-level context changes
+	return React.useMemo(() => {
+		// Custom merge via a function prop
+		if (typeof components === "function") {
+			return components(contextComponents);
+		}
 
-      return {...contextComponents, ...components}
-    },
-    [contextComponents, components]
-  )
+		return { ...contextComponents, ...components };
+	}, [contextComponents, components]);
 }
 
 /**
@@ -63,21 +60,21 @@ export function useMDXComponents(components) {
  * @satisfies {Component}
  */
 export function MDXProvider(properties) {
-  /** @type {Readonly<MDXComponents>} */
-  let allComponents
+	/** @type {Readonly<MDXComponents>} */
+	let allComponents;
 
-  if (properties.disableParentContext) {
-    allComponents =
-      typeof properties.components === 'function'
-        ? properties.components(emptyComponents)
-        : properties.components || emptyComponents
-  } else {
-    allComponents = useMDXComponents(properties.components)
-  }
+	if (properties.disableParentContext) {
+		allComponents =
+			typeof properties.components === "function"
+				? properties.components(emptyComponents)
+				: properties.components || emptyComponents;
+	} else {
+		allComponents = useMDXComponents(properties.components);
+	}
 
-  return React.createElement(
-    MDXContext.Provider,
-    {value: allComponents},
-    properties.children
-  )
+	return React.createElement(
+		MDXContext.Provider,
+		{ value: allComponents },
+		properties.children,
+	);
 }

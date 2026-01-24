@@ -1,11 +1,11 @@
-import { promise as queueAsPromised } from './queue.js'
+import { promise as queueAsPromised } from "./queue.js";
 
 /* eslint-disable */
 
-const queue = queueAsPromised(worker, 1)
+const queue = queueAsPromised(worker, 1);
 
-console.log('the result is', await queue.push(42))
+console.log("the result is", await queue.push(42));
 
-async function worker (arg) {
-  return 42 * 2
+async function worker(arg) {
+	return 42 * 2;
 }

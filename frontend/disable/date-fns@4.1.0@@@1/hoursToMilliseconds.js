@@ -18,7 +18,7 @@ import { millisecondsInHour } from "./constants.js";
  * //=> 7200000
  */
 export function hoursToMilliseconds(hours) {
-  return Math.trunc(hours * millisecondsInHour);
+	return Math.trunc(hours * millisecondsInHour);
 }
 
 // Fallback for modularized imports:

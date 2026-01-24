@@ -27,7 +27,7 @@ import { addHours } from "./addHours.js";
  * //=> Thu Jul 10 2014 23:00:00
  */
 export function subHours(date, amount, options) {
-  return addHours(date, -amount, options);
+	return addHours(date, -amount, options);
 }
 
 // Fallback for modularized imports:

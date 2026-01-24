@@ -1,1 +1,1 @@
-module.exports = require('../../../../dist/adapters/node-http/content-type/form-data');
+module.exports = require("../../../../dist/adapters/node-http/content-type/form-data");

@@ -1,83 +1,83 @@
-import { vi, beforeAll, afterEach, afterAll, it, expect } from 'vitest'
-import { hasConfigurableGlobal } from './hasConfigurableGlobal'
+import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
+import { hasConfigurableGlobal } from "./hasConfigurableGlobal";
 
 beforeAll(() => {
-  vi.spyOn(console, 'error').mockImplementation(() => {})
-})
+	vi.spyOn(console, "error").mockImplementation(() => {});
+});
 
 afterEach(() => {
-  vi.clearAllMocks()
-})
+	vi.clearAllMocks();
+});
 
 afterAll(() => {
-  vi.restoreAllMocks()
-})
+	vi.restoreAllMocks();
+});
 
-it('returns true if the global property exists and is configurable', () => {
-  Object.defineProperty(global, '_existsAndConfigurable', {
-    value: 'something',
-    configurable: true,
-  })
+it("returns true if the global property exists and is configurable", () => {
+	Object.defineProperty(global, "_existsAndConfigurable", {
+		value: "something",
+		configurable: true,
+	});
 
-  expect(hasConfigurableGlobal('_existsAndConfigurable')).toBe(true)
-})
+	expect(hasConfigurableGlobal("_existsAndConfigurable")).toBe(true);
+});
 
-it('returns false if the global property does not exist', () => {
-  expect(hasConfigurableGlobal('_non-existing')).toBe(false)
-})
+it("returns false if the global property does not exist", () => {
+	expect(hasConfigurableGlobal("_non-existing")).toBe(false);
+});
 
-it('returns false for existing global with undefined as a value', () => {
-  Object.defineProperty(global, '_existsAndUndefined', {
-    value: undefined,
-    configurable: true,
-  })
-  expect(hasConfigurableGlobal('_existsAndUndefined')).toBe(false)
-})
+it("returns false for existing global with undefined as a value", () => {
+	Object.defineProperty(global, "_existsAndUndefined", {
+		value: undefined,
+		configurable: true,
+	});
+	expect(hasConfigurableGlobal("_existsAndUndefined")).toBe(false);
+});
 
-it('returns false for existing global with null as a value', () => {
-  Object.defineProperty(global, '_existsAndNull', {
-    value: null,
-    configurable: true,
-  })
-  expect(hasConfigurableGlobal('_existsAndNull')).toBe(false)
-})
+it("returns false for existing global with null as a value", () => {
+	Object.defineProperty(global, "_existsAndNull", {
+		value: null,
+		configurable: true,
+	});
+	expect(hasConfigurableGlobal("_existsAndNull")).toBe(false);
+});
 
-it('returns false for existing global with a getter that returns undefined', () => {
-  Object.defineProperty(global, '_existsGetterUndefined', {
-    get: () => undefined,
-    configurable: true,
-  })
-  expect(hasConfigurableGlobal('_existsGetterUndefined')).toBe(false)
-})
+it("returns false for existing global with a getter that returns undefined", () => {
+	Object.defineProperty(global, "_existsGetterUndefined", {
+		get: () => undefined,
+		configurable: true,
+	});
+	expect(hasConfigurableGlobal("_existsGetterUndefined")).toBe(false);
+});
 
-it('returns false and prints an error for implicitly non-configurable global property', () => {
-  Object.defineProperty(global, '_implicitlyNonConfigurable', {
-    value: 'something',
-  })
+it("returns false and prints an error for implicitly non-configurable global property", () => {
+	Object.defineProperty(global, "_implicitlyNonConfigurable", {
+		value: "something",
+	});
 
-  expect(hasConfigurableGlobal('_implicitlyNonConfigurable')).toBe(false)
-  expect(console.error).toHaveBeenCalledWith(
-    '[MSW] Failed to apply interceptor: the global `_implicitlyNonConfigurable` property is non-configurable. This is likely an issue with your environment. If you are using a framework, please open an issue about this in their repository.'
-  )
-})
+	expect(hasConfigurableGlobal("_implicitlyNonConfigurable")).toBe(false);
+	expect(console.error).toHaveBeenCalledWith(
+		"[MSW] Failed to apply interceptor: the global `_implicitlyNonConfigurable` property is non-configurable. This is likely an issue with your environment. If you are using a framework, please open an issue about this in their repository.",
+	);
+});
 
-it('returns false and prints an error for explicitly non-configurable global property', () => {
-  Object.defineProperty(global, '_explicitlyNonConfigurable', {
-    value: 'something',
-    configurable: false,
-  })
+it("returns false and prints an error for explicitly non-configurable global property", () => {
+	Object.defineProperty(global, "_explicitlyNonConfigurable", {
+		value: "something",
+		configurable: false,
+	});
 
-  expect(hasConfigurableGlobal('_explicitlyNonConfigurable')).toBe(false)
-  expect(console.error).toHaveBeenCalledWith(
-    '[MSW] Failed to apply interceptor: the global `_explicitlyNonConfigurable` property is non-configurable. This is likely an issue with your environment. If you are using a framework, please open an issue about this in their repository.'
-  )
-})
+	expect(hasConfigurableGlobal("_explicitlyNonConfigurable")).toBe(false);
+	expect(console.error).toHaveBeenCalledWith(
+		"[MSW] Failed to apply interceptor: the global `_explicitlyNonConfigurable` property is non-configurable. This is likely an issue with your environment. If you are using a framework, please open an issue about this in their repository.",
+	);
+});
 
-it('returns false and prints an error for global property that only has a getter', () => {
-  Object.defineProperty(global, '_onlyGetter', { get: () => 'something' })
+it("returns false and prints an error for global property that only has a getter", () => {
+	Object.defineProperty(global, "_onlyGetter", { get: () => "something" });
 
-  expect(hasConfigurableGlobal('_onlyGetter')).toBe(false)
-  expect(console.error).toHaveBeenCalledWith(
-    '[MSW] Failed to apply interceptor: the global `_onlyGetter` property is non-configurable. This is likely an issue with your environment. If you are using a framework, please open an issue about this in their repository.'
-  )
-})
+	expect(hasConfigurableGlobal("_onlyGetter")).toBe(false);
+	expect(console.error).toHaveBeenCalledWith(
+		"[MSW] Failed to apply interceptor: the global `_onlyGetter` property is non-configurable. This is likely an issue with your environment. If you are using a framework, please open an issue about this in their repository.",
+	);
+});

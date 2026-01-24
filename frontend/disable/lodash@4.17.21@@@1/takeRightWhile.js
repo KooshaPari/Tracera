@@ -1,5 +1,5 @@
-var baseIteratee = require('./_baseIteratee'),
-    baseWhile = require('./_baseWhile');
+var baseIteratee = require("./_baseIteratee"),
+	baseWhile = require("./_baseWhile");
 
 /**
  * Creates a slice of `array` with elements taken from the end. Elements are
@@ -37,9 +37,9 @@ var baseIteratee = require('./_baseIteratee'),
  * // => []
  */
 function takeRightWhile(array, predicate) {
-  return (array && array.length)
-    ? baseWhile(array, baseIteratee(predicate, 3), false, true)
-    : [];
+	return array && array.length
+		? baseWhile(array, baseIteratee(predicate, 3), false, true)
+		: [];
 }
 
 module.exports = takeRightWhile;

@@ -1,9 +1,9 @@
-var baseToString = require('./_baseToString'),
-    castSlice = require('./_castSlice'),
-    charsEndIndex = require('./_charsEndIndex'),
-    stringToArray = require('./_stringToArray'),
-    toString = require('./toString'),
-    trimmedEndIndex = require('./_trimmedEndIndex');
+var baseToString = require("./_baseToString"),
+	castSlice = require("./_castSlice"),
+	charsEndIndex = require("./_charsEndIndex"),
+	stringToArray = require("./_stringToArray"),
+	toString = require("./toString"),
+	trimmedEndIndex = require("./_trimmedEndIndex");
 
 /**
  * Removes trailing whitespace or specified characters from `string`.
@@ -25,17 +25,17 @@ var baseToString = require('./_baseToString'),
  * // => '-_-abc'
  */
 function trimEnd(string, chars, guard) {
-  string = toString(string);
-  if (string && (guard || chars === undefined)) {
-    return string.slice(0, trimmedEndIndex(string) + 1);
-  }
-  if (!string || !(chars = baseToString(chars))) {
-    return string;
-  }
-  var strSymbols = stringToArray(string),
-      end = charsEndIndex(strSymbols, stringToArray(chars)) + 1;
+	string = toString(string);
+	if (string && (guard || chars === undefined)) {
+		return string.slice(0, trimmedEndIndex(string) + 1);
+	}
+	if (!string || !(chars = baseToString(chars))) {
+		return string;
+	}
+	var strSymbols = stringToArray(string),
+		end = charsEndIndex(strSymbols, stringToArray(chars)) + 1;
 
-  return castSlice(strSymbols, 0, end).join('');
+	return castSlice(strSymbols, 0, end).join("");
 }
 
 module.exports = trimEnd;

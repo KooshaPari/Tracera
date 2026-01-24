@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/array/from-async');
+"use strict";
+module.exports = require("../../full/array/from-async");

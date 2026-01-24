@@ -23,6 +23,6 @@ export interface IsThisYearOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isThisYear(
-  date: DateArg<Date> & {},
-  options?: IsThisYearOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: IsThisYearOptions | undefined,
 ): boolean;

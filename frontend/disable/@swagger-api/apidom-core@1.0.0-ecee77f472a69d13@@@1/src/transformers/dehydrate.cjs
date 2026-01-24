@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 exports.default = void 0;
 var _namespace = _interopRequireDefault(require("../namespace.cjs"));
@@ -10,6 +11,6 @@ var _namespace = _interopRequireDefault(require("../namespace.cjs"));
  * @public
  */
 const dehydrate = (element, namespace = _namespace.default) => {
-  return namespace.toRefract(element);
+	return namespace.toRefract(element);
 };
-var _default = exports.default = dehydrate;
+var _default = (exports.default = dehydrate);

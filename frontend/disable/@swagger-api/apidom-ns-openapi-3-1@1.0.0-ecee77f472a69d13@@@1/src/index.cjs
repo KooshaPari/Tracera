@@ -1,10 +1,146 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
-var _interopRequireWildcard = require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireWildcard =
+	require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
 exports.__esModule = true;
-exports.isObjectElement = exports.isNumberElement = exports.isNullElement = exports.isMemberElement = exports.isMediaTypeElement = exports.isLinkPrimitiveElement = exports.isLinkElement = exports.isLicenseElement = exports.isJsonSchemaDialectElement = exports.isInfoElement = exports.isExternalDocumentationElement = exports.isExampleElement = exports.isElement = exports.isContactElement = exports.isComponentsElement = exports.isCallbackElement = exports.isBooleanJsonSchemaElement = exports.isBooleanElement = exports.isArrayElement = exports.getNodeType = exports.default = exports.createToolbox = exports.XmlElement = exports.WebhooksElement = exports.Visitor = exports.TagsElement = exports.TagElement = exports.SpecificationVisitor = exports.SpecificationExtensionVisitor = exports.ServersElement = exports.ServerVariablesElement = exports.ServerVariableElement = exports.ServerElement = exports.SecuritySchemeElement = exports.SecurityRequirementElement = exports.SecurityElement = exports.SchemaElement = exports.ResponsesElement = exports.ResponseLinksElement = exports.ResponseHeadersElement = exports.ResponseElement = exports.ResponseContentElement = exports.RequestBodyElement = exports.RequestBodyContentElement = exports.ReferenceElement = exports.PatternedFieldsVisitor = exports.PathsElement = exports.PathItemServersElement = exports.PathItemParametersElement = exports.PathItemElement = exports.ParameterExamplesElement = exports.ParameterElement = exports.ParameterContentElement = exports.OperationTagsElement = exports.OperationServersElement = exports.OperationSecurityElement = exports.OperationParametersElement = exports.OperationElement = exports.OperationCallbacksElement = exports.OpenapiElement = exports.OpenApi3_1Element = exports.OpenAPIMediaTypes = exports.OAuthFlowsElement = exports.OAuthFlowScopesElement = exports.OAuthFlowElement = exports.MixedFieldsVisitor = exports.MediaTypeExamplesElement = exports.MediaTypeEncodingElement = exports.MediaTypeElement = exports.MapVisitor = exports.LinkParametersElement = exports.LinkElement = exports.LicenseElement = exports.JsonSchemaDialectElement = exports.InfoElement = exports.HeaderExamplesElement = exports.HeaderElement = exports.HeaderContentElement = exports.FixedFieldsVisitor = exports.FallbackVisitor = exports.ExternalDocumentationElement = exports.ExampleElement = exports.EncodingHeadersElement = exports.EncodingElement = exports.DiscriminatorMappingElement = exports.DiscriminatorElement = exports.ContactElement = exports.ComponentsSecuritySchemesElement = exports.ComponentsSchemasElement = exports.ComponentsResponsesElement = exports.ComponentsRequestBodiesElement = exports.ComponentsPathItemsElement = exports.ComponentsParametersElement = exports.ComponentsLinksElement = exports.ComponentsHeadersElement = exports.ComponentsExamplesElement = exports.ComponentsElement = exports.ComponentsCallbacksElement = exports.CallbackElement = exports.AlternatingVisitor = void 0;
-exports.specificationObj = exports.refractorPluginReplaceEmptyElement = exports.refractorPluginNormalizeServers = exports.refractorPluginNormalizeSecurityRequirements = exports.refractorPluginNormalizeParameters = exports.refractorPluginNormalizeParameterExamples = exports.refractorPluginNormalizeOperationIds = exports.refractorPluginNormalizeHeaderExamples = exports.refractorPluginNormalizeDiscriminatorMapping = exports.mediaTypes = exports.keyMap = exports.isStringElement = exports.isServersElement = exports.isServerVariableElement = exports.isServerLikeElement = exports.isServerElement = exports.isSecuritySchemeElement = exports.isSecurityRequirementElement = exports.isSchemaElement = exports.isResponsesElement = exports.isResponseElement = exports.isRequestBodyElement = exports.isReferenceLikeElement = exports.isReferenceElementExternal = exports.isReferenceElement = exports.isRefElement = exports.isPathsElement = exports.isPathItemElementExternal = exports.isPathItemElement = exports.isParameterElement = exports.isOperationElement = exports.isOpenapiElement = exports.isOpenApiExtension = exports.isOpenApi3_1Element = void 0;
+exports.isObjectElement =
+	exports.isNumberElement =
+	exports.isNullElement =
+	exports.isMemberElement =
+	exports.isMediaTypeElement =
+	exports.isLinkPrimitiveElement =
+	exports.isLinkElement =
+	exports.isLicenseElement =
+	exports.isJsonSchemaDialectElement =
+	exports.isInfoElement =
+	exports.isExternalDocumentationElement =
+	exports.isExampleElement =
+	exports.isElement =
+	exports.isContactElement =
+	exports.isComponentsElement =
+	exports.isCallbackElement =
+	exports.isBooleanJsonSchemaElement =
+	exports.isBooleanElement =
+	exports.isArrayElement =
+	exports.getNodeType =
+	exports.default =
+	exports.createToolbox =
+	exports.XmlElement =
+	exports.WebhooksElement =
+	exports.Visitor =
+	exports.TagsElement =
+	exports.TagElement =
+	exports.SpecificationVisitor =
+	exports.SpecificationExtensionVisitor =
+	exports.ServersElement =
+	exports.ServerVariablesElement =
+	exports.ServerVariableElement =
+	exports.ServerElement =
+	exports.SecuritySchemeElement =
+	exports.SecurityRequirementElement =
+	exports.SecurityElement =
+	exports.SchemaElement =
+	exports.ResponsesElement =
+	exports.ResponseLinksElement =
+	exports.ResponseHeadersElement =
+	exports.ResponseElement =
+	exports.ResponseContentElement =
+	exports.RequestBodyElement =
+	exports.RequestBodyContentElement =
+	exports.ReferenceElement =
+	exports.PatternedFieldsVisitor =
+	exports.PathsElement =
+	exports.PathItemServersElement =
+	exports.PathItemParametersElement =
+	exports.PathItemElement =
+	exports.ParameterExamplesElement =
+	exports.ParameterElement =
+	exports.ParameterContentElement =
+	exports.OperationTagsElement =
+	exports.OperationServersElement =
+	exports.OperationSecurityElement =
+	exports.OperationParametersElement =
+	exports.OperationElement =
+	exports.OperationCallbacksElement =
+	exports.OpenapiElement =
+	exports.OpenApi3_1Element =
+	exports.OpenAPIMediaTypes =
+	exports.OAuthFlowsElement =
+	exports.OAuthFlowScopesElement =
+	exports.OAuthFlowElement =
+	exports.MixedFieldsVisitor =
+	exports.MediaTypeExamplesElement =
+	exports.MediaTypeEncodingElement =
+	exports.MediaTypeElement =
+	exports.MapVisitor =
+	exports.LinkParametersElement =
+	exports.LinkElement =
+	exports.LicenseElement =
+	exports.JsonSchemaDialectElement =
+	exports.InfoElement =
+	exports.HeaderExamplesElement =
+	exports.HeaderElement =
+	exports.HeaderContentElement =
+	exports.FixedFieldsVisitor =
+	exports.FallbackVisitor =
+	exports.ExternalDocumentationElement =
+	exports.ExampleElement =
+	exports.EncodingHeadersElement =
+	exports.EncodingElement =
+	exports.DiscriminatorMappingElement =
+	exports.DiscriminatorElement =
+	exports.ContactElement =
+	exports.ComponentsSecuritySchemesElement =
+	exports.ComponentsSchemasElement =
+	exports.ComponentsResponsesElement =
+	exports.ComponentsRequestBodiesElement =
+	exports.ComponentsPathItemsElement =
+	exports.ComponentsParametersElement =
+	exports.ComponentsLinksElement =
+	exports.ComponentsHeadersElement =
+	exports.ComponentsExamplesElement =
+	exports.ComponentsElement =
+	exports.ComponentsCallbacksElement =
+	exports.CallbackElement =
+	exports.AlternatingVisitor =
+		void 0;
+exports.specificationObj =
+	exports.refractorPluginReplaceEmptyElement =
+	exports.refractorPluginNormalizeServers =
+	exports.refractorPluginNormalizeSecurityRequirements =
+	exports.refractorPluginNormalizeParameters =
+	exports.refractorPluginNormalizeParameterExamples =
+	exports.refractorPluginNormalizeOperationIds =
+	exports.refractorPluginNormalizeHeaderExamples =
+	exports.refractorPluginNormalizeDiscriminatorMapping =
+	exports.mediaTypes =
+	exports.keyMap =
+	exports.isStringElement =
+	exports.isServersElement =
+	exports.isServerVariableElement =
+	exports.isServerLikeElement =
+	exports.isServerElement =
+	exports.isSecuritySchemeElement =
+	exports.isSecurityRequirementElement =
+	exports.isSchemaElement =
+	exports.isResponsesElement =
+	exports.isResponseElement =
+	exports.isRequestBodyElement =
+	exports.isReferenceLikeElement =
+	exports.isReferenceElementExternal =
+	exports.isReferenceElement =
+	exports.isRefElement =
+	exports.isPathsElement =
+	exports.isPathItemElementExternal =
+	exports.isPathItemElement =
+	exports.isParameterElement =
+	exports.isOperationElement =
+	exports.isOpenapiElement =
+	exports.isOpenApiExtension =
+	exports.isOpenApi3_1Element =
+		void 0;
 var _apidomCore = require("@swagger-api/apidom-core");
 exports.isRefElement = _apidomCore.isRefElement;
 exports.isLinkPrimitiveElement = _apidomCore.isLinkElement;
@@ -21,25 +157,46 @@ exports.mediaTypes = _mediaTypes.default;
 exports.OpenAPIMediaTypes = _mediaTypes.OpenAPIMediaTypes;
 var _namespace = _interopRequireDefault(require("./namespace.cjs"));
 exports.default = _namespace.default;
-var _replaceEmptyElement = _interopRequireDefault(require("./refractor/plugins/replace-empty-element.cjs"));
+var _replaceEmptyElement = _interopRequireDefault(
+	require("./refractor/plugins/replace-empty-element.cjs"),
+);
 exports.refractorPluginReplaceEmptyElement = _replaceEmptyElement.default;
-var _normalizeParameters = _interopRequireDefault(require("./refractor/plugins/normalize-parameters.cjs"));
+var _normalizeParameters = _interopRequireDefault(
+	require("./refractor/plugins/normalize-parameters.cjs"),
+);
 exports.refractorPluginNormalizeParameters = _normalizeParameters.default;
-var _normalizeSecurityRequirements = _interopRequireDefault(require("./refractor/plugins/normalize-security-requirements.cjs"));
-exports.refractorPluginNormalizeSecurityRequirements = _normalizeSecurityRequirements.default;
-var _normalizeServers = _interopRequireDefault(require("./refractor/plugins/normalize-servers.cjs"));
+var _normalizeSecurityRequirements = _interopRequireDefault(
+	require("./refractor/plugins/normalize-security-requirements.cjs"),
+);
+exports.refractorPluginNormalizeSecurityRequirements =
+	_normalizeSecurityRequirements.default;
+var _normalizeServers = _interopRequireDefault(
+	require("./refractor/plugins/normalize-servers.cjs"),
+);
 exports.refractorPluginNormalizeServers = _normalizeServers.default;
-var _normalizeOperationIds = _interopRequireDefault(require("./refractor/plugins/normalize-operation-ids.cjs"));
+var _normalizeOperationIds = _interopRequireDefault(
+	require("./refractor/plugins/normalize-operation-ids.cjs"),
+);
 exports.refractorPluginNormalizeOperationIds = _normalizeOperationIds.default;
-var _normalizeParameterExamples = _interopRequireDefault(require("./refractor/plugins/normalize-parameter-examples.cjs"));
-exports.refractorPluginNormalizeParameterExamples = _normalizeParameterExamples.default;
-var _index = _interopRequireDefault(require("./refractor/plugins/normalize-header-examples/index.cjs"));
+var _normalizeParameterExamples = _interopRequireDefault(
+	require("./refractor/plugins/normalize-parameter-examples.cjs"),
+);
+exports.refractorPluginNormalizeParameterExamples =
+	_normalizeParameterExamples.default;
+var _index = _interopRequireDefault(
+	require("./refractor/plugins/normalize-header-examples/index.cjs"),
+);
 exports.refractorPluginNormalizeHeaderExamples = _index.default;
-var _normalizeDiscriminatorMapping = _interopRequireDefault(require("./refractor/plugins/normalize-discriminator-mapping.cjs"));
-exports.refractorPluginNormalizeDiscriminatorMapping = _normalizeDiscriminatorMapping.default;
+var _normalizeDiscriminatorMapping = _interopRequireDefault(
+	require("./refractor/plugins/normalize-discriminator-mapping.cjs"),
+);
+exports.refractorPluginNormalizeDiscriminatorMapping =
+	_normalizeDiscriminatorMapping.default;
 var _toolbox = _interopRequireDefault(require("./refractor/toolbox.cjs"));
 exports.createToolbox = _toolbox.default;
-var _specification = _interopRequireDefault(require("./refractor/specification.cjs"));
+var _specification = _interopRequireDefault(
+	require("./refractor/specification.cjs"),
+);
 exports.specificationObj = _specification.default;
 var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
 exports.AlternatingVisitor = _apidomNsOpenapi.AlternatingVisitor;
@@ -48,23 +205,30 @@ exports.MapVisitor = _apidomNsOpenapi.MapVisitor;
 exports.MixedFieldsVisitor = _apidomNsOpenapi.MixedFieldsVisitor;
 exports.PatternedFieldsVisitor = _apidomNsOpenapi.PatternedFieldsVisitor;
 exports.FallbackVisitor = _apidomNsOpenapi.FallbackVisitor;
-exports.SpecificationExtensionVisitor = _apidomNsOpenapi.SpecificationExtensionVisitor;
+exports.SpecificationExtensionVisitor =
+	_apidomNsOpenapi.SpecificationExtensionVisitor;
 exports.SpecificationVisitor = _apidomNsOpenapi.SpecificationVisitor;
 exports.Visitor = _apidomNsOpenapi.Visitor;
 exports.isReferenceLikeElement = _apidomNsOpenapi.isReferenceLikeElement;
 exports.isOpenApiExtension = _apidomNsOpenapi.isOpenApiExtension;
 exports.isServerLikeElement = _apidomNsOpenapi.isServerLikeElement;
 exports.isServersElement = _apidomNsOpenapi.isServersElement;
-exports.ComponentsCallbacksElement = _apidomNsOpenapi.ComponentsCallbacksElement;
+exports.ComponentsCallbacksElement =
+	_apidomNsOpenapi.ComponentsCallbacksElement;
 exports.ComponentsExamplesElement = _apidomNsOpenapi.ComponentsExamplesElement;
 exports.ComponentsHeadersElement = _apidomNsOpenapi.ComponentsHeadersElement;
 exports.ComponentsLinksElement = _apidomNsOpenapi.ComponentsLinksElement;
-exports.ComponentsParametersElement = _apidomNsOpenapi.ComponentsParametersElement;
-exports.ComponentsRequestBodiesElement = _apidomNsOpenapi.ComponentsRequestBodiesElement;
-exports.ComponentsResponsesElement = _apidomNsOpenapi.ComponentsResponsesElement;
+exports.ComponentsParametersElement =
+	_apidomNsOpenapi.ComponentsParametersElement;
+exports.ComponentsRequestBodiesElement =
+	_apidomNsOpenapi.ComponentsRequestBodiesElement;
+exports.ComponentsResponsesElement =
+	_apidomNsOpenapi.ComponentsResponsesElement;
 exports.ComponentsSchemasElement = _apidomNsOpenapi.ComponentsSchemasElement;
-exports.ComponentsSecuritySchemesElement = _apidomNsOpenapi.ComponentsSecuritySchemesElement;
-exports.DiscriminatorMappingElement = _apidomNsOpenapi.DiscriminatorMappingElement;
+exports.ComponentsSecuritySchemesElement =
+	_apidomNsOpenapi.ComponentsSecuritySchemesElement;
+exports.DiscriminatorMappingElement =
+	_apidomNsOpenapi.DiscriminatorMappingElement;
 exports.EncodingHeadersElement = _apidomNsOpenapi.EncodingHeadersElement;
 exports.HeaderContentElement = _apidomNsOpenapi.HeaderContentElement;
 exports.HeaderExamplesElement = _apidomNsOpenapi.HeaderExamplesElement;
@@ -73,7 +237,8 @@ exports.MediaTypeEncodingElement = _apidomNsOpenapi.MediaTypeEncodingElement;
 exports.MediaTypeExamplesElement = _apidomNsOpenapi.MediaTypeExamplesElement;
 exports.OAuthFlowScopesElement = _apidomNsOpenapi.OAuthFlowScopesElement;
 exports.OperationCallbacksElement = _apidomNsOpenapi.OperationCallbacksElement;
-exports.OperationParametersElement = _apidomNsOpenapi.OperationParametersElement;
+exports.OperationParametersElement =
+	_apidomNsOpenapi.OperationParametersElement;
 exports.OperationSecurityElement = _apidomNsOpenapi.OperationSecurityElement;
 exports.OperationServersElement = _apidomNsOpenapi.OperationServersElement;
 exports.OperationTagsElement = _apidomNsOpenapi.OperationTagsElement;
@@ -111,7 +276,8 @@ exports.isMediaTypeElement = _predicates.isMediaTypeElement;
 exports.isServerElement = _predicates.isServerElement;
 exports.isSecurityRequirementElement = _predicates.isSecurityRequirementElement;
 exports.isSecuritySchemeElement = _predicates.isSecuritySchemeElement;
-exports.isExternalDocumentationElement = _predicates.isExternalDocumentationElement;
+exports.isExternalDocumentationElement =
+	_predicates.isExternalDocumentationElement;
 exports.isServerVariableElement = _predicates.isServerVariableElement;
 exports.isContactElement = _predicates.isContactElement;
 exports.isExampleElement = _predicates.isExampleElement;
@@ -128,7 +294,8 @@ exports.ContactElement = _registration.ContactElement;
 exports.DiscriminatorElement = _registration.DiscriminatorElement;
 exports.EncodingElement = _registration.EncodingElement;
 exports.ExampleElement = _registration.ExampleElement;
-exports.ExternalDocumentationElement = _registration.ExternalDocumentationElement;
+exports.ExternalDocumentationElement =
+	_registration.ExternalDocumentationElement;
 exports.HeaderElement = _registration.HeaderElement;
 exports.InfoElement = _registration.InfoElement;
 exports.JsonSchemaDialectElement = _registration.JsonSchemaDialectElement;
@@ -154,7 +321,9 @@ exports.ServerElement = _registration.ServerElement;
 exports.ServerVariableElement = _registration.ServerVariableElement;
 exports.TagElement = _registration.TagElement;
 exports.XmlElement = _registration.XmlElement;
-var _ComponentsPathItems = _interopRequireDefault(require("./elements/nces/ComponentsPathItems.cjs"));
+var _ComponentsPathItems = _interopRequireDefault(
+	require("./elements/nces/ComponentsPathItems.cjs"),
+);
 exports.ComponentsPathItemsElement = _ComponentsPathItems.default;
 var _Webhooks = _interopRequireDefault(require("./elements/nces/Webhooks.cjs"));
 exports.WebhooksElement = _Webhooks.default;

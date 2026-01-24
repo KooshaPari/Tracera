@@ -1,7 +1,7 @@
-import { ObservablePrimitive } from '@legendapp/state';
+import { ObservablePrimitive } from "@legendapp/state";
 
 type UndoRedoOptions = {
-    limit?: number;
+	limit?: number;
 };
 /**
  * Usage:
@@ -26,12 +26,15 @@ type UndoRedoOptions = {
  * redos$.get();
  * ```
  */
-declare function undoRedo<T>(obs$: ObservablePrimitive<T>, options?: UndoRedoOptions): {
-    undo(): void;
-    redo(): void;
-    undos$: ObservablePrimitive<number>;
-    redos$: ObservablePrimitive<number>;
-    getHistory: () => T[];
+declare function undoRedo<T>(
+	obs$: ObservablePrimitive<T>,
+	options?: UndoRedoOptions,
+): {
+	undo(): void;
+	redo(): void;
+	undos$: ObservablePrimitive<number>;
+	redos$: ObservablePrimitive<number>;
+	getHistory: () => T[];
 };
 
 export { undoRedo };

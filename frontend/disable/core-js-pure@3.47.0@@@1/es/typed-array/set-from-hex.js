@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.uint8-array.set-from-hex');
+"use strict";
+require("../../modules/es.uint8-array.set-from-hex");

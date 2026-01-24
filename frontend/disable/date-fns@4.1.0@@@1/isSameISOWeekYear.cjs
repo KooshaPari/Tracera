@@ -30,13 +30,13 @@ var _index2 = require("./_lib/normalizeDates.cjs");
  * //=> true
  */
 function isSameISOWeekYear(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return (
-    +(0, _index.startOfISOWeekYear)(laterDate_) ===
-    +(0, _index.startOfISOWeekYear)(earlierDate_)
-  );
+	const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return (
+		+(0, _index.startOfISOWeekYear)(laterDate_) ===
+		+(0, _index.startOfISOWeekYear)(earlierDate_)
+	);
 }

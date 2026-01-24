@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link isThisWeek} function options.
  */
 export interface IsThisWeekOptions
-  extends WeekOptions,
-    LocalizedOptions<"options">,
-    ContextOptions<Date> {}
+	extends WeekOptions,
+		LocalizedOptions<"options">,
+		ContextOptions<Date> {}
 /**
  * @name isThisWeek
  * @category Week Helpers
@@ -37,6 +37,6 @@ export interface IsThisWeekOptions
  * //=> false
  */
 export declare function isThisWeek(
-  date: DateArg<Date> & {},
-  options?: IsThisWeekOptions,
+	date: DateArg<Date> & {},
+	options?: IsThisWeekOptions,
 ): boolean;

@@ -1,1 +1,1 @@
-export { createClientRpc } from './createClientRpc'
+export { createClientRpc } from "./createClientRpc";

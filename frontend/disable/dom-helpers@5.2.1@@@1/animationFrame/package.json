@@ -1,7 +1,7 @@
 {
-  "name": "dom-helpers/animationFrame",
-  "private": true,
-  "main": "../cjs/animationFrame.js",
-  "module": "../esm/animationFrame.js",
-  "types": "../esm/animationFrame.d.ts"
+	"name": "dom-helpers/animationFrame",
+	"private": true,
+	"main": "../cjs/animationFrame.js",
+	"module": "../esm/animationFrame.js",
+	"types": "../esm/animationFrame.d.ts"
 }

@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-ease` (ESM)
 // See upstream license: https://github.com/d3/d3-ease/blob/main/LICENSE
 //

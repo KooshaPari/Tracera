@@ -5,16 +5,22 @@
 // if lib.esnext.iterator is loaded.
 
 // Placeholders for TS <5.6
-interface IteratorObject<T, TReturn, TNext> {}
-interface AsyncIteratorObject<T, TReturn, TNext> {}
+type IteratorObject<T, TReturn, TNext> = {};
+type AsyncIteratorObject<T, TReturn, TNext> = {};
 
 declare namespace NodeJS {
-    // Populate iterator methods for TS <5.6
-    interface Iterator<T, TReturn, TNext> extends globalThis.Iterator<T, TReturn, TNext> {}
-    interface AsyncIterator<T, TReturn, TNext> extends globalThis.AsyncIterator<T, TReturn, TNext> {}
+	// Populate iterator methods for TS <5.6
+	interface Iterator<T, TReturn, TNext>
+		extends globalThis.Iterator<T, TReturn, TNext> {}
+	interface AsyncIterator<T, TReturn, TNext>
+		extends globalThis.AsyncIterator<T, TReturn, TNext> {}
 
-    // Polyfill for TS 5.6's instrinsic BuiltinIteratorReturn type, required for DOM-compatible iterators
-    type BuiltinIteratorReturn = ReturnType<any[][typeof Symbol.iterator]> extends
-        globalThis.Iterator<any, infer TReturn> ? TReturn
-        : any;
+	// Polyfill for TS 5.6's instrinsic BuiltinIteratorReturn type, required for DOM-compatible iterators
+	type BuiltinIteratorReturn =
+		ReturnType<any[][typeof Symbol.iterator]> extends globalThis.Iterator<
+			any,
+			infer TReturn
+		>
+			? TReturn
+			: any;
 }

@@ -1,4 +1,4 @@
 // @flow
 
-export {bootstrap} from './routines';
-export {createGlobalProxyAgent} from './factories';
+export { createGlobalProxyAgent } from "./factories";
+export { bootstrap } from "./routines";

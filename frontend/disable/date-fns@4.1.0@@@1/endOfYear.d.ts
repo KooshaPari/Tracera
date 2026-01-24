@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link endOfYear} function options.
  */
 export interface EndOfYearOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name endOfYear
  * @category Year Helpers
@@ -27,6 +27,6 @@ export interface EndOfYearOptions<DateType extends Date = Date>
  * //=> Wed Dec 31 2014 23:59:59.999
  */
 export declare function endOfYear<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(date: DateArg<DateType>, options?: EndOfYearOptions<ResultDate>): ResultDate;

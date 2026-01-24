@@ -1,128 +1,106 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 var _templateLiterals = require("./template-literals.js");
-Object.keys(_templateLiterals).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _templateLiterals[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _templateLiterals[key];
-    }
-  });
+Object.keys(_templateLiterals).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _templateLiterals[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _templateLiterals[key],
+	});
 });
 var _expressions = require("./expressions.js");
-Object.keys(_expressions).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _expressions[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _expressions[key];
-    }
-  });
+Object.keys(_expressions).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _expressions[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _expressions[key],
+	});
 });
 var _statements = require("./statements.js");
-Object.keys(_statements).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _statements[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _statements[key];
-    }
-  });
+Object.keys(_statements).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _statements[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _statements[key],
+	});
 });
 var _classes = require("./classes.js");
-Object.keys(_classes).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _classes[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _classes[key];
-    }
-  });
+Object.keys(_classes).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _classes[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _classes[key],
+	});
 });
 var _methods = require("./methods.js");
-Object.keys(_methods).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _methods[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _methods[key];
-    }
-  });
+Object.keys(_methods).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _methods[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _methods[key],
+	});
 });
 var _modules = require("./modules.js");
-Object.keys(_modules).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _modules[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _modules[key];
-    }
-  });
+Object.keys(_modules).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _modules[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _modules[key],
+	});
 });
 var _types = require("./types.js");
-Object.keys(_types).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _types[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _types[key];
-    }
-  });
+Object.keys(_types).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _types[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _types[key],
+	});
 });
 var _flow = require("./flow.js");
-Object.keys(_flow).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _flow[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _flow[key];
-    }
-  });
+Object.keys(_flow).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _flow[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _flow[key],
+	});
 });
 var _base = require("./base.js");
-Object.keys(_base).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _base[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _base[key];
-    }
-  });
+Object.keys(_base).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _base[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _base[key],
+	});
 });
 var _jsx = require("./jsx.js");
-Object.keys(_jsx).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _jsx[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _jsx[key];
-    }
-  });
+Object.keys(_jsx).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _jsx[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _jsx[key],
+	});
 });
 var _typescript = require("./typescript.js");
-Object.keys(_typescript).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _typescript[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _typescript[key];
-    }
-  });
+Object.keys(_typescript).forEach((key) => {
+	if (key === "default" || key === "__esModule") return;
+	if (key in exports && exports[key] === _typescript[key]) return;
+	Object.defineProperty(exports, key, {
+		enumerable: true,
+		get: () => _typescript[key],
+	});
 });
 
 //# sourceMappingURL=index.js.map

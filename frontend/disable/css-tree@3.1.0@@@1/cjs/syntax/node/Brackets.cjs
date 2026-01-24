@@ -1,35 +1,35 @@
-'use strict';
+"use strict";
 
-const types = require('../../tokenizer/types.cjs');
+const types = require("../../tokenizer/types.cjs");
 
-const name = 'Brackets';
+const name = "Brackets";
 const structure = {
-    children: [[]]
+	children: [[]],
 };
 
 function parse(readSequence, recognizer) {
-    const start = this.tokenStart;
-    let children = null;
+	const start = this.tokenStart;
+	let children = null;
 
-    this.eat(types.LeftSquareBracket);
+	this.eat(types.LeftSquareBracket);
 
-    children = readSequence.call(this, recognizer);
+	children = readSequence.call(this, recognizer);
 
-    if (!this.eof) {
-        this.eat(types.RightSquareBracket);
-    }
+	if (!this.eof) {
+		this.eat(types.RightSquareBracket);
+	}
 
-    return {
-        type: 'Brackets',
-        loc: this.getLocation(start, this.tokenStart),
-        children
-    };
+	return {
+		type: "Brackets",
+		loc: this.getLocation(start, this.tokenStart),
+		children,
+	};
 }
 
 function generate(node) {
-    this.token(types.Delim, '[');
-    this.children(node);
-    this.token(types.Delim, ']');
+	this.token(types.Delim, "[");
+	this.children(node);
+	this.token(types.Delim, "]");
 }
 
 exports.generate = generate;

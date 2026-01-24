@@ -21,6 +21,6 @@ import type { DateArg } from "./types.js";
  * //=> false
  */
 export declare function isEqual(
-  leftDate: DateArg<Date> & {},
-  rightDate: DateArg<Date> & {},
+	leftDate: DateArg<Date> & {},
+	rightDate: DateArg<Date> & {},
 ): boolean;

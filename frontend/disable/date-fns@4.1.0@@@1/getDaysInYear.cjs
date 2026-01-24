@@ -26,7 +26,7 @@ var _index2 = require("./toDate.cjs");
  * //=> 366
  */
 function getDaysInYear(date, options) {
-  const _date = (0, _index2.toDate)(date, options?.in);
-  if (Number.isNaN(+_date)) return NaN;
-  return (0, _index.isLeapYear)(_date) ? 366 : 365;
+	const _date = (0, _index2.toDate)(date, options?.in);
+	if (Number.isNaN(+_date)) return NaN;
+	return (0, _index.isLeapYear)(_date) ? 366 : 365;
 }

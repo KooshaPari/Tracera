@@ -1,4 +1,4 @@
-import type FastGlob from 'fast-glob';
+import type FastGlob from "fast-glob";
 
 export type GlobEntry = FastGlob.Entry;
 
@@ -10,9 +10,9 @@ export type GlobTask = {
 export type ExpandDirectoriesOption =
 	| boolean
 	| readonly string[]
-	| {files?: readonly string[]; extensions?: readonly string[]};
+	| { files?: readonly string[]; extensions?: readonly string[] };
 
-type FastGlobOptionsWithoutCwd = Omit<FastGlob.Options, 'cwd'>;
+type FastGlobOptionsWithoutCwd = Omit<FastGlob.Options, "cwd">;
 
 export type Options = {
 	/**
@@ -73,7 +73,10 @@ export type GitignoreOptions = {
 
 export type GlobbyFilterFunction = (path: URL | string) => boolean;
 
-type AsyncIterableReadable<Value> = Omit<NodeJS.ReadableStream, typeof Symbol.asyncIterator> & {
+type AsyncIterableReadable<Value> = Omit<
+	NodeJS.ReadableStream,
+	typeof Symbol.asyncIterator
+> & {
 	[Symbol.asyncIterator](): NodeJS.AsyncIterator<Value>;
 };
 
@@ -108,11 +111,11 @@ console.log(paths);
 */
 export function globby(
 	patterns: string | readonly string[],
-	options: Options & {objectMode: true}
+	options: Options & { objectMode: true },
 ): Promise<GlobEntry[]>;
 export function globby(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): Promise<string[]>;
 
 /**
@@ -126,11 +129,11 @@ Note that glob patterns can only contain forward-slashes, not backward-slashes, 
 */
 export function globbySync(
 	patterns: string | readonly string[],
-	options: Options & {objectMode: true}
+	options: Options & { objectMode: true },
 ): GlobEntry[];
 export function globbySync(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): string[];
 
 /**
@@ -153,11 +156,11 @@ for await (const path of globbyStream('*.tmp')) {
 */
 export function globbyStream(
 	patterns: string | readonly string[],
-	options: Options & {objectMode: true}
+	options: Options & { objectMode: true },
 ): GlobbyEntryStream;
 export function globbyStream(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): GlobbyStream;
 
 /**
@@ -169,7 +172,7 @@ Note that you should avoid running the same tasks multiple times as they contain
 */
 export function generateGlobTasks(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): Promise<GlobTask[]>;
 
 /**
@@ -179,7 +182,7 @@ export function generateGlobTasks(
 */
 export function generateGlobTasksSync(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): GlobTask[];
 
 /**
@@ -200,7 +203,7 @@ export function isDynamicPattern(
 		@default process.cwd()
 		*/
 		readonly cwd?: URL | string;
-	}
+	},
 ): boolean;
 
 /**
@@ -217,14 +220,18 @@ const isIgnored = await isGitIgnored();
 console.log(isIgnored('some/file'));
 ```
 */
-export function isGitIgnored(options?: GitignoreOptions): Promise<GlobbyFilterFunction>;
+export function isGitIgnored(
+	options?: GitignoreOptions,
+): Promise<GlobbyFilterFunction>;
 
 /**
 @see isGitIgnored
 
 @returns A filter function indicating whether a given path is ignored via a `.gitignore` file.
 */
-export function isGitIgnoredSync(options?: GitignoreOptions): GlobbyFilterFunction;
+export function isGitIgnoredSync(
+	options?: GitignoreOptions,
+): GlobbyFilterFunction;
 
 export function convertPathToPattern(source: string): FastGlob.Pattern;
 
@@ -248,7 +255,7 @@ console.log(isIgnored('some/file'));
 */
 export function isIgnoredByIgnoreFiles(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): Promise<GlobbyFilterFunction>;
 
 /**
@@ -273,5 +280,5 @@ console.log(isIgnored('some/file'));
 */
 export function isIgnoredByIgnoreFilesSync(
 	patterns: string | readonly string[],
-	options?: Options
+	options?: Options,
 ): GlobbyFilterFunction;

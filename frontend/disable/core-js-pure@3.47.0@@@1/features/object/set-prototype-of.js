@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/set-prototype-of');
+"use strict";
+module.exports = require("../../full/object/set-prototype-of");

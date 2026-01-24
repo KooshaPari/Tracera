@@ -23,13 +23,14 @@ var CSSOM = {};
  *   "content: ':';"       // valid, does not match
  *   "color: foo:bar;"     // invalid, matches
  */
-var basicStylePropertyValueValidationRegExp = /:(?![^(]*\))(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/;
+var basicStylePropertyValueValidationRegExp =
+	/:(?![^(]*\))(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/;
 
 /**
  * @constructor
  * @see http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSStyleDeclaration
  */
-CSSOM.CSSStyleDeclaration = function CSSStyleDeclaration(){
+CSSOM.CSSStyleDeclaration = function CSSStyleDeclaration() {
 	this.length = 0;
 	this.parentRule = null;
 
@@ -37,9 +38,7 @@ CSSOM.CSSStyleDeclaration = function CSSStyleDeclaration(){
 	this._importants = {};
 };
 
-
 CSSOM.CSSStyleDeclaration.prototype = {
-
 	constructor: CSSOM.CSSStyleDeclaration,
 
 	/**
@@ -49,7 +48,7 @@ CSSOM.CSSStyleDeclaration.prototype = {
 	 * @return {string} the value of the property if it has been explicitly set for this declaration block.
 	 * Returns the empty string if the property has not been set.
 	 */
-	getPropertyValue: function(name) {
+	getPropertyValue: function (name) {
 		return this[name] || "";
 	},
 
@@ -60,11 +59,17 @@ CSSOM.CSSStyleDeclaration.prototype = {
 	 * @param {string} [priority=null] "important" or null
 	 * @see http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSStyleDeclaration-setProperty
 	 */
-	setProperty: function(name, value, priority, parseErrorHandler) 
-	{
+	setProperty: function (name, value, priority, parseErrorHandler) {
 		// NOTE: Check viability to add a validation for css values or use a dependency like csstree-validator
 		if (basicStylePropertyValueValidationRegExp.test(value)) {
-			parseErrorHandler && parseErrorHandler('Invalid CSSStyleDeclaration property (name = "' + name + '", value = "' + value + '")');
+			parseErrorHandler &&
+				parseErrorHandler(
+					'Invalid CSSStyleDeclaration property (name = "' +
+						name +
+						'", value = "' +
+						value +
+						'")',
+				);
 		} else if (this[name]) {
 			// Property already exist. Overwrite it.
 			var index = Array.prototype.indexOf.call(this, name);
@@ -72,22 +77,22 @@ CSSOM.CSSStyleDeclaration.prototype = {
 				this[this.length] = name;
 				this.length++;
 			}
-	
+
 			// If the priority value of the incoming property is "important",
-			// or the value of the existing property is not "important", 
+			// or the value of the existing property is not "important",
 			// then remove the existing property and rewrite it.
 			if (priority || !this._importants[name]) {
 				this.removeProperty(name);
 				this[this.length] = name;
 				this.length++;
-				this[name] = value + '';
+				this[name] = value + "";
 				this._importants[name] = priority;
 			}
 		} else {
 			// New property.
 			this[this.length] = name;
 			this.length++;
-			this[name] = value + '';
+			this[name] = value + "";
 			this._importants[name] = priority;
 		}
 	},
@@ -99,7 +104,7 @@ CSSOM.CSSStyleDeclaration.prototype = {
 	 * @return {string} the value of the property if it has been explicitly set for this declaration block.
 	 * Returns the empty string if the property has not been set or the property name does not correspond to a known CSS property.
 	 */
-	removeProperty: function(name) {
+	removeProperty: function (name) {
 		if (!(name in this)) {
 			return "";
 		}
@@ -119,7 +124,7 @@ CSSOM.CSSStyleDeclaration.prototype = {
 		return prevValue;
 	},
 
-	getPropertyCSSValue: function() {
+	getPropertyCSSValue: () => {
 		//FIXME
 	},
 
@@ -127,28 +132,27 @@ CSSOM.CSSStyleDeclaration.prototype = {
 	 *
 	 * @param {String} name
 	 */
-	getPropertyPriority: function(name) {
+	getPropertyPriority: function (name) {
 		return this._importants[name] || "";
 	},
-
 
 	/**
 	 *   element.style.overflow = "auto"
 	 *   element.style.getPropertyShorthand("overflow-x")
 	 *   -> "overflow"
 	 */
-	getPropertyShorthand: function() {
+	getPropertyShorthand: () => {
 		//FIXME
 	},
 
-	isPropertyImplicit: function() {
+	isPropertyImplicit: () => {
 		//FIXME
 	},
 
 	// Doesn't work in IE < 9
-	get cssText(){
+	get cssText() {
 		var properties = [];
-		for (var i=0, length=this.length; i < length; ++i) {
+		for (var i = 0, length = this.length; i < length; ++i) {
 			var name = this[i];
 			var value = this.getPropertyValue(name);
 			var priority = this.getPropertyPriority(name);
@@ -160,26 +164,29 @@ CSSOM.CSSStyleDeclaration.prototype = {
 		return properties.join(" ");
 	},
 
-	set cssText(text){
+	set cssText(text) {
 		var i, name;
-		for (i = this.length; i--;) {
+		for (i = this.length; i--; ) {
 			name = this[i];
 			this[name] = "";
 		}
 		Array.prototype.splice.call(this, 0, this.length);
 		this._importants = {};
 
-		var dummyRule = CSSOM.parse('#bogus{' + text + '}').cssRules[0].style;
+		var dummyRule = CSSOM.parse("#bogus{" + text + "}").cssRules[0].style;
 		var length = dummyRule.length;
 		for (i = 0; i < length; ++i) {
 			name = dummyRule[i];
-			this.setProperty(dummyRule[i], dummyRule.getPropertyValue(name), dummyRule.getPropertyPriority(name));
+			this.setProperty(
+				dummyRule[i],
+				dummyRule.getPropertyValue(name),
+				dummyRule.getPropertyPriority(name),
+			);
 		}
-	}
+	},
 };
-
 
 //.CommonJS
 exports.CSSStyleDeclaration = CSSOM.CSSStyleDeclaration;
-CSSOM.parse = require('./parse').parse; // Cannot be included sooner due to the mutual dependency between parse.js and CSSStyleDeclaration.js
+CSSOM.parse = require("./parse").parse; // Cannot be included sooner due to the mutual dependency between parse.js and CSSStyleDeclaration.js
 ///CommonJS

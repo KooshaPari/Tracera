@@ -47,11 +47,11 @@ var _index = require("./toDate.cjs");
  * // => true
  */
 function isWithinInterval(date, interval, options) {
-  const time = +(0, _index.toDate)(date, options?.in);
-  const [startTime, endTime] = [
-    +(0, _index.toDate)(interval.start, options?.in),
-    +(0, _index.toDate)(interval.end, options?.in),
-  ].sort((a, b) => a - b);
+	const time = +(0, _index.toDate)(date, options?.in);
+	const [startTime, endTime] = [
+		+(0, _index.toDate)(interval.start, options?.in),
+		+(0, _index.toDate)(interval.end, options?.in),
+	].sort((a, b) => a - b);
 
-  return time >= startTime && time <= endTime;
+	return time >= startTime && time <= endTime;
 }

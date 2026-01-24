@@ -3,28 +3,28 @@
  */
 
 /* string */
-export const ATRULE = 'Atrule';
-export const ATTR_SELECTOR = 'AttributeSelector';
-export const CLASS_SELECTOR = 'ClassSelector';
-export const COMBINATOR = 'Combinator';
-export const IDENT = 'Identifier';
-export const ID_SELECTOR = 'IdSelector';
-export const NOT_SUPPORTED_ERR = 'NotSupportedError';
-export const NTH = 'Nth';
-export const OPERATOR = 'Operator';
-export const PS_CLASS_SELECTOR = 'PseudoClassSelector';
-export const PS_ELEMENT_SELECTOR = 'PseudoElementSelector';
-export const RULE = 'Rule';
-export const SCOPE = 'Scope';
-export const SELECTOR = 'Selector';
-export const SELECTOR_LIST = 'SelectorList';
-export const STRING = 'String';
-export const SYNTAX_ERR = 'SyntaxError';
-export const TARGET_ALL = 'all';
-export const TARGET_FIRST = 'first';
-export const TARGET_LINEAL = 'lineal';
-export const TARGET_SELF = 'self';
-export const TYPE_SELECTOR = 'TypeSelector';
+export const ATRULE = "Atrule";
+export const ATTR_SELECTOR = "AttributeSelector";
+export const CLASS_SELECTOR = "ClassSelector";
+export const COMBINATOR = "Combinator";
+export const IDENT = "Identifier";
+export const ID_SELECTOR = "IdSelector";
+export const NOT_SUPPORTED_ERR = "NotSupportedError";
+export const NTH = "Nth";
+export const OPERATOR = "Operator";
+export const PS_CLASS_SELECTOR = "PseudoClassSelector";
+export const PS_ELEMENT_SELECTOR = "PseudoElementSelector";
+export const RULE = "Rule";
+export const SCOPE = "Scope";
+export const SELECTOR = "Selector";
+export const SELECTOR_LIST = "SelectorList";
+export const STRING = "String";
+export const SYNTAX_ERR = "SyntaxError";
+export const TARGET_ALL = "all";
+export const TARGET_FIRST = "first";
+export const TARGET_LINEAL = "lineal";
+export const TARGET_SELF = "self";
+export const TYPE_SELECTOR = "TypeSelector";
 
 /* numeric */
 export const BIT_01 = 1;
@@ -56,26 +56,26 @@ export const SHOW_DOCUMENT_FRAGMENT = 0x400;
 export const SHOW_ELEMENT = 1;
 
 /* selectors */
-export const ALPHA_NUM = '[A-Z\\d]+';
-export const CHILD_IDX = '(?:first|last|only)-(?:child|of-type)';
-export const DIGIT = '(?:0|[1-9]\\d*)';
+export const ALPHA_NUM = "[A-Z\\d]+";
+export const CHILD_IDX = "(?:first|last|only)-(?:child|of-type)";
+export const DIGIT = "(?:0|[1-9]\\d*)";
 export const LANG_PART = `(?:-${ALPHA_NUM})*`;
 export const PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|target`;
 export const ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 // combinators
-export const COMBO = '\\s?[\\s>~+]\\s?';
-export const DESCEND = '\\s?[\\s>]\\s?';
-export const SIBLING = '\\s?[+~]\\s?';
+export const COMBO = "\\s?[\\s>~+]\\s?";
+export const DESCEND = "\\s?[\\s>]\\s?";
+export const SIBLING = "\\s?[+~]\\s?";
 // LOGIC_IS: :is()
 export const LOGIC_IS = `:is\\(\\s*[^)]+\\s*\\)`;
 // N_TH: excludes An+B with selector list, e.g. :nth-child(2n+1 of .foo)
 export const N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 // SUB_TYPE: attr, id, class, pseudo-class, note that [foo|=bar] is excluded
-export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
-export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';
+export const SUB_TYPE = "\\[[^|\\]]+\\]|[#.:][\\w-]+";
+export const SUB_TYPE_WO_PSEUDO = "\\[[^|\\]]+\\]|[#.][\\w-]+";
 // TAG_TYPE: *, tag
-export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
-export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
+export const TAG_TYPE = "\\*|[A-Za-z][\\w-]*";
+export const TAG_TYPE_I = "\\*|[A-Z][\\w-]*";
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMPOUND_L = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${LOGIC_IS})+)`;
 export const COMPOUND_I = `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
@@ -88,42 +88,42 @@ export const LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX
 
 /* forms and input types */
 export const FORM_PARTS = Object.freeze([
-  'button',
-  'input',
-  'select',
-  'textarea'
+	"button",
+	"input",
+	"select",
+	"textarea",
 ]);
-export const INPUT_BUTTON = Object.freeze(['button', 'reset', 'submit']);
-export const INPUT_CHECK = Object.freeze(['checkbox', 'radio']);
+export const INPUT_BUTTON = Object.freeze(["button", "reset", "submit"]);
+export const INPUT_CHECK = Object.freeze(["checkbox", "radio"]);
 export const INPUT_DATE = Object.freeze([
-  'date',
-  'datetime-local',
-  'month',
-  'time',
-  'week'
+	"date",
+	"datetime-local",
+	"month",
+	"time",
+	"week",
 ]);
 export const INPUT_TEXT = Object.freeze([
-  'email',
-  'password',
-  'search',
-  'tel',
-  'text',
-  'url'
+	"email",
+	"password",
+	"search",
+	"tel",
+	"text",
+	"url",
 ]);
 export const INPUT_EDIT = Object.freeze([
-  ...INPUT_DATE,
-  ...INPUT_TEXT,
-  'number'
+	...INPUT_DATE,
+	...INPUT_TEXT,
+	"number",
 ]);
 export const INPUT_LTR = Object.freeze([
-  ...INPUT_CHECK,
-  'color',
-  'date',
-  'image',
-  'number',
-  'range',
-  'time'
+	...INPUT_CHECK,
+	"color",
+	"date",
+	"image",
+	"number",
+	"range",
+	"time",
 ]);
 
 /* logical combination pseudo-classes */
-export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
+export const KEYS_LOGICAL = new Set(["has", "is", "not", "where"]);

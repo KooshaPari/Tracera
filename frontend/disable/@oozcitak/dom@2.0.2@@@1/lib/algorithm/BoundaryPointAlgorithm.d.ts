@@ -5,4 +5,7 @@ import { BoundaryPoint, BoundaryPosition } from "../dom/interfaces";
  * @param bp - a boundary point
  * @param relativeTo - a boundary point to compare to
  */
-export declare function boundaryPoint_position(bp: BoundaryPoint, relativeTo: BoundaryPoint): BoundaryPosition;
+export declare function boundaryPoint_position(
+	bp: BoundaryPoint,
+	relativeTo: BoundaryPoint,
+): BoundaryPosition;

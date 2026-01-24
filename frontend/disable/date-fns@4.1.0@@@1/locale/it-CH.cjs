@@ -14,14 +14,14 @@ var _index5 = require("./it-CH/_lib/formatLong.cjs");
  * @author Mike Peyer [@maic66](https://github.com/maic66)
  */
 const itCH = (exports.itCH = {
-  code: "it-CH",
-  formatDistance: _index.formatDistance,
-  formatLong: _index5.formatLong,
-  formatRelative: _index2.formatRelative,
-  localize: _index3.localize,
-  match: _index4.match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 4,
-  },
+	code: "it-CH",
+	formatDistance: _index.formatDistance,
+	formatLong: _index5.formatLong,
+	formatRelative: _index2.formatRelative,
+	localize: _index3.localize,
+	match: _index4.match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 4,
+	},
 });

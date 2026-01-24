@@ -15,23 +15,20 @@ var _index = require("../predicates/index.cjs");
  */
 
 class CallbackVisitor extends _visitor.PredicateVisitor {
-  callback;
-  constructor({
-    callback = _ramdaAdjunct.noop,
-    ...rest
-  } = {}) {
-    super({
-      ...rest
-    });
-    this.callback = callback;
-  }
-  enter(element) {
-    if (this.predicate(element)) {
-      this.callback(element);
-      return this.returnOnTrue;
-    }
-    return this.returnOnFalse;
-  }
+	callback;
+	constructor({ callback = _ramdaAdjunct.noop, ...rest } = {}) {
+		super({
+			...rest,
+		});
+		this.callback = callback;
+	}
+	enter(element) {
+		if (this.predicate(element)) {
+			this.callback(element);
+			return this.returnOnTrue;
+		}
+		return this.returnOnFalse;
+	}
 }
 
 /**
@@ -40,21 +37,21 @@ class CallbackVisitor extends _visitor.PredicateVisitor {
  */
 exports.CallbackVisitor = CallbackVisitor;
 const traverse = (options, element) => {
-  let callback;
-  let predicate;
-  if ((0, _ramdaAdjunct.isFunction)(options)) {
-    callback = options;
-    predicate = _index.isElement;
-  } else {
-    callback = (0, _ramda.pathOr)(_ramdaAdjunct.noop, ['callback'], options);
-    predicate = (0, _ramda.pathOr)(_index.isElement, ['predicate'], options);
-  }
-  const visitor = new CallbackVisitor({
-    callback,
-    predicate
-  });
+	let callback;
+	let predicate;
+	if ((0, _ramdaAdjunct.isFunction)(options)) {
+		callback = options;
+		predicate = _index.isElement;
+	} else {
+		callback = (0, _ramda.pathOr)(_ramdaAdjunct.noop, ["callback"], options);
+		predicate = (0, _ramda.pathOr)(_index.isElement, ["predicate"], options);
+	}
+	const visitor = new CallbackVisitor({
+		callback,
+		predicate,
+	});
 
-  // @ts-ignore
-  (0, _visitor.visit)(element, visitor);
+	// @ts-ignore
+	(0, _visitor.visit)(element, visitor);
 };
-var _default = exports.default = traverse;
+var _default = (exports.default = traverse);

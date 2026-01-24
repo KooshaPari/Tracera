@@ -1,9 +1,8 @@
 //.CommonJS
 var CSSOM = {
-	CSSRule: require("./CSSRule").CSSRule
+	CSSRule: require("./CSSRule").CSSRule,
 };
 ///CommonJS
-
 
 /**
  * @constructor
@@ -11,7 +10,7 @@ var CSSOM = {
  */
 CSSOM.CSSCounterStyleRule = function CSSCounterStyleRule() {
 	CSSOM.CSSRule.call(this);
-    this.name = "";
+	this.name = "";
 };
 
 CSSOM.CSSCounterStyleRule.prototype = new CSSOM.CSSRule();

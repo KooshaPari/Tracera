@@ -11,23 +11,25 @@
 var INFINITY = 1 / 0;
 
 /** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
+var symbolTag = "[object Symbol]";
 
 /**
  * Used to match `RegExp`
  * [syntax characters](http://ecma-international.org/ecma-262/6.0/#sec-patterns).
  */
 var reRegExpChar = /[\\^$.*+?()[\]{}|]/g,
-    reHasRegExpChar = RegExp(reRegExpChar.source);
+	reHasRegExpChar = RegExp(reRegExpChar.source);
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+var freeGlobal =
+	typeof global == "object" && global && global.Object === Object && global;
 
 /** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+var freeSelf =
+	typeof self == "object" && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
-var root = freeGlobal || freeSelf || Function('return this')();
+var root = freeGlobal || freeSelf || Function("return this")();
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -44,7 +46,7 @@ var Symbol = root.Symbol;
 
 /** Used to convert symbols to primitives and strings. */
 var symbolProto = Symbol ? Symbol.prototype : undefined,
-    symbolToString = symbolProto ? symbolProto.toString : undefined;
+	symbolToString = symbolProto ? symbolProto.toString : undefined;
 
 /**
  * The base implementation of `_.toString` which doesn't convert nullish
@@ -55,15 +57,15 @@ var symbolProto = Symbol ? Symbol.prototype : undefined,
  * @returns {string} Returns the string.
  */
 function baseToString(value) {
-  // Exit early for strings to avoid a performance hit in some environments.
-  if (typeof value == 'string') {
-    return value;
-  }
-  if (isSymbol(value)) {
-    return symbolToString ? symbolToString.call(value) : '';
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+	// Exit early for strings to avoid a performance hit in some environments.
+	if (typeof value == "string") {
+		return value;
+	}
+	if (isSymbol(value)) {
+		return symbolToString ? symbolToString.call(value) : "";
+	}
+	var result = value + "";
+	return result == "0" && 1 / value == -INFINITY ? "-0" : result;
 }
 
 /**
@@ -91,7 +93,7 @@ function baseToString(value) {
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+	return !!value && typeof value == "object";
 }
 
 /**
@@ -112,8 +114,10 @@ function isObjectLike(value) {
  * // => false
  */
 function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
+	return (
+		typeof value == "symbol" ||
+		(isObjectLike(value) && objectToString.call(value) == symbolTag)
+	);
 }
 
 /**
@@ -138,7 +142,7 @@ function isSymbol(value) {
  * // => '1,2,3'
  */
 function toString(value) {
-  return value == null ? '' : baseToString(value);
+	return value == null ? "" : baseToString(value);
 }
 
 /**
@@ -157,10 +161,10 @@ function toString(value) {
  * // => '\[lodash\]\(https://lodash\.com/\)'
  */
 function escapeRegExp(string) {
-  string = toString(string);
-  return (string && reHasRegExpChar.test(string))
-    ? string.replace(reRegExpChar, '\\$&')
-    : string;
+	string = toString(string);
+	return string && reHasRegExpChar.test(string)
+		? string.replace(reRegExpChar, "\\$&")
+		: string;
 }
 
 module.exports = escapeRegExp;

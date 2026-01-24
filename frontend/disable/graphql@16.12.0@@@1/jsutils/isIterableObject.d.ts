@@ -16,5 +16,5 @@
  * ```
  */
 export declare function isIterableObject(
-  maybeIterable: any,
+	maybeIterable: any,
 ): maybeIterable is Iterable<unknown>;

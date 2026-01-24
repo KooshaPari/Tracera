@@ -36,7 +36,7 @@ var _index3 = require("./startOfYear.cjs");
  * ]
  */
 function eachWeekendOfYear(date, options) {
-  const start = (0, _index3.startOfYear)(date, options);
-  const end = (0, _index2.endOfYear)(date, options);
-  return (0, _index.eachWeekendOfInterval)({ start, end }, options);
+	const start = (0, _index3.startOfYear)(date, options);
+	const end = (0, _index2.endOfYear)(date, options);
+	return (0, _index.eachWeekendOfInterval)({ start, end }, options);
 }

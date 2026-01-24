@@ -114,7 +114,7 @@ class PerformanceTuningService:
 
     def is_cache_enabled(self) -> bool:
         """Check if caching is enabled."""
-        return self.cache_config["enabled"]
+        return bool(self.cache_config["enabled"])
 
     def optimize_indexes(self) -> list[str]:
         """Generate index optimization recommendations."""

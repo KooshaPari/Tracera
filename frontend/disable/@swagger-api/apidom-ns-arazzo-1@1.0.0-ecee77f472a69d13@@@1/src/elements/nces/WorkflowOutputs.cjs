@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class WorkflowOutputs extends _apidomCore.ObjectElement {
-  static primaryClass = 'workflow-outputs';
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.classes.push(WorkflowOutputs.primaryClass);
-  }
+	static primaryClass = "workflow-outputs";
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.classes.push(WorkflowOutputs.primaryClass);
+	}
 }
-var _default = exports.default = WorkflowOutputs;
+var _default = (exports.default = WorkflowOutputs);

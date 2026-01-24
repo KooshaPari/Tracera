@@ -4,9 +4,9 @@
  * MIT Licensed
  */
 
-import {AssertionError} from 'assertion-error';
-import {flag} from './flag.js';
-import {type} from './type-detect.js';
+import { AssertionError } from "assertion-error";
+import { flag } from "./flag.js";
+import { type } from "./type-detect.js";
 
 /**
  * ### .expectTypes(obj, types)
@@ -22,37 +22,31 @@ import {type} from './type-detect.js';
  * @public
  */
 export function expectTypes(obj, types) {
-  let flagMsg = flag(obj, 'message');
-  let ssfi = flag(obj, 'ssfi');
+	let flagMsg = flag(obj, "message");
+	const ssfi = flag(obj, "ssfi");
 
-  flagMsg = flagMsg ? flagMsg + ': ' : '';
+	flagMsg = flagMsg ? flagMsg + ": " : "";
 
-  obj = flag(obj, 'object');
-  types = types.map(function (t) {
-    return t.toLowerCase();
-  });
-  types.sort();
+	obj = flag(obj, "object");
+	types = types.map((t) => t.toLowerCase());
+	types.sort();
 
-  // Transforms ['lorem', 'ipsum'] into 'a lorem, or an ipsum'
-  let str = types
-    .map(function (t, index) {
-      let art = ~['a', 'e', 'i', 'o', 'u'].indexOf(t.charAt(0)) ? 'an' : 'a';
-      let or = types.length > 1 && index === types.length - 1 ? 'or ' : '';
-      return or + art + ' ' + t;
-    })
-    .join(', ');
+	// Transforms ['lorem', 'ipsum'] into 'a lorem, or an ipsum'
+	const str = types
+		.map((t, index) => {
+			const art = ~["a", "e", "i", "o", "u"].indexOf(t.charAt(0)) ? "an" : "a";
+			const or = types.length > 1 && index === types.length - 1 ? "or " : "";
+			return or + art + " " + t;
+		})
+		.join(", ");
 
-  let objType = type(obj).toLowerCase();
+	const objType = type(obj).toLowerCase();
 
-  if (
-    !types.some(function (expected) {
-      return objType === expected;
-    })
-  ) {
-    throw new AssertionError(
-      flagMsg + 'object tested must be ' + str + ', but ' + objType + ' given',
-      undefined,
-      ssfi
-    );
-  }
+	if (!types.some((expected) => objType === expected)) {
+		throw new AssertionError(
+			flagMsg + "object tested must be " + str + ", but " + objType + " given",
+			undefined,
+			ssfi,
+		);
+	}
 }

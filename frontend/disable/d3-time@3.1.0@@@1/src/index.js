@@ -1,96 +1,85 @@
 export {
-  timeInterval
-} from "./interval.js";
-
-export {
-  millisecond as utcMillisecond,
-  milliseconds as utcMilliseconds,
-  millisecond as timeMillisecond,
-  milliseconds as timeMilliseconds
-} from "./millisecond.js";
-
-export {
-  second as utcSecond,
-  seconds as utcSeconds,
-  second as timeSecond,
-  seconds as timeSeconds
-} from "./second.js";
-
-export {
-  timeMinute,
-  timeMinutes,
-  utcMinute,
-  utcMinutes
-} from "./minute.js";
-
-export {
-  timeHour,
-  timeHours,
-  utcHour,
-  utcHours
-} from "./hour.js";
-
-export {
-  timeDay,
-  timeDays,
-  utcDay,
-  utcDays,
-  unixDay,
-  unixDays
+	timeDay,
+	timeDays,
+	unixDay,
+	unixDays,
+	utcDay,
+	utcDays,
 } from "./day.js";
-
 export {
-  timeSunday as timeWeek,
-  timeSundays as timeWeeks,
-  timeSunday,
-  timeSundays,
-  timeMonday,
-  timeMondays,
-  timeTuesday,
-  timeTuesdays,
-  timeWednesday,
-  timeWednesdays,
-  timeThursday,
-  timeThursdays,
-  timeFriday,
-  timeFridays,
-  timeSaturday,
-  timeSaturdays,
-  utcSunday as utcWeek,
-  utcSundays as utcWeeks,
-  utcSunday,
-  utcSundays,
-  utcMonday,
-  utcMondays,
-  utcTuesday,
-  utcTuesdays,
-  utcWednesday,
-  utcWednesdays,
-  utcThursday,
-  utcThursdays,
-  utcFriday,
-  utcFridays,
-  utcSaturday,
-  utcSaturdays
-} from "./week.js";
-
+	timeHour,
+	timeHours,
+	utcHour,
+	utcHours,
+} from "./hour.js";
+export { timeInterval } from "./interval.js";
 export {
-  timeMonth,
-  timeMonths,
-  utcMonth,
-  utcMonths
+	millisecond as utcMillisecond,
+	millisecond as timeMillisecond,
+	milliseconds as utcMilliseconds,
+	milliseconds as timeMilliseconds,
+} from "./millisecond.js";
+export {
+	timeMinute,
+	timeMinutes,
+	utcMinute,
+	utcMinutes,
+} from "./minute.js";
+export {
+	timeMonth,
+	timeMonths,
+	utcMonth,
+	utcMonths,
 } from "./month.js";
-
 export {
-  timeYear,
-  timeYears,
-  utcYear,
-  utcYears
-} from "./year.js";
-
+	second as utcSecond,
+	second as timeSecond,
+	seconds as utcSeconds,
+	seconds as timeSeconds,
+} from "./second.js";
 export {
-  utcTicks,
-  utcTickInterval,
-  timeTicks,
-  timeTickInterval
+	timeTickInterval,
+	timeTicks,
+	utcTickInterval,
+	utcTicks,
 } from "./ticks.js";
+export {
+	timeFriday,
+	timeFridays,
+	timeMonday,
+	timeMondays,
+	timeSaturday,
+	timeSaturdays,
+	timeSunday as timeWeek,
+	timeSunday,
+	timeSundays as timeWeeks,
+	timeSundays,
+	timeThursday,
+	timeThursdays,
+	timeTuesday,
+	timeTuesdays,
+	timeWednesday,
+	timeWednesdays,
+	utcFriday,
+	utcFridays,
+	utcMonday,
+	utcMondays,
+	utcSaturday,
+	utcSaturdays,
+	utcSunday as utcWeek,
+	utcSunday,
+	utcSundays as utcWeeks,
+	utcSundays,
+	utcThursday,
+	utcThursdays,
+	utcTuesday,
+	utcTuesdays,
+	utcWednesday,
+	utcWednesdays,
+} from "./week.js";
+export {
+	timeYear,
+	timeYears,
+	utcYear,
+	utcYears,
+} from "./year.js";

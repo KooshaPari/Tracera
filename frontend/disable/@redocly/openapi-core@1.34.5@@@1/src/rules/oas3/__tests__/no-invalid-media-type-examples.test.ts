@@ -1,14 +1,18 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
 jest.setTimeout(10000);
 
-describe('no-invalid-media-type-examples', () => {
-  it('should report on invalid example', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-invalid-media-type-examples", () => {
+	it("should report on invalid example", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -29,16 +33,18 @@ describe('no-invalid-media-type-examples', () => {
                             type: number
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -76,11 +82,11 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on invalid example with allowAdditionalProperties', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on invalid example with allowAdditionalProperties", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -102,23 +108,23 @@ describe('no-invalid-media-type-examples', () => {
                             type: number
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-invalid-media-type-examples': {
-            severity: 'error',
-            allowAdditionalProperties: false,
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-invalid-media-type-examples": {
+						severity: "error",
+						allowAdditionalProperties: false,
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -139,11 +145,11 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on invalid example with a falsy value', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on invalid example with a falsy value", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         paths:
           /test:
@@ -156,23 +162,23 @@ describe('no-invalid-media-type-examples', () => {
                         type: string
                       example: false
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-invalid-media-type-examples': {
-            severity: 'error',
-            allowAdditionalProperties: false,
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-invalid-media-type-examples": {
+						severity: "error",
+						allowAdditionalProperties: false,
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -193,11 +199,11 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on valid example with allowAdditionalProperties', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on valid example with allowAdditionalProperties", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -218,28 +224,28 @@ describe('no-invalid-media-type-examples', () => {
                             type: number
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-invalid-media-type-examples': {
-            severity: 'error',
-            allowAdditionalProperties: false,
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-invalid-media-type-examples": {
+						severity: "error",
+						allowAdditionalProperties: false,
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on valid example with allowAdditionalProperties and allOf and $ref', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on valid example with allowAdditionalProperties and allOf and $ref", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -269,28 +275,28 @@ describe('no-invalid-media-type-examples', () => {
                             type: number
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-invalid-media-type-examples': {
-            severity: 'error',
-            allowAdditionalProperties: false,
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-invalid-media-type-examples": {
+						severity: "error",
+						allowAdditionalProperties: false,
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not on invalid examples', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not on invalid examples", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           examples:
@@ -321,23 +327,23 @@ describe('no-invalid-media-type-examples', () => {
                             type: number
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-invalid-media-type-examples': {
-            severity: 'error',
-            allowAdditionalProperties: false,
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-invalid-media-type-examples": {
+						severity: "error",
+						allowAdditionalProperties: false,
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -358,11 +364,11 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if no examples', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if no examples", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -376,21 +382,23 @@ describe('no-invalid-media-type-examples', () => {
                         b: 35
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if no schema', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if no schema", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -408,21 +416,23 @@ describe('no-invalid-media-type-examples', () => {
                             type: number
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should work with cross-file $ref', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should work with cross-file $ref", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -443,21 +453,23 @@ describe('no-invalid-media-type-examples', () => {
                         $ref: '#/components/schemas/C'
 
       `,
-      __dirname + '/foobar.yaml'
-    );
+			__dirname + "/foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not throw for ajv throw', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not throw for ajv throw", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -471,16 +483,18 @@ describe('no-invalid-media-type-examples', () => {
                         nullable: true
 
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -501,11 +515,11 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if allOf used with discriminator', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if allOf used with discriminator", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -523,21 +537,23 @@ describe('no-invalid-media-type-examples', () => {
                         first:
                           value: {}
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if only externalValue is set', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if only externalValue is set", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -557,21 +573,23 @@ describe('no-invalid-media-type-examples', () => {
                         first:
                           externalValue: ./fixtures/external-value.yaml
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if value is valid and externalValue is also set', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if value is valid and externalValue is also set", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -594,21 +612,23 @@ describe('no-invalid-media-type-examples', () => {
                             a: "A"
                             b: 0
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report invalid value when externalValue is also set', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report invalid value when externalValue is also set", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -631,16 +651,18 @@ describe('no-invalid-media-type-examples', () => {
                             a: 0
                             b: "0"
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-invalid-media-type-examples': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-invalid-media-type-examples": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "from": {
@@ -678,11 +700,11 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should first report on unresolved ref rather than fail on validation', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should first report on unresolved ref rather than fail on validation", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         paths:
           /groups:
@@ -697,21 +719,21 @@ describe('no-invalid-media-type-examples', () => {
                         example1:
                           $ref: '#/components/examples/NotExisting'
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-invalid-media-type-examples': 'warn',
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-invalid-media-type-examples": "warn",
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -728,5 +750,5 @@ describe('no-invalid-media-type-examples', () => {
         },
       ]
     `);
-  });
+	});
 });

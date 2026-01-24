@@ -1,9 +1,9 @@
-import type { Maybe } from '../jsutils/Maybe';
-import { GraphQLError } from '../error/GraphQLError';
-import type { DocumentNode } from '../language/ast';
-import type { GraphQLSchema } from '../type/schema';
-import { TypeInfo } from '../utilities/TypeInfo';
-import type { SDLValidationRule, ValidationRule } from './ValidationContext';
+import type { Maybe } from "../jsutils/Maybe";
+import { GraphQLError } from "../error/GraphQLError";
+import type { DocumentNode } from "../language/ast";
+import type { GraphQLSchema } from "../type/schema";
+import { TypeInfo } from "../utilities/TypeInfo";
+import type { SDLValidationRule, ValidationRule } from "./ValidationContext";
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -25,22 +25,22 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext';
  * will be created from the provided schema.
  */
 export declare function validate(
-  schema: GraphQLSchema,
-  documentAST: DocumentNode,
-  rules?: ReadonlyArray<ValidationRule>,
-  options?: {
-    maxErrors?: number;
-  },
-  /** @deprecated will be removed in 17.0.0 */
-  typeInfo?: TypeInfo,
+	schema: GraphQLSchema,
+	documentAST: DocumentNode,
+	rules?: ReadonlyArray<ValidationRule>,
+	options?: {
+		maxErrors?: number;
+	},
+	/** @deprecated will be removed in 17.0.0 */
+	typeInfo?: TypeInfo,
 ): ReadonlyArray<GraphQLError>;
 /**
  * @internal
  */
 export declare function validateSDL(
-  documentAST: DocumentNode,
-  schemaToExtend?: Maybe<GraphQLSchema>,
-  rules?: ReadonlyArray<SDLValidationRule>,
+	documentAST: DocumentNode,
+	schemaToExtend?: Maybe<GraphQLSchema>,
+	rules?: ReadonlyArray<SDLValidationRule>,
 ): ReadonlyArray<GraphQLError>;
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
@@ -56,6 +56,6 @@ export declare function assertValidSDL(documentAST: DocumentNode): void;
  * @internal
  */
 export declare function assertValidSDLExtension(
-  documentAST: DocumentNode,
-  schema: GraphQLSchema,
+	documentAST: DocumentNode,
+	schema: GraphQLSchema,
 ): void;

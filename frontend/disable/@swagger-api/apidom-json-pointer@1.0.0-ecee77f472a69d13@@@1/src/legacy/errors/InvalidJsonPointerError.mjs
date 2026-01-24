@@ -1,4 +1,5 @@
 import JsonPointerError from "./JsonPointerError.mjs";
+
 /**
  * @public
  * @deprecated
@@ -8,12 +9,12 @@ import JsonPointerError from "./JsonPointerError.mjs";
  * @deprecated
  */
 class InvalidJsonPointerError extends JsonPointerError {
-  pointer;
-  constructor(message, structuredOptions) {
-    super(message, structuredOptions);
-    if (typeof structuredOptions !== 'undefined') {
-      this.pointer = structuredOptions.pointer;
-    }
-  }
+	pointer;
+	constructor(message, structuredOptions) {
+		super(message, structuredOptions);
+		if (typeof structuredOptions !== "undefined") {
+			this.pointer = structuredOptions.pointer;
+		}
+	}
 }
 export default InvalidJsonPointerError;

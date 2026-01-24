@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/sub');
+"use strict";
+module.exports = require("../../full/string/sub");

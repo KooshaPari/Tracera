@@ -23,9 +23,9 @@ var _index3 = require("./toDate.cjs");
  * //=> true
  */
 function isLastDayOfMonth(date, options) {
-  const _date = (0, _index3.toDate)(date, options?.in);
-  return (
-    +(0, _index.endOfDay)(_date, options) ===
-    +(0, _index2.endOfMonth)(_date, options)
-  );
+	const _date = (0, _index3.toDate)(date, options?.in);
+	return (
+		+(0, _index.endOfDay)(_date, options) ===
+		+(0, _index2.endOfMonth)(_date, options)
+	);
 }

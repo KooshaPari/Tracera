@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../es/reflect/delete-property');
+"use strict";
+var parent = require("../../es/reflect/delete-property");
 
 module.exports = parent;

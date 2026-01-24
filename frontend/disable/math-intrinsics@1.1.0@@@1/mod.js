@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-var $floor = require('./floor');
+var $floor = require("./floor");
 
 /** @type {import('./mod')} */
 module.exports = function mod(number, modulo) {

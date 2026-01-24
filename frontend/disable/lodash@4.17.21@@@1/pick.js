@@ -1,5 +1,5 @@
-var basePick = require('./_basePick'),
-    flatRest = require('./_flatRest');
+var basePick = require("./_basePick"),
+	flatRest = require("./_flatRest");
 
 /**
  * Creates an object composed of the picked `object` properties.
@@ -18,8 +18,8 @@ var basePick = require('./_basePick'),
  * _.pick(object, ['a', 'c']);
  * // => { 'a': 1, 'c': 3 }
  */
-var pick = flatRest(function(object, paths) {
-  return object == null ? {} : basePick(object, paths);
-});
+var pick = flatRest((object, paths) =>
+	object == null ? {} : basePick(object, paths),
+);
 
 module.exports = pick;

@@ -11,6 +11,7 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 from sqlalchemy import create_engine, text
@@ -22,7 +23,7 @@ from tracertm.models import Base, Item, Link, Project
 class LegacyFriendlySession(Session):
     """Session that auto-wraps plain SQL strings for SQLAlchemy 2.x compatibility."""
 
-    def execute(self, statement, *args, **kwargs):  # type: ignore[override]
+    def execute(self, statement: Any, *args: Any, **kwargs: Any) -> Any:
         if isinstance(statement, str):
             if "INSERT INTO sync_queue" in statement and "datetime('now', '-7 days')" in statement:
                 statement = statement.replace("datetime('now', '-7 days')", "datetime('now', '-7 days', '-1 second')")
@@ -205,7 +206,7 @@ class LocalStorageManager:
         project_path: Path,
         project_name: str | None = None,
         description: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> tuple[Path, str]:
         """
         Initialize a new .trace/ directory in a project.
@@ -335,19 +336,22 @@ class LocalStorageManager:
             raise ValueError(f"project.yaml not found in {trace_dir}")
 
         project_config = yaml.safe_load(project_yaml_path.read_text(encoding="utf-8"))
-        project_id = project_config.get("id")
-        project_name = project_config.get("name", project_path.name)
+        project_id_raw: Any = project_config.get("id") if project_config else None
+        project_id: str = project_id_raw if isinstance(project_id_raw, str) else ""
+        project_name_raw: Any = project_config.get("name") if project_config else None
+        project_name: str = project_name_raw if isinstance(project_name_raw, str) else project_path.name
 
         if not project_id:
             # Generate ID if missing
             import uuid
 
             project_id = str(uuid.uuid4())
-            project_config["id"] = project_id
-            project_yaml_path.write_text(
-                yaml.dump(project_config, default_flow_style=False, sort_keys=False),
-                encoding="utf-8",
-            )
+            if project_config is not None:
+                project_config["id"] = project_id
+                project_yaml_path.write_text(
+                    yaml.dump(project_config, default_flow_style=False, sort_keys=False),
+                    encoding="utf-8",
+                )
 
         # Register in database
         self._register_project_in_db(project_id, project_name, project_path)
@@ -667,7 +671,13 @@ class LocalStorageManager:
             return {"epic": 0, "story": 0, "test": 0, "task": 0}
 
         project_config = yaml.safe_load(project_yaml_path.read_text(encoding="utf-8"))
-        return project_config.get("counters", {"epic": 0, "story": 0, "test": 0, "task": 0})
+        default_counters: dict[str, int] = {"epic": 0, "story": 0, "test": 0, "task": 0}
+        if project_config is None or not isinstance(project_config, dict):
+            return default_counters
+        counters_raw = project_config.get("counters", default_counters)
+        if isinstance(counters_raw, dict):
+            return counters_raw
+        return default_counters
 
     def increment_project_counter(
         self, project_path: Path, item_type: str
@@ -809,7 +819,7 @@ class LocalStorageManager:
             session.close()
 
     def queue_sync(
-        self, entity_type: str, entity_id: str, operation: str, payload: dict
+        self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]
     ) -> None:
         """
         Queue a change for sync to remote server.
@@ -842,7 +852,7 @@ class LocalStorageManager:
         finally:
             session.close()
 
-    def get_sync_queue(self, limit: int = 100) -> list[dict]:
+    def get_sync_queue(self, limit: int = 100) -> list[dict[str, Any]]:
         """
         Get pending sync operations.
 
@@ -1011,7 +1021,7 @@ class ProjectStorage:
             )
 
     def create_or_update_project(
-        self, name: str, description: str | None = None, metadata: dict | None = None
+        self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None
     ) -> Project:
         """
         Create or update a project.
@@ -1166,7 +1176,7 @@ class ItemStorage:
         priority: str = "medium",
         owner: str | None = None,
         parent_id: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Item:
         """
         Create a new item.
@@ -1252,7 +1262,7 @@ class ItemStorage:
         status: str | None = None,
         priority: str | None = None,
         owner: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Item:
         """
         Update an existing item.
@@ -1297,7 +1307,8 @@ class ItemStorage:
             session.refresh(item)
 
             # Regenerate markdown
-            external_id = item.item_metadata.get("external_id")
+            external_id_raw: Any = item.item_metadata.get("external_id")
+            external_id: str | None = external_id_raw if isinstance(external_id_raw, str) else None
             markdown_content = self._generate_item_markdown(item, external_id)
             content_hash = self._hash_content(markdown_content)
 
@@ -1344,7 +1355,8 @@ class ItemStorage:
             session.commit()
 
             # Delete markdown file
-            external_id = item.item_metadata.get("external_id")
+            external_id_raw: Any = item.item_metadata.get("external_id")
+            external_id: str | None = external_id_raw if isinstance(external_id_raw, str) else None
             if external_id:
                 markdown_path = self._get_item_path(item.item_type, external_id)
                 if markdown_path.exists():
@@ -1415,7 +1427,7 @@ class ItemStorage:
         source_id: str,
         target_id: str,
         link_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Link:
         """
         Create a traceability link.
@@ -1448,7 +1460,8 @@ class ItemStorage:
             # Regenerate markdown for source item to include new link
             source_item = session.get(Item, source_id)
             if source_item:
-                external_id = source_item.item_metadata.get("external_id")
+                external_id_raw: Any = source_item.item_metadata.get("external_id")
+                external_id: str | None = external_id_raw if isinstance(external_id_raw, str) else None
                 markdown_content = self._generate_item_markdown(source_item, external_id)
                 self._write_item_markdown(source_item, external_id, markdown_content)
 
@@ -1547,7 +1560,7 @@ class ItemStorage:
                 links_data.append({"type": link.link_type, "target": target_external_id})
 
         # Build frontmatter
-        frontmatter = {
+        frontmatter: dict[str, Any] = {
             "id": item.id,
             "external_id": external_id,
             "type": item.item_type,
@@ -1702,7 +1715,7 @@ class ItemStorage:
         finally:
             session.close()
 
-    def _item_to_dict(self, item: Item, external_id: str | None) -> dict:
+    def _item_to_dict(self, item: Item, external_id: str | None) -> dict[str, Any]:
         """
         Convert item to dict for sync.
 

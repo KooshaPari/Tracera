@@ -39,24 +39,24 @@ import { startOfDay } from "./startOfDay.js";
  * //=> 1
  */
 export function differenceInCalendarDays(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const laterStartOfDay = startOfDay(laterDate_);
-  const earlierStartOfDay = startOfDay(earlierDate_);
+	const laterStartOfDay = startOfDay(laterDate_);
+	const earlierStartOfDay = startOfDay(earlierDate_);
 
-  const laterTimestamp =
-    +laterStartOfDay - getTimezoneOffsetInMilliseconds(laterStartOfDay);
-  const earlierTimestamp =
-    +earlierStartOfDay - getTimezoneOffsetInMilliseconds(earlierStartOfDay);
+	const laterTimestamp =
+		+laterStartOfDay - getTimezoneOffsetInMilliseconds(laterStartOfDay);
+	const earlierTimestamp =
+		+earlierStartOfDay - getTimezoneOffsetInMilliseconds(earlierStartOfDay);
 
-  // Round the number of days to the nearest integer because the number of
-  // milliseconds in a day is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round((laterTimestamp - earlierTimestamp) / millisecondsInDay);
+	// Round the number of days to the nearest integer because the number of
+	// milliseconds in a day is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round((laterTimestamp - earlierTimestamp) / millisecondsInDay);
 }
 
 // Fallback for modularized imports:

@@ -1,6 +1,6 @@
 export type UntilResult<RejectionReason, ResolveData> =
-  | [reason: RejectionReason, data: null]
-  | [reason: null, data: ResolveData]
+	| [reason: RejectionReason, data: null]
+	| [reason: null, data: ResolveData];
 
 /**
  * Gracefully handles a callback that returns a promise.
@@ -13,14 +13,14 @@ export type UntilResult<RejectionReason, ResolveData> =
  * // [new Error('Oops!'), null]
  */
 export async function until<RejectionReason = Error, ResolveData = unknown>(
-  callback: () => Promise<ResolveData>,
+	callback: () => Promise<ResolveData>,
 ): Promise<UntilResult<RejectionReason, ResolveData>> {
-  try {
-    const data = await callback().catch((error) => {
-      throw error
-    })
-    return [null, data]
-  } catch (error: any) {
-    return [error, null]
-  }
+	try {
+		const data = await callback().catch((error) => {
+			throw error;
+		});
+		return [null, data];
+	} catch (error: any) {
+		return [error, null];
+	}
 }

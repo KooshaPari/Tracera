@@ -7,4 +7,4 @@ var _apidomError = require("@swagger-api/apidom-error");
  * @public
  */
 class EvaluationElementIdError extends _apidomError.ApiDOMError {}
-var _default = exports.default = EvaluationElementIdError;
+var _default = (exports.default = EvaluationElementIdError);

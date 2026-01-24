@@ -5,151 +5,144 @@
  * Licensed under the MIT license.
  * https://github.com/archiverjs/archiver-utils/blob/master/LICENSE
  */
-var fs = require('graceful-fs');
-var path = require('path');
-var isStream = require('is-stream');
-var lazystream = require('lazystream');
-var normalizePath = require('normalize-path');
-var defaults = require('lodash/defaults');
+var fs = require("graceful-fs");
+var path = require("path");
+var isStream = require("is-stream");
+var lazystream = require("lazystream");
+var normalizePath = require("normalize-path");
+var defaults = require("lodash/defaults");
 
-var Stream = require('stream').Stream;
-var PassThrough = require('readable-stream').PassThrough;
+var Stream = require("stream").Stream;
+var PassThrough = require("readable-stream").PassThrough;
 
-var utils = module.exports = {};
-utils.file = require('./file.js');
+var utils = (module.exports = {});
+utils.file = require("./file.js");
 
-utils.collectStream = function(source, callback) {
-  var collection = [];
-  var size = 0;
+utils.collectStream = (source, callback) => {
+	var collection = [];
+	var size = 0;
 
-  source.on('error', callback);
+	source.on("error", callback);
 
-  source.on('data', function(chunk) {
-    collection.push(chunk);
-    size += chunk.length;
-  });
+	source.on("data", (chunk) => {
+		collection.push(chunk);
+		size += chunk.length;
+	});
 
-  source.on('end', function() {
-    var buf = Buffer.alloc(size);
-    var offset = 0;
+	source.on("end", () => {
+		var buf = Buffer.alloc(size);
+		var offset = 0;
 
-    collection.forEach(function(data) {
-      data.copy(buf, offset);
-      offset += data.length;
-    });
+		collection.forEach((data) => {
+			data.copy(buf, offset);
+			offset += data.length;
+		});
 
-    callback(null, buf);
-  });
+		callback(null, buf);
+	});
 };
 
-utils.dateify = function(dateish) {
-  dateish = dateish || new Date();
+utils.dateify = (dateish) => {
+	dateish = dateish || new Date();
 
-  if (dateish instanceof Date) {
-    dateish = dateish;
-  } else if (typeof dateish === 'string') {
-    dateish = new Date(dateish);
-  } else {
-    dateish = new Date();
-  }
+	if (dateish instanceof Date) {
+		dateish = dateish;
+	} else if (typeof dateish === "string") {
+		dateish = new Date(dateish);
+	} else {
+		dateish = new Date();
+	}
 
-  return dateish;
+	return dateish;
 };
 
 // this is slightly different from lodash version
-utils.defaults = function(object, source, guard) {
-  var args = arguments;
-  args[0] = args[0] || {};
+utils.defaults = function (object, source, guard) {
+	var args = arguments;
+	args[0] = args[0] || {};
 
-  return defaults(...args);
+	return defaults(...args);
 };
 
-utils.isStream = function(source) {
-  return isStream(source);
+utils.isStream = (source) => isStream(source);
+
+utils.lazyReadStream = (filepath) =>
+	new lazystream.Readable(() => fs.createReadStream(filepath));
+
+utils.normalizeInputSource = (source) => {
+	if (source === null) {
+		return Buffer.alloc(0);
+	} else if (typeof source === "string") {
+		return Buffer.from(source);
+	} else if (utils.isStream(source)) {
+		// Always pipe through a PassThrough stream to guarantee pausing the stream if it's already flowing,
+		// since it will only be processed in a (distant) future iteration of the event loop, and will lose
+		// data if already flowing now.
+		return source.pipe(new PassThrough());
+	}
+
+	return source;
 };
 
-utils.lazyReadStream = function(filepath) {
-  return new lazystream.Readable(function() {
-    return fs.createReadStream(filepath);
-  });
-};
+utils.sanitizePath = (filepath) =>
+	normalizePath(filepath, false)
+		.replace(/^\w+:/, "")
+		.replace(/^(\.\.\/|\/)+/, "");
 
-utils.normalizeInputSource = function(source) {
-  if (source === null) {
-    return Buffer.alloc(0);
-  } else if (typeof source === 'string') {
-    return Buffer.from(source);
-  } else if (utils.isStream(source)) {
-    // Always pipe through a PassThrough stream to guarantee pausing the stream if it's already flowing,
-    // since it will only be processed in a (distant) future iteration of the event loop, and will lose
-    // data if already flowing now.
-    return source.pipe(new PassThrough());
-  }
+utils.trailingSlashIt = (str) => (str.slice(-1) !== "/" ? str + "/" : str);
 
-  return source;
-};
+utils.unixifyPath = (filepath) =>
+	normalizePath(filepath, false).replace(/^\w+:/, "");
 
-utils.sanitizePath = function(filepath) {
-  return normalizePath(filepath, false).replace(/^\w+:/, '').replace(/^(\.\.\/|\/)+/, '');
-};
+utils.walkdir = (dirpath, base, callback) => {
+	var results = [];
 
-utils.trailingSlashIt = function(str) {
-  return str.slice(-1) !== '/' ? str + '/' : str;
-};
+	if (typeof base === "function") {
+		callback = base;
+		base = dirpath;
+	}
 
-utils.unixifyPath = function(filepath) {
-  return normalizePath(filepath, false).replace(/^\w+:/, '');
-};
+	fs.readdir(dirpath, (err, list) => {
+		var i = 0;
+		var file;
+		var filepath;
 
-utils.walkdir = function(dirpath, base, callback) {
-  var results = [];
+		if (err) {
+			return callback(err);
+		}
 
-  if (typeof base === 'function') {
-    callback = base;
-    base = dirpath;
-  }
+		(function next() {
+			file = list[i++];
 
-  fs.readdir(dirpath, function(err, list) {
-    var i = 0;
-    var file;
-    var filepath;
+			if (!file) {
+				return callback(null, results);
+			}
 
-    if (err) {
-      return callback(err);
-    }
+			filepath = path.join(dirpath, file);
 
-    (function next() {
-      file = list[i++];
+			fs.stat(filepath, (err, stats) => {
+				results.push({
+					path: filepath,
+					relative: path.relative(base, filepath).replace(/\\/g, "/"),
+					stats: stats,
+				});
 
-      if (!file) {
-        return callback(null, results);
-      }
+				if (stats && stats.isDirectory()) {
+					utils.walkdir(filepath, base, (err, res) => {
+						if (err) {
+							return callback(err);
+						}
 
-      filepath = path.join(dirpath, file);
+						res.forEach((dirEntry) => {
+							results.push(dirEntry);
+						});
 
-      fs.stat(filepath, function(err, stats) {
-        results.push({
-          path: filepath,
-          relative: path.relative(base, filepath).replace(/\\/g, '/'),
-          stats: stats
-        });
-
-        if (stats && stats.isDirectory()) {
-          utils.walkdir(filepath, base, function(err, res) {
-	    if(err){
-	      return callback(err);
-	    }
-
-            res.forEach(function(dirEntry) {
-              results.push(dirEntry);
-            });
-		  
-            next();  
-          });
-        } else {
-          next();
-        }
-      });
-    })();
-  });
+						next();
+					});
+				} else {
+					next();
+				}
+			});
+		})();
+	});
 };

@@ -48,7 +48,7 @@ var _index2 = require("./differenceInDays.cjs");
  * //=> 8
  */
 function differenceInWeeks(laterDate, earlierDate, options) {
-  const diff =
-    (0, _index2.differenceInDays)(laterDate, earlierDate, options) / 7;
-  return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
+	const diff =
+		(0, _index2.differenceInDays)(laterDate, earlierDate, options) / 7;
+	return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
 }

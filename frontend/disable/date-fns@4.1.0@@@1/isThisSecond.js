@@ -21,7 +21,7 @@ import { isSameSecond } from "./isSameSecond.js";
  * //=> true
  */
 export function isThisSecond(date) {
-  return isSameSecond(date, constructNow(date));
+	return isSameSecond(date, constructNow(date));
 }
 
 // Fallback for modularized imports:

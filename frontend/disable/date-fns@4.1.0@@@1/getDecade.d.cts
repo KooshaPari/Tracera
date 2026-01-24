@@ -22,6 +22,6 @@ export interface GetDecadeOptions extends ContextOptions<Date> {}
  * //=> 1940
  */
 export declare function getDecade(
-  date: DateArg<Date> & {},
-  options?: GetDecadeOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetDecadeOptions | undefined,
 ): number;

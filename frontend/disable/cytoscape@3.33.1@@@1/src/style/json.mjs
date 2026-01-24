@@ -1,59 +1,55 @@
-let styfn = {};
+const styfn = {};
 
-styfn.appendFromJson = function( json ){
-  let style = this;
+styfn.appendFromJson = function (json) {
+	for (let i = 0; i < json.length; i++) {
+		const context = json[i];
+		const selector = context.selector;
+		const props = context.style || context.css;
+		const names = Object.keys(props);
 
-  for( let i = 0; i < json.length; i++ ){
-    let context = json[ i ];
-    let selector = context.selector;
-    let props = context.style || context.css;
-    let names = Object.keys( props );
+		this.selector(selector); // apply selector
 
-    style.selector( selector ); // apply selector
+		for (let j = 0; j < names.length; j++) {
+			const name = names[j];
+			const value = props[name];
 
-    for( let j = 0; j < names.length; j++ ){
-      let name = names[j];
-      let value = props[ name ];
+			this.css(name, value); // apply property
+		}
+	}
 
-      style.css( name, value ); // apply property
-    }
-  }
-
-  return style;
+	return this;
 };
 
 // accessible cy.style() function
-styfn.fromJson = function( json ){
-  let style = this;
+styfn.fromJson = function (json) {
+	this.resetToDefault();
+	this.appendFromJson(json);
 
-  style.resetToDefault();
-  style.appendFromJson( json );
-
-  return style;
+	return this;
 };
 
 // get json from cy.style() api
-styfn.json = function(){
-  let json = [];
+styfn.json = function () {
+	const json = [];
 
-  for( let i = this.defaultLength; i < this.length; i++ ){
-    let cxt = this[ i ];
-    let selector = cxt.selector;
-    let props = cxt.properties;
-    let css = {};
+	for (let i = this.defaultLength; i < this.length; i++) {
+		const cxt = this[i];
+		const selector = cxt.selector;
+		const props = cxt.properties;
+		const css = {};
 
-    for( let j = 0; j < props.length; j++ ){
-      let prop = props[ j ];
-      css[ prop.name ] = prop.strValue;
-    }
+		for (let j = 0; j < props.length; j++) {
+			const prop = props[j];
+			css[prop.name] = prop.strValue;
+		}
 
-    json.push( {
-      selector: !selector ? 'core' : selector.toString(),
-      style: css
-    } );
-  }
+		json.push({
+			selector: !selector ? "core" : selector.toString(),
+			style: css,
+		});
+	}
 
-  return json;
+	return json;
 };
 
 export default styfn;

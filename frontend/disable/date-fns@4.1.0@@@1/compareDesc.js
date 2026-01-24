@@ -33,13 +33,13 @@ import { toDate } from "./toDate.js";
  * // ]
  */
 export function compareDesc(dateLeft, dateRight) {
-  const diff = +toDate(dateLeft) - +toDate(dateRight);
+	const diff = +toDate(dateLeft) - +toDate(dateRight);
 
-  if (diff > 0) return -1;
-  else if (diff < 0) return 1;
+	if (diff > 0) return -1;
+	else if (diff < 0) return 1;
 
-  // Return 0 if diff is 0; return NaN if diff is NaN
-  return diff;
+	// Return 0 if diff is 0; return NaN if diff is NaN
+	return diff;
 }
 
 // Fallback for modularized imports:

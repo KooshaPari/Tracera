@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 02 2014 00:00:00
  */
 function startOfDay(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
 }

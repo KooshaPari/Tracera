@@ -22,6 +22,6 @@ export interface GetMinutesOptions extends ContextOptions<Date> {}
  * //=> 45
  */
 export declare function getMinutes(
-  date: DateArg<Date> & {},
-  options?: GetMinutesOptions | undefined,
+	date: DateArg<Date> & {},
+	options?: GetMinutesOptions | undefined,
 ): number;

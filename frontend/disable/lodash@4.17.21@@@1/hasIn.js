@@ -1,5 +1,5 @@
-var baseHasIn = require('./_baseHasIn'),
-    hasPath = require('./_hasPath');
+var baseHasIn = require("./_baseHasIn"),
+	hasPath = require("./_hasPath");
 
 /**
  * Checks if `path` is a direct or inherited property of `object`.
@@ -28,7 +28,7 @@ var baseHasIn = require('./_baseHasIn'),
  * // => false
  */
 function hasIn(object, path) {
-  return object != null && hasPath(object, path, baseHasIn);
+	return object != null && hasPath(object, path, baseHasIn);
 }
 
 module.exports = hasIn;

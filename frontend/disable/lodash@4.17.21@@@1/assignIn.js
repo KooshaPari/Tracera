@@ -1,6 +1,6 @@
-var copyObject = require('./_copyObject'),
-    createAssigner = require('./_createAssigner'),
-    keysIn = require('./keysIn');
+var copyObject = require("./_copyObject"),
+	createAssigner = require("./_createAssigner"),
+	keysIn = require("./keysIn");
 
 /**
  * This method is like `_.assign` except that it iterates over own and
@@ -33,8 +33,8 @@ var copyObject = require('./_copyObject'),
  * _.assignIn({ 'a': 0 }, new Foo, new Bar);
  * // => { 'a': 1, 'b': 2, 'c': 3, 'd': 4 }
  */
-var assignIn = createAssigner(function(object, source) {
-  copyObject(source, keysIn(source), object);
+var assignIn = createAssigner((object, source) => {
+	copyObject(source, keysIn(source), object);
 });
 
 module.exports = assignIn;

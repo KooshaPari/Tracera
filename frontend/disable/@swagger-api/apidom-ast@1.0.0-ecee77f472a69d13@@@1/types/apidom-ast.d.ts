@@ -1,5 +1,5 @@
-import type { ApiDOMErrorOptions } from '@swagger-api/apidom-error';
-import { ApiDOMStructuredError } from '@swagger-api/apidom-error';
+import type { ApiDOMErrorOptions } from "@swagger-api/apidom-error";
+import { ApiDOMStructuredError } from "@swagger-api/apidom-error";
 
 /**
  * @public
@@ -15,21 +15,21 @@ export declare const cloneNode: (node: any) => any;
  * @public
  */
 declare class Error_2 extends Node_2 {
-    static readonly type: string;
-    readonly value: unknown;
-    readonly isUnexpected: boolean;
-    constructor({ value, isUnexpected, ...rest }?: ErrorOptions_2);
+	static readonly type: string;
+	readonly value: unknown;
+	readonly isUnexpected: boolean;
+	constructor({ value, isUnexpected, ...rest }?: ErrorOptions_2);
 }
-export { Error_2 as Error }
+export { Error_2 as Error };
 
 /**
  * @public
  */
 declare interface ErrorOptions_2 extends NodeOptions {
-    readonly value?: unknown;
-    readonly isUnexpected?: boolean;
+	readonly value?: unknown;
+	readonly isUnexpected?: boolean;
 }
-export { ErrorOptions_2 as ErrorOptions }
+export { ErrorOptions_2 as ErrorOptions };
 
 /**
  * @public
@@ -39,7 +39,11 @@ export declare const getNodeType: (node: any) => string | undefined;
 /**
  * @public
  */
-export declare const getVisitFn: (visitor: any, type: string | undefined, isLeaving: boolean) => ((...args: any[]) => any) | null;
+export declare const getVisitFn: (
+	visitor: any,
+	type: string | undefined,
+	isLeaving: boolean,
+) => ((...args: any[]) => any) | null;
 
 /**
  * @public
@@ -54,7 +58,9 @@ export declare const isJsonDocument: (node: unknown) => node is JsonDocument;
 /**
  * @public
  */
-export declare const isJsonEscapeSequence: (node: unknown) => node is JsonEscapeSequence;
+export declare const isJsonEscapeSequence: (
+	node: unknown,
+) => node is JsonEscapeSequence;
 
 /**
  * @public
@@ -94,7 +100,9 @@ export declare const isJsonString: (node: unknown) => node is JsonString;
 /**
  * @public
  */
-export declare const isJsonStringContent: (node: unknown) => node is JsonStringContent;
+export declare const isJsonStringContent: (
+	node: unknown,
+) => node is JsonStringContent;
 
 /**
  * @public
@@ -144,7 +152,9 @@ export declare const isYamlDocument: (node: unknown) => node is YamlDocument;
 /**
  * @public
  */
-export declare const isYamlKeyValuePair: (node: unknown) => node is YamlKeyValuePair;
+export declare const isYamlKeyValuePair: (
+	node: unknown,
+) => node is YamlKeyValuePair;
 
 /**
  * @public
@@ -175,151 +185,158 @@ export declare const isYamlTag: (node: unknown) => node is YamlTag;
  * @public
  */
 export declare class JsonArray extends JsonNode {
-    static readonly type = "array";
-    get items(): unknown[];
+	static readonly type = "array";
+	get items(): unknown[];
 }
 
 /**
  * @public
  */
 export declare class JsonDocument extends JsonNode {
-    static readonly type = "document";
-    get child(): unknown;
+	static readonly type = "document";
+	get child(): unknown;
 }
 
 /**
  * @public
  */
 export declare class JsonEscapeSequence extends JsonValue {
-    static readonly type = "escapeSequence";
+	static readonly type = "escapeSequence";
 }
 
 /**
  * @public
  */
 export declare class JsonFalse extends JsonValue {
-    static readonly type = "false";
+	static readonly type = "false";
 }
 
 /**
  * @public
  */
 export declare class JsonKey extends JsonString {
-    static readonly type = "key";
+	static readonly type = "key";
 }
 
 /**
  * @public
  */
-export declare class JsonNode extends Node_2 {
-}
+export declare class JsonNode extends Node_2 {}
 
 /**
  * @public
  */
 export declare class JsonNull extends JsonValue {
-    static readonly type = "null";
+	static readonly type = "null";
 }
 
 /**
  * @public
  */
 export declare class JsonNumber extends JsonValue {
-    static readonly type = "number";
+	static readonly type = "number";
 }
 
 /**
  * @public
  */
 export declare class JsonObject extends JsonNode {
-    static readonly type = "object";
-    get properties(): Array<JsonProperty>;
+	static readonly type = "object";
+	get properties(): Array<JsonProperty>;
 }
 
 /**
  * @public
  */
 export declare class JsonProperty extends JsonNode {
-    static readonly type = "property";
-    get key(): JsonKey | undefined;
-    get value(): JsonPropertyValue | undefined;
+	static readonly type = "property";
+	get key(): JsonKey | undefined;
+	get value(): JsonPropertyValue | undefined;
 }
 
 /**
  * @public
  */
-export declare type JsonPropertyValue = JsonFalse | JsonTrue | JsonNull | JsonNumber | JsonString | JsonArray | JsonObject;
+export declare type JsonPropertyValue =
+	| JsonFalse
+	| JsonTrue
+	| JsonNull
+	| JsonNumber
+	| JsonString
+	| JsonArray
+	| JsonObject;
 
 /**
  * @public
  */
 export declare class JsonString extends JsonNode {
-    static readonly type: string;
-    get value(): string;
+	static readonly type: string;
+	get value(): string;
 }
 
 /**
  * @public
  */
 export declare class JsonStringContent extends JsonValue {
-    static readonly type = "stringContent";
+	static readonly type = "stringContent";
 }
 
 /**
  * @public
  */
 export declare class JsonTrue extends JsonValue {
-    static readonly type = "true";
+	static readonly type = "true";
 }
 
 /**
  * @public
  */
 export declare class JsonValue extends JsonNode {
-    static readonly type: string;
-    readonly value: string;
-    constructor({ value, ...rest }: JsonValueOptions);
+	static readonly type: string;
+	readonly value: string;
+	constructor({ value, ...rest }: JsonValueOptions);
 }
 
 /**
  * @public
  */
 export declare interface JsonValueOptions extends NodeOptions {
-    value: string;
+	value: string;
 }
 
 /**
  * @public
  */
 export declare class Literal extends Node_2 {
-    static readonly type: string;
-    readonly value: unknown;
-    constructor({ value, ...rest }?: LiteralOptions);
+	static readonly type: string;
+	readonly value: unknown;
+	constructor({ value, ...rest }?: LiteralOptions);
 }
 
 /**
  * @public
  */
 export declare interface LiteralOptions extends NodeOptions {
-    readonly value?: unknown;
+	readonly value?: unknown;
 }
 
 /**
  * @public
  */
-export declare interface MergeAllAsync {
-    (visitors: any[], options?: {
-        visitFnGetter?: typeof getVisitFn;
-        nodeTypeGetter?: typeof getNodeType;
-        breakSymbol?: typeof BREAK;
-        deleteNodeSymbol?: any;
-        skipVisitingNodeSymbol?: boolean;
-        exposeEdits?: boolean;
-    }): {
-        enter: (node: any, ...rest: any[]) => Promise<any>;
-        leave: (node: any, ...rest: any[]) => Promise<any>;
-    };
-}
+export declare type MergeAllAsync = (
+	visitors: any[],
+	options?: {
+		visitFnGetter?: typeof getVisitFn;
+		nodeTypeGetter?: typeof getNodeType;
+		breakSymbol?: typeof BREAK;
+		deleteNodeSymbol?: any;
+		skipVisitingNodeSymbol?: boolean;
+		exposeEdits?: boolean;
+	},
+) => {
+	enter: (node: any, ...rest: any[]) => Promise<any>;
+	leave: (node: any, ...rest: any[]) => Promise<any>;
+};
 
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
@@ -330,18 +347,21 @@ export declare interface MergeAllAsync {
  * @public
  */
 export declare interface MergeAllSync {
-    (visitors: any[], options?: {
-        visitFnGetter?: typeof getVisitFn;
-        nodeTypeGetter?: typeof getNodeType;
-        breakSymbol?: typeof BREAK;
-        deleteNodeSymbol?: any;
-        skipVisitingNodeSymbol?: boolean;
-        exposeEdits?: boolean;
-    }): {
-        enter: (node: any, ...rest: any[]) => any;
-        leave: (node: any, ...rest: any[]) => any;
-    };
-    [key: symbol]: MergeAllAsync;
+	(
+		visitors: any[],
+		options?: {
+			visitFnGetter?: typeof getVisitFn;
+			nodeTypeGetter?: typeof getNodeType;
+			breakSymbol?: typeof BREAK;
+			deleteNodeSymbol?: any;
+			skipVisitingNodeSymbol?: boolean;
+			exposeEdits?: boolean;
+		},
+	): {
+		enter: (node: any, ...rest: any[]) => any;
+		leave: (node: any, ...rest: any[]) => any;
+	};
+	[key: symbol]: MergeAllAsync;
 }
 
 /**
@@ -353,84 +373,93 @@ export declare const mergeAllVisitors: MergeAllSync;
  * @public
  */
 declare class Node_2 {
-    static readonly type: string;
-    readonly type: string;
-    readonly isMissing: boolean;
-    children: unknown[];
-    startPositionRow?: number;
-    startPositionColumn?: number;
-    startIndex?: number;
-    endPositionRow?: number;
-    endPositionColumn?: number;
-    endIndex?: number;
-    constructor({ children, isMissing, startPositionRow, startPositionColumn, startIndex, endPositionRow, endPositionColumn, endIndex, }?: NodeOptions);
-    clone(): Node_2;
+	static readonly type: string;
+	readonly type: string;
+	readonly isMissing: boolean;
+	children: unknown[];
+	startPositionRow?: number;
+	startPositionColumn?: number;
+	startIndex?: number;
+	endPositionRow?: number;
+	endPositionColumn?: number;
+	endIndex?: number;
+	constructor({
+		children,
+		isMissing,
+		startPositionRow,
+		startPositionColumn,
+		startIndex,
+		endPositionRow,
+		endPositionColumn,
+		endIndex,
+	}?: NodeOptions);
+	clone(): Node_2;
 }
-export { Node_2 as Node }
+export { Node_2 as Node };
 
 /**
  * @public
  */
 export declare interface NodeOptions {
-    readonly children?: unknown[];
-    readonly position?: Position;
-    readonly isMissing?: boolean;
-    readonly startPositionRow?: number;
-    readonly startPositionColumn?: number;
-    readonly startIndex?: number;
-    readonly endPositionRow?: number;
-    readonly endPositionColumn?: number;
-    readonly endIndex?: number;
+	readonly children?: unknown[];
+	readonly position?: Position;
+	readonly isMissing?: boolean;
+	readonly startPositionRow?: number;
+	readonly startPositionColumn?: number;
+	readonly startIndex?: number;
+	readonly endPositionRow?: number;
+	readonly endPositionColumn?: number;
+	readonly endIndex?: number;
 }
 
 /**
  * @public
  */
 export declare class ParseResult extends Node_2 {
-    static readonly type: string;
-    get rootNode(): unknown;
+	static readonly type: string;
+	get rootNode(): unknown;
 }
 
 /**
  * @public
  */
 export declare class Point {
-    static readonly type: string;
-    readonly type: string;
-    readonly row: number;
-    readonly column: number;
-    readonly char: number;
-    constructor({ row, column, char }: PointOptions);
+	static readonly type: string;
+	readonly type: string;
+	readonly row: number;
+	readonly column: number;
+	readonly char: number;
+	constructor({ row, column, char }: PointOptions);
 }
 
 /**
  * @public
  */
 export declare interface PointOptions {
-    readonly row: number;
-    readonly column: number;
-    readonly char: number;
+	readonly row: number;
+	readonly column: number;
+	readonly char: number;
 }
 
 /**
  * @public
  */
 export declare class Position {
-    static readonly type: string;
-    readonly type: string;
-    readonly start: Point;
-    readonly end: Point;
-    constructor({ start, end }: PositionOptions_2);
+	static readonly type: string;
+	readonly type: string;
+	readonly start: Point;
+	readonly end: Point;
+	constructor({ start, end }: PositionOptions_2);
 }
 
 /**
  * @public
  */
 declare interface PositionOptions_2 {
-    readonly start: Point;
-    readonly end: Point;
+	readonly start: Point;
+	readonly end: Point;
 }
-export { PositionOptions_2 as PositionOptions }
+export { PositionOptions_2 as PositionOptions };
 
 /**
  * visit() will walk through an AST using a preorder depth first traversal, calling
@@ -526,313 +555,330 @@ export { PositionOptions_2 as PositionOptions }
  *
  *  @public
  */
-export declare const visit: (root: any, visitor: any, { keyMap, state, breakSymbol, deleteNodeSymbol, skipVisitingNodeSymbol, visitFnGetter, nodeTypeGetter, nodePredicate, nodeCloneFn, detectCycles, detectCyclesCallback, }?: {
-    keyMap?: null | undefined;
-    state?: {} | undefined;
-    breakSymbol?: {} | undefined;
-    deleteNodeSymbol?: null | undefined;
-    skipVisitingNodeSymbol?: boolean | undefined;
-    visitFnGetter?: ((visitor: any, type: string | undefined, isLeaving: boolean) => ((...args: any[]) => any) | null) | undefined;
-    nodeTypeGetter?: ((node: any) => string | undefined) | undefined;
-    nodePredicate?: ((node: any) => boolean) | undefined;
-    nodeCloneFn?: ((node: any) => any) | undefined;
-    detectCycles?: boolean | undefined;
-    detectCyclesCallback?: null | undefined;
-}) => any;
+export declare const visit: (
+	root: any,
+	visitor: any,
+	{
+		keyMap,
+		state,
+		breakSymbol,
+		deleteNodeSymbol,
+		skipVisitingNodeSymbol,
+		visitFnGetter,
+		nodeTypeGetter,
+		nodePredicate,
+		nodeCloneFn,
+		detectCycles,
+		detectCyclesCallback,
+	}?: {
+		keyMap?: null | undefined;
+		state?: {} | undefined;
+		breakSymbol?: {} | undefined;
+		deleteNodeSymbol?: null | undefined;
+		skipVisitingNodeSymbol?: boolean | undefined;
+		visitFnGetter?:
+			| ((
+					visitor: any,
+					type: string | undefined,
+					isLeaving: boolean,
+			  ) => ((...args: any[]) => any) | null)
+			| undefined;
+		nodeTypeGetter?: ((node: any) => string | undefined) | undefined;
+		nodePredicate?: ((node: any) => boolean) | undefined;
+		nodeCloneFn?: ((node: any) => any) | undefined;
+		detectCycles?: boolean | undefined;
+		detectCyclesCallback?: null | undefined;
+	},
+) => any;
 
 /**
  * @public
  */
 export declare class YamlAlias extends Node_2 {
-    static readonly type = "alias";
-    readonly content: string;
-    constructor({ content, ...rest }: YamlAliasOptions);
+	static readonly type = "alias";
+	readonly content: string;
+	constructor({ content, ...rest }: YamlAliasOptions);
 }
 
 /**
  * @public
  */
 export declare interface YamlAliasOptions extends NodeOptions {
-    readonly content: string;
+	readonly content: string;
 }
 
 /**
  * @public
  */
 export declare class YamlAnchor extends Node_2 {
-    static readonly type = "anchor";
-    readonly name: string;
-    constructor({ name, ...rest }: YamlAnchorOptions);
+	static readonly type = "anchor";
+	readonly name: string;
+	constructor({ name, ...rest }: YamlAnchorOptions);
 }
 
 /**
  * @public
  */
 export declare interface YamlAnchorOptions extends NodeOptions {
-    readonly name: string;
+	readonly name: string;
 }
 
 /**
  * @public
  */
-export declare class YamlCollection extends YamlNode {
-}
+export declare class YamlCollection extends YamlNode {}
 
 /**
  * @public
  */
 export declare class YamlComment extends Node_2 {
-    static readonly type = "comment";
-    readonly content: string;
-    constructor({ content, ...rest }: YamlCommentOptions);
+	static readonly type = "comment";
+	readonly content: string;
+	constructor({ content, ...rest }: YamlCommentOptions);
 }
 
 /**
  * @public
  */
 export declare interface YamlCommentOptions extends NodeOptions {
-    readonly content: string;
+	readonly content: string;
 }
 
 /**
  * @public
  */
 export declare class YamlDirective extends Node_2 {
-    static readonly type = "directive";
-    readonly name?: string;
-    readonly parameters: YamlDirectiveParameters;
-    constructor({ name, parameters, ...rest }: YamlDirectiveOptions);
+	static readonly type = "directive";
+	readonly name?: string;
+	readonly parameters: YamlDirectiveParameters;
+	constructor({ name, parameters, ...rest }: YamlDirectiveOptions);
 }
 
 /**
  * @public
  */
 export declare interface YamlDirectiveOptions extends NodeOptions {
-    readonly name?: string;
-    readonly parameters: YamlDirectiveParameters;
+	readonly name?: string;
+	readonly parameters: YamlDirectiveParameters;
 }
 
 /**
  * @public
  */
 export declare interface YamlDirectiveParameters {
-    readonly version?: string;
-    readonly handle?: string;
-    readonly prefix?: string;
+	readonly version?: string;
+	readonly handle?: string;
+	readonly prefix?: string;
 }
 
 /**
  * @public
  */
 export declare class YamlDocument extends Node_2 {
-    static readonly type = "document";
+	static readonly type = "document";
 }
 
 /**
  * @public
  */
-export declare class YamlError extends ApiDOMStructuredError {
-}
+export declare class YamlError extends ApiDOMStructuredError {}
 
 /**
  * @public
  */
 export declare class YamlFailsafeSchema {
-    tags: any[];
-    tagDirectives: YamlDirective[];
-    constructor();
-    toSpecificTagName(node: any): string;
-    registerTagDirective(tagDirective: YamlDirective): void;
-    registerTag(tag: any, beginning?: boolean): this;
-    overrideTag(tag: any): this;
-    resolve(node: any): any;
+	tags: any[];
+	tagDirectives: YamlDirective[];
+	constructor();
+	toSpecificTagName(node: any): string;
+	registerTagDirective(tagDirective: YamlDirective): void;
+	registerTag(tag: any, beginning?: boolean): this;
+	overrideTag(tag: any): this;
+	resolve(node: any): any;
 }
 
 /**
  * @public
  */
 export declare class YamlJsonSchema extends YamlFailsafeSchema {
-    constructor();
-    toSpecificTagName(node: any): any;
+	constructor();
+	toSpecificTagName(node: any): any;
 }
 
 /**
  * @public
  */
 export declare class YamlKeyValuePair extends Node_2 {
-    static readonly type = "keyValuePair";
-    readonly styleGroup: YamlStyleGroup;
-    constructor({ styleGroup, ...rest }: YamlKeyValuePairOptions);
+	static readonly type = "keyValuePair";
+	readonly styleGroup: YamlStyleGroup;
+	constructor({ styleGroup, ...rest }: YamlKeyValuePairOptions);
 }
 
 /**
  * @public
  */
 export declare interface YamlKeyValuePairOptions extends NodeOptions {
-    readonly styleGroup: YamlStyleGroup;
+	readonly styleGroup: YamlStyleGroup;
 }
 
 /**
  * @public
  */
 export declare class YamlMapping extends YamlCollection {
-    static readonly type = "mapping";
+	static readonly type = "mapping";
 }
 
 /**
  * @public
  */
 export declare class YamlNode extends Node_2 {
-    readonly anchor?: YamlAnchor;
-    readonly tag?: YamlTag;
-    readonly style: YamlStyle;
-    readonly styleGroup: YamlStyleGroup;
-    constructor({ anchor, tag, style, styleGroup, ...rest }: YamlNodeOptions);
+	readonly anchor?: YamlAnchor;
+	readonly tag?: YamlTag;
+	readonly style: YamlStyle;
+	readonly styleGroup: YamlStyleGroup;
+	constructor({ anchor, tag, style, styleGroup, ...rest }: YamlNodeOptions);
 }
 
 /**
  * @public
  */
 export declare enum YamlNodeKind {
-    Scalar = "Scalar",
-    Sequence = "Sequence",
-    Mapping = "Mapping"
+	Scalar = "Scalar",
+	Sequence = "Sequence",
+	Mapping = "Mapping",
 }
 
 /**
  * @public
  */
 export declare interface YamlNodeOptions extends NodeOptions {
-    readonly anchor?: YamlAnchor;
-    readonly tag?: YamlTag;
-    readonly style: YamlStyle;
-    readonly styleGroup: YamlStyleGroup;
+	readonly anchor?: YamlAnchor;
+	readonly tag?: YamlTag;
+	readonly style: YamlStyle;
+	readonly styleGroup: YamlStyleGroup;
 }
 
 /**
  * @public
  */
-export declare class YamlReferenceError extends YamlError {
-}
+export declare class YamlReferenceError extends YamlError {}
 
 /**
  * @public
  */
 export declare class YamlReferenceManager {
-    addAnchor(node: YamlNode): void;
-    resolveAlias(alias: YamlAlias): YamlScalar;
+	addAnchor(node: YamlNode): void;
+	resolveAlias(alias: YamlAlias): YamlScalar;
 }
 
 /**
  * @public
  */
 export declare class YamlScalar extends YamlNode {
-    static readonly type = "scalar";
-    readonly content: string;
-    constructor({ content, ...rest }: YamlScalarOptions);
+	static readonly type = "scalar";
+	readonly content: string;
+	constructor({ content, ...rest }: YamlScalarOptions);
 }
 
 /**
  * @public
  */
 export declare interface YamlScalarOptions extends YamlNodeOptions {
-    readonly content: string;
+	readonly content: string;
 }
 
 /**
  * @public
  */
-export declare class YamlSchemaError extends YamlError {
-}
+export declare class YamlSchemaError extends YamlError {}
 
 /**
  * @public
  */
 export declare class YamlSequence extends YamlCollection {
-    static readonly type = "sequence";
+	static readonly type = "sequence";
 }
 
 /**
  * @public
  */
 export declare class YamlStream extends Node_2 {
-    static readonly type = "stream";
+	static readonly type = "stream";
 }
 
 /**
  * @public
  */
 export declare enum YamlStyle {
-    Plain = "Plain",
-    SingleQuoted = "SingleQuoted",
-    DoubleQuoted = "DoubleQuoted",
-    Literal = "Literal",
-    Folded = "Folded",
-    Explicit = "Explicit",
-    SinglePair = "SinglePair",
-    NextLine = "NextLine",
-    InLine = "InLine"
+	Plain = "Plain",
+	SingleQuoted = "SingleQuoted",
+	DoubleQuoted = "DoubleQuoted",
+	Literal = "Literal",
+	Folded = "Folded",
+	Explicit = "Explicit",
+	SinglePair = "SinglePair",
+	NextLine = "NextLine",
+	InLine = "InLine",
 }
 
 /**
  * @public
  */
 export declare enum YamlStyleGroup {
-    Flow = "Flow",
-    Block = "Block"
+	Flow = "Flow",
+	Block = "Block",
 }
 
 /**
  * @public
  */
 export declare class YamlTag extends Node_2 {
-    static readonly type = "tag";
-    readonly explicitName: string;
-    readonly kind: YamlNodeKind;
-    constructor({ explicitName, kind, ...rest }: YamlTagOptions);
+	static readonly type = "tag";
+	readonly explicitName: string;
+	readonly kind: YamlNodeKind;
+	constructor({ explicitName, kind, ...rest }: YamlTagOptions);
 }
 
 /**
  * @public
  */
 export declare class YamlTagError extends YamlSchemaError {
-    readonly specificTagName: string;
-    readonly explicitTagName: string;
-    readonly tagKind: string;
-    readonly tagStartPositionRow?: number;
-    readonly tagStartPositionColumn?: number;
-    readonly tagStartPositionIndex?: number;
-    readonly tagEndPositionRow?: number;
-    readonly tagEndPositionColumn?: number;
-    readonly tagEndPositionIndex?: number;
-    readonly nodeCanonicalContent?: string;
-    readonly node?: unknown;
-    constructor(message?: string, structuredOptions?: YamlTagErrorOptions);
+	readonly specificTagName: string;
+	readonly explicitTagName: string;
+	readonly tagKind: string;
+	readonly tagStartPositionRow?: number;
+	readonly tagStartPositionColumn?: number;
+	readonly tagStartPositionIndex?: number;
+	readonly tagEndPositionRow?: number;
+	readonly tagEndPositionColumn?: number;
+	readonly tagEndPositionIndex?: number;
+	readonly nodeCanonicalContent?: string;
+	readonly node?: unknown;
+	constructor(message?: string, structuredOptions?: YamlTagErrorOptions);
 }
 
 /**
  * @public
  */
-export declare interface YamlTagErrorOptions<T extends Node_2 = Node_2> extends ApiDOMErrorOptions {
-    readonly specificTagName: string;
-    readonly explicitTagName: string;
-    readonly tagKind: string;
-    readonly tagStartPositionRow?: number;
-    readonly tagStartPositionColumn?: number;
-    readonly tagStartPositionIndex?: number;
-    readonly tagEndPositionRow?: number;
-    readonly tagEndPositionColumn?: number;
-    readonly tagEndPositionIndex?: number;
-    readonly nodeCanonicalContent?: string;
-    readonly node?: T;
+export declare interface YamlTagErrorOptions<T extends Node_2 = Node_2>
+	extends ApiDOMErrorOptions {
+	readonly specificTagName: string;
+	readonly explicitTagName: string;
+	readonly tagKind: string;
+	readonly tagStartPositionRow?: number;
+	readonly tagStartPositionColumn?: number;
+	readonly tagStartPositionIndex?: number;
+	readonly tagEndPositionRow?: number;
+	readonly tagEndPositionColumn?: number;
+	readonly tagEndPositionIndex?: number;
+	readonly nodeCanonicalContent?: string;
+	readonly node?: T;
 }
 
 /**
  * @public
  */
 export declare interface YamlTagOptions extends NodeOptions {
-    readonly explicitName: string;
-    readonly kind: YamlNodeKind;
+	readonly explicitName: string;
+	readonly kind: YamlNodeKind;
 }
-
-export { }

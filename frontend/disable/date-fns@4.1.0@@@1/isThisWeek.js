@@ -32,11 +32,11 @@ import { isSameWeek } from "./isSameWeek.js";
  * //=> false
  */
 export function isThisWeek(date, options) {
-  return isSameWeek(
-    constructFrom(options?.in || date, date),
-    constructNow(options?.in || date),
-    options,
-  );
+	return isSameWeek(
+		constructFrom(options?.in || date, date),
+		constructNow(options?.in || date),
+		options,
+	);
 }
 
 // Fallback for modularized imports:

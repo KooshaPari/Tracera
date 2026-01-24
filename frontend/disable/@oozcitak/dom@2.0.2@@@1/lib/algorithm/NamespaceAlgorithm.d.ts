@@ -14,11 +14,10 @@ export declare function namespace_validate(qualifiedName: string): void;
  *
  * @returns a tuple with `namespace`, `prefix` and `localName`.
  */
-export declare function namespace_validateAndExtract(namespace: string | null, qualifiedName: string): [
-    string | null,
-    string | null,
-    string
-];
+export declare function namespace_validateAndExtract(
+	namespace: string | null,
+	qualifiedName: string,
+): [string | null, string | null, string];
 /**
  * Extracts a prefix and localName from the given qualified name.
  *
@@ -26,4 +25,6 @@ export declare function namespace_validateAndExtract(namespace: string | null, q
  *
  * @returns an tuple with `prefix` and `localName`.
  */
-export declare function namespace_extractQName(qualifiedName: string): [string | null, string];
+export declare function namespace_extractQName(
+	qualifiedName: string,
+): [string | null, string];

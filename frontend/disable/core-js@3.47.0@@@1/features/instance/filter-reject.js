@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/filter-reject');
+"use strict";
+module.exports = require("../../full/instance/filter-reject");

@@ -1,6 +1,6 @@
-var baseFlatten = require('./_baseFlatten'),
-    map = require('./map'),
-    toInteger = require('./toInteger');
+var baseFlatten = require("./_baseFlatten"),
+	map = require("./map"),
+	toInteger = require("./toInteger");
 
 /**
  * This method is like `_.flatMap` except that it recursively flattens the
@@ -24,8 +24,8 @@ var baseFlatten = require('./_baseFlatten'),
  * // => [[1, 1], [2, 2]]
  */
 function flatMapDepth(collection, iteratee, depth) {
-  depth = depth === undefined ? 1 : toInteger(depth);
-  return baseFlatten(map(collection, iteratee), depth);
+	depth = depth === undefined ? 1 : toInteger(depth);
+	return baseFlatten(map(collection, iteratee), depth);
 }
 
 module.exports = flatMapDepth;

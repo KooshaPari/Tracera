@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link eachWeekendOfYear} function options.
  */
 export interface EachWeekendOfYearOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name eachWeekendOfYear
  * @category Year Helpers
@@ -32,9 +32,9 @@ export interface EachWeekendOfYearOptions<DateType extends Date = Date>
  * ]
  */
 export declare function eachWeekendOfYear<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  options?: EachWeekendOfYearOptions<ResultDate>,
+	date: DateArg<DateType>,
+	options?: EachWeekendOfYearOptions<ResultDate>,
 ): ResultDate[];

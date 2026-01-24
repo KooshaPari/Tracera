@@ -7,9 +7,9 @@ type NamesIndex = number;
 type GeneratedLine = number;
 
 export type SourceMapSegment =
-  | [GeneratedColumn]
-  | [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn]
-  | [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn, NamesIndex];
+	| [GeneratedColumn]
+	| [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn]
+	| [GeneratedColumn, SourcesIndex, SourceLine, SourceColumn, NamesIndex];
 
 export type ReverseSegment = [SourceColumn, GeneratedLine, GeneratedColumn];
 

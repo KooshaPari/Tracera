@@ -70,10 +70,10 @@ function treeShake({ types: t }) {
 											p.node.type === "ObjectProperty"
 												? "value"
 												: p.node.type === "RestElement"
-												? "argument"
-												: (function () {
-														throw new Error("invariant");
-												  })(),
+													? "argument"
+													: (function () {
+															throw new Error("invariant");
+														})(),
 										);
 										if (isIdentifierReferenced(local)) {
 											variableState.refs.add(local);
@@ -224,10 +224,10 @@ function treeShake({ types: t }) {
 											p.node.type === "ObjectProperty"
 												? "value"
 												: p.node.type === "RestElement"
-												? "argument"
-												: (function () {
-														throw new Error("invariant");
-												  })(),
+													? "argument"
+													: (function () {
+															throw new Error("invariant");
+														})(),
 										);
 										if (refs.has(local) && !isIdentifierReferenced(local)) {
 											++count;

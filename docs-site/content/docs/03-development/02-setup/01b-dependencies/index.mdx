@@ -1,0 +1,157 @@
+---
+title: "Dependencies"
+description: "TraceRTM project dependencies and package management"
+keywords: [dependencies, packages, requirements, pip, npm]
+---
+
+# Dependencies
+
+TraceRTM project dependencies and how to manage them.
+
+## Python Dependencies
+
+### Core Dependencies
+
+TraceRTM requires these Python packages:
+
+- **FastAPI**: Web framework
+- **SQLAlchemy**: ORM and database toolkit
+- **Alembic**: Database migrations
+- **Pydantic**: Data validation
+- **python-jose**: JWT handling
+- **passlib**: Password hashing
+
+### Development Dependencies
+
+Additional packages for development:
+
+- **pytest**: Testing framework
+- **black**: Code formatting
+- **flake8**: Linting
+- **mypy**: Type checking
+- **pre-commit**: Git hooks
+
+## Installing Dependencies
+
+### Using pip
+
+```bash
+# Install core dependencies
+pip install -r requirements.txt
+
+# Install with development dependencies
+pip install -r requirements-dev.txt
+
+# Or install in editable mode
+pip install -e ".[dev]"
+```
+
+### Using Poetry (Recommended)
+
+```bash
+# Install Poetry
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install dependencies
+poetry install
+
+# Install with dev dependencies
+poetry install --with dev
+```
+
+## Frontend Dependencies
+
+### Node.js Packages
+
+- **Next.js**: React framework
+- **React**: UI library
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling
+- **Fumadocs**: Documentation framework
+
+### Installing
+
+```bash
+# Using npm
+npm install
+
+# Using yarn
+yarn install
+
+# Using pnpm
+pnpm install
+```
+
+## Dependency Management
+
+### Updating Dependencies
+
+```bash
+# Python - check for updates
+pip list --outdated
+
+# Update specific package
+pip install --upgrade package-name
+
+# Update all packages
+pip install --upgrade -r requirements.txt
+```
+
+### Locking Versions
+
+```bash
+# Generate requirements.txt with versions
+pip freeze > requirements-lock.txt
+
+# Using Poetry
+poetry lock
+```
+
+## Security
+
+### Checking for Vulnerabilities
+
+```bash
+# Python
+pip-audit
+
+# Node.js
+npm audit
+yarn audit
+```
+
+### Updating Vulnerable Packages
+
+```bash
+# Python
+pip install --upgrade vulnerable-package
+
+# Node.js
+npm audit fix
+```
+
+## Version Pinning
+
+### Python
+
+```txt
+# requirements.txt
+fastapi==0.104.1
+sqlalchemy==2.0.23
+```
+
+### Node.js
+
+```json
+{
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0"
+  }
+}
+```
+
+## Related Documentation
+
+- [Prerequisites](./01-prerequisites) - Required software
+- [Local Development](./02-local-development) - Development setup

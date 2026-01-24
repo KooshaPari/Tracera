@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/uint8-clamped-array');
+"use strict";
+module.exports = require("../../full/typed-array/uint8-clamped-array");

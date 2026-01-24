@@ -1,8 +1,7 @@
+export { TanStackStartVitePluginCore } from "./plugin";
 export {
-  createTanStackConfig,
-  createTanStackStartOptionsSchema,
-  pageSchema,
-} from './schema'
-
-export { TanStackStartVitePluginCore } from './plugin'
-export { resolveViteId } from './utils'
+	createTanStackConfig,
+	createTanStackStartOptionsSchema,
+	pageSchema,
+} from "./schema";
+export { resolveViteId } from "./utils";

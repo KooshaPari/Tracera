@@ -5,5 +5,5 @@ const producersMap = new WeakMap();
 module.exports = {
 	anyMap,
 	eventsMap,
-	producersMap
+	producersMap,
 };

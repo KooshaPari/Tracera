@@ -1,7 +1,5 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.isAsyncIterable = isAsyncIterable;
 
@@ -10,9 +8,9 @@ exports.isAsyncIterable = isAsyncIterable;
  * implementing a `Symbol.asyncIterator` method.
  */
 function isAsyncIterable(maybeAsyncIterable) {
-  return (
-    typeof (maybeAsyncIterable === null || maybeAsyncIterable === void 0
-      ? void 0
-      : maybeAsyncIterable[Symbol.asyncIterator]) === 'function'
-  );
+	return (
+		typeof (maybeAsyncIterable === null || maybeAsyncIterable === void 0
+			? void 0
+			: maybeAsyncIterable[Symbol.asyncIterator]) === "function"
+	);
 }

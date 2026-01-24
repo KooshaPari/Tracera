@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/reflect/has');
+"use strict";
+module.exports = require("../../full/reflect/has");

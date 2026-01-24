@@ -32,24 +32,24 @@ import { startOfISOWeek } from "./startOfISOWeek.js";
  * //=> 3
  */
 export function differenceInCalendarISOWeeks(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const startOfISOWeekLeft = startOfISOWeek(laterDate_);
-  const startOfISOWeekRight = startOfISOWeek(earlierDate_);
+	const startOfISOWeekLeft = startOfISOWeek(laterDate_);
+	const startOfISOWeekRight = startOfISOWeek(earlierDate_);
 
-  const timestampLeft =
-    +startOfISOWeekLeft - getTimezoneOffsetInMilliseconds(startOfISOWeekLeft);
-  const timestampRight =
-    +startOfISOWeekRight - getTimezoneOffsetInMilliseconds(startOfISOWeekRight);
+	const timestampLeft =
+		+startOfISOWeekLeft - getTimezoneOffsetInMilliseconds(startOfISOWeekLeft);
+	const timestampRight =
+		+startOfISOWeekRight - getTimezoneOffsetInMilliseconds(startOfISOWeekRight);
 
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round((timestampLeft - timestampRight) / millisecondsInWeek);
+	// Round the number of weeks to the nearest integer because the number of
+	// milliseconds in a week is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round((timestampLeft - timestampRight) / millisecondsInWeek);
 }
 
 // Fallback for modularized imports:

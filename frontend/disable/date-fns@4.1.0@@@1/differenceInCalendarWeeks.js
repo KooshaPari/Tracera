@@ -40,21 +40,21 @@ import { startOfWeek } from "./startOfWeek.js";
  * //=> 2
  */
 export function differenceInCalendarWeeks(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const laterStartOfWeek = startOfWeek(laterDate_, options);
-  const earlierStartOfWeek = startOfWeek(earlierDate_, options);
+	const laterStartOfWeek = startOfWeek(laterDate_, options);
+	const earlierStartOfWeek = startOfWeek(earlierDate_, options);
 
-  const laterTimestamp =
-    +laterStartOfWeek - getTimezoneOffsetInMilliseconds(laterStartOfWeek);
-  const earlierTimestamp =
-    +earlierStartOfWeek - getTimezoneOffsetInMilliseconds(earlierStartOfWeek);
+	const laterTimestamp =
+		+laterStartOfWeek - getTimezoneOffsetInMilliseconds(laterStartOfWeek);
+	const earlierTimestamp =
+		+earlierStartOfWeek - getTimezoneOffsetInMilliseconds(earlierStartOfWeek);
 
-  return Math.round((laterTimestamp - earlierTimestamp) / millisecondsInWeek);
+	return Math.round((laterTimestamp - earlierTimestamp) / millisecondsInWeek);
 }
 
 // Fallback for modularized imports:

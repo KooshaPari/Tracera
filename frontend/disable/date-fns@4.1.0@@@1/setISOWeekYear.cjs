@@ -35,15 +35,15 @@ var _index4 = require("./toDate.cjs");
  * //=> Mon Jan 01 2007 00:00:00
  */
 function setISOWeekYear(date, weekYear, options) {
-  let _date = (0, _index4.toDate)(date, options?.in);
-  const diff = (0, _index2.differenceInCalendarDays)(
-    _date,
-    (0, _index3.startOfISOWeekYear)(_date, options),
-  );
-  const fourthOfJanuary = (0, _index.constructFrom)(options?.in || date, 0);
-  fourthOfJanuary.setFullYear(weekYear, 0, 4);
-  fourthOfJanuary.setHours(0, 0, 0, 0);
-  _date = (0, _index3.startOfISOWeekYear)(fourthOfJanuary);
-  _date.setDate(_date.getDate() + diff);
-  return _date;
+	let _date = (0, _index4.toDate)(date, options?.in);
+	const diff = (0, _index2.differenceInCalendarDays)(
+		_date,
+		(0, _index3.startOfISOWeekYear)(_date, options),
+	);
+	const fourthOfJanuary = (0, _index.constructFrom)(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(weekYear, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
+	_date = (0, _index3.startOfISOWeekYear)(fourthOfJanuary);
+	_date.setDate(_date.getDate() + diff);
+	return _date;
 }

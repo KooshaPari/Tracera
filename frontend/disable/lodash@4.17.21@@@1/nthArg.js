@@ -1,6 +1,6 @@
-var baseNth = require('./_baseNth'),
-    baseRest = require('./_baseRest'),
-    toInteger = require('./toInteger');
+var baseNth = require("./_baseNth"),
+	baseRest = require("./_baseRest"),
+	toInteger = require("./toInteger");
 
 /**
  * Creates a function that gets the argument at index `n`. If `n` is negative,
@@ -23,10 +23,8 @@ var baseNth = require('./_baseNth'),
  * // => 'c'
  */
 function nthArg(n) {
-  n = toInteger(n);
-  return baseRest(function(args) {
-    return baseNth(args, n);
-  });
+	n = toInteger(n);
+	return baseRest((args) => baseNth(args, n));
 }
 
 module.exports = nthArg;

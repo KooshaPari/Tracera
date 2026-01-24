@@ -1,13 +1,16 @@
-import {type Readable} from 'node:stream';
-import {type Buffer} from 'node:buffer';
+import { type Readable } from "node:stream";
+import { type Buffer } from "node:buffer";
 
 export class MaxBufferError extends Error {
-	readonly name: 'MaxBufferError';
+	readonly name: "MaxBufferError";
 	constructor();
 }
 
 type TextStreamItem = string | Buffer | ArrayBuffer | ArrayBufferView;
-export type AnyStream<SteamItem = TextStreamItem> = Readable | ReadableStream<SteamItem> | AsyncIterable<SteamItem>;
+export type AnyStream<SteamItem = TextStreamItem> =
+	| Readable
+	| ReadableStream<SteamItem>
+	| AsyncIterable<SteamItem>;
 
 export type Options = {
 	/**
@@ -71,7 +74,10 @@ const asyncIterable = await opendir(directory);
 console.log(await getStreamAsArray(asyncIterable));
 ```
 */
-export default function getStream(stream: AnyStream, options?: Options): Promise<string>;
+export default function getStream(
+	stream: AnyStream,
+	options?: Options,
+): Promise<string>;
 
 /**
 Get the given `stream` as a Node.js [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer).
@@ -86,7 +92,10 @@ const stream = fs.createReadStream('unicorn.png');
 console.log(await getStreamAsBuffer(stream));
 ```
 */
-export function getStreamAsBuffer(stream: AnyStream, options?: Options): Promise<Buffer>;
+export function getStreamAsBuffer(
+	stream: AnyStream,
+	options?: Options,
+): Promise<Buffer>;
 
 /**
 Get the given `stream` as an [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
@@ -101,7 +110,10 @@ const {body: readableStream} = await fetch('https://example.com');
 console.log(await getStreamAsArrayBuffer(readableStream));
 ```
 */
-export function getStreamAsArrayBuffer(stream: AnyStream, options?: Options): Promise<ArrayBuffer>;
+export function getStreamAsArrayBuffer(
+	stream: AnyStream,
+	options?: Options,
+): Promise<ArrayBuffer>;
 
 /**
 Get the given `stream` as an array. Unlike [other methods](#api), this supports [streams of objects](https://nodejs.org/api/stream.html#object-mode).
@@ -116,4 +128,7 @@ const {body: readableStream} = await fetch('https://example.com');
 console.log(await getStreamAsArray(readableStream));
 ```
 */
-export function getStreamAsArray<Item>(stream: AnyStream<Item>, options?: Options): Promise<Item[]>;
+export function getStreamAsArray<Item>(
+	stream: AnyStream<Item>,
+	options?: Options,
+): Promise<Item[]>;

@@ -27,5 +27,5 @@ var _index = require("./startOfDay.cjs");
  * //=> Mon Oct 6 2014 00:00:00
  */
 function startOfToday(options) {
-  return (0, _index.startOfDay)(Date.now(), options);
+	return (0, _index.startOfDay)(Date.now(), options);
 }

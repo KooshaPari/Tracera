@@ -12,16 +12,16 @@ import { match } from "./uz-Cyrl/_lib/match.js";
  * @author Kamronbek Shodmonov [@kamronbek28](https://github.com/kamronbek28)
  */
 export const uzCyrl = {
-  code: "uz-Cyrl",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 1 /* Monday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "uz-Cyrl",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 1 /* Monday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

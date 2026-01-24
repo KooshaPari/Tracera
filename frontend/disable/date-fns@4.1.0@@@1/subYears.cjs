@@ -29,5 +29,5 @@ var _index = require("./addYears.cjs");
  * //=> Tue Sep 01 2009 00:00:00
  */
 function subYears(date, amount, options) {
-  return (0, _index.addYears)(date, -amount, options);
+	return (0, _index.addYears)(date, -amount, options);
 }

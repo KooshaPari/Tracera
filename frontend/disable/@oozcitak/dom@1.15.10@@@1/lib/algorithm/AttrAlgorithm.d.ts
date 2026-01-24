@@ -5,4 +5,7 @@ import { Attr } from "../dom/interfaces";
  * @param attribute - an attribute node
  * @param value - attribute value
  */
-export declare function attr_setAnExistingAttributeValue(attribute: Attr, value: string): void;
+export declare function attr_setAnExistingAttributeValue(
+	attribute: Attr,
+	value: string,
+): void;

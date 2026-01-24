@@ -1,31 +1,31 @@
-var through = require("through")
-var test    = require("tape")
+var through = require("through");
+var test = require("tape");
 
-var duplex  = require("../index")
+var duplex = require("../index");
 
-var readable = through()
-var writable = through(write)
-var written = 0
-var data = 0
+var readable = through();
+var writable = through(write);
+var written = 0;
+var data = 0;
 
-var stream = duplex(writable, readable)
+var stream = duplex(writable, readable);
 
 function write() {
-    written++
+	written++;
 }
 
-stream.on("data", ondata)
+stream.on("data", ondata);
 
 function ondata() {
-    data++
+	data++;
 }
 
-test("emit and write", function(t) {
-    t.plan(2)
+test("emit and write", (t) => {
+	t.plan(2);
 
-    stream.write()
-    readable.emit("data")
+	stream.write();
+	readable.emit("data");
 
-    t.equal(written, 1, "should have written once")
-    t.equal(data, 1, "should have received once")
-})
+	t.equal(written, 1, "should have written once");
+	t.equal(data, 1, "should have received once");
+});

@@ -1,6 +1,4 @@
-import {
-  isArray
-} from "../utils";
+import { isArray } from "../utils";
 
 /**
   `Promise.race` returns a new promise which is settled in the same way as the
@@ -68,17 +66,16 @@ import {
   promise to settle.
 */
 export default function race(entries) {
-  /*jshint validthis:true */
-  let Constructor = this;
-
-  if (!isArray(entries)) {
-    return new Constructor((_, reject) => reject(new TypeError('You must pass an array to race.')));
-  } else {
-    return new Constructor((resolve, reject) => {
-      let length = entries.length;
-      for (let i = 0; i < length; i++) {
-        Constructor.resolve(entries[i]).then(resolve, reject);
-      }
-    });
-  }
+	if (!isArray(entries)) {
+		return new this((_, reject) =>
+			reject(new TypeError("You must pass an array to race.")),
+		);
+	} else {
+		return new this((resolve, reject) => {
+			const length = entries.length;
+			for (let i = 0; i < length; i++) {
+				this.resolve(entries[i]).then(resolve, reject);
+			}
+		});
+	}
 }

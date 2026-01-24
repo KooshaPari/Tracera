@@ -1,4 +1,4 @@
-var baseSet = require('./_baseSet');
+var baseSet = require("./_baseSet");
 
 /**
  * This method is like `_.set` except that it accepts `customizer` which is
@@ -25,8 +25,8 @@ var baseSet = require('./_baseSet');
  * // => { '0': { '1': 'a' } }
  */
 function setWith(object, path, value, customizer) {
-  customizer = typeof customizer == 'function' ? customizer : undefined;
-  return object == null ? object : baseSet(object, path, value, customizer);
+	customizer = typeof customizer == "function" ? customizer : undefined;
+	return object == null ? object : baseSet(object, path, value, customizer);
 }
 
 module.exports = setWith;

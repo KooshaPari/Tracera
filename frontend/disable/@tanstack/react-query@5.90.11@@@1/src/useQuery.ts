@@ -1,52 +1,52 @@
-'use client'
-import { QueryObserver } from '@tanstack/query-core'
-import { useBaseQuery } from './useBaseQuery'
+"use client";
 import type {
-  DefaultError,
-  NoInfer,
-  QueryClient,
-  QueryKey,
-} from '@tanstack/query-core'
+	DefaultError,
+	NoInfer,
+	QueryClient,
+	QueryKey,
+} from "@tanstack/query-core";
+import { QueryObserver } from "@tanstack/query-core";
 import type {
-  DefinedUseQueryResult,
-  UseQueryOptions,
-  UseQueryResult,
-} from './types'
+	DefinedInitialDataOptions,
+	UndefinedInitialDataOptions,
+} from "./queryOptions";
 import type {
-  DefinedInitialDataOptions,
-  UndefinedInitialDataOptions,
-} from './queryOptions'
+	DefinedUseQueryResult,
+	UseQueryOptions,
+	UseQueryResult,
+} from "./types";
+import { useBaseQuery } from "./useBaseQuery";
 
 export function useQuery<
-  TQueryFnData = unknown,
-  TError = DefaultError,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
+	TQueryFnData = unknown,
+	TError = DefaultError,
+	TData = TQueryFnData,
+	TQueryKey extends QueryKey = QueryKey,
 >(
-  options: DefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<NoInfer<TData>, TError>
+	options: DefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<NoInfer<TData>, TError>;
 
 export function useQuery<
-  TQueryFnData = unknown,
-  TError = DefaultError,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
+	TQueryFnData = unknown,
+	TError = DefaultError,
+	TData = TQueryFnData,
+	TQueryKey extends QueryKey = QueryKey,
 >(
-  options: UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
-  queryClient?: QueryClient,
-): UseQueryResult<NoInfer<TData>, TError>
+	options: UndefinedInitialDataOptions<TQueryFnData, TError, TData, TQueryKey>,
+	queryClient?: QueryClient,
+): UseQueryResult<NoInfer<TData>, TError>;
 
 export function useQuery<
-  TQueryFnData = unknown,
-  TError = DefaultError,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
+	TQueryFnData = unknown,
+	TError = DefaultError,
+	TData = TQueryFnData,
+	TQueryKey extends QueryKey = QueryKey,
 >(
-  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
-  queryClient?: QueryClient,
-): UseQueryResult<NoInfer<TData>, TError>
+	options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+	queryClient?: QueryClient,
+): UseQueryResult<NoInfer<TData>, TError>;
 
 export function useQuery(options: UseQueryOptions, queryClient?: QueryClient) {
-  return useBaseQuery(options, QueryObserver, queryClient)
+	return useBaseQuery(options, QueryObserver, queryClient);
 }

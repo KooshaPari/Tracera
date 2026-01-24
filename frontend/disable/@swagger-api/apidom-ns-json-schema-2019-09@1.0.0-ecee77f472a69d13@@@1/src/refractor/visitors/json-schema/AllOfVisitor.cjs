@@ -12,19 +12,26 @@ var _apidomNsJsonSchemaDraft = require("@swagger-api/apidom-ns-json-schema-draft
 /**
  * @public
  */
-class AllOfVisitor extends (0, _tsMixer.Mixin)(_apidomNsJsonSchemaDraft.SpecificationVisitor, _apidomNsJsonSchemaDraft.ParentSchemaAwareVisitor, _apidomNsJsonSchemaDraft.FallbackVisitor) {
-  constructor(options) {
-    super(options);
-    this.element = new _apidomCore.ArrayElement();
-    this.element.classes.push('json-schema-allOf');
-  }
-  ArrayElement(arrayElement) {
-    arrayElement.forEach(item => {
-      const element = this.toRefractedElement(['document', 'objects', 'JSONSchema'], item);
-      this.element.push(element);
-    });
-    this.copyMetaAndAttributes(arrayElement, this.element);
-    return _apidomCore.BREAK;
-  }
+class AllOfVisitor extends (0, _tsMixer.Mixin)(
+	_apidomNsJsonSchemaDraft.SpecificationVisitor,
+	_apidomNsJsonSchemaDraft.ParentSchemaAwareVisitor,
+	_apidomNsJsonSchemaDraft.FallbackVisitor,
+) {
+	constructor(options) {
+		super(options);
+		this.element = new _apidomCore.ArrayElement();
+		this.element.classes.push("json-schema-allOf");
+	}
+	ArrayElement(arrayElement) {
+		arrayElement.forEach((item) => {
+			const element = this.toRefractedElement(
+				["document", "objects", "JSONSchema"],
+				item,
+			);
+			this.element.push(element);
+		});
+		this.copyMetaAndAttributes(arrayElement, this.element);
+		return _apidomCore.BREAK;
+	}
 }
-var _default = exports.default = AllOfVisitor;
+var _default = (exports.default = AllOfVisitor);

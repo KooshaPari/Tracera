@@ -27,7 +27,7 @@ export interface DifferenceInSecondsOptions extends RoundingOptions {}
  * //=> 12
  */
 export declare function differenceInSeconds(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInSecondsOptions,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInSecondsOptions,
 ): number;

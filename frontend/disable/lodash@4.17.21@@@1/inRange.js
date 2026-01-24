@@ -1,6 +1,6 @@
-var baseInRange = require('./_baseInRange'),
-    toFinite = require('./toFinite'),
-    toNumber = require('./toNumber');
+var baseInRange = require("./_baseInRange"),
+	toFinite = require("./toFinite"),
+	toNumber = require("./toNumber");
 
 /**
  * Checks if `n` is between `start` and up to, but not including, `end`. If
@@ -41,15 +41,15 @@ var baseInRange = require('./_baseInRange'),
  * // => true
  */
 function inRange(number, start, end) {
-  start = toFinite(start);
-  if (end === undefined) {
-    end = start;
-    start = 0;
-  } else {
-    end = toFinite(end);
-  }
-  number = toNumber(number);
-  return baseInRange(number, start, end);
+	start = toFinite(start);
+	if (end === undefined) {
+		end = start;
+		start = 0;
+	} else {
+		end = toFinite(end);
+	}
+	number = toNumber(number);
+	return baseInRange(number, start, end);
 }
 
 module.exports = inRange;

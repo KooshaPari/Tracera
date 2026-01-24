@@ -1,3 +1,1 @@
-'use strict';
-
-module.exports = require('./es6/crcjam').default;
+module.exports = require("./es6/crcjam").default;

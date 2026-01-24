@@ -10,69 +10,83 @@ const ALREADY_CONSTRUCTED_MARKER = Symbol("already-constructed-marker");
 
 // https://html.spec.whatwg.org/multipage/dom.html#htmlconstructor
 function HTMLConstructor(globalObject, constructorName, newTarget) {
-  const registry = implForWrapper(globalObject._customElementRegistry);
-  if (newTarget === HTMLConstructor) {
-    throw new TypeError("Invalid constructor");
-  }
+	const registry = implForWrapper(globalObject._customElementRegistry);
+	if (newTarget === HTMLConstructor) {
+		throw new TypeError("Invalid constructor");
+	}
 
-  const definition = registry._customElementDefinitions.find(entry => entry.objectReference === newTarget);
-  if (definition === undefined) {
-    throw new TypeError("Invalid constructor, the constructor is not part of the custom element registry");
-  }
+	const definition = registry._customElementDefinitions.find(
+		(entry) => entry.objectReference === newTarget,
+	);
+	if (definition === undefined) {
+		throw new TypeError(
+			"Invalid constructor, the constructor is not part of the custom element registry",
+		);
+	}
 
-  let isValue = null;
+	let isValue = null;
 
-  if (definition.localName === definition.name) {
-    if (constructorName !== "HTMLElement") {
-      throw new TypeError("Invalid constructor, autonomous custom element should extend from HTMLElement");
-    }
-  } else {
-    const validLocalNames = getValidTagNames(HTML_NS, constructorName);
-    if (!validLocalNames.includes(definition.localName)) {
-      throw new TypeError(`${definition.localName} is not valid local name for ${constructorName}`);
-    }
+	if (definition.localName === definition.name) {
+		if (constructorName !== "HTMLElement") {
+			throw new TypeError(
+				"Invalid constructor, autonomous custom element should extend from HTMLElement",
+			);
+		}
+	} else {
+		const validLocalNames = getValidTagNames(HTML_NS, constructorName);
+		if (!validLocalNames.includes(definition.localName)) {
+			throw new TypeError(
+				`${definition.localName} is not valid local name for ${constructorName}`,
+			);
+		}
 
-    isValue = definition.name;
-  }
+		isValue = definition.name;
+	}
 
-  let { prototype } = newTarget;
+	let { prototype } = newTarget;
 
-  if (prototype === null || typeof prototype !== "object") {
-    // The following line deviates from the specification. The HTMLElement prototype should be retrieved from the realm
-    // associated with the "new.target". Because it is impossible to get such information in jsdom, we fallback to the
-    // HTMLElement prototype associated with the current object.
-    prototype = globalObject.HTMLElement.prototype;
-  }
+	if (prototype === null || typeof prototype !== "object") {
+		// The following line deviates from the specification. The HTMLElement prototype should be retrieved from the realm
+		// associated with the "new.target". Because it is impossible to get such information in jsdom, we fallback to the
+		// HTMLElement prototype associated with the current object.
+		prototype = globalObject.HTMLElement.prototype;
+	}
 
-  if (definition.constructionStack.length === 0) {
-    const documentImpl = implForWrapper(globalObject.document);
+	if (definition.constructionStack.length === 0) {
+		const documentImpl = implForWrapper(globalObject.document);
 
-    const elementImpl = createElement(documentImpl, definition.localName, HTML_NS);
+		const elementImpl = createElement(
+			documentImpl,
+			definition.localName,
+			HTML_NS,
+		);
 
-    const element = wrapperForImpl(elementImpl);
-    Object.setPrototypeOf(element, prototype);
+		const element = wrapperForImpl(elementImpl);
+		Object.setPrototypeOf(element, prototype);
 
-    elementImpl._ceState = "custom";
-    elementImpl._ceDefinition = definition;
-    elementImpl._isValue = isValue;
+		elementImpl._ceState = "custom";
+		elementImpl._ceDefinition = definition;
+		elementImpl._isValue = isValue;
 
-    return element;
-  }
+		return element;
+	}
 
-  const elementImpl = definition.constructionStack[definition.constructionStack.length - 1];
-  const element = wrapperForImpl(elementImpl);
+	const elementImpl =
+		definition.constructionStack[definition.constructionStack.length - 1];
+	const element = wrapperForImpl(elementImpl);
 
-  if (elementImpl === ALREADY_CONSTRUCTED_MARKER) {
-    throw new TypeError("This instance is already constructed");
-  }
+	if (elementImpl === ALREADY_CONSTRUCTED_MARKER) {
+		throw new TypeError("This instance is already constructed");
+	}
 
-  Object.setPrototypeOf(element, prototype);
+	Object.setPrototypeOf(element, prototype);
 
-  definition.constructionStack[definition.constructionStack.length - 1] = ALREADY_CONSTRUCTED_MARKER;
+	definition.constructionStack[definition.constructionStack.length - 1] =
+		ALREADY_CONSTRUCTED_MARKER;
 
-  return element;
+	return element;
 }
 
 module.exports = {
-  HTMLConstructor
+	HTMLConstructor,
 };

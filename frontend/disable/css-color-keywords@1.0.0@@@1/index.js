@@ -1,3 +1,1 @@
-'use strict'
-
-module.exports = require('./colors.json')
+module.exports = require("./colors.json");

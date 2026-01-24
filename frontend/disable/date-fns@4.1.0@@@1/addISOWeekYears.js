@@ -29,7 +29,7 @@ import { setISOWeekYear } from "./setISOWeekYear.js";
  * //=> Fri Jun 26 2015 00:00:00
  */
 export function addISOWeekYears(date, amount, options) {
-  return setISOWeekYear(date, getISOWeekYear(date, options) + amount, options);
+	return setISOWeekYear(date, getISOWeekYear(date, options) + amount, options);
 }
 
 // Fallback for modularized imports:

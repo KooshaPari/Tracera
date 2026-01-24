@@ -35,8 +35,8 @@ var _index2 = require("./toDate.cjs");
  * //=> false
  */
 function isValid(date) {
-  return !(
-    (!(0, _index.isDate)(date) && typeof date !== "number") ||
-    isNaN(+(0, _index2.toDate)(date))
-  );
+	return !(
+		(!(0, _index.isDate)(date) && typeof date !== "number") ||
+		isNaN(+(0, _index2.toDate)(date))
+	);
 }

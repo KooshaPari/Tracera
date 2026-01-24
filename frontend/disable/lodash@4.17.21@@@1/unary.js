@@ -1,4 +1,4 @@
-var ary = require('./ary');
+var ary = require("./ary");
 
 /**
  * Creates a function that accepts up to one argument, ignoring any
@@ -16,7 +16,7 @@ var ary = require('./ary');
  * // => [6, 8, 10]
  */
 function unary(func) {
-  return ary(func, 1);
+	return ary(func, 1);
 }
 
 module.exports = unary;

@@ -1,30 +1,36 @@
-
 const EMPTY = {};
 const HOP = Object.prototype.hasOwnProperty;
 
-let fns = {
+const fns = {
 	/**  let cachedFn = memoize(originalFn); */
-	memoize(fn, opt=EMPTY) {
-		let cache = opt.cache || {};
-		return function(...a) {
+	memoize(fn, opt = EMPTY) {
+		const cache = opt.cache || {};
+		return function (...a) {
 			let k = String(a[0]);
-			if (opt.caseSensitive===false) k = k.toLowerCase();
-			return HOP.call(cache,k) ? cache[k] : (cache[k] = fn.apply(this, a));
+			if (opt.caseSensitive === false) k = k.toLowerCase();
+			return HOP.call(cache, k) ? cache[k] : (cache[k] = fn.apply(this, a));
 		};
 	},
 
 	/** let throttled = debounce(10, console.log); */
 	debounce(fn, opts) {
-		if (typeof opts==='function') { let p = fn; fn = opts; opts = p; }
-		let delay = opts && opts.delay || opts || 0,
-			args, context, timer;
-		return function(...a) {
+		if (typeof opts === "function") {
+			const p = fn;
+			fn = opts;
+			opts = p;
+		}
+		let delay = (opts && opts.delay) || opts || 0,
+			args,
+			context,
+			timer;
+		return function (...a) {
 			args = a;
 			context = this;
-			if (!timer) timer = setTimeout( () => {
-				fn.apply(context, args);
-				args = context = timer = null;
-			}, delay);
+			if (!timer)
+				timer = setTimeout(() => {
+					fn.apply(context, args);
+					args = context = timer = null;
+				}, delay);
 		};
 	},
 
@@ -32,26 +38,27 @@ let fns = {
 		return {
 			configurable: true,
 			get() {
-				let value = fn.bind(this);
+				const value = fn.bind(this);
 				Object.defineProperty(this, key, {
 					value,
 					configurable: true,
-					writable: true
+					writable: true,
 				});
 				return value;
-			}
+			},
 		};
-	}
+	},
 };
 
-
-let memoize = multiMethod(fns.memoize),
+const memoize = multiMethod(fns.memoize),
 	debounce = multiMethod(fns.debounce),
-	bind = multiMethod((f,c)=>f.bind(c), ()=>fns.bind);
+	bind = multiMethod(
+		(f, c) => f.bind(c),
+		() => fns.bind,
+	);
 
 export { memoize, debounce, bind };
 export default { memoize, debounce, bind };
-
 
 /** Creates a function that supports the following calling styles:
  *	d() - returns an unconfigured decorator
@@ -78,10 +85,10 @@ export default { memoize, debounce, bind };
  */
 function multiMethod(inner, deco) {
 	deco = deco || inner.decorate || decorator(inner);
-	let d = deco();
+	const d = deco();
 	return (...args) => {
-		let l = args.length;
-		return (l<2 ? deco : (l>2 ? d : inner))(...args);
+		const l = args.length;
+		return (l < 2 ? deco : l > 2 ? d : inner)(...args);
 	};
 }
 
@@ -90,9 +97,10 @@ function multiMethod(inner, deco) {
  *	deco(Fn) -> call the decorator proxy on a function
  */
 function decorator(fn) {
-	return opt => (
-		typeof opt==='function' ? fn(opt) : (target, key, desc) => {
-			desc.value = fn(desc.value, opt, target, key, desc);
-		}
-	);
+	return (opt) =>
+		typeof opt === "function"
+			? fn(opt)
+			: (target, key, desc) => {
+					desc.value = fn(desc.value, opt, target, key, desc);
+				};
 }

@@ -4,6 +4,7 @@ Status workflow service for Epic 2 (Story 2.7, FR13).
 Handles status transitions, validation, and progress auto-update.
 """
 
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -66,7 +67,7 @@ class StatusWorkflowService:
         item_id: str,
         new_status: str,
         agent_id: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Update item status with validation and progress auto-update (Story 2.7, FR13).
 
@@ -129,7 +130,7 @@ class StatusWorkflowService:
             "progress": STATUS_PROGRESS.get(new_status, 0),
         }
 
-    def get_status_history(self, item_id: str) -> list[dict]:
+    def get_status_history(self, item_id: str) -> list[dict[str, Any]]:
         """
         Get status change history for an item (Story 2.7, FR13).
 

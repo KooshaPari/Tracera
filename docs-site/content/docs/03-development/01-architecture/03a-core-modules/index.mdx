@@ -1,0 +1,106 @@
+---
+title: "Core Modules"
+description: "Core modules and components of TraceRTM"
+keywords: [modules, components, architecture, structure]
+---
+
+# Core Modules
+
+Core modules and components that make up TraceRTM.
+
+## Module Structure
+
+### API Module (`tracertm.api`)
+
+```python
+# API endpoints and routing
+tracertm/api/
+├── main.py          # FastAPI app
+├── routers/         # Route handlers
+│   ├── items.py
+│   ├── links.py
+│   └── projects.py
+└── dependencies.py  # Dependency injection
+```
+
+### Service Module (`tracertm.services`)
+
+```python
+# Business logic
+tracertm/services/
+├── item_service.py
+├── link_service.py
+├── project_service.py
+├── cycle_detection_service.py
+├── impact_analysis_service.py
+└── shortest_path_service.py
+```
+
+### Repository Module (`tracertm.repositories`)
+
+```python
+# Data access layer
+tracertm/repositories/
+├── item_repository.py
+├── link_repository.py
+└── project_repository.py
+```
+
+### Database Module (`tracertm.database`)
+
+```python
+# Database connection and models
+tracertm/database/
+├── connection.py    # Database connection
+├── models/          # SQLAlchemy models
+│   ├── item.py
+│   ├── link.py
+│   └── project.py
+└── migrations/     # Alembic migrations
+```
+
+### Config Module (`tracertm.config`)
+
+```python
+# Configuration management
+tracertm/config/
+├── manager.py      # Config manager
+└── settings.py     # Settings
+```
+
+## Module Dependencies
+
+```
+API Layer
+    ↓
+Service Layer
+    ↓
+Repository Layer
+    ↓
+Database Layer
+```
+
+## Core Components
+
+### Item Management
+
+- **ItemService**: Business logic for items
+- **ItemRepository**: Data access for items
+- **Item Model**: Database model
+
+### Link Management
+
+- **LinkService**: Business logic for links
+- **LinkRepository**: Data access for links
+- **Link Model**: Database model
+
+### Analysis Services
+
+- **CycleDetectionService**: Detect circular dependencies
+- **ImpactAnalysisService**: Analyze impact of changes
+- **ShortestPathService**: Find paths between items
+
+## Related Documentation
+
+- [Components](./03-components) - System components
+- [System Design](./01-system-design) - Architecture overview

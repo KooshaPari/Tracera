@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 operation-4xx-response', () => {
-  it('should report missing 4xx response', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("Oas3 operation-4xx-response", () => {
+	it("should report missing 4xx response", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test':
@@ -15,16 +19,18 @@ describe('Oas3 operation-4xx-response', () => {
                   200:
                     description: ok response
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-response': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-response": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -41,11 +47,11 @@ describe('Oas3 operation-4xx-response', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report for present 400 response', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report for present 400 response", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test/':
@@ -54,21 +60,23 @@ describe('Oas3 operation-4xx-response', () => {
                   400:
                     description: error response
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-response': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-response": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report for present 4XX response', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report for present 4XX response", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test/':
@@ -77,21 +85,23 @@ describe('Oas3 operation-4xx-response', () => {
                   4XX:
                     description: error response
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-response': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-response": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if default is present but missing 4xx response', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report if default is present but missing 4xx response", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test/':
@@ -100,16 +110,18 @@ describe('Oas3 operation-4xx-response', () => {
                   default:
                     description: some default response
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-response': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-response": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -126,27 +138,29 @@ describe('Oas3 operation-4xx-response', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report even if the responses are null', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report even if the responses are null", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test/':
               put:
                 responses: null
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-2xx-response': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-2xx-response": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -163,11 +177,11 @@ describe('Oas3 operation-4xx-response', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report missing 4xx response in webhooks when enabled', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report missing 4xx response in webhooks when enabled", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.1.0
           webhooks:
             '/test/':
@@ -176,20 +190,23 @@ describe('Oas3 operation-4xx-response', () => {
                   200:
                     description: success response
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'operation-4xx-response': { severity: 'error', validateWebhooks: true },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"operation-4xx-response": {
+						severity: "error",
+						validateWebhooks: true,
+					},
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -206,11 +223,11 @@ describe('Oas3 operation-4xx-response', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report missing 4xx response in webhooks when not enabled', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report missing 4xx response in webhooks when not enabled", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           x-webhooks:
             '/test/':
@@ -219,15 +236,17 @@ describe('Oas3 operation-4xx-response', () => {
                   200:
                     description: success response
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'operation-4xx-response': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "operation-4xx-response": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

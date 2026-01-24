@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../full/array/virtual/to-spliced');
+"use strict";
+module.exports = require("../../../full/array/virtual/to-spliced");

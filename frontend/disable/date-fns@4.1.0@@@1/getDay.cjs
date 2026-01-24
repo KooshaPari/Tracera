@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> 3
  */
 function getDay(date, options) {
-  return (0, _index.toDate)(date, options?.in).getDay();
+	return (0, _index.toDate)(date, options?.in).getDay();
 }

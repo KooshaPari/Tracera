@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/reflect/metadata');
+"use strict";
+module.exports = require("../../full/reflect/metadata");

@@ -1,0 +1,941 @@
+---
+title: "IDE Setup"
+description: "Comprehensive IDE and editor configuration for TracerTM development"
+---
+
+## Overview
+
+This guide covers IDE and editor configuration for TracerTM development. We provide detailed setup instructions for:
+
+- **VS Code** (Recommended for most developers)
+- **PyCharm/IntelliJ IDEA** (Excellent for Python-heavy workflows)
+- **Vim/Neovim** (For terminal-based development)
+- **Other Editors** (Brief coverage of Emacs, Sublime Text, etc.)
+
+All configurations include Python tooling (Ruff, mypy, basedpyright), TypeScript/React support, and debugging setups.
+
+---
+
+## VS Code Setup (Recommended)
+
+VS Code provides excellent Python and TypeScript support with minimal configuration.
+
+### Required Extensions
+
+Install these extensions for the best experience:
+
+```bash
+# Install via VS Code CLI
+code --install-extension ms-python.python
+code --install-extension ms-python.vscode-pylance
+code --install-extension charliermarsh.ruff
+code --install-extension ms-python.debugpy
+code --install-extension ms-python.mypy-type-checker
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension ms-vscode.makefile-tools
+code --install-extension EditorConfig.EditorConfig
+```
+
+#### Extension Details
+
+| Extension | Purpose |
+|-----------|---------|
+| **Python** | Core Python language support |
+| **Pylance** | Fast, feature-rich language server |
+| **Ruff** | Ultra-fast linting and formatting |
+| **Python Debugger** | Debugging support (debugpy) |
+| **Mypy Type Checker** | Type checking integration |
+| **Tailwind CSS IntelliSense** | Frontend styling support |
+| **ESLint** | JavaScript/TypeScript linting |
+| **Prettier** | Frontend code formatting |
+| **Makefile Tools** | Build system support |
+| **EditorConfig** | Consistent formatting across editors |
+
+### VS Code Settings
+
+Create `.vscode/settings.json` in your project root:
+
+```json
+{
+  // Python Configuration
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.envFile": "${workspaceFolder}/.env",
+  "python.terminal.activateEnvironment": true,
+
+  // Ruff (Linting & Formatting)
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+
+  // Python Formatting
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [120]
+  },
+
+  // Type Checking
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.completeFunctionParens": true,
+
+  // Testing
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests",
+    "-vv",
+    "--tb=short"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+
+  // TypeScript/React Configuration
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+
+  // Tailwind CSS
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+
+  // Editor Preferences
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.trimAutoWhitespace": true,
+  "editor.rulers": [120],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.minimap.enabled": true,
+  "editor.suggestSelection": "first",
+
+  // Files
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/node_modules/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/dist/**": true
+  },
+
+  // Search
+  "search.exclude": {
+    "**/.venv": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/htmlcov": true
+  }
+}
+```
+
+### Launch Configuration (Debugging)
+
+Create `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: FastAPI Server",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "tracertm.api.main:app",
+        "--reload",
+        "--host", "0.0.0.0",
+        "--port", "8000"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: CLI - Help",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "tracertm.cli",
+      "args": ["--help"],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Python: CLI - TUI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "tracertm.cli",
+      "args": ["tui", "dashboard"],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Python: Pytest Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-vv",
+        "-s",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Pytest All Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests",
+        "-vv",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Pytest Integration Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests",
+        "-m", "integration",
+        "-vv",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "justMyCode": false
+    }
+  ]
+}
+```
+
+### Tasks Configuration
+
+Create `.vscode/tasks.json` for common development tasks:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Format Code (Ruff)",
+      "type": "shell",
+      "command": "ruff format .",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Lint Code (Ruff)",
+      "type": "shell",
+      "command": "ruff check --fix .",
+      "problemMatcher": {
+        "owner": "ruff",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(\\w+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "Type Check (mypy)",
+      "type": "shell",
+      "command": "mypy src/",
+      "problemMatcher": {
+        "owner": "mypy",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning|note):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "Type Check Strict (basedpyright)",
+      "type": "shell",
+      "command": "basedpyright src/",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run All Tests",
+      "type": "shell",
+      "command": "pytest tests/ -vv",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Run Tests with Coverage",
+      "type": "shell",
+      "command": "pytest --cov=src/tracertm --cov-report=html --cov-report=term",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start API Server",
+      "type": "shell",
+      "command": "uvicorn tracertm.api.main:app --reload",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Quality Check (All)",
+      "dependsOn": [
+        "Format Code (Ruff)",
+        "Lint Code (Ruff)",
+        "Type Check (mypy)"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+---
+
+## PyCharm/IntelliJ IDEA Setup
+
+PyCharm provides comprehensive Python support with excellent database integration.
+
+### Project Interpreter
+
+1. **Open Settings** → **Project** → **Python Interpreter**
+2. **Add Interpreter** → **Virtualenv Environment**
+3. **Select existing environment**: `<project_root>/.venv`
+4. **Apply changes**
+
+### Code Style Configuration
+
+1. **Settings** → **Editor** → **Code Style** → **Python**
+2. **Set maximum line length**: 120
+3. **Import Settings**:
+   - Enable "Optimize imports on the fly"
+   - Sort imports alphabetically
+   - Separate import groups
+
+### External Tools Setup
+
+#### Ruff Format
+
+1. **Settings** → **Tools** → **External Tools** → **+**
+2. Configure:
+   - **Name**: Ruff Format
+   - **Program**: `$PyInterpreterDirectory$/ruff`
+   - **Arguments**: `format $FilePath$`
+   - **Working directory**: `$ProjectFileDir$`
+
+#### Ruff Lint
+
+1. **Settings** → **Tools** → **External Tools** → **+**
+2. Configure:
+   - **Name**: Ruff Lint
+   - **Program**: `$PyInterpreterDirectory$/ruff`
+   - **Arguments**: `check --fix $FilePath$`
+   - **Working directory**: `$ProjectFileDir$`
+
+### Run Configurations
+
+#### FastAPI Server
+
+1. **Run** → **Edit Configurations** → **+** → **Python**
+2. Configure:
+   - **Name**: FastAPI Server
+   - **Script path**: `<venv>/bin/uvicorn`
+   - **Parameters**: `tracertm.api.main:app --reload --host 0.0.0.0 --port 8000`
+   - **Environment variables**: Load from `.env`
+   - **Working directory**: `<project_root>`
+
+#### CLI Application
+
+1. **Run** → **Edit Configurations** → **+** → **Python**
+2. Configure:
+   - **Name**: TracerTM CLI
+   - **Module name**: `tracertm.cli`
+   - **Parameters**: `--help` (or any CLI command)
+   - **Environment variables**: Load from `.env`
+
+#### Pytest
+
+1. **Run** → **Edit Configurations** → **+** → **Python tests** → **pytest**
+2. Configure:
+   - **Name**: All Tests
+   - **Target**: `tests/`
+   - **Additional Arguments**: `-vv --tb=short`
+   - **Environment variables**: Load from `.env`
+
+### Database Tools
+
+PyCharm Professional includes database integration:
+
+1. **Database** → **+** → **Data Source** → **PostgreSQL**
+2. Configure connection:
+   - **Host**: `localhost`
+   - **Port**: `5432`
+   - **Database**: `tracertm_dev`
+   - **User**: From `.env` file
+   - **Password**: From `.env` file
+3. **Test Connection** → **Apply**
+
+Access database features:
+- SQL console for queries
+- Schema browsing and editing
+- Data viewer/editor
+- Migration management
+
+---
+
+## Vim/Neovim Setup
+
+Modern Neovim with LSP provides excellent Python and TypeScript support.
+
+### Required Plugins
+
+Using **lazy.nvim** (recommended plugin manager):
+
+```lua
+-- ~/.config/nvim/lua/plugins/tracertm.lua
+return {
+  -- LSP Configuration
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+    },
+    config = function()
+      require("mason").setup()
+      require("mason-lspconfig").setup({
+        ensure_installed = {
+          "pyright",      -- Python LSP
+          "ruff_lsp",     -- Ruff LSP
+          "tsserver",     -- TypeScript LSP
+          "tailwindcss",  -- Tailwind CSS LSP
+        },
+      })
+
+      local lspconfig = require("lspconfig")
+
+      -- Python (Pyright)
+      lspconfig.pyright.setup({
+        settings = {
+          python = {
+            analysis = {
+              typeCheckingMode = "strict",
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+            },
+          },
+        },
+      })
+
+      -- Ruff (Linting & Formatting)
+      lspconfig.ruff_lsp.setup({
+        init_options = {
+          settings = {
+            args = {},
+          },
+        },
+      })
+
+      -- TypeScript
+      lspconfig.tsserver.setup({})
+
+      -- Tailwind CSS
+      lspconfig.tailwindcss.setup({})
+    end,
+  },
+
+  -- Autocompletion
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "L3MON4D3/LuaSnip",
+    },
+  },
+
+  -- Debugging (DAP)
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      "mfussenegger/nvim-dap-python",
+      "rcarriga/nvim-dap-ui",
+    },
+    config = function()
+      local dap_python = require("dap-python")
+      dap_python.setup("~/.venv/bin/python")
+      dap_python.test_runner = "pytest"
+    end,
+  },
+
+  -- Testing
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/neotest-python",
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-python")({
+            dap = { justMyCode = false },
+            args = { "-vv", "--tb=short" },
+            runner = "pytest",
+          }),
+        },
+      })
+    end,
+  },
+}
+```
+
+### Key Bindings
+
+Add to `~/.config/nvim/lua/config/keymaps.lua`:
+
+```lua
+local map = vim.keymap.set
+
+-- LSP
+map("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
+map("n", "gr", vim.lsp.buf.references, { desc = "Find references" })
+map("n", "K", vim.lsp.buf.hover, { desc = "Hover documentation" })
+map("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code actions" })
+map("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol" })
+
+-- Formatting
+map("n", "<leader>f", function()
+  vim.lsp.buf.format({ async = true })
+end, { desc = "Format buffer" })
+
+-- Testing
+map("n", "<leader>tt", "<cmd>lua require('neotest').run.run()<cr>", { desc = "Run nearest test" })
+map("n", "<leader>tf", "<cmd>lua require('neotest').run.run(vim.fn.expand('%'))<cr>", { desc = "Run test file" })
+map("n", "<leader>ts", "<cmd>lua require('neotest').summary.toggle()<cr>", { desc = "Toggle test summary" })
+
+-- Debugging
+map("n", "<F5>", "<cmd>lua require('dap').continue()<cr>", { desc = "Debug: Continue" })
+map("n", "<F10>", "<cmd>lua require('dap').step_over()<cr>", { desc = "Debug: Step over" })
+map("n", "<F11>", "<cmd>lua require('dap').step_into()<cr>", { desc = "Debug: Step into" })
+map("n", "<F12>", "<cmd>lua require('dap').step_out()<cr>", { desc = "Debug: Step out" })
+map("n", "<leader>b", "<cmd>lua require('dap').toggle_breakpoint()<cr>", { desc = "Toggle breakpoint" })
+```
+
+---
+
+## Editor-Agnostic Configuration
+
+### EditorConfig
+
+Create `.editorconfig` at project root:
+
+```ini
+# EditorConfig is awesome: https://EditorConfig.org
+
+root = true
+
+# Default settings
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Python files
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# JavaScript/TypeScript files
+[*.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 2
+
+# YAML files
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# Makefile
+[Makefile]
+indent_style = tab
+```
+
+### Pre-commit Hooks
+
+Create `.pre-commit-config.yaml`:
+
+```yaml
+# Pre-commit hooks for TracerTM
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Ruff - Fast Python linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      # Linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      # Formatter
+      - id: ruff-format
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-PyYAML
+          - types-requests
+        args: [--config-file=pyproject.toml]
+
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+
+  # Frontend (Prettier)
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, ts, tsx, json, css, scss]
+        exclude: "^frontend/disable/"
+```
+
+Install pre-commit hooks:
+
+```bash
+# Install pre-commit
+uv pip install pre-commit
+
+# Install hooks
+pre-commit install
+
+# Run manually on all files
+pre-commit run --all-files
+```
+
+---
+
+## Code Quality Tools
+
+### Ruff Configuration
+
+Configuration is in `pyproject.toml` (already configured):
+
+```toml
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP", "N", "PT", "SIM", "RUF"]
+ignore = ["E501", "B008", "SIM105"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+```
+
+### Type Checking
+
+#### mypy (Standard)
+
+```bash
+# Run type checking
+mypy src/
+
+# Configuration in pyproject.toml
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+disallow_untyped_defs = true
+```
+
+#### basedpyright (Strict)
+
+```bash
+# Run strict type checking
+basedpyright src/
+
+# Configured for maximum strictness
+# See pyproject.toml [tool.basedpyright]
+```
+
+### Running Quality Checks
+
+Use `poe` (Poe the Poet) task runner:
+
+```bash
+# Format code
+poe format
+
+# Lint code
+poe lint
+
+# Type check (mypy)
+poe type-check
+
+# Ultra-strict type check (basedpyright)
+poe type-check-strict
+
+# Run all quality checks
+poe quality
+
+# Full pipeline (quality + tests)
+poe all
+```
+
+---
+
+## Frontend Development Setup
+
+### ESLint Configuration
+
+Frontend projects use ESLint for JavaScript/TypeScript:
+
+```bash
+cd frontend/apps/web
+npm run lint
+```
+
+### Prettier Configuration
+
+Frontend formatting with Prettier:
+
+```bash
+cd frontend/apps/web
+npm run format
+```
+
+### TanStack Router
+
+The frontend uses TanStack Router with file-based routing:
+
+```bash
+# Generate route types
+npm run routes:generate
+```
+
+---
+
+## Recommended Workflows
+
+### Daily Development
+
+1. **Start development environment**:
+   ```bash
+   # Terminal 1: API server
+   uvicorn tracertm.api.main:app --reload
+
+   # Terminal 2: Frontend dev server
+   cd frontend/apps/web && npm run dev
+   ```
+
+2. **Before committing**:
+   ```bash
+   # Run quality checks
+   poe quality
+
+   # Run tests
+   poe test
+
+   # Or let pre-commit handle it
+   git commit -m "Your message"
+   ```
+
+### Testing Workflow
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/unit/api/test_endpoints.py
+
+# Run with coverage
+pytest --cov=src/tracertm --cov-report=html
+
+# Run only fast tests
+pytest -m unit
+
+# Run in parallel
+pytest -n auto
+```
+
+### Debugging Workflow
+
+1. **VS Code**: Set breakpoint → Press F5 → Select configuration
+2. **PyCharm**: Set breakpoint → Right-click → Debug 'pytest in...'
+3. **Neovim**: Set breakpoint with `<leader>b` → Press F5
+
+---
+
+## Troubleshooting
+
+### Python Interpreter Not Found
+
+**VS Code**:
+```bash
+# Ensure virtual environment is activated
+source .venv/bin/activate
+
+# Reload VS Code window
+Cmd+Shift+P → "Python: Select Interpreter"
+```
+
+**PyCharm**:
+- Settings → Project → Python Interpreter
+- Add Interpreter → Existing environment
+- Point to `.venv/bin/python`
+
+### Import Errors
+
+```bash
+# Install package in editable mode
+uv pip install -e .
+
+# Verify installation
+python -c "import tracertm; print(tracertm.__version__)"
+```
+
+### Type Checking Issues
+
+```bash
+# Clear mypy cache
+rm -rf .mypy_cache
+
+# Clear basedpyright cache
+rm -rf .basedpyright
+
+# Re-run type checking
+mypy src/
+```
+
+### Test Discovery Issues
+
+```bash
+# Verify pytest finds tests
+pytest --collect-only
+
+# Check pytest configuration
+pytest --version
+pytest --help
+```
+
+---
+
+## Additional Resources
+
+- **Ruff Documentation**: https://docs.astral.sh/ruff/
+- **mypy Documentation**: https://mypy.readthedocs.io/
+- **Pytest Documentation**: https://docs.pytest.org/
+- **VS Code Python**: https://code.visualstudio.com/docs/python/python-tutorial
+- **PyCharm Guide**: https://www.jetbrains.com/help/pycharm/
+
+---
+
+## Next Steps
+
+After setting up your IDE:
+
+1. Review the [Testing Guide](/docs/development/testing) for writing tests
+2. Check the [API Documentation](/api) for endpoint reference
+3. Explore the [Architecture Guide](/docs/development/architecture) for system design
+4. Join the community on GitHub Discussions

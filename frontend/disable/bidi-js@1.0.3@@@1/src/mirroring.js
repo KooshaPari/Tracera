@@ -1,24 +1,24 @@
-import data from './data/bidiMirroring.data.js'
-import { parseCharacterMap } from './util/parseCharacterMap.js'
+import data from "./data/bidiMirroring.data.js";
+import { parseCharacterMap } from "./util/parseCharacterMap.js";
 
-let mirrorMap
+let mirrorMap;
 
-function parse () {
-  if (!mirrorMap) {
-    //const start = performance.now()
-    const { map, reverseMap } = parseCharacterMap(data, true)
-    // Combine both maps into one
-    reverseMap.forEach((value, key) => {
-      map.set(key, value)
-    })
-    mirrorMap = map
-    //console.log(`mirrored chars parsed in ${performance.now() - start}ms`)
-  }
+function parse() {
+	if (!mirrorMap) {
+		//const start = performance.now()
+		const { map, reverseMap } = parseCharacterMap(data, true);
+		// Combine both maps into one
+		reverseMap.forEach((value, key) => {
+			map.set(key, value);
+		});
+		mirrorMap = map;
+		//console.log(`mirrored chars parsed in ${performance.now() - start}ms`)
+	}
 }
 
-export function getMirroredCharacter (char) {
-  parse()
-  return mirrorMap.get(char) || null
+export function getMirroredCharacter(char) {
+	parse();
+	return mirrorMap.get(char) || null;
 }
 
 /**
@@ -31,18 +31,19 @@ export function getMirroredCharacter (char) {
  * @return {Map<number, string>}
  */
 export function getMirroredCharactersMap(string, embeddingLevels, start, end) {
-  let strLen = string.length
-  start = Math.max(0, start == null ? 0 : +start)
-  end = Math.min(strLen - 1, end == null ? strLen - 1 : +end)
+	const strLen = string.length;
+	start = Math.max(0, start == null ? 0 : +start);
+	end = Math.min(strLen - 1, end == null ? strLen - 1 : +end);
 
-  const map = new Map()
-  for (let i = start; i <= end; i++) {
-    if (embeddingLevels[i] & 1) { //only odd (rtl) levels
-      const mirror = getMirroredCharacter(string[i])
-      if (mirror !== null) {
-        map.set(i, mirror)
-      }
-    }
-  }
-  return map
+	const map = new Map();
+	for (let i = start; i <= end; i++) {
+		if (embeddingLevels[i] & 1) {
+			//only odd (rtl) levels
+			const mirror = getMirroredCharacter(string[i]);
+			if (mirror !== null) {
+				map.set(i, mirror);
+			}
+		}
+	}
+	return map;
 }

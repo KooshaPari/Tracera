@@ -33,7 +33,7 @@ import { toDate } from "./toDate.js";
  * //=> false
  */
 export function isValid(date) {
-  return !((!isDate(date) && typeof date !== "number") || isNaN(+toDate(date)));
+	return !((!isDate(date) && typeof date !== "number") || isNaN(+toDate(date)));
 }
 
 // Fallback for modularized imports:

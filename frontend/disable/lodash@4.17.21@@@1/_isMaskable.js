@@ -1,6 +1,6 @@
-var coreJsData = require('./_coreJsData'),
-    isFunction = require('./isFunction'),
-    stubFalse = require('./stubFalse');
+var coreJsData = require("./_coreJsData"),
+	isFunction = require("./isFunction"),
+	stubFalse = require("./stubFalse");
 
 /**
  * Checks if `func` is capable of being masked.

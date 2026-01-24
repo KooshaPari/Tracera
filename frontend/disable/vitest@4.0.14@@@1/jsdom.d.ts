@@ -1,6 +1,6 @@
-import type { JSDOM } from 'jsdom'
+import type { JSDOM } from "jsdom";
 
 declare global {
-  const jsdom: JSDOM
+	const jsdom: JSDOM;
 }
-export {}
+export {};

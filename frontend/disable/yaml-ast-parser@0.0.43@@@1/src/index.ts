@@ -1,22 +1,21 @@
-
 /**
  * Created by kor on 06/05/15.
  */
 
-export {load, loadAll, safeLoad, safeLoadAll, LoadOptions} from './loader';
-export {dump, safeDump} from './dumper';
+export { dump, safeDump } from "./dumper";
+export { LoadOptions, load, loadAll, safeLoad, safeLoadAll } from "./loader";
 
-import Mark=require("./mark")
-export import YAMLException = require('./exception');
+import Mark = require("./mark");
+export import YAMLException = require("./exception");
 
-export * from './yamlAST'
+export * from "./yamlAST";
 
-export type Error = YAMLException
+export type Error = YAMLException;
 
 function deprecated(name) {
-    return function () {
-        throw new Error('Function ' + name + ' is deprecated and cannot be used.');
-    };
+	return () => {
+		throw new Error("Function " + name + " is deprecated and cannot be used.");
+	};
 }
 
-export * from './scalarInference'
+export * from "./scalarInference";

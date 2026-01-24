@@ -1,6 +1,6 @@
-var baseIsSet = require('./_baseIsSet'),
-    baseUnary = require('./_baseUnary'),
-    nodeUtil = require('./_nodeUtil');
+var baseIsSet = require("./_baseIsSet"),
+	baseUnary = require("./_baseUnary"),
+	nodeUtil = require("./_nodeUtil");
 
 /* Node.js helper references. */
 var nodeIsSet = nodeUtil && nodeUtil.isSet;

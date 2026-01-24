@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isFirstDayOfMonth(date, options) {
-  return toDate(date, options?.in).getDate() === 1;
+	return toDate(date, options?.in).getDate() === 1;
 }
 
 // Fallback for modularized imports:

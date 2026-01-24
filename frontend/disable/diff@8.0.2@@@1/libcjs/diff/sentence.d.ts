@@ -1,7 +1,14 @@
-import Diff from './base.js';
-import type { ChangeObject, CallbackOptionAbortable, CallbackOptionNonabortable, DiffCallbackNonabortable, DiffSentencesOptionsAbortable, DiffSentencesOptionsNonabortable } from '../types.js';
+import Diff from "./base.js";
+import type {
+	ChangeObject,
+	CallbackOptionAbortable,
+	CallbackOptionNonabortable,
+	DiffCallbackNonabortable,
+	DiffSentencesOptionsAbortable,
+	DiffSentencesOptionsNonabortable,
+} from "../types.js";
 declare class SentenceDiff extends Diff<string, string> {
-    tokenize(value: string): string[];
+	tokenize(value: string): string[];
 }
 export declare const sentenceDiff: SentenceDiff;
 /**
@@ -12,10 +19,30 @@ export declare const sentenceDiff: SentenceDiff;
  *
  * @returns a list of change objects.
  */
-export declare function diffSentences(oldStr: string, newStr: string, options: DiffCallbackNonabortable<string>): undefined;
-export declare function diffSentences(oldStr: string, newStr: string, options: DiffSentencesOptionsAbortable & CallbackOptionAbortable<string>): undefined;
-export declare function diffSentences(oldStr: string, newStr: string, options: DiffSentencesOptionsNonabortable & CallbackOptionNonabortable<string>): undefined;
-export declare function diffSentences(oldStr: string, newStr: string, options: DiffSentencesOptionsAbortable): ChangeObject<string>[] | undefined;
-export declare function diffSentences(oldStr: string, newStr: string, options?: DiffSentencesOptionsNonabortable): ChangeObject<string>[];
-export {};
+export declare function diffSentences(
+	oldStr: string,
+	newStr: string,
+	options: DiffCallbackNonabortable<string>,
+): undefined;
+export declare function diffSentences(
+	oldStr: string,
+	newStr: string,
+	options: DiffSentencesOptionsAbortable & CallbackOptionAbortable<string>,
+): undefined;
+export declare function diffSentences(
+	oldStr: string,
+	newStr: string,
+	options: DiffSentencesOptionsNonabortable &
+		CallbackOptionNonabortable<string>,
+): undefined;
+export declare function diffSentences(
+	oldStr: string,
+	newStr: string,
+	options: DiffSentencesOptionsAbortable,
+): ChangeObject<string>[] | undefined;
+export declare function diffSentences(
+	oldStr: string,
+	newStr: string,
+	options?: DiffSentencesOptionsNonabortable,
+): ChangeObject<string>[];
 //# sourceMappingURL=sentence.d.ts.map

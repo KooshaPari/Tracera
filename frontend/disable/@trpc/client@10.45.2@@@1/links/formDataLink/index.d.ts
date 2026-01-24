@@ -1,1 +1,1 @@
-export * from '../../dist/links/formDataLink';
+export * from "../../dist/links/formDataLink";

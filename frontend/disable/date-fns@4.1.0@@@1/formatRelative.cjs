@@ -45,48 +45,48 @@ var _index5 = require("./format.cjs");
  * //=> "last Thursday at 12:45 AM"
  */
 function formatRelative(date, baseDate, options) {
-  const [date_, baseDate_] = (0, _index3.normalizeDates)(
-    options?.in,
-    date,
-    baseDate,
-  );
+	const [date_, baseDate_] = (0, _index3.normalizeDates)(
+		options?.in,
+		date,
+		baseDate,
+	);
 
-  const defaultOptions = (0, _index2.getDefaultOptions)();
-  const locale =
-    options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const defaultOptions = (0, _index2.getDefaultOptions)();
+	const locale =
+		options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const diff = (0, _index4.differenceInCalendarDays)(date_, baseDate_);
+	const diff = (0, _index4.differenceInCalendarDays)(date_, baseDate_);
 
-  if (isNaN(diff)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (isNaN(diff)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  let token;
-  if (diff < -6) {
-    token = "other";
-  } else if (diff < -1) {
-    token = "lastWeek";
-  } else if (diff < 0) {
-    token = "yesterday";
-  } else if (diff < 1) {
-    token = "today";
-  } else if (diff < 2) {
-    token = "tomorrow";
-  } else if (diff < 7) {
-    token = "nextWeek";
-  } else {
-    token = "other";
-  }
+	let token;
+	if (diff < -6) {
+		token = "other";
+	} else if (diff < -1) {
+		token = "lastWeek";
+	} else if (diff < 0) {
+		token = "yesterday";
+	} else if (diff < 1) {
+		token = "today";
+	} else if (diff < 2) {
+		token = "tomorrow";
+	} else if (diff < 7) {
+		token = "nextWeek";
+	} else {
+		token = "other";
+	}
 
-  const formatStr = locale.formatRelative(token, date_, baseDate_, {
-    locale,
-    weekStartsOn,
-  });
-  return (0, _index5.format)(date_, formatStr, { locale, weekStartsOn });
+	const formatStr = locale.formatRelative(token, date_, baseDate_, {
+		locale,
+		weekStartsOn,
+	});
+	return (0, _index5.format)(date_, formatStr, { locale, weekStartsOn });
 }

@@ -28,7 +28,10 @@ export declare function getSiblings(elem: AnyNode): AnyNode[];
  * @param name Attribute name to retrieve.
  * @returns The element's attribute value, or `undefined`.
  */
-export declare function getAttributeValue(elem: Element, name: string): string | undefined;
+export declare function getAttributeValue(
+	elem: Element,
+	name: string,
+): string | undefined;
 /**
  * Checks whether an element has an attribute.
  *

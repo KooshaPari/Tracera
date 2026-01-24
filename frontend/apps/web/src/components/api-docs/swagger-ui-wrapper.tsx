@@ -1,197 +1,199 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import SwaggerUI from 'swagger-ui-react';
-import 'swagger-ui-react/swagger-ui.css';
-import { Download, Copy, Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from "react";
+import SwaggerUI from "swagger-ui-react";
+import "swagger-ui-react/swagger-ui.css";
+import { Copy, Download, Moon, Sun } from "lucide-react";
 
 interface SwaggerUIWrapperProps {
-  specUrl?: string;
-  spec?: object;
-  tryItOutEnabled?: boolean;
-  persistAuthorization?: boolean;
-  displayRequestDuration?: boolean;
-  filter?: boolean;
-  deepLinking?: boolean;
-  requestInterceptor?: (request: any) => any;
-  responseInterceptor?: (response: any) => any;
+	specUrl?: string;
+	spec?: object;
+	tryItOutEnabled?: boolean;
+	persistAuthorization?: boolean;
+	displayRequestDuration?: boolean;
+	filter?: boolean;
+	deepLinking?: boolean;
+	requestInterceptor?: (request: any) => any;
+	responseInterceptor?: (response: any) => any;
 }
 
 export function SwaggerUIWrapper({
-  specUrl = '/specs/openapi.json',
-  spec,
-  tryItOutEnabled = true,
-  persistAuthorization = true,
-  displayRequestDuration = true,
-  filter = true,
-  deepLinking = true,
-  requestInterceptor,
-  responseInterceptor,
+	specUrl = "/specs/openapi.json",
+	spec,
+	tryItOutEnabled = true,
+	persistAuthorization = true,
+	displayRequestDuration = true,
+	filter = true,
+	deepLinking = true,
+	requestInterceptor,
+	responseInterceptor,
 }: SwaggerUIWrapperProps) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [specData, setSpecData] = useState<any>(null);
+	const [darkMode, setDarkMode] = useState(false);
+	const [copied, setCopied] = useState(false);
+	const [specData, setSpecData] = useState<any>(null);
 
-  useEffect(() => {
-    // Check for dark mode preference
-    const isDark =
-      document.documentElement.classList.contains('dark') ||
-      window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setDarkMode(isDark);
+	useEffect(() => {
+		// Check for dark mode preference
+		const isDark =
+			document.documentElement.classList.contains("dark") ||
+			window.matchMedia("(prefers-color-scheme: dark)").matches;
+		setDarkMode(isDark);
 
-    // Load spec if URL is provided and no spec object
-    if (specUrl && !spec) {
-      fetch(specUrl)
-        .then((res) => res.json())
-        .then((data) => setSpecData(data))
-        .catch((err) => console.error('Failed to load OpenAPI spec:', err));
-    } else if (spec) {
-      setSpecData(spec);
-    }
-  }, [specUrl, spec]);
+		// Load spec if URL is provided and no spec object
+		if (specUrl && !spec) {
+			fetch(specUrl)
+				.then((res) => res.json())
+				.then((data) => setSpecData(data))
+				.catch((err) => console.error("Failed to load OpenAPI spec:", err));
+		} else if (spec) {
+			setSpecData(spec);
+		}
+	}, [specUrl, spec]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
+	const toggleDarkMode = () => {
+		setDarkMode(!darkMode);
+		document.documentElement.classList.toggle("dark");
+	};
 
-  const downloadSpec = async () => {
-    const dataToDownload = specData || spec;
-    if (!dataToDownload) {
-      if (specUrl) {
-        const response = await fetch(specUrl);
-        const data = await response.json();
-        downloadJSON(data);
-      }
-      return;
-    }
-    downloadJSON(dataToDownload);
-  };
+	const downloadSpec = async () => {
+		const dataToDownload = specData || spec;
+		if (!dataToDownload) {
+			if (specUrl) {
+				const response = await fetch(specUrl);
+				const data = await response.json();
+				downloadJSON(data);
+			}
+			return;
+		}
+		downloadJSON(dataToDownload);
+	};
 
-  const downloadJSON = (data: any) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'openapi-spec.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+	const downloadJSON = (data: any) => {
+		const blob = new Blob([JSON.stringify(data, null, 2)], {
+			type: "application/json",
+		});
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "openapi-spec.json";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	};
 
-  const copySpecUrl = () => {
-    const fullUrl = window.location.origin + specUrl;
-    navigator.clipboard.writeText(fullUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
+	const copySpecUrl = () => {
+		const fullUrl = window.location.origin + specUrl;
+		navigator.clipboard.writeText(fullUrl).then(() => {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		});
+	};
 
-  // Default request interceptor to add authentication
-  const defaultRequestInterceptor = (req: any) => {
-    // Check for stored token
-    const token = localStorage.getItem('api_token');
-    const apiKey = localStorage.getItem('api_key');
+	// Default request interceptor to add authentication (SSR-safe)
+	const defaultRequestInterceptor = (req: any) => {
+		// Check for stored token (SSR-safe)
+		const isStorageAvailable =
+			typeof localStorage !== "undefined" &&
+			typeof localStorage.getItem === "function";
+		const token = isStorageAvailable ? localStorage.getItem("api_token") : null;
+		const apiKey = isStorageAvailable ? localStorage.getItem("api_key") : null;
 
-    if (token) {
-      req.headers.Authorization = `Bearer ${token}`;
-    }
-    if (apiKey) {
-      req.headers['X-API-Key'] = apiKey;
-    }
+		if (token) {
+			req.headers.Authorization = `Bearer ${token}`;
+		}
+		if (apiKey) {
+			req.headers["X-API-Key"] = apiKey;
+		}
 
-    return requestInterceptor ? requestInterceptor(req) : req;
-  };
+		return requestInterceptor ? requestInterceptor(req) : req;
+	};
 
-  // Default response interceptor for logging
-  const defaultResponseInterceptor = (res: any) => {
-    // Log response for debugging
-    console.log('API Response:', {
-      url: res.url,
-      status: res.status,
-      duration: res.duration,
-    });
+	// Default response interceptor for logging
+	const defaultResponseInterceptor = (res: any) => {
+		// Log response for debugging
+		console.log("API Response:", {
+			url: res.url,
+			status: res.status,
+			duration: res.duration,
+		});
 
-    return responseInterceptor ? responseInterceptor(res) : res;
-  };
+		return responseInterceptor ? responseInterceptor(res) : res;
+	};
 
-  return (
-    <div className={`swagger-ui-container ${darkMode ? 'dark-mode' : ''}`}>
-      <div className="swagger-controls">
-        <div className="swagger-toolbar">
-          <h1 className="swagger-title">API Documentation</h1>
-          <div className="swagger-actions">
-            <button
-              type="button"
-              onClick={copySpecUrl}
-              className="swagger-btn"
-              title="Copy Spec URL"
-            >
-              <Copy size={18} />
-              {copied ? 'Copied!' : 'Copy URL'}
-            </button>
-            <button
-              type="button"
-              onClick={downloadSpec}
-              className="swagger-btn"
-              title="Download OpenAPI Spec"
-            >
-              <Download size={18} />
-              Download Spec
-            </button>
-            <button
-              type="button"
-              onClick={toggleDarkMode}
-              className="swagger-btn"
-              title="Toggle Dark Mode"
-            >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-              {darkMode ? 'Light' : 'Dark'}
-            </button>
-          </div>
-        </div>
-      </div>
+	return (
+		<div className={`swagger-ui-container ${darkMode ? "dark-mode" : ""}`}>
+			<div className="swagger-controls">
+				<div className="swagger-toolbar">
+					<h1 className="swagger-title">API Documentation</h1>
+					<div className="swagger-actions">
+						<button
+							type="button"
+							onClick={copySpecUrl}
+							className="swagger-btn"
+							title="Copy Spec URL"
+						>
+							<Copy size={18} />
+							{copied ? "Copied!" : "Copy URL"}
+						</button>
+						<button
+							type="button"
+							onClick={downloadSpec}
+							className="swagger-btn"
+							title="Download OpenAPI Spec"
+						>
+							<Download size={18} />
+							Download Spec
+						</button>
+						<button
+							type="button"
+							onClick={toggleDarkMode}
+							className="swagger-btn"
+							title="Toggle Dark Mode"
+						>
+							{darkMode ? <Sun size={18} /> : <Moon size={18} />}
+							{darkMode ? "Light" : "Dark"}
+						</button>
+					</div>
+				</div>
+			</div>
 
-      {specData || spec ? (
-        <SwaggerUI
-          spec={specData || spec}
-          url={!spec && !specData ? specUrl : undefined}
-          tryItOutEnabled={tryItOutEnabled}
-          persistAuthorization={persistAuthorization}
-          displayRequestDuration={displayRequestDuration}
-          filter={filter}
-          deepLinking={deepLinking}
-          requestInterceptor={defaultRequestInterceptor}
-          responseInterceptor={defaultResponseInterceptor}
-          docExpansion="list"
-          defaultModelsExpandDepth={1}
-          defaultModelExpandDepth={1}
-          displayOperationId={false}
-          showExtensions={false}
-          showCommonExtensions={false}
-          supportedSubmitMethods={[
-            'get',
-            'put',
-            'post',
-            'delete',
-            'options',
-            'head',
-            'patch',
-            'trace',
-          ]}
-          validatorUrl={null}
-        />
-      ) : (
-        <div className="swagger-loading">
-          <div className="spinner" />
-          <p>Loading API Documentation...</p>
-        </div>
-      )}
+			{specData || spec ? (
+				<SwaggerUI
+					spec={specData || spec}
+					{...(specUrl && !spec && !specData ? { url: specUrl } : {})}
+					tryItOutEnabled={tryItOutEnabled}
+					persistAuthorization={persistAuthorization}
+					displayRequestDuration={displayRequestDuration}
+					filter={filter}
+					deepLinking={deepLinking}
+					requestInterceptor={defaultRequestInterceptor}
+					responseInterceptor={defaultResponseInterceptor}
+					docExpansion="list"
+					defaultModelsExpandDepth={1}
+					defaultModelExpandDepth={1}
+					displayOperationId={false}
+					showExtensions={false}
+					showCommonExtensions={false}
+					supportedSubmitMethods={[
+						"get",
+						"put",
+						"post",
+						"delete",
+						"options",
+						"head",
+						"patch",
+						"trace",
+					]}
+				/>
+			) : (
+				<div className="swagger-loading">
+					<div className="spinner" />
+					<p>Loading API Documentation...</p>
+				</div>
+			)}
 
-      <style>{`
+			<style>{`
         .swagger-ui-container {
           min-height: 100vh;
           background-color: #fafafa;
@@ -344,6 +346,6 @@ export function SwaggerUIWrapper({
           }
         }
       `}</style>
-    </div>
-  );
+		</div>
+	);
 }

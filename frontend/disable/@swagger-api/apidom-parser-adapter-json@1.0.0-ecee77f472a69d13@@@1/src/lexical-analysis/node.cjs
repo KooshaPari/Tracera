@@ -1,6 +1,7 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
 exports.__esModule = true;
 exports.default = void 0;
 var _treeSitter = _interopRequireDefault(require("tree-sitter"));
@@ -15,7 +16,7 @@ parser.setLanguage(_treeSitterJson.default);
  * This is Node.js version of TreeSitters Lexical Analysis.
  * @public
  */
-const analyze = async source => {
-  return parser.parse(source);
+const analyze = async (source) => {
+	return parser.parse(source);
 };
-var _default = exports.default = analyze;
+var _default = (exports.default = analyze);

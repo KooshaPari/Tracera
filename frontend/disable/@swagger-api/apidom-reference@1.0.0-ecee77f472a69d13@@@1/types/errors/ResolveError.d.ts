@@ -1,7 +1,6 @@
-import { ApiDOMError } from '@swagger-api/apidom-error';
+import { ApiDOMError } from "@swagger-api/apidom-error";
 /**
  * @public
  */
-declare class ResolveError extends ApiDOMError {
-}
+declare class ResolveError extends ApiDOMError {}
 export default ResolveError;

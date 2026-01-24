@@ -1,4 +1,4 @@
 export declare const isSaturday: import("./types.js").FPFn1<
-  boolean,
-  string | number | Date
+	boolean,
+	string | number | Date
 >;

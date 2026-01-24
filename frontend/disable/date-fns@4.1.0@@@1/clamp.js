@@ -45,14 +45,14 @@ import { min } from "./min.js";
  * //=> Mon Mar 22 2021 00:00:00
  */
 export function clamp(date, interval, options) {
-  const [date_, start, end] = normalizeDates(
-    options?.in,
-    date,
-    interval.start,
-    interval.end,
-  );
+	const [date_, start, end] = normalizeDates(
+		options?.in,
+		date,
+		interval.start,
+		interval.end,
+	);
 
-  return min([max([date_, start], options), end], options);
+	return min([max([date_, start], options), end], options);
 }
 
 // Fallback for modularized imports:

@@ -29,8 +29,8 @@ var _index = require("./toDate.cjs");
  * //=> Wed Jan 01 2014 00:00:00
  */
 function startOfYear(date, options) {
-  const date_ = (0, _index.toDate)(date, options?.in);
-  date_.setFullYear(date_.getFullYear(), 0, 1);
-  date_.setHours(0, 0, 0, 0);
-  return date_;
+	const date_ = (0, _index.toDate)(date, options?.in);
+	date_.setFullYear(date_.getFullYear(), 0, 1);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
 }

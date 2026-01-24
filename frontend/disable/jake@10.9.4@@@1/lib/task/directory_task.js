@@ -1,5 +1,5 @@
-let fs = require('fs');
-let FileTask = require('./file_task').FileTask;
+const fs = require("fs");
+const FileTask = require("./file_task").FileTask;
 
 /**
   @name jake
@@ -16,15 +16,14 @@ let FileTask = require('./file_task').FileTask;
   @param {String} name The name of the directory to create.
  */
 class DirectoryTask extends FileTask {
-  constructor(...args) {
-    super(...args);
-    if (fs.existsSync(this.name)) {
-      this.updateModTime();
-    }
-    else {
-      this.modTime = null;
-    }
-  }
+	constructor(...args) {
+		super(...args);
+		if (fs.existsSync(this.name)) {
+			this.updateModTime();
+		} else {
+			this.modTime = null;
+		}
+	}
 }
 
 exports.DirectoryTask = DirectoryTask;

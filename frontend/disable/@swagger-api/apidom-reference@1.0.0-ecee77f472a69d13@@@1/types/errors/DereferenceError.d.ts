@@ -1,7 +1,6 @@
-import { ApiDOMError } from '@swagger-api/apidom-error';
+import { ApiDOMError } from "@swagger-api/apidom-error";
 /**
  * @public
  */
-declare class DereferenceError extends ApiDOMError {
-}
+declare class DereferenceError extends ApiDOMError {}
 export default DereferenceError;

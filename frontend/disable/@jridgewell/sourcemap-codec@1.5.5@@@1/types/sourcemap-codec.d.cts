@@ -1,6 +1,19 @@
-export { decodeOriginalScopes, encodeOriginalScopes, decodeGeneratedRanges, encodeGeneratedRanges, } from './scopes.cts';
-export type { OriginalScope, GeneratedRange, CallSite, BindingExpressionRange } from './scopes.cts';
-export type SourceMapSegment = [number] | [number, number, number, number] | [number, number, number, number, number];
+export {
+	decodeOriginalScopes,
+	encodeOriginalScopes,
+	decodeGeneratedRanges,
+	encodeGeneratedRanges,
+} from "./scopes.cts";
+export type {
+	OriginalScope,
+	GeneratedRange,
+	CallSite,
+	BindingExpressionRange,
+} from "./scopes.cts";
+export type SourceMapSegment =
+	| [number]
+	| [number, number, number, number]
+	| [number, number, number, number, number];
 export type SourceMapLine = SourceMapSegment[];
 export type SourceMapMappings = SourceMapLine[];
 export declare function decode(mappings: string): SourceMapMappings;

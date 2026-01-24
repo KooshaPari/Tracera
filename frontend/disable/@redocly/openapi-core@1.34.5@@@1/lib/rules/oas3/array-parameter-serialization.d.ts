@@ -1,5 +1,5 @@
-import type { Oas3Rule } from '../../visitors';
+import type { Oas3Rule } from "../../visitors";
 export type ArrayParameterSerializationOptions = {
-    in?: string[];
+	in?: string[];
 };
 export declare const ArrayParameterSerialization: Oas3Rule;

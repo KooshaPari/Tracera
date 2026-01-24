@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _filter2 = require('./internal/filter.js');
+var _filter2 = require("./internal/filter.js");
 
 var _filter3 = _interopRequireDefault(_filter2);
 
-var _eachOf = require('./eachOf.js');
+var _eachOf = require("./eachOf.js");
 
 var _eachOf2 = _interopRequireDefault(_eachOf);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Returns a new array of all the values in `coll` which pass an async truth
@@ -87,7 +87,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function filter(coll, iteratee, callback) {
-    return (0, _filter3.default)(_eachOf2.default, coll, iteratee, callback);
+	return (0, _filter3.default)(_eachOf2.default, coll, iteratee, callback);
 }
 exports.default = (0, _awaitify2.default)(filter, 3);
 module.exports = exports.default;

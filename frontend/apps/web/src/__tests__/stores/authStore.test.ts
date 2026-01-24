@@ -2,206 +2,206 @@
  * Tests for authStore
  */
 
-import { act, renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAuthStore } from '../../stores/authStore'
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { useAuthStore } from "../../stores/authStore";
 
-describe('authStore', () => {
-  beforeEach(() => {
-    // Reset store state before each test
-    const { logout } = useAuthStore.getState()
-    logout()
-    localStorage.clear()
-  })
+describe("authStore", () => {
+	beforeEach(() => {
+		// Reset store state before each test
+		const { logout } = useAuthStore.getState();
+		logout();
+		localStorage.clear();
+	});
 
-  describe('initial state', () => {
-    it('should have correct initial values', () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("initial state", () => {
+		it("should have correct initial values", () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      expect(result.current.user).toBeNull()
-      expect(result.current.token).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(result.current.isLoading).toBe(false)
-    })
-  })
+			expect(result.current.user).toBeNull();
+			expect(result.current.token).toBeNull();
+			expect(result.current.isAuthenticated).toBe(false);
+			expect(result.current.isLoading).toBe(false);
+		});
+	});
 
-  describe('setUser', () => {
-    it('should set user and update authentication status', () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("setUser", () => {
+		it("should set user and update authentication status", () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      act(() => {
-        result.current.setUser({
-          id: '1',
-          email: 'test@example.com',
-          name: 'Test User',
-        })
-      })
+			act(() => {
+				result.current.setUser({
+					id: "1",
+					email: "test@example.com",
+					name: "Test User",
+				});
+			});
 
-      expect(result.current.user).toEqual({
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-      })
-      expect(result.current.isAuthenticated).toBe(true)
-    })
+			expect(result.current.user).toEqual({
+				id: "1",
+				email: "test@example.com",
+				name: "Test User",
+			});
+			expect(result.current.isAuthenticated).toBe(true);
+		});
 
-    it('should clear authentication when user is null', () => {
-      const { result } = renderHook(() => useAuthStore())
+		it("should clear authentication when user is null", () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      // First set a user
-      act(() => {
-        result.current.setUser({
-          id: '1',
-          email: 'test@example.com',
-        })
-      })
+			// First set a user
+			act(() => {
+				result.current.setUser({
+					id: "1",
+					email: "test@example.com",
+				});
+			});
 
-      // Then clear it
-      act(() => {
-        result.current.setUser(null)
-      })
+			// Then clear it
+			act(() => {
+				result.current.setUser(null);
+			});
 
-      expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-    })
-  })
+			expect(result.current.user).toBeNull();
+			expect(result.current.isAuthenticated).toBe(false);
+		});
+	});
 
-  describe('setToken', () => {
-    it('should store token in state and localStorage', () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("setToken", () => {
+		it("should store token in state and localStorage", () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      act(() => {
-        result.current.setToken('test-token')
-      })
+			act(() => {
+				result.current.setToken("test-token");
+			});
 
-      expect(result.current.token).toBe('test-token')
-      expect(localStorage.getItem('auth_token')).toBe('test-token')
-    })
+			expect(result.current.token).toBe("test-token");
+			expect(localStorage.getItem("auth_token")).toBe("test-token");
+		});
 
-    it('should remove token from localStorage when null', () => {
-      const { result } = renderHook(() => useAuthStore())
+		it("should remove token from localStorage when null", () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      // Set token first
-      act(() => {
-        result.current.setToken('test-token')
-      })
+			// Set token first
+			act(() => {
+				result.current.setToken("test-token");
+			});
 
-      // Then remove it
-      act(() => {
-        result.current.setToken(null)
-      })
+			// Then remove it
+			act(() => {
+				result.current.setToken(null);
+			});
 
-      expect(result.current.token).toBeNull()
-      expect(localStorage.getItem('auth_token')).toBeNull()
-    })
-  })
+			expect(result.current.token).toBeNull();
+			expect(localStorage.getItem("auth_token")).toBeNull();
+		});
+	});
 
-  describe('login', () => {
-    it('should login successfully', async () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("login", () => {
+		it("should login successfully", async () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      await act(async () => {
-        await result.current.login('test@example.com', 'password')
-      })
+			await act(async () => {
+				await result.current.login("test@example.com", "password");
+			});
 
-      expect(result.current.isAuthenticated).toBe(true)
-      expect(result.current.user).toEqual({
-        id: '1',
-        email: 'test@example.com',
-        name: 'test',
-      })
-      expect(result.current.token).toBe('mock-jwt-token')
-    })
+			expect(result.current.isAuthenticated).toBe(true);
+			expect(result.current.user).toEqual({
+				id: "1",
+				email: "test@example.com",
+				name: "test",
+			});
+			expect(result.current.token).toBe("mock-jwt-token");
+		});
 
-    it('should set loading state during login', async () => {
-      const { result } = renderHook(() => useAuthStore())
+		it("should set loading state during login", async () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      // Start login
-      act(() => {
-        result.current.login('test@example.com', 'password')
-      })
+			// Start login
+			act(() => {
+				result.current.login("test@example.com", "password");
+			});
 
-      // Login should eventually complete
-      expect(result.current).toBeDefined()
-    })
-  })
+			// Login should eventually complete
+			expect(result.current).toBeDefined();
+		});
+	});
 
-  describe('logout', () => {
-    it('should clear all auth data', async () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("logout", () => {
+		it("should clear all auth data", async () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      // Login first
-      await act(async () => {
-        await result.current.login('test@example.com', 'password')
-      })
+			// Login first
+			await act(async () => {
+				await result.current.login("test@example.com", "password");
+			});
 
-      // Then logout
-      act(() => {
-        result.current.logout()
-      })
+			// Then logout
+			act(() => {
+				result.current.logout();
+			});
 
-      expect(result.current.user).toBeNull()
-      expect(result.current.token).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(localStorage.getItem('auth_token')).toBeNull()
-    })
-  })
+			expect(result.current.user).toBeNull();
+			expect(result.current.token).toBeNull();
+			expect(result.current.isAuthenticated).toBe(false);
+			expect(localStorage.getItem("auth_token")).toBeNull();
+		});
+	});
 
-  describe('updateProfile', () => {
-    it('should update user profile', async () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("updateProfile", () => {
+		it("should update user profile", async () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      // Login first
-      await act(async () => {
-        await result.current.login('test@example.com', 'password')
-      })
+			// Login first
+			await act(async () => {
+				await result.current.login("test@example.com", "password");
+			});
 
-      // Update profile
-      act(() => {
-        result.current.updateProfile({
-          name: 'Updated Name',
-          avatar: 'avatar.jpg',
-        })
-      })
+			// Update profile
+			act(() => {
+				result.current.updateProfile({
+					name: "Updated Name",
+					avatar: "avatar.jpg",
+				});
+			});
 
-      expect(result.current.user).toEqual({
-        id: '1',
-        email: 'test@example.com',
-        name: 'Updated Name',
-        avatar: 'avatar.jpg',
-      })
-    })
+			expect(result.current.user).toEqual({
+				id: "1",
+				email: "test@example.com",
+				name: "Updated Name",
+				avatar: "avatar.jpg",
+			});
+		});
 
-    it('should not update if no user is logged in', () => {
-      const { result } = renderHook(() => useAuthStore())
+		it("should not update if no user is logged in", () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      act(() => {
-        result.current.updateProfile({
-          name: 'Updated Name',
-        })
-      })
+			act(() => {
+				result.current.updateProfile({
+					name: "Updated Name",
+				});
+			});
 
-      expect(result.current.user).toBeNull()
-    })
-  })
+			expect(result.current.user).toBeNull();
+		});
+	});
 
-  describe('persistence', () => {
-    it('should persist auth state to localStorage', async () => {
-      const { result } = renderHook(() => useAuthStore())
+	describe("persistence", () => {
+		it("should persist auth state to localStorage", async () => {
+			const { result } = renderHook(() => useAuthStore());
 
-      await act(async () => {
-        await result.current.login('test@example.com', 'password')
-      })
+			await act(async () => {
+				await result.current.login("test@example.com", "password");
+			});
 
-      // Check that state was persisted
-      const storedData = localStorage.getItem('tracertm-auth-store')
-      expect(storedData).toBeTruthy()
+			// Check that state was persisted
+			const storedData = localStorage.getItem("tracertm-auth-store");
+			expect(storedData).toBeTruthy();
 
-      if (storedData) {
-        const parsed = JSON.parse(storedData)
-        expect(parsed.state.user).toBeTruthy()
-        expect(parsed.state.isAuthenticated).toBe(true)
-      }
-    })
-  })
-})
+			if (storedData) {
+				const parsed = JSON.parse(storedData);
+				expect(parsed.state.user).toBeTruthy();
+				expect(parsed.state.isAuthenticated).toBe(true);
+			}
+		});
+	});
+});

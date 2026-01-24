@@ -25,10 +25,10 @@ import { toDate } from "./toDate.js";
  * //=> 183
  */
 export function getDayOfYear(date, options) {
-  const _date = toDate(date, options?.in);
-  const diff = differenceInCalendarDays(_date, startOfYear(_date));
-  const dayOfYear = diff + 1;
-  return dayOfYear;
+	const _date = toDate(date, options?.in);
+	const diff = differenceInCalendarDays(_date, startOfYear(_date));
+	const dayOfYear = diff + 1;
+	return dayOfYear;
 }
 
 // Fallback for modularized imports:

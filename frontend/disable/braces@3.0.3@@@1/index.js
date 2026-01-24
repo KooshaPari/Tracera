@@ -1,9 +1,7 @@
-'use strict';
-
-const stringify = require('./lib/stringify');
-const compile = require('./lib/compile');
-const expand = require('./lib/expand');
-const parse = require('./lib/parse');
+const stringify = require("./lib/stringify");
+const compile = require("./lib/compile");
+const expand = require("./lib/expand");
+const parse = require("./lib/parse");
 
 /**
  * Expand the given pattern or create a regex-compatible string.
@@ -20,25 +18,25 @@ const parse = require('./lib/parse');
  */
 
 const braces = (input, options = {}) => {
-  let output = [];
+	let output = [];
 
-  if (Array.isArray(input)) {
-    for (const pattern of input) {
-      const result = braces.create(pattern, options);
-      if (Array.isArray(result)) {
-        output.push(...result);
-      } else {
-        output.push(result);
-      }
-    }
-  } else {
-    output = [].concat(braces.create(input, options));
-  }
+	if (Array.isArray(input)) {
+		for (const pattern of input) {
+			const result = braces.create(pattern, options);
+			if (Array.isArray(result)) {
+				output.push(...result);
+			} else {
+				output.push(result);
+			}
+		}
+	} else {
+		output = [].concat(braces.create(input, options));
+	}
 
-  if (options && options.expand === true && options.nodupes === true) {
-    output = [...new Set(output)];
-  }
-  return output;
+	if (options && options.expand === true && options.nodupes === true) {
+		output = [...new Set(output)];
+	}
+	return output;
 };
 
 /**
@@ -72,10 +70,10 @@ braces.parse = (input, options = {}) => parse(input, options);
  */
 
 braces.stringify = (input, options = {}) => {
-  if (typeof input === 'string') {
-    return stringify(braces.parse(input, options), options);
-  }
-  return stringify(input, options);
+	if (typeof input === "string") {
+		return stringify(braces.parse(input, options), options);
+	}
+	return stringify(input, options);
 };
 
 /**
@@ -94,10 +92,10 @@ braces.stringify = (input, options = {}) => {
  */
 
 braces.compile = (input, options = {}) => {
-  if (typeof input === 'string') {
-    input = braces.parse(input, options);
-  }
-  return compile(input, options);
+	if (typeof input === "string") {
+		input = braces.parse(input, options);
+	}
+	return compile(input, options);
 };
 
 /**
@@ -118,23 +116,23 @@ braces.compile = (input, options = {}) => {
  */
 
 braces.expand = (input, options = {}) => {
-  if (typeof input === 'string') {
-    input = braces.parse(input, options);
-  }
+	if (typeof input === "string") {
+		input = braces.parse(input, options);
+	}
 
-  let result = expand(input, options);
+	let result = expand(input, options);
 
-  // filter out empty strings if specified
-  if (options.noempty === true) {
-    result = result.filter(Boolean);
-  }
+	// filter out empty strings if specified
+	if (options.noempty === true) {
+		result = result.filter(Boolean);
+	}
 
-  // filter out duplicates if specified
-  if (options.nodupes === true) {
-    result = [...new Set(result)];
-  }
+	// filter out duplicates if specified
+	if (options.nodupes === true) {
+		result = [...new Set(result)];
+	}
 
-  return result;
+	return result;
 };
 
 /**
@@ -154,13 +152,13 @@ braces.expand = (input, options = {}) => {
  */
 
 braces.create = (input, options = {}) => {
-  if (input === '' || input.length < 3) {
-    return [input];
-  }
+	if (input === "" || input.length < 3) {
+		return [input];
+	}
 
-  return options.expand !== true
-    ? braces.compile(input, options)
-    : braces.expand(input, options);
+	return options.expand !== true
+		? braces.compile(input, options)
+		: braces.expand(input, options);
 };
 
 /**

@@ -14,75 +14,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
-
-let util = require('util'); // Native Node util module
-let spawn = require('child_process').spawn;
-let EventEmitter = require('events').EventEmitter;
-let logger = require('./logger');
-let file = require('./file');
+const util = require("util"); // Native Node util module
+const spawn = require("child_process").spawn;
+const EventEmitter = require("events").EventEmitter;
+const logger = require("./logger");
+const file = require("./file");
 let Exec;
 
-const _UUID_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+const _UUID_CHARS =
+	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 
-let parseArgs = function (argumentsObj) {
-  let args;
-  let arg;
-  let cmds;
-  let callback;
-  let opts = {
-    interactive: false,
-    printStdout: false,
-    printStderr: false,
-    breakOnError: true
-  };
+const parseArgs = (argumentsObj) => {
+	let args;
+	let arg;
+	let cmds;
+	let callback;
+	let opts = {
+		interactive: false,
+		printStdout: false,
+		printStderr: false,
+		breakOnError: true,
+	};
 
-  args = Array.prototype.slice.call(argumentsObj);
+	args = Array.prototype.slice.call(argumentsObj);
 
-  cmds = args.shift();
-  // Arrayize if passed a single string command
-  if (typeof cmds == 'string') {
-    cmds = [cmds];
-  }
-  // Make a copy if it's an actual list
-  else {
-    cmds = cmds.slice();
-  }
+	cmds = args.shift();
+	// Arrayize if passed a single string command
+	if (typeof cmds == "string") {
+		cmds = [cmds];
+	}
+	// Make a copy if it's an actual list
+	else {
+		cmds = cmds.slice();
+	}
 
-  // Get optional callback or opts
-  while((arg = args.shift())) {
-    if (typeof arg == 'function') {
-      callback = arg;
-    }
-    else if (typeof arg == 'object') {
-      opts = Object.assign(opts, arg);
-    }
-  }
+	// Get optional callback or opts
+	while ((arg = args.shift())) {
+		if (typeof arg == "function") {
+			callback = arg;
+		} else if (typeof arg == "object") {
+			opts = Object.assign(opts, arg);
+		}
+	}
 
-  // Backward-compat shim
-  if (typeof opts.stdout != 'undefined') {
-    opts.printStdout = opts.stdout;
-    delete opts.stdout;
-  }
-  if (typeof opts.stderr != 'undefined') {
-    opts.printStderr = opts.stderr;
-    delete opts.stderr;
-  }
+	// Backward-compat shim
+	if (typeof opts.stdout != "undefined") {
+		opts.printStdout = opts.stdout;
+		delete opts.stdout;
+	}
+	if (typeof opts.stderr != "undefined") {
+		opts.printStderr = opts.stderr;
+		delete opts.stderr;
+	}
 
-  return {
-    cmds: cmds,
-    opts: opts,
-    callback: callback
-  };
+	return {
+		cmds: cmds,
+		opts: opts,
+		callback: callback,
+	};
 };
 
 /**
   @name jake
   @namespace jake
 */
-let utils = new (function () {
-  /**
+const utils = new (function () {
+	/**
     @name jake.exec
     @static
     @function
@@ -112,186 +111,176 @@ let utils = new (function () {
         }
     jake.exec(cmds, {stdout: true}, callback);
    */
-  this.exec = function (a, b, c) {
-    let parsed = parseArgs(arguments);
-    let cmds = parsed.cmds;
-    let opts = parsed.opts;
-    let callback = parsed.callback;
+	this.exec = function (a, b, c) {
+		const parsed = parseArgs(arguments);
+		const cmds = parsed.cmds;
+		const opts = parsed.opts;
+		const callback = parsed.callback;
 
-    let ex = new Exec(cmds, opts, callback);
+		const ex = new Exec(cmds, opts, callback);
 
-    ex.addListener('error', function (msg, code) {
-      if (opts.breakOnError) {
-        fail(msg, code);
-      }
-    });
-    ex.run();
+		ex.addListener("error", (msg, code) => {
+			if (opts.breakOnError) {
+				fail(msg, code);
+			}
+		});
+		ex.run();
 
-    return ex;
-  };
+		return ex;
+	};
 
-  this.createExec = function (a, b, c) {
-    return new Exec(a, b, c);
-  };
+	this.createExec = (a, b, c) => new Exec(a, b, c);
 
-  // From Math.uuid.js, https://github.com/broofa/node-uuid
-  // Robert Kieffer (robert@broofa.com), MIT license
-  this.uuid = function (length, radix) {
-    var chars = _UUID_CHARS
-      , uuid = []
-      , r
-      , i;
+	// From Math.uuid.js, https://github.com/broofa/node-uuid
+	// Robert Kieffer (robert@broofa.com), MIT license
+	this.uuid = (length, radix) => {
+		var chars = _UUID_CHARS,
+			uuid = [],
+			r,
+			i;
 
-    radix = radix || chars.length;
+		radix = radix || chars.length;
 
-    if (length) {
-      // Compact form
-      i = -1;
-      while (++i < length) {
-        uuid[i] = chars[0 | Math.random()*radix];
-      }
-    } else {
-      // rfc4122, version 4 form
+		if (length) {
+			// Compact form
+			i = -1;
+			while (++i < length) {
+				uuid[i] = chars[0 | (Math.random() * radix)];
+			}
+		} else {
+			// rfc4122, version 4 form
 
-      // rfc4122 requires these characters
-      uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
-      uuid[14] = '4';
+			// rfc4122 requires these characters
+			uuid[8] = uuid[13] = uuid[18] = uuid[23] = "-";
+			uuid[14] = "4";
 
-      // Fill in random data.  At i==19 set the high bits of clock sequence as
-      // per rfc4122, sec. 4.1.5
-      i = -1;
-      while (++i < 36) {
-        if (!uuid[i]) {
-          r = 0 | Math.random()*16;
-          uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
-        }
-      }
-    }
+			// Fill in random data.  At i==19 set the high bits of clock sequence as
+			// per rfc4122, sec. 4.1.5
+			i = -1;
+			while (++i < 36) {
+				if (!uuid[i]) {
+					r = 0 | (Math.random() * 16);
+					uuid[i] = chars[i == 19 ? (r & 0x3) | 0x8 : r];
+				}
+			}
+		}
 
-    return uuid.join('');
-  };
-
+		return uuid.join("");
+	};
 })();
 
 Exec = function () {
-  let parsed = parseArgs(arguments);
-  let cmds = parsed.cmds;
-  let opts = parsed.opts;
-  let callback = parsed.callback;
+	const parsed = parseArgs(arguments);
+	const cmds = parsed.cmds;
+	const opts = parsed.opts;
+	const callback = parsed.callback;
 
-  this._cmds = cmds;
-  this._callback = callback;
-  this._config = opts;
+	this._cmds = cmds;
+	this._callback = callback;
+	this._config = opts;
 };
 
 util.inherits(Exec, EventEmitter);
 
-Object.assign(Exec.prototype, new (function () {
+Object.assign(
+	Exec.prototype,
+	new (function () {
+		const _run = function () {
+			let sh;
+			let cmd;
+			let args;
+			const next = this._cmds.shift();
+			const config = this._config;
+			let errData = "";
+			let shStdio;
+			const handleStdoutData = (data) => {
+				this.emit("stdout", data);
+			};
+			const handleStderrData = (data) => {
+				const d = data.toString();
+				this.emit("stderr", data);
+				// Accumulate the error-data so we can use it as the
+				// stack if the process exits with an error
+				errData += d;
+			};
 
-  let _run = function () {
-    let self = this;
-    let sh;
-    let cmd;
-    let args;
-    let next = this._cmds.shift();
-    let config = this._config;
-    let errData = '';
-    let shStdio;
-    let handleStdoutData = function (data) {
-      self.emit('stdout', data);
-    };
-    let handleStderrData = function (data) {
-      let d = data.toString();
-      self.emit('stderr', data);
-      // Accumulate the error-data so we can use it as the
-      // stack if the process exits with an error
-      errData += d;
-    };
+			// Keep running as long as there are commands in the array
+			if (next) {
+				const spawnOpts = {};
+				this.emit("cmdStart", next);
 
-    // Keep running as long as there are commands in the array
-    if (next) {
-      let spawnOpts = {};
-      this.emit('cmdStart', next);
+				// Ganking part of Node's child_process.exec to get cmdline args parsed
+				if (process.platform == "win32") {
+					cmd = "cmd";
+					args = ["/c", next];
+					if (config.windowsVerbatimArguments) {
+						spawnOpts.windowsVerbatimArguments = true;
+					}
+				} else {
+					cmd = "/bin/sh";
+					args = ["-c", next];
+				}
 
-      // Ganking part of Node's child_process.exec to get cmdline args parsed
-      if (process.platform == 'win32') {
-        cmd = 'cmd';
-        args = ['/c', next];
-        if (config.windowsVerbatimArguments) {
-          spawnOpts.windowsVerbatimArguments = true;
-        }
-      }
-      else {
-        cmd = '/bin/sh';
-        args = ['-c', next];
-      }
+				if (config.interactive) {
+					spawnOpts.stdio = "inherit";
+					sh = spawn(cmd, args, spawnOpts);
+				} else {
+					shStdio = [process.stdin];
+					if (config.printStdout) {
+						shStdio.push(process.stdout);
+					} else {
+						shStdio.push("pipe");
+					}
+					if (config.printStderr) {
+						shStdio.push(process.stderr);
+					} else {
+						shStdio.push("pipe");
+					}
+					spawnOpts.stdio = shStdio;
+					sh = spawn(cmd, args, spawnOpts);
+					if (!config.printStdout) {
+						sh.stdout.addListener("data", handleStdoutData);
+					}
+					if (!config.printStderr) {
+						sh.stderr.addListener("data", handleStderrData);
+					}
+				}
 
-      if (config.interactive) {
-        spawnOpts.stdio = 'inherit';
-        sh = spawn(cmd, args, spawnOpts);
-      }
-      else {
-        shStdio = [
-          process.stdin
-        ];
-        if (config.printStdout) {
-          shStdio.push(process.stdout);
-        }
-        else {
-          shStdio.push('pipe');
-        }
-        if (config.printStderr) {
-          shStdio.push(process.stderr);
-        }
-        else {
-          shStdio.push('pipe');
-        }
-        spawnOpts.stdio = shStdio;
-        sh = spawn(cmd, args, spawnOpts);
-        if (!config.printStdout) {
-          sh.stdout.addListener('data', handleStdoutData);
-        }
-        if (!config.printStderr) {
-          sh.stderr.addListener('data', handleStderrData);
-        }
-      }
+				// Exit, handle err or run next
+				sh.on("exit", (code) => {
+					let msg;
+					if (code !== 0) {
+						msg = errData || "Process exited with error.";
+						msg = msg.trim();
+						this.emit("error", msg, code);
+					}
+					if (code === 0 || !config.breakOnError) {
+						this.emit("cmdEnd", next);
+						setTimeout(() => {
+							_run.call(this);
+						}, 0);
+					}
+				});
+			} else {
+				this.emit("end");
+				if (typeof this._callback == "function") {
+					this._callback();
+				}
+			}
+		};
 
-      // Exit, handle err or run next
-      sh.on('exit', function (code) {
-        let msg;
-        if (code !== 0) {
-          msg = errData || 'Process exited with error.';
-          msg = msg.trim();
-          self.emit('error', msg, code);
-        }
-        if (code === 0 || !config.breakOnError) {
-          self.emit('cmdEnd', next);
-          setTimeout(function () { _run.call(self); }, 0);
-        }
-      });
+		this.append = function (cmd) {
+			this._cmds.push(cmd);
+		};
 
-    }
-    else {
-      self.emit('end');
-      if (typeof self._callback == 'function') {
-        self._callback();
-      }
-    }
-  };
-
-  this.append = function (cmd) {
-    this._cmds.push(cmd);
-  };
-
-  this.run = function () {
-    _run.call(this);
-  };
-
-})());
+		this.run = function () {
+			_run.call(this);
+		};
+	})(),
+);
 
 utils.Exec = Exec;
 utils.file = file;
 utils.logger = logger;
 
 module.exports = utils;
-

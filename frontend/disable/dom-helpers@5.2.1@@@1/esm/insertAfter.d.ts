@@ -4,4 +4,7 @@
  * @param node the node to insert
  * @param refNode the reference node
  */
-export default function insertAfter(node: Node | null, refNode: Node | null): Node | null;
+export default function insertAfter(
+	node: Node | null,
+	refNode: Node | null,
+): Node | null;

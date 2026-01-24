@@ -1,4 +1,4 @@
-import {config} from '../config.js';
+import { config } from "../config.js";
 
 /*!
  * Chai - isProxyEnabled helper
@@ -18,9 +18,9 @@ import {config} from '../config.js';
  * @returns {boolean}
  */
 export function isProxyEnabled() {
-  return (
-    config.useProxy &&
-    typeof Proxy !== 'undefined' &&
-    typeof Reflect !== 'undefined'
-  );
+	return (
+		config.useProxy &&
+		typeof Proxy !== "undefined" &&
+		typeof Reflect !== "undefined"
+	);
 }

@@ -3,5 +3,5 @@
  * Central export point for all test fixtures and utilities
  */
 
-export * from './testData'
-export * from './pageHelpers'
+export * from "./pageHelpers";
+export * from "./testData";

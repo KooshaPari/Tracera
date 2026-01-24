@@ -1,1 +1,1 @@
-module.exports = require('../../dist/adapters/fetch');
+module.exports = require("../../dist/adapters/fetch");

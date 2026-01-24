@@ -11,16 +11,16 @@ const description = "a description";
 // });
 
 test(".describe", () => {
-  expect(z.string().describe(description).description).toEqual(description);
-  expect(z.number().describe(description).description).toEqual(description);
-  expect(z.boolean().describe(description).description).toEqual(description);
+	expect(z.string().describe(description).description).toEqual(description);
+	expect(z.number().describe(description).description).toEqual(description);
+	expect(z.boolean().describe(description).description).toEqual(description);
 });
 
 test("adding description with z.globalRegistry", () => {
-  const schema = z.string();
-  z.core.globalRegistry.add(schema, { description });
-  z.core.globalRegistry.get(schema);
-  expect(schema.description).toEqual(description);
+	const schema = z.string();
+	z.core.globalRegistry.add(schema, { description });
+	z.core.globalRegistry.get(schema);
+	expect(schema.description).toEqual(description);
 });
 
 // in Zod 4 descriptions are not inherited

@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link setDay} function options.
  */
 export interface SetDayOptions<DateType extends Date = Date>
-  extends LocalizedOptions<"options">,
-    WeekOptions,
-    ContextOptions<DateType> {}
+	extends LocalizedOptions<"options">,
+		WeekOptions,
+		ContextOptions<DateType> {}
 /**
  * @name setDay
  * @category Weekday Helpers
@@ -39,10 +39,10 @@ export interface SetDayOptions<DateType extends Date = Date>
  * //=> Sun Sep 07 2014 00:00:00
  */
 export declare function setDay<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  day: number,
-  options?: SetDayOptions<ResultDate>,
+	date: DateArg<DateType>,
+	day: number,
+	options?: SetDayOptions<ResultDate>,
 ): ResultDate;

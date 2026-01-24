@@ -91,4 +91,3 @@ declare const formats: {
 };
 
 export = formats;
-

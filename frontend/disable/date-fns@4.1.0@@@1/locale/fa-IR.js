@@ -12,16 +12,16 @@ import { match } from "./fa-IR/_lib/match.js";
  * @author Morteza Ziyae [@mort3za](https://github.com/mort3za)
  */
 export const faIR = {
-  code: "fa-IR",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 6 /* Saturday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "fa-IR",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 6 /* Saturday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

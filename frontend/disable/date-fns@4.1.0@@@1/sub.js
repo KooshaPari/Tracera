@@ -49,24 +49,24 @@ import { subMonths } from "./subMonths.js";
  * //=> Mon Sep 1 2014 10:19:50
  */
 export function sub(date, duration, options) {
-  const {
-    years = 0,
-    months = 0,
-    weeks = 0,
-    days = 0,
-    hours = 0,
-    minutes = 0,
-    seconds = 0,
-  } = duration;
+	const {
+		years = 0,
+		months = 0,
+		weeks = 0,
+		days = 0,
+		hours = 0,
+		minutes = 0,
+		seconds = 0,
+	} = duration;
 
-  const withoutMonths = subMonths(date, months + years * 12, options);
-  const withoutDays = subDays(withoutMonths, days + weeks * 7, options);
+	const withoutMonths = subMonths(date, months + years * 12, options);
+	const withoutDays = subDays(withoutMonths, days + weeks * 7, options);
 
-  const minutesToSub = minutes + hours * 60;
-  const secondsToSub = seconds + minutesToSub * 60;
-  const msToSub = secondsToSub * 1000;
+	const minutesToSub = minutes + hours * 60;
+	const secondsToSub = seconds + minutesToSub * 60;
+	const msToSub = secondsToSub * 1000;
 
-  return constructFrom(options?.in || date, +withoutDays - msToSub);
+	return constructFrom(options?.in || date, +withoutDays - msToSub);
 }
 
 // Fallback for modularized imports:

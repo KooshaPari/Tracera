@@ -23,7 +23,7 @@ import { toDate } from "./toDate.js";
  * //=> 3
  */
 export function getDay(date, options) {
-  return toDate(date, options?.in).getDay();
+	return toDate(date, options?.in).getDay();
 }
 
 // Fallback for modularized imports:

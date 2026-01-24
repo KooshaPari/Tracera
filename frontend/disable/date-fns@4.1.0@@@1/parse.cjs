@@ -1,16 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "longFormatters", {
-  enumerable: true,
-  get: function () {
-    return _index2.longFormatters;
-  },
+	enumerable: true,
+	get: () => _index2.longFormatters,
 });
 exports.parse = parse;
 Object.defineProperty(exports, "parsers", {
-  enumerable: true,
-  get: function () {
-    return _index7.parsers;
-  },
+	enumerable: true,
+	get: () => _index7.parsers,
 });
 var _index = require("./_lib/defaultLocale.cjs");
 var _index2 = require("./_lib/format/longFormatters.cjs");
@@ -42,7 +38,7 @@ var _index7 = require("./parse/_lib/parsers.cjs");
 //   then the sequence will continue until the end of the string.
 // - . matches any single character unmatched by previous parts of the RegExps
 const formattingTokensRegExp =
-  /[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
+	/[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
 
 // This RegExp catches symbols escaped by quotes, and also
 // sequences of symbols P, p, and the combinations like `PPPPPPPppppp`
@@ -353,172 +349,172 @@ const unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * //=> Sun Feb 28 2010 00:00:00
  */
 function parse(dateStr, formatStr, referenceDate, options) {
-  const invalidDate = () =>
-    (0, _index4.constructFrom)(options?.in || referenceDate, NaN);
-  const defaultOptions = (0, _index5.getDefaultOptions)();
-  const locale =
-    options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
+	const invalidDate = () =>
+		(0, _index4.constructFrom)(options?.in || referenceDate, NaN);
+	const defaultOptions = (0, _index5.getDefaultOptions)();
+	const locale =
+		options?.locale ?? defaultOptions.locale ?? _index.defaultLocale;
 
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
+	const firstWeekContainsDate =
+		options?.firstWeekContainsDate ??
+		options?.locale?.options?.firstWeekContainsDate ??
+		defaultOptions.firstWeekContainsDate ??
+		defaultOptions.locale?.options?.firstWeekContainsDate ??
+		1;
 
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  if (!formatStr)
-    return dateStr
-      ? invalidDate()
-      : (0, _index6.toDate)(referenceDate, options?.in);
+	if (!formatStr)
+		return dateStr
+			? invalidDate()
+			: (0, _index6.toDate)(referenceDate, options?.in);
 
-  const subFnOptions = {
-    firstWeekContainsDate,
-    weekStartsOn,
-    locale,
-  };
+	const subFnOptions = {
+		firstWeekContainsDate,
+		weekStartsOn,
+		locale,
+	};
 
-  // If timezone isn't specified, it will try to use the context or
-  // the reference date and fallback to the system time zone.
-  const setters = [new _Setter.DateTimezoneSetter(options?.in, referenceDate)];
+	// If timezone isn't specified, it will try to use the context or
+	// the reference date and fallback to the system time zone.
+	const setters = [new _Setter.DateTimezoneSetter(options?.in, referenceDate)];
 
-  const tokens = formatStr
-    .match(longFormattingTokensRegExp)
-    .map((substring) => {
-      const firstCharacter = substring[0];
-      if (firstCharacter in _index2.longFormatters) {
-        const longFormatter = _index2.longFormatters[firstCharacter];
-        return longFormatter(substring, locale.formatLong);
-      }
-      return substring;
-    })
-    .join("")
-    .match(formattingTokensRegExp);
+	const tokens = formatStr
+		.match(longFormattingTokensRegExp)
+		.map((substring) => {
+			const firstCharacter = substring[0];
+			if (firstCharacter in _index2.longFormatters) {
+				const longFormatter = _index2.longFormatters[firstCharacter];
+				return longFormatter(substring, locale.formatLong);
+			}
+			return substring;
+		})
+		.join("")
+		.match(formattingTokensRegExp);
 
-  const usedTokens = [];
+	const usedTokens = [];
 
-  for (let token of tokens) {
-    if (
-      !options?.useAdditionalWeekYearTokens &&
-      (0, _index3.isProtectedWeekYearToken)(token)
-    ) {
-      (0, _index3.warnOrThrowProtectedError)(token, formatStr, dateStr);
-    }
-    if (
-      !options?.useAdditionalDayOfYearTokens &&
-      (0, _index3.isProtectedDayOfYearToken)(token)
-    ) {
-      (0, _index3.warnOrThrowProtectedError)(token, formatStr, dateStr);
-    }
+	for (let token of tokens) {
+		if (
+			!options?.useAdditionalWeekYearTokens &&
+			(0, _index3.isProtectedWeekYearToken)(token)
+		) {
+			(0, _index3.warnOrThrowProtectedError)(token, formatStr, dateStr);
+		}
+		if (
+			!options?.useAdditionalDayOfYearTokens &&
+			(0, _index3.isProtectedDayOfYearToken)(token)
+		) {
+			(0, _index3.warnOrThrowProtectedError)(token, formatStr, dateStr);
+		}
 
-    const firstCharacter = token[0];
-    const parser = _index7.parsers[firstCharacter];
-    if (parser) {
-      const { incompatibleTokens } = parser;
-      if (Array.isArray(incompatibleTokens)) {
-        const incompatibleToken = usedTokens.find(
-          (usedToken) =>
-            incompatibleTokens.includes(usedToken.token) ||
-            usedToken.token === firstCharacter,
-        );
-        if (incompatibleToken) {
-          throw new RangeError(
-            `The format string mustn't contain \`${incompatibleToken.fullToken}\` and \`${token}\` at the same time`,
-          );
-        }
-      } else if (parser.incompatibleTokens === "*" && usedTokens.length > 0) {
-        throw new RangeError(
-          `The format string mustn't contain \`${token}\` and any other token at the same time`,
-        );
-      }
+		const firstCharacter = token[0];
+		const parser = _index7.parsers[firstCharacter];
+		if (parser) {
+			const { incompatibleTokens } = parser;
+			if (Array.isArray(incompatibleTokens)) {
+				const incompatibleToken = usedTokens.find(
+					(usedToken) =>
+						incompatibleTokens.includes(usedToken.token) ||
+						usedToken.token === firstCharacter,
+				);
+				if (incompatibleToken) {
+					throw new RangeError(
+						`The format string mustn't contain \`${incompatibleToken.fullToken}\` and \`${token}\` at the same time`,
+					);
+				}
+			} else if (parser.incompatibleTokens === "*" && usedTokens.length > 0) {
+				throw new RangeError(
+					`The format string mustn't contain \`${token}\` and any other token at the same time`,
+				);
+			}
 
-      usedTokens.push({ token: firstCharacter, fullToken: token });
+			usedTokens.push({ token: firstCharacter, fullToken: token });
 
-      const parseResult = parser.run(
-        dateStr,
-        token,
-        locale.match,
-        subFnOptions,
-      );
+			const parseResult = parser.run(
+				dateStr,
+				token,
+				locale.match,
+				subFnOptions,
+			);
 
-      if (!parseResult) {
-        return invalidDate();
-      }
+			if (!parseResult) {
+				return invalidDate();
+			}
 
-      setters.push(parseResult.setter);
+			setters.push(parseResult.setter);
 
-      dateStr = parseResult.rest;
-    } else {
-      if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
-        throw new RangeError(
-          "Format string contains an unescaped latin alphabet character `" +
-            firstCharacter +
-            "`",
-        );
-      }
+			dateStr = parseResult.rest;
+		} else {
+			if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
+				throw new RangeError(
+					"Format string contains an unescaped latin alphabet character `" +
+						firstCharacter +
+						"`",
+				);
+			}
 
-      // Replace two single quote characters with one single quote character
-      if (token === "''") {
-        token = "'";
-      } else if (firstCharacter === "'") {
-        token = cleanEscapedString(token);
-      }
+			// Replace two single quote characters with one single quote character
+			if (token === "''") {
+				token = "'";
+			} else if (firstCharacter === "'") {
+				token = cleanEscapedString(token);
+			}
 
-      // Cut token from string, or, if string doesn't match the token, return Invalid Date
-      if (dateStr.indexOf(token) === 0) {
-        dateStr = dateStr.slice(token.length);
-      } else {
-        return invalidDate();
-      }
-    }
-  }
+			// Cut token from string, or, if string doesn't match the token, return Invalid Date
+			if (dateStr.indexOf(token) === 0) {
+				dateStr = dateStr.slice(token.length);
+			} else {
+				return invalidDate();
+			}
+		}
+	}
 
-  // Check if the remaining input contains something other than whitespace
-  if (dateStr.length > 0 && notWhitespaceRegExp.test(dateStr)) {
-    return invalidDate();
-  }
+	// Check if the remaining input contains something other than whitespace
+	if (dateStr.length > 0 && notWhitespaceRegExp.test(dateStr)) {
+		return invalidDate();
+	}
 
-  const uniquePrioritySetters = setters
-    .map((setter) => setter.priority)
-    .sort((a, b) => b - a)
-    .filter((priority, index, array) => array.indexOf(priority) === index)
-    .map((priority) =>
-      setters
-        .filter((setter) => setter.priority === priority)
-        .sort((a, b) => b.subPriority - a.subPriority),
-    )
-    .map((setterArray) => setterArray[0]);
+	const uniquePrioritySetters = setters
+		.map((setter) => setter.priority)
+		.sort((a, b) => b - a)
+		.filter((priority, index, array) => array.indexOf(priority) === index)
+		.map((priority) =>
+			setters
+				.filter((setter) => setter.priority === priority)
+				.sort((a, b) => b.subPriority - a.subPriority),
+		)
+		.map((setterArray) => setterArray[0]);
 
-  let date = (0, _index6.toDate)(referenceDate, options?.in);
+	let date = (0, _index6.toDate)(referenceDate, options?.in);
 
-  if (isNaN(+date)) return invalidDate();
+	if (isNaN(+date)) return invalidDate();
 
-  const flags = {};
-  for (const setter of uniquePrioritySetters) {
-    if (!setter.validate(date, subFnOptions)) {
-      return invalidDate();
-    }
+	const flags = {};
+	for (const setter of uniquePrioritySetters) {
+		if (!setter.validate(date, subFnOptions)) {
+			return invalidDate();
+		}
 
-    const result = setter.set(date, flags, subFnOptions);
-    // Result is tuple (date, flags)
-    if (Array.isArray(result)) {
-      date = result[0];
-      Object.assign(flags, result[1]);
-      // Result is date
-    } else {
-      date = result;
-    }
-  }
+		const result = setter.set(date, flags, subFnOptions);
+		// Result is tuple (date, flags)
+		if (Array.isArray(result)) {
+			date = result[0];
+			Object.assign(flags, result[1]);
+			// Result is date
+		} else {
+			date = result;
+		}
+	}
 
-  return date;
+	return date;
 }
 
 function cleanEscapedString(input) {
-  return input.match(escapedStringRegExp)[1].replace(doubleQuoteRegExp, "'");
+	return input.match(escapedStringRegExp)[1].replace(doubleQuoteRegExp, "'");
 }

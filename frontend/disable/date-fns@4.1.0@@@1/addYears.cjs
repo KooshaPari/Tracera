@@ -29,5 +29,5 @@ var _index = require("./addMonths.cjs");
  * //=> Sun Sep 01 2019 00:00:00
  */
 function addYears(date, amount, options) {
-  return (0, _index.addMonths)(date, amount * 12, options);
+	return (0, _index.addMonths)(date, amount * 12, options);
 }

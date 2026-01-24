@@ -31,10 +31,10 @@ import { toDate } from "./toDate.js";
  * //=> Sun Sep 07 2014 00:00:00
  */
 export function setISODay(date, day, options) {
-  const date_ = toDate(date, options?.in);
-  const currentDay = getISODay(date_, options);
-  const diff = day - currentDay;
-  return addDays(date_, diff, options);
+	const date_ = toDate(date, options?.in);
+	const currentDay = getISODay(date_, options);
+	const diff = day - currentDay;
+	return addDays(date_, diff, options);
 }
 
 // Fallback for modularized imports:

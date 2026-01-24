@@ -1,19 +1,15 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "declaration": true,
-    "esModuleInterop": true,
-    "lib": [ "esnext" ],
-    "module": "commonjs",
-    "outDir": "build",
-    "resolveJsonModule": true,
-    "strict": true,
-    "target": "es2019"
-  },
-  "include": [
-    "./**/*.ts"
-  ],
-  "exclude": [
-    "./build"
-  ]
+	"compilerOptions": {
+		"baseUrl": ".",
+		"declaration": true,
+		"esModuleInterop": true,
+		"lib": ["esnext"],
+		"module": "commonjs",
+		"outDir": "build",
+		"resolveJsonModule": true,
+		"strict": true,
+		"target": "es2019"
+	},
+	"include": ["./**/*.ts"],
+	"exclude": ["./build"]
 }

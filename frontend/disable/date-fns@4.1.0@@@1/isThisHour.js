@@ -27,10 +27,10 @@ import { toDate } from "./toDate.js";
  * //=> true
  */
 export function isThisHour(date, options) {
-  return isSameHour(
-    toDate(date, options?.in),
-    constructNow(options?.in || date),
-  );
+	return isSameHour(
+		toDate(date, options?.in),
+		constructNow(options?.in || date),
+	);
 }
 
 // Fallback for modularized imports:

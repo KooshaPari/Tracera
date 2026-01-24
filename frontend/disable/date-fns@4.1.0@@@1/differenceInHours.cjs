@@ -31,11 +31,11 @@ var _index3 = require("./constants.cjs");
  * //=> 12
  */
 function differenceInHours(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  const diff = (+laterDate_ - +earlierDate_) / _index3.millisecondsInHour;
-  return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
+	const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	const diff = (+laterDate_ - +earlierDate_) / _index3.millisecondsInHour;
+	return (0, _index.getRoundingMethod)(options?.roundingMethod)(diff);
 }

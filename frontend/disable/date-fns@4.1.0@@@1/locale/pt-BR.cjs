@@ -15,14 +15,14 @@ var _index5 = require("./pt-BR/_lib/match.cjs");
  * @author Yago Carballo [@yagocarballo](https://github.com/YagoCarballo)
  */
 const ptBR = (exports.ptBR = {
-  code: "pt-BR",
-  formatDistance: _index.formatDistance,
-  formatLong: _index2.formatLong,
-  formatRelative: _index3.formatRelative,
-  localize: _index4.localize,
-  match: _index5.match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "pt-BR",
+	formatDistance: _index.formatDistance,
+	formatLong: _index2.formatLong,
+	formatRelative: _index3.formatRelative,
+	localize: _index4.localize,
+	match: _index5.match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 });

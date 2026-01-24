@@ -24,6 +24,6 @@ import type { DateArg } from "./types.js";
  * //=> 1
  */
 export declare function closestIndexTo(
-  dateToCompare: DateArg<Date> & {},
-  dates: Array<DateArg<Date> & {}>,
+	dateToCompare: DateArg<Date> & {},
+	dates: Array<DateArg<Date> & {}>,
 ): number | undefined;

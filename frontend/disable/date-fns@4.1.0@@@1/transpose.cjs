@@ -31,22 +31,22 @@ var _index = require("./constructFrom.cjs");
  * //=> 'Sun Jul 10 2022 00:00:00 GMT+0000 (Coordinated Universal Time)'
  */
 function transpose(date, constructor) {
-  const date_ = isConstructor(constructor)
-    ? new constructor(0)
-    : (0, _index.constructFrom)(constructor, 0);
-  date_.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-  date_.setHours(
-    date.getHours(),
-    date.getMinutes(),
-    date.getSeconds(),
-    date.getMilliseconds(),
-  );
-  return date_;
+	const date_ = isConstructor(constructor)
+		? new constructor(0)
+		: (0, _index.constructFrom)(constructor, 0);
+	date_.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+	date_.setHours(
+		date.getHours(),
+		date.getMinutes(),
+		date.getSeconds(),
+		date.getMilliseconds(),
+	);
+	return date_;
 }
 
 function isConstructor(constructor) {
-  return (
-    typeof constructor === "function" &&
-    constructor.prototype?.constructor === constructor
-  );
+	return (
+		typeof constructor === "function" &&
+		constructor.prototype?.constructor === constructor
+	);
 }

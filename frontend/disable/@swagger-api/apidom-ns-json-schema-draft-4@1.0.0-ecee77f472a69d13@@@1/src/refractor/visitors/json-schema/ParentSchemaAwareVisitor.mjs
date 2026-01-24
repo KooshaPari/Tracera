@@ -6,11 +6,9 @@
  * @public
  */
 class ParentSchemaAwareVisitor {
-  parent;
-  constructor({
-    parent
-  }) {
-    this.parent = parent;
-  }
+	parent;
+	constructor({ parent }) {
+		this.parent = parent;
+	}
 }
 export default ParentSchemaAwareVisitor;

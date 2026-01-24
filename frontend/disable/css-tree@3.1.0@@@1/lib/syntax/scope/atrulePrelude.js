@@ -1,5 +1,5 @@
-import getNode from './default.js';
+import getNode from "./default.js";
 
 export default {
-    getNode
+	getNode,
 };

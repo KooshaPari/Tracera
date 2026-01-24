@@ -5,65 +5,68 @@
  * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
-var fs = require('fs');
-var glob = require('readdir-glob');
-var async = require('async');
-var path = require('path');
-var util = require('archiver-utils');
+var fs = require("fs");
+var glob = require("readdir-glob");
+var async = require("async");
+var path = require("path");
+var util = require("archiver-utils");
 
-var inherits = require('util').inherits;
-var ArchiverError = require('./error');
-var Transform = require('readable-stream').Transform;
+var inherits = require("util").inherits;
+var ArchiverError = require("./error");
+var Transform = require("readable-stream").Transform;
 
-var win32 = process.platform === 'win32';
+var win32 = process.platform === "win32";
 
 /**
  * @constructor
  * @param {String} format The archive format to use.
  * @param {(CoreOptions|TransformOptions)} options See also {@link ZipOptions} and {@link TarOptions}.
  */
-var Archiver = function(format, options) {
-  if (!(this instanceof Archiver)) {
-    return new Archiver(format, options);
-  }
+var Archiver = function (format, options) {
+	if (!(this instanceof Archiver)) {
+		return new Archiver(format, options);
+	}
 
-  if (typeof format !== 'string') {
-    options = format;
-    format = 'zip';
-  }
+	if (typeof format !== "string") {
+		options = format;
+		format = "zip";
+	}
 
-  options = this.options = util.defaults(options, {
-    highWaterMark: 1024 * 1024,
-    statConcurrency: 4
-  });
+	options = this.options = util.defaults(options, {
+		highWaterMark: 1024 * 1024,
+		statConcurrency: 4,
+	});
 
-  Transform.call(this, options);
+	Transform.call(this, options);
 
-  this._format = false;
-  this._module = false;
-  this._pending = 0;
-  this._pointer = 0;
+	this._format = false;
+	this._module = false;
+	this._pending = 0;
+	this._pointer = 0;
 
-  this._entriesCount = 0;
-  this._entriesProcessedCount = 0;
-  this._fsEntriesTotalBytes = 0;
-  this._fsEntriesProcessedBytes = 0;
+	this._entriesCount = 0;
+	this._entriesProcessedCount = 0;
+	this._fsEntriesTotalBytes = 0;
+	this._fsEntriesProcessedBytes = 0;
 
-  this._queue = async.queue(this._onQueueTask.bind(this), 1);
-  this._queue.drain(this._onQueueDrain.bind(this));
+	this._queue = async.queue(this._onQueueTask.bind(this), 1);
+	this._queue.drain(this._onQueueDrain.bind(this));
 
-  this._statQueue = async.queue(this._onStatQueueTask.bind(this), options.statConcurrency);
-  this._statQueue.drain(this._onQueueDrain.bind(this));
+	this._statQueue = async.queue(
+		this._onStatQueueTask.bind(this),
+		options.statConcurrency,
+	);
+	this._statQueue.drain(this._onQueueDrain.bind(this));
 
-  this._state = {
-    aborted: false,
-    finalize: false,
-    finalizing: false,
-    finalized: false,
-    modulePiped: false
-  };
+	this._state = {
+		aborted: false,
+		finalize: false,
+		finalizing: false,
+		finalized: false,
+		modulePiped: false,
+	};
 
-  this._streams = [];
+	this._streams = [];
 };
 
 inherits(Archiver, Transform);
@@ -74,14 +77,14 @@ inherits(Archiver, Transform);
  * @private
  * @return void
  */
-Archiver.prototype._abort = function() {
-  this._state.aborted = true;
-  this._queue.kill();
-  this._statQueue.kill();
+Archiver.prototype._abort = function () {
+	this._state.aborted = true;
+	this._queue.kill();
+	this._statQueue.kill();
 
-  if (this._queue.idle()) {
-    this._shutdown();
-  }
+	if (this._queue.idle()) {
+		this._shutdown();
+	}
 };
 
 /**
@@ -92,34 +95,34 @@ Archiver.prototype._abort = function() {
  * @param  {EntryData} data The entry data.
  * @return void
  */
-Archiver.prototype._append = function(filepath, data) {
-  data = data || {};
+Archiver.prototype._append = function (filepath, data) {
+	data = data || {};
 
-  var task = {
-    source: null,
-    filepath: filepath
-  };
+	var task = {
+		source: null,
+		filepath: filepath,
+	};
 
-  if (!data.name) {
-    data.name = filepath;
-  }
+	if (!data.name) {
+		data.name = filepath;
+	}
 
-  data.sourcePath = filepath;
-  task.data = data;
-  this._entriesCount++;
+	data.sourcePath = filepath;
+	task.data = data;
+	this._entriesCount++;
 
-  if (data.stats && data.stats instanceof fs.Stats) {
-    task = this._updateQueueTaskWithStats(task, data.stats);
-    if (task) {
-      if (data.stats.size) {
-        this._fsEntriesTotalBytes += data.stats.size;
-      }
+	if (data.stats && data.stats instanceof fs.Stats) {
+		task = this._updateQueueTaskWithStats(task, data.stats);
+		if (task) {
+			if (data.stats.size) {
+				this._fsEntriesTotalBytes += data.stats.size;
+			}
 
-      this._queue.push(task);
-    }
-  } else {
-    this._statQueue.push(task);
-  }
+			this._queue.push(task);
+		}
+	} else {
+		this._statQueue.push(task);
+	}
 };
 
 /**
@@ -128,17 +131,17 @@ Archiver.prototype._append = function(filepath, data) {
  * @private
  * @return void
  */
-Archiver.prototype._finalize = function() {
-  if (this._state.finalizing || this._state.finalized || this._state.aborted) {
-    return;
-  }
+Archiver.prototype._finalize = function () {
+	if (this._state.finalizing || this._state.finalized || this._state.aborted) {
+		return;
+	}
 
-  this._state.finalizing = true;
+	this._state.finalizing = true;
 
-  this._moduleFinalize();
+	this._moduleFinalize();
 
-  this._state.finalizing = false;
-  this._state.finalized = true;
+	this._state.finalizing = false;
+	this._state.finalized = true;
 };
 
 /**
@@ -147,17 +150,22 @@ Archiver.prototype._finalize = function() {
  * @private
  * @return {Boolean}
  */
-Archiver.prototype._maybeFinalize = function() {
-  if (this._state.finalizing || this._state.finalized || this._state.aborted) {
-    return false;
-  }
+Archiver.prototype._maybeFinalize = function () {
+	if (this._state.finalizing || this._state.finalized || this._state.aborted) {
+		return false;
+	}
 
-  if (this._state.finalize && this._pending === 0 && this._queue.idle() && this._statQueue.idle()) {
-    this._finalize();
-    return true;
-  }
+	if (
+		this._state.finalize &&
+		this._pending === 0 &&
+		this._queue.idle() &&
+		this._statQueue.idle()
+	) {
+		this._finalize();
+		return true;
+	}
 
-  return false;
+	return false;
 };
 
 /**
@@ -170,56 +178,60 @@ Archiver.prototype._maybeFinalize = function() {
  * @param  {Function} callback
  * @return void
  */
-Archiver.prototype._moduleAppend = function(source, data, callback) {
-  if (this._state.aborted) {
-    callback();
-    return;
-  }
+Archiver.prototype._moduleAppend = function (source, data, callback) {
+	if (this._state.aborted) {
+		callback();
+		return;
+	}
 
-  this._module.append(source, data, function(err) {
-    this._task = null;
+	this._module.append(
+		source,
+		data,
+		function (err) {
+			this._task = null;
 
-    if (this._state.aborted) {
-      this._shutdown();
-      return;
-    }
+			if (this._state.aborted) {
+				this._shutdown();
+				return;
+			}
 
-    if (err) {
-      this.emit('error', err);
-      setImmediate(callback);
-      return;
-    }
+			if (err) {
+				this.emit("error", err);
+				setImmediate(callback);
+				return;
+			}
 
-    /**
-     * Fires when the entry's input has been processed and appended to the archive.
-     *
-     * @event Archiver#entry
-     * @type {EntryData}
-     */
-    this.emit('entry', data);
-    this._entriesProcessedCount++;
+			/**
+			 * Fires when the entry's input has been processed and appended to the archive.
+			 *
+			 * @event Archiver#entry
+			 * @type {EntryData}
+			 */
+			this.emit("entry", data);
+			this._entriesProcessedCount++;
 
-    if (data.stats && data.stats.size) {
-      this._fsEntriesProcessedBytes += data.stats.size;
-    }
+			if (data.stats && data.stats.size) {
+				this._fsEntriesProcessedBytes += data.stats.size;
+			}
 
-    /**
-     * @event Archiver#progress
-     * @type {ProgressData}
-     */
-    this.emit('progress', {
-      entries: {
-        total: this._entriesCount,
-        processed: this._entriesProcessedCount
-      },
-      fs: {
-        totalBytes: this._fsEntriesTotalBytes,
-        processedBytes: this._fsEntriesProcessedBytes
-      }
-    });
+			/**
+			 * @event Archiver#progress
+			 * @type {ProgressData}
+			 */
+			this.emit("progress", {
+				entries: {
+					total: this._entriesCount,
+					processed: this._entriesProcessedCount,
+				},
+				fs: {
+					totalBytes: this._fsEntriesTotalBytes,
+					processedBytes: this._fsEntriesProcessedBytes,
+				},
+			});
 
-    setImmediate(callback);
-  }.bind(this));
+			setImmediate(callback);
+		}.bind(this),
+	);
 };
 
 /**
@@ -228,14 +240,14 @@ Archiver.prototype._moduleAppend = function(source, data, callback) {
  * @private
  * @return void
  */
-Archiver.prototype._moduleFinalize = function() {
-  if (typeof this._module.finalize === 'function') {
-    this._module.finalize();
-  } else if (typeof this._module.end === 'function') {
-    this._module.end();
-  } else {
-    this.emit('error', new ArchiverError('NOENDMETHOD'));
-  }
+Archiver.prototype._moduleFinalize = function () {
+	if (typeof this._module.finalize === "function") {
+		this._module.finalize();
+	} else if (typeof this._module.end === "function") {
+		this._module.end();
+	} else {
+		this.emit("error", new ArchiverError("NOENDMETHOD"));
+	}
 };
 
 /**
@@ -244,10 +256,10 @@ Archiver.prototype._moduleFinalize = function() {
  * @private
  * @return void
  */
-Archiver.prototype._modulePipe = function() {
-  this._module.on('error', this._onModuleError.bind(this));
-  this._module.pipe(this);
-  this._state.modulePiped = true;
+Archiver.prototype._modulePipe = function () {
+	this._module.on("error", this._onModuleError.bind(this));
+	this._module.pipe(this);
+	this._state.modulePiped = true;
 };
 
 /**
@@ -257,12 +269,12 @@ Archiver.prototype._modulePipe = function() {
  * @param  {String} key
  * @return {Boolean}
  */
-Archiver.prototype._moduleSupports = function(key) {
-  if (!this._module.supports || !this._module.supports[key]) {
-    return false;
-  }
+Archiver.prototype._moduleSupports = function (key) {
+	if (!this._module.supports || !this._module.supports[key]) {
+		return false;
+	}
 
-  return this._module.supports[key];
+	return this._module.supports[key];
 };
 
 /**
@@ -271,9 +283,9 @@ Archiver.prototype._moduleSupports = function(key) {
  * @private
  * @return void
  */
-Archiver.prototype._moduleUnpipe = function() {
-  this._module.unpipe(this);
-  this._state.modulePiped = false;
+Archiver.prototype._moduleUnpipe = function () {
+	this._module.unpipe(this);
+	this._state.modulePiped = false;
 };
 
 /**
@@ -284,68 +296,68 @@ Archiver.prototype._moduleUnpipe = function() {
  * @param  {fs.Stats} stats
  * @return {Object}
  */
-Archiver.prototype._normalizeEntryData = function(data, stats) {
-  data = util.defaults(data, {
-    type: 'file',
-    name: null,
-    date: null,
-    mode: null,
-    prefix: null,
-    sourcePath: null,
-    stats: false
-  });
+Archiver.prototype._normalizeEntryData = (data, stats) => {
+	data = util.defaults(data, {
+		type: "file",
+		name: null,
+		date: null,
+		mode: null,
+		prefix: null,
+		sourcePath: null,
+		stats: false,
+	});
 
-  if (stats && data.stats === false) {
-    data.stats = stats;
-  }
+	if (stats && data.stats === false) {
+		data.stats = stats;
+	}
 
-  var isDir = data.type === 'directory';
+	var isDir = data.type === "directory";
 
-  if (data.name) {
-    if (typeof data.prefix === 'string' && '' !== data.prefix) {
-      data.name = data.prefix + '/' + data.name;
-      data.prefix = null;
-    }
+	if (data.name) {
+		if (typeof data.prefix === "string" && "" !== data.prefix) {
+			data.name = data.prefix + "/" + data.name;
+			data.prefix = null;
+		}
 
-    data.name = util.sanitizePath(data.name);
+		data.name = util.sanitizePath(data.name);
 
-    if (data.type !== 'symlink' && data.name.slice(-1) === '/') {
-      isDir = true;
-      data.type = 'directory';
-    } else if (isDir) {
-      data.name += '/';
-    }
-  }
+		if (data.type !== "symlink" && data.name.slice(-1) === "/") {
+			isDir = true;
+			data.type = "directory";
+		} else if (isDir) {
+			data.name += "/";
+		}
+	}
 
-  // 511 === 0777; 493 === 0755; 438 === 0666; 420 === 0644
-  if (typeof data.mode === 'number') {
-    if (win32) {
-      data.mode &= 511;
-    } else {
-      data.mode &= 4095
-    }
-  } else if (data.stats && data.mode === null) {
-    if (win32) {
-      data.mode = data.stats.mode & 511;
-    } else {
-      data.mode = data.stats.mode & 4095;
-    }
+	// 511 === 0777; 493 === 0755; 438 === 0666; 420 === 0644
+	if (typeof data.mode === "number") {
+		if (win32) {
+			data.mode &= 511;
+		} else {
+			data.mode &= 4095;
+		}
+	} else if (data.stats && data.mode === null) {
+		if (win32) {
+			data.mode = data.stats.mode & 511;
+		} else {
+			data.mode = data.stats.mode & 4095;
+		}
 
-    // stat isn't reliable on windows; force 0755 for dir
-    if (win32 && isDir) {
-      data.mode = 493;
-    }
-  } else if (data.mode === null) {
-    data.mode = isDir ? 493 : 420;
-  }
+		// stat isn't reliable on windows; force 0755 for dir
+		if (win32 && isDir) {
+			data.mode = 493;
+		}
+	} else if (data.mode === null) {
+		data.mode = isDir ? 493 : 420;
+	}
 
-  if (data.stats && data.date === null) {
-    data.date = data.stats.mtime;
-  } else {
-    data.date = util.dateify(data.date);
-  }
+	if (data.stats && data.date === null) {
+		data.date = data.stats.mtime;
+	} else {
+		data.date = util.dateify(data.date);
+	}
 
-  return data;
+	return data;
 };
 
 /**
@@ -355,12 +367,12 @@ Archiver.prototype._normalizeEntryData = function(data, stats) {
  * @param  {Error} err
  * @return void
  */
-Archiver.prototype._onModuleError = function(err) {
-  /**
-   * @event Archiver#error
-   * @type {ErrorData}
-   */
-  this.emit('error', err);
+Archiver.prototype._onModuleError = function (err) {
+	/**
+	 * @event Archiver#error
+	 * @type {ErrorData}
+	 */
+	this.emit("error", err);
 };
 
 /**
@@ -370,14 +382,19 @@ Archiver.prototype._onModuleError = function(err) {
  * @private
  * @return void
  */
-Archiver.prototype._onQueueDrain = function() {
-  if (this._state.finalizing || this._state.finalized || this._state.aborted) {
-    return;
-  }
+Archiver.prototype._onQueueDrain = function () {
+	if (this._state.finalizing || this._state.finalized || this._state.aborted) {
+		return;
+	}
 
-  if (this._state.finalize && this._pending === 0 && this._queue.idle() && this._statQueue.idle()) {
-    this._finalize();
-  }
+	if (
+		this._state.finalize &&
+		this._pending === 0 &&
+		this._queue.idle() &&
+		this._statQueue.idle()
+	) {
+		this._finalize();
+	}
 };
 
 /**
@@ -388,21 +405,21 @@ Archiver.prototype._onQueueDrain = function() {
  * @param  {Function} callback
  * @return void
  */
-Archiver.prototype._onQueueTask = function(task, callback) {
-  var fullCallback = () => {
-    if(task.data.callback) {
-      task.data.callback();
-    }
-    callback();
-  }
+Archiver.prototype._onQueueTask = function (task, callback) {
+	var fullCallback = () => {
+		if (task.data.callback) {
+			task.data.callback();
+		}
+		callback();
+	};
 
-  if (this._state.finalizing || this._state.finalized || this._state.aborted) {
-    fullCallback();
-    return;
-  }
+	if (this._state.finalizing || this._state.finalized || this._state.aborted) {
+		fullCallback();
+		return;
+	}
 
-  this._task = task;
-  this._moduleAppend(task.source, task.data, fullCallback);
+	this._task = task;
+	this._moduleAppend(task.source, task.data, fullCallback);
 };
 
 /**
@@ -413,42 +430,45 @@ Archiver.prototype._onQueueTask = function(task, callback) {
  * @param  {Function} callback
  * @return void
  */
-Archiver.prototype._onStatQueueTask = function(task, callback) {
-  if (this._state.finalizing || this._state.finalized || this._state.aborted) {
-    callback();
-    return;
-  }
+Archiver.prototype._onStatQueueTask = function (task, callback) {
+	if (this._state.finalizing || this._state.finalized || this._state.aborted) {
+		callback();
+		return;
+	}
 
-  fs.lstat(task.filepath, function(err, stats) {
-    if (this._state.aborted) {
-      setImmediate(callback);
-      return;
-    }
+	fs.lstat(
+		task.filepath,
+		function (err, stats) {
+			if (this._state.aborted) {
+				setImmediate(callback);
+				return;
+			}
 
-    if (err) {
-      this._entriesCount--;
+			if (err) {
+				this._entriesCount--;
 
-      /**
-       * @event Archiver#warning
-       * @type {ErrorData}
-       */
-      this.emit('warning', err);
-      setImmediate(callback);
-      return;
-    }
+				/**
+				 * @event Archiver#warning
+				 * @type {ErrorData}
+				 */
+				this.emit("warning", err);
+				setImmediate(callback);
+				return;
+			}
 
-    task = this._updateQueueTaskWithStats(task, stats);
+			task = this._updateQueueTaskWithStats(task, stats);
 
-    if (task) {
-      if (stats.size) {
-        this._fsEntriesTotalBytes += stats.size;
-      }
+			if (task) {
+				if (stats.size) {
+					this._fsEntriesTotalBytes += stats.size;
+				}
 
-      this._queue.push(task);
-    }
+				this._queue.push(task);
+			}
 
-    setImmediate(callback);
-  }.bind(this));
+			setImmediate(callback);
+		}.bind(this),
+	);
 };
 
 /**
@@ -457,9 +477,9 @@ Archiver.prototype._onStatQueueTask = function(task, callback) {
  * @private
  * @return void
  */
-Archiver.prototype._shutdown = function() {
-  this._moduleUnpipe();
-  this.end();
+Archiver.prototype._shutdown = function () {
+	this._moduleUnpipe();
+	this.end();
 };
 
 /**
@@ -471,12 +491,12 @@ Archiver.prototype._shutdown = function() {
  * @param  {Function} callback
  * @return void
  */
-Archiver.prototype._transform = function(chunk, encoding, callback) {
-  if (chunk) {
-    this._pointer += chunk.length;
-  }
+Archiver.prototype._transform = function (chunk, encoding, callback) {
+	if (chunk) {
+		this._pointer += chunk.length;
+	}
 
-  callback(null, chunk);
+	callback(null, chunk);
 };
 
 /**
@@ -487,39 +507,45 @@ Archiver.prototype._transform = function(chunk, encoding, callback) {
  * @param  {fs.Stats} stats
  * @return {Object}
  */
-Archiver.prototype._updateQueueTaskWithStats = function(task, stats) {
-  if (stats.isFile()) {
-    task.data.type = 'file';
-    task.data.sourceType = 'stream';
-    task.source = util.lazyReadStream(task.filepath);
-  } else if (stats.isDirectory() && this._moduleSupports('directory')) {
-    task.data.name = util.trailingSlashIt(task.data.name);
-    task.data.type = 'directory';
-    task.data.sourcePath = util.trailingSlashIt(task.filepath);
-    task.data.sourceType = 'buffer';
-    task.source = Buffer.concat([]);
-  } else if (stats.isSymbolicLink() && this._moduleSupports('symlink')) {
-    var linkPath = fs.readlinkSync(task.filepath);
-    var dirName = path.dirname(task.filepath);
-    task.data.type = 'symlink';
-    task.data.linkname = path.relative(dirName, path.resolve(dirName, linkPath));
-    task.data.sourceType = 'buffer';
-    task.source = Buffer.concat([]);
-  } else {
-    if (stats.isDirectory()) {
-      this.emit('warning', new ArchiverError('DIRECTORYNOTSUPPORTED', task.data));
-    } else if (stats.isSymbolicLink()) {
-      this.emit('warning', new ArchiverError('SYMLINKNOTSUPPORTED', task.data));
-    } else {
-      this.emit('warning', new ArchiverError('ENTRYNOTSUPPORTED', task.data));
-    }
+Archiver.prototype._updateQueueTaskWithStats = function (task, stats) {
+	if (stats.isFile()) {
+		task.data.type = "file";
+		task.data.sourceType = "stream";
+		task.source = util.lazyReadStream(task.filepath);
+	} else if (stats.isDirectory() && this._moduleSupports("directory")) {
+		task.data.name = util.trailingSlashIt(task.data.name);
+		task.data.type = "directory";
+		task.data.sourcePath = util.trailingSlashIt(task.filepath);
+		task.data.sourceType = "buffer";
+		task.source = Buffer.concat([]);
+	} else if (stats.isSymbolicLink() && this._moduleSupports("symlink")) {
+		var linkPath = fs.readlinkSync(task.filepath);
+		var dirName = path.dirname(task.filepath);
+		task.data.type = "symlink";
+		task.data.linkname = path.relative(
+			dirName,
+			path.resolve(dirName, linkPath),
+		);
+		task.data.sourceType = "buffer";
+		task.source = Buffer.concat([]);
+	} else {
+		if (stats.isDirectory()) {
+			this.emit(
+				"warning",
+				new ArchiverError("DIRECTORYNOTSUPPORTED", task.data),
+			);
+		} else if (stats.isSymbolicLink()) {
+			this.emit("warning", new ArchiverError("SYMLINKNOTSUPPORTED", task.data));
+		} else {
+			this.emit("warning", new ArchiverError("ENTRYNOTSUPPORTED", task.data));
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  task.data = this._normalizeEntryData(task.data, stats);
+	task.data = this._normalizeEntryData(task.data, stats);
 
-  return task;
+	return task;
 };
 
 /**
@@ -534,14 +560,14 @@ Archiver.prototype._updateQueueTaskWithStats = function(task, stats) {
  *
  * @return {this}
  */
-Archiver.prototype.abort = function() {
-  if (this._state.aborted || this._state.finalized) {
-    return this;
-  }
+Archiver.prototype.abort = function () {
+	if (this._state.aborted || this._state.finalized) {
+		return this;
+	}
 
-  this._abort();
+	this._abort();
 
-  return this;
+	return this;
 };
 
 /**
@@ -555,42 +581,48 @@ Archiver.prototype.abort = function() {
  * @param  {EntryData} data See also {@link ZipEntryData} and {@link TarEntryData}.
  * @return {this}
  */
-Archiver.prototype.append = function(source, data) {
-  if (this._state.finalize || this._state.aborted) {
-    this.emit('error', new ArchiverError('QUEUECLOSED'));
-    return this;
-  }
+Archiver.prototype.append = function (source, data) {
+	if (this._state.finalize || this._state.aborted) {
+		this.emit("error", new ArchiverError("QUEUECLOSED"));
+		return this;
+	}
 
-  data = this._normalizeEntryData(data);
+	data = this._normalizeEntryData(data);
 
-  if (typeof data.name !== 'string' || data.name.length === 0) {
-    this.emit('error', new ArchiverError('ENTRYNAMEREQUIRED'));
-    return this;
-  }
+	if (typeof data.name !== "string" || data.name.length === 0) {
+		this.emit("error", new ArchiverError("ENTRYNAMEREQUIRED"));
+		return this;
+	}
 
-  if (data.type === 'directory' && !this._moduleSupports('directory')) {
-    this.emit('error', new ArchiverError('DIRECTORYNOTSUPPORTED', { name: data.name }));
-    return this;
-  }
+	if (data.type === "directory" && !this._moduleSupports("directory")) {
+		this.emit(
+			"error",
+			new ArchiverError("DIRECTORYNOTSUPPORTED", { name: data.name }),
+		);
+		return this;
+	}
 
-  source = util.normalizeInputSource(source);
+	source = util.normalizeInputSource(source);
 
-  if (Buffer.isBuffer(source)) {
-    data.sourceType = 'buffer';
-  } else if (util.isStream(source)) {
-    data.sourceType = 'stream';
-  } else {
-    this.emit('error', new ArchiverError('INPUTSTEAMBUFFERREQUIRED', { name: data.name }));
-    return this;
-  }
+	if (Buffer.isBuffer(source)) {
+		data.sourceType = "buffer";
+	} else if (util.isStream(source)) {
+		data.sourceType = "stream";
+	} else {
+		this.emit(
+			"error",
+			new ArchiverError("INPUTSTEAMBUFFERREQUIRED", { name: data.name }),
+		);
+		return this;
+	}
 
-  this._entriesCount++;
-  this._queue.push({
-    data: data,
-    source: source
-  });
+	this._entriesCount++;
+	this._queue.push({
+		data: data,
+		source: source,
+	});
 
-  return this;
+	return this;
 };
 
 /**
@@ -602,86 +634,88 @@ Archiver.prototype.append = function(source, data) {
  * [TarEntryData]{@link TarEntryData}.
  * @return {this}
  */
-Archiver.prototype.directory = function(dirpath, destpath, data) {
-  if (this._state.finalize || this._state.aborted) {
-    this.emit('error', new ArchiverError('QUEUECLOSED'));
-    return this;
-  }
+Archiver.prototype.directory = function (dirpath, destpath, data) {
+	if (this._state.finalize || this._state.aborted) {
+		this.emit("error", new ArchiverError("QUEUECLOSED"));
+		return this;
+	}
 
-  if (typeof dirpath !== 'string' || dirpath.length === 0) {
-    this.emit('error', new ArchiverError('DIRECTORYDIRPATHREQUIRED'));
-    return this;
-  }
+	if (typeof dirpath !== "string" || dirpath.length === 0) {
+		this.emit("error", new ArchiverError("DIRECTORYDIRPATHREQUIRED"));
+		return this;
+	}
 
-  this._pending++;
+	this._pending++;
 
-  if (destpath === false) {
-    destpath = '';
-  } else if (typeof destpath !== 'string'){
-    destpath = dirpath;
-  }
+	if (destpath === false) {
+		destpath = "";
+	} else if (typeof destpath !== "string") {
+		destpath = dirpath;
+	}
 
-  var dataFunction = false;
-  if (typeof data === 'function') {
-    dataFunction = data;
-    data = {};
-  } else if (typeof data !== 'object') {
-    data = {};
-  }
+	var dataFunction = false;
+	if (typeof data === "function") {
+		dataFunction = data;
+		data = {};
+	} else if (typeof data !== "object") {
+		data = {};
+	}
 
-  var globOptions = {
-    stat: true,
-    dot: true
-  };
+	var globOptions = {
+		stat: true,
+		dot: true,
+	};
 
-  function onGlobEnd() {
-    this._pending--;
-    this._maybeFinalize();
-  }
+	function onGlobEnd() {
+		this._pending--;
+		this._maybeFinalize();
+	}
 
-  function onGlobError(err) {
-    this.emit('error', err);
-  }
+	function onGlobError(err) {
+		this.emit("error", err);
+	}
 
-  function onGlobMatch(match){
-    globber.pause();
+	function onGlobMatch(match) {
+		globber.pause();
 
-    var ignoreMatch = false;
-    var entryData = Object.assign({}, data);
-    entryData.name = match.relative;
-    entryData.prefix = destpath;
-    entryData.stats = match.stat;
-    entryData.callback = globber.resume.bind(globber);
+		var ignoreMatch = false;
+		var entryData = Object.assign({}, data);
+		entryData.name = match.relative;
+		entryData.prefix = destpath;
+		entryData.stats = match.stat;
+		entryData.callback = globber.resume.bind(globber);
 
-    try {
-      if (dataFunction) {
-        entryData = dataFunction(entryData);
+		try {
+			if (dataFunction) {
+				entryData = dataFunction(entryData);
 
-        if (entryData === false) {
-          ignoreMatch = true;
-        } else if (typeof entryData !== 'object') {
-          throw new ArchiverError('DIRECTORYFUNCTIONINVALIDDATA', { dirpath: dirpath });
-        }
-      }
-    } catch(e) {
-      this.emit('error', e);
-      return;
-    }
+				if (entryData === false) {
+					ignoreMatch = true;
+				} else if (typeof entryData !== "object") {
+					throw new ArchiverError("DIRECTORYFUNCTIONINVALIDDATA", {
+						dirpath: dirpath,
+					});
+				}
+			}
+		} catch (e) {
+			this.emit("error", e);
+			return;
+		}
 
-    if (ignoreMatch) {
-      globber.resume();
-      return;
-    }
+		if (ignoreMatch) {
+			globber.resume();
+			return;
+		}
 
-    this._append(match.absolute, entryData);
-  }
+		this._append(match.absolute, entryData);
+	}
 
-  var globber = glob(dirpath, globOptions);
-  globber.on('error', onGlobError.bind(this));
-  globber.on('match', onGlobMatch.bind(this));
-  globber.on('end', onGlobEnd.bind(this));
+	var globber = glob(dirpath, globOptions);
+	globber.on("error", onGlobError.bind(this));
+	globber.on("match", onGlobMatch.bind(this));
+	globber.on("end", onGlobEnd.bind(this));
 
-  return this;
+	return this;
 };
 
 /**
@@ -697,20 +731,20 @@ Archiver.prototype.directory = function(dirpath, destpath, data) {
  * [TarEntryData]{@link TarEntryData}.
  * @return {this}
  */
-Archiver.prototype.file = function(filepath, data) {
-  if (this._state.finalize || this._state.aborted) {
-    this.emit('error', new ArchiverError('QUEUECLOSED'));
-    return this;
-  }
+Archiver.prototype.file = function (filepath, data) {
+	if (this._state.finalize || this._state.aborted) {
+		this.emit("error", new ArchiverError("QUEUECLOSED"));
+		return this;
+	}
 
-  if (typeof filepath !== 'string' || filepath.length === 0) {
-    this.emit('error', new ArchiverError('FILEFILEPATHREQUIRED'));
-    return this;
-  }
+	if (typeof filepath !== "string" || filepath.length === 0) {
+		this.emit("error", new ArchiverError("FILEFILEPATHREQUIRED"));
+		return this;
+	}
 
-  this._append(filepath, data);
+	this._append(filepath, data);
 
-  return this;
+	return this;
 };
 
 /**
@@ -722,39 +756,39 @@ Archiver.prototype.file = function(filepath, data) {
  * [TarEntryData]{@link TarEntryData}.
  * @return {this}
  */
-Archiver.prototype.glob = function(pattern, options, data) {
-  this._pending++;
+Archiver.prototype.glob = function (pattern, options, data) {
+	this._pending++;
 
-  options = util.defaults(options, {
-    stat: true,
-    pattern: pattern
-  });
+	options = util.defaults(options, {
+		stat: true,
+		pattern: pattern,
+	});
 
-  function onGlobEnd() {
-    this._pending--;
-    this._maybeFinalize();
-  }
+	function onGlobEnd() {
+		this._pending--;
+		this._maybeFinalize();
+	}
 
-  function onGlobError(err) {
-    this.emit('error', err);
-  }
+	function onGlobError(err) {
+		this.emit("error", err);
+	}
 
-  function onGlobMatch(match){
-    globber.pause();
-    var entryData = Object.assign({}, data);
-    entryData.callback = globber.resume.bind(globber);
-    entryData.stats = match.stat;
-    entryData.name = match.relative;
+	function onGlobMatch(match) {
+		globber.pause();
+		var entryData = Object.assign({}, data);
+		entryData.callback = globber.resume.bind(globber);
+		entryData.stats = match.stat;
+		entryData.name = match.relative;
 
-    this._append(match.absolute, entryData);
-  }
+		this._append(match.absolute, entryData);
+	}
 
-  var globber = glob(options.cwd || '.', options);
-  globber.on('error', onGlobError.bind(this));
-  globber.on('match', onGlobMatch.bind(this));
-  globber.on('end', onGlobEnd.bind(this));
+	var globber = glob(options.cwd || ".", options);
+	globber.on("error", onGlobError.bind(this));
+	globber.on("match", onGlobMatch.bind(this));
+	globber.on("end", onGlobEnd.bind(this));
 
-  return this;
+	return this;
 };
 
 /**
@@ -767,41 +801,39 @@ Archiver.prototype.glob = function(pattern, options, data) {
  *
  * @return {Promise}
  */
-Archiver.prototype.finalize = function() {
-  if (this._state.aborted) {
-    var abortedError = new ArchiverError('ABORTED');
-    this.emit('error', abortedError);
-    return Promise.reject(abortedError);
-  }
+Archiver.prototype.finalize = function () {
+	if (this._state.aborted) {
+		var abortedError = new ArchiverError("ABORTED");
+		this.emit("error", abortedError);
+		return Promise.reject(abortedError);
+	}
 
-  if (this._state.finalize) {
-    var finalizingError = new ArchiverError('FINALIZING');
-    this.emit('error', finalizingError);
-    return Promise.reject(finalizingError);
-  }
+	if (this._state.finalize) {
+		var finalizingError = new ArchiverError("FINALIZING");
+		this.emit("error", finalizingError);
+		return Promise.reject(finalizingError);
+	}
 
-  this._state.finalize = true;
+	this._state.finalize = true;
 
-  if (this._pending === 0 && this._queue.idle() && this._statQueue.idle()) {
-    this._finalize();
-  }
+	if (this._pending === 0 && this._queue.idle() && this._statQueue.idle()) {
+		this._finalize();
+	}
 
-  var self = this;
+	return new Promise((resolve, reject) => {
+		var errored;
 
-  return new Promise(function(resolve, reject) {
-    var errored;
+		this._module.on("end", () => {
+			if (!errored) {
+				resolve();
+			}
+		});
 
-    self._module.on('end', function() {
-      if (!errored) {
-        resolve();
-      }
-    })
-
-    self._module.on('error', function(err) {
-      errored = true;
-      reject(err);
-    })
-  })
+		this._module.on("error", (err) => {
+			errored = true;
+			reject(err);
+		});
+	});
 };
 
 /**
@@ -810,15 +842,15 @@ Archiver.prototype.finalize = function() {
  * @param {String} format The name of the format.
  * @return {this}
  */
-Archiver.prototype.setFormat = function(format) {
-  if (this._format) {
-    this.emit('error', new ArchiverError('FORMATSET'));
-    return this;
-  }
+Archiver.prototype.setFormat = function (format) {
+	if (this._format) {
+		this.emit("error", new ArchiverError("FORMATSET"));
+		return this;
+	}
 
-  this._format = format;
+	this._format = format;
 
-  return this;
+	return this;
 };
 
 /**
@@ -827,21 +859,21 @@ Archiver.prototype.setFormat = function(format) {
  * @param {Function} module The function for archiver to interact with.
  * @return {this}
  */
-Archiver.prototype.setModule = function(module) {
-  if (this._state.aborted) {
-    this.emit('error', new ArchiverError('ABORTED'));
-    return this;
-  }
+Archiver.prototype.setModule = function (module) {
+	if (this._state.aborted) {
+		this.emit("error", new ArchiverError("ABORTED"));
+		return this;
+	}
 
-  if (this._state.module) {
-    this.emit('error', new ArchiverError('MODULESET'));
-    return this;
-  }
+	if (this._state.module) {
+		this.emit("error", new ArchiverError("MODULESET"));
+		return this;
+	}
 
-  this._module = module;
-  this._modulePipe();
+	this._module = module;
+	this._modulePipe();
 
-  return this;
+	return this;
 };
 
 /**
@@ -854,44 +886,50 @@ Archiver.prototype.setModule = function(module) {
  * @param  {Number} mode Sets the entry permissions.
  * @return {this}
  */
-Archiver.prototype.symlink = function(filepath, target, mode) {
-  if (this._state.finalize || this._state.aborted) {
-    this.emit('error', new ArchiverError('QUEUECLOSED'));
-    return this;
-  }
+Archiver.prototype.symlink = function (filepath, target, mode) {
+	if (this._state.finalize || this._state.aborted) {
+		this.emit("error", new ArchiverError("QUEUECLOSED"));
+		return this;
+	}
 
-  if (typeof filepath !== 'string' || filepath.length === 0) {
-    this.emit('error', new ArchiverError('SYMLINKFILEPATHREQUIRED'));
-    return this;
-  }
+	if (typeof filepath !== "string" || filepath.length === 0) {
+		this.emit("error", new ArchiverError("SYMLINKFILEPATHREQUIRED"));
+		return this;
+	}
 
-  if (typeof target !== 'string' || target.length === 0) {
-    this.emit('error', new ArchiverError('SYMLINKTARGETREQUIRED', { filepath: filepath }));
-    return this;
-  }
+	if (typeof target !== "string" || target.length === 0) {
+		this.emit(
+			"error",
+			new ArchiverError("SYMLINKTARGETREQUIRED", { filepath: filepath }),
+		);
+		return this;
+	}
 
-  if (!this._moduleSupports('symlink')) {
-    this.emit('error', new ArchiverError('SYMLINKNOTSUPPORTED', { filepath: filepath }));
-    return this;
-  }
+	if (!this._moduleSupports("symlink")) {
+		this.emit(
+			"error",
+			new ArchiverError("SYMLINKNOTSUPPORTED", { filepath: filepath }),
+		);
+		return this;
+	}
 
-  var data = {};
-  data.type = 'symlink';
-  data.name = filepath.replace(/\\/g, '/');
-  data.linkname = target.replace(/\\/g, '/');
-  data.sourceType = 'buffer';
+	var data = {};
+	data.type = "symlink";
+	data.name = filepath.replace(/\\/g, "/");
+	data.linkname = target.replace(/\\/g, "/");
+	data.sourceType = "buffer";
 
-  if (typeof mode === "number") {
-    data.mode = mode;
-  }
+	if (typeof mode === "number") {
+		data.mode = mode;
+	}
 
-  this._entriesCount++;
-  this._queue.push({
-    data: data,
-    source: Buffer.concat([])
-  });
+	this._entriesCount++;
+	this._queue.push({
+		data: data,
+		source: Buffer.concat([]),
+	});
 
-  return this;
+	return this;
 };
 
 /**
@@ -899,8 +937,8 @@ Archiver.prototype.symlink = function(filepath, target, mode) {
  *
  * @return {Number}
  */
-Archiver.prototype.pointer = function() {
-  return this._pointer;
+Archiver.prototype.pointer = function () {
+	return this._pointer;
 };
 
 /**
@@ -910,9 +948,9 @@ Archiver.prototype.pointer = function() {
  * @param  {Function} plugin
  * @return {this}
  */
-Archiver.prototype.use = function(plugin) {
-  this._streams.push(plugin);
-  return this;
+Archiver.prototype.use = function (plugin) {
+	this._streams.push(plugin);
+	return this;
 };
 
 module.exports = Archiver;

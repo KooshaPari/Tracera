@@ -1,1 +1,5 @@
-export { wrapCompilerAsTypeGuard, wrapValidatorAsTypeGuard, asConst, } from "./utils";
+export {
+	asConst,
+	wrapCompilerAsTypeGuard,
+	wrapValidatorAsTypeGuard,
+} from "./utils";

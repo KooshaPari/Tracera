@@ -10,7 +10,8 @@ const skip = [
 	"@vinxi/react-server-dom/runtime",
 ];
 
-const IGNORE_COMMENT_REGEXP = /^(?:(?:\/\/.+\n)|(?:\/\*.+\*\/)|\s)*(\/\/ *@vinxi-ignore-style-collection\n)/;
+const IGNORE_COMMENT_REGEXP =
+	/^(?:(?:\/\/.+\n)|(?:\/\*.+\*\/)|\s)*(\/\/ *@vinxi-ignore-style-collection\n)/;
 
 async function getViteModuleNode(vite, file, ssr) {
 	if (file.startsWith("node:") || isBuiltin(file)) {
@@ -51,7 +52,7 @@ async function getViteModuleNode(vite, file, ssr) {
 		node = await vite.moduleGraph.getModuleById(nodePath);
 	}
 
-	if (nodePath.includes('node_modules')) {
+	if (nodePath.includes("node_modules")) {
 		return;
 	}
 
@@ -100,7 +101,9 @@ async function findDeps(vite, node, deps, ssr) {
 
 	if (
 		node.url.endsWith(".css") ||
-		node.transformResult?.map?.sourcesContent?.some((code) => code.match(IGNORE_COMMENT_REGEXP))
+		node.transformResult?.map?.sourcesContent?.some((code) =>
+			code.match(IGNORE_COMMENT_REGEXP),
+		)
 	) {
 		return;
 	}
@@ -109,7 +112,7 @@ async function findDeps(vite, node, deps, ssr) {
 			for (const url of node.ssrTransformResult.deps) {
 				await add_by_url(url, ssr);
 			}
-		
+
 			// Parallel version with incorrect style order
 			/* node.ssrTransformResult.deps.forEach((url) =>
 				branches.push(add_by_url(url, ssr)),

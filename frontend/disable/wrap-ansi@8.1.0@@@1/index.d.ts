@@ -38,4 +38,8 @@ const input = 'The quick brown ' + chalk.red('fox jumped over ') +
 console.log(wrapAnsi(input, 20));
 ```
 */
-export default function wrapAnsi(string: string, columns: number, options?: Options): string;
+export default function wrapAnsi(
+	string: string,
+	columns: number,
+	options?: Options,
+): string;

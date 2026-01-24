@@ -12,7 +12,7 @@ declare namespace locatePath {
 
 		@default 'file'
 		*/
-		readonly type?: 'file' | 'directory';
+		readonly type?: "file" | "directory";
 
 		/**
 		Allow symbolic links to match if they point to the requested path type.
@@ -64,9 +64,10 @@ declare const locatePath: {
 	})();
 	```
 	*/
-	(paths: Iterable<string>, options?: locatePath.AsyncOptions): Promise<
-		string | undefined
-	>;
+	(
+		paths: Iterable<string>,
+		options?: locatePath.AsyncOptions,
+	): Promise<string | undefined>;
 
 	/**
 	Synchronously get the first path that exists on disk of multiple paths.
@@ -76,7 +77,7 @@ declare const locatePath: {
 	*/
 	sync(
 		paths: Iterable<string>,
-		options?: locatePath.Options
+		options?: locatePath.Options,
 	): string | undefined;
 };
 

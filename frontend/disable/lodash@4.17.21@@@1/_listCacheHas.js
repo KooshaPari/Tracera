@@ -1,4 +1,4 @@
-var assocIndexOf = require('./_assocIndexOf');
+var assocIndexOf = require("./_assocIndexOf");
 
 /**
  * Checks if a list cache value for `key` exists.
@@ -10,7 +10,7 @@ var assocIndexOf = require('./_assocIndexOf');
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
 function listCacheHas(key) {
-  return assocIndexOf(this.__data__, key) > -1;
+	return assocIndexOf(this.__data__, key) > -1;
 }
 
 module.exports = listCacheHas;

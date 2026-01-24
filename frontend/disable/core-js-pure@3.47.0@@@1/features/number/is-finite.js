@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/number/is-finite');
+"use strict";
+module.exports = require("../../full/number/is-finite");

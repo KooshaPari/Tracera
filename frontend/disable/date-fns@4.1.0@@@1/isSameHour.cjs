@@ -32,13 +32,13 @@ var _index2 = require("./startOfHour.cjs");
  * //=> false
  */
 function isSameHour(dateLeft, dateRight, options) {
-  const [dateLeft_, dateRight_] = (0, _index.normalizeDates)(
-    options?.in,
-    dateLeft,
-    dateRight,
-  );
-  return (
-    +(0, _index2.startOfHour)(dateLeft_) ===
-    +(0, _index2.startOfHour)(dateRight_)
-  );
+	const [dateLeft_, dateRight_] = (0, _index.normalizeDates)(
+		options?.in,
+		dateLeft,
+		dateRight,
+	);
+	return (
+		+(0, _index2.startOfHour)(dateLeft_) ===
+		+(0, _index2.startOfHour)(dateRight_)
+	);
 }

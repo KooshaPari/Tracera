@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/set-from-hex');
+"use strict";
+module.exports = require("../../full/typed-array/set-from-hex");

@@ -1,13 +1,11 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _keyValMap = require('../jsutils/keyValMap.js');
+var _keyValMap = require("../jsutils/keyValMap.js");
 
-var _kinds = require('../language/kinds.js');
+var _kinds = require("../language/kinds.js");
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -26,36 +24,36 @@ var _kinds = require('../language/kinds.js');
  *
  */
 function valueFromASTUntyped(valueNode, variables) {
-  switch (valueNode.kind) {
-    case _kinds.Kind.NULL:
-      return null;
+	switch (valueNode.kind) {
+		case _kinds.Kind.NULL:
+			return null;
 
-    case _kinds.Kind.INT:
-      return parseInt(valueNode.value, 10);
+		case _kinds.Kind.INT:
+			return parseInt(valueNode.value, 10);
 
-    case _kinds.Kind.FLOAT:
-      return parseFloat(valueNode.value);
+		case _kinds.Kind.FLOAT:
+			return parseFloat(valueNode.value);
 
-    case _kinds.Kind.STRING:
-    case _kinds.Kind.ENUM:
-    case _kinds.Kind.BOOLEAN:
-      return valueNode.value;
+		case _kinds.Kind.STRING:
+		case _kinds.Kind.ENUM:
+		case _kinds.Kind.BOOLEAN:
+			return valueNode.value;
 
-    case _kinds.Kind.LIST:
-      return valueNode.values.map((node) =>
-        valueFromASTUntyped(node, variables),
-      );
+		case _kinds.Kind.LIST:
+			return valueNode.values.map((node) =>
+				valueFromASTUntyped(node, variables),
+			);
 
-    case _kinds.Kind.OBJECT:
-      return (0, _keyValMap.keyValMap)(
-        valueNode.fields,
-        (field) => field.name.value,
-        (field) => valueFromASTUntyped(field.value, variables),
-      );
+		case _kinds.Kind.OBJECT:
+			return (0, _keyValMap.keyValMap)(
+				valueNode.fields,
+				(field) => field.name.value,
+				(field) => valueFromASTUntyped(field.value, variables),
+			);
 
-    case _kinds.Kind.VARIABLE:
-      return variables === null || variables === void 0
-        ? void 0
-        : variables[valueNode.name.value];
-  }
+		case _kinds.Kind.VARIABLE:
+			return variables === null || variables === void 0
+				? void 0
+				: variables[valueNode.name.value];
+	}
 }

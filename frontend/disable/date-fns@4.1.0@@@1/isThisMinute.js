@@ -22,7 +22,7 @@ import { isSameMinute } from "./isSameMinute.js";
  */
 
 export function isThisMinute(date) {
-  return isSameMinute(date, constructNow(date));
+	return isSameMinute(date, constructNow(date));
 }
 
 // Fallback for modularized imports:

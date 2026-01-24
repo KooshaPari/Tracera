@@ -1,7 +1,7 @@
 /**
  * @license MIT
- * Copyright (c) Pooya Parsa <pooya@pi0.io>. 
- * 
+ * Copyright (c) Pooya Parsa <pooya@pi0.io>.
+ *
  * All the types in this file are copied from h3 package. We add a variant without the `event` parameter that uses AsyncLocalStorage.
  */
 
@@ -27,12 +27,12 @@ import {
 	RequestHeaders,
 	MultiPartData,
 } from "h3";
-import { CookieSerializeOptions } from 'cookie-es';
+import { CookieSerializeOptions } from "cookie-es";
 import { OutgoingMessage } from "node:http";
 import { Readable } from "node:stream";
 export type HTTPServer = App;
 
-export { CookieSerializeOptions } from 'cookie-es';
+export { CookieSerializeOptions } from "cookie-es";
 
 export {
 	H3Error,
@@ -144,7 +144,6 @@ type SessionUpdate<T extends SessionDataT = SessionDataT> =
 	| Partial<SessionData<T>>
 	| ((oldData: SessionData<T>) => Partial<SessionData<T>> | undefined);
 
-
 /*****************************************************
  * Read Body Utilities
  *****************************************************/
@@ -189,11 +188,7 @@ export function readBody<
 	T,
 	Event extends HTTPEvent = HTTPEvent,
 	_T = InferEventInput<"body", Event, T>,
->(
-	options?: {
-		strict?: boolean;
-	},
-): Promise<_T>;
+>(options?: { strict?: boolean }): Promise<_T>;
 
 /**
  * Tries to read the request body via `readBody`, then uses the provided validation function and either throws a validation error or returns the result.
@@ -224,8 +219,7 @@ export function readValidatedBody<
 	T,
 	Event extends HTTPEvent = HTTPEvent,
 	_T = InferEventInput<"body", Event, T>,
-	>(validate: ValidateFunction<_T>): Promise<_T>;
-
+>(validate: ValidateFunction<_T>): Promise<_T>;
 
 /**
  * Tries to read and parse the body of a an HTTPEvent as multipart form.
@@ -251,9 +245,7 @@ export function readValidatedBody<
 export function readMultipartFormData(
 	event: HTTPEvent,
 ): Promise<MultiPartData[] | undefined>;
-export function readMultipartFormData(): Promise<
-	MultiPartData[] | undefined
->;
+export function readMultipartFormData(): Promise<MultiPartData[] | undefined>;
 
 /**
  * Constructs a FormData object from an event, after converting it to a a web request.
@@ -270,7 +262,6 @@ export function readMultipartFormData(): Promise<
 export function readFormData(event: HTTPEvent): Promise<FormData>;
 export function readFormData(): Promise<FormData>;
 
-
 /**
  * Captures a stream from a request.
  * @param event The HTTPEvent object containing the request information.
@@ -281,11 +272,9 @@ export function getRequestWebStream(
 ): undefined | ReadableStream;
 export function getRequestWebStream(): undefined | ReadableStream;
 
-
 /*****************************************************
  * Request Info Utilities
  *****************************************************/
-
 
 export function getRequestHost(
 	event: HTTPEvent,
@@ -293,11 +282,7 @@ export function getRequestHost(
 		xForwardedHost?: boolean;
 	},
 ): string;
-export function getRequestHost(
-	opts?: {
-		xForwardedHost?: boolean;
-	},
-): string;
+export function getRequestHost(opts?: { xForwardedHost?: boolean }): string;
 
 export function getRequestProtocol(
 	event: HTTPEvent,
@@ -314,12 +299,10 @@ export function getRequestURL(
 		xForwardedProto?: boolean;
 	},
 ): URL;
-export function getRequestURL(
-	opts?: {
-		xForwardedHost?: boolean;
-		xForwardedProto?: boolean;
-	},
-): URL;
+export function getRequestURL(opts?: {
+	xForwardedHost?: boolean;
+	xForwardedProto?: boolean;
+}): URL;
 
 export function getRequestIP(
 	event: HTTPEvent,
@@ -334,14 +317,12 @@ export function getRequestIP(
 ): string | undefined;
 export function getRequestIP(): string | undefined;
 
-
 /*****************************************************
  * Request Type Utilities
  *****************************************************/
 
 export function isPreflightRequest(event: HTTPEvent): boolean;
 export function isPreflightRequest(): boolean;
-
 
 /*****************************************************
  * Web Request Utilities
@@ -427,7 +408,6 @@ export function getRequestFingerprint(
 	opts?: RequestFingerprintOptions,
 ): Promise<string | null>;
 
-
 /*****************************************************
  * Fetch Utilities
  *****************************************************/
@@ -460,12 +440,9 @@ export function fetchWithEvent<
 	},
 ): unknown extends T ? ReturnType<F> : T;
 
-
 /*****************************************************
  * Router Param Utilities
  *****************************************************/
-
-
 
 export function getRouterParams(
 	event: HTTPEvent,
@@ -473,11 +450,9 @@ export function getRouterParams(
 		decode?: boolean;
 	},
 ): NonNullable<HTTPEvent["context"]["params"]>;
-export function getRouterParams(
-	opts?: {
-		decode?: boolean;
-	},
-): NonNullable<HTTPEvent["context"]["params"]>;
+export function getRouterParams(opts?: {
+	decode?: boolean;
+}): NonNullable<HTTPEvent["context"]["params"]>;
 
 export function getValidatedRouterParams<
 	T,
@@ -514,10 +489,6 @@ export function getRouterParam(
 		decode?: boolean;
 	},
 ): string | undefined;
-
-
-
-
 
 /*****************************************************
  * Query Utilities
@@ -604,7 +575,6 @@ export function useSession<T extends SessionDataT = SessionDataT>(
 	clear: () => Promise<any>;
 }>;
 
-
 /*****************************************************
  * Header Utilities
  *****************************************************/
@@ -612,8 +582,9 @@ export function useSession<T extends SessionDataT = SessionDataT>(
 export function getResponseHeaders(
 	event: HTTPEvent,
 ): ReturnType<HTTPEvent["res"]["getHeaders"]>;
-export function getResponseHeaders(): ReturnType<HTTPEvent["res"]["getHeaders"]>;
-
+export function getResponseHeaders(): ReturnType<
+	HTTPEvent["res"]["getHeaders"]
+>;
 
 export function getResponseHeader(
 	event: HTTPEvent,
@@ -625,14 +596,17 @@ export function getResponseHeader(
 
 export function setResponseHeaders(
 	event: HTTPEvent,
-	headers: Partial<Record<HTTPHeaderName, Parameters<OutgoingMessage["setHeader"]>[1]>>,
+	headers: Partial<
+		Record<HTTPHeaderName, Parameters<OutgoingMessage["setHeader"]>[1]>
+	>,
 ): void;
 export function setResponseHeaders(
-	headers: Partial<Record<HTTPHeaderName, Parameters<OutgoingMessage["setHeader"]>[1]>>,
+	headers: Partial<
+		Record<HTTPHeaderName, Parameters<OutgoingMessage["setHeader"]>[1]>
+	>,
 ): void;
 
 export const setHeaders: typeof setResponseHeaders;
-
 
 export function setResponseHeader(
 	event: HTTPEvent,
@@ -659,10 +633,7 @@ export function appendResponseHeader(
 	name: HTTPHeaderName,
 	value: string,
 ): void;
-export function appendResponseHeader(
-	name: HTTPHeaderName,
-	value: string,
-): void;
+export function appendResponseHeader(name: HTTPHeaderName, value: string): void;
 
 export const appendHeader: typeof appendResponseHeader;
 /**
@@ -716,8 +687,6 @@ export function handleCacheHeaders(
 ): boolean;
 export function handleCacheHeaders(opts: CacheConditions): boolean;
 
-
-
 /*****************************************************
  * Middleware Utilities
  *****************************************************/
@@ -765,10 +734,7 @@ export function proxyRequest(
 	target: string,
 	opts?: ProxyOptions,
 ): Promise<any>;
-export function proxyRequest(
-	target: string,
-	opts?: ProxyOptions,
-): Promise<any>;
+export function proxyRequest(target: string, opts?: ProxyOptions): Promise<any>;
 
 export function sendProxy(
 	event: HTTPEvent,
@@ -803,8 +769,11 @@ export function handleCors(options: H3CorsOptions): void;
  * Send Response Utilities
  *****************************************************/
 
-
-export function send(event: HTTPEvent, data?: any, type?: string): Promise<void>;
+export function send(
+	event: HTTPEvent,
+	data?: any,
+	type?: string,
+): Promise<void>;
 export function send(data?: any, type?: string): Promise<void>;
 /**
  * Respond with an empty payload.<br>
@@ -869,7 +838,6 @@ export function sendError(error: Error | H3Error, debug?: boolean): void;
  * Method Utilities
  *****************************************************/
 
-
 export function isMethod(
 	event: HTTPEvent,
 	expected: HTTPMethod | HTTPMethod[],
@@ -891,6 +859,5 @@ export function assertMethod(
 ): void;
 
 export function handleHTTPEvent(event: HTTPEvent): Promise<void>;
-
 
 export const HTTPEventSymbol: unique symbol;

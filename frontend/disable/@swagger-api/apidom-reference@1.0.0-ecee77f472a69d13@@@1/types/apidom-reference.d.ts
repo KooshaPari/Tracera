@@ -1,90 +1,95 @@
-import { ApiDOMError } from '@swagger-api/apidom-error';
-import { Element as Element_2 } from 'minim';
-import { Element as Element_3 } from '@swagger-api/apidom-core';
-import { ParseResultElement } from '@swagger-api/apidom-core';
-import { RefElement } from 'minim';
+import { ApiDOMError } from "@swagger-api/apidom-error";
+import { Element as Element_2 } from "minim";
+import { Element as Element_3 } from "@swagger-api/apidom-core";
+import { ParseResultElement } from "@swagger-api/apidom-core";
+import { RefElement } from "minim";
 
 /**
  * @public
  */
 export declare interface ApiDOMReferenceBundleOptions {
-    strategies: Array<BundleStrategy>;
-    refSet: null | ReferenceSet;
-    maxDepth: number;
+	strategies: Array<BundleStrategy>;
+	refSet: null | ReferenceSet;
+	maxDepth: number;
 }
 
 /**
  * @public
  */
 export declare interface ApiDOMReferenceDereferenceOptions {
-    strategies: Array<DereferenceStrategy>;
-    strategyOpts: Record<string, any>;
-    refSet: null | ReferenceSet;
-    maxDepth: number;
-    circular: 'ignore' | 'replace' | 'error';
-    circularReplacer: (ref: RefElement) => unknown;
-    immutable: boolean;
+	strategies: Array<DereferenceStrategy>;
+	strategyOpts: Record<string, any>;
+	refSet: null | ReferenceSet;
+	maxDepth: number;
+	circular: "ignore" | "replace" | "error";
+	circularReplacer: (ref: RefElement) => unknown;
+	immutable: boolean;
 }
 
 /**
  * @public
  */
 export declare interface ApiDOMReferenceOptions {
-    readonly parse: ApiDOMReferenceParseOptions;
-    readonly resolve: ApiDOMReferenceResolveOptions;
-    readonly dereference: ApiDOMReferenceDereferenceOptions;
-    readonly bundle: ApiDOMReferenceBundleOptions;
+	readonly parse: ApiDOMReferenceParseOptions;
+	readonly resolve: ApiDOMReferenceResolveOptions;
+	readonly dereference: ApiDOMReferenceDereferenceOptions;
+	readonly bundle: ApiDOMReferenceBundleOptions;
 }
 
 /**
  * @public
  */
 export declare interface ApiDOMReferenceParseOptions {
-    mediaType: string;
-    parsers: Array<Parser>;
-    parserOpts: Record<string, any>;
+	mediaType: string;
+	parsers: Array<Parser>;
+	parserOpts: Record<string, any>;
 }
 
 /**
  * @public
  */
 export declare interface ApiDOMReferenceResolveOptions {
-    baseURI: string;
-    resolvers: Array<Resolver>;
-    resolverOpts: Record<string, any>;
-    strategies: Array<ResolveStrategy>;
-    strategyOpts: Record<string, any>;
-    internal: boolean;
-    external: boolean;
-    maxDepth: number;
+	baseURI: string;
+	resolvers: Array<Resolver>;
+	resolverOpts: Record<string, any>;
+	strategies: Array<ResolveStrategy>;
+	strategyOpts: Record<string, any>;
+	internal: boolean;
+	external: boolean;
+	maxDepth: number;
 }
 
 /**
  * @public
  */
-export declare const bundle: (uri: string, options?: {}) => Promise<ParseResultElement>;
+export declare const bundle: (
+	uri: string,
+	options?: {},
+) => Promise<ParseResultElement>;
 
 /**
  * @public
  */
-export declare class BundleError extends ApiDOMError {
-}
+export declare class BundleError extends ApiDOMError {}
 
 /**
  * @public
  */
 export declare abstract class BundleStrategy {
-    readonly name: string;
-    constructor({ name }: BundleStrategyOptions);
-    abstract canBundle(file: File_2, options: ApiDOMReferenceOptions): boolean;
-    abstract bundle(file: File_2, options: ApiDOMReferenceOptions): Promise<ParseResultElement>;
+	readonly name: string;
+	constructor({ name }: BundleStrategyOptions);
+	abstract canBundle(file: File_2, options: ApiDOMReferenceOptions): boolean;
+	abstract bundle(
+		file: File_2,
+		options: ApiDOMReferenceOptions,
+	): Promise<ParseResultElement>;
 }
 
 /**
  * @public
  */
 export declare interface BundleStrategyOptions {
-    readonly name: string;
+	readonly name: string;
 }
 
 /**
@@ -96,86 +101,96 @@ declare const cwd: () => string;
 /**
  * @public
  */
-export declare const dereference: (uri: string, options?: {}) => Promise<ParseResultElement>;
+export declare const dereference: (
+	uri: string,
+	options?: {},
+) => Promise<ParseResultElement>;
 
 /**
  * @public
  */
-export declare class DereferenceAncestorLineage<T extends Element_3> extends Array<Set<T>> {
-    includesCycle(element: T): boolean;
-    includes(searchElement: Set<T> | T, fromIndex?: number): boolean;
-    findItem(predicate: (item: T) => boolean): T | undefined;
+export declare class DereferenceAncestorLineage<
+	T extends Element_3,
+> extends Array<Set<T>> {
+	includesCycle(element: T): boolean;
+	includes(searchElement: Set<T> | T, fromIndex?: number): boolean;
+	findItem(predicate: (item: T) => boolean): T | undefined;
 }
 
 /**
  * @public
  */
-export declare const dereferenceApiDOM: <T extends Element_3>(element: T, options?: {}) => Promise<T>;
+export declare const dereferenceApiDOM: <T extends Element_3>(
+	element: T,
+	options?: {},
+) => Promise<T>;
 
 /**
  * @public
  */
-export declare class DereferenceError extends ApiDOMError {
-}
+export declare class DereferenceError extends ApiDOMError {}
 
 /**
  * @public
  */
 export declare abstract class DereferenceStrategy {
-    readonly name: string;
-    constructor({ name }: DereferenceStrategyOptions);
-    abstract canDereference(file: File_2, options: ApiDOMReferenceOptions): boolean;
-    abstract dereference(file: File_2, options: ApiDOMReferenceOptions): Promise<Element_2>;
+	readonly name: string;
+	constructor({ name }: DereferenceStrategyOptions);
+	abstract canDereference(
+		file: File_2,
+		options: ApiDOMReferenceOptions,
+	): boolean;
+	abstract dereference(
+		file: File_2,
+		options: ApiDOMReferenceOptions,
+	): Promise<Element_2>;
 }
 
 /**
  * @public
  */
 export declare interface DereferenceStrategyOptions {
-    readonly name: string;
+	readonly name: string;
 }
 
 /**
  * @public
  */
-export declare class EvaluationElementIdError extends ApiDOMError {
-}
+export declare class EvaluationElementIdError extends ApiDOMError {}
 
 /**
  * @public
  */
-export declare class EvaluationJsonSchema$anchorError extends JsonSchema$anchorError {
-}
+export declare class EvaluationJsonSchema$anchorError extends JsonSchema$anchorError {}
 
 /**
  * @public
  */
-export declare class EvaluationJsonSchemaUriError extends JsonSchemaURIError {
-}
+export declare class EvaluationJsonSchemaUriError extends JsonSchemaURIError {}
 
 /**
  * @public
  */
 declare class File_2 {
-    uri: string;
-    mediaType: string;
-    data?: Buffer | DataView | ArrayBuffer | string;
-    parseResult?: ParseResultElement;
-    constructor({ uri, mediaType, data, parseResult }: FileOptions);
-    get extension(): string;
-    toString(): string;
+	uri: string;
+	mediaType: string;
+	data?: Buffer | DataView | ArrayBuffer | string;
+	parseResult?: ParseResultElement;
+	constructor({ uri, mediaType, data, parseResult }: FileOptions);
+	get extension(): string;
+	toString(): string;
 }
-export { File_2 as File }
+export { File_2 as File };
 
 /**
  * This class represents a File object with url and data.
  * @public
  */
 export declare interface FileOptions {
-    readonly uri: string;
-    readonly mediaType?: string;
-    readonly data?: Buffer | DataView | ArrayBuffer | string;
-    readonly parseResult?: ParseResultElement;
+	readonly uri: string;
+	readonly mediaType?: string;
+	readonly data?: Buffer | DataView | ArrayBuffer | string;
+	readonly parseResult?: ParseResultElement;
 }
 
 /**
@@ -225,28 +240,28 @@ declare const hasProtocol: (url: string) => boolean;
  * @public
  */
 export declare abstract class HTTPResolver extends Resolver {
-    protected readonly timeout: number;
-    protected readonly redirects: number;
-    protected readonly withCredentials: boolean;
-    constructor(options?: HTTPResolverOptions);
-    canRead(file: File_2): boolean;
-    abstract getHttpClient(): unknown;
+	protected readonly timeout: number;
+	protected readonly redirects: number;
+	protected readonly withCredentials: boolean;
+	constructor(options?: HTTPResolverOptions);
+	canRead(file: File_2): boolean;
+	abstract getHttpClient(): unknown;
 }
 
 /**
  * @public
  */
 export declare interface HTTPResolverOptions extends ResolverOptions {
-    readonly timeout?: number;
-    readonly redirects?: number;
-    readonly withCredentials?: boolean;
+	readonly timeout?: number;
+	readonly redirects?: number;
+	readonly withCredentials?: boolean;
 }
 
 /**
  * @public
  */
 export declare class InvalidJsonSchema$anchorError extends JsonSchema$anchorError {
-    constructor(anchor: string);
+	constructor(anchor: string);
 }
 
 /**
@@ -271,37 +286,35 @@ declare const isURI: (uri: string) => boolean;
 /**
  * @public
  */
-export declare class JsonSchema$anchorError extends ApiDOMError {
-}
+export declare class JsonSchema$anchorError extends ApiDOMError {}
 
 /**
  * @public
  */
-export declare class JsonSchemaURIError extends ApiDOMError {
-}
+export declare class JsonSchemaURIError extends ApiDOMError {}
 
 /**
  * @public
  */
-export declare class MaximumBundleDepthError extends BundleError {
-}
+export declare class MaximumBundleDepthError extends BundleError {}
 
 /**
  * @public
  */
-export declare class MaximumDereferenceDepthError extends DereferenceError {
-}
+export declare class MaximumDereferenceDepthError extends DereferenceError {}
 
 /**
  * @public
  */
-export declare class MaximumResolveDepthError extends ResolveError {
-}
+export declare class MaximumResolveDepthError extends ResolveError {}
 
 /**
  * @public
  */
-export declare const mergeOptions: (lObj: ApiDOMReferenceOptions, rObj: Record<string, any>) => ApiDOMReferenceOptions;
+export declare const mergeOptions: (
+	lObj: ApiDOMReferenceOptions,
+	rObj: Record<string, any>,
+) => ApiDOMReferenceOptions;
 
 /**
  * @public
@@ -311,66 +324,78 @@ export declare const options: ApiDOMReferenceOptions;
 /**
  * @public
  */
-export declare const parse: (uri: string, options?: {}) => Promise<ParseResultElement>;
+export declare const parse: (
+	uri: string,
+	options?: {},
+) => Promise<ParseResultElement>;
 
 /**
  * @public
  */
-export declare class ParseError extends ApiDOMError {
-}
+export declare class ParseError extends ApiDOMError {}
 
 /**
  * @public
  */
 export declare abstract class Parser {
-    readonly name: string;
-    /**
-     * Whether to allow "empty" files. This includes zero-byte files.
-     */
-    allowEmpty: boolean;
-    /**
-     * Whether to generate source map during parsing.
-     */
-    sourceMap: boolean;
-    /**
-     * List of supported file extensions.
-     */
-    fileExtensions: string[];
-    /**
-     * List of supported media types.
-     */
-    mediaTypes: string[];
-    constructor({ name, allowEmpty, sourceMap, fileExtensions, mediaTypes, }: ParserOptions);
-    abstract canParse(file: File_2): boolean | Promise<boolean>;
-    abstract parse(file: File_2): ParseResultElement | Promise<ParseResultElement>;
+	readonly name: string;
+	/**
+	 * Whether to allow "empty" files. This includes zero-byte files.
+	 */
+	allowEmpty: boolean;
+	/**
+	 * Whether to generate source map during parsing.
+	 */
+	sourceMap: boolean;
+	/**
+	 * List of supported file extensions.
+	 */
+	fileExtensions: string[];
+	/**
+	 * List of supported media types.
+	 */
+	mediaTypes: string[];
+	constructor({
+		name,
+		allowEmpty,
+		sourceMap,
+		fileExtensions,
+		mediaTypes,
+	}: ParserOptions);
+	abstract canParse(file: File_2): boolean | Promise<boolean>;
+	abstract parse(
+		file: File_2,
+	): ParseResultElement | Promise<ParseResultElement>;
 }
 
 /**
  * @public
  */
-export declare class ParserError extends ParseError {
-}
+export declare class ParserError extends ParseError {}
 
 /**
  * @public
  */
 export declare interface ParserOptions {
-    readonly name: string;
-    readonly allowEmpty?: boolean;
-    readonly sourceMap?: boolean;
-    readonly fileExtensions?: string[];
-    readonly mediaTypes?: string[];
+	readonly name: string;
+	readonly allowEmpty?: boolean;
+	readonly sourceMap?: boolean;
+	readonly fileExtensions?: string[];
+	readonly mediaTypes?: string[];
 }
 
 /**
  * @public
  */
 export declare class PluginError extends ApiDOMError {
-    plugin: any;
-    constructor(message: string, options: {
-        cause?: Error;
-        plugin: any;
-    });
+	plugin: any;
+	constructor(
+		message: string,
+		options: {
+			cause?: Error;
+			plugin: any;
+		},
+	);
 }
 
 /**
@@ -382,53 +407,58 @@ export declare const readFile: (uri: string, options?: {}) => Promise<Buffer>;
  * @public
  */
 export declare class Reference<T = Element_3> {
-    readonly uri: string;
-    readonly depth: number;
-    readonly value: T;
-    refSet?: ReferenceSet;
-    readonly errors: Array<Error>;
-    constructor({ uri, depth, refSet, value }: ReferenceOptions<T>);
+	readonly uri: string;
+	readonly depth: number;
+	readonly value: T;
+	refSet?: ReferenceSet;
+	readonly errors: Array<Error>;
+	constructor({ uri, depth, refSet, value }: ReferenceOptions<T>);
 }
 
 /**
  * @public
  */
 export declare interface ReferenceOptions<T = Element_3> {
-    readonly uri: string;
-    readonly depth?: number;
-    readonly refSet?: ReferenceSet;
-    readonly value: T;
+	readonly uri: string;
+	readonly depth?: number;
+	readonly refSet?: ReferenceSet;
+	readonly value: T;
 }
 
 /**
  * @public
  */
 export declare class ReferenceSet {
-    rootRef?: Reference;
-    readonly refs: Reference[];
-    circular: boolean;
-    constructor({ refs, circular }?: ReferenceSetOptions);
-    get size(): number;
-    add(reference: Reference): this;
-    merge(anotherRefSet: this): this;
-    has(thing: string | Reference): boolean;
-    find(predicate: (value: Reference, index: number, obj: Reference[]) => boolean): Reference | undefined;
-    values(): Generator<Reference<Element_2>, void, undefined>;
-    clean(): void;
+	rootRef?: Reference;
+	readonly refs: Reference[];
+	circular: boolean;
+	constructor({ refs, circular }?: ReferenceSetOptions);
+	get size(): number;
+	add(reference: Reference): this;
+	merge(anotherRefSet: this): this;
+	has(thing: string | Reference): boolean;
+	find(
+		predicate: (value: Reference, index: number, obj: Reference[]) => boolean,
+	): Reference | undefined;
+	values(): Generator<Reference<Element_2>, void, undefined>;
+	clean(): void;
 }
 
 /**
  * @public
  */
 export declare interface ReferenceSetOptions {
-    readonly refs?: Reference[];
-    readonly circular?: boolean;
+	readonly refs?: Reference[];
+	readonly circular?: boolean;
 }
 
 /**
  * @public
  */
-export declare const resolve: (uri: string, options?: {}) => Promise<ReferenceSet>;
+export declare const resolve: (
+	uri: string,
+	options?: {},
+) => Promise<ReferenceSet>;
 
 /**
  * Resolves a target URI relative to a base URI in a manner similar to that of a Web browser resolving an anchor tag HREF.
@@ -439,52 +469,56 @@ declare const resolve_2: (from: string, to: string) => string;
 /**
  * @public
  */
-export declare const resolveApiDOM: <T extends Element_3>(element: T, options?: {}) => Promise<ReferenceSet>;
+export declare const resolveApiDOM: <T extends Element_3>(
+	element: T,
+	options?: {},
+) => Promise<ReferenceSet>;
 
 /**
  * @public
  */
-export declare class ResolveError extends ApiDOMError {
-}
+export declare class ResolveError extends ApiDOMError {}
 
 /**
  * @public
  */
 export declare abstract class Resolver {
-    readonly name: string;
-    constructor({ name }: ResolverOptions);
-    abstract canRead(file: File_2): boolean;
-    abstract read(file: File_2): Promise<Buffer>;
+	readonly name: string;
+	constructor({ name }: ResolverOptions);
+	abstract canRead(file: File_2): boolean;
+	abstract read(file: File_2): Promise<Buffer>;
 }
 
 /**
  * @public
  */
-export declare class ResolverError extends ResolveError {
-}
+export declare class ResolverError extends ResolveError {}
 
 /**
  * @public
  */
 export declare interface ResolverOptions {
-    readonly name: string;
+	readonly name: string;
 }
 
 /**
  * @public
  */
 export declare abstract class ResolveStrategy {
-    readonly name: string;
-    constructor({ name }: ResolveStrategyOptions);
-    abstract canResolve(file: File_2, options: ApiDOMReferenceOptions): boolean;
-    abstract resolve(file: File_2, options: ApiDOMReferenceOptions): Promise<ReferenceSet>;
+	readonly name: string;
+	constructor({ name }: ResolveStrategyOptions);
+	abstract canResolve(file: File_2, options: ApiDOMReferenceOptions): boolean;
+	abstract resolve(
+		file: File_2,
+		options: ApiDOMReferenceOptions,
+	): Promise<ReferenceSet>;
 }
 
 /**
  * @public
  */
 export declare interface ResolveStrategyOptions {
-    readonly name: string;
+	readonly name: string;
 }
 
 /**
@@ -507,39 +541,38 @@ declare const stripHash: (uri: string) => string;
  * Converts a URL to a local filesystem path.
  * @public
  */
-declare const toFileSystemPath: (uri: string, options?: ToFileSystemPathOptions) => string;
+declare const toFileSystemPath: (
+	uri: string,
+	options?: ToFileSystemPathOptions,
+) => string;
 
 /**
  * @public
  */
 declare interface ToFileSystemPathOptions {
-    keepFileProtocol?: boolean;
-    isWindows?: WindowsPredicate;
+	keepFileProtocol?: boolean;
+	isWindows?: WindowsPredicate;
 }
 
 /**
  * @public
  */
-export declare class UnmatchedBundleStrategyError extends BundleError {
-}
+export declare class UnmatchedBundleStrategyError extends BundleError {}
 
 /**
  * @public
  */
-export declare class UnmatchedDereferenceStrategyError extends DereferenceError {
-}
+export declare class UnmatchedDereferenceStrategyError extends DereferenceError {}
 
 /**
  * @public
  */
-export declare class UnmatchedResolverError extends ResolverError {
-}
+export declare class UnmatchedResolverError extends ResolverError {}
 
 /**
  * @public
  */
-export declare class UnmatchedResolveStrategyError extends ResolveError {
-}
+export declare class UnmatchedResolveStrategyError extends ResolveError {}
 
 /**
  * Unsanitizes/Decodes URI to it's url encoded form.
@@ -550,26 +583,26 @@ export declare class UnmatchedResolveStrategyError extends ResolveError {
 declare const unsanitize: (uri: string) => string;
 
 declare namespace url {
-    export {
-        WindowsPredicate,
-        getProtocol,
-        hasProtocol,
-        getExtension,
-        isFileSystemPath,
-        isHttpUrl,
-        isURI,
-        ToFileSystemPathOptions,
-        toFileSystemPath,
-        fromFileSystemPath,
-        getHash,
-        stripHash,
-        cwd,
-        resolve_2 as resolve,
-        sanitize,
-        unsanitize
-    }
+	export {
+		WindowsPredicate,
+		getProtocol,
+		hasProtocol,
+		getExtension,
+		isFileSystemPath,
+		isHttpUrl,
+		isURI,
+		ToFileSystemPathOptions,
+		toFileSystemPath,
+		fromFileSystemPath,
+		getHash,
+		stripHash,
+		cwd,
+		resolve_2 as resolve,
+		sanitize,
+		unsanitize,
+	};
 }
-export { url }
+export { url };
 
 /**
  * SPDX-FileCopyrightText: Copyright (c) 2015 James Messinger
@@ -580,5 +613,3 @@ export { url }
  * @public
  */
 declare type WindowsPredicate = () => boolean;
-
-export { }

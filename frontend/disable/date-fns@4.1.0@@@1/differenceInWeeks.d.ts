@@ -3,8 +3,8 @@ import type { ContextOptions, DateArg, RoundingOptions } from "./types.js";
  * The {@link differenceInWeeks} function options.
  */
 export interface DifferenceInWeeksOptions
-  extends RoundingOptions,
-    ContextOptions<Date> {}
+	extends RoundingOptions,
+		ContextOptions<Date> {}
 /**
  * @name differenceInWeeks
  * @category Week Helpers
@@ -46,7 +46,7 @@ export interface DifferenceInWeeksOptions
  * //=> 8
  */
 export declare function differenceInWeeks(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInWeeksOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInWeeksOptions | undefined,
 ): number;

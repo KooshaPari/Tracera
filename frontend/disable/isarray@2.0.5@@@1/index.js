@@ -1,5 +1,4 @@
 var toString = {}.toString;
 
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
+module.exports =
+	Array.isArray || ((arr) => toString.call(arr) == "[object Array]");

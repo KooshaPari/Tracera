@@ -28,7 +28,7 @@ import { millisecondsInHour } from "./constants.js";
  * //=> Fri Jul 11 2014 01:00:00
  */
 export function addHours(date, amount, options) {
-  return addMilliseconds(date, amount * millisecondsInHour, options);
+	return addMilliseconds(date, amount * millisecondsInHour, options);
 }
 
 // Fallback for modularized imports:

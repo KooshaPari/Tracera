@@ -33,7 +33,7 @@ export interface IsSameDayOptions extends ContextOptions<Date> {}
  * //=> false
  */
 export declare function isSameDay(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IsSameDayOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IsSameDayOptions | undefined,
 ): boolean;

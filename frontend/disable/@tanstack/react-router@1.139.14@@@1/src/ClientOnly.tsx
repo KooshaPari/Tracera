@@ -1,14 +1,14 @@
-import React from 'react'
+import React from "react";
 
 export interface ClientOnlyProps {
-  /**
-   * The children to render when the JS is loaded.
-   */
-  children: React.ReactNode
-  /**
-   * The fallback component to render if the JS is not yet loaded.
-   */
-  fallback?: React.ReactNode
+	/**
+	 * The children to render when the JS is loaded.
+	 */
+	children: React.ReactNode;
+	/**
+	 * The fallback component to render if the JS is not yet loaded.
+	 */
+	fallback?: React.ReactNode;
 }
 
 /**
@@ -34,11 +34,11 @@ export interface ClientOnlyProps {
  * @link https://tanstack.com/router/latest/docs/framework/react/api/router/clientOnlyComponent
  */
 export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
-  return useHydrated() ? (
-    <React.Fragment>{children}</React.Fragment>
-  ) : (
-    <React.Fragment>{fallback}</React.Fragment>
-  )
+	return useHydrated() ? (
+		<React.Fragment>{children}</React.Fragment>
+	) : (
+		<React.Fragment>{fallback}</React.Fragment>
+	);
 }
 
 /**
@@ -64,13 +64,13 @@ export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
  * Return a boolean indicating whether client hydration has occurred.
  */
 export function useHydrated(): boolean {
-  return React.useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
-  )
+	return React.useSyncExternalStore(
+		subscribe,
+		() => true,
+		() => false,
+	);
 }
 
 function subscribe() {
-  return () => {}
+	return () => {};
 }

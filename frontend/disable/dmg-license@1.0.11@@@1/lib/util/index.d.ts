@@ -10,10 +10,15 @@ export declare function arrayify<T>(v: T | T[]): T[];
  */
 export declare function unarrayify<T>(v: T[]): T | typeof v;
 export declare function readFileP(path: FS.PathLike): Promise<Buffer>;
-export declare function mapObjByKeys<K extends PropertyKey, T, U>(obj: {
-    [key in K]: T;
-}, keys: ReadonlyArray<K>, fun: (value: T, key: K) => U, target?: {
-    [key in K]: U;
-}): {
-    [key in K]: U;
+export declare function mapObjByKeys<K extends PropertyKey, T, U>(
+	obj: {
+		[key in K]: T;
+	},
+	keys: ReadonlyArray<K>,
+	fun: (value: T, key: K) => U,
+	target?: {
+		[key in K]: U;
+	},
+): {
+	[key in K]: U;
 };

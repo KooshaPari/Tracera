@@ -405,9 +405,7 @@ export type WebSocketEvent =
 	  };
 
 export type PartyHandler = {
-	onConnect?:
-		| ((party: Party, peer: Peer) => void | Promise<void>)
-		| undefined;
+	onConnect?: ((party: Party, peer: Peer) => void | Promise<void>) | undefined;
 	onMessage?:
 		| ((
 				party: Party,
@@ -415,15 +413,9 @@ export type PartyHandler = {
 				connection: Connection,
 		  ) => void | Promise<void>)
 		| undefined;
-	onClose?:
-		| ((party: Party, peer: Peer) => void | Promise<void>)
-		| undefined;
+	onClose?: ((party: Party, peer: Peer) => void | Promise<void>) | undefined;
 	onError?:
-		| ((
-				party: Party,
-				peer: Peer,
-				error: Error,
-		  ) => void | Promise<void>)
+		| ((party: Party, peer: Peer, error: Error) => void | Promise<void>)
 		| undefined;
 };
 

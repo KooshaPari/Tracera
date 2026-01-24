@@ -1,5 +1,5 @@
 /// <reference types="node"/>
-import {LiteralUnion} from 'type-fest';
+import { LiteralUnion } from "type-fest";
 
 declare namespace ansiEscapes {
 	interface ImageOptions {
@@ -11,7 +11,7 @@ declare namespace ansiEscapes {
 		- `N%`: N percent of the session's width or height.
 		- `auto`: The image's inherent size will be used to determine an appropriate dimension.
 		*/
-		readonly width?: LiteralUnion<'auto', number | string>;
+		readonly width?: LiteralUnion<"auto", number | string>;
 
 		/**
 		The height is given as a number followed by a unit, or the word `'auto'`.
@@ -21,7 +21,7 @@ declare namespace ansiEscapes {
 		- `N%`: N percent of the session's width or height.
 		- `auto`: The image's inherent size will be used to determine an appropriate dimension.
 		*/
-		readonly height?: LiteralUnion<'auto', number | string>;
+		readonly height?: LiteralUnion<"auto", number | string>;
 
 		readonly preserveAspectRatio?: boolean;
 	}
@@ -238,7 +238,10 @@ declare const ansiEscapes: {
 		@param message - The message to display within the annotation. The `|` character is disallowed and will be stripped.
 		@returns An escape code which will create an annotation when printed in iTerm2.
 		*/
-		annotation(message: string, options?: ansiEscapes.AnnotationOptions): string;
+		annotation(
+			message: string,
+			options?: ansiEscapes.AnnotationOptions,
+		): string;
 	};
 
 	// TODO: remove this in the next major version

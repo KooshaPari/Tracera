@@ -1,59 +1,58 @@
-import {
-    isHexDigit,
-    Ident,
-    Number,
-    Dimension
-} from '../../tokenizer/index.js';
+import { Dimension, Ident, isHexDigit, Number } from "../../tokenizer/index.js";
 
-const PLUSSIGN = 0x002B;     // U+002B PLUS SIGN (+)
-const HYPHENMINUS = 0x002D;  // U+002D HYPHEN-MINUS (-)
-const QUESTIONMARK = 0x003F; // U+003F QUESTION MARK (?)
+const PLUSSIGN = 0x002b; // U+002B PLUS SIGN (+)
+const HYPHENMINUS = 0x002d; // U+002D HYPHEN-MINUS (-)
+const QUESTIONMARK = 0x003f; // U+003F QUESTION MARK (?)
 
 function eatHexSequence(offset, allowDash) {
-    let len = 0;
+	let len = 0;
 
-    for (let pos = this.tokenStart + offset; pos < this.tokenEnd; pos++) {
-        const code = this.charCodeAt(pos);
+	for (let pos = this.tokenStart + offset; pos < this.tokenEnd; pos++) {
+		const code = this.charCodeAt(pos);
 
-        if (code === HYPHENMINUS && allowDash && len !== 0) {
-            eatHexSequence.call(this, offset + len + 1, false);
-            return -1;
-        }
+		if (code === HYPHENMINUS && allowDash && len !== 0) {
+			eatHexSequence.call(this, offset + len + 1, false);
+			return -1;
+		}
 
-        if (!isHexDigit(code)) {
-            this.error(
-                allowDash && len !== 0
-                    ? 'Hyphen minus' + (len < 6 ? ' or hex digit' : '') + ' is expected'
-                    : (len < 6 ? 'Hex digit is expected' : 'Unexpected input'),
-                pos
-            );
-        }
+		if (!isHexDigit(code)) {
+			this.error(
+				allowDash && len !== 0
+					? "Hyphen minus" + (len < 6 ? " or hex digit" : "") + " is expected"
+					: len < 6
+						? "Hex digit is expected"
+						: "Unexpected input",
+				pos,
+			);
+		}
 
-        if (++len > 6) {
-            this.error('Too many hex digits', pos);
-        };
-    }
+		if (++len > 6) {
+			this.error("Too many hex digits", pos);
+		}
+	}
 
-    this.next();
-    return len;
+	this.next();
+	return len;
 }
 
 function eatQuestionMarkSequence(max) {
-    let count = 0;
+	let count = 0;
 
-    while (this.isDelim(QUESTIONMARK)) {
-        if (++count > max) {
-            this.error('Too many question marks');
-        }
+	while (this.isDelim(QUESTIONMARK)) {
+		if (++count > max) {
+			this.error("Too many question marks");
+		}
 
-        this.next();
-    }
+		this.next();
+	}
 }
 
 function startsWith(code) {
-    if (this.charCodeAt(this.tokenStart) !== code) {
-        this.error((code === PLUSSIGN ? 'Plus sign' : 'Hyphen minus') + ' is expected');
-    }
+	if (this.charCodeAt(this.tokenStart) !== code) {
+		this.error(
+			(code === PLUSSIGN ? "Plus sign" : "Hyphen minus") + " is expected",
+		);
+	}
 }
 
 // https://drafts.csswg.org/css-syntax/#urange
@@ -76,81 +75,80 @@ function startsWith(code) {
 //   u <number-token> <number-token> |
 //   u '+' '?'+
 function scanUnicodeRange() {
-    let hexLength = 0;
+	let hexLength = 0;
 
-    switch (this.tokenType) {
-        case Number:
-            // u <number-token> '?'*
-            // u <number-token> <dimension-token>
-            // u <number-token> <number-token>
-            hexLength = eatHexSequence.call(this, 1, true);
+	switch (this.tokenType) {
+		case Number:
+			// u <number-token> '?'*
+			// u <number-token> <dimension-token>
+			// u <number-token> <number-token>
+			hexLength = eatHexSequence.call(this, 1, true);
 
-            if (this.isDelim(QUESTIONMARK)) {
-                eatQuestionMarkSequence.call(this, 6 - hexLength);
-                break;
-            }
+			if (this.isDelim(QUESTIONMARK)) {
+				eatQuestionMarkSequence.call(this, 6 - hexLength);
+				break;
+			}
 
-            if (this.tokenType === Dimension ||
-                this.tokenType === Number) {
-                startsWith.call(this, HYPHENMINUS);
-                eatHexSequence.call(this, 1, false);
-                break;
-            }
+			if (this.tokenType === Dimension || this.tokenType === Number) {
+				startsWith.call(this, HYPHENMINUS);
+				eatHexSequence.call(this, 1, false);
+				break;
+			}
 
-            break;
+			break;
 
-        case Dimension:
-            // u <dimension-token> '?'*
-            hexLength = eatHexSequence.call(this, 1, true);
+		case Dimension:
+			// u <dimension-token> '?'*
+			hexLength = eatHexSequence.call(this, 1, true);
 
-            if (hexLength > 0) {
-                eatQuestionMarkSequence.call(this, 6 - hexLength);
-            }
+			if (hexLength > 0) {
+				eatQuestionMarkSequence.call(this, 6 - hexLength);
+			}
 
-            break;
+			break;
 
-        default:
-            // u '+' <ident-token> '?'*
-            // u '+' '?'+
-            this.eatDelim(PLUSSIGN);
+		default:
+			// u '+' <ident-token> '?'*
+			// u '+' '?'+
+			this.eatDelim(PLUSSIGN);
 
-            if (this.tokenType === Ident) {
-                hexLength = eatHexSequence.call(this, 0, true);
-                if (hexLength > 0) {
-                    eatQuestionMarkSequence.call(this, 6 - hexLength);
-                }
-                break;
-            }
+			if (this.tokenType === Ident) {
+				hexLength = eatHexSequence.call(this, 0, true);
+				if (hexLength > 0) {
+					eatQuestionMarkSequence.call(this, 6 - hexLength);
+				}
+				break;
+			}
 
-            if (this.isDelim(QUESTIONMARK)) {
-                this.next();
-                eatQuestionMarkSequence.call(this, 5);
-                break;
-            }
+			if (this.isDelim(QUESTIONMARK)) {
+				this.next();
+				eatQuestionMarkSequence.call(this, 5);
+				break;
+			}
 
-            this.error('Hex digit or question mark is expected');
-    }
+			this.error("Hex digit or question mark is expected");
+	}
 }
 
-export const name = 'UnicodeRange';
+export const name = "UnicodeRange";
 export const structure = {
-    value: String
+	value: String,
 };
 
 export function parse() {
-    const start = this.tokenStart;
+	const start = this.tokenStart;
 
-    // U or u
-    this.eatIdent('u');
-    scanUnicodeRange.call(this);
+	// U or u
+	this.eatIdent("u");
+	scanUnicodeRange.call(this);
 
-    return {
-        type: 'UnicodeRange',
-        loc: this.getLocation(start, this.tokenStart),
-        value: this.substrToCursor(start)
-    };
+	return {
+		type: "UnicodeRange",
+		loc: this.getLocation(start, this.tokenStart),
+		value: this.substrToCursor(start),
+	};
 }
 
 export function generate(node) {
-    this.tokenize(node.value);
+	this.tokenize(node.value);
 }

@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _reject2 = require('./internal/reject.js');
+var _reject2 = require("./internal/reject.js");
 
 var _reject3 = _interopRequireDefault(_reject2);
 
-var _eachOf = require('./eachOf.js');
+var _eachOf = require("./eachOf.js");
 
 var _eachOf2 = _interopRequireDefault(_eachOf);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The opposite of [`filter`]{@link module:Collections.filter}. Removes values that pass an `async` truth test.
@@ -81,7 +81,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function reject(coll, iteratee, callback) {
-    return (0, _reject3.default)(_eachOf2.default, coll, iteratee, callback);
+	return (0, _reject3.default)(_eachOf2.default, coll, iteratee, callback);
 }
 exports.default = (0, _awaitify2.default)(reject, 3);
 module.exports = exports.default;

@@ -26,10 +26,10 @@ import { isSameYear } from "./isSameYear.js";
  * //=> true
  */
 export function isThisYear(date, options) {
-  return isSameYear(
-    constructFrom(options?.in || date, date),
-    constructNow(options?.in || date),
-  );
+	return isSameYear(
+		constructFrom(options?.in || date, date),
+		constructNow(options?.in || date),
+	);
 }
 
 // Fallback for modularized imports:

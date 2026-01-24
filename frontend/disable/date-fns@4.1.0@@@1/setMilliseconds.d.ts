@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setMilliseconds} function options.
  */
 export interface SetMillisecondsOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setMilliseconds
  * @category Millisecond Helpers
@@ -27,10 +27,10 @@ export interface SetMillisecondsOptions<DateType extends Date = Date>
  * //=> Mon Sep 01 2014 11:30:40.300
  */
 export declare function setMilliseconds<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  milliseconds: number,
-  options?: SetMillisecondsOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	milliseconds: number,
+	options?: SetMillisecondsOptions<ResultDate> | undefined,
 ): ResultDate;

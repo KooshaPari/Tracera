@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFeed = getFeed;
 var stringify_js_1 = require("./stringify.js");
@@ -11,12 +10,12 @@ var legacy_js_1 = require("./legacy.js");
  * @returns The feed.
  */
 function getFeed(doc) {
-    var feedRoot = getOneElement(isValidFeed, doc);
-    return !feedRoot
-        ? null
-        : feedRoot.name === "feed"
-            ? getAtomFeed(feedRoot)
-            : getRssFeed(feedRoot);
+	var feedRoot = getOneElement(isValidFeed, doc);
+	return !feedRoot
+		? null
+		: feedRoot.name === "feed"
+			? getAtomFeed(feedRoot)
+			: getRssFeed(feedRoot);
 }
 /**
  * Parse an Atom feed.
@@ -25,44 +24,53 @@ function getFeed(doc) {
  * @returns The parsed feed.
  */
 function getAtomFeed(feedRoot) {
-    var _a;
-    var childs = feedRoot.children;
-    var feed = {
-        type: "atom",
-        items: (0, legacy_js_1.getElementsByTagName)("entry", childs).map(function (item) {
-            var _a;
-            var children = item.children;
-            var entry = { media: getMediaElements(children) };
-            addConditionally(entry, "id", "id", children);
-            addConditionally(entry, "title", "title", children);
-            var href = (_a = getOneElement("link", children)) === null || _a === void 0 ? void 0 : _a.attribs["href"];
-            if (href) {
-                entry.link = href;
-            }
-            var description = fetch("summary", children) || fetch("content", children);
-            if (description) {
-                entry.description = description;
-            }
-            var pubDate = fetch("updated", children);
-            if (pubDate) {
-                entry.pubDate = new Date(pubDate);
-            }
-            return entry;
-        }),
-    };
-    addConditionally(feed, "id", "id", childs);
-    addConditionally(feed, "title", "title", childs);
-    var href = (_a = getOneElement("link", childs)) === null || _a === void 0 ? void 0 : _a.attribs["href"];
-    if (href) {
-        feed.link = href;
-    }
-    addConditionally(feed, "description", "subtitle", childs);
-    var updated = fetch("updated", childs);
-    if (updated) {
-        feed.updated = new Date(updated);
-    }
-    addConditionally(feed, "author", "email", childs, true);
-    return feed;
+	var _a;
+	var childs = feedRoot.children;
+	var feed = {
+		type: "atom",
+		items: (0, legacy_js_1.getElementsByTagName)("entry", childs).map(
+			(item) => {
+				var _a;
+				var children = item.children;
+				var entry = { media: getMediaElements(children) };
+				addConditionally(entry, "id", "id", children);
+				addConditionally(entry, "title", "title", children);
+				var href =
+					(_a = getOneElement("link", children)) === null || _a === void 0
+						? void 0
+						: _a.attribs["href"];
+				if (href) {
+					entry.link = href;
+				}
+				var description =
+					fetch("summary", children) || fetch("content", children);
+				if (description) {
+					entry.description = description;
+				}
+				var pubDate = fetch("updated", children);
+				if (pubDate) {
+					entry.pubDate = new Date(pubDate);
+				}
+				return entry;
+			},
+		),
+	};
+	addConditionally(feed, "id", "id", childs);
+	addConditionally(feed, "title", "title", childs);
+	var href =
+		(_a = getOneElement("link", childs)) === null || _a === void 0
+			? void 0
+			: _a.attribs["href"];
+	if (href) {
+		feed.link = href;
+	}
+	addConditionally(feed, "description", "subtitle", childs);
+	var updated = fetch("updated", childs);
+	if (updated) {
+		feed.updated = new Date(updated);
+	}
+	addConditionally(feed, "author", "email", childs, true);
+	return feed;
 }
 /**
  * Parse a RSS feed.
@@ -71,44 +79,52 @@ function getAtomFeed(feedRoot) {
  * @returns The parsed feed.
  */
 function getRssFeed(feedRoot) {
-    var _a, _b;
-    var childs = (_b = (_a = getOneElement("channel", feedRoot.children)) === null || _a === void 0 ? void 0 : _a.children) !== null && _b !== void 0 ? _b : [];
-    var feed = {
-        type: feedRoot.name.substr(0, 3),
-        id: "",
-        items: (0, legacy_js_1.getElementsByTagName)("item", feedRoot.children).map(function (item) {
-            var children = item.children;
-            var entry = { media: getMediaElements(children) };
-            addConditionally(entry, "id", "guid", children);
-            addConditionally(entry, "title", "title", children);
-            addConditionally(entry, "link", "link", children);
-            addConditionally(entry, "description", "description", children);
-            var pubDate = fetch("pubDate", children) || fetch("dc:date", children);
-            if (pubDate)
-                entry.pubDate = new Date(pubDate);
-            return entry;
-        }),
-    };
-    addConditionally(feed, "title", "title", childs);
-    addConditionally(feed, "link", "link", childs);
-    addConditionally(feed, "description", "description", childs);
-    var updated = fetch("lastBuildDate", childs);
-    if (updated) {
-        feed.updated = new Date(updated);
-    }
-    addConditionally(feed, "author", "managingEditor", childs, true);
-    return feed;
+	var _a, _b;
+	var childs =
+		(_b =
+			(_a = getOneElement("channel", feedRoot.children)) === null ||
+			_a === void 0
+				? void 0
+				: _a.children) !== null && _b !== void 0
+			? _b
+			: [];
+	var feed = {
+		type: feedRoot.name.substr(0, 3),
+		id: "",
+		items: (0, legacy_js_1.getElementsByTagName)("item", feedRoot.children).map(
+			(item) => {
+				var children = item.children;
+				var entry = { media: getMediaElements(children) };
+				addConditionally(entry, "id", "guid", children);
+				addConditionally(entry, "title", "title", children);
+				addConditionally(entry, "link", "link", children);
+				addConditionally(entry, "description", "description", children);
+				var pubDate = fetch("pubDate", children) || fetch("dc:date", children);
+				if (pubDate) entry.pubDate = new Date(pubDate);
+				return entry;
+			},
+		),
+	};
+	addConditionally(feed, "title", "title", childs);
+	addConditionally(feed, "link", "link", childs);
+	addConditionally(feed, "description", "description", childs);
+	var updated = fetch("lastBuildDate", childs);
+	if (updated) {
+		feed.updated = new Date(updated);
+	}
+	addConditionally(feed, "author", "managingEditor", childs, true);
+	return feed;
 }
 var MEDIA_KEYS_STRING = ["url", "type", "lang"];
 var MEDIA_KEYS_INT = [
-    "fileSize",
-    "bitrate",
-    "framerate",
-    "samplingrate",
-    "channels",
-    "duration",
-    "height",
-    "width",
+	"fileSize",
+	"bitrate",
+	"framerate",
+	"samplingrate",
+	"channels",
+	"duration",
+	"height",
+	"width",
 ];
 /**
  * Get all media elements of a feed item.
@@ -117,29 +133,39 @@ var MEDIA_KEYS_INT = [
  * @returns Media elements.
  */
 function getMediaElements(where) {
-    return (0, legacy_js_1.getElementsByTagName)("media:content", where).map(function (elem) {
-        var attribs = elem.attribs;
-        var media = {
-            medium: attribs["medium"],
-            isDefault: !!attribs["isDefault"],
-        };
-        for (var _i = 0, MEDIA_KEYS_STRING_1 = MEDIA_KEYS_STRING; _i < MEDIA_KEYS_STRING_1.length; _i++) {
-            var attrib = MEDIA_KEYS_STRING_1[_i];
-            if (attribs[attrib]) {
-                media[attrib] = attribs[attrib];
-            }
-        }
-        for (var _a = 0, MEDIA_KEYS_INT_1 = MEDIA_KEYS_INT; _a < MEDIA_KEYS_INT_1.length; _a++) {
-            var attrib = MEDIA_KEYS_INT_1[_a];
-            if (attribs[attrib]) {
-                media[attrib] = parseInt(attribs[attrib], 10);
-            }
-        }
-        if (attribs["expression"]) {
-            media.expression = attribs["expression"];
-        }
-        return media;
-    });
+	return (0, legacy_js_1.getElementsByTagName)("media:content", where).map(
+		(elem) => {
+			var attribs = elem.attribs;
+			var media = {
+				medium: attribs["medium"],
+				isDefault: !!attribs["isDefault"],
+			};
+			for (
+				var _i = 0, MEDIA_KEYS_STRING_1 = MEDIA_KEYS_STRING;
+				_i < MEDIA_KEYS_STRING_1.length;
+				_i++
+			) {
+				var attrib = MEDIA_KEYS_STRING_1[_i];
+				if (attribs[attrib]) {
+					media[attrib] = attribs[attrib];
+				}
+			}
+			for (
+				var _a = 0, MEDIA_KEYS_INT_1 = MEDIA_KEYS_INT;
+				_a < MEDIA_KEYS_INT_1.length;
+				_a++
+			) {
+				var attrib = MEDIA_KEYS_INT_1[_a];
+				if (attribs[attrib]) {
+					media[attrib] = parseInt(attribs[attrib], 10);
+				}
+			}
+			if (attribs["expression"]) {
+				media.expression = attribs["expression"];
+			}
+			return media;
+		},
+	);
 }
 /**
  * Get one element by tag name.
@@ -149,7 +175,7 @@ function getMediaElements(where) {
  * @returns The element or null
  */
 function getOneElement(tagName, node) {
-    return (0, legacy_js_1.getElementsByTagName)(tagName, node, true, 1)[0];
+	return (0, legacy_js_1.getElementsByTagName)(tagName, node, true, 1)[0];
 }
 /**
  * Get the text content of an element with a certain tag name.
@@ -160,8 +186,12 @@ function getOneElement(tagName, node) {
  * @returns The text content of the element.
  */
 function fetch(tagName, where, recurse) {
-    if (recurse === void 0) { recurse = false; }
-    return (0, stringify_js_1.textContent)((0, legacy_js_1.getElementsByTagName)(tagName, where, recurse, 1)).trim();
+	if (recurse === void 0) {
+		recurse = false;
+	}
+	return (0, stringify_js_1.textContent)(
+		(0, legacy_js_1.getElementsByTagName)(tagName, where, recurse, 1),
+	).trim();
 }
 /**
  * Adds a property to an object if it has a value.
@@ -173,10 +203,11 @@ function fetch(tagName, where, recurse) {
  * @param recurse Whether to recurse into child nodes.
  */
 function addConditionally(obj, prop, tagName, where, recurse) {
-    if (recurse === void 0) { recurse = false; }
-    var val = fetch(tagName, where, recurse);
-    if (val)
-        obj[prop] = val;
+	if (recurse === void 0) {
+		recurse = false;
+	}
+	var val = fetch(tagName, where, recurse);
+	if (val) obj[prop] = val;
 }
 /**
  * Checks if an element is a feed root node.
@@ -185,6 +216,6 @@ function addConditionally(obj, prop, tagName, where, recurse) {
  * @returns Whether an element is a feed root node.
  */
 function isValidFeed(value) {
-    return value === "rss" || value === "feed" || value === "rdf:RDF";
+	return value === "rss" || value === "feed" || value === "rdf:RDF";
 }
 //# sourceMappingURL=feeds.js.map

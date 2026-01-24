@@ -1,1 +1,1 @@
-export { useEffectEvent } from './use-effect-event';
+export { useEffectEvent } from "./use-effect-event";

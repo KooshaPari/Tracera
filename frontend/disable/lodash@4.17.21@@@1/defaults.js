@@ -1,7 +1,7 @@
-var baseRest = require('./_baseRest'),
-    eq = require('./eq'),
-    isIterateeCall = require('./_isIterateeCall'),
-    keysIn = require('./keysIn');
+var baseRest = require("./_baseRest"),
+	eq = require("./eq"),
+	isIterateeCall = require("./_isIterateeCall"),
+	keysIn = require("./keysIn");
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -30,35 +30,37 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * _.defaults({ 'a': 1 }, { 'b': 2 }, { 'a': 3 });
  * // => { 'a': 1, 'b': 2 }
  */
-var defaults = baseRest(function(object, sources) {
-  object = Object(object);
+var defaults = baseRest((object, sources) => {
+	object = Object(object);
 
-  var index = -1;
-  var length = sources.length;
-  var guard = length > 2 ? sources[2] : undefined;
+	var index = -1;
+	var length = sources.length;
+	var guard = length > 2 ? sources[2] : undefined;
 
-  if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-    length = 1;
-  }
+	if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+		length = 1;
+	}
 
-  while (++index < length) {
-    var source = sources[index];
-    var props = keysIn(source);
-    var propsIndex = -1;
-    var propsLength = props.length;
+	while (++index < length) {
+		var source = sources[index];
+		var props = keysIn(source);
+		var propsIndex = -1;
+		var propsLength = props.length;
 
-    while (++propsIndex < propsLength) {
-      var key = props[propsIndex];
-      var value = object[key];
+		while (++propsIndex < propsLength) {
+			var key = props[propsIndex];
+			var value = object[key];
 
-      if (value === undefined ||
-          (eq(value, objectProto[key]) && !hasOwnProperty.call(object, key))) {
-        object[key] = source[key];
-      }
-    }
-  }
+			if (
+				value === undefined ||
+				(eq(value, objectProto[key]) && !hasOwnProperty.call(object, key))
+			) {
+				object[key] = source[key];
+			}
+		}
+	}
 
-  return object;
+	return object;
 });
 
 module.exports = defaults;

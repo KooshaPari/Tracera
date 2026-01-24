@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/find');
+"use strict";
+module.exports = require("../../full/typed-array/find");

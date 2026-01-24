@@ -29,14 +29,14 @@ var _index = require("./_lib/normalizeDates.cjs");
  * //=> 8
  */
 function differenceInCalendarMonths(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
-  const monthsDiff = laterDate_.getMonth() - earlierDate_.getMonth();
+	const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
+	const monthsDiff = laterDate_.getMonth() - earlierDate_.getMonth();
 
-  return yearsDiff * 12 + monthsDiff;
+	return yearsDiff * 12 + monthsDiff;
 }

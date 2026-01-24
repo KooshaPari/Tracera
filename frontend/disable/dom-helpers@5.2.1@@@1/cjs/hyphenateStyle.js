@@ -1,5 +1,3 @@
-"use strict";
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 exports.__esModule = true;
@@ -15,7 +13,7 @@ var _hyphenate = _interopRequireDefault(require("./hyphenate"));
 var msPattern = /^ms-/;
 
 function hyphenateStyleName(string) {
-  return (0, _hyphenate.default)(string).replace(msPattern, '-ms-');
+	return (0, _hyphenate.default)(string).replace(msPattern, "-ms-");
 }
 
 module.exports = exports["default"];

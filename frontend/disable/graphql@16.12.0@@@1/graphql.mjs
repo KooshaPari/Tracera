@@ -1,9 +1,9 @@
-import { devAssert } from './jsutils/devAssert.mjs';
-import { isPromise } from './jsutils/isPromise.mjs';
-import { parse } from './language/parser.mjs';
-import { validateSchema } from './type/validate.mjs';
-import { validate } from './validation/validate.mjs';
-import { execute } from './execution/execute.mjs';
+import { execute } from "./execution/execute.mjs";
+import { devAssert } from "./jsutils/devAssert.mjs";
+import { isPromise } from "./jsutils/isPromise.mjs";
+import { parse } from "./language/parser.mjs";
+import { validateSchema } from "./type/validate.mjs";
+import { validate } from "./validation/validate.mjs";
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a
@@ -45,8 +45,8 @@ import { execute } from './execution/execute.mjs';
  */
 
 export function graphql(args) {
-  // Always return a Promise for a consistent API.
-  return new Promise((resolve) => resolve(graphqlImpl(args)));
+	// Always return a Promise for a consistent API.
+	return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -56,67 +56,67 @@ export function graphql(args) {
  */
 
 export function graphqlSync(args) {
-  const result = graphqlImpl(args); // Assert that the execution was synchronous.
+	const result = graphqlImpl(args); // Assert that the execution was synchronous.
 
-  if (isPromise(result)) {
-    throw new Error('GraphQL execution failed to complete synchronously.');
-  }
+	if (isPromise(result)) {
+		throw new Error("GraphQL execution failed to complete synchronously.");
+	}
 
-  return result;
+	return result;
 }
 
 function graphqlImpl(args) {
-  // Temporary for v15 to v16 migration. Remove in v17
-  arguments.length < 2 ||
-    devAssert(
-      false,
-      'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
-    );
-  const {
-    schema,
-    source,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  } = args; // Validate Schema
+	// Temporary for v15 to v16 migration. Remove in v17
+	arguments.length < 2 ||
+		devAssert(
+			false,
+			"graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.",
+		);
+	const {
+		schema,
+		source,
+		rootValue,
+		contextValue,
+		variableValues,
+		operationName,
+		fieldResolver,
+		typeResolver,
+	} = args; // Validate Schema
 
-  const schemaValidationErrors = validateSchema(schema);
+	const schemaValidationErrors = validateSchema(schema);
 
-  if (schemaValidationErrors.length > 0) {
-    return {
-      errors: schemaValidationErrors,
-    };
-  } // Parse
+	if (schemaValidationErrors.length > 0) {
+		return {
+			errors: schemaValidationErrors,
+		};
+	} // Parse
 
-  let document;
+	let document;
 
-  try {
-    document = parse(source);
-  } catch (syntaxError) {
-    return {
-      errors: [syntaxError],
-    };
-  } // Validate
+	try {
+		document = parse(source);
+	} catch (syntaxError) {
+		return {
+			errors: [syntaxError],
+		};
+	} // Validate
 
-  const validationErrors = validate(schema, document);
+	const validationErrors = validate(schema, document);
 
-  if (validationErrors.length > 0) {
-    return {
-      errors: validationErrors,
-    };
-  } // Execute
+	if (validationErrors.length > 0) {
+		return {
+			errors: validationErrors,
+		};
+	} // Execute
 
-  return execute({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  });
+	return execute({
+		schema,
+		document,
+		rootValue,
+		contextValue,
+		variableValues,
+		operationName,
+		fieldResolver,
+		typeResolver,
+	});
 }

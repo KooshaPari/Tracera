@@ -1,7 +1,7 @@
-var baseFlatten = require('./_baseFlatten'),
-    baseRest = require('./_baseRest'),
-    baseUniq = require('./_baseUniq'),
-    isArrayLikeObject = require('./isArrayLikeObject');
+var baseFlatten = require("./_baseFlatten"),
+	baseRest = require("./_baseRest"),
+	baseUniq = require("./_baseUniq"),
+	isArrayLikeObject = require("./isArrayLikeObject");
 
 /**
  * Creates an array of unique values, in order, from all given arrays using
@@ -19,8 +19,8 @@ var baseFlatten = require('./_baseFlatten'),
  * _.union([2], [1, 2]);
  * // => [2, 1]
  */
-var union = baseRest(function(arrays) {
-  return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true));
-});
+var union = baseRest((arrays) =>
+	baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true)),
+);
 
 module.exports = union;

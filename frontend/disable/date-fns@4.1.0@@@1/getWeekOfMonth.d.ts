@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link getWeekOfMonth} function options.
  */
 export interface GetWeekOfMonthOptions
-  extends LocalizedOptions<"options">,
-    WeekOptions,
-    ContextOptions<Date> {}
+	extends LocalizedOptions<"options">,
+		WeekOptions,
+		ContextOptions<Date> {}
 /**
  * @name getWeekOfMonth
  * @category Week Helpers
@@ -30,6 +30,6 @@ export interface GetWeekOfMonthOptions
  * //=> 2
  */
 export declare function getWeekOfMonth(
-  date: DateArg<Date> & {},
-  options?: GetWeekOfMonthOptions,
+	date: DateArg<Date> & {},
+	options?: GetWeekOfMonthOptions,
 ): number;

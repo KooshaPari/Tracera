@@ -23,7 +23,7 @@ export interface IsSameYearOptions extends ContextOptions<Date> {}
  * //=> true
  */
 export declare function isSameYear(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: IsSameYearOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: IsSameYearOptions | undefined,
 ): boolean;

@@ -1,9 +1,9 @@
-import { outdent } from 'outdent';
-import { validateDoc } from './utils';
+import { outdent } from "outdent";
+import { validateDoc } from "./utils";
 
-describe('OpenAPI Schema', () => {
-  it('should not report if Path object is valid ', async () => {
-    const source = outdent`
+describe("OpenAPI Schema", () => {
+	it("should not report if Path object is valid ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -20,15 +20,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if Path object is empty ', async () => {
-    const source = outdent`
+	it("should not report if Path object is empty ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -40,15 +40,15 @@ describe('OpenAPI Schema', () => {
       paths: {}
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if Path object is not present ', async () => {
-    const source = outdent`
+	it("should report if Path object is not present ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -58,11 +58,11 @@ describe('OpenAPI Schema', () => {
         - url: http://google.com
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/",
@@ -70,10 +70,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if Path object is empty ', async () => {
-    const source = outdent`
+	it("should not report if Path object is empty ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -85,16 +85,16 @@ describe('OpenAPI Schema', () => {
       paths: {}
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  //Check: no error
-  it('should report if the field name is not begin with a forward slash (/) ', async () => {
-    const source = outdent`
+	//Check: no error
+	it("should report if the field name is not begin with a forward slash (/) ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -111,11 +111,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/paths/ping",
@@ -123,10 +123,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if paths are considered identical and invalid', async () => {
-    const source = outdent`
+	it("should report if paths are considered identical and invalid", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -148,11 +148,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        'no-identical-paths': 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				"no-identical-paths": "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/paths/~1pets~1{name}",
@@ -160,10 +160,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report valid matching URLs', async () => {
-    const source = outdent`
+	it("should not report valid matching URLs", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -185,15 +185,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report in case of ambiguous matching ', async () => {
-    const source = outdent`
+	it("should not report in case of ambiguous matching ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -215,15 +215,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if Path Item is empty ', async () => {
-    const source = outdent`
+	it("should not report if Path Item is empty ", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -236,15 +236,15 @@ describe('OpenAPI Schema', () => {
         '/ping': {}
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report of a valid Parameter Object', async () => {
-    const source = outdent`
+	it("should not report of a valid Parameter Object", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Test
@@ -275,10 +275,10 @@ describe('OpenAPI Schema', () => {
                 description: Invalid input
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 });

@@ -1,6 +1,6 @@
-var baseClamp = require('./_baseClamp'),
-    shuffleSelf = require('./_shuffleSelf'),
-    values = require('./values');
+var baseClamp = require("./_baseClamp"),
+	shuffleSelf = require("./_shuffleSelf"),
+	values = require("./values");
 
 /**
  * The base implementation of `_.sampleSize` without param guards.
@@ -11,8 +11,8 @@ var baseClamp = require('./_baseClamp'),
  * @returns {Array} Returns the random elements.
  */
 function baseSampleSize(collection, n) {
-  var array = values(collection);
-  return shuffleSelf(array, baseClamp(n, 0, array.length));
+	var array = values(collection);
+	return shuffleSelf(array, baseClamp(n, 0, array.length));
 }
 
 module.exports = baseSampleSize;

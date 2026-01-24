@@ -9,18 +9,18 @@ type Key = string | number | symbol;
  * and there are never duplicates.
  */
 export class SetArray<T extends Key = Key> {
-  declare private _indexes: Record<T, number | undefined>;
-  declare array: readonly T[];
+	private declare _indexes: Record<T, number | undefined>;
+	declare array: readonly T[];
 
-  constructor() {
-    this._indexes = { __proto__: null } as any;
-    this.array = [];
-  }
+	constructor() {
+		this._indexes = { __proto__: null } as any;
+		this.array = [];
+	}
 }
 
 interface PublicSet<T extends Key> {
-  array: T[];
-  _indexes: SetArray<T>['_indexes'];
+	array: T[];
+	_indexes: SetArray<T>["_indexes"];
 }
 
 /**
@@ -28,14 +28,17 @@ interface PublicSet<T extends Key> {
  * with public access modifiers.
  */
 function cast<T extends Key>(set: SetArray<T>): PublicSet<T> {
-  return set as any;
+	return set as any;
 }
 
 /**
  * Gets the index associated with `key` in the backing array, if it is already present.
  */
-export function get<T extends Key>(setarr: SetArray<T>, key: T): number | undefined {
-  return cast(setarr)._indexes[key];
+export function get<T extends Key>(
+	setarr: SetArray<T>,
+	key: T,
+): number | undefined {
+	return cast(setarr)._indexes[key];
 }
 
 /**
@@ -43,40 +46,40 @@ export function get<T extends Key>(setarr: SetArray<T>, key: T): number | undefi
  * the index of the `key` in the backing array.
  */
 export function put<T extends Key>(setarr: SetArray<T>, key: T): number {
-  // The key may or may not be present. If it is present, it's a number.
-  const index = get(setarr, key);
-  if (index !== undefined) return index;
+	// The key may or may not be present. If it is present, it's a number.
+	const index = get(setarr, key);
+	if (index !== undefined) return index;
 
-  const { array, _indexes: indexes } = cast(setarr);
+	const { array, _indexes: indexes } = cast(setarr);
 
-  const length = array.push(key);
-  return (indexes[key] = length - 1);
+	const length = array.push(key);
+	return (indexes[key] = length - 1);
 }
 
 /**
  * Pops the last added item out of the SetArray.
  */
 export function pop<T extends Key>(setarr: SetArray<T>): void {
-  const { array, _indexes: indexes } = cast(setarr);
-  if (array.length === 0) return;
+	const { array, _indexes: indexes } = cast(setarr);
+	if (array.length === 0) return;
 
-  const last = array.pop()!;
-  indexes[last] = undefined;
+	const last = array.pop()!;
+	indexes[last] = undefined;
 }
 
 /**
  * Removes the key, if it exists in the set.
  */
 export function remove<T extends Key>(setarr: SetArray<T>, key: T): void {
-  const index = get(setarr, key);
-  if (index === undefined) return;
+	const index = get(setarr, key);
+	if (index === undefined) return;
 
-  const { array, _indexes: indexes } = cast(setarr);
-  for (let i = index + 1; i < array.length; i++) {
-    const k = array[i];
-    array[i - 1] = k;
-    indexes[k]!--;
-  }
-  indexes[key] = undefined;
-  array.pop();
+	const { array, _indexes: indexes } = cast(setarr);
+	for (let i = index + 1; i < array.length; i++) {
+		const k = array[i];
+		array[i - 1] = k;
+		indexes[k]!--;
+	}
+	indexes[key] = undefined;
+	array.pop();
 }

@@ -1,34 +1,31 @@
-import {
-    LeftParenthesis,
-    RightParenthesis
-} from '../../tokenizer/index.js';
+import { LeftParenthesis, RightParenthesis } from "../../tokenizer/index.js";
 
-export const name = 'SupportsDeclaration';
+export const name = "SupportsDeclaration";
 export const structure = {
-    declaration: 'Declaration'
+	declaration: "Declaration",
 };
 
 export function parse() {
-    const start = this.tokenStart;
+	const start = this.tokenStart;
 
-    this.eat(LeftParenthesis);
-    this.skipSC();
+	this.eat(LeftParenthesis);
+	this.skipSC();
 
-    const declaration = this.Declaration();
+	const declaration = this.Declaration();
 
-    if (!this.eof) {
-        this.eat(RightParenthesis);
-    }
+	if (!this.eof) {
+		this.eat(RightParenthesis);
+	}
 
-    return {
-        type: 'SupportsDeclaration',
-        loc: this.getLocation(start, this.tokenStart),
-        declaration
-    };
+	return {
+		type: "SupportsDeclaration",
+		loc: this.getLocation(start, this.tokenStart),
+		declaration,
+	};
 }
 
 export function generate(node) {
-    this.token(LeftParenthesis, '(');
-    this.node(node.declaration);
-    this.token(RightParenthesis, ')');
+	this.token(LeftParenthesis, "(");
+	this.node(node.declaration);
+	this.token(RightParenthesis, ")");
 }

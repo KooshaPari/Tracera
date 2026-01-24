@@ -1,11 +1,11 @@
-import * as React from 'react'
-import { Matches } from './Matches'
-import { getRouterContext } from './routerContext'
 import type {
-  AnyRouter,
-  RegisteredRouter,
-  RouterOptions,
-} from '@tanstack/router-core'
+	AnyRouter,
+	RegisteredRouter,
+	RouterOptions,
+} from "@tanstack/router-core";
+import type * as React from "react";
+import { Matches } from "./Matches";
+import { getRouterContext } from "./routerContext";
 
 /**
  * Low-level provider that places the router into React context and optionally
@@ -16,40 +16,40 @@ import type {
  * updates router options from props. Most apps should use `RouterProvider`.
  */
 export function RouterContextProvider<
-  TRouter extends AnyRouter = RegisteredRouter,
-  TDehydrated extends Record<string, any> = Record<string, any>,
+	TRouter extends AnyRouter = RegisteredRouter,
+	TDehydrated extends Record<string, any> = Record<string, any>,
 >({
-  router,
-  children,
-  ...rest
+	router,
+	children,
+	...rest
 }: RouterProps<TRouter, TDehydrated> & {
-  children: React.ReactNode
+	children: React.ReactNode;
 }) {
-  if (Object.keys(rest).length > 0) {
-    // Allow the router to update options on the router instance
-    router.update({
-      ...router.options,
-      ...rest,
-      context: {
-        ...router.options.context,
-        ...rest.context,
-      },
-    } as any)
-  }
+	if (Object.keys(rest).length > 0) {
+		// Allow the router to update options on the router instance
+		router.update({
+			...router.options,
+			...rest,
+			context: {
+				...router.options.context,
+				...rest.context,
+			},
+		} as any);
+	}
 
-  const routerContext = getRouterContext()
+	const routerContext = getRouterContext();
 
-  const provider = (
-    <routerContext.Provider value={router as AnyRouter}>
-      {children}
-    </routerContext.Provider>
-  )
+	const provider = (
+		<routerContext.Provider value={router as AnyRouter}>
+			{children}
+		</routerContext.Provider>
+	);
 
-  if (router.options.Wrap) {
-    return <router.options.Wrap>{provider}</router.options.Wrap>
-  }
+	if (router.options.Wrap) {
+		return <router.options.Wrap>{provider}</router.options.Wrap>;
+	}
 
-  return provider
+	return provider;
 }
 
 /**
@@ -67,37 +67,37 @@ export function RouterContextProvider<
  * `createRouter` via props to update the router instance.
  */
 export function RouterProvider<
-  TRouter extends AnyRouter = RegisteredRouter,
-  TDehydrated extends Record<string, any> = Record<string, any>,
+	TRouter extends AnyRouter = RegisteredRouter,
+	TDehydrated extends Record<string, any> = Record<string, any>,
 >({ router, ...rest }: RouterProps<TRouter, TDehydrated>) {
-  return (
-    <RouterContextProvider router={router} {...rest}>
-      <Matches />
-    </RouterContextProvider>
-  )
+	return (
+		<RouterContextProvider router={router} {...rest}>
+			<Matches />
+		</RouterContextProvider>
+	);
 }
 
 export type RouterProps<
-  TRouter extends AnyRouter = RegisteredRouter,
-  TDehydrated extends Record<string, any> = Record<string, any>,
+	TRouter extends AnyRouter = RegisteredRouter,
+	TDehydrated extends Record<string, any> = Record<string, any>,
 > = Omit<
-  RouterOptions<
-    TRouter['routeTree'],
-    NonNullable<TRouter['options']['trailingSlash']>,
-    NonNullable<TRouter['options']['defaultStructuralSharing']>,
-    TRouter['history'],
-    TDehydrated
-  >,
-  'context'
+	RouterOptions<
+		TRouter["routeTree"],
+		NonNullable<TRouter["options"]["trailingSlash"]>,
+		NonNullable<TRouter["options"]["defaultStructuralSharing"]>,
+		TRouter["history"],
+		TDehydrated
+	>,
+	"context"
 > & {
-  router: TRouter
-  context?: Partial<
-    RouterOptions<
-      TRouter['routeTree'],
-      NonNullable<TRouter['options']['trailingSlash']>,
-      NonNullable<TRouter['options']['defaultStructuralSharing']>,
-      TRouter['history'],
-      TDehydrated
-    >['context']
-  >
-}
+	router: TRouter;
+	context?: Partial<
+		RouterOptions<
+			TRouter["routeTree"],
+			NonNullable<TRouter["options"]["trailingSlash"]>,
+			NonNullable<TRouter["options"]["defaultStructuralSharing"]>,
+			TRouter["history"],
+			TDehydrated
+		>["context"]
+	>;
+};

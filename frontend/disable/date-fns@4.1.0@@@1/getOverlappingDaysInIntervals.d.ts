@@ -35,6 +35,6 @@ import type { Interval } from "./types.js";
  * //=> 0
  */
 export declare function getOverlappingDaysInIntervals(
-  intervalLeft: Interval,
-  intervalRight: Interval,
+	intervalLeft: Interval,
+	intervalRight: Interval,
 ): number;

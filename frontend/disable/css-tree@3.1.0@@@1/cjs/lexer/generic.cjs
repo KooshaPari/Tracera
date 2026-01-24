@@ -1,144 +1,146 @@
-'use strict';
+"use strict";
 
-const genericConst = require('./generic-const.cjs');
-const genericAnPlusB = require('./generic-an-plus-b.cjs');
-const genericUrange = require('./generic-urange.cjs');
-const charCodeDefinitions = require('../tokenizer/char-code-definitions.cjs');
-const types = require('../tokenizer/types.cjs');
-const utils = require('../tokenizer/utils.cjs');
+const genericConst = require("./generic-const.cjs");
+const genericAnPlusB = require("./generic-an-plus-b.cjs");
+const genericUrange = require("./generic-urange.cjs");
+const charCodeDefinitions = require("../tokenizer/char-code-definitions.cjs");
+const types = require("../tokenizer/types.cjs");
+const utils = require("../tokenizer/utils.cjs");
 
-const calcFunctionNames = ['calc(', '-moz-calc(', '-webkit-calc('];
+const calcFunctionNames = ["calc(", "-moz-calc(", "-webkit-calc("];
 const balancePair = new Map([
-    [types.Function, types.RightParenthesis],
-    [types.LeftParenthesis, types.RightParenthesis],
-    [types.LeftSquareBracket, types.RightSquareBracket],
-    [types.LeftCurlyBracket, types.RightCurlyBracket]
+	[types.Function, types.RightParenthesis],
+	[types.LeftParenthesis, types.RightParenthesis],
+	[types.LeftSquareBracket, types.RightSquareBracket],
+	[types.LeftCurlyBracket, types.RightCurlyBracket],
 ]);
 
 // safe char code getter
 function charCodeAt(str, index) {
-    return index < str.length ? str.charCodeAt(index) : 0;
+	return index < str.length ? str.charCodeAt(index) : 0;
 }
 
 function eqStr(actual, expected) {
-    return utils.cmpStr(actual, 0, actual.length, expected);
+	return utils.cmpStr(actual, 0, actual.length, expected);
 }
 
 function eqStrAny(actual, expected) {
-    for (let i = 0; i < expected.length; i++) {
-        if (eqStr(actual, expected[i])) {
-            return true;
-        }
-    }
+	for (let i = 0; i < expected.length; i++) {
+		if (eqStr(actual, expected[i])) {
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 // IE postfix hack, i.e. 123\0 or 123px\9
 function isPostfixIeHack(str, offset) {
-    if (offset !== str.length - 2) {
-        return false;
-    }
+	if (offset !== str.length - 2) {
+		return false;
+	}
 
-    return (
-        charCodeAt(str, offset) === 0x005C &&  // U+005C REVERSE SOLIDUS (\)
-        charCodeDefinitions.isDigit(charCodeAt(str, offset + 1))
-    );
+	return (
+		charCodeAt(str, offset) === 0x005c && // U+005C REVERSE SOLIDUS (\)
+		charCodeDefinitions.isDigit(charCodeAt(str, offset + 1))
+	);
 }
 
 function outOfRange(opts, value, numEnd) {
-    if (opts && opts.type === 'Range') {
-        const num = Number(
-            numEnd !== undefined && numEnd !== value.length
-                ? value.substr(0, numEnd)
-                : value
-        );
+	if (opts && opts.type === "Range") {
+		const num = Number(
+			numEnd !== undefined && numEnd !== value.length
+				? value.substr(0, numEnd)
+				: value,
+		);
 
-        if (isNaN(num)) {
-            return true;
-        }
+		if (isNaN(num)) {
+			return true;
+		}
 
-        // FIXME: when opts.min is a string it's a dimension, skip a range validation
-        // for now since it requires a type covertation which is not implmented yet
-        if (opts.min !== null && num < opts.min && typeof opts.min !== 'string') {
-            return true;
-        }
+		// FIXME: when opts.min is a string it's a dimension, skip a range validation
+		// for now since it requires a type covertation which is not implmented yet
+		if (opts.min !== null && num < opts.min && typeof opts.min !== "string") {
+			return true;
+		}
 
-        // FIXME: when opts.max is a string it's a dimension, skip a range validation
-        // for now since it requires a type covertation which is not implmented yet
-        if (opts.max !== null && num > opts.max && typeof opts.max !== 'string') {
-            return true;
-        }
-    }
+		// FIXME: when opts.max is a string it's a dimension, skip a range validation
+		// for now since it requires a type covertation which is not implmented yet
+		if (opts.max !== null && num > opts.max && typeof opts.max !== "string") {
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 function consumeFunction(token, getNextToken) {
-    let balanceCloseType = 0;
-    let balanceStash = [];
-    let length = 0;
+	let balanceCloseType = 0;
+	const balanceStash = [];
+	let length = 0;
 
-    // balanced token consuming
-    scan:
-    do {
-        switch (token.type) {
-            case types.RightCurlyBracket:
-            case types.RightParenthesis:
-            case types.RightSquareBracket:
-                if (token.type !== balanceCloseType) {
-                    break scan;
-                }
+	// balanced token consuming
+	scan: do {
+		switch (token.type) {
+			case types.RightCurlyBracket:
+			case types.RightParenthesis:
+			case types.RightSquareBracket:
+				if (token.type !== balanceCloseType) {
+					break scan;
+				}
 
-                balanceCloseType = balanceStash.pop();
+				balanceCloseType = balanceStash.pop();
 
-                if (balanceStash.length === 0) {
-                    length++;
-                    break scan;
-                }
+				if (balanceStash.length === 0) {
+					length++;
+					break scan;
+				}
 
-                break;
+				break;
 
-            case types.Function:
-            case types.LeftParenthesis:
-            case types.LeftSquareBracket:
-            case types.LeftCurlyBracket:
-                balanceStash.push(balanceCloseType);
-                balanceCloseType = balancePair.get(token.type);
-                break;
-        }
+			case types.Function:
+			case types.LeftParenthesis:
+			case types.LeftSquareBracket:
+			case types.LeftCurlyBracket:
+				balanceStash.push(balanceCloseType);
+				balanceCloseType = balancePair.get(token.type);
+				break;
+		}
 
-        length++;
-    } while (token = getNextToken(length));
+		length++;
+	} while ((token = getNextToken(length)));
 
-    return length;
+	return length;
 }
 
 // TODO: implement
 // can be used wherever <length>, <frequency>, <angle>, <time>, <percentage>, <number>, or <integer> values are allowed
 // https://drafts.csswg.org/css-values/#calc-notation
 function calc(next) {
-    return function(token, getNextToken, opts) {
-        if (token === null) {
-            return 0;
-        }
+	return (token, getNextToken, opts) => {
+		if (token === null) {
+			return 0;
+		}
 
-        if (token.type === types.Function && eqStrAny(token.value, calcFunctionNames)) {
-            return consumeFunction(token, getNextToken);
-        }
+		if (
+			token.type === types.Function &&
+			eqStrAny(token.value, calcFunctionNames)
+		) {
+			return consumeFunction(token, getNextToken);
+		}
 
-        return next(token, getNextToken, opts);
-    };
+		return next(token, getNextToken, opts);
+	};
 }
 
 function tokenType(expectedTokenType) {
-    return function(token) {
-        if (token === null || token.type !== expectedTokenType) {
-            return 0;
-        }
+	return (token) => {
+		if (token === null || token.type !== expectedTokenType) {
+			return 0;
+		}
 
-        return 1;
-    };
+		return 1;
+	};
 }
 
 // =========================
@@ -153,45 +155,48 @@ function tokenType(expectedTokenType) {
 //
 // See also: https://developer.mozilla.org/en-US/docs/Web/CSS/custom-ident
 function customIdent(token) {
-    if (token === null || token.type !== types.Ident) {
-        return 0;
-    }
+	if (token === null || token.type !== types.Ident) {
+		return 0;
+	}
 
-    const name = token.value.toLowerCase();
+	const name = token.value.toLowerCase();
 
-    // The CSS-wide keywords are not valid <custom-ident>s
-    if (eqStrAny(name, genericConst.cssWideKeywords)) {
-        return 0;
-    }
+	// The CSS-wide keywords are not valid <custom-ident>s
+	if (eqStrAny(name, genericConst.cssWideKeywords)) {
+		return 0;
+	}
 
-    // The default keyword is reserved and is also not a valid <custom-ident>
-    if (eqStr(name, 'default')) {
-        return 0;
-    }
+	// The default keyword is reserved and is also not a valid <custom-ident>
+	if (eqStr(name, "default")) {
+		return 0;
+	}
 
-    // TODO: ignore property specific keywords (as described https://developer.mozilla.org/en-US/docs/Web/CSS/custom-ident)
-    // Specifications using <custom-ident> must specify clearly what other keywords
-    // are excluded from <custom-ident>, if any—for example by saying that any pre-defined keywords
-    // in that property’s value definition are excluded. Excluded keywords are excluded
-    // in all ASCII case permutations.
+	// TODO: ignore property specific keywords (as described https://developer.mozilla.org/en-US/docs/Web/CSS/custom-ident)
+	// Specifications using <custom-ident> must specify clearly what other keywords
+	// are excluded from <custom-ident>, if any—for example by saying that any pre-defined keywords
+	// in that property’s value definition are excluded. Excluded keywords are excluded
+	// in all ASCII case permutations.
 
-    return 1;
+	return 1;
 }
 
 // https://drafts.csswg.org/css-values-4/#dashed-idents
 // The <dashed-ident> production is a <custom-ident>, with all the case-sensitivity that implies,
 // with the additional restriction that it must start with two dashes (U+002D HYPHEN-MINUS).
 function dashedIdent(token) {
-    if (token === null || token.type !== types.Ident) {
-        return 0;
-    }
+	if (token === null || token.type !== types.Ident) {
+		return 0;
+	}
 
-    // ... must start with two dashes (U+002D HYPHEN-MINUS)
-    if (charCodeAt(token.value, 0) !== 0x002D || charCodeAt(token.value, 1) !== 0x002D) {
-        return 0;
-    }
+	// ... must start with two dashes (U+002D HYPHEN-MINUS)
+	if (
+		charCodeAt(token.value, 0) !== 0x002d ||
+		charCodeAt(token.value, 1) !== 0x002d
+	) {
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 // https://drafts.csswg.org/css-variables/#typedef-custom-property-name
@@ -199,17 +204,17 @@ function dashedIdent(token) {
 // The <custom-property-name> production corresponds to this: it’s defined as any <dashed-ident>
 // (a valid identifier that starts with two dashes), except -- itself, which is reserved for future use by CSS.
 function customPropertyName(token) {
-    // ... it’s defined as any <dashed-ident>
-    if (!dashedIdent(token)) {
-        return 0;
-    }
+	// ... it’s defined as any <dashed-ident>
+	if (!dashedIdent(token)) {
+		return 0;
+	}
 
-    // ... except -- itself, which is reserved for future use by CSS
-    if (token.value === '--') {
-        return 0;
-    }
+	// ... except -- itself, which is reserved for future use by CSS
+	if (token.value === "--") {
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 // https://drafts.csswg.org/css-color-4/#hex-notation
@@ -217,99 +222,104 @@ function customPropertyName(token) {
 // In other words, a hex color is written as a hash character, "#", followed by some number of digits 0-9 or
 // letters a-f (the case of the letters doesn’t matter - #00ff00 is identical to #00FF00).
 function hexColor(token) {
-    if (token === null || token.type !== types.Hash) {
-        return 0;
-    }
+	if (token === null || token.type !== types.Hash) {
+		return 0;
+	}
 
-    const length = token.value.length;
+	const length = token.value.length;
 
-    // valid values (length): #rgb (4), #rgba (5), #rrggbb (7), #rrggbbaa (9)
-    if (length !== 4 && length !== 5 && length !== 7 && length !== 9) {
-        return 0;
-    }
+	// valid values (length): #rgb (4), #rgba (5), #rrggbb (7), #rrggbbaa (9)
+	if (length !== 4 && length !== 5 && length !== 7 && length !== 9) {
+		return 0;
+	}
 
-    for (let i = 1; i < length; i++) {
-        if (!charCodeDefinitions.isHexDigit(charCodeAt(token.value, i))) {
-            return 0;
-        }
-    }
+	for (let i = 1; i < length; i++) {
+		if (!charCodeDefinitions.isHexDigit(charCodeAt(token.value, i))) {
+			return 0;
+		}
+	}
 
-    return 1;
+	return 1;
 }
 
 function idSelector(token) {
-    if (token === null || token.type !== types.Hash) {
-        return 0;
-    }
+	if (token === null || token.type !== types.Hash) {
+		return 0;
+	}
 
-    if (!charCodeDefinitions.isIdentifierStart(charCodeAt(token.value, 1), charCodeAt(token.value, 2), charCodeAt(token.value, 3))) {
-        return 0;
-    }
+	if (
+		!charCodeDefinitions.isIdentifierStart(
+			charCodeAt(token.value, 1),
+			charCodeAt(token.value, 2),
+			charCodeAt(token.value, 3),
+		)
+	) {
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 // https://drafts.csswg.org/css-syntax/#any-value
 // It represents the entirety of what a valid declaration can have as its value.
 function declarationValue(token, getNextToken) {
-    if (!token) {
-        return 0;
-    }
+	if (!token) {
+		return 0;
+	}
 
-    let balanceCloseType = 0;
-    let balanceStash = [];
-    let length = 0;
+	let balanceCloseType = 0;
+	const balanceStash = [];
+	let length = 0;
 
-    // The <declaration-value> production matches any sequence of one or more tokens,
-    // so long as the sequence does not contain ...
-    scan:
-    do {
-        switch (token.type) {
-            // ... <bad-string-token>, <bad-url-token>,
-            case types.BadString:
-            case types.BadUrl:
-                break scan;
+	// The <declaration-value> production matches any sequence of one or more tokens,
+	// so long as the sequence does not contain ...
+	scan: do {
+		switch (token.type) {
+			// ... <bad-string-token>, <bad-url-token>,
+			case types.BadString:
+			case types.BadUrl:
+				break scan;
 
-            // ... unmatched <)-token>, <]-token>, or <}-token>,
-            case types.RightCurlyBracket:
-            case types.RightParenthesis:
-            case types.RightSquareBracket:
-                if (token.type !== balanceCloseType) {
-                    break scan;
-                }
+			// ... unmatched <)-token>, <]-token>, or <}-token>,
+			case types.RightCurlyBracket:
+			case types.RightParenthesis:
+			case types.RightSquareBracket:
+				if (token.type !== balanceCloseType) {
+					break scan;
+				}
 
-                balanceCloseType = balanceStash.pop();
-                break;
+				balanceCloseType = balanceStash.pop();
+				break;
 
-            // ... or top-level <semicolon-token> tokens
-            case types.Semicolon:
-                if (balanceCloseType === 0) {
-                    break scan;
-                }
+			// ... or top-level <semicolon-token> tokens
+			case types.Semicolon:
+				if (balanceCloseType === 0) {
+					break scan;
+				}
 
-                break;
+				break;
 
-            // ... or <delim-token> tokens with a value of "!"
-            case types.Delim:
-                if (balanceCloseType === 0 && token.value === '!') {
-                    break scan;
-                }
+			// ... or <delim-token> tokens with a value of "!"
+			case types.Delim:
+				if (balanceCloseType === 0 && token.value === "!") {
+					break scan;
+				}
 
-                break;
+				break;
 
-            case types.Function:
-            case types.LeftParenthesis:
-            case types.LeftSquareBracket:
-            case types.LeftCurlyBracket:
-                balanceStash.push(balanceCloseType);
-                balanceCloseType = balancePair.get(token.type);
-                break;
-        }
+			case types.Function:
+			case types.LeftParenthesis:
+			case types.LeftSquareBracket:
+			case types.LeftCurlyBracket:
+				balanceStash.push(balanceCloseType);
+				balanceCloseType = balancePair.get(token.type);
+				break;
+		}
 
-        length++;
-    } while (token = getNextToken(length));
+		length++;
+	} while ((token = getNextToken(length)));
 
-    return length;
+	return length;
 }
 
 // https://drafts.csswg.org/css-syntax/#any-value
@@ -317,48 +327,47 @@ function declarationValue(token, getNextToken) {
 // allows top-level <semicolon-token> tokens and <delim-token> tokens
 // with a value of "!". It represents the entirety of what valid CSS can be in any context.
 function anyValue(token, getNextToken) {
-    if (!token) {
-        return 0;
-    }
+	if (!token) {
+		return 0;
+	}
 
-    let balanceCloseType = 0;
-    let balanceStash = [];
-    let length = 0;
+	let balanceCloseType = 0;
+	const balanceStash = [];
+	let length = 0;
 
-    // The <any-value> production matches any sequence of one or more tokens,
-    // so long as the sequence ...
-    scan:
-    do {
-        switch (token.type) {
-            // ... does not contain <bad-string-token>, <bad-url-token>,
-            case types.BadString:
-            case types.BadUrl:
-                break scan;
+	// The <any-value> production matches any sequence of one or more tokens,
+	// so long as the sequence ...
+	scan: do {
+		switch (token.type) {
+			// ... does not contain <bad-string-token>, <bad-url-token>,
+			case types.BadString:
+			case types.BadUrl:
+				break scan;
 
-            // ... unmatched <)-token>, <]-token>, or <}-token>,
-            case types.RightCurlyBracket:
-            case types.RightParenthesis:
-            case types.RightSquareBracket:
-                if (token.type !== balanceCloseType) {
-                    break scan;
-                }
+			// ... unmatched <)-token>, <]-token>, or <}-token>,
+			case types.RightCurlyBracket:
+			case types.RightParenthesis:
+			case types.RightSquareBracket:
+				if (token.type !== balanceCloseType) {
+					break scan;
+				}
 
-                balanceCloseType = balanceStash.pop();
-                break;
+				balanceCloseType = balanceStash.pop();
+				break;
 
-            case types.Function:
-            case types.LeftParenthesis:
-            case types.LeftSquareBracket:
-            case types.LeftCurlyBracket:
-                balanceStash.push(balanceCloseType);
-                balanceCloseType = balancePair.get(token.type);
-                break;
-        }
+			case types.Function:
+			case types.LeftParenthesis:
+			case types.LeftSquareBracket:
+			case types.LeftCurlyBracket:
+				balanceStash.push(balanceCloseType);
+				balanceCloseType = balancePair.get(token.type);
+				break;
+		}
 
-        length++;
-    } while (token = getNextToken(length));
+		length++;
+	} while ((token = getNextToken(length)));
 
-    return length;
+	return length;
 }
 
 // =========================
@@ -366,37 +375,39 @@ function anyValue(token, getNextToken) {
 //
 
 function dimension(type) {
-    if (type) {
-        type = new Set(type);
-    }
+	if (type) {
+		type = new Set(type);
+	}
 
-    return function(token, getNextToken, opts) {
-        if (token === null || token.type !== types.Dimension) {
-            return 0;
-        }
+	return (token, getNextToken, opts) => {
+		if (token === null || token.type !== types.Dimension) {
+			return 0;
+		}
 
-        const numberEnd = utils.consumeNumber(token.value, 0);
+		const numberEnd = utils.consumeNumber(token.value, 0);
 
-        // check unit
-        if (type !== null) {
-            // check for IE postfix hack, i.e. 123px\0 or 123px\9
-            const reverseSolidusOffset = token.value.indexOf('\\', numberEnd);
-            const unit = reverseSolidusOffset === -1 || !isPostfixIeHack(token.value, reverseSolidusOffset)
-                ? token.value.substr(numberEnd)
-                : token.value.substring(numberEnd, reverseSolidusOffset);
+		// check unit
+		if (type !== null) {
+			// check for IE postfix hack, i.e. 123px\0 or 123px\9
+			const reverseSolidusOffset = token.value.indexOf("\\", numberEnd);
+			const unit =
+				reverseSolidusOffset === -1 ||
+				!isPostfixIeHack(token.value, reverseSolidusOffset)
+					? token.value.substr(numberEnd)
+					: token.value.substring(numberEnd, reverseSolidusOffset);
 
-            if (type.has(unit.toLowerCase()) === false) {
-                return 0;
-            }
-        }
+			if (type.has(unit.toLowerCase()) === false) {
+				return 0;
+			}
+		}
 
-        // check range if specified
-        if (outOfRange(opts, token.value, numberEnd)) {
-            return 0;
-        }
+		// check range if specified
+		if (outOfRange(opts, token.value, numberEnd)) {
+			return 0;
+		}
 
-        return 1;
-    };
+		return 1;
+	};
 }
 
 // =========================
@@ -406,17 +417,17 @@ function dimension(type) {
 // §5.5. Percentages: the <percentage> type
 // https://drafts.csswg.org/css-values-4/#percentages
 function percentage(token, getNextToken, opts) {
-    // ... corresponds to the <percentage-token> production
-    if (token === null || token.type !== types.Percentage) {
-        return 0;
-    }
+	// ... corresponds to the <percentage-token> production
+	if (token === null || token.type !== types.Percentage) {
+		return 0;
+	}
 
-    // check range if specified
-    if (outOfRange(opts, token.value, token.value.length - 1)) {
-        return 0;
-    }
+	// check range if specified
+	if (outOfRange(opts, token.value, token.value.length - 1)) {
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 // =========================
@@ -428,21 +439,19 @@ function percentage(token, getNextToken, opts) {
 // evaluate to a <number> with the value 0 (for example, calc(0)) do not match <zero>;
 // only literal <number-token>s do.
 function zero(next) {
-    if (typeof next !== 'function') {
-        next = function() {
-            return 0;
-        };
-    }
+	if (typeof next !== "function") {
+		next = () => 0;
+	}
 
-    return function(token, getNextToken, opts) {
-        if (token !== null && token.type === types.Number) {
-            if (Number(token.value) === 0) {
-                return 1;
-            }
-        }
+	return (token, getNextToken, opts) => {
+		if (token !== null && token.type === types.Number) {
+			if (Number(token.value) === 0) {
+				return 1;
+			}
+		}
 
-        return next(token, getNextToken, opts);
-    };
+		return next(token, getNextToken, opts);
+	};
 }
 
 // § 5.3. Real Numbers: the <number> type
@@ -450,137 +459,140 @@ function zero(next) {
 // Number values are denoted by <number>, and represent real numbers, possibly with a fractional component.
 // ... It corresponds to the <number-token> production
 function number(token, getNextToken, opts) {
-    if (token === null) {
-        return 0;
-    }
+	if (token === null) {
+		return 0;
+	}
 
-    const numberEnd = utils.consumeNumber(token.value, 0);
-    const isNumber = numberEnd === token.value.length;
-    if (!isNumber && !isPostfixIeHack(token.value, numberEnd)) {
-        return 0;
-    }
+	const numberEnd = utils.consumeNumber(token.value, 0);
+	const isNumber = numberEnd === token.value.length;
+	if (!isNumber && !isPostfixIeHack(token.value, numberEnd)) {
+		return 0;
+	}
 
-    // check range if specified
-    if (outOfRange(opts, token.value, numberEnd)) {
-        return 0;
-    }
+	// check range if specified
+	if (outOfRange(opts, token.value, numberEnd)) {
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 // §5.2. Integers: the <integer> type
 // https://drafts.csswg.org/css-values-4/#integers
 function integer(token, getNextToken, opts) {
-    // ... corresponds to a subset of the <number-token> production
-    if (token === null || token.type !== types.Number) {
-        return 0;
-    }
+	// ... corresponds to a subset of the <number-token> production
+	if (token === null || token.type !== types.Number) {
+		return 0;
+	}
 
-    // The first digit of an integer may be immediately preceded by `-` or `+` to indicate the integer’s sign.
-    let i = charCodeAt(token.value, 0) === 0x002B ||       // U+002B PLUS SIGN (+)
-            charCodeAt(token.value, 0) === 0x002D ? 1 : 0; // U+002D HYPHEN-MINUS (-)
+	// The first digit of an integer may be immediately preceded by `-` or `+` to indicate the integer’s sign.
+	let i =
+		charCodeAt(token.value, 0) === 0x002b || // U+002B PLUS SIGN (+)
+		charCodeAt(token.value, 0) === 0x002d
+			? 1
+			: 0; // U+002D HYPHEN-MINUS (-)
 
-    // When written literally, an integer is one or more decimal digits 0 through 9 ...
-    for (; i < token.value.length; i++) {
-        if (!charCodeDefinitions.isDigit(charCodeAt(token.value, i))) {
-            return 0;
-        }
-    }
+	// When written literally, an integer is one or more decimal digits 0 through 9 ...
+	for (; i < token.value.length; i++) {
+		if (!charCodeDefinitions.isDigit(charCodeAt(token.value, i))) {
+			return 0;
+		}
+	}
 
-    // check range if specified
-    if (outOfRange(opts, token.value, i)) {
-        return 0;
-    }
+	// check range if specified
+	if (outOfRange(opts, token.value, i)) {
+		return 0;
+	}
 
-    return 1;
+	return 1;
 }
 
 // token types
 const tokenTypes = {
-    'ident-token': tokenType(types.Ident),
-    'function-token': tokenType(types.Function),
-    'at-keyword-token': tokenType(types.AtKeyword),
-    'hash-token': tokenType(types.Hash),
-    'string-token': tokenType(types.String),
-    'bad-string-token': tokenType(types.BadString),
-    'url-token': tokenType(types.Url),
-    'bad-url-token': tokenType(types.BadUrl),
-    'delim-token': tokenType(types.Delim),
-    'number-token': tokenType(types.Number),
-    'percentage-token': tokenType(types.Percentage),
-    'dimension-token': tokenType(types.Dimension),
-    'whitespace-token': tokenType(types.WhiteSpace),
-    'CDO-token': tokenType(types.CDO),
-    'CDC-token': tokenType(types.CDC),
-    'colon-token': tokenType(types.Colon),
-    'semicolon-token': tokenType(types.Semicolon),
-    'comma-token': tokenType(types.Comma),
-    '[-token': tokenType(types.LeftSquareBracket),
-    ']-token': tokenType(types.RightSquareBracket),
-    '(-token': tokenType(types.LeftParenthesis),
-    ')-token': tokenType(types.RightParenthesis),
-    '{-token': tokenType(types.LeftCurlyBracket),
-    '}-token': tokenType(types.RightCurlyBracket)
+	"ident-token": tokenType(types.Ident),
+	"function-token": tokenType(types.Function),
+	"at-keyword-token": tokenType(types.AtKeyword),
+	"hash-token": tokenType(types.Hash),
+	"string-token": tokenType(types.String),
+	"bad-string-token": tokenType(types.BadString),
+	"url-token": tokenType(types.Url),
+	"bad-url-token": tokenType(types.BadUrl),
+	"delim-token": tokenType(types.Delim),
+	"number-token": tokenType(types.Number),
+	"percentage-token": tokenType(types.Percentage),
+	"dimension-token": tokenType(types.Dimension),
+	"whitespace-token": tokenType(types.WhiteSpace),
+	"CDO-token": tokenType(types.CDO),
+	"CDC-token": tokenType(types.CDC),
+	"colon-token": tokenType(types.Colon),
+	"semicolon-token": tokenType(types.Semicolon),
+	"comma-token": tokenType(types.Comma),
+	"[-token": tokenType(types.LeftSquareBracket),
+	"]-token": tokenType(types.RightSquareBracket),
+	"(-token": tokenType(types.LeftParenthesis),
+	")-token": tokenType(types.RightParenthesis),
+	"{-token": tokenType(types.LeftCurlyBracket),
+	"}-token": tokenType(types.RightCurlyBracket),
 };
 
 // token production types
 const productionTypes = {
-    // token type aliases
-    'string': tokenType(types.String),
-    'ident': tokenType(types.Ident),
+	// token type aliases
+	string: tokenType(types.String),
+	ident: tokenType(types.Ident),
 
-    // percentage
-    'percentage': calc(percentage),
+	// percentage
+	percentage: calc(percentage),
 
-    // numeric
-    'zero': zero(),
-    'number': calc(number),
-    'integer': calc(integer),
+	// numeric
+	zero: zero(),
+	number: calc(number),
+	integer: calc(integer),
 
-    // complex types
-    'custom-ident': customIdent,
-    'dashed-ident': dashedIdent,
-    'custom-property-name': customPropertyName,
-    'hex-color': hexColor,
-    'id-selector': idSelector, // element( <id-selector> )
-    'an-plus-b': genericAnPlusB,
-    'urange': genericUrange,
-    'declaration-value': declarationValue,
-    'any-value': anyValue
+	// complex types
+	"custom-ident": customIdent,
+	"dashed-ident": dashedIdent,
+	"custom-property-name": customPropertyName,
+	"hex-color": hexColor,
+	"id-selector": idSelector, // element( <id-selector> )
+	"an-plus-b": genericAnPlusB,
+	urange: genericUrange,
+	"declaration-value": declarationValue,
+	"any-value": anyValue,
 };
 
 // dimensions types depend on units set
 function createDemensionTypes(units) {
-    const {
-        angle,
-        decibel,
-        frequency,
-        flex,
-        length,
-        resolution,
-        semitones,
-        time
-    } = units || {};
+	const {
+		angle,
+		decibel,
+		frequency,
+		flex,
+		length,
+		resolution,
+		semitones,
+		time,
+	} = units || {};
 
-    return {
-        'dimension': calc(dimension(null)),
-        'angle': calc(dimension(angle)),
-        'decibel': calc(dimension(decibel)),
-        'frequency': calc(dimension(frequency)),
-        'flex': calc(dimension(flex)),
-        'length': calc(zero(dimension(length))),
-        'resolution': calc(dimension(resolution)),
-        'semitones': calc(dimension(semitones)),
-        'time': calc(dimension(time))
-    };
+	return {
+		dimension: calc(dimension(null)),
+		angle: calc(dimension(angle)),
+		decibel: calc(dimension(decibel)),
+		frequency: calc(dimension(frequency)),
+		flex: calc(dimension(flex)),
+		length: calc(zero(dimension(length))),
+		resolution: calc(dimension(resolution)),
+		semitones: calc(dimension(semitones)),
+		time: calc(dimension(time)),
+	};
 }
 
 function createGenericTypes(units) {
-    return {
-        ...tokenTypes,
-        ...productionTypes,
-        ...createDemensionTypes(units)
-    };
+	return {
+		...tokenTypes,
+		...productionTypes,
+		...createDemensionTypes(units),
+	};
 }
 
 exports.createDemensionTypes = createDemensionTypes;

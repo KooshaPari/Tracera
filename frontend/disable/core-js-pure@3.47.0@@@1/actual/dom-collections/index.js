@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/dom-collections');
+"use strict";
+var parent = require("../../stable/dom-collections");
 
 module.exports = parent;

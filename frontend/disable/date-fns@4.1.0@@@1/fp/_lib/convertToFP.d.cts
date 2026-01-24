@@ -12,6 +12,6 @@ import type { FPArity, FPFn, FPFnInput } from "../types.js";
  * @private
  */
 export declare function convertToFP<
-  Fn extends FPFnInput,
-  Arity extends FPArity,
+	Fn extends FPFnInput,
+	Arity extends FPArity,
 >(fn: Fn, arity: Arity, curriedArgs?: unknown[]): FPFn<Fn, Arity>;

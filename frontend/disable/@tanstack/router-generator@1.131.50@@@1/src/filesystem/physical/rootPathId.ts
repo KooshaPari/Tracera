@@ -1,1 +1,1 @@
-export const rootPathId = '__root'
+export const rootPathId = "__root";

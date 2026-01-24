@@ -5,9 +5,9 @@
  * Licensed under the MIT License.
  */
 
-var path = require('path');
-var findPkg = require('find-pkg');
-var exists = require('fs-exists-sync');
+var path = require("path");
+var findPkg = require("find-pkg");
+var exists = require("fs-exists-sync");
 
 /**
  * Cache lookups to prevent hitting the file system
@@ -24,28 +24,28 @@ var cache = {};
  * @api public
  */
 
-module.exports = function(filename) {
-  var filepath = path.resolve(filename || '');
+module.exports = function (filename) {
+	var filepath = path.resolve(filename || "");
 
-  if (arguments.length > 1) {
-    filepath = path.resolve.apply(path, arguments);
-  }
+	if (arguments.length > 1) {
+		filepath = path.resolve.apply(path, arguments);
+	}
 
-  if (cache.hasOwnProperty(filepath)) {
-    return cache[filepath];
-  }
+	if (Object.hasOwn(cache, filepath)) {
+		return cache[filepath];
+	}
 
-  if (path.basename(filepath) === 'package.json' && exists(filepath)) {
-    cache[filepath] = filepath;
-    return filepath;
-  }
+	if (path.basename(filepath) === "package.json" && exists(filepath)) {
+		cache[filepath] = filepath;
+		return filepath;
+	}
 
-  var pkgPath = findPkg.sync(filepath);
-  if (pkgPath) {
-    return (cache[filepath] = path.resolve(path.dirname(pkgPath), filepath));
-  }
+	var pkgPath = findPkg.sync(filepath);
+	if (pkgPath) {
+		return (cache[filepath] = path.resolve(path.dirname(pkgPath), filepath));
+	}
 
-  if (exists(filepath)) {
-    return (cache[filepath] = filepath);
-  }
+	if (exists(filepath)) {
+		return (cache[filepath] = filepath);
+	}
 };

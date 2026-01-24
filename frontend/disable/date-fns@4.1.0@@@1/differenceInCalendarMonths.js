@@ -27,16 +27,16 @@ import { normalizeDates } from "./_lib/normalizeDates.js";
  * //=> 8
  */
 export function differenceInCalendarMonths(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
-  const monthsDiff = laterDate_.getMonth() - earlierDate_.getMonth();
+	const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
+	const monthsDiff = laterDate_.getMonth() - earlierDate_.getMonth();
 
-  return yearsDiff * 12 + monthsDiff;
+	return yearsDiff * 12 + monthsDiff;
 }
 
 // Fallback for modularized imports:

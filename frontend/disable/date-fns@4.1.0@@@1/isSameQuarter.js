@@ -30,12 +30,12 @@ import { startOfQuarter } from "./startOfQuarter.js";
  * //=> false
  */
 export function isSameQuarter(laterDate, earlierDate, options) {
-  const [dateLeft_, dateRight_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
-  return +startOfQuarter(dateLeft_) === +startOfQuarter(dateRight_);
+	const [dateLeft_, dateRight_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
+	return +startOfQuarter(dateLeft_) === +startOfQuarter(dateRight_);
 }
 
 // Fallback for modularized imports:

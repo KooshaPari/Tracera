@@ -12,6 +12,6 @@
  * ```
  */
 export var asConst = function asConst(narrowed) {
-  return narrowed;
+	return narrowed;
 };
 //# sourceMappingURL=asConst.js.map

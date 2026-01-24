@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('no-required-schema-properties-undefined', () => {
-  it('should report if one or more of the required properties are undefined', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-required-schema-properties-undefined", () => {
+	it("should report if one or more of the required properties are undefined", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -24,16 +28,18 @@ describe('no-required-schema-properties-undefined', () => {
                     type: string
                     example: doggie
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -50,11 +56,11 @@ describe('no-required-schema-properties-undefined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if one or more of the required properties are undefined, including allOf nested schemas', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report if one or more of the required properties are undefined, including allOf nested schemas", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -73,16 +79,18 @@ describe('no-required-schema-properties-undefined', () => {
                     type: integer
                     format: int64
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -99,11 +107,11 @@ describe('no-required-schema-properties-undefined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if one or more of the required properties are undefined when used in schema with allOf keyword', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report if one or more of the required properties are undefined when used in schema with allOf keyword", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -128,16 +136,18 @@ describe('no-required-schema-properties-undefined', () => {
                   photoUrls:
                     type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -154,11 +164,11 @@ describe('no-required-schema-properties-undefined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report required properties are present after resolving $refs when used in schema with allOf keyword', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report required properties are present after resolving $refs when used in schema with allOf keyword", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -184,21 +194,23 @@ describe('no-required-schema-properties-undefined', () => {
                   photoUrls:
                     type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report with few messages if more than one of the required properties are undefined', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report with few messages if more than one of the required properties are undefined", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -217,16 +229,18 @@ describe('no-required-schema-properties-undefined', () => {
                     type: string
                     example: doggie
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -256,11 +270,11 @@ describe('no-required-schema-properties-undefined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if all of the required properties are present', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if all of the required properties are present", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -280,21 +294,23 @@ describe('no-required-schema-properties-undefined', () => {
                     type: string
                     example: test
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not cause stack overflow when there are circular references in schemas', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not cause stack overflow when there are circular references in schemas", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -323,21 +339,23 @@ describe('no-required-schema-properties-undefined', () => {
                       photoUrls:
                         type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if there is any required schema that is undefined, including checking nested allOf schemas', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report if there is any required schema that is undefined, including checking nested allOf schemas", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -372,16 +390,18 @@ describe('no-required-schema-properties-undefined', () => {
                       id:
                         type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -398,11 +418,11 @@ describe('no-required-schema-properties-undefined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if required property is present in one of the nested reference schemas', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report if required property is present in one of the nested reference schemas", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -441,21 +461,23 @@ describe('no-required-schema-properties-undefined', () => {
                 required:
                   - commonProperty
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if one or more of the required properties are undefined when used in schema with anyOf keyword', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report if one or more of the required properties are undefined when used in schema with anyOf keyword", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -480,16 +502,18 @@ describe('no-required-schema-properties-undefined', () => {
                   photoUrls:
                     type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -506,11 +530,11 @@ describe('no-required-schema-properties-undefined', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if one or more of the required properties are undefined when used in schema with allOf keyword', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report if one or more of the required properties are undefined when used in schema with allOf keyword", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           components:
             schemas:
@@ -536,15 +560,17 @@ describe('no-required-schema-properties-undefined', () => {
                   photoUrls:
                     type: string
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-required-schema-properties-undefined': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-required-schema-properties-undefined": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

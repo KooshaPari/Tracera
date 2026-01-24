@@ -1,5 +1,5 @@
-var baseAssign = require('./_baseAssign'),
-    baseCreate = require('./_baseCreate');
+var baseAssign = require("./_baseAssign"),
+	baseCreate = require("./_baseCreate");
 
 /**
  * Creates an object that inherits from the `prototype` object. If a
@@ -36,8 +36,8 @@ var baseAssign = require('./_baseAssign'),
  * // => true
  */
 function create(prototype, properties) {
-  var result = baseCreate(prototype);
-  return properties == null ? result : baseAssign(result, properties);
+	var result = baseCreate(prototype);
+	return properties == null ? result : baseAssign(result, properties);
 }
 
 module.exports = create;

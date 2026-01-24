@@ -1,5 +1,7 @@
 //#region src/index.d.ts
-type UntilResult<RejectionReason, ResolveData> = [reason: RejectionReason, data: null] | [reason: null, data: ResolveData];
+type UntilResult<RejectionReason, ResolveData> =
+	| [reason: RejectionReason, data: null]
+	| [reason: null, data: ResolveData];
 /**
  * Gracefully handles a callback that returns a promise.
  *
@@ -10,7 +12,9 @@ type UntilResult<RejectionReason, ResolveData> = [reason: RejectionReason, data:
  * await until(() => Promise.reject(new Error('Oops!')))
  * // [new Error('Oops!'), null]
  */
-declare function until<RejectionReason = Error, ResolveData = unknown>(callback: () => Promise<ResolveData>): Promise<UntilResult<RejectionReason, ResolveData>>;
+declare function until<RejectionReason = Error, ResolveData = unknown>(
+	callback: () => Promise<ResolveData>,
+): Promise<UntilResult<RejectionReason, ResolveData>>;
 //#endregion
 export { UntilResult, until };
 //# sourceMappingURL=index.d.ts.map

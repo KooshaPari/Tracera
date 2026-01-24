@@ -8,17 +8,17 @@ Category: scripting
 */
 
 function vbscriptHtml(hljs) {
-  return {
-    name: 'VBScript in HTML',
-    subLanguage: 'xml',
-    contains: [
-      {
-        begin: '<%',
-        end: '%>',
-        subLanguage: 'vbscript'
-      }
-    ]
-  };
+	return {
+		name: "VBScript in HTML",
+		subLanguage: "xml",
+		contains: [
+			{
+				begin: "<%",
+				end: "%>",
+				subLanguage: "vbscript",
+			},
+		],
+	};
 }
 
 module.exports = vbscriptHtml;

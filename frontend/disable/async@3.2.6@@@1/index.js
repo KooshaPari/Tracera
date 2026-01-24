@@ -1,316 +1,416 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.doDuring = exports.during = exports.wrapSync = undefined;
-exports.selectSeries = exports.selectLimit = exports.select = exports.foldr = exports.foldl = exports.inject = exports.forEachOfLimit = exports.forEachOfSeries = exports.forEachOf = exports.forEachLimit = exports.forEachSeries = exports.forEach = exports.flatMapSeries = exports.flatMapLimit = exports.flatMap = exports.findSeries = exports.findLimit = exports.find = exports.anySeries = exports.anyLimit = exports.any = exports.allSeries = exports.allLimit = exports.all = exports.whilst = exports.waterfall = exports.until = exports.unmemoize = exports.tryEach = exports.transform = exports.timesSeries = exports.timesLimit = exports.times = exports.timeout = exports.sortBy = exports.someSeries = exports.someLimit = exports.some = exports.setImmediate = exports.series = exports.seq = exports.retryable = exports.retry = exports.rejectSeries = exports.rejectLimit = exports.reject = exports.reflectAll = exports.reflect = exports.reduceRight = exports.reduce = exports.race = exports.queue = exports.priorityQueue = exports.parallelLimit = exports.parallel = exports.nextTick = exports.memoize = exports.mapValuesSeries = exports.mapValuesLimit = exports.mapValues = exports.mapSeries = exports.mapLimit = exports.map = exports.log = exports.groupBySeries = exports.groupByLimit = exports.groupBy = exports.forever = exports.filterSeries = exports.filterLimit = exports.filter = exports.everySeries = exports.everyLimit = exports.every = exports.ensureAsync = exports.eachSeries = exports.eachOfSeries = exports.eachOfLimit = exports.eachOf = exports.eachLimit = exports.each = exports.doWhilst = exports.doUntil = exports.dir = exports.detectSeries = exports.detectLimit = exports.detect = exports.constant = exports.concatSeries = exports.concatLimit = exports.concat = exports.compose = exports.cargoQueue = exports.cargo = exports.autoInject = exports.auto = exports.asyncify = exports.applyEachSeries = exports.applyEach = exports.apply = undefined;
+exports.selectSeries =
+	exports.selectLimit =
+	exports.select =
+	exports.foldr =
+	exports.foldl =
+	exports.inject =
+	exports.forEachOfLimit =
+	exports.forEachOfSeries =
+	exports.forEachOf =
+	exports.forEachLimit =
+	exports.forEachSeries =
+	exports.forEach =
+	exports.flatMapSeries =
+	exports.flatMapLimit =
+	exports.flatMap =
+	exports.findSeries =
+	exports.findLimit =
+	exports.find =
+	exports.anySeries =
+	exports.anyLimit =
+	exports.any =
+	exports.allSeries =
+	exports.allLimit =
+	exports.all =
+	exports.whilst =
+	exports.waterfall =
+	exports.until =
+	exports.unmemoize =
+	exports.tryEach =
+	exports.transform =
+	exports.timesSeries =
+	exports.timesLimit =
+	exports.times =
+	exports.timeout =
+	exports.sortBy =
+	exports.someSeries =
+	exports.someLimit =
+	exports.some =
+	exports.setImmediate =
+	exports.series =
+	exports.seq =
+	exports.retryable =
+	exports.retry =
+	exports.rejectSeries =
+	exports.rejectLimit =
+	exports.reject =
+	exports.reflectAll =
+	exports.reflect =
+	exports.reduceRight =
+	exports.reduce =
+	exports.race =
+	exports.queue =
+	exports.priorityQueue =
+	exports.parallelLimit =
+	exports.parallel =
+	exports.nextTick =
+	exports.memoize =
+	exports.mapValuesSeries =
+	exports.mapValuesLimit =
+	exports.mapValues =
+	exports.mapSeries =
+	exports.mapLimit =
+	exports.map =
+	exports.log =
+	exports.groupBySeries =
+	exports.groupByLimit =
+	exports.groupBy =
+	exports.forever =
+	exports.filterSeries =
+	exports.filterLimit =
+	exports.filter =
+	exports.everySeries =
+	exports.everyLimit =
+	exports.every =
+	exports.ensureAsync =
+	exports.eachSeries =
+	exports.eachOfSeries =
+	exports.eachOfLimit =
+	exports.eachOf =
+	exports.eachLimit =
+	exports.each =
+	exports.doWhilst =
+	exports.doUntil =
+	exports.dir =
+	exports.detectSeries =
+	exports.detectLimit =
+	exports.detect =
+	exports.constant =
+	exports.concatSeries =
+	exports.concatLimit =
+	exports.concat =
+	exports.compose =
+	exports.cargoQueue =
+	exports.cargo =
+	exports.autoInject =
+	exports.auto =
+	exports.asyncify =
+	exports.applyEachSeries =
+	exports.applyEach =
+	exports.apply =
+		undefined;
 
-var _apply = require('./apply');
+var _apply = require("./apply");
 
 var _apply2 = _interopRequireDefault(_apply);
 
-var _applyEach = require('./applyEach');
+var _applyEach = require("./applyEach");
 
 var _applyEach2 = _interopRequireDefault(_applyEach);
 
-var _applyEachSeries = require('./applyEachSeries');
+var _applyEachSeries = require("./applyEachSeries");
 
 var _applyEachSeries2 = _interopRequireDefault(_applyEachSeries);
 
-var _asyncify = require('./asyncify');
+var _asyncify = require("./asyncify");
 
 var _asyncify2 = _interopRequireDefault(_asyncify);
 
-var _auto = require('./auto');
+var _auto = require("./auto");
 
 var _auto2 = _interopRequireDefault(_auto);
 
-var _autoInject = require('./autoInject');
+var _autoInject = require("./autoInject");
 
 var _autoInject2 = _interopRequireDefault(_autoInject);
 
-var _cargo = require('./cargo');
+var _cargo = require("./cargo");
 
 var _cargo2 = _interopRequireDefault(_cargo);
 
-var _cargoQueue = require('./cargoQueue');
+var _cargoQueue = require("./cargoQueue");
 
 var _cargoQueue2 = _interopRequireDefault(_cargoQueue);
 
-var _compose = require('./compose');
+var _compose = require("./compose");
 
 var _compose2 = _interopRequireDefault(_compose);
 
-var _concat = require('./concat');
+var _concat = require("./concat");
 
 var _concat2 = _interopRequireDefault(_concat);
 
-var _concatLimit = require('./concatLimit');
+var _concatLimit = require("./concatLimit");
 
 var _concatLimit2 = _interopRequireDefault(_concatLimit);
 
-var _concatSeries = require('./concatSeries');
+var _concatSeries = require("./concatSeries");
 
 var _concatSeries2 = _interopRequireDefault(_concatSeries);
 
-var _constant = require('./constant');
+var _constant = require("./constant");
 
 var _constant2 = _interopRequireDefault(_constant);
 
-var _detect = require('./detect');
+var _detect = require("./detect");
 
 var _detect2 = _interopRequireDefault(_detect);
 
-var _detectLimit = require('./detectLimit');
+var _detectLimit = require("./detectLimit");
 
 var _detectLimit2 = _interopRequireDefault(_detectLimit);
 
-var _detectSeries = require('./detectSeries');
+var _detectSeries = require("./detectSeries");
 
 var _detectSeries2 = _interopRequireDefault(_detectSeries);
 
-var _dir = require('./dir');
+var _dir = require("./dir");
 
 var _dir2 = _interopRequireDefault(_dir);
 
-var _doUntil = require('./doUntil');
+var _doUntil = require("./doUntil");
 
 var _doUntil2 = _interopRequireDefault(_doUntil);
 
-var _doWhilst = require('./doWhilst');
+var _doWhilst = require("./doWhilst");
 
 var _doWhilst2 = _interopRequireDefault(_doWhilst);
 
-var _each = require('./each');
+var _each = require("./each");
 
 var _each2 = _interopRequireDefault(_each);
 
-var _eachLimit = require('./eachLimit');
+var _eachLimit = require("./eachLimit");
 
 var _eachLimit2 = _interopRequireDefault(_eachLimit);
 
-var _eachOf = require('./eachOf');
+var _eachOf = require("./eachOf");
 
 var _eachOf2 = _interopRequireDefault(_eachOf);
 
-var _eachOfLimit = require('./eachOfLimit');
+var _eachOfLimit = require("./eachOfLimit");
 
 var _eachOfLimit2 = _interopRequireDefault(_eachOfLimit);
 
-var _eachOfSeries = require('./eachOfSeries');
+var _eachOfSeries = require("./eachOfSeries");
 
 var _eachOfSeries2 = _interopRequireDefault(_eachOfSeries);
 
-var _eachSeries = require('./eachSeries');
+var _eachSeries = require("./eachSeries");
 
 var _eachSeries2 = _interopRequireDefault(_eachSeries);
 
-var _ensureAsync = require('./ensureAsync');
+var _ensureAsync = require("./ensureAsync");
 
 var _ensureAsync2 = _interopRequireDefault(_ensureAsync);
 
-var _every = require('./every');
+var _every = require("./every");
 
 var _every2 = _interopRequireDefault(_every);
 
-var _everyLimit = require('./everyLimit');
+var _everyLimit = require("./everyLimit");
 
 var _everyLimit2 = _interopRequireDefault(_everyLimit);
 
-var _everySeries = require('./everySeries');
+var _everySeries = require("./everySeries");
 
 var _everySeries2 = _interopRequireDefault(_everySeries);
 
-var _filter = require('./filter');
+var _filter = require("./filter");
 
 var _filter2 = _interopRequireDefault(_filter);
 
-var _filterLimit = require('./filterLimit');
+var _filterLimit = require("./filterLimit");
 
 var _filterLimit2 = _interopRequireDefault(_filterLimit);
 
-var _filterSeries = require('./filterSeries');
+var _filterSeries = require("./filterSeries");
 
 var _filterSeries2 = _interopRequireDefault(_filterSeries);
 
-var _forever = require('./forever');
+var _forever = require("./forever");
 
 var _forever2 = _interopRequireDefault(_forever);
 
-var _groupBy = require('./groupBy');
+var _groupBy = require("./groupBy");
 
 var _groupBy2 = _interopRequireDefault(_groupBy);
 
-var _groupByLimit = require('./groupByLimit');
+var _groupByLimit = require("./groupByLimit");
 
 var _groupByLimit2 = _interopRequireDefault(_groupByLimit);
 
-var _groupBySeries = require('./groupBySeries');
+var _groupBySeries = require("./groupBySeries");
 
 var _groupBySeries2 = _interopRequireDefault(_groupBySeries);
 
-var _log = require('./log');
+var _log = require("./log");
 
 var _log2 = _interopRequireDefault(_log);
 
-var _map = require('./map');
+var _map = require("./map");
 
 var _map2 = _interopRequireDefault(_map);
 
-var _mapLimit = require('./mapLimit');
+var _mapLimit = require("./mapLimit");
 
 var _mapLimit2 = _interopRequireDefault(_mapLimit);
 
-var _mapSeries = require('./mapSeries');
+var _mapSeries = require("./mapSeries");
 
 var _mapSeries2 = _interopRequireDefault(_mapSeries);
 
-var _mapValues = require('./mapValues');
+var _mapValues = require("./mapValues");
 
 var _mapValues2 = _interopRequireDefault(_mapValues);
 
-var _mapValuesLimit = require('./mapValuesLimit');
+var _mapValuesLimit = require("./mapValuesLimit");
 
 var _mapValuesLimit2 = _interopRequireDefault(_mapValuesLimit);
 
-var _mapValuesSeries = require('./mapValuesSeries');
+var _mapValuesSeries = require("./mapValuesSeries");
 
 var _mapValuesSeries2 = _interopRequireDefault(_mapValuesSeries);
 
-var _memoize = require('./memoize');
+var _memoize = require("./memoize");
 
 var _memoize2 = _interopRequireDefault(_memoize);
 
-var _nextTick = require('./nextTick');
+var _nextTick = require("./nextTick");
 
 var _nextTick2 = _interopRequireDefault(_nextTick);
 
-var _parallel = require('./parallel');
+var _parallel = require("./parallel");
 
 var _parallel2 = _interopRequireDefault(_parallel);
 
-var _parallelLimit = require('./parallelLimit');
+var _parallelLimit = require("./parallelLimit");
 
 var _parallelLimit2 = _interopRequireDefault(_parallelLimit);
 
-var _priorityQueue = require('./priorityQueue');
+var _priorityQueue = require("./priorityQueue");
 
 var _priorityQueue2 = _interopRequireDefault(_priorityQueue);
 
-var _queue = require('./queue');
+var _queue = require("./queue");
 
 var _queue2 = _interopRequireDefault(_queue);
 
-var _race = require('./race');
+var _race = require("./race");
 
 var _race2 = _interopRequireDefault(_race);
 
-var _reduce = require('./reduce');
+var _reduce = require("./reduce");
 
 var _reduce2 = _interopRequireDefault(_reduce);
 
-var _reduceRight = require('./reduceRight');
+var _reduceRight = require("./reduceRight");
 
 var _reduceRight2 = _interopRequireDefault(_reduceRight);
 
-var _reflect = require('./reflect');
+var _reflect = require("./reflect");
 
 var _reflect2 = _interopRequireDefault(_reflect);
 
-var _reflectAll = require('./reflectAll');
+var _reflectAll = require("./reflectAll");
 
 var _reflectAll2 = _interopRequireDefault(_reflectAll);
 
-var _reject = require('./reject');
+var _reject = require("./reject");
 
 var _reject2 = _interopRequireDefault(_reject);
 
-var _rejectLimit = require('./rejectLimit');
+var _rejectLimit = require("./rejectLimit");
 
 var _rejectLimit2 = _interopRequireDefault(_rejectLimit);
 
-var _rejectSeries = require('./rejectSeries');
+var _rejectSeries = require("./rejectSeries");
 
 var _rejectSeries2 = _interopRequireDefault(_rejectSeries);
 
-var _retry = require('./retry');
+var _retry = require("./retry");
 
 var _retry2 = _interopRequireDefault(_retry);
 
-var _retryable = require('./retryable');
+var _retryable = require("./retryable");
 
 var _retryable2 = _interopRequireDefault(_retryable);
 
-var _seq = require('./seq');
+var _seq = require("./seq");
 
 var _seq2 = _interopRequireDefault(_seq);
 
-var _series = require('./series');
+var _series = require("./series");
 
 var _series2 = _interopRequireDefault(_series);
 
-var _setImmediate = require('./setImmediate');
+var _setImmediate = require("./setImmediate");
 
 var _setImmediate2 = _interopRequireDefault(_setImmediate);
 
-var _some = require('./some');
+var _some = require("./some");
 
 var _some2 = _interopRequireDefault(_some);
 
-var _someLimit = require('./someLimit');
+var _someLimit = require("./someLimit");
 
 var _someLimit2 = _interopRequireDefault(_someLimit);
 
-var _someSeries = require('./someSeries');
+var _someSeries = require("./someSeries");
 
 var _someSeries2 = _interopRequireDefault(_someSeries);
 
-var _sortBy = require('./sortBy');
+var _sortBy = require("./sortBy");
 
 var _sortBy2 = _interopRequireDefault(_sortBy);
 
-var _timeout = require('./timeout');
+var _timeout = require("./timeout");
 
 var _timeout2 = _interopRequireDefault(_timeout);
 
-var _times = require('./times');
+var _times = require("./times");
 
 var _times2 = _interopRequireDefault(_times);
 
-var _timesLimit = require('./timesLimit');
+var _timesLimit = require("./timesLimit");
 
 var _timesLimit2 = _interopRequireDefault(_timesLimit);
 
-var _timesSeries = require('./timesSeries');
+var _timesSeries = require("./timesSeries");
 
 var _timesSeries2 = _interopRequireDefault(_timesSeries);
 
-var _transform = require('./transform');
+var _transform = require("./transform");
 
 var _transform2 = _interopRequireDefault(_transform);
 
-var _tryEach = require('./tryEach');
+var _tryEach = require("./tryEach");
 
 var _tryEach2 = _interopRequireDefault(_tryEach);
 
-var _unmemoize = require('./unmemoize');
+var _unmemoize = require("./unmemoize");
 
 var _unmemoize2 = _interopRequireDefault(_unmemoize);
 
-var _until = require('./until');
+var _until = require("./until");
 
 var _until2 = _interopRequireDefault(_until);
 
-var _waterfall = require('./waterfall');
+var _waterfall = require("./waterfall");
 
 var _waterfall2 = _interopRequireDefault(_waterfall);
 
-var _whilst = require('./whilst');
+var _whilst = require("./whilst");
 
 var _whilst2 = _interopRequireDefault(_whilst);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * An "async function" in the context of Async is an asynchronous function with
@@ -377,111 +477,111 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 
 exports.default = {
-    apply: _apply2.default,
-    applyEach: _applyEach2.default,
-    applyEachSeries: _applyEachSeries2.default,
-    asyncify: _asyncify2.default,
-    auto: _auto2.default,
-    autoInject: _autoInject2.default,
-    cargo: _cargo2.default,
-    cargoQueue: _cargoQueue2.default,
-    compose: _compose2.default,
-    concat: _concat2.default,
-    concatLimit: _concatLimit2.default,
-    concatSeries: _concatSeries2.default,
-    constant: _constant2.default,
-    detect: _detect2.default,
-    detectLimit: _detectLimit2.default,
-    detectSeries: _detectSeries2.default,
-    dir: _dir2.default,
-    doUntil: _doUntil2.default,
-    doWhilst: _doWhilst2.default,
-    each: _each2.default,
-    eachLimit: _eachLimit2.default,
-    eachOf: _eachOf2.default,
-    eachOfLimit: _eachOfLimit2.default,
-    eachOfSeries: _eachOfSeries2.default,
-    eachSeries: _eachSeries2.default,
-    ensureAsync: _ensureAsync2.default,
-    every: _every2.default,
-    everyLimit: _everyLimit2.default,
-    everySeries: _everySeries2.default,
-    filter: _filter2.default,
-    filterLimit: _filterLimit2.default,
-    filterSeries: _filterSeries2.default,
-    forever: _forever2.default,
-    groupBy: _groupBy2.default,
-    groupByLimit: _groupByLimit2.default,
-    groupBySeries: _groupBySeries2.default,
-    log: _log2.default,
-    map: _map2.default,
-    mapLimit: _mapLimit2.default,
-    mapSeries: _mapSeries2.default,
-    mapValues: _mapValues2.default,
-    mapValuesLimit: _mapValuesLimit2.default,
-    mapValuesSeries: _mapValuesSeries2.default,
-    memoize: _memoize2.default,
-    nextTick: _nextTick2.default,
-    parallel: _parallel2.default,
-    parallelLimit: _parallelLimit2.default,
-    priorityQueue: _priorityQueue2.default,
-    queue: _queue2.default,
-    race: _race2.default,
-    reduce: _reduce2.default,
-    reduceRight: _reduceRight2.default,
-    reflect: _reflect2.default,
-    reflectAll: _reflectAll2.default,
-    reject: _reject2.default,
-    rejectLimit: _rejectLimit2.default,
-    rejectSeries: _rejectSeries2.default,
-    retry: _retry2.default,
-    retryable: _retryable2.default,
-    seq: _seq2.default,
-    series: _series2.default,
-    setImmediate: _setImmediate2.default,
-    some: _some2.default,
-    someLimit: _someLimit2.default,
-    someSeries: _someSeries2.default,
-    sortBy: _sortBy2.default,
-    timeout: _timeout2.default,
-    times: _times2.default,
-    timesLimit: _timesLimit2.default,
-    timesSeries: _timesSeries2.default,
-    transform: _transform2.default,
-    tryEach: _tryEach2.default,
-    unmemoize: _unmemoize2.default,
-    until: _until2.default,
-    waterfall: _waterfall2.default,
-    whilst: _whilst2.default,
+	apply: _apply2.default,
+	applyEach: _applyEach2.default,
+	applyEachSeries: _applyEachSeries2.default,
+	asyncify: _asyncify2.default,
+	auto: _auto2.default,
+	autoInject: _autoInject2.default,
+	cargo: _cargo2.default,
+	cargoQueue: _cargoQueue2.default,
+	compose: _compose2.default,
+	concat: _concat2.default,
+	concatLimit: _concatLimit2.default,
+	concatSeries: _concatSeries2.default,
+	constant: _constant2.default,
+	detect: _detect2.default,
+	detectLimit: _detectLimit2.default,
+	detectSeries: _detectSeries2.default,
+	dir: _dir2.default,
+	doUntil: _doUntil2.default,
+	doWhilst: _doWhilst2.default,
+	each: _each2.default,
+	eachLimit: _eachLimit2.default,
+	eachOf: _eachOf2.default,
+	eachOfLimit: _eachOfLimit2.default,
+	eachOfSeries: _eachOfSeries2.default,
+	eachSeries: _eachSeries2.default,
+	ensureAsync: _ensureAsync2.default,
+	every: _every2.default,
+	everyLimit: _everyLimit2.default,
+	everySeries: _everySeries2.default,
+	filter: _filter2.default,
+	filterLimit: _filterLimit2.default,
+	filterSeries: _filterSeries2.default,
+	forever: _forever2.default,
+	groupBy: _groupBy2.default,
+	groupByLimit: _groupByLimit2.default,
+	groupBySeries: _groupBySeries2.default,
+	log: _log2.default,
+	map: _map2.default,
+	mapLimit: _mapLimit2.default,
+	mapSeries: _mapSeries2.default,
+	mapValues: _mapValues2.default,
+	mapValuesLimit: _mapValuesLimit2.default,
+	mapValuesSeries: _mapValuesSeries2.default,
+	memoize: _memoize2.default,
+	nextTick: _nextTick2.default,
+	parallel: _parallel2.default,
+	parallelLimit: _parallelLimit2.default,
+	priorityQueue: _priorityQueue2.default,
+	queue: _queue2.default,
+	race: _race2.default,
+	reduce: _reduce2.default,
+	reduceRight: _reduceRight2.default,
+	reflect: _reflect2.default,
+	reflectAll: _reflectAll2.default,
+	reject: _reject2.default,
+	rejectLimit: _rejectLimit2.default,
+	rejectSeries: _rejectSeries2.default,
+	retry: _retry2.default,
+	retryable: _retryable2.default,
+	seq: _seq2.default,
+	series: _series2.default,
+	setImmediate: _setImmediate2.default,
+	some: _some2.default,
+	someLimit: _someLimit2.default,
+	someSeries: _someSeries2.default,
+	sortBy: _sortBy2.default,
+	timeout: _timeout2.default,
+	times: _times2.default,
+	timesLimit: _timesLimit2.default,
+	timesSeries: _timesSeries2.default,
+	transform: _transform2.default,
+	tryEach: _tryEach2.default,
+	unmemoize: _unmemoize2.default,
+	until: _until2.default,
+	waterfall: _waterfall2.default,
+	whilst: _whilst2.default,
 
-    // aliases
-    all: _every2.default,
-    allLimit: _everyLimit2.default,
-    allSeries: _everySeries2.default,
-    any: _some2.default,
-    anyLimit: _someLimit2.default,
-    anySeries: _someSeries2.default,
-    find: _detect2.default,
-    findLimit: _detectLimit2.default,
-    findSeries: _detectSeries2.default,
-    flatMap: _concat2.default,
-    flatMapLimit: _concatLimit2.default,
-    flatMapSeries: _concatSeries2.default,
-    forEach: _each2.default,
-    forEachSeries: _eachSeries2.default,
-    forEachLimit: _eachLimit2.default,
-    forEachOf: _eachOf2.default,
-    forEachOfSeries: _eachOfSeries2.default,
-    forEachOfLimit: _eachOfLimit2.default,
-    inject: _reduce2.default,
-    foldl: _reduce2.default,
-    foldr: _reduceRight2.default,
-    select: _filter2.default,
-    selectLimit: _filterLimit2.default,
-    selectSeries: _filterSeries2.default,
-    wrapSync: _asyncify2.default,
-    during: _whilst2.default,
-    doDuring: _doWhilst2.default
+	// aliases
+	all: _every2.default,
+	allLimit: _everyLimit2.default,
+	allSeries: _everySeries2.default,
+	any: _some2.default,
+	anyLimit: _someLimit2.default,
+	anySeries: _someSeries2.default,
+	find: _detect2.default,
+	findLimit: _detectLimit2.default,
+	findSeries: _detectSeries2.default,
+	flatMap: _concat2.default,
+	flatMapLimit: _concatLimit2.default,
+	flatMapSeries: _concatSeries2.default,
+	forEach: _each2.default,
+	forEachSeries: _eachSeries2.default,
+	forEachLimit: _eachLimit2.default,
+	forEachOf: _eachOf2.default,
+	forEachOfSeries: _eachOfSeries2.default,
+	forEachOfLimit: _eachOfLimit2.default,
+	inject: _reduce2.default,
+	foldl: _reduce2.default,
+	foldr: _reduceRight2.default,
+	select: _filter2.default,
+	selectLimit: _filterLimit2.default,
+	selectSeries: _filterSeries2.default,
+	wrapSync: _asyncify2.default,
+	during: _whilst2.default,
+	doDuring: _doWhilst2.default,
 };
 exports.apply = _apply2.default;
 exports.applyEach = _applyEach2.default;

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/typed-array/to-reversed');
+"use strict";
+module.exports = require("../../full/typed-array/to-reversed");

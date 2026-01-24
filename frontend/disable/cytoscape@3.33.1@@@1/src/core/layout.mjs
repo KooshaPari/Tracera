@@ -1,45 +1,47 @@
-import * as util from '../util/index.mjs';
-import * as is from '../is.mjs';
+import * as is from "../is.mjs";
+import * as util from "../util/index.mjs";
 
-let corefn = ({
+const corefn = {
+	layout: function (options) {
+		if (options == null) {
+			util.error("Layout options must be specified to make a layout");
+			return;
+		}
 
-  layout: function( options ){
-    let cy = this;
+		if (options.name == null) {
+			util.error("A `name` must be specified to make a layout");
+			return;
+		}
 
-    if( options == null ){
-      util.error( 'Layout options must be specified to make a layout' );
-      return;
-    }
+		const name = options.name;
+		const Layout = this.extension("layout", name);
 
-    if( options.name == null ){
-      util.error( 'A `name` must be specified to make a layout' );
-      return;
-    }
+		if (Layout == null) {
+			util.error(
+				"No such layout `" +
+					name +
+					"` found.  Did you forget to import it and `cytoscape.use()` it?",
+			);
+			return;
+		}
 
-    let name = options.name;
-    let Layout = cy.extension( 'layout', name );
+		let eles;
+		if (is.string(options.eles)) {
+			eles = this.$(options.eles);
+		} else {
+			eles = options.eles != null ? options.eles : this.$();
+		}
 
-    if( Layout == null ){
-      util.error( 'No such layout `' + name + '` found.  Did you forget to import it and `cytoscape.use()` it?' );
-      return;
-    }
+		const layout = new Layout(
+			util.extend({}, options, {
+				cy: this,
+				eles: eles,
+			}),
+		);
 
-    let eles;
-    if( is.string( options.eles ) ){
-      eles = cy.$( options.eles );
-    } else {
-      eles = options.eles != null ? options.eles : cy.$();
-    }
-
-    let layout = new Layout( util.extend( {}, options, {
-      cy: cy,
-      eles: eles
-    } ) );
-
-    return layout;
-  }
-
-});
+		return layout;
+	},
+};
 
 corefn.createLayout = corefn.makeLayout = corefn.layout;
 

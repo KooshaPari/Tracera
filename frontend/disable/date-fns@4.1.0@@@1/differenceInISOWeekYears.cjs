@@ -34,32 +34,32 @@ var _index4 = require("./subISOWeekYears.cjs");
  * // => 1
  */
 function differenceInISOWeekYears(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const sign = (0, _index2.compareAsc)(laterDate_, earlierDate_);
-  const diff = Math.abs(
-    (0, _index3.differenceInCalendarISOWeekYears)(
-      laterDate_,
-      earlierDate_,
-      options,
-    ),
-  );
+	const sign = (0, _index2.compareAsc)(laterDate_, earlierDate_);
+	const diff = Math.abs(
+		(0, _index3.differenceInCalendarISOWeekYears)(
+			laterDate_,
+			earlierDate_,
+			options,
+		),
+	);
 
-  const adjustedDate = (0, _index4.subISOWeekYears)(
-    laterDate_,
-    sign * diff,
-    options,
-  );
+	const adjustedDate = (0, _index4.subISOWeekYears)(
+		laterDate_,
+		sign * diff,
+		options,
+	);
 
-  const isLastISOWeekYearNotFull = Number(
-    (0, _index2.compareAsc)(adjustedDate, earlierDate_) === -sign,
-  );
-  const result = sign * (diff - isLastISOWeekYearNotFull);
+	const isLastISOWeekYearNotFull = Number(
+		(0, _index2.compareAsc)(adjustedDate, earlierDate_) === -sign,
+	);
+	const result = sign * (diff - isLastISOWeekYearNotFull);
 
-  // Prevent negative zero
-  return result === 0 ? 0 : result;
+	// Prevent negative zero
+	return result === 0 ? 0 : result;
 }

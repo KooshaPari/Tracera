@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Syntactic sugar for invoking a function and expanding an array for arguments.
  *
@@ -21,7 +19,7 @@
  * @returns {Function}
  */
 module.exports = function spread(callback) {
-  return function wrap(arr) {
-    return callback.apply(null, arr);
-  };
+	return function wrap(arr) {
+		return callback.apply(null, arr);
+	};
 };

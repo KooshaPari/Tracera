@@ -28,8 +28,8 @@ var _index3 = require("./isSameQuarter.cjs");
  * //=> true
  */
 function isThisQuarter(date, options) {
-  return (0, _index3.isSameQuarter)(
-    (0, _index.constructFrom)(options?.in || date, date),
-    (0, _index2.constructNow)(options?.in || date),
-  );
+	return (0, _index3.isSameQuarter)(
+		(0, _index.constructFrom)(options?.in || date, date),
+		(0, _index2.constructNow)(options?.in || date),
+	);
 }

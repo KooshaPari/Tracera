@@ -1,15 +1,15 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = timesSeries;
 
-var _timesLimit = require('./timesLimit.js');
+var _timesLimit = require("./timesLimit.js");
 
 var _timesLimit2 = _interopRequireDefault(_timesLimit);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [times]{@link module:ControlFlow.times} but runs only a single async operation at a time.
@@ -27,6 +27,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback is provided
  */
 function timesSeries(n, iteratee, callback) {
-    return (0, _timesLimit2.default)(n, 1, iteratee, callback);
+	return (0, _timesLimit2.default)(n, 1, iteratee, callback);
 }
 module.exports = exports.default;

@@ -1,5 +1,3 @@
-'use strict'
+const log = require("loglevel");
 
-const log = require('loglevel')
-
-module.exports = log
+module.exports = log;

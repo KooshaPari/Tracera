@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/sign');
+"use strict";
+module.exports = require("../../full/math/sign");

@@ -1,3 +1,3 @@
-'use strict';
+"use strict";
 // TODO: Remove from `core-js@4`
-require('../modules/es.array-buffer.transfer-to-fixed-length');
+require("../modules/es.array-buffer.transfer-to-fixed-length");

@@ -1,5 +1,5 @@
-var isArrayLike = require('./isArrayLike'),
-    isObjectLike = require('./isObjectLike');
+var isArrayLike = require("./isArrayLike"),
+	isObjectLike = require("./isObjectLike");
 
 /**
  * This method is like `_.isArrayLike` except that it also checks if `value`
@@ -27,7 +27,7 @@ var isArrayLike = require('./isArrayLike'),
  * // => false
  */
 function isArrayLikeObject(value) {
-  return isObjectLike(value) && isArrayLike(value);
+	return isObjectLike(value) && isArrayLike(value);
 }
 
 module.exports = isArrayLikeObject;

@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg, Interval } from "./types.js";
  * The {@link clamp} function options.
  */
 export interface ClampOptions<ContextDate extends Date = Date>
-  extends ContextOptions<ContextDate> {}
+	extends ContextOptions<ContextDate> {}
 /**
  * The {@link clamp} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the date argument,
@@ -11,19 +11,18 @@ export interface ClampOptions<ContextDate extends Date = Date>
  * a context function is passed, it uses the context function return type.
  */
 export type ClampResult<
-  DateType extends DateArg<Date>,
-  IntervalType extends Interval,
-  Options extends ClampOptions | undefined,
-> =
-  Options extends ClampOptions<infer DateType extends Date>
-    ? DateType
-    : DateType extends Date
-      ? DateType
-      : IntervalType["start"] extends Date
-        ? IntervalType["start"]
-        : IntervalType["end"] extends Date
-          ? IntervalType["end"]
-          : Date;
+	DateType extends DateArg<Date>,
+	IntervalType extends Interval,
+	Options extends ClampOptions | undefined,
+> = Options extends ClampOptions<infer DateType extends Date>
+	? DateType
+	: DateType extends Date
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date;
 /**
  * @name clamp
  * @category Interval Helpers
@@ -56,11 +55,11 @@ export type ClampResult<
  * //=> Mon Mar 22 2021 00:00:00
  */
 export declare function clamp<
-  DateType extends DateArg<Date>,
-  IntervalType extends Interval,
-  Options extends ClampOptions | undefined = undefined,
+	DateType extends DateArg<Date>,
+	IntervalType extends Interval,
+	Options extends ClampOptions | undefined = undefined,
 >(
-  date: DateType,
-  interval: IntervalType,
-  options?: Options,
+	date: DateType,
+	interval: IntervalType,
+	options?: Options,
 ): ClampResult<DateType, IntervalType, Options>;

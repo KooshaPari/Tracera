@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-format` (CommonJS)
 // See upstream license: https://github.com/d3/d3-format/blob/main/LICENSE
 //

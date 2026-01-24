@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class ComponentsResponses extends _apidomCore.ObjectElement {
-  static primaryClass = 'components-responses';
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.classes.push(ComponentsResponses.primaryClass);
-  }
+	static primaryClass = "components-responses";
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.classes.push(ComponentsResponses.primaryClass);
+	}
 }
-var _default = exports.default = ComponentsResponses;
+var _default = (exports.default = ComponentsResponses);

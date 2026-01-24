@@ -1,11 +1,9 @@
-'use strict';
-
-import transformData from './transformData.js';
-import isCancel from '../cancel/isCancel.js';
-import defaults from '../defaults/index.js';
-import CanceledError from '../cancel/CanceledError.js';
-import AxiosHeaders from '../core/AxiosHeaders.js';
 import adapters from "../adapters/adapters.js";
+import CanceledError from "../cancel/CanceledError.js";
+import isCancel from "../cancel/isCancel.js";
+import AxiosHeaders from "../core/AxiosHeaders.js";
+import defaults from "../defaults/index.js";
+import transformData from "./transformData.js";
 
 /**
  * Throws a `CanceledError` if cancellation has been requested.
@@ -15,13 +13,13 @@ import adapters from "../adapters/adapters.js";
  * @returns {void}
  */
 function throwIfCancellationRequested(config) {
-  if (config.cancelToken) {
-    config.cancelToken.throwIfRequested();
-  }
+	if (config.cancelToken) {
+		config.cancelToken.throwIfRequested();
+	}
 
-  if (config.signal && config.signal.aborted) {
-    throw new CanceledError(null, config);
-  }
+	if (config.signal && config.signal.aborted) {
+		throw new CanceledError(null, config);
+	}
 }
 
 /**
@@ -32,50 +30,53 @@ function throwIfCancellationRequested(config) {
  * @returns {Promise} The Promise to be fulfilled
  */
 export default function dispatchRequest(config) {
-  throwIfCancellationRequested(config);
+	throwIfCancellationRequested(config);
 
-  config.headers = AxiosHeaders.from(config.headers);
+	config.headers = AxiosHeaders.from(config.headers);
 
-  // Transform request data
-  config.data = transformData.call(
-    config,
-    config.transformRequest
-  );
+	// Transform request data
+	config.data = transformData.call(config, config.transformRequest);
 
-  if (['post', 'put', 'patch'].indexOf(config.method) !== -1) {
-    config.headers.setContentType('application/x-www-form-urlencoded', false);
-  }
+	if (["post", "put", "patch"].indexOf(config.method) !== -1) {
+		config.headers.setContentType("application/x-www-form-urlencoded", false);
+	}
 
-  const adapter = adapters.getAdapter(config.adapter || defaults.adapter, config);
+	const adapter = adapters.getAdapter(
+		config.adapter || defaults.adapter,
+		config,
+	);
 
-  return adapter(config).then(function onAdapterResolution(response) {
-    throwIfCancellationRequested(config);
+	return adapter(config).then(
+		function onAdapterResolution(response) {
+			throwIfCancellationRequested(config);
 
-    // Transform response data
-    response.data = transformData.call(
-      config,
-      config.transformResponse,
-      response
-    );
+			// Transform response data
+			response.data = transformData.call(
+				config,
+				config.transformResponse,
+				response,
+			);
 
-    response.headers = AxiosHeaders.from(response.headers);
+			response.headers = AxiosHeaders.from(response.headers);
 
-    return response;
-  }, function onAdapterRejection(reason) {
-    if (!isCancel(reason)) {
-      throwIfCancellationRequested(config);
+			return response;
+		},
+		function onAdapterRejection(reason) {
+			if (!isCancel(reason)) {
+				throwIfCancellationRequested(config);
 
-      // Transform response data
-      if (reason && reason.response) {
-        reason.response.data = transformData.call(
-          config,
-          config.transformResponse,
-          reason.response
-        );
-        reason.response.headers = AxiosHeaders.from(reason.response.headers);
-      }
-    }
+				// Transform response data
+				if (reason && reason.response) {
+					reason.response.data = transformData.call(
+						config,
+						config.transformResponse,
+						reason.response,
+					);
+					reason.response.headers = AxiosHeaders.from(reason.response.headers);
+				}
+			}
 
-    return Promise.reject(reason);
-  });
+			return Promise.reject(reason);
+		},
+	);
 }

@@ -1,15 +1,16 @@
-import { createNamespace, isStringElement } from '@swagger-api/apidom-core';
-import * as jsonSchemaDraft7Predicates from "../predicates.mjs";
+import { createNamespace, isStringElement } from "@swagger-api/apidom-core";
 import jsonSchemaDraft7Namespace from "../namespace.mjs";
+import * as jsonSchemaDraft7Predicates from "../predicates.mjs";
+
 const createToolbox = () => {
-  const namespace = createNamespace(jsonSchemaDraft7Namespace);
-  const predicates = {
-    ...jsonSchemaDraft7Predicates,
-    isStringElement
-  };
-  return {
-    predicates,
-    namespace
-  };
+	const namespace = createNamespace(jsonSchemaDraft7Namespace);
+	const predicates = {
+		...jsonSchemaDraft7Predicates,
+		isStringElement,
+	};
+	return {
+		predicates,
+		namespace,
+	};
 };
 export default createToolbox;

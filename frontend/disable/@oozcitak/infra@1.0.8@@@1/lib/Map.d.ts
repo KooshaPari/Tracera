@@ -20,7 +20,10 @@ export declare function set<K, V>(map: Map<K, V>, key: K, val: V): void;
  * @param conditionOrItem - the key of an item to remove or a condition matching
  * items to remove
  */
-export declare function remove<K, V>(map: Map<K, V>, conditionOrItem: K | ((item: [K, V]) => boolean)): void;
+export declare function remove<K, V>(
+	map: Map<K, V>,
+	conditionOrItem: K | ((item: [K, V]) => boolean),
+): void;
 /**
  * Determines if the map contains a value with the given key.
  *
@@ -28,7 +31,10 @@ export declare function remove<K, V>(map: Map<K, V>, conditionOrItem: K | ((item
  * @param conditionOrItem - the key of an item to match or a condition matching
  * items
  */
-export declare function contains<K, V>(map: Map<K, V>, conditionOrItem: K | ((item: [K, V]) => boolean)): boolean;
+export declare function contains<K, V>(
+	map: Map<K, V>,
+	conditionOrItem: K | ((item: [K, V]) => boolean),
+): boolean;
 /**
  * Gets the keys of the map.
  *
@@ -47,7 +53,10 @@ export declare function values<K, V>(map: Map<K, V>): V[];
  * @param map - a map
  * @param condition - an optional condition to match
  */
-export declare function size<K, V>(map: Map<K, V>, condition?: ((item: [K, V]) => boolean)): number;
+export declare function size<K, V>(
+	map: Map<K, V>,
+	condition?: (item: [K, V]) => boolean,
+): number;
 /**
  * Determines if the map is empty.
  *
@@ -60,7 +69,10 @@ export declare function isEmpty<K, V>(map: Map<K, V>): boolean;
  * @param map - a map
  * @param condition - an optional condition to match
  */
-export declare function forEach<K, V>(map: Map<K, V>, condition?: ((item: [K, V]) => boolean)): IterableIterator<[K, V]>;
+export declare function forEach<K, V>(
+	map: Map<K, V>,
+	condition?: (item: [K, V]) => boolean,
+): IterableIterator<[K, V]>;
 /**
  * Creates and returns a shallow clone of map.
  *
@@ -75,7 +87,10 @@ export declare function clone<K, V>(map: Map<K, V>): Map<K, V>;
  * @param lessThanAlgo - a function that returns `true` if its first argument
  * is less than its second argument, and `false` otherwise.
  */
-export declare function sortInAscendingOrder<K, V>(map: Map<K, V>, lessThanAlgo: ((itemA: [K, V], itemB: [K, V]) => boolean)): Map<K, V>;
+export declare function sortInAscendingOrder<K, V>(
+	map: Map<K, V>,
+	lessThanAlgo: (itemA: [K, V], itemB: [K, V]) => boolean,
+): Map<K, V>;
 /**
  * Returns a new map containing items from the map sorted in descending
  * order.
@@ -84,4 +99,7 @@ export declare function sortInAscendingOrder<K, V>(map: Map<K, V>, lessThanAlgo:
  * @param lessThanAlgo - a function that returns `true` if its first argument
  * is less than its second argument, and `false` otherwise.
  */
-export declare function sortInDescendingOrder<K, V>(map: Map<K, V>, lessThanAlgo: ((itemA: [K, V], itemB: [K, V]) => boolean)): Map<K, V>;
+export declare function sortInDescendingOrder<K, V>(
+	map: Map<K, V>,
+	lessThanAlgo: (itemA: [K, V], itemB: [K, V]) => boolean,
+): Map<K, V>;

@@ -1,1 +1,1 @@
-export * from '../../dist/links/httpTuplesonLink';
+export * from "../../dist/links/httpTuplesonLink";

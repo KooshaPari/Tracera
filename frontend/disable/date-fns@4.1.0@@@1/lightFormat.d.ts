@@ -59,6 +59,6 @@ export { lightFormatters };
  * //=> '2014-02-11'
  */
 export declare function lightFormat(
-  date: DateArg<Date> & {},
-  formatStr: string,
+	date: DateArg<Date> & {},
+	formatStr: string,
 ): string;

@@ -1,17 +1,17 @@
 // @flow
 
 import {
-  Socket,
-} from 'net';
-import {
-  TLSSocket,
-} from 'tls';
-import {
   Agent as HttpAgent,
 } from 'http';
 import {
   Agent as HttpsAgent,
 } from 'https';
+import {
+  Socket,
+} from 'net';
+import {
+  TLSSocket,
+} from 'tls';
 
 export type ProxyConfigurationType = {|
   +authorization: string,

@@ -1,9 +1,9 @@
-import { outdent } from 'outdent';
-import { validateDoc } from './utils';
+import { outdent } from "outdent";
+import { validateDoc } from "./utils";
 
-describe('OpenAPI Schema', () => {
-  it('should not report on valid Server Object', async () => {
-    const source = outdent`
+describe("OpenAPI Schema", () => {
+	it("should not report on valid Server Object", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -21,15 +21,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report on empty server URL', async () => {
-    const source = outdent`
+	it("should report on empty server URL", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -46,11 +46,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/url",
@@ -58,10 +58,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on missing server URL', async () => {
-    const source = outdent`
+	it("should report on missing server URL", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -78,11 +78,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0",
@@ -90,10 +90,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on empty description field', async () => {
-    const source = outdent`
+	it("should report on empty description field", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -111,11 +111,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/description",
@@ -123,10 +123,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if description field is missing', async () => {
-    const source = outdent`
+	it("should not report if description field is missing", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -143,15 +143,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if fields type in servers are not array', async () => {
-    const source = outdent`
+	it("should report if fields type in servers are not array", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -168,11 +168,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers",
@@ -180,10 +180,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on multiple servers', async () => {
-    const source = outdent`
+	it("should not report on multiple servers", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -205,15 +205,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if variables are used for a server configuration', async () => {
-    const source = outdent`
+	it("should not report if variables are used for a server configuration", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -240,15 +240,15 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report if array in enum is empty', async () => {
-    const source = outdent`
+	it("should report if array in enum is empty", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -274,11 +274,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/variables/port/enum",
@@ -286,10 +286,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if some variable is not defined', async () => {
-    const source = outdent`
+	it("should report if some variable is not defined", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -314,11 +314,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        'no-undefined-server-variable': 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				"no-undefined-server-variable": "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/url",
@@ -326,10 +326,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if default value is not provided in variables', async () => {
-    const source = outdent`
+	it("should report if default value is not provided in variables", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -354,11 +354,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/variables/username",
@@ -370,10 +370,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if default value in variables is empty', async () => {
-    const source = outdent`
+	it("should report if default value in variables is empty", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -400,11 +400,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/variables/username/default",
@@ -412,10 +412,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report if description in variable is not a string', async () => {
-    const source = outdent`
+	it("should report if description in variable is not a string", async () => {
+		const source = outdent`
       openapi: 3.0.2
       info:
         title: Example OpenAPI 3 definition. Valid.
@@ -443,11 +443,11 @@ describe('OpenAPI Schema', () => {
                 description: example description
     `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`
       [
         {
           "location": "#/servers/0/variables/username/description",
@@ -455,10 +455,10 @@ describe('OpenAPI Schema', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report if servers property is not provided', async () => {
-    const source = outdent`
+	it("should not report if servers property is not provided", async () => {
+		const source = outdent`
         openapi: 3.0.2
         info:
           title: Example OpenAPI 3 definition. Valid.
@@ -472,15 +472,15 @@ describe('OpenAPI Schema', () => {
                   description: example description
       `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report if servers property is an empty array', async () => {
-    const source = outdent`
+	it("should not report if servers property is an empty array", async () => {
+		const source = outdent`
         openapi: 3.0.2
         info:
           title: Example OpenAPI 3 definition. Valid.
@@ -496,10 +496,10 @@ describe('OpenAPI Schema', () => {
                   description: example description
       `;
 
-    expect(
-      await validateDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await validateDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 });

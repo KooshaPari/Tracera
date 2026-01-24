@@ -31,5 +31,5 @@ var _index = require("./constructFrom.cjs");
  * }
  */
 function constructNow(date) {
-  return (0, _index.constructFrom)(date, Date.now());
+	return (0, _index.constructFrom)(date, Date.now());
 }

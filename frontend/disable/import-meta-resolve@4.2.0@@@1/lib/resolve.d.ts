@@ -13,17 +13,25 @@
  * @returns {URL}
  *   A URL object to the found thing.
  */
-export function moduleResolve(specifier: string, base: URL, conditions?: Set<string>, preserveSymlinks?: boolean): URL;
+export function moduleResolve(
+	specifier: string,
+	base: URL,
+	conditions?: Set<string>,
+	preserveSymlinks?: boolean,
+): URL;
 /**
  * @param {string} specifier
  * @param {{parentURL?: string, conditions?: Array<string>}} context
  * @returns {{url: string, format?: string | null}}
  */
-export function defaultResolve(specifier: string, context?: {
-    parentURL?: string;
-    conditions?: Array<string>;
-}): {
-    url: string;
-    format?: string | null;
+export function defaultResolve(
+	specifier: string,
+	context?: {
+		parentURL?: string;
+		conditions?: Array<string>;
+	},
+): {
+	url: string;
+	format?: string | null;
 };
 //# sourceMappingURL=resolve.d.ts.map

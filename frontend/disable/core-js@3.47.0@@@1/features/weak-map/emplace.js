@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/weak-map/emplace');
+"use strict";
+module.exports = require("../../full/weak-map/emplace");

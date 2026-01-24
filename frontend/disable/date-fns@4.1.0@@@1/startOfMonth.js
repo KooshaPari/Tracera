@@ -28,10 +28,10 @@ import { toDate } from "./toDate.js";
  * //=> Mon Sep 01 2014 00:00:00
  */
 export function startOfMonth(date, options) {
-  const _date = toDate(date, options?.in);
-  _date.setDate(1);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
+	const _date = toDate(date, options?.in);
+	_date.setDate(1);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
 }
 
 // Fallback for modularized imports:

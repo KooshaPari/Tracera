@@ -1,7 +1,5 @@
-"use strict";
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = unmemoize;
 /**
@@ -18,8 +16,8 @@ exports.default = unmemoize;
  * @returns {AsyncFunction} a function that calls the original unmemoized function
  */
 function unmemoize(fn) {
-    return (...args) => {
-        return (fn.unmemoized || fn)(...args);
-    };
+	return (...args) => {
+		return (fn.unmemoized || fn)(...args);
+	};
 }
 module.exports = exports.default;

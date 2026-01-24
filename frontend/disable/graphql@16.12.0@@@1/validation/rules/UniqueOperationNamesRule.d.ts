@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ASTValidationContext } from "../ValidationContext";
 /**
  * Unique operation names
  *
@@ -8,5 +8,5 @@ import type { ASTValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
  */
 export declare function UniqueOperationNamesRule(
-  context: ASTValidationContext,
+	context: ASTValidationContext,
 ): ASTVisitor;

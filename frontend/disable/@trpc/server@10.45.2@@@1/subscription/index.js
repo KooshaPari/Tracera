@@ -1,1 +1,1 @@
-module.exports = require('../dist/subscription');
+module.exports = require("../dist/subscription");

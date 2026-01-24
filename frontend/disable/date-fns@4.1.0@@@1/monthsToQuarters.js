@@ -23,8 +23,8 @@ import { monthsInQuarter } from "./constants.js";
  * //=> 2
  */
 export function monthsToQuarters(months) {
-  const quarters = months / monthsInQuarter;
-  return Math.trunc(quarters);
+	const quarters = months / monthsInQuarter;
+	return Math.trunc(quarters);
 }
 
 // Fallback for modularized imports:

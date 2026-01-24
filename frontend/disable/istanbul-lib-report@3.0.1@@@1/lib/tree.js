@@ -2,7 +2,6 @@
  Copyright 2012-2015, Yahoo Inc.
  Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
  */
-'use strict';
 
 /**
  * An object with methods that are called during the traversal of the coverage tree.
@@ -23,79 +22,79 @@
  * @constructor
  */
 class Visitor {
-    constructor(delegate) {
-        this.delegate = delegate;
-    }
+	constructor(delegate) {
+		this.delegate = delegate;
+	}
 }
 
-['Start', 'End', 'Summary', 'SummaryEnd', 'Detail']
-    .map(k => `on${k}`)
-    .forEach(fn => {
-        Object.defineProperty(Visitor.prototype, fn, {
-            writable: true,
-            value(node, state) {
-                if (typeof this.delegate[fn] === 'function') {
-                    this.delegate[fn](node, state);
-                }
-            }
-        });
-    });
+["Start", "End", "Summary", "SummaryEnd", "Detail"]
+	.map((k) => `on${k}`)
+	.forEach((fn) => {
+		Object.defineProperty(Visitor.prototype, fn, {
+			writable: true,
+			value(node, state) {
+				if (typeof this.delegate[fn] === "function") {
+					this.delegate[fn](node, state);
+				}
+			},
+		});
+	});
 
 class CompositeVisitor extends Visitor {
-    constructor(visitors) {
-        super();
+	constructor(visitors) {
+		super();
 
-        if (!Array.isArray(visitors)) {
-            visitors = [visitors];
-        }
-        this.visitors = visitors.map(v => {
-            if (v instanceof Visitor) {
-                return v;
-            }
-            return new Visitor(v);
-        });
-    }
+		if (!Array.isArray(visitors)) {
+			visitors = [visitors];
+		}
+		this.visitors = visitors.map((v) => {
+			if (v instanceof Visitor) {
+				return v;
+			}
+			return new Visitor(v);
+		});
+	}
 }
 
-['Start', 'Summary', 'SummaryEnd', 'Detail', 'End']
-    .map(k => `on${k}`)
-    .forEach(fn => {
-        Object.defineProperty(CompositeVisitor.prototype, fn, {
-            value(node, state) {
-                this.visitors.forEach(v => {
-                    v[fn](node, state);
-                });
-            }
-        });
-    });
+["Start", "Summary", "SummaryEnd", "Detail", "End"]
+	.map((k) => `on${k}`)
+	.forEach((fn) => {
+		Object.defineProperty(CompositeVisitor.prototype, fn, {
+			value(node, state) {
+				this.visitors.forEach((v) => {
+					v[fn](node, state);
+				});
+			},
+		});
+	});
 
 class BaseNode {
-    isRoot() {
-        return !this.getParent();
-    }
+	isRoot() {
+		return !this.getParent();
+	}
 
-    /**
-     * visit all nodes depth-first from this node down. Note that `onStart`
-     * and `onEnd` are never called on the visitor even if the current
-     * node is the root of the tree.
-     * @param visitor a full visitor that is called during tree traversal
-     * @param state optional state that is passed around
-     */
-    visit(visitor, state) {
-        if (this.isSummary()) {
-            visitor.onSummary(this, state);
-        } else {
-            visitor.onDetail(this, state);
-        }
+	/**
+	 * visit all nodes depth-first from this node down. Note that `onStart`
+	 * and `onEnd` are never called on the visitor even if the current
+	 * node is the root of the tree.
+	 * @param visitor a full visitor that is called during tree traversal
+	 * @param state optional state that is passed around
+	 */
+	visit(visitor, state) {
+		if (this.isSummary()) {
+			visitor.onSummary(this, state);
+		} else {
+			visitor.onDetail(this, state);
+		}
 
-        this.getChildren().forEach(child => {
-            child.visit(visitor, state);
-        });
+		this.getChildren().forEach((child) => {
+			child.visit(visitor, state);
+		});
 
-        if (this.isSummary()) {
-            visitor.onSummaryEnd(this, state);
-        }
-    }
+		if (this.isSummary()) {
+			visitor.onSummaryEnd(this, state);
+		}
+	}
 }
 
 /**
@@ -103,35 +102,35 @@ class BaseNode {
  * @constructor
  */
 class BaseTree {
-    constructor(root) {
-        this.root = root;
-    }
+	constructor(root) {
+		this.root = root;
+	}
 
-    /**
-     * returns the root node of the tree
-     */
-    getRoot() {
-        return this.root;
-    }
+	/**
+	 * returns the root node of the tree
+	 */
+	getRoot() {
+		return this.root;
+	}
 
-    /**
-     * visits the tree depth-first with the supplied partial visitor
-     * @param visitor - a potentially partial visitor
-     * @param state - the state to be passed around during tree traversal
-     */
-    visit(visitor, state) {
-        if (!(visitor instanceof Visitor)) {
-            visitor = new Visitor(visitor);
-        }
-        visitor.onStart(this.getRoot(), state);
-        this.getRoot().visit(visitor, state);
-        visitor.onEnd(this.getRoot(), state);
-    }
+	/**
+	 * visits the tree depth-first with the supplied partial visitor
+	 * @param visitor - a potentially partial visitor
+	 * @param state - the state to be passed around during tree traversal
+	 */
+	visit(visitor, state) {
+		if (!(visitor instanceof Visitor)) {
+			visitor = new Visitor(visitor);
+		}
+		visitor.onStart(this.getRoot(), state);
+		this.getRoot().visit(visitor, state);
+		visitor.onEnd(this.getRoot(), state);
+	}
 }
 
 module.exports = {
-    BaseTree,
-    BaseNode,
-    Visitor,
-    CompositeVisitor
+	BaseTree,
+	BaseNode,
+	Visitor,
+	CompositeVisitor,
 };

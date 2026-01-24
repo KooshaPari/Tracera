@@ -1,7 +1,7 @@
-var arrayFilter = require('./_arrayFilter'),
-    baseRest = require('./_baseRest'),
-    baseXor = require('./_baseXor'),
-    isArrayLikeObject = require('./isArrayLikeObject');
+var arrayFilter = require("./_arrayFilter"),
+	baseRest = require("./_baseRest"),
+	baseXor = require("./_baseXor"),
+	isArrayLikeObject = require("./isArrayLikeObject");
 
 /**
  * Creates an array of unique values that is the
@@ -21,8 +21,6 @@ var arrayFilter = require('./_arrayFilter'),
  * _.xor([2, 1], [2, 3]);
  * // => [1, 3]
  */
-var xor = baseRest(function(arrays) {
-  return baseXor(arrayFilter(arrays, isArrayLikeObject));
-});
+var xor = baseRest((arrays) => baseXor(arrayFilter(arrays, isArrayLikeObject)));
 
 module.exports = xor;

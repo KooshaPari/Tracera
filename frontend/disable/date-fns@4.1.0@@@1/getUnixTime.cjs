@@ -20,5 +20,5 @@ var _index = require("./toDate.cjs");
  * //=> 1330512305
  */
 function getUnixTime(date) {
-  return Math.trunc(+(0, _index.toDate)(date) / 1000);
+	return Math.trunc(+(0, _index.toDate)(date) / 1000);
 }

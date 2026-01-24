@@ -1,34 +1,34 @@
 import type {
-  ContextOptions,
-  Interval,
-  LocalizedOptions,
-  StepOptions,
-  WeekOptions,
+	ContextOptions,
+	Interval,
+	LocalizedOptions,
+	StepOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link eachWeekOfInterval} function options.
  */
 export interface EachWeekOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    WeekOptions,
-    LocalizedOptions<"options">,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		WeekOptions,
+		LocalizedOptions<"options">,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachWeekOfInterval} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the interval start date,
  * then the end interval date. If a context function is passed, it uses the context function return type.
  */
 export type EachWeekOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachWeekOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachWeekOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachWeekOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachWeekOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachWeekOfInterval
@@ -61,9 +61,9 @@ export type EachWeekOfIntervalResult<
  * // ]
  */
 export declare function eachWeekOfInterval<
-  IntervalType extends Interval,
-  Options extends EachWeekOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachWeekOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachWeekOfIntervalResult<IntervalType, Options>;

@@ -6,15 +6,18 @@ const PageTransitionEventInit = require("../generated/PageTransitionEventInit");
 
 // https://html.spec.whatwg.org/multipage/browsing-the-web.html#pagetransitionevent
 class PageTransitionEventImpl extends EventImpl {
-  initPageTransitionEvent(type, bubbles, cancelable, persisted) {
-    if (this._dispatchFlag) {
-      return;
-    }
+	initPageTransitionEvent(type, bubbles, cancelable, persisted) {
+		if (this._dispatchFlag) {
+			return;
+		}
 
-    this.initEvent(type, bubbles, cancelable);
-    this.persisted = persisted;
-  }
+		this.initEvent(type, bubbles, cancelable);
+		this.persisted = persisted;
+	}
 }
-PageTransitionEventImpl.defaultInit = PageTransitionEventInit.convert(undefined, undefined);
+PageTransitionEventImpl.defaultInit = PageTransitionEventInit.convert(
+	undefined,
+	undefined,
+);
 
 exports.implementation = PageTransitionEventImpl;

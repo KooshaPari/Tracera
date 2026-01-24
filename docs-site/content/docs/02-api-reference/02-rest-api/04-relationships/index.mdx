@@ -1,0 +1,360 @@
+---
+title: "Relationships API"
+description: "Create and manage traceability links between items in TraceRTM"
+keywords: [links, relationships, traceability, connections, api]
+---
+
+# Relationships API
+
+The Relationships API (also called Links API) allows you to create and manage traceability links between items, establishing relationships like "verified_by", "implements", "depends_on", and more.
+
+## Base Endpoint
+
+```
+/api/v1/links
+```
+
+## List Links
+
+Retrieve all links in a project.
+
+### Endpoint
+
+```
+GET /api/v1/links
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID |
+| `skip` | integer | No | Number of links to skip (default: 0) |
+| `limit` | integer | No | Maximum links to return (default: 100) |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/links?project_id=proj_123&skip=0&limit=50" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Response
+
+```json
+{
+  "total": 75,
+  "links": [
+    {
+      "id": "link_abc123",
+      "source_id": "item_req_001",
+      "target_id": "item_test_001",
+      "type": "verified_by",
+      "metadata": {
+        "confidence": 0.95
+      }
+    },
+    {
+      "id": "link_def456",
+      "source_id": "item_req_002",
+      "target_id": "item_design_001",
+      "type": "implements",
+      "metadata": {}
+    }
+  ]
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# List links
+links = client.links.list(
+    project_id="proj_123",
+    skip=0,
+    limit=50
+)
+
+for link in links:
+    print(f"{link.source_id} --[{link.type}]--> {link.target_id}")
+```
+
+## Update Link
+
+Update link properties (type, metadata).
+
+### Endpoint
+
+```
+PUT /api/v1/links/{link_id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `link_id` | string | Yes | Link ID to update |
+
+### Request Body
+
+```json
+{
+  "link_type": "verified_by",
+  "metadata": {
+    "confidence": 0.98,
+    "verified_by": "user_123",
+    "verified_at": "2025-01-20T10:30:00Z"
+  }
+}
+```
+
+### Request Example
+
+```bash
+curl -X PUT "https://api.tracertm.dev/v1/links/link_abc123" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "link_type": "verified_by",
+    "metadata": {
+      "confidence": 0.98
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "link_abc123",
+  "source_id": "item_req_001",
+  "target_id": "item_test_001",
+  "type": "verified_by",
+  "metadata": {
+    "confidence": 0.98,
+    "verified_by": "user_123"
+  }
+}
+```
+
+### Python Example
+
+```python
+# Update link
+updated_link = client.links.update(
+    link_id="link_abc123",
+    link_type="verified_by",
+    metadata={
+        "confidence": 0.98,
+        "verified_by": "user_123"
+    }
+)
+
+print(f"Updated link: {updated_link.id}")
+```
+
+## Link Types
+
+Common link types in TraceRTM:
+
+| Link Type | Description | Direction |
+|-----------|-------------|-----------|
+| `verified_by` | Requirement verified by test | req → test |
+| `implements` | Design implements requirement | design → req |
+| `depends_on` | Item depends on another | item → dependency |
+| `related_to` | General relationship | bidirectional |
+| `traced_to` | Traced from/to | bidirectional |
+| `satisfies` | Item satisfies requirement | item → req |
+| `refines` | Item refines another | refined → original |
+
+## Creating Links
+
+Links are typically created through the Items API or Graph API. To create a link:
+
+```python
+# Create link between items
+link = client.links.create(
+    source_id="item_req_001",
+    target_id="item_test_001",
+    link_type="verified_by",
+    metadata={
+        "confidence": 0.95
+    }
+)
+```
+
+## Link Metadata
+
+Links can include custom metadata:
+
+```json
+{
+  "confidence": 0.95,
+  "verified_by": "user_123",
+  "verified_at": "2025-01-20T10:30:00Z",
+  "notes": "Verified through automated testing",
+  "custom_field": "value"
+}
+```
+
+## Querying Links
+
+### Get Links for an Item
+
+```python
+# Get all links where item is source
+outgoing_links = client.items.get_links(
+    item_id="item_req_001",
+    direction="out"
+)
+
+# Get all links where item is target
+incoming_links = client.items.get_links(
+    item_id="item_test_001",
+    direction="in"
+)
+
+# Get all links (both directions)
+all_links = client.items.get_links(
+    item_id="item_req_001",
+    direction="both"
+)
+```
+
+### Filter by Link Type
+
+```python
+# Get only "verified_by" links
+verified_links = [
+    link for link in links
+    if link.type == "verified_by"
+]
+```
+
+## Graph Queries
+
+Use graph endpoints for advanced link queries:
+
+### Get Neighbors
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_123/graph/neighbors?item_id=item_req_001&direction=both" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Response:
+```json
+{
+  "project_id": "proj_123",
+  "item_id": "item_req_001",
+  "direction": "both",
+  "neighbors": [
+    {
+      "id": "link_abc123",
+      "item_id": "item_test_001",
+      "link_type": "verified_by",
+      "direction": "out"
+    },
+    {
+      "id": "link_def456",
+      "item_id": "item_design_001",
+      "link_type": "implements",
+      "direction": "in"
+    }
+  ],
+  "total": 2
+}
+```
+
+## Error Responses
+
+### Link Not Found
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Link not found"
+  }
+}
+```
+
+### Invalid Link Type
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid link type",
+    "details": [
+      {
+        "field": "link_type",
+        "message": "Link type must be one of: verified_by, implements, depends_on"
+      }
+    ]
+  }
+}
+```
+
+## Best Practices
+
+### 1. Use Appropriate Link Types
+
+Choose link types that accurately represent relationships:
+
+```python
+# ✅ Good: Specific link type
+link = client.links.create(
+    source_id="req_001",
+    target_id="test_001",
+    link_type="verified_by"  # Clear relationship
+)
+
+# ❌ Bad: Generic link type
+link = client.links.create(
+    source_id="req_001",
+    target_id="test_001",
+    link_type="related_to"  # Too vague
+)
+```
+
+### 2. Add Metadata
+
+Include relevant metadata:
+
+```python
+link = client.links.create(
+    source_id="req_001",
+    target_id="test_001",
+    link_type="verified_by",
+    metadata={
+        "confidence": 0.95,
+        "verified_by": "automated_test_suite",
+        "verified_at": "2025-01-20T10:30:00Z",
+        "test_coverage": "100%"
+    }
+)
+```
+
+### 3. Validate Links
+
+Check for cycles and validate link integrity:
+
+```python
+# Check for cycles
+cycles = client.analysis.detect_cycles(project_id="proj_123")
+if cycles.has_cycles:
+    print(f"Warning: {cycles.total_cycles} cycles detected")
+```
+
+## Related Documentation
+
+- [Items API](./02-artifacts) - Manage items
+- [Analysis API](./05-metadata) - Impact analysis and cycle detection
+- [Graph API](./05-metadata) - Graph queries
+- [Search API](./06-search) - Search links

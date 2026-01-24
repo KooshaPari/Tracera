@@ -1,13 +1,18 @@
-import path = require('path');
-import { outdent } from 'outdent';
-import { lintDocument } from '../../lint';
-import { BaseResolver } from '../../resolve';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../__tests__/utils';
+import path = require("path");
 
-describe('oas3 boolean-parameter-prefixes', () => {
-  it('should report on unresolved $ref', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../__tests__/utils";
+import { lintDocument } from "../../lint";
+import { BaseResolver } from "../../resolve";
+
+describe("oas3 boolean-parameter-prefixes", () => {
+	it("should report on unresolved $ref", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -15,20 +20,20 @@ describe('oas3 boolean-parameter-prefixes', () => {
               requestBody:
                 $ref: 'invalid.yaml'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -45,11 +50,11 @@ describe('oas3 boolean-parameter-prefixes', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on unresolved $ref yaml error', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on unresolved $ref yaml error", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -57,20 +62,20 @@ describe('oas3 boolean-parameter-prefixes', () => {
               requestBody:
                 $ref: 'fixtures/invalid-yaml.yaml'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -104,11 +109,11 @@ describe('oas3 boolean-parameter-prefixes', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report on unresolved $ref yaml error', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on unresolved $ref yaml error", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -116,25 +121,27 @@ describe('oas3 boolean-parameter-prefixes', () => {
               requestBody:
                 $ref: 'fixtures/ref.yaml'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(
+			`[]`,
+		);
+	});
 
-  it('should report on unresolved localr ref', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report on unresolved localr ref", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           '/test':
@@ -142,20 +149,20 @@ describe('oas3 boolean-parameter-prefixes', () => {
               requestBody:
                 $ref: '#/components/requestBodies/a'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -172,11 +179,11 @@ describe('oas3 boolean-parameter-prefixes', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on refs inside specification extensions', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on refs inside specification extensions", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           requestBodies:
@@ -191,25 +198,27 @@ describe('oas3 boolean-parameter-prefixes', () => {
               requestBody:
                 $ref: '#/components/requestBodies/a'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(
+			`[]`,
+		);
+	});
 
-  it('should not report on nested refs inside specification extensions', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on nested refs inside specification extensions", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         x-test:
           prop:
@@ -222,25 +231,27 @@ describe('oas3 boolean-parameter-prefixes', () => {
                   source:
                     $ref: 'fixtures/code-sample.php'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(
+			`[]`,
+		);
+	});
 
-  it('should not report on nested refs inside specification extensions for 3.1', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on nested refs inside specification extensions for 3.1", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         openapi: 3.1.0
         x-test:
           prop:
@@ -253,19 +264,21 @@ describe('oas3 boolean-parameter-prefixes', () => {
                   source:
                     $ref: 'fixtures/code-sample.php'
       `,
-      path.join(__dirname, 'foobar.yaml')
-    );
+			path.join(__dirname, "foobar.yaml"),
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'no-unresolved-refs': 'error',
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"no-unresolved-refs": "error",
+				},
+			}),
+		});
 
-    expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results, __dirname)).toMatchInlineSnapshot(
+			`[]`,
+		);
+	});
 });

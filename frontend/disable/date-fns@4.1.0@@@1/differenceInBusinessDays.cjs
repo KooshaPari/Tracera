@@ -62,29 +62,29 @@ var _index6 = require("./isWeekend.cjs");
  * //=> 0
  */
 function differenceInBusinessDays(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  if (!(0, _index5.isValid)(laterDate_) || !(0, _index5.isValid)(earlierDate_))
-    return NaN;
+	if (!(0, _index5.isValid)(laterDate_) || !(0, _index5.isValid)(earlierDate_))
+		return NaN;
 
-  const diff = (0, _index3.differenceInCalendarDays)(laterDate_, earlierDate_);
-  const sign = diff < 0 ? -1 : 1;
-  const weeks = Math.trunc(diff / 7);
+	const diff = (0, _index3.differenceInCalendarDays)(laterDate_, earlierDate_);
+	const sign = diff < 0 ? -1 : 1;
+	const weeks = Math.trunc(diff / 7);
 
-  let result = weeks * 5;
-  let movingDate = (0, _index2.addDays)(earlierDate_, weeks * 7);
+	let result = weeks * 5;
+	let movingDate = (0, _index2.addDays)(earlierDate_, weeks * 7);
 
-  // the loop below will run at most 6 times to account for the remaining days that don't makeup a full week
-  while (!(0, _index4.isSameDay)(laterDate_, movingDate)) {
-    // sign is used to account for both negative and positive differences
-    result += (0, _index6.isWeekend)(movingDate, options) ? 0 : sign;
-    movingDate = (0, _index2.addDays)(movingDate, sign);
-  }
+	// the loop below will run at most 6 times to account for the remaining days that don't makeup a full week
+	while (!(0, _index4.isSameDay)(laterDate_, movingDate)) {
+		// sign is used to account for both negative and positive differences
+		result += (0, _index6.isWeekend)(movingDate, options) ? 0 : sign;
+		movingDate = (0, _index2.addDays)(movingDate, sign);
+	}
 
-  // Prevent negative zero
-  return result === 0 ? 0 : result;
+	// Prevent negative zero
+	return result === 0 ? 0 : result;
 }

@@ -12,15 +12,15 @@ import (
 
 // IndexerConfig holds configuration for the embedding indexer
 type IndexerConfig struct {
-	Provider        Provider      // Embedding provider to use
-	Pool            *pgxpool.Pool // Database connection pool
-	BatchSize       int           // Number of items to process per batch
-	WorkerCount     int           // Number of concurrent workers
-	PollInterval    time.Duration // How often to check for new items
-	RetryAttempts   int           // Number of retry attempts for failed items
-	RetryDelay      time.Duration // Delay between retries
-	MaxQueueSize    int           // Maximum items in processing queue
-	EnableLogging   bool          // Enable detailed logging
+	Provider      Provider      // Embedding provider to use
+	Pool          *pgxpool.Pool // Database connection pool
+	BatchSize     int           // Number of items to process per batch
+	WorkerCount   int           // Number of concurrent workers
+	PollInterval  time.Duration // How often to check for new items
+	RetryAttempts int           // Number of retry attempts for failed items
+	RetryDelay    time.Duration // Delay between retries
+	MaxQueueSize  int           // Maximum items in processing queue
+	EnableLogging bool          // Enable detailed logging
 }
 
 // IndexItem represents an item that needs embedding
@@ -238,7 +238,6 @@ func (idx *Indexer) loadPendingItems() error {
 		return fmt.Errorf("failed to query pending items: %w", err)
 	}
 	defer rows.Close()
-
 	count := 0
 	for rows.Next() {
 		var item IndexItem

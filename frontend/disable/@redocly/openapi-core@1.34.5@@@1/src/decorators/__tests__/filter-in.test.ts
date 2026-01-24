@@ -1,13 +1,17 @@
-import { outdent } from 'outdent';
-import { bundleDocument } from '../../bundle';
-import { BaseResolver } from '../../resolve';
-import { makeConfig, parseYamlToDocument, yamlSerializer } from '../../../__tests__/utils';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	yamlSerializer,
+} from "../../../__tests__/utils";
+import { bundleDocument } from "../../bundle";
+import { BaseResolver } from "../../resolve";
 
-describe('oas3 filter-in', () => {
-  expect.addSnapshotSerializer(yamlSerializer);
+describe("oas3 filter-in", () => {
+	expect.addSnapshotSerializer(yamlSerializer);
 
-  const inputDoc = parseYamlToDocument(
-    outdent`
+	const inputDoc = parseYamlToDocument(
+		outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -26,12 +30,12 @@ describe('oas3 filter-in', () => {
             post:
               operationId: storeOrder
               callbacks:
-                x-access: protected`
-  );
+                x-access: protected`,
+	);
 
-  it('should include /user path and remove y parameter', async () => {
-    const testDocument = parseYamlToDocument(
-      outdent`
+	it("should include /user path and remove y parameter", async () => {
+		const testDocument = parseYamlToDocument(
+			outdent`
       openapi: 3.0.0
       paths:
         /pet:
@@ -51,17 +55,17 @@ describe('oas3 filter-in', () => {
           y:
             x-access: private
             name: y            
-    `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDocument,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: { 'filter-in': { value: 'public', property: 'x-access' } },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+    `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDocument,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: { "filter-in": { value: "public", property: "x-access" } },
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /user:
@@ -73,24 +77,24 @@ describe('oas3 filter-in', () => {
             name: x
 
     `);
-  });
+	});
 
-  it('should include /order and /post paths', async () => {
-    const { bundle: res } = await bundleDocument({
-      document: inputDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-in': {
-            property: 'x-audience',
-            value: ['Public', 'Protected'],
-            matchStrategy: 'all',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+	it("should include /order and /post paths", async () => {
+		const { bundle: res } = await bundleDocument({
+			document: inputDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-in": {
+						property: "x-audience",
+						value: ["Public", "Protected"],
+						matchStrategy: "all",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /post:
@@ -107,11 +111,11 @@ describe('oas3 filter-in', () => {
       components: {}
 
     `);
-  });
+	});
 
-  it('should include all paths', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should include all paths", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -128,23 +132,23 @@ describe('oas3 filter-in', () => {
               operationId: storeOrder
               parameters:
                 - name: api_key
-                 `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-in': {
-            property: 'x-audience',
-            value: ['Public', 'Global'],
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+                 `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-in": {
+						property: "x-audience",
+						value: ["Public", "Global"],
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /pet:
@@ -168,24 +172,24 @@ describe('oas3 filter-in', () => {
       components: {}
 
     `);
-  });
+	});
 
-  it('should include path without x-audience property ', async () => {
-    const { bundle: res } = await bundleDocument({
-      document: inputDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-in': {
-            property: 'x-audience',
-            value: 'non-existing-audience',
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+	it("should include path without x-audience property ", async () => {
+		const { bundle: res } = await bundleDocument({
+			document: inputDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-in": {
+						property: "x-audience",
+						value: "non-existing-audience",
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /post:
@@ -194,11 +198,11 @@ describe('oas3 filter-in', () => {
       components: {}
 
     `);
-  });
+	});
 
-  it('should include /pet and /account without post method', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+	it("should include /pet and /account without post method", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         paths:
           /pet:
@@ -218,23 +222,23 @@ describe('oas3 filter-in', () => {
             post: 
                summary: test
                x-audience: Private     
-                 `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-in': {
-            property: 'x-audience',
-            value: ['Public', 'Global'],
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+                 `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-in": {
+						property: "x-audience",
+						value: ["Public", "Global"],
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       openapi: 3.0.0
       paths:
         /pet:
@@ -247,13 +251,13 @@ describe('oas3 filter-in', () => {
       components: {}
 
     `);
-  });
+	});
 });
 
-describe('oas2 filter-in', () => {
-  it('should include only one parameter and not include response', async () => {
-    const testDoc = parseYamlToDocument(
-      outdent`
+describe("oas2 filter-in", () => {
+	it("should include only one parameter and not include response", async () => {
+		const testDoc = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         host: api.instagram.com
         paths:
@@ -277,23 +281,23 @@ describe('oas2 filter-in', () => {
                 '200':
                   description: List of recent media entries.
                   x-access: [private, protected]
-      `
-    );
-    const { bundle: res } = await bundleDocument({
-      document: testDoc,
-      externalRefResolver: new BaseResolver(),
-      config: await makeConfig({
-        rules: {},
-        decorators: {
-          'filter-in': {
-            property: 'x-access',
-            value: ['public', 'global'],
-            matchStrategy: 'any',
-          },
-        },
-      }),
-    });
-    expect(res.parsed).toMatchInlineSnapshot(`
+      `,
+		);
+		const { bundle: res } = await bundleDocument({
+			document: testDoc,
+			externalRefResolver: new BaseResolver(),
+			config: await makeConfig({
+				rules: {},
+				decorators: {
+					"filter-in": {
+						property: "x-access",
+						value: ["public", "global"],
+						matchStrategy: "any",
+					},
+				},
+			}),
+		});
+		expect(res.parsed).toMatchInlineSnapshot(`
       swagger: '2.0'
       host: api.instagram.com
       paths:
@@ -309,5 +313,5 @@ describe('oas2 filter-in', () => {
                 type: integer
 
     `);
-  });
+	});
 });

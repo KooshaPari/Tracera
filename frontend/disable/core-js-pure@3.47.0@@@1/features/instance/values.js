@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/values');
+"use strict";
+module.exports = require("../../full/instance/values");

@@ -1,7 +1,7 @@
-var baseRest = require('./_baseRest'),
-    createWrap = require('./_createWrap'),
-    getHolder = require('./_getHolder'),
-    replaceHolders = require('./_replaceHolders');
+var baseRest = require("./_baseRest"),
+	createWrap = require("./_createWrap"),
+	getHolder = require("./_getHolder"),
+	replaceHolders = require("./_replaceHolders");
 
 /** Used to compose bitmasks for function metadata. */
 var WRAP_PARTIAL_FLAG = 32;
@@ -39,9 +39,9 @@ var WRAP_PARTIAL_FLAG = 32;
  * greetFred('hi');
  * // => 'hi fred'
  */
-var partial = baseRest(function(func, partials) {
-  var holders = replaceHolders(partials, getHolder(partial));
-  return createWrap(func, WRAP_PARTIAL_FLAG, undefined, partials, holders);
+var partial = baseRest((func, partials) => {
+	var holders = replaceHolders(partials, getHolder(partial));
+	return createWrap(func, WRAP_PARTIAL_FLAG, undefined, partials, holders);
 });
 
 // Assign default placeholders.

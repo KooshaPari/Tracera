@@ -5,18 +5,18 @@ import { toDate } from "./toDate.js";
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+	"Jan",
+	"Feb",
+	"Mar",
+	"Apr",
+	"May",
+	"Jun",
+	"Jul",
+	"Aug",
+	"Sep",
+	"Oct",
+	"Nov",
+	"Dec",
 ];
 
 /**
@@ -40,23 +40,23 @@ const months = [
  * //=> 'Wed, 18 Sep 2019 19:00:52 GMT'
  */
 export function formatRFC7231(date) {
-  const _date = toDate(date);
+	const _date = toDate(date);
 
-  if (!isValid(_date)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (!isValid(_date)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  const dayName = days[_date.getUTCDay()];
-  const dayOfMonth = addLeadingZeros(_date.getUTCDate(), 2);
-  const monthName = months[_date.getUTCMonth()];
-  const year = _date.getUTCFullYear();
+	const dayName = days[_date.getUTCDay()];
+	const dayOfMonth = addLeadingZeros(_date.getUTCDate(), 2);
+	const monthName = months[_date.getUTCMonth()];
+	const year = _date.getUTCFullYear();
 
-  const hour = addLeadingZeros(_date.getUTCHours(), 2);
-  const minute = addLeadingZeros(_date.getUTCMinutes(), 2);
-  const second = addLeadingZeros(_date.getUTCSeconds(), 2);
+	const hour = addLeadingZeros(_date.getUTCHours(), 2);
+	const minute = addLeadingZeros(_date.getUTCMinutes(), 2);
+	const second = addLeadingZeros(_date.getUTCSeconds(), 2);
 
-  // Result variables.
-  return `${dayName}, ${dayOfMonth} ${monthName} ${year} ${hour}:${minute}:${second} GMT`;
+	// Result variables.
+	return `${dayName}, ${dayOfMonth} ${monthName} ${year} ${hour}:${minute}:${second} GMT`;
 }
 
 // Fallback for modularized imports:

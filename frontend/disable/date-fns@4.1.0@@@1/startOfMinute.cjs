@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Mon Dec 01 2014 22:15:00
  */
 function startOfMinute(date, options) {
-  const date_ = (0, _index.toDate)(date, options?.in);
-  date_.setSeconds(0, 0);
-  return date_;
+	const date_ = (0, _index.toDate)(date, options?.in);
+	date_.setSeconds(0, 0);
+	return date_;
 }

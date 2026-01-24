@@ -1,10 +1,10 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = constant;
 
 function constant(x) {
-  return () => x;
+	return () => x;
 }

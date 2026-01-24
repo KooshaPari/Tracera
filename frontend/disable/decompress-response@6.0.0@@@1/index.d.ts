@@ -1,5 +1,5 @@
 /// <reference types="node"/>
-import {IncomingMessage} from 'http';
+import { IncomingMessage } from "http";
 
 /**
 Decompress a HTTP response if needed.

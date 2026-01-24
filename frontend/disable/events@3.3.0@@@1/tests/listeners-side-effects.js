@@ -19,31 +19,31 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require('./common');
-var assert = require('assert');
+require("./common");
+var assert = require("assert");
 
-var EventEmitter = require('../').EventEmitter;
+var EventEmitter = require("../").EventEmitter;
 
 var e = new EventEmitter();
-var fl;  // foo listeners
+var fl; // foo listeners
 
-fl = e.listeners('foo');
+fl = e.listeners("foo");
 assert.ok(Array.isArray(fl));
 assert.strictEqual(fl.length, 0);
 if (Object.create) assert.ok(!(e._events instanceof Object));
 assert.strictEqual(Object.keys(e._events).length, 0);
 
-e.on('foo', assert.fail);
-fl = e.listeners('foo');
+e.on("foo", assert.fail);
+fl = e.listeners("foo");
 assert.strictEqual(e._events.foo, assert.fail);
 assert.ok(Array.isArray(fl));
 assert.strictEqual(fl.length, 1);
 assert.strictEqual(fl[0], assert.fail);
 
-e.listeners('bar');
+e.listeners("bar");
 
-e.on('foo', assert.ok);
-fl = e.listeners('foo');
+e.on("foo", assert.ok);
+fl = e.listeners("foo");
 
 assert.ok(Array.isArray(e._events.foo));
 assert.strictEqual(e._events.foo.length, 2);

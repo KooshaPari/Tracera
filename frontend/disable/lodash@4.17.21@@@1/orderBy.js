@@ -1,5 +1,5 @@
-var baseOrderBy = require('./_baseOrderBy'),
-    isArray = require('./isArray');
+var baseOrderBy = require("./_baseOrderBy"),
+	isArray = require("./isArray");
 
 /**
  * This method is like `_.sortBy` except that it allows specifying the sort
@@ -31,17 +31,17 @@ var baseOrderBy = require('./_baseOrderBy'),
  * // => objects for [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 40]]
  */
 function orderBy(collection, iteratees, orders, guard) {
-  if (collection == null) {
-    return [];
-  }
-  if (!isArray(iteratees)) {
-    iteratees = iteratees == null ? [] : [iteratees];
-  }
-  orders = guard ? undefined : orders;
-  if (!isArray(orders)) {
-    orders = orders == null ? [] : [orders];
-  }
-  return baseOrderBy(collection, iteratees, orders);
+	if (collection == null) {
+		return [];
+	}
+	if (!isArray(iteratees)) {
+		iteratees = iteratees == null ? [] : [iteratees];
+	}
+	orders = guard ? undefined : orders;
+	if (!isArray(orders)) {
+		orders = orders == null ? [] : [orders];
+	}
+	return baseOrderBy(collection, iteratees, orders);
 }
 
 module.exports = orderBy;

@@ -1,4 +1,4 @@
-'use strict';
-require('../../modules/es.json.to-string-tag');
+"use strict";
+require("../../modules/es.json.to-string-tag");
 
-module.exports = 'JSON';
+module.exports = "JSON";

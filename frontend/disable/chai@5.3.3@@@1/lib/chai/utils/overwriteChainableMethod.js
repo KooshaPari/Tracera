@@ -4,8 +4,8 @@
  * MIT Licensed
  */
 
-import {Assertion} from '../assertion.js';
-import {transferFlags} from './transferFlags.js';
+import { Assertion } from "../assertion.js";
+import { transferFlags } from "./transferFlags.js";
 
 /**
  * ### .overwriteChainableMethod(ctx, name, method, chainingBehavior)
@@ -40,30 +40,30 @@ import {transferFlags} from './transferFlags.js';
  * @public
  */
 export function overwriteChainableMethod(ctx, name, method, chainingBehavior) {
-  let chainableBehavior = ctx.__methods[name];
+	const chainableBehavior = ctx.__methods[name];
 
-  let _chainingBehavior = chainableBehavior.chainingBehavior;
-  chainableBehavior.chainingBehavior =
-    function overwritingChainableMethodGetter() {
-      let result = chainingBehavior(_chainingBehavior).call(this);
-      if (result !== undefined) {
-        return result;
-      }
+	const _chainingBehavior = chainableBehavior.chainingBehavior;
+	chainableBehavior.chainingBehavior =
+		function overwritingChainableMethodGetter() {
+			const result = chainingBehavior(_chainingBehavior).call(this);
+			if (result !== undefined) {
+				return result;
+			}
 
-      let newAssertion = new Assertion();
-      transferFlags(this, newAssertion);
-      return newAssertion;
-    };
+			const newAssertion = new Assertion();
+			transferFlags(this, newAssertion);
+			return newAssertion;
+		};
 
-  let _method = chainableBehavior.method;
-  chainableBehavior.method = function overwritingChainableMethodWrapper() {
-    let result = method(_method).apply(this, arguments);
-    if (result !== undefined) {
-      return result;
-    }
+	const _method = chainableBehavior.method;
+	chainableBehavior.method = function overwritingChainableMethodWrapper() {
+		const result = method(_method).apply(this, arguments);
+		if (result !== undefined) {
+			return result;
+		}
 
-    let newAssertion = new Assertion();
-    transferFlags(this, newAssertion);
-    return newAssertion;
-  };
+		const newAssertion = new Assertion();
+		transferFlags(this, newAssertion);
+		return newAssertion;
+	};
 }

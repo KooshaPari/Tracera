@@ -34,38 +34,40 @@ import ReactDOM = require(".");
 export {};
 
 declare module "react" {
-    // @enableViewTransition
-    interface ViewTransitionPseudoElement extends Animatable {
-        getComputedStyle: () => CSSStyleDeclaration;
-    }
+	// @enableViewTransition
+	interface ViewTransitionPseudoElement extends Animatable {
+		getComputedStyle: () => CSSStyleDeclaration;
+	}
 
-    interface ViewTransitionInstance {
-        group: ViewTransitionPseudoElement;
-        imagePair: ViewTransitionPseudoElement;
-        old: ViewTransitionPseudoElement;
-        new: ViewTransitionPseudoElement;
-    }
+	interface ViewTransitionInstance {
+		group: ViewTransitionPseudoElement;
+		imagePair: ViewTransitionPseudoElement;
+		old: ViewTransitionPseudoElement;
+		new: ViewTransitionPseudoElement;
+	}
 
-    // @enableFragmentRefs
-    interface FragmentInstance {
-        blur: () => void;
-        focus: (focusOptions?: FocusOptions | undefined) => void;
-        focusLast: (focusOptions?: FocusOptions | undefined) => void;
-        observeUsing(observer: IntersectionObserver | ResizeObserver): void;
-        unobserveUsing(observer: IntersectionObserver | ResizeObserver): void;
-        getClientRects(): Array<DOMRect>;
-        getRootNode(getRootNodeOptions?: GetRootNodeOptions | undefined): Document | ShadowRoot | FragmentInstance;
-        addEventListener(
-            type: string,
-            listener: EventListener,
-            optionsOrUseCapture?: Parameters<Element["addEventListener"]>[2],
-        ): void;
-        removeEventListener(
-            type: string,
-            listener: EventListener,
-            optionsOrUseCapture?: Parameters<Element["removeEventListener"]>[2],
-        ): void;
-        dispatchEvent(event: Event): boolean;
-        scrollIntoView(alignToTop?: boolean): void;
-    }
+	// @enableFragmentRefs
+	interface FragmentInstance {
+		blur: () => void;
+		focus: (focusOptions?: FocusOptions | undefined) => void;
+		focusLast: (focusOptions?: FocusOptions | undefined) => void;
+		observeUsing(observer: IntersectionObserver | ResizeObserver): void;
+		unobserveUsing(observer: IntersectionObserver | ResizeObserver): void;
+		getClientRects(): Array<DOMRect>;
+		getRootNode(
+			getRootNodeOptions?: GetRootNodeOptions | undefined,
+		): Document | ShadowRoot | FragmentInstance;
+		addEventListener(
+			type: string,
+			listener: EventListener,
+			optionsOrUseCapture?: Parameters<Element["addEventListener"]>[2],
+		): void;
+		removeEventListener(
+			type: string,
+			listener: EventListener,
+			optionsOrUseCapture?: Parameters<Element["removeEventListener"]>[2],
+		): void;
+		dispatchEvent(event: Event): boolean;
+		scrollIntoView(alignToTop?: boolean): void;
+	}
 }

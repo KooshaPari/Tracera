@@ -1,7 +1,7 @@
-var baseRepeat = require('./_baseRepeat'),
-    isIterateeCall = require('./_isIterateeCall'),
-    toInteger = require('./toInteger'),
-    toString = require('./toString');
+var baseRepeat = require("./_baseRepeat"),
+	isIterateeCall = require("./_isIterateeCall"),
+	toInteger = require("./toInteger"),
+	toString = require("./toString");
 
 /**
  * Repeats the given string `n` times.
@@ -26,12 +26,12 @@ var baseRepeat = require('./_baseRepeat'),
  * // => ''
  */
 function repeat(string, n, guard) {
-  if ((guard ? isIterateeCall(string, n, guard) : n === undefined)) {
-    n = 1;
-  } else {
-    n = toInteger(n);
-  }
-  return baseRepeat(toString(string), n);
+	if (guard ? isIterateeCall(string, n, guard) : n === undefined) {
+		n = 1;
+	} else {
+		n = toInteger(n);
+	}
+	return baseRepeat(toString(string), n);
 }
 
 module.exports = repeat;

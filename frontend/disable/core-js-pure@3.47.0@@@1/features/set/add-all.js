@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/set/add-all');
+"use strict";
+module.exports = require("../../full/set/add-all");

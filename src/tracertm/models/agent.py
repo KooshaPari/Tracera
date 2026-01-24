@@ -40,15 +40,15 @@ class Agent(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
 
     # Flexible metadata fields expected by tests
-    config: Mapped[dict] = mapped_column(JSONType, nullable=False, default=dict)
-    capabilities: Mapped[list] = mapped_column(JSONType, nullable=False, default=list)
-    agent_metadata: Mapped[dict] = mapped_column(JSONType, nullable=False, default=dict)
+    config: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    capabilities: Mapped[list[object]] = mapped_column(JSONType, nullable=False, default=list)
+    agent_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     last_activity_at: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     __table_args__ = (Index("idx_agents_project_status", "project_id", "status"),)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: object) -> None:
         """
         Accept flexible kwargs used by tests (config, capabilities, agent_type).
         """

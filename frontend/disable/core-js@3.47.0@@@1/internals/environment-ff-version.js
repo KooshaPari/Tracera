@@ -1,5 +1,5 @@
-'use strict';
-var userAgent = require('../internals/environment-user-agent');
+"use strict";
+var userAgent = require("../internals/environment-user-agent");
 
 var firefox = userAgent.match(/firefox\/(\d+)/i);
 

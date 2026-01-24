@@ -5,27 +5,27 @@
 // This is tested in `packages/vite/src/node/__tests_dts__/typeOptions.ts`
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- to allow extending by users
 interface ViteTypeOptions {
-  // strictImportMetaEnv: unknown
+	// strictImportMetaEnv: unknown
 }
 
 type ImportMetaEnvFallbackKey =
-  'strictImportMetaEnv' extends keyof ViteTypeOptions ? never : string
+	"strictImportMetaEnv" extends keyof ViteTypeOptions ? never : string;
 
 interface ImportMetaEnv {
-  [key: ImportMetaEnvFallbackKey]: any
-  BASE_URL: string
-  MODE: string
-  DEV: boolean
-  PROD: boolean
-  SSR: boolean
+	[key: ImportMetaEnvFallbackKey]: any;
+	BASE_URL: string;
+	MODE: string;
+	DEV: boolean;
+	PROD: boolean;
+	SSR: boolean;
 }
 
 interface ImportMeta {
-  url: string
+	url: string;
 
-  readonly hot?: import('./hot').ViteHotContext
+	readonly hot?: import("./hot").ViteHotContext;
 
-  readonly env: ImportMetaEnv
+	readonly env: ImportMetaEnv;
 
-  glob: import('./importGlob').ImportGlobFunction
+	glob: import("./importGlob").ImportGlobFunction;
 }

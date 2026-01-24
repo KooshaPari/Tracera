@@ -1,11 +1,11 @@
 // @ts-expect-error
-import tsrGetManifest from 'tsr:routes-manifest'
-import { getManifest } from 'vinxi/manifest'
-import { default as invariant } from 'tiny-invariant'
-import type { Manifest } from '@tanstack/router-core'
+import tsrGetManifest from "tsr:routes-manifest";
+import type { Manifest } from "@tanstack/router-core";
+import { default as invariant } from "tiny-invariant";
+import { getManifest } from "vinxi/manifest";
 
 function sanitizeBase(base: string) {
-  return base.replace(/^\/|\/$/g, '')
+	return base.replace(/^\/|\/$/g, "");
 }
 
 /**
@@ -14,50 +14,50 @@ function sanitizeBase(base: string) {
  * send to the client.
  */
 export function getFullRouterManifest() {
-  const routerManifest = tsrGetManifest() as Manifest
+	const routerManifest = tsrGetManifest() as Manifest;
 
-  const rootRoute = (routerManifest.routes.__root__ =
-    routerManifest.routes.__root__ || {})
+	const rootRoute = (routerManifest.routes.__root__ =
+		routerManifest.routes.__root__ || {});
 
-  rootRoute.assets = rootRoute.assets || []
+	rootRoute.assets = rootRoute.assets || [];
 
-  let script = ''
-  // Always fake that HMR is ready
-  if (process.env.NODE_ENV === 'development') {
-    const CLIENT_BASE = sanitizeBase(process.env.TSS_CLIENT_BASE || '')
+	let script = "";
+	// Always fake that HMR is ready
+	if (process.env.NODE_ENV === "development") {
+		const CLIENT_BASE = sanitizeBase(process.env.TSS_CLIENT_BASE || "");
 
-    if (!CLIENT_BASE) {
-      throw new Error(
-        'tanstack/start-router-manifest: TSS_CLIENT_BASE must be defined in your environment for getFullRouterManifest()',
-      )
-    }
-    script = `import RefreshRuntime from "/${CLIENT_BASE}/@react-refresh";
+		if (!CLIENT_BASE) {
+			throw new Error(
+				"tanstack/start-router-manifest: TSS_CLIENT_BASE must be defined in your environment for getFullRouterManifest()",
+			);
+		}
+		script = `import RefreshRuntime from "/${CLIENT_BASE}/@react-refresh";
     RefreshRuntime.injectIntoGlobalHook(window)
     window.$RefreshReg$ = () => {}
     window.$RefreshSig$ = () => (type) => type
-    window.__vite_plugin_react_preamble_installed__ = true;`
-  }
+    window.__vite_plugin_react_preamble_installed__ = true;`;
+	}
 
-  // Get the entry for the client from vinxi
-  const vinxiClientManifest = getManifest('client')
+	// Get the entry for the client from vinxi
+	const vinxiClientManifest = getManifest("client");
 
-  const importPath =
-    vinxiClientManifest.inputs[vinxiClientManifest.handler]?.output.path
-  if (!importPath) {
-    invariant(importPath, 'Could not find client entry in vinxi manifest')
-  }
+	const importPath =
+		vinxiClientManifest.inputs[vinxiClientManifest.handler]?.output.path;
+	if (!importPath) {
+		invariant(importPath, "Could not find client entry in vinxi manifest");
+	}
 
-  rootRoute.assets.push({
-    tag: 'script',
-    attrs: {
-      type: 'module',
-      suppressHydrationWarning: true,
-      async: true,
-    },
-    children: `${script}import("${importPath}")`,
-  })
+	rootRoute.assets.push({
+		tag: "script",
+		attrs: {
+			type: "module",
+			suppressHydrationWarning: true,
+			async: true,
+		},
+		children: `${script}import("${importPath}")`,
+	});
 
-  return routerManifest
+	return routerManifest;
 }
 
 /**
@@ -67,22 +67,22 @@ export function getFullRouterManifest() {
  * between routes or any other data that is not needed for the client.
  */
 export function getRouterManifest() {
-  const routerManifest = getFullRouterManifest()
+	const routerManifest = getFullRouterManifest();
 
-  // Strip out anything that isn't needed for the client
-  return {
-    ...routerManifest,
-    routes: Object.fromEntries(
-      Object.entries(routerManifest.routes).map(([k, v]: any) => {
-        const { preloads, assets } = v
-        return [
-          k,
-          {
-            preloads,
-            assets,
-          },
-        ]
-      }),
-    ),
-  }
+	// Strip out anything that isn't needed for the client
+	return {
+		...routerManifest,
+		routes: Object.fromEntries(
+			Object.entries(routerManifest.routes).map(([k, v]: any) => {
+				const { preloads, assets } = v;
+				return [
+					k,
+					{
+						preloads,
+						assets,
+					},
+				];
+			}),
+		),
+	};
 }

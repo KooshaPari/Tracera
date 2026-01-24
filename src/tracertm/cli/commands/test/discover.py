@@ -42,3 +42,13 @@ class TypeScriptTestDiscoverer:
 
     def discover(self) -> list[str]:
         return []
+
+
+def _list_tests(tests: list[dict[str, str]]) -> None:
+    """List all discovered tests."""
+    if not tests:
+        print("No tests found")
+        return
+
+    for test in tests:
+        print(f"  {test.get('path', 'unknown')}")

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
-let path = require('path');
-let fs = require('fs');
-let exec = require('child_process').exec;
-let FileList = require('filelist').FileList;
+const path = require("path");
+const fs = require("fs");
+const exec = require("child_process").exec;
+const FileList = require("filelist").FileList;
 
 /**
   @name jake
@@ -58,92 +58,92 @@ let FileList = require('filelist').FileList;
   });
 
  */
-let PackageTask = function () {
-  let args = Array.prototype.slice.call(arguments);
-  let name = args.shift();
-  let version = args.shift();
-  let definition = args.pop();
-  let prereqs = args.pop() || []; // Optional
+const PackageTask = function () {
+	const args = Array.prototype.slice.call(arguments);
+	const name = args.shift();
+	const version = args.shift();
+	const definition = args.pop();
+	let prereqs = args.pop() || []; // Optional
 
-  prereqs = [].concat(prereqs); // Accept string or list
+	prereqs = [].concat(prereqs); // Accept string or list
 
-  /**
+	/**
     @name jake.PackageTask#name
     @public
     @type {String}
     @description The name of the project
    */
-  this.name = name;
-  /**
+	this.name = name;
+	/**
     @name jake.PackageTask#version
     @public
     @type {String}
     @description The project version-string
    */
-  this.version = version;
-  /**
+	this.version = version;
+	/**
     @name jake.PackageTask#prereqs
     @public
     @type {Array}
     @description Tasks to run before packaging
    */
-  this.prereqs = prereqs;
-  /**
+	this.prereqs = prereqs;
+	/**
     @name jake.PackageTask#packageDir
     @public
     @type {String='pkg'}
     @description The directory-name to use for packaging the software
    */
-  this.packageDir = 'pkg';
-  /**
+	this.packageDir = "pkg";
+	/**
     @name jake.PackageTask#packageFiles
     @public
     @type {jake.FileList}
     @description The list of files and directories to include in the
     package-archive
    */
-  this.packageFiles = new FileList();
-  /**
+	this.packageFiles = new FileList();
+	/**
     @name jake.PackageTask#needTar
     @public
     @type {Boolean=false}
     @description If set to true, uses the `tar` utility to create
     a gzip .tgz archive of the package
    */
-  this.needTar = false;
-  /**
+	this.needTar = false;
+	/**
     @name jake.PackageTask#needTarGz
     @public
     @type {Boolean=false}
     @description If set to true, uses the `tar` utility to create
     a gzip .tar.gz archive of the package
    */
-  this.needTarGz = false;
-  /**
+	this.needTarGz = false;
+	/**
     @name jake.PackageTask#needTarBz2
     @public
     @type {Boolean=false}
     @description If set to true, uses the `tar` utility to create
     a bzip2 .bz2 archive of the package
    */
-  this.needTarBz2 = false;
-  /**
+	this.needTarBz2 = false;
+	/**
     @name jake.PackageTask#needJar
     @public
     @type {Boolean=false}
     @description If set to true, uses the `jar` utility to create
     a .jar archive of the package
    */
-  this.needJar = false;
-  /**
+	this.needJar = false;
+	/**
     @name jake.PackageTask#needZip
     @public
     @type {Boolean=false}
     @description If set to true, uses the `zip` utility to create
     a .zip archive of the package
    */
-  this.needZip = false;
-  /**
+	this.needZip = false;
+	/**
     @name jake.PackageTask#manifestFile
     @public
     @type {String=null}
@@ -152,45 +152,45 @@ let PackageTask = function () {
     created by the `jar` utility. This path should be relative to the
     root of the package directory (this.packageDir above, likely 'pkg')
    */
-  this.manifestFile = null;
-  /**
+	this.manifestFile = null;
+	/**
     @name jake.PackageTask#tarCommand
     @public
     @type {String='tar'}
     @description The shell-command to use for creating tar archives.
    */
-  this.tarCommand = 'tar';
-  /**
+	this.tarCommand = "tar";
+	/**
     @name jake.PackageTask#jarCommand
     @public
     @type {String='jar'}
     @description The shell-command to use for creating jar archives.
    */
-  this.jarCommand = 'jar';
-  /**
+	this.jarCommand = "jar";
+	/**
     @name jake.PackageTask#zipCommand
     @public
     @type {String='zip'}
     @description The shell-command to use for creating zip archives.
    */
-  this.zipCommand = 'zip';
-  /**
+	this.zipCommand = "zip";
+	/**
     @name jake.PackageTask#archiveNoBaseDir
     @public
     @type {Boolean=false}
     @description Simple option for performing the archive on the
     contents of the directory instead of the directory itself
    */
-  this.archiveNoBaseDir = false;
-  /**
+	this.archiveNoBaseDir = false;
+	/**
     @name jake.PackageTask#archiveChangeDir
     @public
     @type {String=null}
     @description Equivalent to the '-C' command for the `tar` and `jar`
     commands. ("Change to this directory before adding files.")
    */
-  this.archiveChangeDir = null;
-  /**
+	this.archiveChangeDir = null;
+	/**
     @name jake.PackageTask#archiveContentDir
     @public
     @type {String=null}
@@ -198,209 +198,211 @@ let PackageTask = function () {
     package-archive. If unset, this will default to the main package
     directory -- i.e., name + version.
    */
-  this.archiveContentDir = null;
+	this.archiveContentDir = null;
 
-  if (typeof definition == 'function') {
-    definition.call(this);
-  }
-  this.define();
+	if (typeof definition == "function") {
+		definition.call(this);
+	}
+	this.define();
 };
 
 PackageTask.prototype = new (function () {
+	const _compressOpts = {
+		Tar: {
+			ext: ".tgz",
+			flags: "czf",
+			cmd: "tar",
+		},
+		TarGz: {
+			ext: ".tar.gz",
+			flags: "czf",
+			cmd: "tar",
+		},
+		TarBz2: {
+			ext: ".tar.bz2",
+			flags: "cjf",
+			cmd: "tar",
+		},
+		Jar: {
+			ext: ".jar",
+			flags: "cf",
+			cmd: "jar",
+		},
+		Zip: {
+			ext: ".zip",
+			flags: "qr",
+			cmd: "zip",
+		},
+	};
 
-  let _compressOpts = {
-    Tar: {
-      ext: '.tgz',
-      flags: 'czf',
-      cmd: 'tar'
-    },
-    TarGz: {
-      ext: '.tar.gz',
-      flags: 'czf',
-      cmd: 'tar'
-    },
-    TarBz2: {
-      ext: '.tar.bz2',
-      flags: 'cjf',
-      cmd: 'tar'
-    },
-    Jar: {
-      ext: '.jar',
-      flags: 'cf',
-      cmd: 'jar'
-    },
-    Zip: {
-      ext: '.zip',
-      flags: 'qr',
-      cmd: 'zip'
-    }
-  };
+	this.define = function () {
+		const packageDirPath = this.packageDirPath();
+		const compressTaskArr = [];
 
-  this.define = function () {
-    let self = this;
-    let packageDirPath = this.packageDirPath();
-    let compressTaskArr = [];
+		desc("Build the package for distribution");
+		task("package", this.prereqs.concat(["clobberPackage", "buildPackage"]));
+		// Backward-compat alias
+		task("repackage", ["package"]);
 
-    desc('Build the package for distribution');
-    task('package', self.prereqs.concat(['clobberPackage', 'buildPackage']));
-    // Backward-compat alias
-    task('repackage', ['package']);
+		task("clobberPackage", () => {
+			jake.rmRf(this.packageDir, { silent: true });
+		});
 
-    task('clobberPackage', function () {
-      jake.rmRf(self.packageDir, {silent: true});
-    });
+		desc("Remove the package");
+		task("clobber", ["clobberPackage"]);
 
-    desc('Remove the package');
-    task('clobber', ['clobberPackage']);
+		const doCommand = (p) => {
+			let filename = path.resolve(
+				this.packageDir + "/" + this.packageName() + _compressOpts[p].ext,
+			);
+			if (process.platform == "win32") {
+				// Windows full path may have drive letter, which is going to cause
+				// namespace problems, so strip it.
+				if (filename.length > 2 && filename[1] == ":") {
+					filename = filename.substr(2);
+				}
+			}
+			compressTaskArr.push(filename);
 
-    let doCommand = function (p) {
-      let filename = path.resolve(self.packageDir + '/' + self.packageName() +
-                                  _compressOpts[p].ext);
-      if (process.platform == 'win32') {
-        // Windows full path may have drive letter, which is going to cause
-        // namespace problems, so strip it.
-        if (filename.length > 2 && filename[1] == ':') {
-          filename = filename.substr(2);
-        }
-      }
-      compressTaskArr.push(filename);
+			file(
+				filename,
+				[packageDirPath],
+				() => {
+					let cmd;
+					const opts = _compressOpts[p];
+					// Directory to move to when doing the compression-task
+					// Changes in the case of zip for emulating -C option
+					let chdir = this.packageDir;
+					// Save the current dir so it's possible to pop back up
+					// after compressing
+					const currDir = process.cwd();
+					let archiveChangeDir;
+					let archiveContentDir;
 
-      file(filename, [packageDirPath], function () {
-        let cmd;
-        let opts = _compressOpts[p];
-        // Directory to move to when doing the compression-task
-        // Changes in the case of zip for emulating -C option
-        let chdir = self.packageDir;
-        // Save the current dir so it's possible to pop back up
-        // after compressing
-        let currDir = process.cwd();
-        let archiveChangeDir;
-        let archiveContentDir;
+					if (this.archiveNoBaseDir) {
+						archiveChangeDir = this.packageName();
+						archiveContentDir = ".";
+					} else {
+						archiveChangeDir = this.archiveChangeDir;
+						archiveContentDir = this.archiveContentDir;
+					}
 
-        if (self.archiveNoBaseDir) {
-          archiveChangeDir = self.packageName();
-          archiveContentDir = '.';
-        }
-        else {
-          archiveChangeDir = self.archiveChangeDir;
-          archiveContentDir = self.archiveContentDir;
-        }
+					cmd = this[opts.cmd + "Command"];
+					cmd += " -" + opts.flags;
+					if (opts.cmd == "jar" && this.manifestFile) {
+						cmd += "m";
+					}
 
-        cmd = self[opts.cmd + 'Command'];
-        cmd += ' -' + opts.flags;
-        if (opts.cmd == 'jar' && self.manifestFile) {
-          cmd += 'm';
-        }
+					// The name of the archive to create -- use full path
+					// so compression can be performed from a different dir
+					// if needed
+					cmd += " " + filename;
 
-        // The name of the archive to create -- use full path
-        // so compression can be performed from a different dir
-        // if needed
-        cmd += ' ' + filename;
+					if (opts.cmd == "jar" && this.manifestFile) {
+						cmd += " " + this.manifestFile;
+					}
 
-        if (opts.cmd == 'jar' && self.manifestFile) {
-          cmd += ' ' + self.manifestFile;
-        }
+					// Where to perform the compression -- -C option isn't
+					// supported in zip, so actually do process.chdir for this
+					if (archiveChangeDir) {
+						if (opts.cmd == "zip") {
+							chdir = path.join(chdir, archiveChangeDir);
+						} else {
+							cmd += " -C " + archiveChangeDir;
+						}
+					}
 
-        // Where to perform the compression -- -C option isn't
-        // supported in zip, so actually do process.chdir for this
-        if (archiveChangeDir) {
-          if (opts.cmd == 'zip') {
-            chdir = path.join(chdir, archiveChangeDir);
-          }
-          else {
-            cmd += ' -C ' + archiveChangeDir;
-          }
-        }
+					// Where to get the archive content
+					if (archiveContentDir) {
+						cmd += " " + archiveContentDir;
+					} else {
+						cmd += " " + this.packageName();
+					}
 
-        // Where to get the archive content
-        if (archiveContentDir) {
-          cmd += ' ' + archiveContentDir;
-        }
-        else {
-          cmd += ' ' + self.packageName();
-        }
+					// Move into the desired dir (usually packageDir) to compress
+					// Return back up to the current dir after the exec
+					process.chdir(chdir);
 
-        // Move into the desired dir (usually packageDir) to compress
-        // Return back up to the current dir after the exec
-        process.chdir(chdir);
+					exec(cmd, (err, stdout, stderr) => {
+						if (err) {
+							throw err;
+						}
 
-        exec(cmd, function (err, stdout, stderr) {
-          if (err) { throw err; }
+						// Return back up to the starting directory (see above,
+						// before exec)
+						process.chdir(currDir);
 
-          // Return back up to the starting directory (see above,
-          // before exec)
-          process.chdir(currDir);
+						complete();
+					});
+				},
+				{ async: true },
+			);
+		};
 
-          complete();
-        });
-      }, {async: true});
-    };
+		for (const p in _compressOpts) {
+			if (this["need" + p]) {
+				doCommand(p);
+			}
+		}
 
-    for (let p in _compressOpts) {
-      if (this['need' + p]) {
-        doCommand(p);
-      }
-    }
+		task("buildPackage", compressTaskArr, () => {});
 
-    task('buildPackage', compressTaskArr, function () {});
+		directory(this.packageDir);
 
-    directory(this.packageDir);
+		file(
+			packageDirPath,
+			this.packageFiles,
+			() => {
+				jake.mkdirP(packageDirPath);
+				const fileList = [];
+				this.packageFiles.forEach((name) => {
+					const f = path.join(this.packageDirPath(), name);
+					const fDir = path.dirname(f);
+					jake.mkdirP(fDir, { silent: true });
 
-    file(packageDirPath, this.packageFiles, function () {
-      jake.mkdirP(packageDirPath);
-      let fileList = [];
-      self.packageFiles.forEach(function (name) {
-        let f = path.join(self.packageDirPath(), name);
-        let fDir = path.dirname(f);
-        jake.mkdirP(fDir, {silent: true});
+					// Add both files and directories
+					fileList.push({
+						from: name,
+						to: f,
+					});
+				});
+				const _copyFile = () => {
+					const file = fileList.pop();
+					let stat;
+					if (file) {
+						stat = fs.statSync(file.from);
+						// Target is a directory, just create it
+						if (stat.isDirectory()) {
+							jake.mkdirP(file.to, { silent: true });
+							_copyFile();
+						}
+						// Otherwise copy the file
+						else {
+							jake.cpR(file.from, file.to, { silent: true });
+							_copyFile();
+						}
+					} else {
+						complete();
+					}
+				};
+				_copyFile();
+			},
+			{ async: true },
+		);
+	};
 
-        // Add both files and directories
-        fileList.push({
-          from: name,
-          to: f
-        });
-      });
-      let _copyFile = function () {
-        let file = fileList.pop();
-        let stat;
-        if (file) {
-          stat = fs.statSync(file.from);
-          // Target is a directory, just create it
-          if (stat.isDirectory()) {
-            jake.mkdirP(file.to, {silent: true});
-            _copyFile();
-          }
-          // Otherwise copy the file
-          else {
-            jake.cpR(file.from, file.to, {silent: true});
-            _copyFile();
-          }
-        }
-        else {
-          complete();
-        }
-      };
-      _copyFile();
-    }, {async: true});
+	this.packageName = function () {
+		if (this.version) {
+			return this.name + "-" + this.version;
+		} else {
+			return this.name;
+		}
+	};
 
-
-  };
-
-  this.packageName = function () {
-    if (this.version) {
-      return this.name + '-' + this.version;
-    }
-    else {
-      return this.name;
-    }
-  };
-
-  this.packageDirPath = function () {
-    return this.packageDir + '/' + this.packageName();
-  };
-
+	this.packageDirPath = function () {
+		return this.packageDir + "/" + this.packageName();
+	};
 })();
 
 jake.PackageTask = PackageTask;
 exports.PackageTask = PackageTask;
-

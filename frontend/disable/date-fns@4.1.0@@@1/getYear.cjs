@@ -25,5 +25,5 @@ var _index = require("./toDate.cjs");
  * //=> 2014
  */
 function getYear(date, options) {
-  return (0, _index.toDate)(date, options?.in).getFullYear();
+	return (0, _index.toDate)(date, options?.in).getFullYear();
 }

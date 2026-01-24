@@ -1,7 +1,7 @@
-import {characterEntities} from 'character-entities'
+import { characterEntities } from "character-entities";
 
 // To do: next major: use `Object.hasOwn`.
-const own = {}.hasOwnProperty
+const own = {}.hasOwnProperty;
 
 /**
  * Decode a single character reference (without the `&` or `;`).
@@ -15,5 +15,5 @@ const own = {}.hasOwnProperty
  *   Decoded reference.
  */
 export function decodeNamedCharacterReference(value) {
-  return own.call(characterEntities, value) ? characterEntities[value] : false
+	return own.call(characterEntities, value) ? characterEntities[value] : false;
 }

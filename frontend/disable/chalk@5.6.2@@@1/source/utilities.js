@@ -7,7 +7,7 @@ export function stringReplaceAll(string, substring, replacer) {
 
 	const substringLength = substring.length;
 	let endIndex = 0;
-	let returnValue = '';
+	let returnValue = "";
 	do {
 		returnValue += string.slice(endIndex, index) + substring + replacer;
 		endIndex = index + substringLength;
@@ -20,12 +20,16 @@ export function stringReplaceAll(string, substring, replacer) {
 
 export function stringEncaseCRLFWithFirstIndex(string, prefix, postfix, index) {
 	let endIndex = 0;
-	let returnValue = '';
+	let returnValue = "";
 	do {
-		const gotCR = string[index - 1] === '\r';
-		returnValue += string.slice(endIndex, (gotCR ? index - 1 : index)) + prefix + (gotCR ? '\r\n' : '\n') + postfix;
+		const gotCR = string[index - 1] === "\r";
+		returnValue +=
+			string.slice(endIndex, gotCR ? index - 1 : index) +
+			prefix +
+			(gotCR ? "\r\n" : "\n") +
+			postfix;
 		endIndex = index + 1;
-		index = string.indexOf('\n', endIndex);
+		index = string.indexOf("\n", endIndex);
 	} while (index !== -1);
 
 	returnValue += string.slice(endIndex);

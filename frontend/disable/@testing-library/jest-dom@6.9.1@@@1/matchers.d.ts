@@ -1,3 +1,3 @@
-import * as matchers from './types/matchers'
+import * as matchers from "./types/matchers";
 
-export = matchers
+export = matchers;

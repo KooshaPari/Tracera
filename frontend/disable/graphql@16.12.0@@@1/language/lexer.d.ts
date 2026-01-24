@@ -1,6 +1,6 @@
-import { Token } from './ast';
-import type { Source } from './source';
-import { TokenKind } from './tokenKind';
+import { Token } from "./ast";
+import type { Source } from "./source";
+import { TokenKind } from "./tokenKind";
 /**
  * A Lexer interface which provides common properties and methods required for
  * lexing GraphQL source.
@@ -8,13 +8,13 @@ import { TokenKind } from './tokenKind';
  * @internal
  */
 export interface LexerInterface {
-  source: Source;
-  lastToken: Token;
-  token: Token;
-  line: number;
-  lineStart: number;
-  advance: () => Token;
-  lookahead: () => Token;
+	source: Source;
+	lastToken: Token;
+	token: Token;
+	line: number;
+	lineStart: number;
+	advance: () => Token;
+	lookahead: () => Token;
 }
 /**
  * Given a Source object, creates a Lexer for that source.
@@ -25,34 +25,34 @@ export interface LexerInterface {
  * whenever called.
  */
 export declare class Lexer implements LexerInterface {
-  source: Source;
-  /**
-   * The previously focused non-ignored token.
-   */
-  lastToken: Token;
-  /**
-   * The currently focused non-ignored token.
-   */
-  token: Token;
-  /**
-   * The (1-indexed) line containing the current token.
-   */
-  line: number;
-  /**
-   * The character offset at which the current line begins.
-   */
-  lineStart: number;
-  constructor(source: Source);
-  get [Symbol.toStringTag](): string;
-  /**
-   * Advances the token stream to the next non-ignored token.
-   */
-  advance(): Token;
-  /**
-   * Looks ahead and returns the next non-ignored token, but does not change
-   * the state of Lexer.
-   */
-  lookahead(): Token;
+	source: Source;
+	/**
+	 * The previously focused non-ignored token.
+	 */
+	lastToken: Token;
+	/**
+	 * The currently focused non-ignored token.
+	 */
+	token: Token;
+	/**
+	 * The (1-indexed) line containing the current token.
+	 */
+	line: number;
+	/**
+	 * The character offset at which the current line begins.
+	 */
+	lineStart: number;
+	constructor(source: Source);
+	get [Symbol.toStringTag](): string;
+	/**
+	 * Advances the token stream to the next non-ignored token.
+	 */
+	advance(): Token;
+	/**
+	 * Looks ahead and returns the next non-ignored token, but does not change
+	 * the state of Lexer.
+	 */
+	lookahead(): Token;
 }
 /**
  * @internal
@@ -68,8 +68,8 @@ export declare function isPunctuatorTokenKind(kind: TokenKind): boolean;
  * @internal
  */
 export declare function printCodePointAt(
-  lexer: LexerInterface,
-  location: number,
+	lexer: LexerInterface,
+	location: number,
 ): string;
 /**
  * Create a token with line and column location information.
@@ -77,11 +77,11 @@ export declare function printCodePointAt(
  * @internal
  */
 export declare function createToken(
-  lexer: LexerInterface,
-  kind: TokenKind,
-  start: number,
-  end: number,
-  value?: string,
+	lexer: LexerInterface,
+	kind: TokenKind,
+	start: number,
+	end: number,
+	value?: string,
 ): Token;
 /**
  * Reads an alphanumeric + underscore name from the source.

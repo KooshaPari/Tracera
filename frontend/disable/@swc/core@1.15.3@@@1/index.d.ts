@@ -1,5 +1,15 @@
 /// <reference types="node" />
-import type { Plugin, ParseOptions, Module, Output, Options, Script, Program, JsMinifyOptions, WasmAnalysisOptions } from "@swc/types";
+import type {
+	Plugin,
+	ParseOptions,
+	Module,
+	Output,
+	Options,
+	Script,
+	Program,
+	JsMinifyOptions,
+	WasmAnalysisOptions,
+} from "@swc/types";
 export type * from "@swc/types";
 export { newMangleNameCache as experimental_newMangleNameCache } from "./binding";
 import { BundleInput } from "./spack";
@@ -13,77 +23,145 @@ export declare const version: string;
  */
 export declare function plugins(ps: Plugin[]): Plugin;
 export declare class Compiler {
-    private fallbackBindingsPluginWarningDisplayed;
-    minify(src: string | Buffer, opts?: JsMinifyOptions, extras?: NapiMinifyExtra): Promise<Output>;
-    minifySync(src: string | Buffer, opts?: JsMinifyOptions, extras?: NapiMinifyExtra): Output;
-    /**
-     * @deprecated Use Rust instead.
-     */
-    parse(src: string, options: ParseOptions & {
-        isModule: false;
-    }): Promise<Script>;
-    parse(src: string, options?: ParseOptions, filename?: string): Promise<Module>;
-    parseSync(src: string, options: ParseOptions & {
-        isModule: false;
-    }): Script;
-    parseSync(src: string, options?: ParseOptions, filename?: string): Module;
-    parseFile(path: string, options: ParseOptions & {
-        isModule: false;
-    }): Promise<Script>;
-    parseFile(path: string, options?: ParseOptions): Promise<Module>;
-    parseFileSync(path: string, options: ParseOptions & {
-        isModule: false;
-    }): Script;
-    parseFileSync(path: string, options?: ParseOptions): Module;
-    /**
-     * Note: this method should be invoked on the compiler instance used
-     *  for `parse()` / `parseSync()`.
-     */
-    print(m: Program, options?: Options): Promise<Output>;
-    /**
-     * Note: this method should be invoked on the compiler instance used
-     *  for `parse()` / `parseSync()`.
-     */
-    printSync(m: Program, options?: Options): Output;
-    transform(src: string | Program, options?: Options): Promise<Output>;
-    transformSync(src: string | Program, options?: Options): Output;
-    transformFile(path: string, options?: Options): Promise<Output>;
-    transformFileSync(path: string, options?: Options): Output;
-    bundle(options?: BundleInput | string): Promise<{
-        [name: string]: Output;
-    }>;
+	private fallbackBindingsPluginWarningDisplayed;
+	minify(
+		src: string | Buffer,
+		opts?: JsMinifyOptions,
+		extras?: NapiMinifyExtra,
+	): Promise<Output>;
+	minifySync(
+		src: string | Buffer,
+		opts?: JsMinifyOptions,
+		extras?: NapiMinifyExtra,
+	): Output;
+	/**
+	 * @deprecated Use Rust instead.
+	 */
+	parse(
+		src: string,
+		options: ParseOptions & {
+			isModule: false;
+		},
+	): Promise<Script>;
+	parse(
+		src: string,
+		options?: ParseOptions,
+		filename?: string,
+	): Promise<Module>;
+	parseSync(
+		src: string,
+		options: ParseOptions & {
+			isModule: false;
+		},
+	): Script;
+	parseSync(src: string, options?: ParseOptions, filename?: string): Module;
+	parseFile(
+		path: string,
+		options: ParseOptions & {
+			isModule: false;
+		},
+	): Promise<Script>;
+	parseFile(path: string, options?: ParseOptions): Promise<Module>;
+	parseFileSync(
+		path: string,
+		options: ParseOptions & {
+			isModule: false;
+		},
+	): Script;
+	parseFileSync(path: string, options?: ParseOptions): Module;
+	/**
+	 * Note: this method should be invoked on the compiler instance used
+	 *  for `parse()` / `parseSync()`.
+	 */
+	print(m: Program, options?: Options): Promise<Output>;
+	/**
+	 * Note: this method should be invoked on the compiler instance used
+	 *  for `parse()` / `parseSync()`.
+	 */
+	printSync(m: Program, options?: Options): Output;
+	transform(src: string | Program, options?: Options): Promise<Output>;
+	transformSync(src: string | Program, options?: Options): Output;
+	transformFile(path: string, options?: Options): Promise<Output>;
+	transformFileSync(path: string, options?: Options): Output;
+	bundle(options?: BundleInput | string): Promise<{
+		[name: string]: Output;
+	}>;
 }
-export declare function experimental_analyze(src: string, options?: WasmAnalysisOptions): Promise<string>;
+export declare function experimental_analyze(
+	src: string,
+	options?: WasmAnalysisOptions,
+): Promise<string>;
 /**
  * @deprecated Use Rust instead.
  */
-export declare function parse(src: string, options: ParseOptions & {
-    isModule: false;
-}): Promise<Script>;
-export declare function parse(src: string, options?: ParseOptions): Promise<Module>;
-export declare function parseSync(src: string, options: ParseOptions & {
-    isModule: false;
-}): Script;
+export declare function parse(
+	src: string,
+	options: ParseOptions & {
+		isModule: false;
+	},
+): Promise<Script>;
+export declare function parse(
+	src: string,
+	options?: ParseOptions,
+): Promise<Module>;
+export declare function parseSync(
+	src: string,
+	options: ParseOptions & {
+		isModule: false;
+	},
+): Script;
 export declare function parseSync(src: string, options?: ParseOptions): Module;
-export declare function parseFile(path: string, options: ParseOptions & {
-    isModule: false;
-}): Promise<Script>;
-export declare function parseFile(path: string, options?: ParseOptions): Promise<Module>;
-export declare function parseFileSync(path: string, options: ParseOptions & {
-    isModule: false;
-}): Script;
-export declare function parseFileSync(path: string, options?: ParseOptions): Module;
+export declare function parseFile(
+	path: string,
+	options: ParseOptions & {
+		isModule: false;
+	},
+): Promise<Script>;
+export declare function parseFile(
+	path: string,
+	options?: ParseOptions,
+): Promise<Module>;
+export declare function parseFileSync(
+	path: string,
+	options: ParseOptions & {
+		isModule: false;
+	},
+): Script;
+export declare function parseFileSync(
+	path: string,
+	options?: ParseOptions,
+): Module;
 export declare function print(m: Program, options?: Options): Promise<Output>;
 export declare function printSync(m: Program, options?: Options): Output;
-export declare function transform(src: string | Program, options?: Options): Promise<Output>;
-export declare function transformSync(src: string | Program, options?: Options): Output;
-export declare function transformFile(path: string, options?: Options): Promise<Output>;
-export declare function transformFileSync(path: string, options?: Options): Output;
+export declare function transform(
+	src: string | Program,
+	options?: Options,
+): Promise<Output>;
+export declare function transformSync(
+	src: string | Program,
+	options?: Options,
+): Output;
+export declare function transformFile(
+	path: string,
+	options?: Options,
+): Promise<Output>;
+export declare function transformFileSync(
+	path: string,
+	options?: Options,
+): Output;
 export declare function bundle(options?: BundleInput | string): Promise<{
-    [name: string]: Output;
+	[name: string]: Output;
 }>;
-export declare function minify(src: string | Buffer, opts?: JsMinifyOptions, extras?: NapiMinifyExtra): Promise<Output>;
-export declare function minifySync(src: string | Buffer, opts?: JsMinifyOptions, extras?: NapiMinifyExtra): Output;
+export declare function minify(
+	src: string | Buffer,
+	opts?: JsMinifyOptions,
+	extras?: NapiMinifyExtra,
+): Promise<Output>;
+export declare function minifySync(
+	src: string | Buffer,
+	opts?: JsMinifyOptions,
+	extras?: NapiMinifyExtra,
+): Output;
 /**
  * Configure custom trace configuration runs for a process lifecycle.
  * Currently only chromium's trace event format is supported.
@@ -103,8 +181,8 @@ export declare function minifySync(src: string | Buffer, opts?: JsMinifyOptions,
  * or bug report at https://github.com/swc-project/swc/discussions.
  */
 export declare function __experimental_registerGlobalTraceConfig(traceConfig: {
-    type: "traceEvent";
-    fileName?: string;
+	type: "traceEvent";
+	fileName?: string;
 }): void;
 /**
  * @ignore
@@ -115,6 +193,6 @@ export declare function __experimental_registerGlobalTraceConfig(traceConfig: {
  * as internal representation may change anytime. Use it with caution.
  */
 export declare function getBinaryMetadata(): {
-    target: string | undefined;
+	target: string | undefined;
 };
 export declare const DEFAULT_EXTENSIONS: readonly string[];

@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/date/to-primitive');
+"use strict";
+var parent = require("../../stable/date/to-primitive");
 
 module.exports = parent;

@@ -5,11 +5,11 @@ import { Node } from "../dom/interfaces";
  * Implements: https://www.w3.org/TR/DOM-Parsing/#serializing
  */
 export interface XMLSerializer {
-    /**
-     * Produces an XML serialization of the given node.
-     *
-     * @param root - node to serialize
-     * @param requireWellFormed - whether to check conformance
-     */
-    serializeToString(root: Node): string;
+	/**
+	 * Produces an XML serialization of the given node.
+	 *
+	 * @param root - node to serialize
+	 * @param requireWellFormed - whether to check conformance
+	 */
+	serializeToString(root: Node): string;
 }

@@ -9,7 +9,12 @@
  * @param {string[]} stack Stack of chunk ids to prevent circular dependencies
  * @returns Array of asset URLs
  */
-function findAssetsInViteManifest(manifest, id, assetMap = new Map(), stack = []) {
+function findAssetsInViteManifest(
+	manifest,
+	id,
+	assetMap = new Map(),
+	stack = [],
+) {
 	if (stack.includes(id)) {
 		return [];
 	}
@@ -25,12 +30,19 @@ function findAssetsInViteManifest(manifest, id, assetMap = new Map(), stack = []
 
 	const assets = [
 		...(chunk.assets?.filter(Boolean) || []),
-		...(chunk.css?.filter(Boolean) || [])
+		...(chunk.css?.filter(Boolean) || []),
 	];
 	if (chunk.imports) {
 		stack.push(id);
 		for (let i = 0, l = chunk.imports.length; i < l; i++) {
-			assets.push(...findAssetsInViteManifest(manifest, chunk.imports[i], assetMap, stack));
+			assets.push(
+				...findAssetsInViteManifest(
+					manifest,
+					chunk.imports[i],
+					assetMap,
+					stack,
+				),
+			);
 		}
 		stack.pop();
 	}

@@ -1,8 +1,8 @@
-var getTag = require('./_getTag'),
-    isObjectLike = require('./isObjectLike');
+var getTag = require("./_getTag"),
+	isObjectLike = require("./isObjectLike");
 
 /** `Object#toString` result references. */
-var mapTag = '[object Map]';
+var mapTag = "[object Map]";
 
 /**
  * The base implementation of `_.isMap` without Node.js optimizations.
@@ -12,7 +12,7 @@ var mapTag = '[object Map]';
  * @returns {boolean} Returns `true` if `value` is a map, else `false`.
  */
 function baseIsMap(value) {
-  return isObjectLike(value) && getTag(value) == mapTag;
+	return isObjectLike(value) && getTag(value) == mapTag;
 }
 
 module.exports = baseIsMap;

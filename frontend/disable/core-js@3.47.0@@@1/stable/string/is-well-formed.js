@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../es/string/is-well-formed');
+"use strict";
+var parent = require("../../es/string/is-well-formed");
 
 module.exports = parent;

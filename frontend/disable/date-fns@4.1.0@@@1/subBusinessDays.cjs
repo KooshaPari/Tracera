@@ -29,5 +29,5 @@ var _index = require("./addBusinessDays.cjs");
  * //=> Mon Aug 18 2014 00:00:00 (skipped weekend days)
  */
 function subBusinessDays(date, amount, options) {
-  return (0, _index.addBusinessDays)(date, -amount, options);
+	return (0, _index.addBusinessDays)(date, -amount, options);
 }

@@ -22,7 +22,7 @@ import { addSeconds } from "./addSeconds.js";
  * //=> Thu Jul 10 2014 12:44:30
  */
 export function subSeconds(date, amount, options) {
-  return addSeconds(date, -amount, options);
+	return addSeconds(date, -amount, options);
 }
 
 // Fallback for modularized imports:

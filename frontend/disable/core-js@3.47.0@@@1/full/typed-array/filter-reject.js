@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/esnext.typed-array.filter-reject');
+"use strict";
+require("../../modules/esnext.typed-array.filter-reject");

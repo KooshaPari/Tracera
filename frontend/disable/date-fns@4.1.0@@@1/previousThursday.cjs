@@ -28,5 +28,5 @@ var _index = require("./previousDay.cjs");
  * //=> Thu June 17 2021 00:00:00
  */
 function previousThursday(date, options) {
-  return (0, _index.previousDay)(date, 4, options);
+	return (0, _index.previousDay)(date, 4, options);
 }

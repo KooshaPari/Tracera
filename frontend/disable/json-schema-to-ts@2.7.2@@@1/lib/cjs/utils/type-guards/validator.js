@@ -1,7 +1,5 @@
-"use strict";
-
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.wrapValidatorAsTypeGuard = void 0;
 
@@ -27,13 +25,19 @@ exports.wrapValidatorAsTypeGuard = void 0;
  * Adds type guarding to any validator function (doesn't modify it)
  */
 var wrapValidatorAsTypeGuard = function wrapValidatorAsTypeGuard(validator) {
-  return function (schema, data) {
-    for (var _len = arguments.length, validationOptions = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-      validationOptions[_key - 2] = arguments[_key];
-    }
+	return function (schema, data) {
+		for (
+			var _len = arguments.length,
+				validationOptions = new Array(_len > 2 ? _len - 2 : 0),
+				_key = 2;
+			_key < _len;
+			_key++
+		) {
+			validationOptions[_key - 2] = arguments[_key];
+		}
 
-    return validator.apply(void 0, [schema, data].concat(validationOptions));
-  };
+		return validator.apply(void 0, [schema, data].concat(validationOptions));
+	};
 };
 
 exports.wrapValidatorAsTypeGuard = wrapValidatorAsTypeGuard;

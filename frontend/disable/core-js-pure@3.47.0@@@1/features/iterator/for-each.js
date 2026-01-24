@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/iterator/for-each');
+"use strict";
+module.exports = require("../../full/iterator/for-each");

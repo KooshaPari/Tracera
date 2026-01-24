@@ -7,7 +7,7 @@
  * @internal
  */
 export function isWhiteSpace(code) {
-  return code === 0x0009 || code === 0x0020;
+	return code === 0x0009 || code === 0x0020;
 }
 /**
  * ```
@@ -18,7 +18,7 @@ export function isWhiteSpace(code) {
  */
 
 export function isDigit(code) {
-  return code >= 0x0030 && code <= 0x0039;
+	return code >= 0x0030 && code <= 0x0039;
 }
 /**
  * ```
@@ -32,10 +32,10 @@ export function isDigit(code) {
  */
 
 export function isLetter(code) {
-  return (
-    (code >= 0x0061 && code <= 0x007a) || // A-Z
-    (code >= 0x0041 && code <= 0x005a) // a-z
-  );
+	return (
+		(code >= 0x0061 && code <= 0x007a) || // A-Z
+		(code >= 0x0041 && code <= 0x005a) // a-z
+	);
 }
 /**
  * ```
@@ -47,7 +47,7 @@ export function isLetter(code) {
  */
 
 export function isNameStart(code) {
-  return isLetter(code) || code === 0x005f;
+	return isLetter(code) || code === 0x005f;
 }
 /**
  * ```
@@ -60,5 +60,5 @@ export function isNameStart(code) {
  */
 
 export function isNameContinue(code) {
-  return isLetter(code) || isDigit(code) || code === 0x005f;
+	return isLetter(code) || isDigit(code) || code === 0x005f;
 }

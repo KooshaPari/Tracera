@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../stable/number/epsilon');
+"use strict";
+var parent = require("../../stable/number/epsilon");
 
 module.exports = parent;

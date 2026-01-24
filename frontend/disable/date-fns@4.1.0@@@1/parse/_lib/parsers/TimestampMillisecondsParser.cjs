@@ -6,16 +6,16 @@ var _Parser = require("../Parser.cjs");
 var _utils = require("../utils.cjs");
 
 class TimestampMillisecondsParser extends _Parser.Parser {
-  priority = 20;
+	priority = 20;
 
-  parse(dateString) {
-    return (0, _utils.parseAnyDigitsSigned)(dateString);
-  }
+	parse(dateString) {
+		return (0, _utils.parseAnyDigitsSigned)(dateString);
+	}
 
-  set(date, _flags, value) {
-    return [(0, _index.constructFrom)(date, value), { timestampIsSet: true }];
-  }
+	set(date, _flags, value) {
+		return [(0, _index.constructFrom)(date, value), { timestampIsSet: true }];
+	}
 
-  incompatibleTokens = "*";
+	incompatibleTokens = "*";
 }
 exports.TimestampMillisecondsParser = TimestampMillisecondsParser;

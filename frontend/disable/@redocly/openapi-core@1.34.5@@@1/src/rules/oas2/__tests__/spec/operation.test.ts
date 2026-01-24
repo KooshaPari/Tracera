@@ -1,9 +1,9 @@
-import { outdent } from 'outdent';
-import { lintDoc } from './utils';
+import { outdent } from "outdent";
+import { lintDoc } from "./utils";
 
-describe('OpenAPI Schema 2.0', () => {
-  it('should not report of a valid GET operation object', async () => {
-    const source = outdent`
+describe("OpenAPI Schema 2.0", () => {
+	it("should not report of a valid GET operation object", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Test
@@ -17,15 +17,15 @@ describe('OpenAPI Schema 2.0', () => {
                 description: example description
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report of a valid PUT operation object', async () => {
-    const source = outdent`
+	it("should not report of a valid PUT operation object", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Test
@@ -44,15 +44,15 @@ describe('OpenAPI Schema 2.0', () => {
                 description: Invalid ID supplied
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report of a valid Post operation object', async () => {
-    const source = outdent`
+	it("should not report of a valid Post operation object", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Test
@@ -78,15 +78,15 @@ describe('OpenAPI Schema 2.0', () => {
                 description: successful operation
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report of a valid delete operation object', async () => {
-    const source = outdent`
+	it("should not report of a valid delete operation object", async () => {
+		const source = outdent`
       swagger: '2.0'
       info:
         title: Test
@@ -114,10 +114,10 @@ describe('OpenAPI Schema 2.0', () => {
                 description: Invalid ID supplied
     `;
 
-    expect(
-      await lintDoc(source, {
-        spec: 'error',
-      })
-    ).toMatchInlineSnapshot(`[]`);
-  });
+		expect(
+			await lintDoc(source, {
+				spec: "error",
+			}),
+		).toMatchInlineSnapshot(`[]`);
+	});
 });

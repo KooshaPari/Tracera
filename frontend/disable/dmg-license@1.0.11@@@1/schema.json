@@ -78,13 +78,13 @@
 
 				"dependencies": {
 					"charset": ["file"],
-					"file": {"not": {"required": ["text"]}},
-					"text": {"not": {"required": ["file"]}}
+					"file": { "not": { "required": ["text"] } },
+					"text": { "not": { "required": ["file"] } }
 				},
 
 				"anyOf": [
-					{"required": ["file", "lang"]},
-					{"required": ["lang", "text"]}
+					{ "required": ["file", "lang"] },
+					{ "required": ["lang", "text"] }
 				]
 			}
 		},

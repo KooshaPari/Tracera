@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/object/get-own-property-symbols');
+"use strict";
+module.exports = require("../../full/object/get-own-property-symbols");

@@ -1,14 +1,13 @@
-import { outdent } from 'outdent';
+import { outdent } from "outdent";
+import { parseYamlToDocument } from "../../__tests__/utils";
+import { BaseResolver, resolveDocument } from "../resolve";
+import { normalizeTypes } from "../types";
+import { Oas3Types } from "../types/oas3";
 
-import { resolveDocument, BaseResolver } from '../resolve';
-import { parseYamlToDocument } from '../../__tests__/utils';
-import { Oas3Types } from '../types/oas3';
-import { normalizeTypes } from '../types';
-
-describe('Resolve http-headers', () => {
-  it('should use matching http-headers', async () => {
-    const rootDocument = parseYamlToDocument(
-      outdent`
+describe("Resolve http-headers", () => {
+	it("should use matching http-headers", async () => {
+		const rootDocument = parseYamlToDocument(
+			outdent`
         openapi: 3.0.0
         components:
           schemas:
@@ -19,35 +18,37 @@ describe('Resolve http-headers', () => {
             C:
               $ref: 'https://sample.com/test/a/test.yaml'
       `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const fetchMock = jest.fn(() => Promise.resolve({ ok: true, text: Promise.resolve('') }));
+		const fetchMock = jest.fn(() =>
+			Promise.resolve({ ok: true, text: Promise.resolve("") }),
+		);
 
-    await resolveDocument({
-      rootDocument,
-      externalRefResolver: new BaseResolver({
-        http: {
-          customFetch: fetchMock,
-          headers: [
-            {
-              name: 'X_TEST',
-              matches: 'example.com/*',
-              value: '123',
-            },
-            {
-              name: 'X_TEST',
-              matches: 'https://sample.com/test/**',
-              value: '321',
-            },
-          ],
-        },
-      }),
-      rootType: normalizeTypes(Oas3Types).Root,
-    });
+		await resolveDocument({
+			rootDocument,
+			externalRefResolver: new BaseResolver({
+				http: {
+					customFetch: fetchMock,
+					headers: [
+						{
+							name: "X_TEST",
+							matches: "example.com/*",
+							value: "123",
+						},
+						{
+							name: "X_TEST",
+							matches: "https://sample.com/test/**",
+							value: "321",
+						},
+					],
+				},
+			}),
+			rootType: normalizeTypes(Oas3Types).Root,
+		});
 
-    expect(fetchMock).toBeCalledTimes(3);
-    expect(fetchMock.mock.calls).toMatchInlineSnapshot(`
+		expect(fetchMock).toBeCalledTimes(3);
+		expect(fetchMock.mock.calls).toMatchInlineSnapshot(`
       [
         [
           "https://example.com/test.yaml",
@@ -73,5 +74,5 @@ describe('Resolve http-headers', () => {
         ],
       ]
     `);
-  });
+	});
 });

@@ -1,5 +1,5 @@
-var baseMerge = require('./_baseMerge'),
-    createAssigner = require('./_createAssigner');
+var baseMerge = require("./_baseMerge"),
+	createAssigner = require("./_createAssigner");
 
 /**
  * This method is like `_.assign` except that it recursively merges own and
@@ -32,8 +32,8 @@ var baseMerge = require('./_baseMerge'),
  * _.merge(object, other);
  * // => { 'a': [{ 'b': 2, 'c': 3 }, { 'd': 4, 'e': 5 }] }
  */
-var merge = createAssigner(function(object, source, srcIndex) {
-  baseMerge(object, source, srcIndex);
+var merge = createAssigner((object, source, srcIndex) => {
+	baseMerge(object, source, srcIndex);
 });
 
 module.exports = merge;

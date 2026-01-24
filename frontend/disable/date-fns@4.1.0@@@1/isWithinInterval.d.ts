@@ -44,7 +44,7 @@ export interface IsWithinIntervalOptions extends ContextOptions<Date> {}
  * // => true
  */
 export declare function isWithinInterval(
-  date: DateArg<Date> & {},
-  interval: Interval,
-  options?: IsWithinIntervalOptions | undefined,
+	date: DateArg<Date> & {},
+	interval: Interval,
+	options?: IsWithinIntervalOptions | undefined,
 ): boolean;

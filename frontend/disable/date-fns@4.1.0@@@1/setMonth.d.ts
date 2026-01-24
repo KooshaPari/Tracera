@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link setMonth} function options.
  */
 export interface SetMonthOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name setMonth
  * @category Month Helpers
@@ -27,10 +27,10 @@ export interface SetMonthOptions<DateType extends Date = Date>
  * //=> Sat Feb 01 2014 00:00:00
  */
 export declare function setMonth<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  month: number,
-  options?: SetMonthOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	month: number,
+	options?: SetMonthOptions<ResultDate> | undefined,
 ): ResultDate;

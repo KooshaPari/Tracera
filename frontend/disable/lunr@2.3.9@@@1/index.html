@@ -11,7 +11,7 @@
       _gaq.push(['_setAccount', 'UA-25695442-4']);
       _gaq.push(['_trackPageview']);
 
-      (function() {
+      (() => {
         var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
         ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
@@ -163,7 +163,7 @@
   </div>
 
   <script>
-    (function (ua) {
+    ((ua) => {
       // some _really_ basic browser sniffing to choose the right dev tools link.
 
       var consoleSrc,
@@ -207,7 +207,7 @@
   </script>
 
   <script>
-    (function (hijs) {
+    ((hijs) => {
     //
     // hijs - JavaScript Syntax Highlighter
     //
@@ -226,7 +226,7 @@
     // The key becomes the class name of the <span>
     // around the matched block of code.
     var syntax = [
-      ['comment', /(\/\*(?:[^*\n]|\*+[^\/*])*\*+\/)/g],
+      ['comment', /(\/\*(?:[^*\n]|\*+[^/*])*\*+\/)/g],
       ['comment', /(\/\/[^\n]*)/g],
       ['string' , /("(?:(?!")[^\\\n]|\\.)*"|'(?:(?!')[^\\\n]|\\.)*')/g],
       ['regexp' , /(\/.+\/[mgi]*)(?!\s*\w)/g],
@@ -256,13 +256,11 @@
             if (code.length >= 0) { // It's a text node
                 // Don't highlight command-line snippets
                 if (! /^\$/.test(code.nodeValue.trim())) {
-                    syntax.forEach(function (s) {
+                    syntax.forEach((s) => {
                         var k = s[0], v = s[1];
-                        code.nodeValue = code.nodeValue.replace(v, function (_, m) {
-                            return '\u00ab' + encode(k) + '\u00b7'
+                        code.nodeValue = code.nodeValue.replace(v, (_, m) => '\u00ab' + encode(k) + '\u00b7'
                                             + encode(m) +
-                                   '\u00b7' + encode(k) + '\u00bb';
-                        });
+                                   '\u00b7' + encode(k) + '\u00bb');
                     });
                 }
             }
@@ -270,7 +268,7 @@
     }
     for (var i = 0; i < nodes.length; i++) {
         nodes[i].innerHTML =
-            nodes[i].innerHTML.replace(/\u00ab(.+?)\u00b7(.+?)\u00b7\1\u00bb/g, function (_, name, value) {
+            nodes[i].innerHTML.replace(/\u00ab(.+?)\u00b7(.+?)\u00b7\1\u00bb/g, (_, name, value) => {
                 value = value.replace(/\u00ab[^\u00b7]+\u00b7/g, '').replace(/\u00b7[^\u00bb]+\u00bb/g, '');
                 return '<span class="' + decode(name) + '">' + escape(decode(value)) + '</span>';
         });
@@ -282,7 +280,7 @@
 
     // Encode ASCII characters to, and from Braille
     function encode (str, encoded) {
-        table[encoded = str.split('').map(function (s) {
+        table[encoded = str.split('').map((s) => {
             if (s.charCodeAt(0) > 127) { return s }
             return String.fromCharCode(s.charCodeAt(0) + 0x2800);
         }).join('')] = str;
@@ -292,7 +290,7 @@
         if (str in table) {
             return table[str];
         } else {
-            return str.trim().split('').map(function (s) {
+            return str.trim().split('').map((s) => {
                 if (s.charCodeAt(0) - 0x2800 > 127) { return s }
                 return String.fromCharCode(s.charCodeAt(0) - 0x2800);
             }).join('');

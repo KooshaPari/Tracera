@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/un-this');
+"use strict";
+module.exports = require("../../full/instance/un-this");

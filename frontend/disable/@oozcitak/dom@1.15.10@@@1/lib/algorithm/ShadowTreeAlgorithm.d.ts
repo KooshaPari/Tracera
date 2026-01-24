@@ -24,7 +24,10 @@ export declare function shadowTree_isAssigned(slotable: Slotable): boolean;
  * @param slotable - a slotable
  * @param openFlag - `true` to search open shadow tree's only
  */
-export declare function shadowTree_findASlot(slotable: Slotable, openFlag?: boolean): Slot | null;
+export declare function shadowTree_findASlot(
+	slotable: Slotable,
+	openFlag?: boolean,
+): Slot | null;
 /**
  * Finds slotables for the given slot.
  *
@@ -36,7 +39,9 @@ export declare function shadowTree_findSlotables(slot: Slot): Slotable[];
  *
  * @param slot - a slot
  */
-export declare function shadowTree_findFlattenedSlotables(slot: Slot): Slotable[];
+export declare function shadowTree_findFlattenedSlotables(
+	slot: Slot,
+): Slotable[];
 /**
  * Assigns slotables to the given slot.
  *

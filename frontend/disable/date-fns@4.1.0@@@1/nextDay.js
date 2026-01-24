@@ -30,10 +30,10 @@ import { getDay } from "./getDay.js";
  * //=> Tue Mar 24 2020 00:00:00
  */
 export function nextDay(date, day, options) {
-  let delta = day - getDay(date, options);
-  if (delta <= 0) delta += 7;
+	let delta = day - getDay(date, options);
+	if (delta <= 0) delta += 7;
 
-  return addDays(date, delta, options);
+	return addDays(date, delta, options);
 }
 
 // Fallback for modularized imports:

@@ -1,4 +1,3 @@
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.append = append;
 exports.extend = extend;
@@ -27,7 +26,7 @@ const util_1 = require("@oozcitak/util");
  * @param item - an item
  */
 function append(set, item) {
-    set.add(item);
+	set.add(item);
 }
 /**
  * Extends a set by appending all items from another set.
@@ -36,7 +35,7 @@ function append(set, item) {
  * @param setB - a list containing items to append to `setA`
  */
 function extend(setA, setB) {
-    setB.forEach(setA.add, setA);
+	setB.forEach(setA.add, setA);
 }
 /**
  * Inserts the given item to the start of the set.
@@ -45,10 +44,10 @@ function extend(setA, setB) {
  * @param item - an item
  */
 function prepend(set, item) {
-    const cloned = new Set(set);
-    set.clear();
-    set.add(item);
-    cloned.forEach(set.add, set);
+	const cloned = new Set(set);
+	set.clear();
+	set.add(item);
+	cloned.forEach(set.add, set);
 }
 /**
  * Replaces the given item or all items matching condition with a new item.
@@ -59,25 +58,22 @@ function prepend(set, item) {
  * @param item - an item
  */
 function replace(set, conditionOrItem, newItem) {
-    const newSet = new Set();
-    for (const oldItem of set) {
-        if ((0, util_1.isFunction)(conditionOrItem)) {
-            if (!!conditionOrItem.call(null, oldItem)) {
-                newSet.add(newItem);
-            }
-            else {
-                newSet.add(oldItem);
-            }
-        }
-        else if (oldItem === conditionOrItem) {
-            newSet.add(newItem);
-        }
-        else {
-            newSet.add(oldItem);
-        }
-    }
-    set.clear();
-    newSet.forEach(set.add, set);
+	const newSet = new Set();
+	for (const oldItem of set) {
+		if ((0, util_1.isFunction)(conditionOrItem)) {
+			if (conditionOrItem.call(null, oldItem)) {
+				newSet.add(newItem);
+			} else {
+				newSet.add(oldItem);
+			}
+		} else if (oldItem === conditionOrItem) {
+			newSet.add(newItem);
+		} else {
+			newSet.add(oldItem);
+		}
+	}
+	set.clear();
+	newSet.forEach(set.add, set);
 }
 /**
  * Inserts the given item before the given index.
@@ -86,16 +82,15 @@ function replace(set, conditionOrItem, newItem) {
  * @param item - an item
  */
 function insert(set, item, index) {
-    const newSet = new Set();
-    let i = 0;
-    for (const oldItem of set) {
-        if (i === index)
-            newSet.add(item);
-        newSet.add(oldItem);
-        i++;
-    }
-    set.clear();
-    newSet.forEach(set.add, set);
+	const newSet = new Set();
+	let i = 0;
+	for (const oldItem of set) {
+		if (i === index) newSet.add(item);
+		newSet.add(oldItem);
+		i++;
+	}
+	set.clear();
+	newSet.forEach(set.add, set);
 }
 /**
  * Removes the given item or all items matching condition.
@@ -105,26 +100,25 @@ function insert(set, item, index) {
  * to remove
  */
 function remove(set, conditionOrItem) {
-    if (!(0, util_1.isFunction)(conditionOrItem)) {
-        set.delete(conditionOrItem);
-    }
-    else {
-        const toRemove = [];
-        for (const item of set) {
-            if (!!conditionOrItem.call(null, item)) {
-                toRemove.push(item);
-            }
-        }
-        for (const oldItem of toRemove) {
-            set.delete(oldItem);
-        }
-    }
+	if (!(0, util_1.isFunction)(conditionOrItem)) {
+		set.delete(conditionOrItem);
+	} else {
+		const toRemove = [];
+		for (const item of set) {
+			if (conditionOrItem.call(null, item)) {
+				toRemove.push(item);
+			}
+		}
+		for (const oldItem of toRemove) {
+			set.delete(oldItem);
+		}
+	}
 }
 /**
  * Removes all items from the set.
  */
 function empty(set) {
-    set.clear();
+	set.clear();
 }
 /**
  * Determines if the set contains the given item or any items matching
@@ -134,17 +128,16 @@ function empty(set) {
  * @param conditionOrItem - an item to a condition to match
  */
 function contains(set, conditionOrItem) {
-    if (!(0, util_1.isFunction)(conditionOrItem)) {
-        return set.has(conditionOrItem);
-    }
-    else {
-        for (const oldItem of set) {
-            if (!!conditionOrItem.call(null, oldItem)) {
-                return true;
-            }
-        }
-    }
-    return false;
+	if (!(0, util_1.isFunction)(conditionOrItem)) {
+		return set.has(conditionOrItem);
+	} else {
+		for (const oldItem of set) {
+			if (conditionOrItem.call(null, oldItem)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 /**
  * Returns the count of items in the set matching the given condition.
@@ -153,18 +146,17 @@ function contains(set, conditionOrItem) {
  * @param condition - an optional condition to match
  */
 function size(set, condition) {
-    if (condition === undefined) {
-        return set.size;
-    }
-    else {
-        let count = 0;
-        for (const item of set) {
-            if (!!condition.call(null, item)) {
-                count++;
-            }
-        }
-        return count;
-    }
+	if (condition === undefined) {
+		return set.size;
+	} else {
+		let count = 0;
+		for (const item of set) {
+			if (condition.call(null, item)) {
+				count++;
+			}
+		}
+		return count;
+	}
 }
 /**
  * Determines if the set is empty.
@@ -172,7 +164,7 @@ function size(set, condition) {
  * @param set - a set
  */
 function isEmpty(set) {
-    return set.size === 0;
+	return set.size === 0;
 }
 /**
  * Returns an iterator for the items of the set.
@@ -181,16 +173,15 @@ function isEmpty(set) {
  * @param condition - an optional condition to match
  */
 function* forEach(set, condition) {
-    if (condition === undefined) {
-        yield* set;
-    }
-    else {
-        for (const item of set) {
-            if (!!condition.call(null, item)) {
-                yield item;
-            }
-        }
-    }
+	if (condition === undefined) {
+		yield* set;
+	} else {
+		for (const item of set) {
+			if (condition.call(null, item)) {
+				yield item;
+			}
+		}
+	}
 }
 /**
  * Creates and returns a shallow clone of set.
@@ -198,7 +189,7 @@ function* forEach(set, condition) {
  * @param set - a set
  */
 function clone(set) {
-    return new Set(set);
+	return new Set(set);
 }
 /**
  * Returns a new set containing items from the set sorted in ascending
@@ -209,9 +200,9 @@ function clone(set) {
  * is less than its second argument, and `false` otherwise.
  */
 function sortInAscendingOrder(set, lessThanAlgo) {
-    const list = new Array(...set);
-    list.sort((itemA, itemB) => lessThanAlgo.call(null, itemA, itemB) ? -1 : 1);
-    return new Set(list);
+	const list = [...set];
+	list.sort((itemA, itemB) => (lessThanAlgo.call(null, itemA, itemB) ? -1 : 1));
+	return new Set(list);
 }
 /**
  * Returns a new set containing items from the set sorted in descending
@@ -222,9 +213,9 @@ function sortInAscendingOrder(set, lessThanAlgo) {
  * is less than its second argument, and `false` otherwise.
  */
 function sortInDescendingOrder(set, lessThanAlgo) {
-    const list = new Array(...set);
-    list.sort((itemA, itemB) => lessThanAlgo.call(null, itemA, itemB) ? 1 : -1);
-    return new Set(list);
+	const list = [...set];
+	list.sort((itemA, itemB) => (lessThanAlgo.call(null, itemA, itemB) ? 1 : -1));
+	return new Set(list);
 }
 /**
  * Determines if a set is a subset of another set.
@@ -233,11 +224,10 @@ function sortInDescendingOrder(set, lessThanAlgo) {
  * @param superset - a superset possibly containing all items from `subset`.
  */
 function isSubsetOf(subset, superset) {
-    for (const item of subset) {
-        if (!superset.has(item))
-            return false;
-    }
-    return true;
+	for (const item of subset) {
+		if (!superset.has(item)) return false;
+	}
+	return true;
 }
 /**
  * Determines if a set is a superset of another set.
@@ -246,7 +236,7 @@ function isSubsetOf(subset, superset) {
  * @param subset - a subset possibly contained within `superset`.
  */
 function isSupersetOf(superset, subset) {
-    return isSubsetOf(subset, superset);
+	return isSubsetOf(subset, superset);
 }
 /**
  * Returns a new set with items that are contained in both sets.
@@ -255,12 +245,11 @@ function isSupersetOf(superset, subset) {
  * @param setB - a set
  */
 function intersection(setA, setB) {
-    const newSet = new Set();
-    for (const item of setA) {
-        if (setB.has(item))
-            newSet.add(item);
-    }
-    return newSet;
+	const newSet = new Set();
+	for (const item of setA) {
+		if (setB.has(item)) newSet.add(item);
+	}
+	return newSet;
 }
 /**
  * Returns a new set with items from both sets.
@@ -269,9 +258,9 @@ function intersection(setA, setB) {
  * @param setB - a set
  */
 function union(setA, setB) {
-    const newSet = new Set(setA);
-    setB.forEach(newSet.add, newSet);
-    return newSet;
+	const newSet = new Set(setA);
+	setB.forEach(newSet.add, newSet);
+	return newSet;
 }
 /**
  * Returns a set of integers from `n` to `m` inclusive.
@@ -280,10 +269,10 @@ function union(setA, setB) {
  * @param m - ending number
  */
 function range(n, m) {
-    const newSet = new Set();
-    for (let i = n; i <= m; i++) {
-        newSet.add(i);
-    }
-    return newSet;
+	const newSet = new Set();
+	for (let i = n; i <= m; i++) {
+		newSet.add(i);
+	}
+	return newSet;
 }
 //# sourceMappingURL=Set.js.map

@@ -1,8 +1,8 @@
-var arrayReduce = require('./_arrayReduce'),
-    baseEach = require('./_baseEach'),
-    baseIteratee = require('./_baseIteratee'),
-    baseReduce = require('./_baseReduce'),
-    isArray = require('./isArray');
+var arrayReduce = require("./_arrayReduce"),
+	baseEach = require("./_baseEach"),
+	baseIteratee = require("./_baseIteratee"),
+	baseReduce = require("./_baseReduce"),
+	isArray = require("./isArray");
 
 /**
  * Reduces `collection` to a value which is the accumulated result of running
@@ -42,10 +42,16 @@ var arrayReduce = require('./_arrayReduce'),
  * // => { '1': ['a', 'c'], '2': ['b'] } (iteration order is not guaranteed)
  */
 function reduce(collection, iteratee, accumulator) {
-  var func = isArray(collection) ? arrayReduce : baseReduce,
-      initAccum = arguments.length < 3;
+	var func = isArray(collection) ? arrayReduce : baseReduce,
+		initAccum = arguments.length < 3;
 
-  return func(collection, baseIteratee(iteratee, 4), accumulator, initAccum, baseEach);
+	return func(
+		collection,
+		baseIteratee(iteratee, 4),
+		accumulator,
+		initAccum,
+		baseEach,
+	);
 }
 
 module.exports = reduce;

@@ -1,10 +1,10 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = void 0;
 
-var _default = x => () => x;
+var _default = (x) => () => x;
 
 exports.default = _default;

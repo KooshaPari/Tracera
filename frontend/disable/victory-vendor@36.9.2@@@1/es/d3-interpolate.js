@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-interpolate` (ESM)
 // See upstream license: https://github.com/d3/d3-interpolate/blob/main/LICENSE
 //

@@ -20,5 +20,5 @@ var _index = require("./toDate.cjs");
  * //=> 1330515905123
  */
 function getTime(date) {
-  return +(0, _index.toDate)(date);
+	return +(0, _index.toDate)(date);
 }

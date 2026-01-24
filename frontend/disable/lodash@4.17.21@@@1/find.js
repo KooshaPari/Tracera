@@ -1,5 +1,5 @@
-var createFind = require('./_createFind'),
-    findIndex = require('./findIndex');
+var createFind = require("./_createFind"),
+	findIndex = require("./findIndex");
 
 /**
  * Iterates over elements of `collection`, returning the first element

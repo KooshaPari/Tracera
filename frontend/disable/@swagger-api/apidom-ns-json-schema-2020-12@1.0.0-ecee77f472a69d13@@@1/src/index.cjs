@@ -1,9 +1,54 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
-var _interopRequireWildcard = require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireWildcard =
+	require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
 exports.__esModule = true;
-exports.specificationObj = exports.refractorPluginReplaceEmptyElement = exports.refract = exports.mediaTypes = exports.isStringElement = exports.isRefElement = exports.isObjectElement = exports.isNumberElement = exports.isNullElement = exports.isMemberElement = exports.isLinkElement = exports.isLinkDescriptionElement = exports.isJSONSchemaElement = exports.isElement = exports.isBooleanElement = exports.isArrayElement = exports.default = exports.createRefractor = exports.Visitor = exports.SpecificationVisitor = exports.PropertiesVisitor = exports.PrefixItemsVisitor = exports.PatternedFieldsVisitor = exports.PatternPropertiesVisitor = exports.ParentSchemaAwareVisitor = exports.OneOfVisitor = exports.MapVisitor = exports.LinkDescriptionVisitor = exports.LinkDescriptionElement = exports.JSONSchemaVisitor = exports.JSONSchemaElement = exports.JSONSchema202012MediaTypes = exports.ItemsVisitor = exports.FixedFieldsVisitor = exports.FallbackVisitor = exports.DependentSchemasVisitor = exports.DependentRequiredVisitor = exports.AnyOfVisitor = exports.AlternatingVisitor = exports.AllOfVisitor = exports.$vocabularyVisitor = exports.$refVisitor = exports.$defsVisitor = void 0;
+exports.specificationObj =
+	exports.refractorPluginReplaceEmptyElement =
+	exports.refract =
+	exports.mediaTypes =
+	exports.isStringElement =
+	exports.isRefElement =
+	exports.isObjectElement =
+	exports.isNumberElement =
+	exports.isNullElement =
+	exports.isMemberElement =
+	exports.isLinkElement =
+	exports.isLinkDescriptionElement =
+	exports.isJSONSchemaElement =
+	exports.isElement =
+	exports.isBooleanElement =
+	exports.isArrayElement =
+	exports.default =
+	exports.createRefractor =
+	exports.Visitor =
+	exports.SpecificationVisitor =
+	exports.PropertiesVisitor =
+	exports.PrefixItemsVisitor =
+	exports.PatternedFieldsVisitor =
+	exports.PatternPropertiesVisitor =
+	exports.ParentSchemaAwareVisitor =
+	exports.OneOfVisitor =
+	exports.MapVisitor =
+	exports.LinkDescriptionVisitor =
+	exports.LinkDescriptionElement =
+	exports.JSONSchemaVisitor =
+	exports.JSONSchemaElement =
+	exports.JSONSchema202012MediaTypes =
+	exports.ItemsVisitor =
+	exports.FixedFieldsVisitor =
+	exports.FallbackVisitor =
+	exports.DependentSchemasVisitor =
+	exports.DependentRequiredVisitor =
+	exports.AnyOfVisitor =
+	exports.AlternatingVisitor =
+	exports.AllOfVisitor =
+	exports.$vocabularyVisitor =
+	exports.$refVisitor =
+	exports.$defsVisitor =
+		void 0;
 var _apidomCore = require("@swagger-api/apidom-core");
 exports.isRefElement = _apidomCore.isRefElement;
 exports.isLinkElement = _apidomCore.isLinkElement;
@@ -20,12 +65,16 @@ exports.mediaTypes = _mediaTypes.default;
 exports.JSONSchema202012MediaTypes = _mediaTypes.JSONSchema202012MediaTypes;
 var _namespace = _interopRequireDefault(require("./namespace.cjs"));
 exports.default = _namespace.default;
-var _replaceEmptyElement = _interopRequireDefault(require("./refractor/plugins/replace-empty-element.cjs"));
+var _replaceEmptyElement = _interopRequireDefault(
+	require("./refractor/plugins/replace-empty-element.cjs"),
+);
 exports.refractorPluginReplaceEmptyElement = _replaceEmptyElement.default;
 var _index = _interopRequireWildcard(require("./refractor/index.cjs"));
 exports.refract = _index.default;
 exports.createRefractor = _index.createRefractor;
-var _specification = _interopRequireDefault(require("./refractor/specification.cjs"));
+var _specification = _interopRequireDefault(
+	require("./refractor/specification.cjs"),
+);
 exports.specificationObj = _specification.default;
 var _predicates = require("./predicates.cjs");
 exports.isJSONSchemaElement = _predicates.isJSONSchemaElement;
@@ -50,11 +99,17 @@ exports.ItemsVisitor = _apidomNsJsonSchema.ItemsVisitor;
 exports.OneOfVisitor = _apidomNsJsonSchema.OneOfVisitor;
 exports.PatternPropertiesVisitor = _apidomNsJsonSchema.PatternPropertiesVisitor;
 exports.PropertiesVisitor = _apidomNsJsonSchema.PropertiesVisitor;
-var _index2 = _interopRequireDefault(require("./refractor/visitors/json-schema/index.cjs"));
+var _index2 = _interopRequireDefault(
+	require("./refractor/visitors/json-schema/index.cjs"),
+);
 exports.JSONSchemaVisitor = _index2.default;
-var _index3 = _interopRequireDefault(require("./refractor/visitors/json-schema/link-description/index.cjs"));
+var _index3 = _interopRequireDefault(
+	require("./refractor/visitors/json-schema/link-description/index.cjs"),
+);
 exports.LinkDescriptionVisitor = _index3.default;
-var _PrefixItemsVisitor = _interopRequireDefault(require("./refractor/visitors/json-schema/PrefixItemsVisitor.cjs"));
+var _PrefixItemsVisitor = _interopRequireDefault(
+	require("./refractor/visitors/json-schema/PrefixItemsVisitor.cjs"),
+);
 exports.PrefixItemsVisitor = _PrefixItemsVisitor.default;
 var _registration = require("./refractor/registration.cjs");
 exports.JSONSchemaElement = _registration.JSONSchemaElement;

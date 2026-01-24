@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _createTester = require('./internal/createTester.js');
+var _createTester = require("./internal/createTester.js");
 
 var _createTester2 = _interopRequireDefault(_createTester);
 
-var _eachOfLimit = require('./internal/eachOfLimit.js');
+var _eachOfLimit = require("./internal/eachOfLimit.js");
 
 var _eachOfLimit2 = _interopRequireDefault(_eachOfLimit);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`some`]{@link module:Collections.some} but runs a maximum of `limit` async operations at a time.
@@ -41,7 +41,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if no callback provided
  */
 function someLimit(coll, limit, iteratee, callback) {
-    return (0, _createTester2.default)(Boolean, res => res)((0, _eachOfLimit2.default)(limit), coll, iteratee, callback);
+	return (0, _createTester2.default)(Boolean, (res) => res)(
+		(0, _eachOfLimit2.default)(limit),
+		coll,
+		iteratee,
+		callback,
+	);
 }
 exports.default = (0, _awaitify2.default)(someLimit, 4);
 module.exports = exports.default;

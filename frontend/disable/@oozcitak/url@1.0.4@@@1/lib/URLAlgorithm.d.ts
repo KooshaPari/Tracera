@@ -5,7 +5,9 @@ import { URLRecord, ParserState, Host, Origin } from "./interfaces";
  * @param validationErrorCallback - a callback function to be called when a
  * validation error occurs
  */
-export declare function setValidationErrorCallback(validationErrorCallback?: ((message: string) => void)): void;
+export declare function setValidationErrorCallback(
+	validationErrorCallback?: (message: string) => void,
+): void;
 /**
  * Creates a new URL.
  */
@@ -39,13 +41,18 @@ export declare function includesCredentials(url: URLRecord): boolean;
  *
  * @param url - an URL
  */
-export declare function cannotHaveAUsernamePasswordPort(url: URLRecord): boolean;
+export declare function cannotHaveAUsernamePasswordPort(
+	url: URLRecord,
+): boolean;
 /**
  * Serializes an URL into a string.
  *
  * @param url - an URL
  */
-export declare function urlSerializer(url: URLRecord, excludeFragmentFlag?: boolean): string;
+export declare function urlSerializer(
+	url: URLRecord,
+	excludeFragmentFlag?: boolean,
+): string;
 /**
  * Serializes a host into a string.
  *
@@ -71,7 +78,11 @@ export declare function iPv6Serializer(address: number[]): string;
  * @param baseURL - base URL
  * @param encodingOverride - encoding override
  */
-export declare function urlParser(input: string, baseURL?: URLRecord, encodingOverride?: string): URLRecord | null;
+export declare function urlParser(
+	input: string,
+	baseURL?: URLRecord,
+	encodingOverride?: string,
+): URLRecord | null;
 /**
  * Parses an URL string.
  *
@@ -79,7 +90,13 @@ export declare function urlParser(input: string, baseURL?: URLRecord, encodingOv
  * @param baseURL - base URL
  * @param encodingOverride - encoding override
  */
-export declare function basicURLParser(input: string, baseURL?: URLRecord | null, encodingOverride?: string, url?: URLRecord, stateOverride?: ParserState): URLRecord | null;
+export declare function basicURLParser(
+	input: string,
+	baseURL?: URLRecord | null,
+	encodingOverride?: string,
+	url?: URLRecord,
+	stateOverride?: ParserState,
+): URLRecord | null;
 /**
  * Sets a URL's username.
  *
@@ -137,7 +154,10 @@ export declare function startsWithAWindowsDriveLetter(str: string): boolean;
  * @param isNotSpecial - `true` if the source URL is not special; otherwise
  * `false`.
  */
-export declare function hostParser(input: string, isNotSpecial?: boolean): string | number | number[] | null;
+export declare function hostParser(
+	input: string,
+	isNotSpecial?: boolean,
+): string | number | number[] | null;
 /**
  * Parses a string containing an IP v4 address.
  *
@@ -145,9 +165,12 @@ export declare function hostParser(input: string, isNotSpecial?: boolean): strin
  * @param isNotSpecial - `true` if the source URL is not special; otherwise
  * `false`.
  */
-export declare function iPv4NumberParser(input: string, validationErrorFlag?: {
-    value: boolean;
-}): number | null;
+export declare function iPv4NumberParser(
+	input: string,
+	validationErrorFlag?: {
+		value: boolean;
+	},
+): number | null;
 /**
  * Parses a string containing an IP v4 address.
  *
@@ -198,7 +221,10 @@ export declare function stringPercentDecode(input: string): Uint8Array;
  * @param codePoint - a code point
  * @param percentEncodeSet - a percent encode set
  */
-export declare function utf8PercentEncode(codePoint: string, percentEncodeSet: RegExp): string;
+export declare function utf8PercentEncode(
+	codePoint: string,
+	percentEncodeSet: RegExp,
+): string;
 /**
  * Determines if two hosts are considered equal.
  *
@@ -213,13 +239,19 @@ export declare function hostEquals(hostA: Host, hostB: Host): boolean;
  * @param urlB - a URL
  * @param excludeFragmentsFlag - whether to ignore fragments while comparing
  */
-export declare function urlEquals(urlA: URLRecord, urlB: URLRecord, excludeFragmentsFlag?: boolean): boolean;
+export declare function urlEquals(
+	urlA: URLRecord,
+	urlB: URLRecord,
+	excludeFragmentsFlag?: boolean,
+): boolean;
 /**
  * Parses an `application/x-www-form-urlencoded` string.
  *
  * @param input - a string
  */
-export declare function urlEncodedStringParser(input: string): [string, string][];
+export declare function urlEncodedStringParser(
+	input: string,
+): [string, string][];
 /**
  * Parses `application/x-www-form-urlencoded` bytes.
  *
@@ -238,7 +270,10 @@ export declare function urlEncodedByteSerializer(input: Uint8Array): string;
  * @param input - input tuple of name/value pairs
  * @param encodingOverride: encoding override
  */
-export declare function urlEncodedSerializer(tuples: [string, string][], encodingOverride?: string): string;
+export declare function urlEncodedSerializer(
+	tuples: [string, string][],
+	encodingOverride?: string,
+): string;
 /**
  * Returns a URL's origin.
  *
@@ -250,13 +285,19 @@ export declare function origin(url: URLRecord): Origin;
  *
  * @param domain - a domain string
  */
-export declare function domainToASCII(domain: string, beStrict?: boolean): string | null;
+export declare function domainToASCII(
+	domain: string,
+	beStrict?: boolean,
+): string | null;
 /**
  * Converts a domain string to Unicode.
  *
  * @param domain - a domain string
  */
-export declare function domainToUnicode(domain: string, beStrict?: boolean): string;
+export declare function domainToUnicode(
+	domain: string,
+	beStrict?: boolean,
+): string;
 /**
  * Serializes an origin.
  * function is from the HTML spec:

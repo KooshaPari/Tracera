@@ -1,21 +1,21 @@
-import { List } from './List.js';
+import { List } from "./List.js";
 
 export function clone(node) {
-    const result = {};
+	const result = {};
 
-    for (const key of Object.keys(node)) {
-        let value = node[key];
+	for (const key of Object.keys(node)) {
+		let value = node[key];
 
-        if (value) {
-            if (Array.isArray(value) || value instanceof List) {
-                value = value.map(clone);
-            } else if (value.constructor === Object) {
-                value = clone(value);
-            }
-        }
+		if (value) {
+			if (Array.isArray(value) || value instanceof List) {
+				value = value.map(clone);
+			} else if (value.constructor === Object) {
+				value = clone(value);
+			}
+		}
 
-        result[key] = value;
-    }
+		result[key] = value;
+	}
 
-    return result;
+	return result;
 }

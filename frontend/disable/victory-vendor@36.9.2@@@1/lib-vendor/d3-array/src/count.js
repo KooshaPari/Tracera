@@ -1,28 +1,31 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = count;
 
 function count(values, valueof) {
-  let count = 0;
+	let count = 0;
 
-  if (valueof === undefined) {
-    for (let value of values) {
-      if (value != null && (value = +value) >= value) {
-        ++count;
-      }
-    }
-  } else {
-    let index = -1;
+	if (valueof === undefined) {
+		for (let value of values) {
+			if (value != null && (value = +value) >= value) {
+				++count;
+			}
+		}
+	} else {
+		let index = -1;
 
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
-        ++count;
-      }
-    }
-  }
+		for (let value of values) {
+			if (
+				(value = valueof(value, ++index, values)) != null &&
+				(value = +value) >= value
+			) {
+				++count;
+			}
+		}
+	}
 
-  return count;
+	return count;
 }

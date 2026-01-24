@@ -1,6 +1,6 @@
-'use strict';
-var hasOwn = require('../internals/has-own-property');
+"use strict";
+var hasOwn = require("../internals/has-own-property");
 
-module.exports = function (descriptor) {
-  return descriptor !== undefined && (hasOwn(descriptor, 'value') || hasOwn(descriptor, 'writable'));
-};
+module.exports = (descriptor) =>
+	descriptor !== undefined &&
+	(hasOwn(descriptor, "value") || hasOwn(descriptor, "writable"));

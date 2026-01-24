@@ -1,6 +1,6 @@
-var apply = require('./_apply'),
-    baseRest = require('./_baseRest'),
-    isError = require('./isError');
+var apply = require("./_apply"),
+	baseRest = require("./_baseRest"),
+	isError = require("./isError");
 
 /**
  * Attempts to invoke `func`, returning either the result or the caught error
@@ -24,12 +24,12 @@ var apply = require('./_apply'),
  *   elements = [];
  * }
  */
-var attempt = baseRest(function(func, args) {
-  try {
-    return apply(func, undefined, args);
-  } catch (e) {
-    return isError(e) ? e : new Error(e);
-  }
+var attempt = baseRest((func, args) => {
+	try {
+		return apply(func, undefined, args);
+	} catch (e) {
+		return isError(e) ? e : new Error(e);
+	}
 });
 
 module.exports = attempt;

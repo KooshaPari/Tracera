@@ -4,20 +4,20 @@ import { Node, NodeFilter, WhatToShow, Traverser } from "./interfaces";
  * of a subtree.
  */
 export declare abstract class TraverserImpl implements Traverser {
-    _activeFlag: boolean;
-    _root: Node;
-    _whatToShow: WhatToShow;
-    _filter: NodeFilter | null;
-    /**
-     * Initializes a new instance of `Traverser`.
-     *
-     * @param root - root node
-     */
-    protected constructor(root: Node);
-    /** @inheritdoc */
-    get root(): Node;
-    /** @inheritdoc */
-    get whatToShow(): WhatToShow;
-    /** @inheritdoc */
-    get filter(): NodeFilter | null;
+	_activeFlag: boolean;
+	_root: Node;
+	_whatToShow: WhatToShow;
+	_filter: NodeFilter | null;
+	/**
+	 * Initializes a new instance of `Traverser`.
+	 *
+	 * @param root - root node
+	 */
+	protected constructor(root: Node);
+	/** @inheritdoc */
+	get root(): Node;
+	/** @inheritdoc */
+	get whatToShow(): WhatToShow;
+	/** @inheritdoc */
+	get filter(): NodeFilter | null;
 }

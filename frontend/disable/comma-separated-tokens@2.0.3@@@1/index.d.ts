@@ -18,7 +18,7 @@
  * @returns {Array<string>}
  *   List of tokens.
  */
-export function parse(value: string): Array<string>
+export function parse(value: string): Array<string>;
 /**
  * Serialize an array of strings or numbers to comma-separated tokens.
  *
@@ -30,23 +30,23 @@ export function parse(value: string): Array<string>
  *   Comma-separated tokens.
  */
 export function stringify(
-  values: Array<string | number>,
-  options?: Options | undefined
-): string
+	values: Array<string | number>,
+	options?: Options | undefined,
+): string;
 /**
  * Configuration for `stringify`.
  */
 export type Options = {
-  /**
-   * Whether to pad a space before a token.
-   */
-  padLeft?: boolean | undefined
-  /**
-   * Whether to pad a space after a token.
-   */
-  padRight?: boolean | undefined
-}
+	/**
+	 * Whether to pad a space before a token.
+	 */
+	padLeft?: boolean | undefined;
+	/**
+	 * Whether to pad a space after a token.
+	 */
+	padRight?: boolean | undefined;
+};
 /**
  * Please use `StringifyOptions` instead.
  */
-export type StringifyOptions = Options
+export type StringifyOptions = Options;

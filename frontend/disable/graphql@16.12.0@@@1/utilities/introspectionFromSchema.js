@@ -1,17 +1,15 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.introspectionFromSchema = introspectionFromSchema;
 
-var _invariant = require('../jsutils/invariant.js');
+var _invariant = require("../jsutils/invariant.js");
 
-var _parser = require('../language/parser.js');
+var _parser = require("../language/parser.js");
 
-var _execute = require('../execution/execute.js');
+var _execute = require("../execution/execute.js");
 
-var _getIntrospectionQuery = require('./getIntrospectionQuery.js');
+var _getIntrospectionQuery = require("./getIntrospectionQuery.js");
 
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
@@ -23,21 +21,21 @@ var _getIntrospectionQuery = require('./getIntrospectionQuery.js');
  * of the server context, for instance when doing schema comparisons.
  */
 function introspectionFromSchema(schema, options) {
-  const optionsWithDefaults = {
-    specifiedByUrl: true,
-    directiveIsRepeatable: true,
-    schemaDescription: true,
-    inputValueDeprecation: true,
-    oneOf: true,
-    ...options,
-  };
-  const document = (0, _parser.parse)(
-    (0, _getIntrospectionQuery.getIntrospectionQuery)(optionsWithDefaults),
-  );
-  const result = (0, _execute.executeSync)({
-    schema,
-    document,
-  });
-  (!result.errors && result.data) || (0, _invariant.invariant)(false);
-  return result.data;
+	const optionsWithDefaults = {
+		specifiedByUrl: true,
+		directiveIsRepeatable: true,
+		schemaDescription: true,
+		inputValueDeprecation: true,
+		oneOf: true,
+		...options,
+	};
+	const document = (0, _parser.parse)(
+		(0, _getIntrospectionQuery.getIntrospectionQuery)(optionsWithDefaults),
+	);
+	const result = (0, _execute.executeSync)({
+		schema,
+		document,
+	});
+	(!result.errors && result.data) || (0, _invariant.invariant)(false);
+	return result.data;
 }

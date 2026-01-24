@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/ends-with');
+"use strict";
+module.exports = require("../../full/instance/ends-with");

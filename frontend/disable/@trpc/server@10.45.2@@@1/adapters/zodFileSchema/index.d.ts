@@ -1,1 +1,1 @@
-export * from '../../dist/adapters/zodFileSchema';
+export * from "../../dist/adapters/zodFileSchema";

@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/esnext.typed-array.group-by');
+"use strict";
+require("../../modules/esnext.typed-array.group-by");

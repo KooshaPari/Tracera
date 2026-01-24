@@ -64,7 +64,7 @@ class TraceabilityService:
             source_item_id=source_item_id,
             target_item_id=target_item_id,
             link_type=link_type,
-            metadata=metadata,
+            link_metadata=metadata,
         )
 
     async def generate_matrix(

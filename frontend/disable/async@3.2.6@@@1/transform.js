@@ -1,25 +1,25 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 exports.default = transform;
 
-var _eachOf = require('./eachOf.js');
+var _eachOf = require("./eachOf.js");
 
 var _eachOf2 = _interopRequireDefault(_eachOf);
 
-var _once = require('./internal/once.js');
+var _once = require("./internal/once.js");
 
 var _once2 = _interopRequireDefault(_once);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _promiseCallback = require('./internal/promiseCallback.js');
+var _promiseCallback = require("./internal/promiseCallback.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * A relative of `reduce`.  Takes an Object or Array, and iterates over each
@@ -157,17 +157,23 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function transform(coll, accumulator, iteratee, callback) {
-    if (arguments.length <= 3 && typeof accumulator === 'function') {
-        callback = iteratee;
-        iteratee = accumulator;
-        accumulator = Array.isArray(coll) ? [] : {};
-    }
-    callback = (0, _once2.default)(callback || (0, _promiseCallback.promiseCallback)());
-    var _iteratee = (0, _wrapAsync2.default)(iteratee);
+	if (arguments.length <= 3 && typeof accumulator === "function") {
+		callback = iteratee;
+		iteratee = accumulator;
+		accumulator = Array.isArray(coll) ? [] : {};
+	}
+	callback = (0, _once2.default)(
+		callback || (0, _promiseCallback.promiseCallback)(),
+	);
+	var _iteratee = (0, _wrapAsync2.default)(iteratee);
 
-    (0, _eachOf2.default)(coll, (v, k, cb) => {
-        _iteratee(accumulator, v, k, cb);
-    }, err => callback(err, accumulator));
-    return callback[_promiseCallback.PROMISE_SYMBOL];
+	(0, _eachOf2.default)(
+		coll,
+		(v, k, cb) => {
+			_iteratee(accumulator, v, k, cb);
+		},
+		(err) => callback(err, accumulator),
+	);
+	return callback[_promiseCallback.PROMISE_SYMBOL];
 }
 module.exports = exports.default;

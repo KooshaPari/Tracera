@@ -4,4 +4,7 @@
  * @param element the element
  * @param className the CSS class name
  */
-export default function removeClass(element: Element | SVGElement, className: string): void;
+export default function removeClass(
+	element: Element | SVGElement,
+	className: string,
+): void;

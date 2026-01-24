@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/asinh');
+"use strict";
+module.exports = require("../../full/math/asinh");

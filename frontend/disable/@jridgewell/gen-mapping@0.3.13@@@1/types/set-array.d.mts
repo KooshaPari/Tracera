@@ -8,14 +8,17 @@ type Key = string | number | symbol;
  * and there are never duplicates.
  */
 export declare class SetArray<T extends Key = Key> {
-    private _indexes;
-    array: readonly T[];
-    constructor();
+	private _indexes;
+	array: readonly T[];
+	constructor();
 }
 /**
  * Gets the index associated with `key` in the backing array, if it is already present.
  */
-export declare function get<T extends Key>(setarr: SetArray<T>, key: T): number | undefined;
+export declare function get<T extends Key>(
+	setarr: SetArray<T>,
+	key: T,
+): number | undefined;
 /**
  * Puts `key` into the backing array, if it is not already present. Returns
  * the index of the `key` in the backing array.
@@ -28,6 +31,8 @@ export declare function pop<T extends Key>(setarr: SetArray<T>): void;
 /**
  * Removes the key, if it exists in the set.
  */
-export declare function remove<T extends Key>(setarr: SetArray<T>, key: T): void;
-export {};
+export declare function remove<T extends Key>(
+	setarr: SetArray<T>,
+	key: T,
+): void;
 //# sourceMappingURL=set-array.d.ts.map

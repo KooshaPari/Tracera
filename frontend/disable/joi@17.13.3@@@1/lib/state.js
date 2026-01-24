@@ -1,166 +1,147 @@
-'use strict';
+const Clone = require("@hapi/hoek/lib/clone");
+const Reach = require("@hapi/hoek/lib/reach");
 
-const Clone = require('@hapi/hoek/lib/clone');
-const Reach = require('@hapi/hoek/lib/reach');
-
-const Common = require('./common');
-
+const Common = require("./common");
 
 const internals = {
-    value: Symbol('value')
+	value: Symbol("value"),
 };
-
 
 module.exports = internals.State = class {
+	constructor(path, ancestors, state) {
+		this.path = path;
+		this.ancestors = ancestors; // [parent, ..., root]
 
-    constructor(path, ancestors, state) {
+		this.mainstay = state.mainstay;
+		this.schemas = state.schemas; // [current, ..., root]
+		this.debug = null;
+	}
 
-        this.path = path;
-        this.ancestors = ancestors;                 // [parent, ..., root]
+	localize(path, ancestors = null, schema = null) {
+		const state = new internals.State(path, ancestors, this);
 
-        this.mainstay = state.mainstay;
-        this.schemas = state.schemas;               // [current, ..., root]
-        this.debug = null;
-    }
+		if (schema && state.schemas) {
+			state.schemas = [internals.schemas(schema), ...state.schemas];
+		}
 
-    localize(path, ancestors = null, schema = null) {
+		return state;
+	}
 
-        const state = new internals.State(path, ancestors, this);
+	nest(schema, debug) {
+		const state = new internals.State(this.path, this.ancestors, this);
+		state.schemas = state.schemas && [
+			internals.schemas(schema),
+			...state.schemas,
+		];
+		state.debug = debug;
+		return state;
+	}
 
-        if (schema &&
-            state.schemas) {
+	shadow(value, reason) {
+		this.mainstay.shadow = this.mainstay.shadow || new internals.Shadow();
+		this.mainstay.shadow.set(this.path, value, reason);
+	}
 
-            state.schemas = [internals.schemas(schema), ...state.schemas];
-        }
+	snapshot() {
+		if (this.mainstay.shadow) {
+			this._snapshot = Clone(this.mainstay.shadow.node(this.path));
+		}
 
-        return state;
-    }
+		this.mainstay.snapshot();
+	}
 
-    nest(schema, debug) {
+	restore() {
+		if (this.mainstay.shadow) {
+			this.mainstay.shadow.override(this.path, this._snapshot);
+			this._snapshot = undefined;
+		}
 
-        const state = new internals.State(this.path, this.ancestors, this);
-        state.schemas = state.schemas && [internals.schemas(schema), ...state.schemas];
-        state.debug = debug;
-        return state;
-    }
+		this.mainstay.restore();
+	}
 
-    shadow(value, reason) {
+	commit() {
+		if (this.mainstay.shadow) {
+			this.mainstay.shadow.override(this.path, this._snapshot);
+			this._snapshot = undefined;
+		}
 
-        this.mainstay.shadow = this.mainstay.shadow || new internals.Shadow();
-        this.mainstay.shadow.set(this.path, value, reason);
-    }
-
-    snapshot() {
-
-        if (this.mainstay.shadow) {
-            this._snapshot = Clone(this.mainstay.shadow.node(this.path));
-        }
-
-        this.mainstay.snapshot();
-    }
-
-    restore() {
-
-        if (this.mainstay.shadow) {
-            this.mainstay.shadow.override(this.path, this._snapshot);
-            this._snapshot = undefined;
-        }
-
-        this.mainstay.restore();
-    }
-
-    commit() {
-
-        if (this.mainstay.shadow) {
-            this.mainstay.shadow.override(this.path, this._snapshot);
-            this._snapshot = undefined;
-        }
-
-        this.mainstay.commit();
-    }
+		this.mainstay.commit();
+	}
 };
 
+internals.schemas = (schema) => {
+	if (Common.isSchema(schema)) {
+		return { schema };
+	}
 
-internals.schemas = function (schema) {
-
-    if (Common.isSchema(schema)) {
-        return { schema };
-    }
-
-    return schema;
+	return schema;
 };
-
 
 internals.Shadow = class {
+	constructor() {
+		this._values = null;
+	}
 
-    constructor() {
+	set(path, value, reason) {
+		if (!path.length) {
+			// No need to store root value
+			return;
+		}
 
-        this._values = null;
-    }
+		if (reason === "strip" && typeof path[path.length - 1] === "number") {
+			// Cannot store stripped array values (due to shift)
 
-    set(path, value, reason) {
+			return;
+		}
 
-        if (!path.length) {                                     // No need to store root value
-            return;
-        }
+		this._values = this._values || new Map();
 
-        if (reason === 'strip' &&
-            typeof path[path.length - 1] === 'number') {        // Cannot store stripped array values (due to shift)
+		let node = this._values;
+		for (let i = 0; i < path.length; ++i) {
+			const segment = path[i];
+			let next = node.get(segment);
+			if (!next) {
+				next = new Map();
+				node.set(segment, next);
+			}
 
-            return;
-        }
+			node = next;
+		}
 
-        this._values = this._values || new Map();
+		node[internals.value] = value;
+	}
 
-        let node = this._values;
-        for (let i = 0; i < path.length; ++i) {
-            const segment = path[i];
-            let next = node.get(segment);
-            if (!next) {
-                next = new Map();
-                node.set(segment, next);
-            }
+	get(path) {
+		const node = this.node(path);
+		if (node) {
+			return node[internals.value];
+		}
+	}
 
-            node = next;
-        }
+	node(path) {
+		if (!this._values) {
+			return;
+		}
 
-        node[internals.value] = value;
-    }
+		return Reach(this._values, path, { iterables: true });
+	}
 
-    get(path) {
+	override(path, node) {
+		if (!this._values) {
+			return;
+		}
 
-        const node = this.node(path);
-        if (node) {
-            return node[internals.value];
-        }
-    }
+		const parents = path.slice(0, -1);
+		const own = path[path.length - 1];
+		const parent = Reach(this._values, parents, { iterables: true });
 
-    node(path) {
+		if (node) {
+			parent.set(own, node);
+			return;
+		}
 
-        if (!this._values) {
-            return;
-        }
-
-        return Reach(this._values, path, { iterables: true });
-    }
-
-    override(path, node) {
-
-        if (!this._values) {
-            return;
-        }
-
-        const parents = path.slice(0, -1);
-        const own = path[path.length - 1];
-        const parent = Reach(this._values, parents, { iterables: true });
-
-        if (node) {
-            parent.set(own, node);
-            return;
-        }
-
-        if (parent) {
-            parent.delete(own);
-        }
-    }
+		if (parent) {
+			parent.delete(own);
+		}
+	}
 };

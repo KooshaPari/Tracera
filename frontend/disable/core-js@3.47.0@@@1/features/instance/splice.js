@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/splice');
+"use strict";
+module.exports = require("../../full/instance/splice");

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/string/fontcolor');
+"use strict";
+module.exports = require("../../full/string/fontcolor");

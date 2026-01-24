@@ -5,16 +5,16 @@
 */
 /* global define */
 
-(function () {
-	'use strict';
+(() => {
+	"use strict";
 
-	var classNames = (function () {
+	var classNames = (() => {
 		// don't inherit from Object so we can skip hasOwnProperty check later
 		// http://stackoverflow.com/questions/15518328/creating-js-object-with-object-createnull#answer-21079232
 		function StorageObject() {}
 		StorageObject.prototype = Object.create(null);
 
-		function _parseArray (resultSet, array) {
+		function _parseArray(resultSet, array) {
 			var length = array.length;
 
 			for (var i = 0; i < length; ++i) {
@@ -24,12 +24,15 @@
 
 		var hasOwn = {}.hasOwnProperty;
 
-		function _parseNumber (resultSet, num) {
+		function _parseNumber(resultSet, num) {
 			resultSet[num] = true;
 		}
 
-		function _parseObject (resultSet, object) {
-			if (object.toString !== Object.prototype.toString && !object.toString.toString().includes('[native code]')) {
+		function _parseObject(resultSet, object) {
+			if (
+				object.toString !== Object.prototype.toString &&
+				!object.toString.toString().includes("[native code]")
+			) {
 				resultSet[object.toString()] = true;
 				return;
 			}
@@ -44,7 +47,7 @@
 		}
 
 		var SPACE = /\s+/;
-		function _parseString (resultSet, str) {
+		function _parseString(resultSet, str) {
 			var array = str.split(SPACE);
 			var length = array.length;
 
@@ -53,29 +56,29 @@
 			}
 		}
 
-		function _parse (resultSet, arg) {
+		function _parse(resultSet, arg) {
 			if (!arg) return;
 			var argType = typeof arg;
 
 			// 'foo bar'
-			if (argType === 'string') {
+			if (argType === "string") {
 				_parseString(resultSet, arg);
 
-			// ['foo', 'bar', ...]
+				// ['foo', 'bar', ...]
 			} else if (Array.isArray(arg)) {
 				_parseArray(resultSet, arg);
 
-			// { 'foo': true, ... }
-			} else if (argType === 'object') {
+				// { 'foo': true, ... }
+			} else if (argType === "object") {
 				_parseObject(resultSet, arg);
 
-			// '130'
-			} else if (argType === 'number') {
+				// '130'
+			} else if (argType === "number") {
 				_parseNumber(resultSet, arg);
 			}
 		}
 
-		function _classNames () {
+		function _classNames() {
 			// don't leak arguments
 			// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#32-leaking-arguments
 			var len = arguments.length;
@@ -91,25 +94,27 @@
 
 			for (var k in classSet) {
 				if (classSet[k]) {
-					list.push(k)
+					list.push(k);
 				}
 			}
 
-			return list.join(' ');
+			return list.join(" ");
 		}
 
 		return _classNames;
 	})();
 
-	if (typeof module !== 'undefined' && module.exports) {
+	if (typeof module !== "undefined" && module.exports) {
 		classNames.default = classNames;
 		module.exports = classNames;
-	} else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+	} else if (
+		typeof define === "function" &&
+		typeof define.amd === "object" &&
+		define.amd
+	) {
 		// register as 'classnames', consistent with npm package name
-		define('classnames', [], function () {
-			return classNames;
-		});
+		define("classnames", [], () => classNames);
 	} else {
 		window.classNames = classNames;
 	}
-}());
+})();

@@ -1,32 +1,37 @@
-import { toNestErrors, validateFieldsNatively } from '@hookform/resolvers';
-import { FieldError, FieldValues, Resolver } from 'react-hook-form';
-import { Infer, Struct, StructError, validate } from 'superstruct';
+import { toNestErrors, validateFieldsNatively } from "@hookform/resolvers";
+import type { FieldError, FieldValues, Resolver } from "react-hook-form";
+import {
+	type Infer,
+	type Struct,
+	type StructError,
+	validate,
+} from "superstruct";
 
 function parseErrorSchema(error: StructError) {
-  return error.failures().reduce<Record<string, FieldError>>(
-    (previous, error) =>
-      (previous[error.path.join('.')] = {
-        message: error.message,
-        type: error.type,
-      }) && previous,
-    {},
-  );
+	return error.failures().reduce<Record<string, FieldError>>(
+		(previous, error) =>
+			(previous[error.path.join(".")] = {
+				message: error.message,
+				type: error.type,
+			}) && previous,
+		{},
+	);
 }
 
 export function superstructResolver<Input extends FieldValues, Context, Output>(
-  schema: Struct<Input, any>,
-  schemaOptions?: Parameters<typeof validate>[2],
-  resolverOptions?: {
-    raw?: false;
-  },
+	schema: Struct<Input, any>,
+	schemaOptions?: Parameters<typeof validate>[2],
+	resolverOptions?: {
+		raw?: false;
+	},
 ): Resolver<Input, Context, Infer<typeof schema>>;
 
 export function superstructResolver<Input extends FieldValues, Context, Output>(
-  schema: Struct<Input, any>,
-  schemaOptions: Parameters<typeof validate>[2] | undefined,
-  resolverOptions: {
-    raw: true;
-  },
+	schema: Struct<Input, any>,
+	schemaOptions: Parameters<typeof validate>[2] | undefined,
+	resolverOptions: {
+		raw: true;
+	},
 ): Resolver<Input, Context, Input>;
 
 /**
@@ -47,27 +52,27 @@ export function superstructResolver<Input extends FieldValues, Context, Output>(
  * });
  */
 export function superstructResolver<Input extends FieldValues, Context, Output>(
-  schema: Struct<Input, any>,
-  schemaOptions?: Parameters<typeof validate>[2],
-  resolverOptions: {
-    raw?: boolean;
-  } = {},
+	schema: Struct<Input, any>,
+	schemaOptions?: Parameters<typeof validate>[2],
+	resolverOptions: {
+		raw?: boolean;
+	} = {},
 ): Resolver<Input, Context, Input | Output> {
-  return (values: Input, _, options) => {
-    const result = validate(values, schema, schemaOptions);
+	return (values: Input, _, options) => {
+		const result = validate(values, schema, schemaOptions);
 
-    if (result[0]) {
-      return {
-        values: {},
-        errors: toNestErrors(parseErrorSchema(result[0]), options),
-      };
-    }
+		if (result[0]) {
+			return {
+				values: {},
+				errors: toNestErrors(parseErrorSchema(result[0]), options),
+			};
+		}
 
-    options.shouldUseNativeValidation && validateFieldsNatively({}, options);
+		options.shouldUseNativeValidation && validateFieldsNatively({}, options);
 
-    return {
-      values: resolverOptions.raw ? Object.assign({}, values) : result[1],
-      errors: {},
-    };
-  };
+		return {
+			values: resolverOptions.raw ? Object.assign({}, values) : result[1],
+			errors: {},
+		};
+	};
 }

@@ -13,12 +13,16 @@ var _apidomNsJsonSchemaDraft = require("@swagger-api/apidom-ns-json-schema-draft
 /**
  * @public
  */
-class $defsVisitor extends (0, _tsMixer.Mixin)(_apidomNsJsonSchemaDraft.MapVisitor, _apidomNsJsonSchemaDraft.ParentSchemaAwareVisitor, _apidomNsJsonSchemaDraft.FallbackVisitor) {
-  constructor(options) {
-    super(options);
-    this.element = new _apidomCore.ObjectElement();
-    this.element.classes.push('json-schema-$defs');
-    this.specPath = (0, _ramda.always)(['document', 'objects', 'JSONSchema']);
-  }
+class $defsVisitor extends (0, _tsMixer.Mixin)(
+	_apidomNsJsonSchemaDraft.MapVisitor,
+	_apidomNsJsonSchemaDraft.ParentSchemaAwareVisitor,
+	_apidomNsJsonSchemaDraft.FallbackVisitor,
+) {
+	constructor(options) {
+		super(options);
+		this.element = new _apidomCore.ObjectElement();
+		this.element.classes.push("json-schema-$defs");
+		this.specPath = (0, _ramda.always)(["document", "objects", "JSONSchema"]);
+	}
 }
-var _default = exports.default = $defsVisitor;
+var _default = (exports.default = $defsVisitor);

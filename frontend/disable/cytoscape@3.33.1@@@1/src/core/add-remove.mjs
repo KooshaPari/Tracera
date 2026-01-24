@@ -1,82 +1,83 @@
-import * as is from '../is.mjs';
-import * as util from '../util/index.mjs';
-import Collection from '../collection/index.mjs';
-import Element from '../collection/element.mjs';
+import Element from "../collection/element.mjs";
+import Collection from "../collection/index.mjs";
+import * as is from "../is.mjs";
+import * as util from "../util/index.mjs";
 
-let corefn = {
-  add: function( opts ){
+const corefn = {
+	add: function (opts) {
+		let elements;
 
-    let elements;
-    let cy = this;
+		// add the elements
+		if (is.elementOrCollection(opts)) {
+			const eles = opts;
 
-    // add the elements
-    if( is.elementOrCollection( opts ) ){
-      let eles = opts;
+			if (eles._private.cy === this) {
+				// same instance => just restore
+				elements = eles.restore();
+			} else {
+				// otherwise, copy from json
+				const jsons = [];
 
-      if( eles._private.cy === cy ){ // same instance => just restore
-        elements = eles.restore();
+				for (let i = 0; i < eles.length; i++) {
+					const ele = eles[i];
+					jsons.push(ele.json());
+				}
 
-      } else { // otherwise, copy from json
-        let jsons = [];
+				elements = new Collection(this, jsons);
+			}
+		}
 
-        for( let i = 0; i < eles.length; i++ ){
-          let ele = eles[ i ];
-          jsons.push( ele.json() );
-        }
+		// specify an array of options
+		else if (is.array(opts)) {
+			const jsons = opts;
 
-        elements = new Collection( cy, jsons );
-      }
-    }
+			elements = new Collection(this, jsons);
+		}
 
-    // specify an array of options
-    else if( is.array( opts ) ){
-      let jsons = opts;
+		// specify via opts.nodes and opts.edges
+		else if (
+			is.plainObject(opts) &&
+			(is.array(opts.nodes) || is.array(opts.edges))
+		) {
+			const elesByGroup = opts;
+			const jsons = [];
 
-      elements = new Collection( cy, jsons );
-    }
+			const grs = ["nodes", "edges"];
+			for (let i = 0, il = grs.length; i < il; i++) {
+				const group = grs[i];
+				const elesArray = elesByGroup[group];
 
-    // specify via opts.nodes and opts.edges
-    else if( is.plainObject( opts ) && (is.array( opts.nodes ) || is.array( opts.edges )) ){
-      let elesByGroup = opts;
-      let jsons = [];
+				if (is.array(elesArray)) {
+					for (let j = 0, jl = elesArray.length; j < jl; j++) {
+						const json = util.extend({ group: group }, elesArray[j]);
 
-      let grs = [ 'nodes', 'edges' ];
-      for( let i = 0, il = grs.length; i < il; i++ ){
-        let group = grs[ i ];
-        let elesArray = elesByGroup[ group ];
+						jsons.push(json);
+					}
+				}
+			}
 
-        if( is.array( elesArray ) ){
+			elements = new Collection(this, jsons);
+		}
 
-          for( let j = 0, jl = elesArray.length; j < jl; j++ ){
-            let json = util.extend( { group: group }, elesArray[ j ] );
+		// specify options for one element
+		else {
+			const json = opts;
+			elements = new Element(this, json).collection();
+		}
 
-            jsons.push( json );
-          }
-        }
-      }
+		return elements;
+	},
 
-      elements = new Collection( cy, jsons );
-    }
+	remove: function (collection) {
+		if (is.elementOrCollection(collection)) {
+			// already have right ref
+		} else if (is.string(collection)) {
+			const selector = collection;
+			collection = this.$(selector);
+		}
 
-    // specify options for one element
-    else {
-      let json = opts;
-      elements = (new Element( cy, json )).collection();
-    }
-
-    return elements;
-  },
-
-  remove: function( collection ){
-    if( is.elementOrCollection( collection ) ){
-      // already have right ref
-    } else if( is.string( collection ) ){
-      let selector = collection;
-      collection = this.$( selector );
-    }
-
-    return collection.remove();
-  }
+		return collection.remove();
+	},
 };
 
 export default corefn;

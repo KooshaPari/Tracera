@@ -8,5 +8,9 @@ import type { CompiledQuery, InternalOptions } from "../types.js";
  * the results of the parent elements, so that the `matches` function only
  * needs to be called once for each subtree.
  */
-export declare function cacheParentResults<Node, ElementNode extends Node>(next: CompiledQuery<ElementNode>, { adapter, cacheResults }: InternalOptions<Node, ElementNode>, matches: (elem: ElementNode) => boolean): CompiledQuery<ElementNode>;
+export declare function cacheParentResults<Node, ElementNode extends Node>(
+	next: CompiledQuery<ElementNode>,
+	{ adapter, cacheResults }: InternalOptions<Node, ElementNode>,
+	matches: (elem: ElementNode) => boolean,
+): CompiledQuery<ElementNode>;
 //# sourceMappingURL=cache.d.ts.map

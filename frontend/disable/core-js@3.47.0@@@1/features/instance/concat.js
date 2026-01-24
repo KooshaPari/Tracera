@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/concat');
+"use strict";
+module.exports = require("../../full/instance/concat");

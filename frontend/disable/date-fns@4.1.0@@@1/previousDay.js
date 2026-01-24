@@ -33,10 +33,10 @@ import { subDays } from "./subDays.js";
  * //=> Tue Mar 17 2020 00:00:00
  */
 export function previousDay(date, day, options) {
-  let delta = getDay(date, options) - day;
-  if (delta <= 0) delta += 7;
+	let delta = getDay(date, options) - day;
+	if (delta <= 0) delta += 7;
 
-  return subDays(date, delta, options);
+	return subDays(date, delta, options);
 }
 
 // Fallback for modularized imports:

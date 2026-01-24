@@ -28,6 +28,6 @@ import type { ContextFn, DateArg } from "./types.js";
  * }
  */
 export declare function constructNow<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(date: DateArg<DateType> | ContextFn<ResultDate> | undefined): ResultDate;

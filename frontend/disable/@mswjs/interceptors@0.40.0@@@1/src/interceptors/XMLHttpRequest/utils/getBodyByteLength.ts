@@ -3,14 +3,14 @@
  * If the `Content-Length` header is present, it will be used as the byte length.
  */
 export async function getBodyByteLength(
-  input: Request | Response
+	input: Request | Response,
 ): Promise<number> {
-  const explicitContentLength = input.headers.get('content-length')
+	const explicitContentLength = input.headers.get("content-length");
 
-  if (explicitContentLength != null && explicitContentLength !== '') {
-    return Number(explicitContentLength)
-  }
+	if (explicitContentLength != null && explicitContentLength !== "") {
+		return Number(explicitContentLength);
+	}
 
-  const buffer = await input.arrayBuffer()
-  return buffer.byteLength
+	const buffer = await input.arrayBuffer();
+	return buffer.byteLength;
 }

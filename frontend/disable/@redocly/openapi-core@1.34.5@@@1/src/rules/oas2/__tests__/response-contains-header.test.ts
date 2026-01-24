@@ -1,11 +1,11 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import { makeConfig, parseYamlToDocument } from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas2 response-contains-header', () => {
-  it('should report a response object not containing the header', async () => {
-    const document = parseYamlToDocument(outdent`
+describe("Oas2 response-contains-header", () => {
+	it("should report a response object not containing the header", async () => {
+		const document = parseYamlToDocument(outdent`
       swagger: '2.0'
       schemes:
         - https
@@ -25,19 +25,19 @@ describe('Oas2 response-contains-header', () => {
               '404':
                 description: User not found
     `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: { '2xx': ['Content-Length'], '4xx': ['Content-Length'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: { "2xx": ["Content-Length"], "4xx": ["Content-Length"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -109,10 +109,10 @@ describe('Oas2 response-contains-header', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report a response object containing the header nor not applicable', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report a response object containing the header nor not applicable", async () => {
+		const document = parseYamlToDocument(outdent`
       swagger: '2.0'
       schemes:
         - https
@@ -134,23 +134,23 @@ describe('Oas2 response-contains-header', () => {
               '404':
                 description: User not found
 		`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: { '2xx': ['Content-Length'], '400': ['Content-Length'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: { "2xx": ["Content-Length"], "400": ["Content-Length"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report a response object when there is no `names` section defined', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report a response object when there is no `names` section defined", async () => {
+		const document = parseYamlToDocument(outdent`
       swagger: '2.0'
       schemes:
         - https
@@ -164,17 +164,17 @@ describe('Oas2 response-contains-header', () => {
               '404':
                 description: User not found
 		`);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 });

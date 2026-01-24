@@ -1,14 +1,12 @@
-'use strict';
+var test = require("tape");
 
-var test = require('tape');
+var E = require("../");
+var R = require("../range");
+var Ref = require("../ref");
+var S = require("../syntax");
+var T = require("../type");
 
-var E = require('../');
-var R = require('../range');
-var Ref = require('../ref');
-var S = require('../syntax');
-var T = require('../type');
-
-test('errors', function (t) {
+test("errors", (t) => {
 	t.equal(E, Error);
 	t.equal(R, RangeError);
 	t.equal(Ref, ReferenceError);

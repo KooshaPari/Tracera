@@ -3,42 +3,42 @@
  */
 
 import {
-  CacheItem,
-  NullObject,
-  createCacheKey,
-  getCache,
-  setCache
-} from './cache';
+	CacheItem,
+	createCacheKey,
+	getCache,
+	NullObject,
+	setCache,
+} from "./cache";
 import {
-  convertRgbToHex,
-  resolveColorFunc,
-  resolveColorMix,
-  resolveColorValue
-} from './color';
-import { isString } from './common';
-import { cssCalc } from './css-calc';
-import { resolveVar } from './css-var';
-import { resolveRelativeColor } from './relative-color';
-import { splitValue } from './util';
-import {
-  ComputedColorChannels,
-  Options,
-  SpecifiedColorChannels
-} from './typedef';
-
+	convertRgbToHex,
+	resolveColorFunc,
+	resolveColorMix,
+	resolveColorValue,
+} from "./color";
+import { isString } from "./common";
 /* constants */
 import {
-  FN_COLOR,
-  FN_MIX,
-  SYN_FN_CALC,
-  SYN_FN_LIGHT_DARK,
-  SYN_FN_REL,
-  SYN_FN_VAR,
-  VAL_COMP,
-  VAL_SPEC
-} from './constant';
-const NAMESPACE = 'resolve';
-const RGB_TRANSPARENT = 'rgba(0, 0, 0, 0)';
+	FN_COLOR,
+	FN_MIX,
+	SYN_FN_CALC,
+	SYN_FN_LIGHT_DARK,
+	SYN_FN_REL,
+	SYN_FN_VAR,
+	VAL_COMP,
+	VAL_SPEC,
+} from "./constant";
+import { cssCalc } from "./css-calc";
+import { resolveVar } from "./css-var";
+import { resolveRelativeColor } from "./relative-color";
+import type {
+	ComputedColorChannels,
+	Options,
+	SpecifiedColorChannels,
+} from "./typedef";
+import { splitValue } from "./util";
+
+const NAMESPACE = "resolve";
+const RGB_TRANSPARENT = "rgba(0, 0, 0, 0)";
 
 /* regexp */
 const REG_FN_CALC = new RegExp(SYN_FN_CALC);
@@ -53,342 +53,342 @@ const REG_FN_VAR = new RegExp(SYN_FN_VAR);
  * @returns resolved color
  */
 export const resolveColor = (
-  value: string,
-  opt: Options = {}
+	value: string,
+	opt: Options = {},
 ): string | NullObject => {
-  if (isString(value)) {
-    value = value.trim();
-  } else {
-    throw new TypeError(`${value} is not a string.`);
-  }
-  const {
-    colorScheme = 'normal',
-    currentColor = '',
-    format = VAL_COMP,
-    nullable = false
-  } = opt;
-  const cacheKey: string = createCacheKey(
-    {
-      namespace: NAMESPACE,
-      name: 'resolve',
-      value
-    },
-    opt
-  );
-  const cachedResult = getCache(cacheKey);
-  if (cachedResult instanceof CacheItem) {
-    if (cachedResult.isNull) {
-      return cachedResult as NullObject;
-    }
-    return cachedResult.item as string;
-  }
-  if (REG_FN_VAR.test(value)) {
-    if (format === VAL_SPEC) {
-      setCache(cacheKey, value);
-      return value;
-    }
-    const resolvedValue = resolveVar(value, opt);
-    if (resolvedValue instanceof NullObject) {
-      switch (format) {
-        case 'hex':
-        case 'hexAlpha': {
-          setCache(cacheKey, resolvedValue);
-          return resolvedValue;
-        }
-        default: {
-          if (nullable) {
-            setCache(cacheKey, resolvedValue);
-            return resolvedValue;
-          }
-          const res = RGB_TRANSPARENT;
-          setCache(cacheKey, res);
-          return res;
-        }
-      }
-    } else {
-      value = resolvedValue;
-    }
-  }
-  if (opt.format !== format) {
-    opt.format = format;
-  }
-  value = value.toLowerCase();
-  if (REG_FN_LIGHT_DARK.test(value) && value.endsWith(')')) {
-    const colorParts = value.replace(REG_FN_LIGHT_DARK, '').replace(/\)$/, '');
-    const [light = '', dark = ''] = splitValue(colorParts, {
-      delimiter: ','
-    });
-    if (light && dark) {
-      if (format === VAL_SPEC) {
-        const lightColor = resolveColor(light, opt);
-        const darkColor = resolveColor(dark, opt);
-        let res;
-        if (lightColor && darkColor) {
-          res = `light-dark(${lightColor}, ${darkColor})`;
-        } else {
-          res = '';
-        }
-        setCache(cacheKey, res);
-        return res;
-      }
-      let resolvedValue;
-      if (colorScheme === 'dark') {
-        resolvedValue = resolveColor(dark, opt);
-      } else {
-        resolvedValue = resolveColor(light, opt);
-      }
-      let res;
-      if (resolvedValue instanceof NullObject) {
-        if (nullable) {
-          res = resolvedValue;
-        } else {
-          res = RGB_TRANSPARENT;
-        }
-      } else {
-        res = resolvedValue;
-      }
-      setCache(cacheKey, res);
-      return res;
-    }
-    // invalid value
-    switch (format) {
-      case VAL_SPEC: {
-        setCache(cacheKey, '');
-        return '';
-      }
-      case 'hex':
-      case 'hexAlpha': {
-        setCache(cacheKey, null);
-        return new NullObject();
-      }
-      case VAL_COMP:
-      default: {
-        const res = RGB_TRANSPARENT;
-        setCache(cacheKey, res);
-        return res;
-      }
-    }
-  }
-  if (REG_FN_REL.test(value)) {
-    const resolvedValue = resolveRelativeColor(value, opt);
-    if (format === VAL_COMP) {
-      let res;
-      if (resolvedValue instanceof NullObject) {
-        if (nullable) {
-          res = resolvedValue;
-        } else {
-          res = RGB_TRANSPARENT;
-        }
-      } else {
-        res = resolvedValue;
-      }
-      setCache(cacheKey, res);
-      return res;
-    }
-    if (format === VAL_SPEC) {
-      let res = '';
-      if (resolvedValue instanceof NullObject) {
-        res = '';
-      } else {
-        res = resolvedValue;
-      }
-      setCache(cacheKey, res);
-      return res;
-    }
-    if (resolvedValue instanceof NullObject) {
-      value = '';
-    } else {
-      value = resolvedValue;
-    }
-  }
-  if (REG_FN_CALC.test(value)) {
-    value = cssCalc(value, opt);
-  }
-  let cs = '';
-  let r = NaN;
-  let g = NaN;
-  let b = NaN;
-  let alpha = NaN;
-  if (value === 'transparent') {
-    switch (format) {
-      case VAL_SPEC: {
-        setCache(cacheKey, value);
-        return value;
-      }
-      case 'hex': {
-        setCache(cacheKey, null);
-        return new NullObject();
-      }
-      case 'hexAlpha': {
-        const res = '#00000000';
-        setCache(cacheKey, res);
-        return res;
-      }
-      case VAL_COMP:
-      default: {
-        const res = RGB_TRANSPARENT;
-        setCache(cacheKey, res);
-        return res;
-      }
-    }
-  } else if (value === 'currentcolor') {
-    if (format === VAL_SPEC) {
-      setCache(cacheKey, value);
-      return value;
-    }
-    if (currentColor) {
-      let resolvedValue;
-      if (currentColor.startsWith(FN_MIX)) {
-        resolvedValue = resolveColorMix(currentColor, opt);
-      } else if (currentColor.startsWith(FN_COLOR)) {
-        resolvedValue = resolveColorFunc(currentColor, opt);
-      } else {
-        resolvedValue = resolveColorValue(currentColor, opt);
-      }
-      if (resolvedValue instanceof NullObject) {
-        setCache(cacheKey, resolvedValue);
-        return resolvedValue;
-      }
-      [cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
-    } else if (format === VAL_COMP) {
-      const res = RGB_TRANSPARENT;
-      setCache(cacheKey, res);
-      return res;
-    }
-  } else if (format === VAL_SPEC) {
-    if (value.startsWith(FN_MIX)) {
-      const res = resolveColorMix(value, opt) as string;
-      setCache(cacheKey, res);
-      return res;
-    } else if (value.startsWith(FN_COLOR)) {
-      const [scs, rr, gg, bb, aa] = resolveColorFunc(
-        value,
-        opt
-      ) as SpecifiedColorChannels;
-      let res = '';
-      if (aa === 1) {
-        res = `color(${scs} ${rr} ${gg} ${bb})`;
-      } else {
-        res = `color(${scs} ${rr} ${gg} ${bb} / ${aa})`;
-      }
-      setCache(cacheKey, res);
-      return res;
-    } else {
-      const rgb = resolveColorValue(value, opt);
-      if (isString(rgb)) {
-        setCache(cacheKey, rgb);
-        return rgb;
-      }
-      const [scs, rr, gg, bb, aa] = rgb as SpecifiedColorChannels;
-      let res = '';
-      if (scs === 'rgb') {
-        if (aa === 1) {
-          res = `${scs}(${rr}, ${gg}, ${bb})`;
-        } else {
-          res = `${scs}a(${rr}, ${gg}, ${bb}, ${aa})`;
-        }
-      } else if (aa === 1) {
-        res = `${scs}(${rr} ${gg} ${bb})`;
-      } else {
-        res = `${scs}(${rr} ${gg} ${bb} / ${aa})`;
-      }
-      setCache(cacheKey, res);
-      return res;
-    }
-  } else if (value.startsWith(FN_MIX)) {
-    if (/currentcolor/.test(value)) {
-      if (currentColor) {
-        value = value.replace(/currentcolor/g, currentColor);
-      }
-    }
-    if (/transparent/.test(value)) {
-      value = value.replace(/transparent/g, RGB_TRANSPARENT);
-    }
-    const resolvedValue = resolveColorMix(value, opt);
-    if (resolvedValue instanceof NullObject) {
-      setCache(cacheKey, resolvedValue);
-      return resolvedValue;
-    }
-    [cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
-  } else if (value.startsWith(FN_COLOR)) {
-    const resolvedValue = resolveColorFunc(value, opt);
-    if (resolvedValue instanceof NullObject) {
-      setCache(cacheKey, resolvedValue);
-      return resolvedValue;
-    }
-    [cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
-  } else if (value) {
-    const resolvedValue = resolveColorValue(value, opt);
-    if (resolvedValue instanceof NullObject) {
-      setCache(cacheKey, resolvedValue);
-      return resolvedValue;
-    }
-    [cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
-  }
-  let res = '';
-  switch (format) {
-    case 'hex': {
-      if (
-        Number.isNaN(r) ||
-        Number.isNaN(g) ||
-        Number.isNaN(b) ||
-        Number.isNaN(alpha) ||
-        alpha === 0
-      ) {
-        setCache(cacheKey, null);
-        return new NullObject();
-      }
-      res = convertRgbToHex([r, g, b, 1]);
-      break;
-    }
-    case 'hexAlpha': {
-      if (
-        Number.isNaN(r) ||
-        Number.isNaN(g) ||
-        Number.isNaN(b) ||
-        Number.isNaN(alpha)
-      ) {
-        setCache(cacheKey, null);
-        return new NullObject();
-      }
-      res = convertRgbToHex([r, g, b, alpha]);
-      break;
-    }
-    case VAL_COMP:
-    default: {
-      switch (cs) {
-        case 'rgb': {
-          if (alpha === 1) {
-            res = `${cs}(${r}, ${g}, ${b})`;
-          } else {
-            res = `${cs}a(${r}, ${g}, ${b}, ${alpha})`;
-          }
-          break;
-        }
-        case 'lab':
-        case 'lch':
-        case 'oklab':
-        case 'oklch': {
-          if (alpha === 1) {
-            res = `${cs}(${r} ${g} ${b})`;
-          } else {
-            res = `${cs}(${r} ${g} ${b} / ${alpha})`;
-          }
-          break;
-        }
-        // color()
-        default: {
-          if (alpha === 1) {
-            res = `color(${cs} ${r} ${g} ${b})`;
-          } else {
-            res = `color(${cs} ${r} ${g} ${b} / ${alpha})`;
-          }
-        }
-      }
-    }
-  }
-  setCache(cacheKey, res);
-  return res;
+	if (isString(value)) {
+		value = value.trim();
+	} else {
+		throw new TypeError(`${value} is not a string.`);
+	}
+	const {
+		colorScheme = "normal",
+		currentColor = "",
+		format = VAL_COMP,
+		nullable = false,
+	} = opt;
+	const cacheKey: string = createCacheKey(
+		{
+			namespace: NAMESPACE,
+			name: "resolve",
+			value,
+		},
+		opt,
+	);
+	const cachedResult = getCache(cacheKey);
+	if (cachedResult instanceof CacheItem) {
+		if (cachedResult.isNull) {
+			return cachedResult as NullObject;
+		}
+		return cachedResult.item as string;
+	}
+	if (REG_FN_VAR.test(value)) {
+		if (format === VAL_SPEC) {
+			setCache(cacheKey, value);
+			return value;
+		}
+		const resolvedValue = resolveVar(value, opt);
+		if (resolvedValue instanceof NullObject) {
+			switch (format) {
+				case "hex":
+				case "hexAlpha": {
+					setCache(cacheKey, resolvedValue);
+					return resolvedValue;
+				}
+				default: {
+					if (nullable) {
+						setCache(cacheKey, resolvedValue);
+						return resolvedValue;
+					}
+					const res = RGB_TRANSPARENT;
+					setCache(cacheKey, res);
+					return res;
+				}
+			}
+		} else {
+			value = resolvedValue;
+		}
+	}
+	if (opt.format !== format) {
+		opt.format = format;
+	}
+	value = value.toLowerCase();
+	if (REG_FN_LIGHT_DARK.test(value) && value.endsWith(")")) {
+		const colorParts = value.replace(REG_FN_LIGHT_DARK, "").replace(/\)$/, "");
+		const [light = "", dark = ""] = splitValue(colorParts, {
+			delimiter: ",",
+		});
+		if (light && dark) {
+			if (format === VAL_SPEC) {
+				const lightColor = resolveColor(light, opt);
+				const darkColor = resolveColor(dark, opt);
+				let res;
+				if (lightColor && darkColor) {
+					res = `light-dark(${lightColor}, ${darkColor})`;
+				} else {
+					res = "";
+				}
+				setCache(cacheKey, res);
+				return res;
+			}
+			let resolvedValue;
+			if (colorScheme === "dark") {
+				resolvedValue = resolveColor(dark, opt);
+			} else {
+				resolvedValue = resolveColor(light, opt);
+			}
+			let res;
+			if (resolvedValue instanceof NullObject) {
+				if (nullable) {
+					res = resolvedValue;
+				} else {
+					res = RGB_TRANSPARENT;
+				}
+			} else {
+				res = resolvedValue;
+			}
+			setCache(cacheKey, res);
+			return res;
+		}
+		// invalid value
+		switch (format) {
+			case VAL_SPEC: {
+				setCache(cacheKey, "");
+				return "";
+			}
+			case "hex":
+			case "hexAlpha": {
+				setCache(cacheKey, null);
+				return new NullObject();
+			}
+			case VAL_COMP:
+			default: {
+				const res = RGB_TRANSPARENT;
+				setCache(cacheKey, res);
+				return res;
+			}
+		}
+	}
+	if (REG_FN_REL.test(value)) {
+		const resolvedValue = resolveRelativeColor(value, opt);
+		if (format === VAL_COMP) {
+			let res;
+			if (resolvedValue instanceof NullObject) {
+				if (nullable) {
+					res = resolvedValue;
+				} else {
+					res = RGB_TRANSPARENT;
+				}
+			} else {
+				res = resolvedValue;
+			}
+			setCache(cacheKey, res);
+			return res;
+		}
+		if (format === VAL_SPEC) {
+			let res = "";
+			if (resolvedValue instanceof NullObject) {
+				res = "";
+			} else {
+				res = resolvedValue;
+			}
+			setCache(cacheKey, res);
+			return res;
+		}
+		if (resolvedValue instanceof NullObject) {
+			value = "";
+		} else {
+			value = resolvedValue;
+		}
+	}
+	if (REG_FN_CALC.test(value)) {
+		value = cssCalc(value, opt);
+	}
+	let cs = "";
+	let r = NaN;
+	let g = NaN;
+	let b = NaN;
+	let alpha = NaN;
+	if (value === "transparent") {
+		switch (format) {
+			case VAL_SPEC: {
+				setCache(cacheKey, value);
+				return value;
+			}
+			case "hex": {
+				setCache(cacheKey, null);
+				return new NullObject();
+			}
+			case "hexAlpha": {
+				const res = "#00000000";
+				setCache(cacheKey, res);
+				return res;
+			}
+			case VAL_COMP:
+			default: {
+				const res = RGB_TRANSPARENT;
+				setCache(cacheKey, res);
+				return res;
+			}
+		}
+	} else if (value === "currentcolor") {
+		if (format === VAL_SPEC) {
+			setCache(cacheKey, value);
+			return value;
+		}
+		if (currentColor) {
+			let resolvedValue;
+			if (currentColor.startsWith(FN_MIX)) {
+				resolvedValue = resolveColorMix(currentColor, opt);
+			} else if (currentColor.startsWith(FN_COLOR)) {
+				resolvedValue = resolveColorFunc(currentColor, opt);
+			} else {
+				resolvedValue = resolveColorValue(currentColor, opt);
+			}
+			if (resolvedValue instanceof NullObject) {
+				setCache(cacheKey, resolvedValue);
+				return resolvedValue;
+			}
+			[cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
+		} else if (format === VAL_COMP) {
+			const res = RGB_TRANSPARENT;
+			setCache(cacheKey, res);
+			return res;
+		}
+	} else if (format === VAL_SPEC) {
+		if (value.startsWith(FN_MIX)) {
+			const res = resolveColorMix(value, opt) as string;
+			setCache(cacheKey, res);
+			return res;
+		} else if (value.startsWith(FN_COLOR)) {
+			const [scs, rr, gg, bb, aa] = resolveColorFunc(
+				value,
+				opt,
+			) as SpecifiedColorChannels;
+			let res = "";
+			if (aa === 1) {
+				res = `color(${scs} ${rr} ${gg} ${bb})`;
+			} else {
+				res = `color(${scs} ${rr} ${gg} ${bb} / ${aa})`;
+			}
+			setCache(cacheKey, res);
+			return res;
+		} else {
+			const rgb = resolveColorValue(value, opt);
+			if (isString(rgb)) {
+				setCache(cacheKey, rgb);
+				return rgb;
+			}
+			const [scs, rr, gg, bb, aa] = rgb as SpecifiedColorChannels;
+			let res = "";
+			if (scs === "rgb") {
+				if (aa === 1) {
+					res = `${scs}(${rr}, ${gg}, ${bb})`;
+				} else {
+					res = `${scs}a(${rr}, ${gg}, ${bb}, ${aa})`;
+				}
+			} else if (aa === 1) {
+				res = `${scs}(${rr} ${gg} ${bb})`;
+			} else {
+				res = `${scs}(${rr} ${gg} ${bb} / ${aa})`;
+			}
+			setCache(cacheKey, res);
+			return res;
+		}
+	} else if (value.startsWith(FN_MIX)) {
+		if (/currentcolor/.test(value)) {
+			if (currentColor) {
+				value = value.replace(/currentcolor/g, currentColor);
+			}
+		}
+		if (/transparent/.test(value)) {
+			value = value.replace(/transparent/g, RGB_TRANSPARENT);
+		}
+		const resolvedValue = resolveColorMix(value, opt);
+		if (resolvedValue instanceof NullObject) {
+			setCache(cacheKey, resolvedValue);
+			return resolvedValue;
+		}
+		[cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
+	} else if (value.startsWith(FN_COLOR)) {
+		const resolvedValue = resolveColorFunc(value, opt);
+		if (resolvedValue instanceof NullObject) {
+			setCache(cacheKey, resolvedValue);
+			return resolvedValue;
+		}
+		[cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
+	} else if (value) {
+		const resolvedValue = resolveColorValue(value, opt);
+		if (resolvedValue instanceof NullObject) {
+			setCache(cacheKey, resolvedValue);
+			return resolvedValue;
+		}
+		[cs, r, g, b, alpha] = resolvedValue as ComputedColorChannels;
+	}
+	let res = "";
+	switch (format) {
+		case "hex": {
+			if (
+				Number.isNaN(r) ||
+				Number.isNaN(g) ||
+				Number.isNaN(b) ||
+				Number.isNaN(alpha) ||
+				alpha === 0
+			) {
+				setCache(cacheKey, null);
+				return new NullObject();
+			}
+			res = convertRgbToHex([r, g, b, 1]);
+			break;
+		}
+		case "hexAlpha": {
+			if (
+				Number.isNaN(r) ||
+				Number.isNaN(g) ||
+				Number.isNaN(b) ||
+				Number.isNaN(alpha)
+			) {
+				setCache(cacheKey, null);
+				return new NullObject();
+			}
+			res = convertRgbToHex([r, g, b, alpha]);
+			break;
+		}
+		case VAL_COMP:
+		default: {
+			switch (cs) {
+				case "rgb": {
+					if (alpha === 1) {
+						res = `${cs}(${r}, ${g}, ${b})`;
+					} else {
+						res = `${cs}a(${r}, ${g}, ${b}, ${alpha})`;
+					}
+					break;
+				}
+				case "lab":
+				case "lch":
+				case "oklab":
+				case "oklch": {
+					if (alpha === 1) {
+						res = `${cs}(${r} ${g} ${b})`;
+					} else {
+						res = `${cs}(${r} ${g} ${b} / ${alpha})`;
+					}
+					break;
+				}
+				// color()
+				default: {
+					if (alpha === 1) {
+						res = `color(${cs} ${r} ${g} ${b})`;
+					} else {
+						res = `color(${cs} ${r} ${g} ${b} / ${alpha})`;
+					}
+				}
+			}
+		}
+	}
+	setCache(cacheKey, res);
+	return res;
 };
 
 /**
@@ -434,10 +434,10 @@ export const resolveColor = (
  *     however returns `null` if any of `r`, `g`, `b`, `alpha` is not a number
  */
 export const resolve = (value: string, opt: Options = {}): string | null => {
-  opt.nullable = false;
-  const resolvedValue = resolveColor(value, opt);
-  if (resolvedValue instanceof NullObject) {
-    return null;
-  }
-  return resolvedValue as string;
+	opt.nullable = false;
+	const resolvedValue = resolveColor(value, opt);
+	if (resolvedValue instanceof NullObject) {
+		return null;
+	}
+	return resolvedValue as string;
 };

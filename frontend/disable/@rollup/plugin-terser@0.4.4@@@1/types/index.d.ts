@@ -1,9 +1,9 @@
-import type { Plugin } from 'rollup';
-import type { MinifyOptions } from 'terser';
+import type { Plugin } from "rollup";
+import type { MinifyOptions } from "terser";
 
 export interface Options extends MinifyOptions {
-  nameCache?: Record<string, any>;
-  maxWorkers?: number;
+	nameCache?: Record<string, any>;
+	maxWorkers?: number;
 }
 
 /**

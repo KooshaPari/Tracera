@@ -1,4 +1,4 @@
-import { FunctionCov, ProcessCov, RangeCov, ScriptCov } from "./types";
+import type { FunctionCov, ProcessCov, RangeCov, ScriptCov } from "./types";
 
 /**
  * Creates a deep copy of a process coverage.
@@ -7,14 +7,14 @@ import { FunctionCov, ProcessCov, RangeCov, ScriptCov } from "./types";
  * @return Cloned process coverage.
  */
 export function cloneProcessCov(processCov: Readonly<ProcessCov>): ProcessCov {
-  const result: ScriptCov[] = [];
-  for (const scriptCov of processCov.result) {
-    result.push(cloneScriptCov(scriptCov));
-  }
+	const result: ScriptCov[] = [];
+	for (const scriptCov of processCov.result) {
+		result.push(cloneScriptCov(scriptCov));
+	}
 
-  return {
-    result,
-  };
+	return {
+		result,
+	};
 }
 
 /**
@@ -24,16 +24,16 @@ export function cloneProcessCov(processCov: Readonly<ProcessCov>): ProcessCov {
  * @return Cloned script coverage.
  */
 export function cloneScriptCov(scriptCov: Readonly<ScriptCov>): ScriptCov {
-  const functions: FunctionCov[] = [];
-  for (const functionCov of scriptCov.functions) {
-    functions.push(cloneFunctionCov(functionCov));
-  }
+	const functions: FunctionCov[] = [];
+	for (const functionCov of scriptCov.functions) {
+		functions.push(cloneFunctionCov(functionCov));
+	}
 
-  return {
-    scriptId: scriptCov.scriptId,
-    url: scriptCov.url,
-    functions,
-  };
+	return {
+		scriptId: scriptCov.scriptId,
+		url: scriptCov.url,
+		functions,
+	};
 }
 
 /**
@@ -42,17 +42,19 @@ export function cloneScriptCov(scriptCov: Readonly<ScriptCov>): ScriptCov {
  * @param functionCov Function coverage to clone.
  * @return Cloned function coverage.
  */
-export function cloneFunctionCov(functionCov: Readonly<FunctionCov>): FunctionCov {
-  const ranges: RangeCov[] = [];
-  for (const rangeCov of functionCov.ranges) {
-    ranges.push(cloneRangeCov(rangeCov));
-  }
+export function cloneFunctionCov(
+	functionCov: Readonly<FunctionCov>,
+): FunctionCov {
+	const ranges: RangeCov[] = [];
+	for (const rangeCov of functionCov.ranges) {
+		ranges.push(cloneRangeCov(rangeCov));
+	}
 
-  return {
-    functionName: functionCov.functionName,
-    ranges,
-    isBlockCoverage: functionCov.isBlockCoverage,
-  };
+	return {
+		functionName: functionCov.functionName,
+		ranges,
+		isBlockCoverage: functionCov.isBlockCoverage,
+	};
 }
 
 /**
@@ -62,9 +64,9 @@ export function cloneFunctionCov(functionCov: Readonly<FunctionCov>): FunctionCo
  * @return Cloned range coverage.
  */
 export function cloneRangeCov(rangeCov: Readonly<RangeCov>): RangeCov {
-  return {
-    startOffset: rangeCov.startOffset,
-    endOffset: rangeCov.endOffset,
-    count: rangeCov.count,
-  };
+	return {
+		startOffset: rangeCov.startOffset,
+		endOffset: rangeCov.endOffset,
+		count: rangeCov.count,
+	};
 }

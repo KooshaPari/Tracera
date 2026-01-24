@@ -30,7 +30,7 @@ import { startOfMinute } from "./startOfMinute.js";
  * //=> false
  */
 export function isSameMinute(laterDate, earlierDate) {
-  return +startOfMinute(laterDate) === +startOfMinute(earlierDate);
+	return +startOfMinute(laterDate) === +startOfMinute(earlierDate);
 }
 
 // Fallback for modularized imports:

@@ -1,1 +1,1 @@
-export * from './dist/suite.js'
+export * from "./dist/suite.js";

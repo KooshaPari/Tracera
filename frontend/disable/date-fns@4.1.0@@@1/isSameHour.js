@@ -30,12 +30,12 @@ import { startOfHour } from "./startOfHour.js";
  * //=> false
  */
 export function isSameHour(dateLeft, dateRight, options) {
-  const [dateLeft_, dateRight_] = normalizeDates(
-    options?.in,
-    dateLeft,
-    dateRight,
-  );
-  return +startOfHour(dateLeft_) === +startOfHour(dateRight_);
+	const [dateLeft_, dateRight_] = normalizeDates(
+		options?.in,
+		dateLeft,
+		dateRight,
+	);
+	return +startOfHour(dateLeft_) === +startOfHour(dateRight_);
 }
 
 // Fallback for modularized imports:

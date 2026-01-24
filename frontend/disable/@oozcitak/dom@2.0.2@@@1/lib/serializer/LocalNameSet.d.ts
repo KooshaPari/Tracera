@@ -8,20 +8,20 @@
  * element differ only by their prefix values.
  */
 export declare class LocalNameSet {
-    private _items;
-    private _nullItems;
-    /**
-     * Adds or replaces a tuple.
-     *
-     * @param ns - namespace URI
-     * @param localName - attribute local name
-     */
-    set(ns: string | null, localName: string): void;
-    /**
-     * Determines if the given tuple exists in the set.
-     *
-     * @param ns - namespace URI
-     * @param localName - attribute local name
-     */
-    has(ns: string | null, localName: string): boolean;
+	private _items;
+	private _nullItems;
+	/**
+	 * Adds or replaces a tuple.
+	 *
+	 * @param ns - namespace URI
+	 * @param localName - attribute local name
+	 */
+	set(ns: string | null, localName: string): void;
+	/**
+	 * Determines if the given tuple exists in the set.
+	 *
+	 * @param ns - namespace URI
+	 * @param localName - attribute local name
+	 */
+	has(ns: string | null, localName: string): boolean;
 }

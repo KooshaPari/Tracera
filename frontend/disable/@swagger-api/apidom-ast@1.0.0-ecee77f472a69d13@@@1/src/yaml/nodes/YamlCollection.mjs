@@ -1,4 +1,5 @@
 import YamlNode from "./YamlNode.mjs";
+
 /**
  * @public
  */

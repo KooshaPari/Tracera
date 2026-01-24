@@ -1,210 +1,210 @@
-import {
-  For,
-  Show,
-  batch,
-  createEffect,
-  createMemo,
-  createSignal,
-  on,
-  onCleanup,
-  onMount,
-} from 'solid-js'
-import { rankItem } from '@tanstack/match-sorter-utils'
-import * as goober from 'goober'
-import { clsx as cx } from 'clsx'
-import { TransitionGroup } from 'solid-transition-group'
-import { Key } from '@solid-primitives/keyed'
-import { createResizeObserver } from '@solid-primitives/resize-observer'
-import { DropdownMenu, RadioGroup } from '@kobalte/core'
-import { Portal } from 'solid-js/web'
-import { tokens } from './theme'
-import {
-  convertRemToPixels,
-  displayValue,
-  getMutationStatusColor,
-  getQueryStatusColor,
-  getQueryStatusColorByLabel,
-  getQueryStatusLabel,
-  getSidedProp,
-  mutationSortFns,
-  sortFns,
-} from './utils'
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  CheckCircle,
-  ChevronDown,
-  LoadingCircle,
-  Monitor,
-  Moon,
-  Offline,
-  PauseCircle,
-  PiPIcon,
-  Search,
-  Settings,
-  Sun,
-  TanstackLogo,
-  Trash,
-  Wifi,
-  XCircle,
-} from './icons'
-import Explorer from './Explorer'
-import { usePiPWindow, useQueryDevtoolsContext, useTheme } from './contexts'
-import {
-  BUTTON_POSITION,
-  DEFAULT_HEIGHT,
-  DEFAULT_MUTATION_SORT_FN_NAME,
-  DEFAULT_SORT_FN_NAME,
-  DEFAULT_SORT_ORDER,
-  DEFAULT_WIDTH,
-  INITIAL_IS_OPEN,
-  POSITION,
-  firstBreakpoint,
-  secondBreakpoint,
-  thirdBreakpoint,
-} from './constants'
+import { DropdownMenu, RadioGroup } from "@kobalte/core";
+import { Key } from "@solid-primitives/keyed";
+import { createResizeObserver } from "@solid-primitives/resize-observer";
+import type { StorageObject, StorageSetter } from "@solid-primitives/storage";
+import { rankItem } from "@tanstack/match-sorter-utils";
 import type {
-  DevtoolsErrorType,
-  DevtoolsPosition,
-  QueryDevtoolsProps,
-} from './contexts'
+	Mutation,
+	MutationCache,
+	Query,
+	QueryCache,
+	QueryCacheNotifyEvent,
+	QueryState,
+} from "@tanstack/query-core";
+import { clsx as cx } from "clsx";
+import * as goober from "goober";
+import type { Accessor, Component, JSX, Setter } from "solid-js";
+import {
+	batch,
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	on,
+	onCleanup,
+	onMount,
+	Show,
+} from "solid-js";
+import { Portal } from "solid-js/web";
+import { TransitionGroup } from "solid-transition-group";
+import {
+	BUTTON_POSITION,
+	DEFAULT_HEIGHT,
+	DEFAULT_MUTATION_SORT_FN_NAME,
+	DEFAULT_SORT_FN_NAME,
+	DEFAULT_SORT_ORDER,
+	DEFAULT_WIDTH,
+	firstBreakpoint,
+	INITIAL_IS_OPEN,
+	POSITION,
+	secondBreakpoint,
+	thirdBreakpoint,
+} from "./constants";
 import type {
-  Mutation,
-  MutationCache,
-  Query,
-  QueryCache,
-  QueryCacheNotifyEvent,
-  QueryState,
-} from '@tanstack/query-core'
-import type { StorageObject, StorageSetter } from '@solid-primitives/storage'
-import type { Accessor, Component, JSX, Setter } from 'solid-js'
+	DevtoolsErrorType,
+	DevtoolsPosition,
+	QueryDevtoolsProps,
+} from "./contexts";
+import { usePiPWindow, useQueryDevtoolsContext, useTheme } from "./contexts";
+import Explorer from "./Explorer";
+import {
+	ArrowDown,
+	ArrowLeft,
+	ArrowRight,
+	ArrowUp,
+	CheckCircle,
+	ChevronDown,
+	LoadingCircle,
+	Monitor,
+	Moon,
+	Offline,
+	PauseCircle,
+	PiPIcon,
+	Search,
+	Settings,
+	Sun,
+	TanstackLogo,
+	Trash,
+	Wifi,
+	XCircle,
+} from "./icons";
+import { tokens } from "./theme";
+import {
+	convertRemToPixels,
+	displayValue,
+	getMutationStatusColor,
+	getQueryStatusColor,
+	getQueryStatusColorByLabel,
+	getQueryStatusLabel,
+	getSidedProp,
+	mutationSortFns,
+	sortFns,
+} from "./utils";
 
 interface DevtoolsPanelProps {
-  localStore: StorageObject<string>
-  setLocalStore: StorageSetter<string, unknown>
+	localStore: StorageObject<string>;
+	setLocalStore: StorageSetter<string, unknown>;
 }
 
 interface ContentViewProps {
-  localStore: StorageObject<string>
-  setLocalStore: StorageSetter<string, unknown>
-  showPanelViewOnly?: boolean
-  onClose?: () => unknown
+	localStore: StorageObject<string>;
+	setLocalStore: StorageSetter<string, unknown>;
+	showPanelViewOnly?: boolean;
+	onClose?: () => unknown;
 }
 
 interface QueryStatusProps {
-  label: string
-  color: 'green' | 'yellow' | 'gray' | 'blue' | 'purple' | 'red'
-  count: number
+	label: string;
+	color: "green" | "yellow" | "gray" | "blue" | "purple" | "red";
+	count: number;
 }
 
 const [selectedQueryHash, setSelectedQueryHash] = createSignal<string | null>(
-  null,
-)
+	null,
+);
 const [selectedMutationId, setSelectedMutationId] = createSignal<number | null>(
-  null,
-)
-const [panelWidth, setPanelWidth] = createSignal(0)
-const [offline, setOffline] = createSignal(false)
+	null,
+);
+const [panelWidth, setPanelWidth] = createSignal(0);
+const [offline, setOffline] = createSignal(false);
 
 export type DevtoolsComponentType = Component<QueryDevtoolsProps> & {
-  shadowDOMTarget?: ShadowRoot
-}
+	shadowDOMTarget?: ShadowRoot;
+};
 
 export const Devtools: Component<DevtoolsPanelProps> = (props) => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
-  const onlineManager = createMemo(
-    () => useQueryDevtoolsContext().onlineManager,
-  )
-  onMount(() => {
-    const unsubscribe = onlineManager().subscribe((online) => {
-      setOffline(!online)
-    })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
+	const onlineManager = createMemo(
+		() => useQueryDevtoolsContext().onlineManager,
+	);
+	onMount(() => {
+		const unsubscribe = onlineManager().subscribe((online) => {
+			setOffline(!online);
+		});
 
-    onCleanup(() => {
-      unsubscribe()
-    })
-  })
+		onCleanup(() => {
+			unsubscribe();
+		});
+	});
 
-  const pip = usePiPWindow()
+	const pip = usePiPWindow();
 
-  const buttonPosition = createMemo(() => {
-    return useQueryDevtoolsContext().buttonPosition || BUTTON_POSITION
-  })
+	const buttonPosition = createMemo(() => {
+		return useQueryDevtoolsContext().buttonPosition || BUTTON_POSITION;
+	});
 
-  const isOpen = createMemo(() => {
-    return props.localStore.open === 'true'
-      ? true
-      : props.localStore.open === 'false'
-        ? false
-        : useQueryDevtoolsContext().initialIsOpen || INITIAL_IS_OPEN
-  })
+	const isOpen = createMemo(() => {
+		return props.localStore.open === "true"
+			? true
+			: props.localStore.open === "false"
+				? false
+				: useQueryDevtoolsContext().initialIsOpen || INITIAL_IS_OPEN;
+	});
 
-  const position = createMemo(() => {
-    return (
-      props.localStore.position ||
-      useQueryDevtoolsContext().position ||
-      POSITION
-    )
-  })
+	const position = createMemo(() => {
+		return (
+			props.localStore.position ||
+			useQueryDevtoolsContext().position ||
+			POSITION
+		);
+	});
 
-  let transitionsContainerRef!: HTMLDivElement
-  createEffect(() => {
-    const root = transitionsContainerRef.parentElement as HTMLElement
-    const height = props.localStore.height || DEFAULT_HEIGHT
-    const width = props.localStore.width || DEFAULT_WIDTH
-    const panelPosition = position()
-    root.style.setProperty(
-      '--tsqd-panel-height',
-      `${panelPosition === 'top' ? '-' : ''}${height}px`,
-    )
-    root.style.setProperty(
-      '--tsqd-panel-width',
-      `${panelPosition === 'left' ? '-' : ''}${width}px`,
-    )
-  })
+	let transitionsContainerRef!: HTMLDivElement;
+	createEffect(() => {
+		const root = transitionsContainerRef.parentElement as HTMLElement;
+		const height = props.localStore.height || DEFAULT_HEIGHT;
+		const width = props.localStore.width || DEFAULT_WIDTH;
+		const panelPosition = position();
+		root.style.setProperty(
+			"--tsqd-panel-height",
+			`${panelPosition === "top" ? "-" : ""}${height}px`,
+		);
+		root.style.setProperty(
+			"--tsqd-panel-width",
+			`${panelPosition === "left" ? "-" : ""}${width}px`,
+		);
+	});
 
-  // Calculates the inherited font size of the parent and sets it as a CSS variable
-  // All the design tokens are calculated based on this variable
-  onMount(() => {
-    // This is to make sure that the font size is updated when the stylesheet is updated
-    // and the user focuses back on the window
-    const onFocus = () => {
-      const root = transitionsContainerRef.parentElement as HTMLElement
-      const fontSize = getComputedStyle(root).fontSize
-      root.style.setProperty('--tsqd-font-size', fontSize)
-    }
-    onFocus()
-    window.addEventListener('focus', onFocus)
-    onCleanup(() => {
-      window.removeEventListener('focus', onFocus)
-    })
-  })
+	// Calculates the inherited font size of the parent and sets it as a CSS variable
+	// All the design tokens are calculated based on this variable
+	onMount(() => {
+		// This is to make sure that the font size is updated when the stylesheet is updated
+		// and the user focuses back on the window
+		const onFocus = () => {
+			const root = transitionsContainerRef.parentElement as HTMLElement;
+			const fontSize = getComputedStyle(root).fontSize;
+			root.style.setProperty("--tsqd-font-size", fontSize);
+		};
+		onFocus();
+		window.addEventListener("focus", onFocus);
+		onCleanup(() => {
+			window.removeEventListener("focus", onFocus);
+		});
+	});
 
-  const pip_open = createMemo(
-    () => (props.localStore.pip_open ?? 'false') as 'true' | 'false',
-  )
+	const pip_open = createMemo(
+		() => (props.localStore.pip_open ?? "false") as "true" | "false",
+	);
 
-  return (
-    <>
-      <Show when={pip().pipWindow && pip_open() == 'true'}>
-        <Portal mount={pip().pipWindow?.document.body}>
-          <PiPPanel>
-            <ContentView {...props} />
-          </PiPPanel>
-        </Portal>
-      </Show>
-      <div
-        // styles for animating the panel in and out
-        class={cx(
-          css`
+	return (
+		<>
+			<Show when={pip().pipWindow && pip_open() == "true"}>
+				<Portal mount={pip().pipWindow?.document.body}>
+					<PiPPanel>
+						<ContentView {...props} />
+					</PiPPanel>
+				</Portal>
+			</Show>
+			<div
+				// styles for animating the panel in and out
+				class={cx(
+					css`
             & .tsqd-panel-transition-exit-active,
             & .tsqd-panel-transition-enter-active {
               transition:
@@ -214,9 +214,11 @@ export const Devtools: Component<DevtoolsPanelProps> = (props) => {
 
             & .tsqd-panel-transition-exit-to,
             & .tsqd-panel-transition-enter {
-              ${position() === 'top' || position() === 'bottom'
-                ? `transform: translateY(var(--tsqd-panel-height));`
-                : `transform: translateX(var(--tsqd-panel-width));`}
+              ${
+								position() === "top" || position() === "bottom"
+									? `transform: translateY(var(--tsqd-panel-height));`
+									: `transform: translateX(var(--tsqd-panel-width));`
+							}
             }
 
             & .tsqd-button-transition-exit-active,
@@ -229,2394 +231,2406 @@ export const Devtools: Component<DevtoolsPanelProps> = (props) => {
 
             & .tsqd-button-transition-exit-to,
             & .tsqd-button-transition-enter {
-              transform: ${buttonPosition() === 'relative'
-                ? `none;`
-                : buttonPosition() === 'top-left'
-                  ? `translateX(-72px);`
-                  : buttonPosition() === 'top-right'
-                    ? `translateX(72px);`
-                    : `translateY(72px);`};
+              transform: ${
+								buttonPosition() === "relative"
+									? `none;`
+									: buttonPosition() === "top-left"
+										? `translateX(-72px);`
+										: buttonPosition() === "top-right"
+											? `translateX(72px);`
+											: `translateY(72px);`
+							};
               opacity: 0;
             }
           `,
-          'tsqd-transitions-container',
-        )}
-        ref={transitionsContainerRef}
-      >
-        <TransitionGroup name="tsqd-panel-transition">
-          <Show when={isOpen() && !pip().pipWindow && pip_open() == 'false'}>
-            <DraggablePanel
-              localStore={props.localStore}
-              setLocalStore={props.setLocalStore}
-            />
-          </Show>
-        </TransitionGroup>
-        <TransitionGroup name="tsqd-button-transition">
-          <Show when={!isOpen()}>
-            <div
-              class={cx(
-                styles().devtoolsBtn,
-                styles()[`devtoolsBtn-position-${buttonPosition()}`],
-                'tsqd-open-btn-container',
-              )}
-            >
-              <div aria-hidden="true">
-                <TanstackLogo />
-              </div>
-              <button
-                type="button"
-                aria-label="Open Tanstack query devtools"
-                onClick={() => props.setLocalStore('open', 'true')}
-                class="tsqd-open-btn"
-              >
-                <TanstackLogo />
-              </button>
-            </div>
-          </Show>
-        </TransitionGroup>
-      </div>
-    </>
-  )
-}
+					"tsqd-transitions-container",
+				)}
+				ref={transitionsContainerRef}
+			>
+				<TransitionGroup name="tsqd-panel-transition">
+					<Show when={isOpen() && !pip().pipWindow && pip_open() == "false"}>
+						<DraggablePanel
+							localStore={props.localStore}
+							setLocalStore={props.setLocalStore}
+						/>
+					</Show>
+				</TransitionGroup>
+				<TransitionGroup name="tsqd-button-transition">
+					<Show when={!isOpen()}>
+						<div
+							class={cx(
+								styles().devtoolsBtn,
+								styles()[`devtoolsBtn-position-${buttonPosition()}`],
+								"tsqd-open-btn-container",
+							)}
+						>
+							<div aria-hidden="true">
+								<TanstackLogo />
+							</div>
+							<button
+								type="button"
+								aria-label="Open Tanstack query devtools"
+								onClick={() => props.setLocalStore("open", "true")}
+								class="tsqd-open-btn"
+							>
+								<TanstackLogo />
+							</button>
+						</div>
+					</Show>
+				</TransitionGroup>
+			</div>
+		</>
+	);
+};
 
 const PiPPanel: Component<{
-  children: JSX.Element
+	children: JSX.Element;
 }> = (props) => {
-  const pip = usePiPWindow()
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const pip = usePiPWindow();
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const getPanelDynamicStyles = () => {
-    const { colors } = tokens
-    const t = (light: string, dark: string) =>
-      theme() === 'dark' ? dark : light
-    if (panelWidth() < secondBreakpoint) {
-      return css`
+	const getPanelDynamicStyles = () => {
+		const { colors } = tokens;
+		const t = (light: string, dark: string) =>
+			theme() === "dark" ? dark : light;
+		if (panelWidth() < secondBreakpoint) {
+			return css`
         flex-direction: column;
         background-color: ${t(colors.gray[300], colors.gray[600])};
-      `
-    }
-    return css`
+      `;
+		}
+		return css`
       flex-direction: row;
       background-color: ${t(colors.gray[200], colors.darkGray[900])};
-    `
-  }
+    `;
+	};
 
-  createEffect(() => {
-    const win = pip().pipWindow
-    const resizeCB = () => {
-      if (!win) return
-      setPanelWidth(win.innerWidth)
-    }
-    if (win) {
-      win.addEventListener('resize', resizeCB)
-      resizeCB()
-    }
+	createEffect(() => {
+		const win = pip().pipWindow;
+		const resizeCB = () => {
+			if (!win) return;
+			setPanelWidth(win.innerWidth);
+		};
+		if (win) {
+			win.addEventListener("resize", resizeCB);
+			resizeCB();
+		}
 
-    onCleanup(() => {
-      if (win) {
-        win.removeEventListener('resize', resizeCB)
-      }
-    })
-  })
+		onCleanup(() => {
+			if (win) {
+				win.removeEventListener("resize", resizeCB);
+			}
+		});
+	});
 
-  return (
-    <div
-      style={{
-        '--tsqd-font-size': '16px',
-        'max-height': '100vh',
-        height: '100vh',
-        width: '100vw',
-      }}
-      class={cx(
-        styles().panel,
-        getPanelDynamicStyles(),
-        {
-          [css`
+	return (
+		<div
+			style={{
+				"--tsqd-font-size": "16px",
+				"max-height": "100vh",
+				height: "100vh",
+				width: "100vw",
+			}}
+			class={cx(
+				styles().panel,
+				getPanelDynamicStyles(),
+				{
+					[css`
             min-width: min-content;
           `]: panelWidth() < thirdBreakpoint,
-        },
-        'tsqd-main-panel',
-      )}
-    >
-      {props.children}
-    </div>
-  )
-}
+				},
+				"tsqd-main-panel",
+			)}
+		>
+			{props.children}
+		</div>
+	);
+};
 
 export const ParentPanel: Component<{
-  children: JSX.Element
+	children: JSX.Element;
 }> = (props) => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  let panelRef!: HTMLDivElement
+	let panelRef!: HTMLDivElement;
 
-  onMount(() => {
-    createResizeObserver(panelRef, ({ width }, el) => {
-      if (el === panelRef) {
-        setPanelWidth(width)
-      }
-    })
-  })
+	onMount(() => {
+		createResizeObserver(panelRef, ({ width }, el) => {
+			if (el === panelRef) {
+				setPanelWidth(width);
+			}
+		});
+	});
 
-  const getPanelDynamicStyles = () => {
-    const { colors } = tokens
-    const t = (light: string, dark: string) =>
-      theme() === 'dark' ? dark : light
-    if (panelWidth() < secondBreakpoint) {
-      return css`
+	const getPanelDynamicStyles = () => {
+		const { colors } = tokens;
+		const t = (light: string, dark: string) =>
+			theme() === "dark" ? dark : light;
+		if (panelWidth() < secondBreakpoint) {
+			return css`
         flex-direction: column;
         background-color: ${t(colors.gray[300], colors.gray[600])};
-      `
-    }
-    return css`
+      `;
+		}
+		return css`
       flex-direction: row;
       background-color: ${t(colors.gray[200], colors.darkGray[900])};
-    `
-  }
+    `;
+	};
 
-  return (
-    <div
-      style={{
-        '--tsqd-font-size': '16px',
-      }}
-      ref={panelRef}
-      class={cx(
-        styles().parentPanel,
-        getPanelDynamicStyles(),
-        {
-          [css`
+	return (
+		<div
+			style={{
+				"--tsqd-font-size": "16px",
+			}}
+			ref={panelRef}
+			class={cx(
+				styles().parentPanel,
+				getPanelDynamicStyles(),
+				{
+					[css`
             min-width: min-content;
           `]: panelWidth() < thirdBreakpoint,
-        },
-        'tsqd-main-panel',
-      )}
-    >
-      {props.children}
-    </div>
-  )
-}
+				},
+				"tsqd-main-panel",
+			)}
+		>
+			{props.children}
+		</div>
+	);
+};
 
 const DraggablePanel: Component<DevtoolsPanelProps> = (props) => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const [isResizing, setIsResizing] = createSignal(false)
+	const [isResizing, setIsResizing] = createSignal(false);
 
-  const position = createMemo(
-    () =>
-      (props.localStore.position ||
-        useQueryDevtoolsContext().position ||
-        POSITION) as DevtoolsPosition,
-  )
+	const position = createMemo(
+		() =>
+			(props.localStore.position ||
+				useQueryDevtoolsContext().position ||
+				POSITION) as DevtoolsPosition,
+	);
 
-  const handleDragStart: JSX.EventHandler<HTMLDivElement, MouseEvent> = (
-    event,
-  ) => {
-    const panelElement = event.currentTarget.parentElement
-    if (!panelElement) return
-    setIsResizing(true)
-    const { height, width } = panelElement.getBoundingClientRect()
-    const startX = event.clientX
-    const startY = event.clientY
-    let newSize = 0
-    const minHeight = convertRemToPixels(3.5)
-    const minWidth = convertRemToPixels(12)
-    const runDrag = (moveEvent: MouseEvent) => {
-      moveEvent.preventDefault()
+	const handleDragStart: JSX.EventHandler<HTMLDivElement, MouseEvent> = (
+		event,
+	) => {
+		const panelElement = event.currentTarget.parentElement;
+		if (!panelElement) return;
+		setIsResizing(true);
+		const { height, width } = panelElement.getBoundingClientRect();
+		const startX = event.clientX;
+		const startY = event.clientY;
+		let newSize = 0;
+		const minHeight = convertRemToPixels(3.5);
+		const minWidth = convertRemToPixels(12);
+		const runDrag = (moveEvent: MouseEvent) => {
+			moveEvent.preventDefault();
 
-      if (position() === 'left' || position() === 'right') {
-        const valToAdd =
-          position() === 'right'
-            ? startX - moveEvent.clientX
-            : moveEvent.clientX - startX
-        newSize = Math.round(width + valToAdd)
-        if (newSize < minWidth) {
-          newSize = minWidth
-        }
-        props.setLocalStore('width', String(Math.round(newSize)))
+			if (position() === "left" || position() === "right") {
+				const valToAdd =
+					position() === "right"
+						? startX - moveEvent.clientX
+						: moveEvent.clientX - startX;
+				newSize = Math.round(width + valToAdd);
+				if (newSize < minWidth) {
+					newSize = minWidth;
+				}
+				props.setLocalStore("width", String(Math.round(newSize)));
 
-        const newWidth = panelElement.getBoundingClientRect().width
-        // If the panel size didn't decrease, this means we have reached the minimum width
-        // of the panel so we restore the original width in local storage
-        // Restoring the width helps in smooth open/close transitions
-        if (Number(props.localStore.width) < newWidth) {
-          props.setLocalStore('width', String(newWidth))
-        }
-      } else {
-        const valToAdd =
-          position() === 'bottom'
-            ? startY - moveEvent.clientY
-            : moveEvent.clientY - startY
-        newSize = Math.round(height + valToAdd)
-        // If the panel size is less than the minimum height,
-        // we set the size to the minimum height
-        if (newSize < minHeight) {
-          newSize = minHeight
-          setSelectedQueryHash(null)
-        }
-        props.setLocalStore('height', String(Math.round(newSize)))
-      }
-    }
+				const newWidth = panelElement.getBoundingClientRect().width;
+				// If the panel size didn't decrease, this means we have reached the minimum width
+				// of the panel so we restore the original width in local storage
+				// Restoring the width helps in smooth open/close transitions
+				if (Number(props.localStore.width) < newWidth) {
+					props.setLocalStore("width", String(newWidth));
+				}
+			} else {
+				const valToAdd =
+					position() === "bottom"
+						? startY - moveEvent.clientY
+						: moveEvent.clientY - startY;
+				newSize = Math.round(height + valToAdd);
+				// If the panel size is less than the minimum height,
+				// we set the size to the minimum height
+				if (newSize < minHeight) {
+					newSize = minHeight;
+					setSelectedQueryHash(null);
+				}
+				props.setLocalStore("height", String(Math.round(newSize)));
+			}
+		};
 
-    const unsubscribe = () => {
-      if (isResizing()) {
-        setIsResizing(false)
-      }
-      document.removeEventListener('mousemove', runDrag, false)
-      document.removeEventListener('mouseUp', unsubscribe, false)
-    }
+		const unsubscribe = () => {
+			if (isResizing()) {
+				setIsResizing(false);
+			}
+			document.removeEventListener("mousemove", runDrag, false);
+			document.removeEventListener("mouseUp", unsubscribe, false);
+		};
 
-    document.addEventListener('mousemove', runDrag, false)
-    document.addEventListener('mouseup', unsubscribe, false)
-  }
+		document.addEventListener("mousemove", runDrag, false);
+		document.addEventListener("mouseup", unsubscribe, false);
+	};
 
-  let panelRef!: HTMLDivElement
+	let panelRef!: HTMLDivElement;
 
-  onMount(() => {
-    createResizeObserver(panelRef, ({ width }, el) => {
-      if (el === panelRef) {
-        setPanelWidth(width)
-      }
-    })
-  })
+	onMount(() => {
+		createResizeObserver(panelRef, ({ width }, el) => {
+			if (el === panelRef) {
+				setPanelWidth(width);
+			}
+		});
+	});
 
-  createEffect(() => {
-    const rootContainer = panelRef.parentElement?.parentElement?.parentElement
-    if (!rootContainer) return
-    const currentPosition = (props.localStore.position ||
-      POSITION) as DevtoolsPosition
-    const styleProp = getSidedProp('padding', currentPosition)
-    const isVertical =
-      props.localStore.position === 'left' ||
-      props.localStore.position === 'right'
-    const previousPaddings = (({
-      padding,
-      paddingTop,
-      paddingBottom,
-      paddingLeft,
-      paddingRight,
-    }) => ({
-      padding,
-      paddingTop,
-      paddingBottom,
-      paddingLeft,
-      paddingRight,
-    }))(rootContainer.style)
+	createEffect(() => {
+		const rootContainer = panelRef.parentElement?.parentElement?.parentElement;
+		if (!rootContainer) return;
+		const currentPosition = (props.localStore.position ||
+			POSITION) as DevtoolsPosition;
+		const styleProp = getSidedProp("padding", currentPosition);
+		const isVertical =
+			props.localStore.position === "left" ||
+			props.localStore.position === "right";
+		const previousPaddings = (({
+			padding,
+			paddingTop,
+			paddingBottom,
+			paddingLeft,
+			paddingRight,
+		}) => ({
+			padding,
+			paddingTop,
+			paddingBottom,
+			paddingLeft,
+			paddingRight,
+		}))(rootContainer.style);
 
-    rootContainer.style[styleProp] = `${
-      isVertical ? props.localStore.width : props.localStore.height
-    }px`
+		rootContainer.style[styleProp] = `${
+			isVertical ? props.localStore.width : props.localStore.height
+		}px`;
 
-    onCleanup(() => {
-      Object.entries(previousPaddings).forEach(([property, previousValue]) => {
-        rootContainer.style[property as keyof typeof previousPaddings] =
-          previousValue
-      })
-    })
-  })
+		onCleanup(() => {
+			Object.entries(previousPaddings).forEach(([property, previousValue]) => {
+				rootContainer.style[property as keyof typeof previousPaddings] =
+					previousValue;
+			});
+		});
+	});
 
-  const getPanelDynamicStyles = () => {
-    const { colors } = tokens
-    const t = (light: string, dark: string) =>
-      theme() === 'dark' ? dark : light
-    if (panelWidth() < secondBreakpoint) {
-      return css`
+	const getPanelDynamicStyles = () => {
+		const { colors } = tokens;
+		const t = (light: string, dark: string) =>
+			theme() === "dark" ? dark : light;
+		if (panelWidth() < secondBreakpoint) {
+			return css`
         flex-direction: column;
         background-color: ${t(colors.gray[300], colors.gray[600])};
-      `
-    }
-    return css`
+      `;
+		}
+		return css`
       flex-direction: row;
       background-color: ${t(colors.gray[200], colors.darkGray[900])};
-    `
-  }
+    `;
+	};
 
-  return (
-    <aside
-      // Some context for styles here
-      // background-color - Changes to a lighter color create a harder contrast
-      // between the queries and query detail panel
-      // -
-      // min-width - When the panel is in the left or right position, the panel
-      // width is set to min-content to allow the panel to shrink to the lowest possible width
-      class={cx(
-        styles().panel,
-        styles()[`panel-position-${position()}`],
-        getPanelDynamicStyles(),
-        {
-          [css`
+	return (
+		<aside
+			// Some context for styles here
+			// background-color - Changes to a lighter color create a harder contrast
+			// between the queries and query detail panel
+			// -
+			// min-width - When the panel is in the left or right position, the panel
+			// width is set to min-content to allow the panel to shrink to the lowest possible width
+			class={cx(
+				styles().panel,
+				styles()[`panel-position-${position()}`],
+				getPanelDynamicStyles(),
+				{
+					[css`
             min-width: min-content;
           `]:
-            panelWidth() < thirdBreakpoint &&
-            (position() === 'right' || position() === 'left'),
-        },
-        'tsqd-main-panel',
-      )}
-      style={{
-        height:
-          position() === 'bottom' || position() === 'top'
-            ? `${props.localStore.height || DEFAULT_HEIGHT}px`
-            : 'auto',
-        width:
-          position() === 'right' || position() === 'left'
-            ? `${props.localStore.width || DEFAULT_WIDTH}px`
-            : 'auto',
-      }}
-      ref={panelRef}
-      aria-label="Tanstack query devtools"
-    >
-      <div
-        class={cx(
-          styles().dragHandle,
-          styles()[`dragHandle-position-${position()}`],
-          'tsqd-drag-handle',
-        )}
-        onMouseDown={handleDragStart}
-      ></div>
-      <button
-        aria-label="Close tanstack query devtools"
-        class={cx(
-          styles().closeBtn,
-          styles()[`closeBtn-position-${position()}`],
-          'tsqd-minimize-btn',
-        )}
-        onClick={() => props.setLocalStore('open', 'false')}
-      >
-        <ChevronDown />
-      </button>
-      <ContentView {...props} />
-    </aside>
-  )
-}
+						panelWidth() < thirdBreakpoint &&
+						(position() === "right" || position() === "left"),
+				},
+				"tsqd-main-panel",
+			)}
+			style={{
+				height:
+					position() === "bottom" || position() === "top"
+						? `${props.localStore.height || DEFAULT_HEIGHT}px`
+						: "auto",
+				width:
+					position() === "right" || position() === "left"
+						? `${props.localStore.width || DEFAULT_WIDTH}px`
+						: "auto",
+			}}
+			ref={panelRef}
+			aria-label="Tanstack query devtools"
+		>
+			<div
+				class={cx(
+					styles().dragHandle,
+					styles()[`dragHandle-position-${position()}`],
+					"tsqd-drag-handle",
+				)}
+				onMouseDown={handleDragStart}
+			></div>
+			<button
+				aria-label="Close tanstack query devtools"
+				class={cx(
+					styles().closeBtn,
+					styles()[`closeBtn-position-${position()}`],
+					"tsqd-minimize-btn",
+				)}
+				onClick={() => props.setLocalStore("open", "false")}
+			>
+				<ChevronDown />
+			</button>
+			<ContentView {...props} />
+		</aside>
+	);
+};
 
 export const ContentView: Component<ContentViewProps> = (props) => {
-  setupQueryCacheSubscription()
-  setupMutationCacheSubscription()
-  let containerRef!: HTMLDivElement
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	setupQueryCacheSubscription();
+	setupMutationCacheSubscription();
+	let containerRef!: HTMLDivElement;
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const pip = usePiPWindow()
+	const pip = usePiPWindow();
 
-  const [selectedView, setSelectedView] = createSignal<'queries' | 'mutations'>(
-    'queries',
-  )
+	const [selectedView, setSelectedView] = createSignal<"queries" | "mutations">(
+		"queries",
+	);
 
-  const sort = createMemo(() => props.localStore.sort || DEFAULT_SORT_FN_NAME)
-  const sortOrder = createMemo(
-    () => Number(props.localStore.sortOrder) || DEFAULT_SORT_ORDER,
-  ) as () => 1 | -1
+	const sort = createMemo(() => props.localStore.sort || DEFAULT_SORT_FN_NAME);
+	const sortOrder = createMemo(
+		() => Number(props.localStore.sortOrder) || DEFAULT_SORT_ORDER,
+	) as () => 1 | -1;
 
-  const mutationSort = createMemo(
-    () => props.localStore.mutationSort || DEFAULT_MUTATION_SORT_FN_NAME,
-  )
-  const mutationSortOrder = createMemo(
-    () => Number(props.localStore.mutationSortOrder) || DEFAULT_SORT_ORDER,
-  ) as () => 1 | -1
+	const mutationSort = createMemo(
+		() => props.localStore.mutationSort || DEFAULT_MUTATION_SORT_FN_NAME,
+	);
+	const mutationSortOrder = createMemo(
+		() => Number(props.localStore.mutationSortOrder) || DEFAULT_SORT_ORDER,
+	) as () => 1 | -1;
 
-  const sortFn = createMemo(() => sortFns[sort() as string])
-  const mutationSortFn = createMemo(
-    () => mutationSortFns[mutationSort() as string],
-  )
+	const sortFn = createMemo(() => sortFns[sort() as string]);
+	const mutationSortFn = createMemo(
+		() => mutationSortFns[mutationSort() as string],
+	);
 
-  const onlineManager = createMemo(
-    () => useQueryDevtoolsContext().onlineManager,
-  )
+	const onlineManager = createMemo(
+		() => useQueryDevtoolsContext().onlineManager,
+	);
 
-  const query_cache = createMemo(() => {
-    return useQueryDevtoolsContext().client.getQueryCache()
-  })
+	const query_cache = createMemo(() => {
+		return useQueryDevtoolsContext().client.getQueryCache();
+	});
 
-  const mutation_cache = createMemo(() => {
-    return useQueryDevtoolsContext().client.getMutationCache()
-  })
+	const mutation_cache = createMemo(() => {
+		return useQueryDevtoolsContext().client.getMutationCache();
+	});
 
-  const queryCount = createSubscribeToQueryCacheBatcher((queryCache) => {
-    return queryCache().getAll().length
-  }, false)
+	const queryCount = createSubscribeToQueryCacheBatcher((queryCache) => {
+		return queryCache().getAll().length;
+	}, false);
 
-  const queries = createMemo(
-    on(
-      () => [
-        queryCount(),
-        props.localStore.filter,
-        sort(),
-        sortOrder(),
-        props.localStore.hideDisabledQueries,
-      ],
-      () => {
-        const curr = query_cache().getAll()
+	const queries = createMemo(
+		on(
+			() => [
+				queryCount(),
+				props.localStore.filter,
+				sort(),
+				sortOrder(),
+				props.localStore.hideDisabledQueries,
+			],
+			() => {
+				const curr = query_cache().getAll();
 
-        let filtered = props.localStore.filter
-          ? curr.filter(
-              (item) =>
-                rankItem(item.queryHash, props.localStore.filter || '').passed,
-            )
-          : [...curr]
+				let filtered = props.localStore.filter
+					? curr.filter(
+							(item) =>
+								rankItem(item.queryHash, props.localStore.filter || "").passed,
+						)
+					: [...curr];
 
-        // Filter out disabled queries if hideDisabledQueries is enabled
-        if (props.localStore.hideDisabledQueries === 'true') {
-          filtered = filtered.filter((item) => !item.isDisabled())
-        }
+				// Filter out disabled queries if hideDisabledQueries is enabled
+				if (props.localStore.hideDisabledQueries === "true") {
+					filtered = filtered.filter((item) => !item.isDisabled());
+				}
 
-        const sorted = sortFn()
-          ? filtered.sort((a, b) => sortFn()!(a, b) * sortOrder())
-          : filtered
-        return sorted
-      },
-    ),
-  )
+				const sorted = sortFn()
+					? filtered.sort((a, b) => sortFn()!(a, b) * sortOrder())
+					: filtered;
+				return sorted;
+			},
+		),
+	);
 
-  const mutationCount = createSubscribeToMutationCacheBatcher(
-    (mutationCache) => {
-      return mutationCache().getAll().length
-    },
-    false,
-  )
+	const mutationCount = createSubscribeToMutationCacheBatcher(
+		(mutationCache) => {
+			return mutationCache().getAll().length;
+		},
+		false,
+	);
 
-  const mutations = createMemo(
-    on(
-      () => [
-        mutationCount(),
-        props.localStore.mutationFilter,
-        mutationSort(),
-        mutationSortOrder(),
-      ],
-      () => {
-        const curr = mutation_cache().getAll()
+	const mutations = createMemo(
+		on(
+			() => [
+				mutationCount(),
+				props.localStore.mutationFilter,
+				mutationSort(),
+				mutationSortOrder(),
+			],
+			() => {
+				const curr = mutation_cache().getAll();
 
-        const filtered = props.localStore.mutationFilter
-          ? curr.filter((item) => {
-              const value = `${
-                item.options.mutationKey
-                  ? JSON.stringify(item.options.mutationKey) + ' - '
-                  : ''
-              }${new Date(item.state.submittedAt).toLocaleString()}`
-              return rankItem(value, props.localStore.mutationFilter || '')
-                .passed
-            })
-          : [...curr]
+				const filtered = props.localStore.mutationFilter
+					? curr.filter((item) => {
+							const value = `${
+								item.options.mutationKey
+									? JSON.stringify(item.options.mutationKey) + " - "
+									: ""
+							}${new Date(item.state.submittedAt).toLocaleString()}`;
+							return rankItem(value, props.localStore.mutationFilter || "")
+								.passed;
+						})
+					: [...curr];
 
-        const sorted = mutationSortFn()
-          ? filtered.sort(
-              (a, b) => mutationSortFn()!(a, b) * mutationSortOrder(),
-            )
-          : filtered
-        return sorted
-      },
-    ),
-  )
+				const sorted = mutationSortFn()
+					? filtered.sort(
+							(a, b) => mutationSortFn()!(a, b) * mutationSortOrder(),
+						)
+					: filtered;
+				return sorted;
+			},
+		),
+	);
 
-  const setDevtoolsPosition = (pos: DevtoolsPosition) => {
-    props.setLocalStore('position', pos)
-  }
+	const setDevtoolsPosition = (pos: DevtoolsPosition) => {
+		props.setLocalStore("position", pos);
+	};
 
-  // Sets the Font Size variable on portal menu elements since they will be outside
-  // the main panel container
-  const setComputedVariables = (el: HTMLDivElement) => {
-    const computedStyle = getComputedStyle(containerRef)
-    const variable = computedStyle.getPropertyValue('--tsqd-font-size')
-    el.style.setProperty('--tsqd-font-size', variable)
-  }
-  return (
-    <>
-      <div
-        // When the panels are stacked we use the height style
-        // to divide the panels into two equal parts
-        class={cx(
-          styles().queriesContainer,
-          panelWidth() < secondBreakpoint &&
-            (selectedQueryHash() || selectedMutationId()) &&
-            css`
+	// Sets the Font Size variable on portal menu elements since they will be outside
+	// the main panel container
+	const setComputedVariables = (el: HTMLDivElement) => {
+		const computedStyle = getComputedStyle(containerRef);
+		const variable = computedStyle.getPropertyValue("--tsqd-font-size");
+		el.style.setProperty("--tsqd-font-size", variable);
+	};
+	return (
+		<>
+			<div
+				// When the panels are stacked we use the height style
+				// to divide the panels into two equal parts
+				class={cx(
+					styles().queriesContainer,
+					panelWidth() < secondBreakpoint &&
+						(selectedQueryHash() || selectedMutationId()) &&
+						css`
               height: 50%;
               max-height: 50%;
             `,
-          panelWidth() < secondBreakpoint &&
-            !(selectedQueryHash() || selectedMutationId()) &&
-            css`
+					panelWidth() < secondBreakpoint &&
+						!(selectedQueryHash() || selectedMutationId()) &&
+						css`
               height: 100%;
               max-height: 100%;
             `,
-          'tsqd-queries-container',
-        )}
-        ref={containerRef}
-      >
-        <div class={cx(styles().row, 'tsqd-header')}>
-          <div class={styles().logoAndToggleContainer}>
-            <button
-              class={cx(styles().logo, 'tsqd-text-logo-container')}
-              onClick={() => {
-                if (!pip().pipWindow && !props.showPanelViewOnly) {
-                  props.setLocalStore('open', 'false')
-                  return
-                }
-                if (props.onClose) {
-                  props.onClose()
-                }
-              }}
-              aria-label="Close Tanstack query devtools"
-            >
-              <span
-                class={cx(styles().tanstackLogo, 'tsqd-text-logo-tanstack')}
-              >
-                TANSTACK
-              </span>
-              <span
-                class={cx(
-                  styles().queryFlavorLogo,
-                  'tsqd-text-logo-query-flavor',
-                )}
-              >
-                {useQueryDevtoolsContext().queryFlavor} v
-                {useQueryDevtoolsContext().version}
-              </span>
-            </button>
-            <RadioGroup.Root
-              class={cx(styles().viewToggle)}
-              value={selectedView()}
-              onChange={(value) => {
-                setSelectedView(value as 'queries' | 'mutations')
-                setSelectedQueryHash(null)
-                setSelectedMutationId(null)
-              }}
-            >
-              <RadioGroup.Item value="queries" class="tsqd-radio-toggle">
-                <RadioGroup.ItemInput />
-                <RadioGroup.ItemControl>
-                  <RadioGroup.ItemIndicator />
-                </RadioGroup.ItemControl>
-                <RadioGroup.ItemLabel title="Toggle Queries View">
-                  Queries
-                </RadioGroup.ItemLabel>
-              </RadioGroup.Item>
-              <RadioGroup.Item value="mutations" class="tsqd-radio-toggle">
-                <RadioGroup.ItemInput />
-                <RadioGroup.ItemControl>
-                  <RadioGroup.ItemIndicator />
-                </RadioGroup.ItemControl>
-                <RadioGroup.ItemLabel title="Toggle Mutations View">
-                  Mutations
-                </RadioGroup.ItemLabel>
-              </RadioGroup.Item>
-            </RadioGroup.Root>
-          </div>
+					"tsqd-queries-container",
+				)}
+				ref={containerRef}
+			>
+				<div class={cx(styles().row, "tsqd-header")}>
+					<div class={styles().logoAndToggleContainer}>
+						<button
+							class={cx(styles().logo, "tsqd-text-logo-container")}
+							onClick={() => {
+								if (!pip().pipWindow && !props.showPanelViewOnly) {
+									props.setLocalStore("open", "false");
+									return;
+								}
+								if (props.onClose) {
+									props.onClose();
+								}
+							}}
+							aria-label="Close Tanstack query devtools"
+						>
+							<span
+								class={cx(styles().tanstackLogo, "tsqd-text-logo-tanstack")}
+							>
+								TANSTACK
+							</span>
+							<span
+								class={cx(
+									styles().queryFlavorLogo,
+									"tsqd-text-logo-query-flavor",
+								)}
+							>
+								{useQueryDevtoolsContext().queryFlavor} v
+								{useQueryDevtoolsContext().version}
+							</span>
+						</button>
+						<RadioGroup.Root
+							class={cx(styles().viewToggle)}
+							value={selectedView()}
+							onChange={(value) => {
+								setSelectedView(value as "queries" | "mutations");
+								setSelectedQueryHash(null);
+								setSelectedMutationId(null);
+							}}
+						>
+							<RadioGroup.Item value="queries" class="tsqd-radio-toggle">
+								<RadioGroup.ItemInput />
+								<RadioGroup.ItemControl>
+									<RadioGroup.ItemIndicator />
+								</RadioGroup.ItemControl>
+								<RadioGroup.ItemLabel title="Toggle Queries View">
+									Queries
+								</RadioGroup.ItemLabel>
+							</RadioGroup.Item>
+							<RadioGroup.Item value="mutations" class="tsqd-radio-toggle">
+								<RadioGroup.ItemInput />
+								<RadioGroup.ItemControl>
+									<RadioGroup.ItemIndicator />
+								</RadioGroup.ItemControl>
+								<RadioGroup.ItemLabel title="Toggle Mutations View">
+									Mutations
+								</RadioGroup.ItemLabel>
+							</RadioGroup.Item>
+						</RadioGroup.Root>
+					</div>
 
-          <Show when={selectedView() === 'queries'}>
-            <QueryStatusCount />
-          </Show>
-          <Show when={selectedView() === 'mutations'}>
-            <MutationStatusCount />
-          </Show>
-        </div>
-        <div class={cx(styles().row, 'tsqd-filters-actions-container')}>
-          <div class={cx(styles().filtersContainer, 'tsqd-filters-container')}>
-            <div
-              class={cx(
-                styles().filterInput,
-                'tsqd-query-filter-textfield-container',
-              )}
-            >
-              <Search />
-              <input
-                aria-label="Filter queries by query key"
-                type="text"
-                placeholder="Filter"
-                onInput={(e) => {
-                  if (selectedView() === 'queries') {
-                    props.setLocalStore('filter', e.currentTarget.value)
-                  } else {
-                    props.setLocalStore('mutationFilter', e.currentTarget.value)
-                  }
-                }}
-                class={cx('tsqd-query-filter-textfield')}
-                name="tsqd-query-filter-input"
-                value={
-                  selectedView() === 'queries'
-                    ? props.localStore.filter || ''
-                    : props.localStore.mutationFilter || ''
-                }
-              />
-            </div>
-            <div
-              class={cx(
-                styles().filterSelect,
-                'tsqd-query-filter-sort-container',
-              )}
-            >
-              <Show when={selectedView() === 'queries'}>
-                <select
-                  value={sort()}
-                  name="tsqd-queries-filter-sort"
-                  onChange={(e) => {
-                    props.setLocalStore('sort', e.currentTarget.value)
-                  }}
-                >
-                  {Object.keys(sortFns).map((key) => (
-                    <option value={key}>Sort by {key}</option>
-                  ))}
-                </select>
-              </Show>
-              <Show when={selectedView() === 'mutations'}>
-                <select
-                  value={mutationSort()}
-                  name="tsqd-mutations-filter-sort"
-                  onChange={(e) => {
-                    props.setLocalStore('mutationSort', e.currentTarget.value)
-                  }}
-                >
-                  {Object.keys(mutationSortFns).map((key) => (
-                    <option value={key}>Sort by {key}</option>
-                  ))}
-                </select>
-              </Show>
-              <ChevronDown />
-            </div>
-            <button
-              onClick={() => {
-                if (selectedView() === 'queries') {
-                  props.setLocalStore('sortOrder', String(sortOrder() * -1))
-                } else {
-                  props.setLocalStore(
-                    'mutationSortOrder',
-                    String(mutationSortOrder() * -1),
-                  )
-                }
-              }}
-              aria-label={`Sort order ${
-                (selectedView() === 'queries'
-                  ? sortOrder()
-                  : mutationSortOrder()) === -1
-                  ? 'descending'
-                  : 'ascending'
-              }`}
-              aria-pressed={
-                (selectedView() === 'queries'
-                  ? sortOrder()
-                  : mutationSortOrder()) === -1
-              }
-              class="tsqd-query-filter-sort-order-btn"
-            >
-              <Show
-                when={
-                  (selectedView() === 'queries'
-                    ? sortOrder()
-                    : mutationSortOrder()) === 1
-                }
-              >
-                <span>Asc</span>
-                <ArrowUp />
-              </Show>
-              <Show
-                when={
-                  (selectedView() === 'queries'
-                    ? sortOrder()
-                    : mutationSortOrder()) === -1
-                }
-              >
-                <span>Desc</span>
-                <ArrowDown />
-              </Show>
-            </button>
-          </div>
+					<Show when={selectedView() === "queries"}>
+						<QueryStatusCount />
+					</Show>
+					<Show when={selectedView() === "mutations"}>
+						<MutationStatusCount />
+					</Show>
+				</div>
+				<div class={cx(styles().row, "tsqd-filters-actions-container")}>
+					<div class={cx(styles().filtersContainer, "tsqd-filters-container")}>
+						<div
+							class={cx(
+								styles().filterInput,
+								"tsqd-query-filter-textfield-container",
+							)}
+						>
+							<Search />
+							<input
+								aria-label="Filter queries by query key"
+								type="text"
+								placeholder="Filter"
+								onInput={(e) => {
+									if (selectedView() === "queries") {
+										props.setLocalStore("filter", e.currentTarget.value);
+									} else {
+										props.setLocalStore(
+											"mutationFilter",
+											e.currentTarget.value,
+										);
+									}
+								}}
+								class={cx("tsqd-query-filter-textfield")}
+								name="tsqd-query-filter-input"
+								value={
+									selectedView() === "queries"
+										? props.localStore.filter || ""
+										: props.localStore.mutationFilter || ""
+								}
+							/>
+						</div>
+						<div
+							class={cx(
+								styles().filterSelect,
+								"tsqd-query-filter-sort-container",
+							)}
+						>
+							<Show when={selectedView() === "queries"}>
+								<select
+									value={sort()}
+									name="tsqd-queries-filter-sort"
+									onChange={(e) => {
+										props.setLocalStore("sort", e.currentTarget.value);
+									}}
+								>
+									{Object.keys(sortFns).map((key) => (
+										<option value={key}>Sort by {key}</option>
+									))}
+								</select>
+							</Show>
+							<Show when={selectedView() === "mutations"}>
+								<select
+									value={mutationSort()}
+									name="tsqd-mutations-filter-sort"
+									onChange={(e) => {
+										props.setLocalStore("mutationSort", e.currentTarget.value);
+									}}
+								>
+									{Object.keys(mutationSortFns).map((key) => (
+										<option value={key}>Sort by {key}</option>
+									))}
+								</select>
+							</Show>
+							<ChevronDown />
+						</div>
+						<button
+							onClick={() => {
+								if (selectedView() === "queries") {
+									props.setLocalStore("sortOrder", String(sortOrder() * -1));
+								} else {
+									props.setLocalStore(
+										"mutationSortOrder",
+										String(mutationSortOrder() * -1),
+									);
+								}
+							}}
+							aria-label={`Sort order ${
+								(
+									selectedView() === "queries"
+										? sortOrder()
+										: mutationSortOrder()
+								) === -1
+									? "descending"
+									: "ascending"
+							}`}
+							aria-pressed={
+								(selectedView() === "queries"
+									? sortOrder()
+									: mutationSortOrder()) === -1
+							}
+							class="tsqd-query-filter-sort-order-btn"
+						>
+							<Show
+								when={
+									(selectedView() === "queries"
+										? sortOrder()
+										: mutationSortOrder()) === 1
+								}
+							>
+								<span>Asc</span>
+								<ArrowUp />
+							</Show>
+							<Show
+								when={
+									(selectedView() === "queries"
+										? sortOrder()
+										: mutationSortOrder()) === -1
+								}
+							>
+								<span>Desc</span>
+								<ArrowDown />
+							</Show>
+						</button>
+					</div>
 
-          <div class={cx(styles().actionsContainer, 'tsqd-actions-container')}>
-            <button
-              onClick={() => {
-                if (selectedView() === 'queries') {
-                  sendDevToolsEvent({ type: 'CLEAR_QUERY_CACHE' })
-                  query_cache().clear()
-                } else {
-                  sendDevToolsEvent({ type: 'CLEAR_MUTATION_CACHE' })
-                  mutation_cache().clear()
-                }
-              }}
-              class={cx(
-                styles().actionsBtn,
-                'tsqd-actions-btn',
-                'tsqd-action-clear-cache',
-              )}
-              aria-label="Clear query cache"
-              title={`Clear ${selectedView()} cache`}
-            >
-              <Trash />
-            </button>
-            <button
-              onClick={() => {
-                onlineManager().setOnline(!onlineManager().isOnline())
-              }}
-              class={cx(
-                styles().actionsBtn,
-                offline() && styles().actionsBtnOffline,
-                'tsqd-actions-btn',
-                'tsqd-action-mock-offline-behavior',
-              )}
-              aria-label={`${
-                offline()
-                  ? 'Unset offline mocking behavior'
-                  : 'Mock offline behavior'
-              }`}
-              aria-pressed={offline()}
-              title={`${
-                offline()
-                  ? 'Unset offline mocking behavior'
-                  : 'Mock offline behavior'
-              }`}
-            >
-              {offline() ? <Offline /> : <Wifi />}
-            </button>
-            <Show when={!pip().pipWindow && !pip().disabled}>
-              <button
-                onClick={() => {
-                  pip().requestPipWindow(
-                    Number(window.innerWidth),
-                    Number(props.localStore.height ?? 500),
-                  )
-                }}
-                class={cx(
-                  styles().actionsBtn,
-                  'tsqd-actions-btn',
-                  'tsqd-action-open-pip',
-                )}
-                aria-label="Open in picture-in-picture mode"
-                title="Open in picture-in-picture mode"
-              >
-                <PiPIcon />
-              </button>
-            </Show>
+					<div class={cx(styles().actionsContainer, "tsqd-actions-container")}>
+						<button
+							onClick={() => {
+								if (selectedView() === "queries") {
+									sendDevToolsEvent({ type: "CLEAR_QUERY_CACHE" });
+									query_cache().clear();
+								} else {
+									sendDevToolsEvent({ type: "CLEAR_MUTATION_CACHE" });
+									mutation_cache().clear();
+								}
+							}}
+							class={cx(
+								styles().actionsBtn,
+								"tsqd-actions-btn",
+								"tsqd-action-clear-cache",
+							)}
+							aria-label="Clear query cache"
+							title={`Clear ${selectedView()} cache`}
+						>
+							<Trash />
+						</button>
+						<button
+							onClick={() => {
+								onlineManager().setOnline(!onlineManager().isOnline());
+							}}
+							class={cx(
+								styles().actionsBtn,
+								offline() && styles().actionsBtnOffline,
+								"tsqd-actions-btn",
+								"tsqd-action-mock-offline-behavior",
+							)}
+							aria-label={`${
+								offline()
+									? "Unset offline mocking behavior"
+									: "Mock offline behavior"
+							}`}
+							aria-pressed={offline()}
+							title={`${
+								offline()
+									? "Unset offline mocking behavior"
+									: "Mock offline behavior"
+							}`}
+						>
+							{offline() ? <Offline /> : <Wifi />}
+						</button>
+						<Show when={!pip().pipWindow && !pip().disabled}>
+							<button
+								onClick={() => {
+									pip().requestPipWindow(
+										Number(window.innerWidth),
+										Number(props.localStore.height ?? 500),
+									);
+								}}
+								class={cx(
+									styles().actionsBtn,
+									"tsqd-actions-btn",
+									"tsqd-action-open-pip",
+								)}
+								aria-label="Open in picture-in-picture mode"
+								title="Open in picture-in-picture mode"
+							>
+								<PiPIcon />
+							</button>
+						</Show>
 
-            <DropdownMenu.Root gutter={4}>
-              <DropdownMenu.Trigger
-                class={cx(
-                  styles().actionsBtn,
-                  'tsqd-actions-btn',
-                  'tsqd-action-settings',
-                )}
-                aria-label="Open settings menu"
-                title="Open settings menu"
-              >
-                <Settings />
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal
-                ref={(el) => setComputedVariables(el as HTMLDivElement)}
-                mount={
-                  pip().pipWindow
-                    ? pip().pipWindow!.document.body
-                    : document.body
-                }
-              >
-                <DropdownMenu.Content
-                  class={cx(styles().settingsMenu, 'tsqd-settings-menu')}
-                >
-                  <div
-                    class={cx(
-                      styles().settingsMenuHeader,
-                      'tsqd-settings-menu-header',
-                    )}
-                  >
-                    Settings
-                  </div>
-                  <Show when={!props.showPanelViewOnly}>
-                    <DropdownMenu.Sub overlap gutter={8} shift={-4}>
-                      <DropdownMenu.SubTrigger
-                        class={cx(
-                          styles().settingsSubTrigger,
-                          'tsqd-settings-menu-sub-trigger',
-                          'tsqd-settings-menu-sub-trigger-position',
-                        )}
-                      >
-                        <span>Position</span>
-                        <ChevronDown />
-                      </DropdownMenu.SubTrigger>
-                      <DropdownMenu.Portal
-                        ref={(el) => setComputedVariables(el as HTMLDivElement)}
-                        mount={
-                          pip().pipWindow
-                            ? pip().pipWindow!.document.body
-                            : document.body
-                        }
-                      >
-                        <DropdownMenu.SubContent
-                          class={cx(
-                            styles().settingsMenu,
-                            'tsqd-settings-submenu',
-                          )}
-                        >
-                          <DropdownMenu.RadioGroup
-                            aria-label="Position settings"
-                            value={props.localStore.position}
-                            onChange={(value) =>
-                              setDevtoolsPosition(value as DevtoolsPosition)
-                            }
-                          >
-                            <DropdownMenu.RadioItem
-                              value="top"
-                              class={cx(
-                                styles().settingsSubButton,
-                                'tsqd-settings-menu-position-btn',
-                                'tsqd-settings-menu-position-btn-top',
-                              )}
-                            >
-                              <span>Top</span>
-                              <ArrowUp />
-                            </DropdownMenu.RadioItem>
-                            <DropdownMenu.RadioItem
-                              value="bottom"
-                              class={cx(
-                                styles().settingsSubButton,
-                                'tsqd-settings-menu-position-btn',
-                                'tsqd-settings-menu-position-btn-bottom',
-                              )}
-                            >
-                              <span>Bottom</span>
-                              <ArrowDown />
-                            </DropdownMenu.RadioItem>
-                            <DropdownMenu.RadioItem
-                              value="left"
-                              class={cx(
-                                styles().settingsSubButton,
-                                'tsqd-settings-menu-position-btn',
-                                'tsqd-settings-menu-position-btn-left',
-                              )}
-                            >
-                              <span>Left</span>
-                              <ArrowLeft />
-                            </DropdownMenu.RadioItem>
-                            <DropdownMenu.RadioItem
-                              value="right"
-                              class={cx(
-                                styles().settingsSubButton,
-                                'tsqd-settings-menu-position-btn',
-                                'tsqd-settings-menu-position-btn-right',
-                              )}
-                            >
-                              <span>Right</span>
-                              <ArrowRight />
-                            </DropdownMenu.RadioItem>
-                          </DropdownMenu.RadioGroup>
-                        </DropdownMenu.SubContent>
-                      </DropdownMenu.Portal>
-                    </DropdownMenu.Sub>
-                  </Show>
-                  <DropdownMenu.Sub overlap gutter={8} shift={-4}>
-                    <DropdownMenu.SubTrigger
-                      class={cx(
-                        styles().settingsSubTrigger,
-                        'tsqd-settings-menu-sub-trigger',
-                        'tsqd-settings-menu-sub-trigger-position',
-                      )}
-                    >
-                      <span>Theme</span>
-                      <ChevronDown />
-                    </DropdownMenu.SubTrigger>
-                    <DropdownMenu.Portal
-                      ref={(el) => setComputedVariables(el as HTMLDivElement)}
-                      mount={
-                        pip().pipWindow
-                          ? pip().pipWindow!.document.body
-                          : document.body
-                      }
-                    >
-                      <DropdownMenu.SubContent
-                        class={cx(
-                          styles().settingsMenu,
-                          'tsqd-settings-submenu',
-                        )}
-                      >
-                        <DropdownMenu.RadioGroup
-                          value={props.localStore.theme_preference}
-                          onChange={(value) => {
-                            props.setLocalStore('theme_preference', value)
-                          }}
-                          aria-label="Theme preference"
-                        >
-                          <DropdownMenu.RadioItem
-                            value="light"
-                            class={cx(
-                              styles().settingsSubButton,
-                              'tsqd-settings-menu-position-btn',
-                              'tsqd-settings-menu-position-btn-top',
-                            )}
-                          >
-                            <span>Light</span>
-                            <Sun />
-                          </DropdownMenu.RadioItem>
-                          <DropdownMenu.RadioItem
-                            value="dark"
-                            class={cx(
-                              styles().settingsSubButton,
-                              'tsqd-settings-menu-position-btn',
-                              'tsqd-settings-menu-position-btn-bottom',
-                            )}
-                          >
-                            <span>Dark</span>
-                            <Moon />
-                          </DropdownMenu.RadioItem>
-                          <DropdownMenu.RadioItem
-                            value="system"
-                            class={cx(
-                              styles().settingsSubButton,
-                              'tsqd-settings-menu-position-btn',
-                              'tsqd-settings-menu-position-btn-left',
-                            )}
-                          >
-                            <span>System</span>
-                            <Monitor />
-                          </DropdownMenu.RadioItem>
-                        </DropdownMenu.RadioGroup>
-                      </DropdownMenu.SubContent>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Sub>
-                  <DropdownMenu.Sub overlap gutter={8} shift={-4}>
-                    <DropdownMenu.SubTrigger
-                      class={cx(
-                        styles().settingsSubTrigger,
-                        'tsqd-settings-menu-sub-trigger',
-                        'tsqd-settings-menu-sub-trigger-disabled-queries',
-                      )}
-                    >
-                      <span>Disabled Queries</span>
-                      <ChevronDown />
-                    </DropdownMenu.SubTrigger>
-                    <DropdownMenu.Portal
-                      ref={(el) => setComputedVariables(el as HTMLDivElement)}
-                      mount={
-                        pip().pipWindow
-                          ? pip().pipWindow!.document.body
-                          : document.body
-                      }
-                    >
-                      <DropdownMenu.SubContent
-                        class={cx(
-                          styles().settingsMenu,
-                          'tsqd-settings-submenu',
-                        )}
-                        aria-label="Hide disabled queries setting"
-                      >
-                        <DropdownMenu.RadioGroup
-                          value={props.localStore.hideDisabledQueries}
-                          onChange={(value) =>
-                            props.setLocalStore('hideDisabledQueries', value)
-                          }
-                        >
-                          <DropdownMenu.RadioItem
-                            value="false"
-                            class={cx(
-                              styles().settingsSubButton,
-                              'tsqd-settings-menu-position-btn',
-                              'tsqd-settings-menu-position-btn-show',
-                            )}
-                          >
-                            <span>Show</span>
-                            <Show
-                              when={
-                                props.localStore.hideDisabledQueries !== 'true'
-                              }
-                            >
-                              <CheckCircle />
-                            </Show>
-                          </DropdownMenu.RadioItem>
-                          <DropdownMenu.RadioItem
-                            value="true"
-                            class={cx(
-                              styles().settingsSubButton,
-                              'tsqd-settings-menu-position-btn',
-                              'tsqd-settings-menu-position-btn-hide',
-                            )}
-                          >
-                            <span>Hide</span>
-                            <Show
-                              when={
-                                props.localStore.hideDisabledQueries === 'true'
-                              }
-                            >
-                              <CheckCircle />
-                            </Show>
-                          </DropdownMenu.RadioItem>
-                        </DropdownMenu.RadioGroup>
-                      </DropdownMenu.SubContent>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Sub>
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-          </div>
-        </div>
-        <Show when={selectedView() === 'queries'}>
-          <div
-            class={cx(
-              styles().overflowQueryContainer,
-              'tsqd-queries-overflow-container',
-            )}
-          >
-            <div class="tsqd-queries-container">
-              <Key by={(q) => q.queryHash} each={queries()}>
-                {(query) => <QueryRow query={query()} />}
-              </Key>
-            </div>
-          </div>
-        </Show>
-        <Show when={selectedView() === 'mutations'}>
-          <div
-            class={cx(
-              styles().overflowQueryContainer,
-              'tsqd-mutations-overflow-container',
-            )}
-          >
-            <div class="tsqd-mutations-container">
-              <Key by={(m) => m.mutationId} each={mutations()}>
-                {(mutation) => <MutationRow mutation={mutation()} />}
-              </Key>
-            </div>
-          </div>
-        </Show>
-      </div>
-      <Show when={selectedView() === 'queries' && selectedQueryHash()}>
-        <QueryDetails />
-      </Show>
+						<DropdownMenu.Root gutter={4}>
+							<DropdownMenu.Trigger
+								class={cx(
+									styles().actionsBtn,
+									"tsqd-actions-btn",
+									"tsqd-action-settings",
+								)}
+								aria-label="Open settings menu"
+								title="Open settings menu"
+							>
+								<Settings />
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Portal
+								ref={(el) => setComputedVariables(el as HTMLDivElement)}
+								mount={
+									pip().pipWindow
+										? pip().pipWindow!.document.body
+										: document.body
+								}
+							>
+								<DropdownMenu.Content
+									class={cx(styles().settingsMenu, "tsqd-settings-menu")}
+								>
+									<div
+										class={cx(
+											styles().settingsMenuHeader,
+											"tsqd-settings-menu-header",
+										)}
+									>
+										Settings
+									</div>
+									<Show when={!props.showPanelViewOnly}>
+										<DropdownMenu.Sub overlap gutter={8} shift={-4}>
+											<DropdownMenu.SubTrigger
+												class={cx(
+													styles().settingsSubTrigger,
+													"tsqd-settings-menu-sub-trigger",
+													"tsqd-settings-menu-sub-trigger-position",
+												)}
+											>
+												<span>Position</span>
+												<ChevronDown />
+											</DropdownMenu.SubTrigger>
+											<DropdownMenu.Portal
+												ref={(el) => setComputedVariables(el as HTMLDivElement)}
+												mount={
+													pip().pipWindow
+														? pip().pipWindow!.document.body
+														: document.body
+												}
+											>
+												<DropdownMenu.SubContent
+													class={cx(
+														styles().settingsMenu,
+														"tsqd-settings-submenu",
+													)}
+												>
+													<DropdownMenu.RadioGroup
+														aria-label="Position settings"
+														value={props.localStore.position}
+														onChange={(value) =>
+															setDevtoolsPosition(value as DevtoolsPosition)
+														}
+													>
+														<DropdownMenu.RadioItem
+															value="top"
+															class={cx(
+																styles().settingsSubButton,
+																"tsqd-settings-menu-position-btn",
+																"tsqd-settings-menu-position-btn-top",
+															)}
+														>
+															<span>Top</span>
+															<ArrowUp />
+														</DropdownMenu.RadioItem>
+														<DropdownMenu.RadioItem
+															value="bottom"
+															class={cx(
+																styles().settingsSubButton,
+																"tsqd-settings-menu-position-btn",
+																"tsqd-settings-menu-position-btn-bottom",
+															)}
+														>
+															<span>Bottom</span>
+															<ArrowDown />
+														</DropdownMenu.RadioItem>
+														<DropdownMenu.RadioItem
+															value="left"
+															class={cx(
+																styles().settingsSubButton,
+																"tsqd-settings-menu-position-btn",
+																"tsqd-settings-menu-position-btn-left",
+															)}
+														>
+															<span>Left</span>
+															<ArrowLeft />
+														</DropdownMenu.RadioItem>
+														<DropdownMenu.RadioItem
+															value="right"
+															class={cx(
+																styles().settingsSubButton,
+																"tsqd-settings-menu-position-btn",
+																"tsqd-settings-menu-position-btn-right",
+															)}
+														>
+															<span>Right</span>
+															<ArrowRight />
+														</DropdownMenu.RadioItem>
+													</DropdownMenu.RadioGroup>
+												</DropdownMenu.SubContent>
+											</DropdownMenu.Portal>
+										</DropdownMenu.Sub>
+									</Show>
+									<DropdownMenu.Sub overlap gutter={8} shift={-4}>
+										<DropdownMenu.SubTrigger
+											class={cx(
+												styles().settingsSubTrigger,
+												"tsqd-settings-menu-sub-trigger",
+												"tsqd-settings-menu-sub-trigger-position",
+											)}
+										>
+											<span>Theme</span>
+											<ChevronDown />
+										</DropdownMenu.SubTrigger>
+										<DropdownMenu.Portal
+											ref={(el) => setComputedVariables(el as HTMLDivElement)}
+											mount={
+												pip().pipWindow
+													? pip().pipWindow!.document.body
+													: document.body
+											}
+										>
+											<DropdownMenu.SubContent
+												class={cx(
+													styles().settingsMenu,
+													"tsqd-settings-submenu",
+												)}
+											>
+												<DropdownMenu.RadioGroup
+													value={props.localStore.theme_preference}
+													onChange={(value) => {
+														props.setLocalStore("theme_preference", value);
+													}}
+													aria-label="Theme preference"
+												>
+													<DropdownMenu.RadioItem
+														value="light"
+														class={cx(
+															styles().settingsSubButton,
+															"tsqd-settings-menu-position-btn",
+															"tsqd-settings-menu-position-btn-top",
+														)}
+													>
+														<span>Light</span>
+														<Sun />
+													</DropdownMenu.RadioItem>
+													<DropdownMenu.RadioItem
+														value="dark"
+														class={cx(
+															styles().settingsSubButton,
+															"tsqd-settings-menu-position-btn",
+															"tsqd-settings-menu-position-btn-bottom",
+														)}
+													>
+														<span>Dark</span>
+														<Moon />
+													</DropdownMenu.RadioItem>
+													<DropdownMenu.RadioItem
+														value="system"
+														class={cx(
+															styles().settingsSubButton,
+															"tsqd-settings-menu-position-btn",
+															"tsqd-settings-menu-position-btn-left",
+														)}
+													>
+														<span>System</span>
+														<Monitor />
+													</DropdownMenu.RadioItem>
+												</DropdownMenu.RadioGroup>
+											</DropdownMenu.SubContent>
+										</DropdownMenu.Portal>
+									</DropdownMenu.Sub>
+									<DropdownMenu.Sub overlap gutter={8} shift={-4}>
+										<DropdownMenu.SubTrigger
+											class={cx(
+												styles().settingsSubTrigger,
+												"tsqd-settings-menu-sub-trigger",
+												"tsqd-settings-menu-sub-trigger-disabled-queries",
+											)}
+										>
+											<span>Disabled Queries</span>
+											<ChevronDown />
+										</DropdownMenu.SubTrigger>
+										<DropdownMenu.Portal
+											ref={(el) => setComputedVariables(el as HTMLDivElement)}
+											mount={
+												pip().pipWindow
+													? pip().pipWindow!.document.body
+													: document.body
+											}
+										>
+											<DropdownMenu.SubContent
+												class={cx(
+													styles().settingsMenu,
+													"tsqd-settings-submenu",
+												)}
+												aria-label="Hide disabled queries setting"
+											>
+												<DropdownMenu.RadioGroup
+													value={props.localStore.hideDisabledQueries}
+													onChange={(value) =>
+														props.setLocalStore("hideDisabledQueries", value)
+													}
+												>
+													<DropdownMenu.RadioItem
+														value="false"
+														class={cx(
+															styles().settingsSubButton,
+															"tsqd-settings-menu-position-btn",
+															"tsqd-settings-menu-position-btn-show",
+														)}
+													>
+														<span>Show</span>
+														<Show
+															when={
+																props.localStore.hideDisabledQueries !== "true"
+															}
+														>
+															<CheckCircle />
+														</Show>
+													</DropdownMenu.RadioItem>
+													<DropdownMenu.RadioItem
+														value="true"
+														class={cx(
+															styles().settingsSubButton,
+															"tsqd-settings-menu-position-btn",
+															"tsqd-settings-menu-position-btn-hide",
+														)}
+													>
+														<span>Hide</span>
+														<Show
+															when={
+																props.localStore.hideDisabledQueries === "true"
+															}
+														>
+															<CheckCircle />
+														</Show>
+													</DropdownMenu.RadioItem>
+												</DropdownMenu.RadioGroup>
+											</DropdownMenu.SubContent>
+										</DropdownMenu.Portal>
+									</DropdownMenu.Sub>
+								</DropdownMenu.Content>
+							</DropdownMenu.Portal>
+						</DropdownMenu.Root>
+					</div>
+				</div>
+				<Show when={selectedView() === "queries"}>
+					<div
+						class={cx(
+							styles().overflowQueryContainer,
+							"tsqd-queries-overflow-container",
+						)}
+					>
+						<div class="tsqd-queries-container">
+							<Key by={(q) => q.queryHash} each={queries()}>
+								{(query) => <QueryRow query={query()} />}
+							</Key>
+						</div>
+					</div>
+				</Show>
+				<Show when={selectedView() === "mutations"}>
+					<div
+						class={cx(
+							styles().overflowQueryContainer,
+							"tsqd-mutations-overflow-container",
+						)}
+					>
+						<div class="tsqd-mutations-container">
+							<Key by={(m) => m.mutationId} each={mutations()}>
+								{(mutation) => <MutationRow mutation={mutation()} />}
+							</Key>
+						</div>
+					</div>
+				</Show>
+			</div>
+			<Show when={selectedView() === "queries" && selectedQueryHash()}>
+				<QueryDetails />
+			</Show>
 
-      <Show when={selectedView() === 'mutations' && selectedMutationId()}>
-        <MutationDetails />
-      </Show>
-    </>
-  )
-}
+			<Show when={selectedView() === "mutations" && selectedMutationId()}>
+				<MutationDetails />
+			</Show>
+		</>
+	);
+};
 
 const QueryRow: Component<{ query: Query }> = (props) => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const { colors, alpha } = tokens
-  const t = (light: string, dark: string) => (theme() === 'dark' ? dark : light)
+	const { colors, alpha } = tokens;
+	const t = (light: string, dark: string) =>
+		theme() === "dark" ? dark : light;
 
-  const queryState = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache().find({
-        queryKey: props.query.queryKey,
-      })?.state,
-    true,
-    (e) => e.query.queryHash === props.query.queryHash,
-  )
+	const queryState = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache().find({
+				queryKey: props.query.queryKey,
+			})?.state,
+		true,
+		(e) => e.query.queryHash === props.query.queryHash,
+	);
 
-  const isDisabled = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .find({
-          queryKey: props.query.queryKey,
-        })
-        ?.isDisabled() ?? false,
-    true,
-    (e) => e.query.queryHash === props.query.queryHash,
-  )
+	const isDisabled = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.find({
+					queryKey: props.query.queryKey,
+				})
+				?.isDisabled() ?? false,
+		true,
+		(e) => e.query.queryHash === props.query.queryHash,
+	);
 
-  const isStatic = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .find({
-          queryKey: props.query.queryKey,
-        })
-        ?.isStatic() ?? false,
-    true,
-    (e) => e.query.queryHash === props.query.queryHash,
-  )
+	const isStatic = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.find({
+					queryKey: props.query.queryKey,
+				})
+				?.isStatic() ?? false,
+		true,
+		(e) => e.query.queryHash === props.query.queryHash,
+	);
 
-  const isStale = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .find({
-          queryKey: props.query.queryKey,
-        })
-        ?.isStale() ?? false,
-    true,
-    (e) => e.query.queryHash === props.query.queryHash,
-  )
+	const isStale = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.find({
+					queryKey: props.query.queryKey,
+				})
+				?.isStale() ?? false,
+		true,
+		(e) => e.query.queryHash === props.query.queryHash,
+	);
 
-  const observers = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .find({
-          queryKey: props.query.queryKey,
-        })
-        ?.getObserversCount() ?? 0,
-    true,
-    (e) => e.query.queryHash === props.query.queryHash,
-  )
+	const observers = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.find({
+					queryKey: props.query.queryKey,
+				})
+				?.getObserversCount() ?? 0,
+		true,
+		(e) => e.query.queryHash === props.query.queryHash,
+	);
 
-  const color = createMemo(() =>
-    getQueryStatusColor({
-      queryState: queryState()!,
-      observerCount: observers(),
-      isStale: isStale(),
-    }),
-  )
+	const color = createMemo(() =>
+		getQueryStatusColor({
+			queryState: queryState()!,
+			observerCount: observers(),
+			isStale: isStale(),
+		}),
+	);
 
-  const getObserverCountColorStyles = () => {
-    if (color() === 'gray') {
-      return css`
+	const getObserverCountColorStyles = () => {
+		if (color() === "gray") {
+			return css`
         background-color: ${t(colors[color()][200], colors[color()][700])};
         color: ${t(colors[color()][700], colors[color()][300])};
-      `
-    }
+      `;
+		}
 
-    return css`
+		return css`
       background-color: ${t(
-        colors[color()][200] + alpha[80],
-        colors[color()][900],
-      )};
+				colors[color()][200] + alpha[80],
+				colors[color()][900],
+			)};
       color: ${t(colors[color()][800], colors[color()][300])};
-    `
-  }
+    `;
+	};
 
-  return (
-    <Show when={queryState()}>
-      <button
-        onClick={() =>
-          setSelectedQueryHash(
-            props.query.queryHash === selectedQueryHash()
-              ? null
-              : props.query.queryHash,
-          )
-        }
-        class={cx(
-          styles().queryRow,
-          selectedQueryHash() === props.query.queryHash &&
-            styles().selectedQueryRow,
-          'tsqd-query-row',
-        )}
-        aria-label={`Query key ${props.query.queryHash}`}
-      >
-        <div
-          class={cx(getObserverCountColorStyles(), 'tsqd-query-observer-count')}
-        >
-          {observers()}
-        </div>
-        <code class="tsqd-query-hash">{props.query.queryHash}</code>
-        <Show when={isDisabled()}>
-          <div class="tsqd-query-disabled-indicator">disabled</div>
-        </Show>
-        <Show when={isStatic()}>
-          <div class="tsqd-query-static-indicator">static</div>
-        </Show>
-      </button>
-    </Show>
-  )
-}
+	return (
+		<Show when={queryState()}>
+			<button
+				onClick={() =>
+					setSelectedQueryHash(
+						props.query.queryHash === selectedQueryHash()
+							? null
+							: props.query.queryHash,
+					)
+				}
+				class={cx(
+					styles().queryRow,
+					selectedQueryHash() === props.query.queryHash &&
+						styles().selectedQueryRow,
+					"tsqd-query-row",
+				)}
+				aria-label={`Query key ${props.query.queryHash}`}
+			>
+				<div
+					class={cx(getObserverCountColorStyles(), "tsqd-query-observer-count")}
+				>
+					{observers()}
+				</div>
+				<code class="tsqd-query-hash">{props.query.queryHash}</code>
+				<Show when={isDisabled()}>
+					<div class="tsqd-query-disabled-indicator">disabled</div>
+				</Show>
+				<Show when={isStatic()}>
+					<div class="tsqd-query-static-indicator">static</div>
+				</Show>
+			</button>
+		</Show>
+	);
+};
 
 const MutationRow: Component<{ mutation: Mutation }> = (props) => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const { colors, alpha } = tokens
-  const t = (light: string, dark: string) => (theme() === 'dark' ? dark : light)
+	const { colors, alpha } = tokens;
+	const t = (light: string, dark: string) =>
+		theme() === "dark" ? dark : light;
 
-  const mutationState = createSubscribeToMutationCacheBatcher(
-    (mutationCache) => {
-      const mutations = mutationCache().getAll()
-      const mutation = mutations.find(
-        (m) => m.mutationId === props.mutation.mutationId,
-      )
-      return mutation?.state
-    },
-  )
+	const mutationState = createSubscribeToMutationCacheBatcher(
+		(mutationCache) => {
+			const mutations = mutationCache().getAll();
+			const mutation = mutations.find(
+				(m) => m.mutationId === props.mutation.mutationId,
+			);
+			return mutation?.state;
+		},
+	);
 
-  const isPaused = createSubscribeToMutationCacheBatcher((mutationCache) => {
-    const mutations = mutationCache().getAll()
-    const mutation = mutations.find(
-      (m) => m.mutationId === props.mutation.mutationId,
-    )
-    if (!mutation) return false
-    return mutation.state.isPaused
-  })
+	const isPaused = createSubscribeToMutationCacheBatcher((mutationCache) => {
+		const mutations = mutationCache().getAll();
+		const mutation = mutations.find(
+			(m) => m.mutationId === props.mutation.mutationId,
+		);
+		if (!mutation) return false;
+		return mutation.state.isPaused;
+	});
 
-  const status = createSubscribeToMutationCacheBatcher((mutationCache) => {
-    const mutations = mutationCache().getAll()
-    const mutation = mutations.find(
-      (m) => m.mutationId === props.mutation.mutationId,
-    )
-    if (!mutation) return 'idle'
-    return mutation.state.status
-  })
+	const status = createSubscribeToMutationCacheBatcher((mutationCache) => {
+		const mutations = mutationCache().getAll();
+		const mutation = mutations.find(
+			(m) => m.mutationId === props.mutation.mutationId,
+		);
+		if (!mutation) return "idle";
+		return mutation.state.status;
+	});
 
-  const color = createMemo(() =>
-    getMutationStatusColor({
-      isPaused: isPaused(),
-      status: status(),
-    }),
-  )
+	const color = createMemo(() =>
+		getMutationStatusColor({
+			isPaused: isPaused(),
+			status: status(),
+		}),
+	);
 
-  const getObserverCountColorStyles = () => {
-    if (color() === 'gray') {
-      return css`
+	const getObserverCountColorStyles = () => {
+		if (color() === "gray") {
+			return css`
         background-color: ${t(colors[color()][200], colors[color()][700])};
         color: ${t(colors[color()][700], colors[color()][300])};
-      `
-    }
+      `;
+		}
 
-    return css`
+		return css`
       background-color: ${t(
-        colors[color()][200] + alpha[80],
-        colors[color()][900],
-      )};
+				colors[color()][200] + alpha[80],
+				colors[color()][900],
+			)};
       color: ${t(colors[color()][800], colors[color()][300])};
-    `
-  }
+    `;
+	};
 
-  return (
-    <Show when={mutationState()}>
-      <button
-        onClick={() => {
-          setSelectedMutationId(
-            props.mutation.mutationId === selectedMutationId()
-              ? null
-              : props.mutation.mutationId,
-          )
-        }}
-        class={cx(
-          styles().queryRow,
-          selectedMutationId() === props.mutation.mutationId &&
-            styles().selectedQueryRow,
-          'tsqd-query-row',
-        )}
-        aria-label={`Mutation submitted at ${new Date(
-          props.mutation.state.submittedAt,
-        ).toLocaleString()}`}
-      >
-        <div
-          class={cx(getObserverCountColorStyles(), 'tsqd-query-observer-count')}
-        >
-          <Show when={color() === 'purple'}>
-            <PauseCircle />
-          </Show>
-          <Show when={color() === 'green'}>
-            <CheckCircle />
-          </Show>
-          <Show when={color() === 'red'}>
-            <XCircle />
-          </Show>
-          <Show when={color() === 'yellow'}>
-            <LoadingCircle />
-          </Show>
-        </div>
-        <code class="tsqd-query-hash">
-          <Show when={props.mutation.options.mutationKey}>
-            {JSON.stringify(props.mutation.options.mutationKey)} -{' '}
-          </Show>
-          {new Date(props.mutation.state.submittedAt).toLocaleString()}
-        </code>
-      </button>
-    </Show>
-  )
-}
+	return (
+		<Show when={mutationState()}>
+			<button
+				onClick={() => {
+					setSelectedMutationId(
+						props.mutation.mutationId === selectedMutationId()
+							? null
+							: props.mutation.mutationId,
+					);
+				}}
+				class={cx(
+					styles().queryRow,
+					selectedMutationId() === props.mutation.mutationId &&
+						styles().selectedQueryRow,
+					"tsqd-query-row",
+				)}
+				aria-label={`Mutation submitted at ${new Date(
+					props.mutation.state.submittedAt,
+				).toLocaleString()}`}
+			>
+				<div
+					class={cx(getObserverCountColorStyles(), "tsqd-query-observer-count")}
+				>
+					<Show when={color() === "purple"}>
+						<PauseCircle />
+					</Show>
+					<Show when={color() === "green"}>
+						<CheckCircle />
+					</Show>
+					<Show when={color() === "red"}>
+						<XCircle />
+					</Show>
+					<Show when={color() === "yellow"}>
+						<LoadingCircle />
+					</Show>
+				</div>
+				<code class="tsqd-query-hash">
+					<Show when={props.mutation.options.mutationKey}>
+						{JSON.stringify(props.mutation.options.mutationKey)} -{" "}
+					</Show>
+					{new Date(props.mutation.state.submittedAt).toLocaleString()}
+				</code>
+			</button>
+		</Show>
+	);
+};
 
 const QueryStatusCount: Component = () => {
-  const stale = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .filter((q) => getQueryStatusLabel(q) === 'stale').length,
-  )
+	const stale = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.filter((q) => getQueryStatusLabel(q) === "stale").length,
+	);
 
-  const fresh = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .filter((q) => getQueryStatusLabel(q) === 'fresh').length,
-  )
+	const fresh = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.filter((q) => getQueryStatusLabel(q) === "fresh").length,
+	);
 
-  const fetching = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .filter((q) => getQueryStatusLabel(q) === 'fetching').length,
-  )
+	const fetching = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.filter((q) => getQueryStatusLabel(q) === "fetching").length,
+	);
 
-  const paused = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .filter((q) => getQueryStatusLabel(q) === 'paused').length,
-  )
+	const paused = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.filter((q) => getQueryStatusLabel(q) === "paused").length,
+	);
 
-  const inactive = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .filter((q) => getQueryStatusLabel(q) === 'inactive').length,
-  )
+	const inactive = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.filter((q) => getQueryStatusLabel(q) === "inactive").length,
+	);
 
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  return (
-    <div
-      class={cx(styles().queryStatusContainer, 'tsqd-query-status-container')}
-    >
-      <QueryStatus label="Fresh" color="green" count={fresh()} />
-      <QueryStatus label="Fetching" color="blue" count={fetching()} />
-      <QueryStatus label="Paused" color="purple" count={paused()} />
-      <QueryStatus label="Stale" color="yellow" count={stale()} />
-      <QueryStatus label="Inactive" color="gray" count={inactive()} />
-    </div>
-  )
-}
+	return (
+		<div
+			class={cx(styles().queryStatusContainer, "tsqd-query-status-container")}
+		>
+			<QueryStatus label="Fresh" color="green" count={fresh()} />
+			<QueryStatus label="Fetching" color="blue" count={fetching()} />
+			<QueryStatus label="Paused" color="purple" count={paused()} />
+			<QueryStatus label="Stale" color="yellow" count={stale()} />
+			<QueryStatus label="Inactive" color="gray" count={inactive()} />
+		</div>
+	);
+};
 
 const MutationStatusCount: Component = () => {
-  const success = createSubscribeToMutationCacheBatcher(
-    (mutationCache) =>
-      mutationCache()
-        .getAll()
-        .filter(
-          (m) =>
-            getMutationStatusColor({
-              isPaused: m.state.isPaused,
-              status: m.state.status,
-            }) === 'green',
-        ).length,
-  )
+	const success = createSubscribeToMutationCacheBatcher(
+		(mutationCache) =>
+			mutationCache()
+				.getAll()
+				.filter(
+					(m) =>
+						getMutationStatusColor({
+							isPaused: m.state.isPaused,
+							status: m.state.status,
+						}) === "green",
+				).length,
+	);
 
-  const pending = createSubscribeToMutationCacheBatcher(
-    (mutationCache) =>
-      mutationCache()
-        .getAll()
-        .filter(
-          (m) =>
-            getMutationStatusColor({
-              isPaused: m.state.isPaused,
-              status: m.state.status,
-            }) === 'yellow',
-        ).length,
-  )
+	const pending = createSubscribeToMutationCacheBatcher(
+		(mutationCache) =>
+			mutationCache()
+				.getAll()
+				.filter(
+					(m) =>
+						getMutationStatusColor({
+							isPaused: m.state.isPaused,
+							status: m.state.status,
+						}) === "yellow",
+				).length,
+	);
 
-  const paused = createSubscribeToMutationCacheBatcher(
-    (mutationCache) =>
-      mutationCache()
-        .getAll()
-        .filter(
-          (m) =>
-            getMutationStatusColor({
-              isPaused: m.state.isPaused,
-              status: m.state.status,
-            }) === 'purple',
-        ).length,
-  )
+	const paused = createSubscribeToMutationCacheBatcher(
+		(mutationCache) =>
+			mutationCache()
+				.getAll()
+				.filter(
+					(m) =>
+						getMutationStatusColor({
+							isPaused: m.state.isPaused,
+							status: m.state.status,
+						}) === "purple",
+				).length,
+	);
 
-  const error = createSubscribeToMutationCacheBatcher(
-    (mutationCache) =>
-      mutationCache()
-        .getAll()
-        .filter(
-          (m) =>
-            getMutationStatusColor({
-              isPaused: m.state.isPaused,
-              status: m.state.status,
-            }) === 'red',
-        ).length,
-  )
+	const error = createSubscribeToMutationCacheBatcher(
+		(mutationCache) =>
+			mutationCache()
+				.getAll()
+				.filter(
+					(m) =>
+						getMutationStatusColor({
+							isPaused: m.state.isPaused,
+							status: m.state.status,
+						}) === "red",
+				).length,
+	);
 
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  return (
-    <div
-      class={cx(styles().queryStatusContainer, 'tsqd-query-status-container')}
-    >
-      <QueryStatus label="Paused" color="purple" count={paused()} />
-      <QueryStatus label="Pending" color="yellow" count={pending()} />
-      <QueryStatus label="Success" color="green" count={success()} />
-      <QueryStatus label="Error" color="red" count={error()} />
-    </div>
-  )
-}
+	return (
+		<div
+			class={cx(styles().queryStatusContainer, "tsqd-query-status-container")}
+		>
+			<QueryStatus label="Paused" color="purple" count={paused()} />
+			<QueryStatus label="Pending" color="yellow" count={pending()} />
+			<QueryStatus label="Success" color="green" count={success()} />
+			<QueryStatus label="Error" color="red" count={error()} />
+		</div>
+	);
+};
 
 const QueryStatus: Component<QueryStatusProps> = (props) => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const { colors, alpha } = tokens
-  const t = (light: string, dark: string) => (theme() === 'dark' ? dark : light)
+	const { colors, alpha } = tokens;
+	const t = (light: string, dark: string) =>
+		theme() === "dark" ? dark : light;
 
-  let tagRef!: HTMLButtonElement
+	let tagRef!: HTMLButtonElement;
 
-  const [mouseOver, setMouseOver] = createSignal(false)
-  const [focused, setFocused] = createSignal(false)
+	const [mouseOver, setMouseOver] = createSignal(false);
+	const [focused, setFocused] = createSignal(false);
 
-  const showLabel = createMemo(() => {
-    if (selectedQueryHash()) {
-      if (panelWidth() < firstBreakpoint && panelWidth() > secondBreakpoint) {
-        return false
-      }
-    }
-    if (panelWidth() < secondBreakpoint) {
-      return false
-    }
+	const showLabel = createMemo(() => {
+		if (selectedQueryHash()) {
+			if (panelWidth() < firstBreakpoint && panelWidth() > secondBreakpoint) {
+				return false;
+			}
+		}
+		if (panelWidth() < secondBreakpoint) {
+			return false;
+		}
 
-    return true
-  })
+		return true;
+	});
 
-  return (
-    <button
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      onMouseEnter={() => setMouseOver(true)}
-      onMouseLeave={() => {
-        setMouseOver(false)
-        setFocused(false)
-      }}
-      disabled={showLabel()}
-      ref={tagRef}
-      class={cx(
-        styles().queryStatusTag,
-        !showLabel() &&
-          css`
+	return (
+		<button
+			onFocus={() => setFocused(true)}
+			onBlur={() => setFocused(false)}
+			onMouseEnter={() => setMouseOver(true)}
+			onMouseLeave={() => {
+				setMouseOver(false);
+				setFocused(false);
+			}}
+			disabled={showLabel()}
+			ref={tagRef}
+			class={cx(
+				styles().queryStatusTag,
+				!showLabel() &&
+					css`
             cursor: pointer;
             &:hover {
               background: ${t(
-                  colors.gray[200],
-                  colors.darkGray[400],
-                )}${alpha[80]};
+								colors.gray[200],
+								colors.darkGray[400],
+							)}${alpha[80]};
             }
           `,
-        'tsqd-query-status-tag',
-        `tsqd-query-status-tag-${props.label.toLowerCase()}`,
-      )}
-      {...(mouseOver() || focused()
-        ? {
-            'aria-describedby': 'tsqd-status-tooltip',
-          }
-        : {})}
-    >
-      <Show when={!showLabel() && (mouseOver() || focused())}>
-        <div
-          role="tooltip"
-          id="tsqd-status-tooltip"
-          class={cx(styles().statusTooltip, 'tsqd-query-status-tooltip')}
-        >
-          {props.label}
-        </div>
-      </Show>
-      <span
-        class={cx(
-          css`
+				"tsqd-query-status-tag",
+				`tsqd-query-status-tag-${props.label.toLowerCase()}`,
+			)}
+			{...(mouseOver() || focused()
+				? {
+						"aria-describedby": "tsqd-status-tooltip",
+					}
+				: {})}
+		>
+			<Show when={!showLabel() && (mouseOver() || focused())}>
+				<div
+					role="tooltip"
+					id="tsqd-status-tooltip"
+					class={cx(styles().statusTooltip, "tsqd-query-status-tooltip")}
+				>
+					{props.label}
+				</div>
+			</Show>
+			<span
+				class={cx(
+					css`
             width: ${tokens.size[1.5]};
             height: ${tokens.size[1.5]};
             border-radius: ${tokens.border.radius.full};
             background-color: ${tokens.colors[props.color][500]};
           `,
-          'tsqd-query-status-tag-dot',
-        )}
-      />
-      <Show when={showLabel()}>
-        <span
-          class={cx(
-            styles().queryStatusTagLabel,
-            'tsqd-query-status-tag-label',
-          )}
-        >
-          {props.label}
-        </span>
-      </Show>
-      <span
-        class={cx(
-          styles().queryStatusCount,
-          props.count > 0 &&
-            props.color !== 'gray' &&
-            css`
+					"tsqd-query-status-tag-dot",
+				)}
+			/>
+			<Show when={showLabel()}>
+				<span
+					class={cx(
+						styles().queryStatusTagLabel,
+						"tsqd-query-status-tag-label",
+					)}
+				>
+					{props.label}
+				</span>
+			</Show>
+			<span
+				class={cx(
+					styles().queryStatusCount,
+					props.count > 0 &&
+						props.color !== "gray" &&
+						css`
               background-color: ${t(
-                colors[props.color][100],
-                colors[props.color][900],
-              )};
+								colors[props.color][100],
+								colors[props.color][900],
+							)};
               color: ${t(colors[props.color][700], colors[props.color][300])};
             `,
-          'tsqd-query-status-tag-count',
-        )}
-      >
-        {props.count}
-      </span>
-    </button>
-  )
-}
+					"tsqd-query-status-tag-count",
+				)}
+			>
+				{props.count}
+			</span>
+		</button>
+	);
+};
 
 const QueryDetails = () => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const { colors } = tokens
-  const t = (light: string, dark: string) => (theme() === 'dark' ? dark : light)
+	const { colors } = tokens;
+	const t = (light: string, dark: string) =>
+		theme() === "dark" ? dark : light;
 
-  const queryClient = useQueryDevtoolsContext().client
+	const queryClient = useQueryDevtoolsContext().client;
 
-  const [restoringLoading, setRestoringLoading] = createSignal(false)
-  const [dataMode, setDataMode] = createSignal<'view' | 'edit'>('view')
-  const [dataEditError, setDataEditError] = createSignal<boolean>(false)
+	const [restoringLoading, setRestoringLoading] = createSignal(false);
+	const [dataMode, setDataMode] = createSignal<"view" | "edit">("view");
+	const [dataEditError, setDataEditError] = createSignal<boolean>(false);
 
-  const errorTypes = createMemo(() => {
-    return useQueryDevtoolsContext().errorTypes || []
-  })
+	const errorTypes = createMemo(() => {
+		return useQueryDevtoolsContext().errorTypes || [];
+	});
 
-  const activeQuery = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .find((query) => query.queryHash === selectedQueryHash()),
-    false,
-  )
+	const activeQuery = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.find((query) => query.queryHash === selectedQueryHash()),
+		false,
+	);
 
-  const activeQueryFresh = createSubscribeToQueryCacheBatcher((queryCache) => {
-    return queryCache()
-      .getAll()
-      .find((query) => query.queryHash === selectedQueryHash())
-  }, false)
+	const activeQueryFresh = createSubscribeToQueryCacheBatcher((queryCache) => {
+		return queryCache()
+			.getAll()
+			.find((query) => query.queryHash === selectedQueryHash());
+	}, false);
 
-  const activeQueryState = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .find((query) => query.queryHash === selectedQueryHash())?.state,
-    false,
-  )
+	const activeQueryState = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.find((query) => query.queryHash === selectedQueryHash())?.state,
+		false,
+	);
 
-  const activeQueryStateData = createSubscribeToQueryCacheBatcher(
-    (queryCache) => {
-      return queryCache()
-        .getAll()
-        .find((query) => query.queryHash === selectedQueryHash())?.state.data
-    },
-    false,
-  )
+	const activeQueryStateData = createSubscribeToQueryCacheBatcher(
+		(queryCache) => {
+			return queryCache()
+				.getAll()
+				.find((query) => query.queryHash === selectedQueryHash())?.state.data;
+		},
+		false,
+	);
 
-  const statusLabel = createSubscribeToQueryCacheBatcher((queryCache) => {
-    const query = queryCache()
-      .getAll()
-      .find((q) => q.queryHash === selectedQueryHash())
-    if (!query) return 'inactive'
-    return getQueryStatusLabel(query)
-  })
+	const statusLabel = createSubscribeToQueryCacheBatcher((queryCache) => {
+		const query = queryCache()
+			.getAll()
+			.find((q) => q.queryHash === selectedQueryHash());
+		if (!query) return "inactive";
+		return getQueryStatusLabel(query);
+	});
 
-  const queryStatus = createSubscribeToQueryCacheBatcher((queryCache) => {
-    const query = queryCache()
-      .getAll()
-      .find((q) => q.queryHash === selectedQueryHash())
-    if (!query) return 'pending'
-    return query.state.status
-  })
+	const queryStatus = createSubscribeToQueryCacheBatcher((queryCache) => {
+		const query = queryCache()
+			.getAll()
+			.find((q) => q.queryHash === selectedQueryHash());
+		if (!query) return "pending";
+		return query.state.status;
+	});
 
-  const observerCount = createSubscribeToQueryCacheBatcher(
-    (queryCache) =>
-      queryCache()
-        .getAll()
-        .find((query) => query.queryHash === selectedQueryHash())
-        ?.getObserversCount() ?? 0,
-  )
+	const observerCount = createSubscribeToQueryCacheBatcher(
+		(queryCache) =>
+			queryCache()
+				.getAll()
+				.find((query) => query.queryHash === selectedQueryHash())
+				?.getObserversCount() ?? 0,
+	);
 
-  const color = createMemo(() => getQueryStatusColorByLabel(statusLabel()))
+	const color = createMemo(() => getQueryStatusColorByLabel(statusLabel()));
 
-  const handleRefetch = () => {
-    sendDevToolsEvent({ type: 'REFETCH', queryHash: activeQuery()?.queryHash })
-    const promise = activeQuery()?.fetch()
-    promise?.catch(() => {})
-  }
+	const handleRefetch = () => {
+		sendDevToolsEvent({ type: "REFETCH", queryHash: activeQuery()?.queryHash });
+		const promise = activeQuery()?.fetch();
+		promise?.catch(() => {});
+	};
 
-  const triggerError = (errorType?: DevtoolsErrorType) => {
-    const activeQueryVal = activeQuery()
-    if (!activeQueryVal) return
-    sendDevToolsEvent({
-      type: 'TRIGGER_ERROR',
-      queryHash: activeQueryVal.queryHash,
-      metadata: { error: errorType?.name },
-    })
-    const error =
-      errorType?.initializer(activeQueryVal) ??
-      new Error('Unknown error from devtools')
+	const triggerError = (errorType?: DevtoolsErrorType) => {
+		const activeQueryVal = activeQuery();
+		if (!activeQueryVal) return;
+		sendDevToolsEvent({
+			type: "TRIGGER_ERROR",
+			queryHash: activeQueryVal.queryHash,
+			metadata: { error: errorType?.name },
+		});
+		const error =
+			errorType?.initializer(activeQueryVal) ??
+			new Error("Unknown error from devtools");
 
-    const __previousQueryOptions = activeQueryVal.options
+		const __previousQueryOptions = activeQueryVal.options;
 
-    activeQueryVal.setState({
-      status: 'error',
-      error,
-      fetchMeta: {
-        ...activeQueryVal.state.fetchMeta,
-        __previousQueryOptions,
-      } as any,
-    } as QueryState<unknown, Error>)
-  }
+		activeQueryVal.setState({
+			status: "error",
+			error,
+			fetchMeta: {
+				...activeQueryVal.state.fetchMeta,
+				__previousQueryOptions,
+			} as any,
+		} as QueryState<unknown, Error>);
+	};
 
-  const restoreQueryAfterLoadingOrError = () => {
-    const activeQueryVal = activeQuery()
-    if (!activeQueryVal) return
+	const restoreQueryAfterLoadingOrError = () => {
+		const activeQueryVal = activeQuery();
+		if (!activeQueryVal) return;
 
-    sendDevToolsEvent({
-      type: 'RESTORE_LOADING',
-      queryHash: activeQueryVal.queryHash,
-    })
-    const previousState = activeQueryVal.state
-    const previousOptions = activeQueryVal.state.fetchMeta
-      ? (activeQueryVal.state.fetchMeta as any).__previousQueryOptions
-      : null
+		sendDevToolsEvent({
+			type: "RESTORE_LOADING",
+			queryHash: activeQueryVal.queryHash,
+		});
+		const previousState = activeQueryVal.state;
+		const previousOptions = activeQueryVal.state.fetchMeta
+			? (activeQueryVal.state.fetchMeta as any).__previousQueryOptions
+			: null;
 
-    activeQueryVal.cancel({ silent: true })
-    activeQueryVal.setState({
-      ...previousState,
-      fetchStatus: 'idle',
-      fetchMeta: null,
-    })
+		activeQueryVal.cancel({ silent: true });
+		activeQueryVal.setState({
+			...previousState,
+			fetchStatus: "idle",
+			fetchMeta: null,
+		});
 
-    if (previousOptions) {
-      activeQueryVal.fetch(previousOptions)
-    }
-  }
+		if (previousOptions) {
+			activeQueryVal.fetch(previousOptions);
+		}
+	};
 
-  createEffect(() => {
-    if (statusLabel() !== 'fetching') {
-      setRestoringLoading(false)
-    }
-  })
+	createEffect(() => {
+		if (statusLabel() !== "fetching") {
+			setRestoringLoading(false);
+		}
+	});
 
-  const getQueryStatusColors = () => {
-    if (color() === 'gray') {
-      return css`
+	const getQueryStatusColors = () => {
+		if (color() === "gray") {
+			return css`
         background-color: ${t(colors[color()][200], colors[color()][700])};
         color: ${t(colors[color()][700], colors[color()][300])};
         border-color: ${t(colors[color()][400], colors[color()][600])};
-      `
-    }
-    return css`
+      `;
+		}
+		return css`
       background-color: ${t(colors[color()][100], colors[color()][900])};
       color: ${t(colors[color()][700], colors[color()][300])};
       border-color: ${t(colors[color()][400], colors[color()][600])};
-    `
-  }
+    `;
+	};
 
-  return (
-    <Show when={activeQuery() && activeQueryState()}>
-      <div
-        class={cx(styles().detailsContainer, 'tsqd-query-details-container')}
-      >
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Query Details
-        </div>
-        <div
-          class={cx(
-            styles().detailsBody,
-            'tsqd-query-details-summary-container',
-          )}
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <div class="tsqd-query-details-summary">
-            <pre>
-              <code>{displayValue(activeQuery()!.queryKey, true)}</code>
-            </pre>
-            <span
-              class={cx(styles().queryDetailsStatus, getQueryStatusColors())}
-            >
-              {statusLabel()}
-            </span>
-          </div>
-          <div class="tsqd-query-details-observers-count">
-            <span>Observers:</span>
-            <span>{observerCount()}</span>
-          </div>
-          <div class="tsqd-query-details-last-updated">
-            <span>Last Updated:</span>
-            <span>
-              {new Date(activeQueryState()!.dataUpdatedAt).toLocaleTimeString()}
-            </span>
-          </div>
-        </div>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Actions
-        </div>
-        <div
-          class={cx(
-            styles().actionsBody,
-            'tsqd-query-details-actions-container',
-          )}
-        >
-          <button
-            class={cx(
-              css`
+	return (
+		<Show when={activeQuery() && activeQueryState()}>
+			<div
+				class={cx(styles().detailsContainer, "tsqd-query-details-container")}
+			>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Query Details
+				</div>
+				<div
+					class={cx(
+						styles().detailsBody,
+						"tsqd-query-details-summary-container",
+					)}
+					role="status"
+					aria-live="polite"
+					aria-atomic="true"
+				>
+					<div class="tsqd-query-details-summary">
+						<pre>
+							<code>{displayValue(activeQuery()!.queryKey, true)}</code>
+						</pre>
+						<span
+							class={cx(styles().queryDetailsStatus, getQueryStatusColors())}
+						>
+							{statusLabel()}
+						</span>
+					</div>
+					<div class="tsqd-query-details-observers-count">
+						<span>Observers:</span>
+						<span>{observerCount()}</span>
+					</div>
+					<div class="tsqd-query-details-last-updated">
+						<span>Last Updated:</span>
+						<span>
+							{new Date(activeQueryState()!.dataUpdatedAt).toLocaleTimeString()}
+						</span>
+					</div>
+				</div>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Actions
+				</div>
+				<div
+					class={cx(
+						styles().actionsBody,
+						"tsqd-query-details-actions-container",
+					)}
+				>
+					<button
+						class={cx(
+							css`
                 color: ${t(colors.blue[600], colors.blue[400])};
               `,
-              'tsqd-query-details-actions-btn',
-              'tsqd-query-details-action-refetch',
-            )}
-            onClick={handleRefetch}
-            disabled={statusLabel() === 'fetching'}
-          >
-            <span
-              class={css`
+							"tsqd-query-details-actions-btn",
+							"tsqd-query-details-action-refetch",
+						)}
+						onClick={handleRefetch}
+						disabled={statusLabel() === "fetching"}
+					>
+						<span
+							class={css`
                 background-color: ${t(colors.blue[600], colors.blue[400])};
               `}
-            ></span>
-            Refetch
-          </button>
-          <button
-            class={cx(
-              css`
+						></span>
+						Refetch
+					</button>
+					<button
+						class={cx(
+							css`
                 color: ${t(colors.yellow[600], colors.yellow[400])};
               `,
-              'tsqd-query-details-actions-btn',
-              'tsqd-query-details-action-invalidate',
-            )}
-            onClick={() => {
-              sendDevToolsEvent({
-                type: 'INVALIDATE',
-                queryHash: activeQuery()?.queryHash,
-              })
-              queryClient.invalidateQueries(activeQuery())
-            }}
-            disabled={queryStatus() === 'pending'}
-          >
-            <span
-              class={css`
+							"tsqd-query-details-actions-btn",
+							"tsqd-query-details-action-invalidate",
+						)}
+						onClick={() => {
+							sendDevToolsEvent({
+								type: "INVALIDATE",
+								queryHash: activeQuery()?.queryHash,
+							});
+							queryClient.invalidateQueries(activeQuery());
+						}}
+						disabled={queryStatus() === "pending"}
+					>
+						<span
+							class={css`
                 background-color: ${t(colors.yellow[600], colors.yellow[400])};
               `}
-            ></span>
-            Invalidate
-          </button>
-          <button
-            class={cx(
-              css`
+						></span>
+						Invalidate
+					</button>
+					<button
+						class={cx(
+							css`
                 color: ${t(colors.gray[600], colors.gray[300])};
               `,
-              'tsqd-query-details-actions-btn',
-              'tsqd-query-details-action-reset',
-            )}
-            onClick={() => {
-              sendDevToolsEvent({
-                type: 'RESET',
-                queryHash: activeQuery()?.queryHash,
-              })
-              queryClient.resetQueries(activeQuery())
-            }}
-            disabled={queryStatus() === 'pending'}
-          >
-            <span
-              class={css`
+							"tsqd-query-details-actions-btn",
+							"tsqd-query-details-action-reset",
+						)}
+						onClick={() => {
+							sendDevToolsEvent({
+								type: "RESET",
+								queryHash: activeQuery()?.queryHash,
+							});
+							queryClient.resetQueries(activeQuery());
+						}}
+						disabled={queryStatus() === "pending"}
+					>
+						<span
+							class={css`
                 background-color: ${t(colors.gray[600], colors.gray[400])};
               `}
-            ></span>
-            Reset
-          </button>
-          <button
-            class={cx(
-              css`
+						></span>
+						Reset
+					</button>
+					<button
+						class={cx(
+							css`
                 color: ${t(colors.pink[500], colors.pink[400])};
               `,
-              'tsqd-query-details-actions-btn',
-              'tsqd-query-details-action-remove',
-            )}
-            onClick={() => {
-              sendDevToolsEvent({
-                type: 'REMOVE',
-                queryHash: activeQuery()?.queryHash,
-              })
-              queryClient.removeQueries(activeQuery())
-              setSelectedQueryHash(null)
-            }}
-            disabled={statusLabel() === 'fetching'}
-          >
-            <span
-              class={css`
+							"tsqd-query-details-actions-btn",
+							"tsqd-query-details-action-remove",
+						)}
+						onClick={() => {
+							sendDevToolsEvent({
+								type: "REMOVE",
+								queryHash: activeQuery()?.queryHash,
+							});
+							queryClient.removeQueries(activeQuery());
+							setSelectedQueryHash(null);
+						}}
+						disabled={statusLabel() === "fetching"}
+					>
+						<span
+							class={css`
                 background-color: ${t(colors.pink[500], colors.pink[400])};
               `}
-            ></span>
-            Remove
-          </button>
-          <button
-            class={cx(
-              css`
+						></span>
+						Remove
+					</button>
+					<button
+						class={cx(
+							css`
                 color: ${t(colors.cyan[500], colors.cyan[400])};
               `,
-              'tsqd-query-details-actions-btn',
-              'tsqd-query-details-action-loading',
-            )}
-            disabled={restoringLoading()}
-            onClick={() => {
-              if (activeQuery()?.state.data === undefined) {
-                setRestoringLoading(true)
-                restoreQueryAfterLoadingOrError()
-              } else {
-                const activeQueryVal = activeQuery()
-                if (!activeQueryVal) return
-                sendDevToolsEvent({
-                  type: 'TRIGGER_LOADING',
-                  queryHash: activeQueryVal.queryHash,
-                })
-                const __previousQueryOptions = activeQueryVal.options
-                // Trigger a fetch in order to trigger suspense as well.
-                activeQueryVal.fetch({
-                  ...__previousQueryOptions,
-                  queryFn: () => {
-                    return new Promise(() => {
-                      // Never resolve
-                    })
-                  },
-                  gcTime: -1,
-                })
-                activeQueryVal.setState({
-                  data: undefined,
-                  status: 'pending',
-                  fetchMeta: {
-                    ...activeQueryVal.state.fetchMeta,
-                    __previousQueryOptions,
-                  } as any,
-                } as QueryState<unknown, Error>)
-              }
-            }}
-          >
-            <span
-              class={css`
+							"tsqd-query-details-actions-btn",
+							"tsqd-query-details-action-loading",
+						)}
+						disabled={restoringLoading()}
+						onClick={() => {
+							if (activeQuery()?.state.data === undefined) {
+								setRestoringLoading(true);
+								restoreQueryAfterLoadingOrError();
+							} else {
+								const activeQueryVal = activeQuery();
+								if (!activeQueryVal) return;
+								sendDevToolsEvent({
+									type: "TRIGGER_LOADING",
+									queryHash: activeQueryVal.queryHash,
+								});
+								const __previousQueryOptions = activeQueryVal.options;
+								// Trigger a fetch in order to trigger suspense as well.
+								activeQueryVal.fetch({
+									...__previousQueryOptions,
+									queryFn: () => {
+										return new Promise(() => {
+											// Never resolve
+										});
+									},
+									gcTime: -1,
+								});
+								activeQueryVal.setState({
+									data: undefined,
+									status: "pending",
+									fetchMeta: {
+										...activeQueryVal.state.fetchMeta,
+										__previousQueryOptions,
+									} as any,
+								} as QueryState<unknown, Error>);
+							}
+						}}
+					>
+						<span
+							class={css`
                 background-color: ${t(colors.cyan[500], colors.cyan[400])};
               `}
-            ></span>
-            {queryStatus() === 'pending' ? 'Restore' : 'Trigger'} Loading
-          </button>
-          <Show when={errorTypes().length === 0 || queryStatus() === 'error'}>
-            <button
-              class={cx(
-                css`
+						></span>
+						{queryStatus() === "pending" ? "Restore" : "Trigger"} Loading
+					</button>
+					<Show when={errorTypes().length === 0 || queryStatus() === "error"}>
+						<button
+							class={cx(
+								css`
                   color: ${t(colors.red[500], colors.red[400])};
                 `,
-                'tsqd-query-details-actions-btn',
-                'tsqd-query-details-action-error',
-              )}
-              onClick={() => {
-                if (!activeQuery()!.state.error) {
-                  triggerError()
-                } else {
-                  sendDevToolsEvent({
-                    type: 'RESTORE_ERROR',
-                    queryHash: activeQuery()?.queryHash,
-                  })
-                  queryClient.resetQueries(activeQuery())
-                }
-              }}
-              disabled={queryStatus() === 'pending'}
-            >
-              <span
-                class={css`
+								"tsqd-query-details-actions-btn",
+								"tsqd-query-details-action-error",
+							)}
+							onClick={() => {
+								if (!activeQuery()!.state.error) {
+									triggerError();
+								} else {
+									sendDevToolsEvent({
+										type: "RESTORE_ERROR",
+										queryHash: activeQuery()?.queryHash,
+									});
+									queryClient.resetQueries(activeQuery());
+								}
+							}}
+							disabled={queryStatus() === "pending"}
+						>
+							<span
+								class={css`
                   background-color: ${t(colors.red[500], colors.red[400])};
                 `}
-              ></span>
-              {queryStatus() === 'error' ? 'Restore' : 'Trigger'} Error
-            </button>
-          </Show>
-          <Show
-            when={!(errorTypes().length === 0 || queryStatus() === 'error')}
-          >
-            <div
-              class={cx(
-                styles().actionsSelect,
-                'tsqd-query-details-actions-btn',
-                'tsqd-query-details-action-error-multiple',
-              )}
-            >
-              <span
-                class={css`
+							></span>
+							{queryStatus() === "error" ? "Restore" : "Trigger"} Error
+						</button>
+					</Show>
+					<Show
+						when={!(errorTypes().length === 0 || queryStatus() === "error")}
+					>
+						<div
+							class={cx(
+								styles().actionsSelect,
+								"tsqd-query-details-actions-btn",
+								"tsqd-query-details-action-error-multiple",
+							)}
+						>
+							<span
+								class={css`
                   background-color: ${tokens.colors.red[400]};
                 `}
-              ></span>
-              Trigger Error
-              <select
-                disabled={queryStatus() === 'pending'}
-                onChange={(e) => {
-                  const errorType = errorTypes().find(
-                    (et) => et.name === e.currentTarget.value,
-                  )
+							></span>
+							Trigger Error
+							<select
+								disabled={queryStatus() === "pending"}
+								onChange={(e) => {
+									const errorType = errorTypes().find(
+										(et) => et.name === e.currentTarget.value,
+									);
 
-                  triggerError(errorType)
-                }}
-              >
-                <option value="" disabled selected></option>
-                <For each={errorTypes()}>
-                  {(errorType) => (
-                    <option value={errorType.name}>{errorType.name}</option>
-                  )}
-                </For>
-              </select>
-              <ChevronDown />
-            </div>
-          </Show>
-        </div>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Data {dataMode() === 'view' ? 'Explorer' : 'Editor'}
-        </div>
-        <Show when={dataMode() === 'view'}>
-          <div
-            style={{
-              padding: tokens.size[2],
-            }}
-            class="tsqd-query-details-explorer-container tsqd-query-details-data-explorer"
-          >
-            <Explorer
-              label="Data"
-              defaultExpanded={['Data']}
-              value={activeQueryStateData()}
-              editable={true}
-              onEdit={() => setDataMode('edit')}
-              activeQuery={activeQuery()}
-            />
-          </div>
-        </Show>
-        <Show when={dataMode() === 'edit'}>
-          <form
-            class={cx(
-              styles().devtoolsEditForm,
-              'tsqd-query-details-data-editor',
-            )}
-            onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.currentTarget)
-              const data = formData.get('data') as string
-              try {
-                const parsedData = JSON.parse(data)
-                activeQuery()!.setState({
-                  ...activeQuery()!.state,
-                  data: parsedData,
-                })
-                setDataMode('view')
-              } catch (error) {
-                setDataEditError(true)
-              }
-            }}
-          >
-            <textarea
-              name="data"
-              class={styles().devtoolsEditTextarea}
-              onFocus={() => setDataEditError(false)}
-              data-error={dataEditError()}
-              value={JSON.stringify(activeQueryStateData(), null, 2)}
-            ></textarea>
-            <div class={styles().devtoolsEditFormActions}>
-              <span class={styles().devtoolsEditFormError}>
-                {dataEditError() ? 'Invalid Value' : ''}
-              </span>
-              <div class={styles().devtoolsEditFormActionContainer}>
-                <button
-                  class={cx(
-                    styles().devtoolsEditFormAction,
-                    css`
+									triggerError(errorType);
+								}}
+							>
+								<option value="" disabled selected></option>
+								<For each={errorTypes()}>
+									{(errorType) => (
+										<option value={errorType.name}>{errorType.name}</option>
+									)}
+								</For>
+							</select>
+							<ChevronDown />
+						</div>
+					</Show>
+				</div>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Data {dataMode() === "view" ? "Explorer" : "Editor"}
+				</div>
+				<Show when={dataMode() === "view"}>
+					<div
+						style={{
+							padding: tokens.size[2],
+						}}
+						class="tsqd-query-details-explorer-container tsqd-query-details-data-explorer"
+					>
+						<Explorer
+							label="Data"
+							defaultExpanded={["Data"]}
+							value={activeQueryStateData()}
+							editable={true}
+							onEdit={() => setDataMode("edit")}
+							activeQuery={activeQuery()}
+						/>
+					</div>
+				</Show>
+				<Show when={dataMode() === "edit"}>
+					<form
+						class={cx(
+							styles().devtoolsEditForm,
+							"tsqd-query-details-data-editor",
+						)}
+						onSubmit={(e) => {
+							e.preventDefault();
+							const formData = new FormData(e.currentTarget);
+							const data = formData.get("data") as string;
+							try {
+								const parsedData = JSON.parse(data);
+								activeQuery()!.setState({
+									...activeQuery()!.state,
+									data: parsedData,
+								});
+								setDataMode("view");
+							} catch (error) {
+								setDataEditError(true);
+							}
+						}}
+					>
+						<textarea
+							name="data"
+							class={styles().devtoolsEditTextarea}
+							onFocus={() => setDataEditError(false)}
+							data-error={dataEditError()}
+							value={JSON.stringify(activeQueryStateData(), null, 2)}
+						></textarea>
+						<div class={styles().devtoolsEditFormActions}>
+							<span class={styles().devtoolsEditFormError}>
+								{dataEditError() ? "Invalid Value" : ""}
+							</span>
+							<div class={styles().devtoolsEditFormActionContainer}>
+								<button
+									class={cx(
+										styles().devtoolsEditFormAction,
+										css`
                       color: ${t(colors.gray[600], colors.gray[300])};
                     `,
-                  )}
-                  type="button"
-                  onClick={() => setDataMode('view')}
-                >
-                  Cancel
-                </button>
-                <button
-                  class={cx(
-                    styles().devtoolsEditFormAction,
-                    css`
+									)}
+									type="button"
+									onClick={() => setDataMode("view")}
+								>
+									Cancel
+								</button>
+								<button
+									class={cx(
+										styles().devtoolsEditFormAction,
+										css`
                       color: ${t(colors.blue[600], colors.blue[400])};
                     `,
-                  )}
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </form>
-        </Show>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Query Explorer
-        </div>
-        <div
-          style={{
-            padding: tokens.size[2],
-          }}
-          class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
-        >
-          <Explorer
-            label="Query"
-            defaultExpanded={['Query', 'queryKey']}
-            value={activeQueryFresh()}
-          />
-        </div>
-      </div>
-    </Show>
-  )
-}
+									)}
+								>
+									Save
+								</button>
+							</div>
+						</div>
+					</form>
+				</Show>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Query Explorer
+				</div>
+				<div
+					style={{
+						padding: tokens.size[2],
+					}}
+					class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
+				>
+					<Explorer
+						label="Query"
+						defaultExpanded={["Query", "queryKey"]}
+						value={activeQueryFresh()}
+					/>
+				</div>
+			</div>
+		</Show>
+	);
+};
 
 const MutationDetails = () => {
-  const theme = useTheme()
-  const css = useQueryDevtoolsContext().shadowDOMTarget
-    ? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
-    : goober.css
-  const styles = createMemo(() => {
-    return theme() === 'dark' ? darkStyles(css) : lightStyles(css)
-  })
+	const theme = useTheme();
+	const css = useQueryDevtoolsContext().shadowDOMTarget
+		? goober.css.bind({ target: useQueryDevtoolsContext().shadowDOMTarget })
+		: goober.css;
+	const styles = createMemo(() => {
+		return theme() === "dark" ? darkStyles(css) : lightStyles(css);
+	});
 
-  const { colors } = tokens
-  const t = (light: string, dark: string) => (theme() === 'dark' ? dark : light)
+	const { colors } = tokens;
+	const t = (light: string, dark: string) =>
+		theme() === "dark" ? dark : light;
 
-  const isPaused = createSubscribeToMutationCacheBatcher((mutationCache) => {
-    const mutations = mutationCache().getAll()
-    const mutation = mutations.find(
-      (m) => m.mutationId === selectedMutationId(),
-    )
-    if (!mutation) return false
-    return mutation.state.isPaused
-  })
+	const isPaused = createSubscribeToMutationCacheBatcher((mutationCache) => {
+		const mutations = mutationCache().getAll();
+		const mutation = mutations.find(
+			(m) => m.mutationId === selectedMutationId(),
+		);
+		if (!mutation) return false;
+		return mutation.state.isPaused;
+	});
 
-  const status = createSubscribeToMutationCacheBatcher((mutationCache) => {
-    const mutations = mutationCache().getAll()
-    const mutation = mutations.find(
-      (m) => m.mutationId === selectedMutationId(),
-    )
-    if (!mutation) return 'idle'
-    return mutation.state.status
-  })
+	const status = createSubscribeToMutationCacheBatcher((mutationCache) => {
+		const mutations = mutationCache().getAll();
+		const mutation = mutations.find(
+			(m) => m.mutationId === selectedMutationId(),
+		);
+		if (!mutation) return "idle";
+		return mutation.state.status;
+	});
 
-  const color = createMemo(() =>
-    getMutationStatusColor({
-      isPaused: isPaused(),
-      status: status(),
-    }),
-  )
+	const color = createMemo(() =>
+		getMutationStatusColor({
+			isPaused: isPaused(),
+			status: status(),
+		}),
+	);
 
-  const activeMutation = createSubscribeToMutationCacheBatcher(
-    (mutationCache) =>
-      mutationCache()
-        .getAll()
-        .find((mutation) => mutation.mutationId === selectedMutationId()),
-    false,
-  )
+	const activeMutation = createSubscribeToMutationCacheBatcher(
+		(mutationCache) =>
+			mutationCache()
+				.getAll()
+				.find((mutation) => mutation.mutationId === selectedMutationId()),
+		false,
+	);
 
-  const getQueryStatusColors = () => {
-    if (color() === 'gray') {
-      return css`
+	const getQueryStatusColors = () => {
+		if (color() === "gray") {
+			return css`
         background-color: ${t(colors[color()][200], colors[color()][700])};
         color: ${t(colors[color()][700], colors[color()][300])};
         border-color: ${t(colors[color()][400], colors[color()][600])};
-      `
-    }
-    return css`
+      `;
+		}
+		return css`
       background-color: ${t(colors[color()][100], colors[color()][900])};
       color: ${t(colors[color()][700], colors[color()][300])};
       border-color: ${t(colors[color()][400], colors[color()][600])};
-    `
-  }
+    `;
+	};
 
-  return (
-    <Show when={activeMutation()}>
-      <div
-        class={cx(styles().detailsContainer, 'tsqd-query-details-container')}
-      >
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Mutation Details
-        </div>
-        <div
-          class={cx(
-            styles().detailsBody,
-            'tsqd-query-details-summary-container',
-          )}
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <div class="tsqd-query-details-summary">
-            <pre>
-              <code>
-                <Show
-                  when={activeMutation()!.options.mutationKey}
-                  fallback={'No mutationKey found'}
-                >
-                  {displayValue(activeMutation()!.options.mutationKey, true)}
-                </Show>
-              </code>
-            </pre>
-            <span
-              class={cx(styles().queryDetailsStatus, getQueryStatusColors())}
-            >
-              <Show when={color() === 'purple'}>pending</Show>
-              <Show when={color() !== 'purple'}>{status()}</Show>
-            </span>
-          </div>
-          <div class="tsqd-query-details-last-updated">
-            <span>Submitted At:</span>
-            <span>
-              {new Date(
-                activeMutation()!.state.submittedAt,
-              ).toLocaleTimeString()}
-            </span>
-          </div>
-        </div>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Variables Details
-        </div>
-        <div
-          style={{
-            padding: tokens.size[2],
-          }}
-          class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
-        >
-          <Explorer
-            label="Variables"
-            defaultExpanded={['Variables']}
-            value={activeMutation()!.state.variables}
-          />
-        </div>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Context Details
-        </div>
-        <div
-          style={{
-            padding: tokens.size[2],
-          }}
-          class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
-        >
-          <Explorer
-            label="Context"
-            defaultExpanded={['Context']}
-            value={activeMutation()!.state.context}
-          />
-        </div>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Data Explorer
-        </div>
-        <div
-          style={{
-            padding: tokens.size[2],
-          }}
-          class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
-        >
-          <Explorer
-            label="Data"
-            defaultExpanded={['Data']}
-            value={activeMutation()!.state.data}
-          />
-        </div>
-        <div class={cx(styles().detailsHeader, 'tsqd-query-details-header')}>
-          Mutations Explorer
-        </div>
-        <div
-          style={{
-            padding: tokens.size[2],
-          }}
-          class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
-        >
-          <Explorer
-            label="Mutation"
-            defaultExpanded={['Mutation']}
-            value={activeMutation()}
-          />
-        </div>
-      </div>
-    </Show>
-  )
-}
+	return (
+		<Show when={activeMutation()}>
+			<div
+				class={cx(styles().detailsContainer, "tsqd-query-details-container")}
+			>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Mutation Details
+				</div>
+				<div
+					class={cx(
+						styles().detailsBody,
+						"tsqd-query-details-summary-container",
+					)}
+					role="status"
+					aria-live="polite"
+					aria-atomic="true"
+				>
+					<div class="tsqd-query-details-summary">
+						<pre>
+							<code>
+								<Show
+									when={activeMutation()!.options.mutationKey}
+									fallback={"No mutationKey found"}
+								>
+									{displayValue(activeMutation()!.options.mutationKey, true)}
+								</Show>
+							</code>
+						</pre>
+						<span
+							class={cx(styles().queryDetailsStatus, getQueryStatusColors())}
+						>
+							<Show when={color() === "purple"}>pending</Show>
+							<Show when={color() !== "purple"}>{status()}</Show>
+						</span>
+					</div>
+					<div class="tsqd-query-details-last-updated">
+						<span>Submitted At:</span>
+						<span>
+							{new Date(
+								activeMutation()!.state.submittedAt,
+							).toLocaleTimeString()}
+						</span>
+					</div>
+				</div>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Variables Details
+				</div>
+				<div
+					style={{
+						padding: tokens.size[2],
+					}}
+					class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
+				>
+					<Explorer
+						label="Variables"
+						defaultExpanded={["Variables"]}
+						value={activeMutation()!.state.variables}
+					/>
+				</div>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Context Details
+				</div>
+				<div
+					style={{
+						padding: tokens.size[2],
+					}}
+					class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
+				>
+					<Explorer
+						label="Context"
+						defaultExpanded={["Context"]}
+						value={activeMutation()!.state.context}
+					/>
+				</div>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Data Explorer
+				</div>
+				<div
+					style={{
+						padding: tokens.size[2],
+					}}
+					class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
+				>
+					<Explorer
+						label="Data"
+						defaultExpanded={["Data"]}
+						value={activeMutation()!.state.data}
+					/>
+				</div>
+				<div class={cx(styles().detailsHeader, "tsqd-query-details-header")}>
+					Mutations Explorer
+				</div>
+				<div
+					style={{
+						padding: tokens.size[2],
+					}}
+					class="tsqd-query-details-explorer-container tsqd-query-details-query-explorer"
+				>
+					<Explorer
+						label="Mutation"
+						defaultExpanded={["Mutation"]}
+						value={activeMutation()}
+					/>
+				</div>
+			</div>
+		</Show>
+	);
+};
 
 const queryCacheMap = new Map<
-  (q: Accessor<QueryCache>) => any,
-  {
-    setter: Setter<any>
-    shouldUpdate: (event: QueryCacheNotifyEvent) => boolean
-  }
->()
+	(q: Accessor<QueryCache>) => any,
+	{
+		setter: Setter<any>;
+		shouldUpdate: (event: QueryCacheNotifyEvent) => boolean;
+	}
+>();
 
 const setupQueryCacheSubscription = () => {
-  const queryCache = createMemo(() => {
-    const client = useQueryDevtoolsContext().client
-    return client.getQueryCache()
-  })
+	const queryCache = createMemo(() => {
+		const client = useQueryDevtoolsContext().client;
+		return client.getQueryCache();
+	});
 
-  const unsubscribe = queryCache().subscribe((q) => {
-    batch(() => {
-      for (const [callback, value] of queryCacheMap.entries()) {
-        if (!value.shouldUpdate(q)) continue
-        value.setter(callback(queryCache))
-      }
-    })
-  })
+	const unsubscribe = queryCache().subscribe((q) => {
+		batch(() => {
+			for (const [callback, value] of queryCacheMap.entries()) {
+				if (!value.shouldUpdate(q)) continue;
+				value.setter(callback(queryCache));
+			}
+		});
+	});
 
-  onCleanup(() => {
-    queryCacheMap.clear()
-    unsubscribe()
-  })
+	onCleanup(() => {
+		queryCacheMap.clear();
+		unsubscribe();
+	});
 
-  return unsubscribe
-}
+	return unsubscribe;
+};
 
 const createSubscribeToQueryCacheBatcher = <T,>(
-  callback: (queryCache: Accessor<QueryCache>) => Exclude<T, Function>,
-  equalityCheck: boolean = true,
-  shouldUpdate: (event: QueryCacheNotifyEvent) => boolean = () => true,
+	callback: (queryCache: Accessor<QueryCache>) => Exclude<T, Function>,
+	equalityCheck: boolean = true,
+	shouldUpdate: (event: QueryCacheNotifyEvent) => boolean = () => true,
 ) => {
-  const queryCache = createMemo(() => {
-    const client = useQueryDevtoolsContext().client
-    return client.getQueryCache()
-  })
+	const queryCache = createMemo(() => {
+		const client = useQueryDevtoolsContext().client;
+		return client.getQueryCache();
+	});
 
-  const [value, setValue] = createSignal<T>(
-    callback(queryCache),
-    !equalityCheck ? { equals: false } : undefined,
-  )
+	const [value, setValue] = createSignal<T>(
+		callback(queryCache),
+		!equalityCheck ? { equals: false } : undefined,
+	);
 
-  createEffect(() => {
-    setValue(callback(queryCache))
-  })
+	createEffect(() => {
+		setValue(callback(queryCache));
+	});
 
-  queryCacheMap.set(callback, {
-    setter: setValue,
-    shouldUpdate: shouldUpdate,
-  })
+	queryCacheMap.set(callback, {
+		setter: setValue,
+		shouldUpdate: shouldUpdate,
+	});
 
-  onCleanup(() => {
-    queryCacheMap.delete(callback)
-  })
+	onCleanup(() => {
+		queryCacheMap.delete(callback);
+	});
 
-  return value
-}
+	return value;
+};
 
 const mutationCacheMap = new Map<
-  (q: Accessor<MutationCache>) => any,
-  Setter<any>
->()
+	(q: Accessor<MutationCache>) => any,
+	Setter<any>
+>();
 
 const setupMutationCacheSubscription = () => {
-  const mutationCache = createMemo(() => {
-    const client = useQueryDevtoolsContext().client
-    return client.getMutationCache()
-  })
+	const mutationCache = createMemo(() => {
+		const client = useQueryDevtoolsContext().client;
+		return client.getMutationCache();
+	});
 
-  const unsubscribe = mutationCache().subscribe(() => {
-    for (const [callback, setter] of mutationCacheMap.entries()) {
-      queueMicrotask(() => {
-        setter(callback(mutationCache))
-      })
-    }
-  })
+	const unsubscribe = mutationCache().subscribe(() => {
+		for (const [callback, setter] of mutationCacheMap.entries()) {
+			queueMicrotask(() => {
+				setter(callback(mutationCache));
+			});
+		}
+	});
 
-  onCleanup(() => {
-    mutationCacheMap.clear()
-    unsubscribe()
-  })
+	onCleanup(() => {
+		mutationCacheMap.clear();
+		unsubscribe();
+	});
 
-  return unsubscribe
-}
+	return unsubscribe;
+};
 
 const createSubscribeToMutationCacheBatcher = <T,>(
-  callback: (queryCache: Accessor<MutationCache>) => Exclude<T, Function>,
-  equalityCheck: boolean = true,
+	callback: (queryCache: Accessor<MutationCache>) => Exclude<T, Function>,
+	equalityCheck: boolean = true,
 ) => {
-  const mutationCache = createMemo(() => {
-    const client = useQueryDevtoolsContext().client
-    return client.getMutationCache()
-  })
+	const mutationCache = createMemo(() => {
+		const client = useQueryDevtoolsContext().client;
+		return client.getMutationCache();
+	});
 
-  const [value, setValue] = createSignal<T>(
-    callback(mutationCache),
-    !equalityCheck ? { equals: false } : undefined,
-  )
+	const [value, setValue] = createSignal<T>(
+		callback(mutationCache),
+		!equalityCheck ? { equals: false } : undefined,
+	);
 
-  createEffect(() => {
-    setValue(callback(mutationCache))
-  })
+	createEffect(() => {
+		setValue(callback(mutationCache));
+	});
 
-  mutationCacheMap.set(callback, setValue)
+	mutationCacheMap.set(callback, setValue);
 
-  onCleanup(() => {
-    mutationCacheMap.delete(callback)
-  })
+	onCleanup(() => {
+		mutationCacheMap.delete(callback);
+	});
 
-  return value
-}
+	return value;
+};
 
 type DevToolsActionType =
-  | 'REFETCH'
-  | 'INVALIDATE'
-  | 'RESET'
-  | 'REMOVE'
-  | 'TRIGGER_ERROR'
-  | 'RESTORE_ERROR'
-  | 'TRIGGER_LOADING'
-  | 'RESTORE_LOADING'
-  | 'CLEAR_MUTATION_CACHE'
-  | 'CLEAR_QUERY_CACHE'
+	| "REFETCH"
+	| "INVALIDATE"
+	| "RESET"
+	| "REMOVE"
+	| "TRIGGER_ERROR"
+	| "RESTORE_ERROR"
+	| "TRIGGER_LOADING"
+	| "RESTORE_LOADING"
+	| "CLEAR_MUTATION_CACHE"
+	| "CLEAR_QUERY_CACHE";
 
-const DEV_TOOLS_EVENT = '@tanstack/query-devtools-event'
+const DEV_TOOLS_EVENT = "@tanstack/query-devtools-event";
 
 const sendDevToolsEvent = ({
-  type,
-  queryHash,
-  metadata,
+	type,
+	queryHash,
+	metadata,
 }: {
-  type: DevToolsActionType
-  queryHash?: string
-  metadata?: Record<string, unknown>
+	type: DevToolsActionType;
+	queryHash?: string;
+	metadata?: Record<string, unknown>;
 }) => {
-  const event = new CustomEvent(DEV_TOOLS_EVENT, {
-    detail: { type, queryHash, metadata },
-    bubbles: true,
-    cancelable: true,
-  })
-  window.dispatchEvent(event)
-}
+	const event = new CustomEvent(DEV_TOOLS_EVENT, {
+		detail: { type, queryHash, metadata },
+		bubbles: true,
+		cancelable: true,
+	});
+	window.dispatchEvent(event);
+};
 
 const stylesFactory = (
-  theme: 'light' | 'dark',
-  css: (typeof goober)['css'],
+	theme: "light" | "dark",
+	css: (typeof goober)["css"],
 ) => {
-  const { colors, font, size, alpha, shadow, border } = tokens
+	const { colors, font, size, alpha, shadow, border } = tokens;
 
-  const t = (light: string, dark: string) => (theme === 'light' ? light : dark)
+	const t = (light: string, dark: string) => (theme === "light" ? light : dark);
 
-  return {
-    devtoolsBtn: css`
+	return {
+		devtoolsBtn: css`
       z-index: 100000;
       position: fixed;
       padding: 4px;
@@ -2670,7 +2684,7 @@ const stylesFactory = (
         }
       }
     `,
-    panel: css`
+		panel: css`
       position: fixed;
       z-index: 9999;
       display: flex;
@@ -2696,7 +2710,7 @@ const stylesFactory = (
         background: ${t(colors.gray[400], colors.darkGray[300])};
       }
     `,
-    parentPanel: css`
+		parentPanel: css`
       z-index: 9999;
       display: flex;
       height: 100%;
@@ -2722,26 +2736,26 @@ const stylesFactory = (
         background: ${t(colors.gray[400], colors.darkGray[300])};
       }
     `,
-    'devtoolsBtn-position-bottom-right': css`
+		"devtoolsBtn-position-bottom-right": css`
       bottom: 12px;
       right: 12px;
     `,
-    'devtoolsBtn-position-bottom-left': css`
+		"devtoolsBtn-position-bottom-left": css`
       bottom: 12px;
       left: 12px;
     `,
-    'devtoolsBtn-position-top-left': css`
+		"devtoolsBtn-position-top-left": css`
       top: 12px;
       left: 12px;
     `,
-    'devtoolsBtn-position-top-right': css`
+		"devtoolsBtn-position-top-right": css`
       top: 12px;
       right: 12px;
     `,
-    'devtoolsBtn-position-relative': css`
+		"devtoolsBtn-position-relative": css`
       position: relative;
     `,
-    'panel-position-top': css`
+		"panel-position-top": css`
       top: 0;
       right: 0;
       left: 0;
@@ -2749,7 +2763,7 @@ const stylesFactory = (
       min-height: ${size[14]};
       border-bottom: ${t(colors.gray[400], colors.darkGray[300])} 1px solid;
     `,
-    'panel-position-bottom': css`
+		"panel-position-bottom": css`
       bottom: 0;
       right: 0;
       left: 0;
@@ -2757,21 +2771,21 @@ const stylesFactory = (
       min-height: ${size[14]};
       border-top: ${t(colors.gray[400], colors.darkGray[300])} 1px solid;
     `,
-    'panel-position-right': css`
+		"panel-position-right": css`
       bottom: 0;
       right: 0;
       top: 0;
       border-left: ${t(colors.gray[400], colors.darkGray[300])} 1px solid;
       max-width: 90%;
     `,
-    'panel-position-left': css`
+		"panel-position-left": css`
       bottom: 0;
       left: 0;
       top: 0;
       border-right: ${t(colors.gray[400], colors.darkGray[300])} 1px solid;
       max-width: 90%;
     `,
-    closeBtn: css`
+		closeBtn: css`
       position: absolute;
       cursor: pointer;
       z-index: 5;
@@ -2792,7 +2806,7 @@ const stylesFactory = (
         height: ${size[2]};
       }
     `,
-    'closeBtn-position-top': css`
+		"closeBtn-position-top": css`
       bottom: 0;
       right: ${size[2]};
       transform: translate(0, 100%);
@@ -2816,7 +2830,7 @@ const stylesFactory = (
         transform: rotate(180deg);
       }
     `,
-    'closeBtn-position-bottom': css`
+		"closeBtn-position-bottom": css`
       top: 0;
       right: ${size[2]};
       transform: translate(0, -100%);
@@ -2836,7 +2850,7 @@ const stylesFactory = (
         width: calc(100% + ${size[5]});
       }
     `,
-    'closeBtn-position-right': css`
+		"closeBtn-position-right": css`
       bottom: ${size[2]};
       left: 0;
       transform: translate(-100%, 0);
@@ -2859,7 +2873,7 @@ const stylesFactory = (
         transform: rotate(-90deg);
       }
     `,
-    'closeBtn-position-left': css`
+		"closeBtn-position-left": css`
       bottom: ${size[2]};
       right: 0;
       transform: translate(100%, 0);
@@ -2882,7 +2896,7 @@ const stylesFactory = (
         transform: rotate(90deg);
       }
     `,
-    queriesContainer: css`
+		queriesContainer: css`
       flex: 1 1 700px;
       background-color: ${t(colors.gray[50], colors.darkGray[700])};
       display: flex;
@@ -2891,39 +2905,39 @@ const stylesFactory = (
         font-family: ui-sans-serif, Inter, system-ui, sans-serif, sans-serif;
       }
     `,
-    dragHandle: css`
+		dragHandle: css`
       position: absolute;
       transition: background-color 0.125s ease;
       &:hover {
-        background-color: ${colors.purple[400]}${t('', alpha[90])};
+        background-color: ${colors.purple[400]}${t("", alpha[90])};
       }
       z-index: 4;
     `,
-    'dragHandle-position-top': css`
+		"dragHandle-position-top": css`
       bottom: 0;
       width: 100%;
       height: 3px;
       cursor: ns-resize;
     `,
-    'dragHandle-position-bottom': css`
+		"dragHandle-position-bottom": css`
       top: 0;
       width: 100%;
       height: 3px;
       cursor: ns-resize;
     `,
-    'dragHandle-position-right': css`
+		"dragHandle-position-right": css`
       left: 0;
       width: 3px;
       height: 100%;
       cursor: ew-resize;
     `,
-    'dragHandle-position-left': css`
+		"dragHandle-position-left": css`
       right: 0;
       width: 3px;
       height: 100%;
       cursor: ew-resize;
     `,
-    row: css`
+		row: css`
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -2940,12 +2954,12 @@ const stylesFactory = (
         flex-direction: column;
       }
     `,
-    logoAndToggleContainer: css`
+		logoAndToggleContainer: css`
       display: flex;
       gap: ${tokens.size[3]};
       align-items: center;
     `,
-    logo: css`
+		logo: css`
       cursor: pointer;
       display: flex;
       flex-direction: column;
@@ -2962,19 +2976,19 @@ const stylesFactory = (
         outline: 2px solid ${colors.blue[800]};
       }
     `,
-    tanstackLogo: css`
+		tanstackLogo: css`
       font-size: ${font.size.md};
       font-weight: ${font.weight.bold};
       line-height: ${font.lineHeight.xs};
       white-space: nowrap;
       color: ${t(colors.gray[600], colors.gray[300])};
     `,
-    queryFlavorLogo: css`
+		queryFlavorLogo: css`
       font-weight: ${font.weight.semibold};
       font-size: ${font.size.xs};
       background: linear-gradient(
         to right,
-        ${t('#ea4037, #ff9b11', '#dd524b, #e9a03b')}
+        ${t("#ea4037, #ff9b11", "#dd524b, #e9a03b")}
       );
       background-clip: text;
       -webkit-background-clip: text;
@@ -2982,12 +2996,12 @@ const stylesFactory = (
       -webkit-text-fill-color: transparent;
       white-space: nowrap;
     `,
-    queryStatusContainer: css`
+		queryStatusContainer: css`
       display: flex;
       gap: ${tokens.size[2]};
       height: min-content;
     `,
-    queryStatusTag: css`
+		queryStatusTag: css`
       display: flex;
       gap: ${tokens.size[1.5]};
       box-sizing: border-box;
@@ -3000,7 +3014,7 @@ const stylesFactory = (
       padding-left: ${tokens.size[1.5]};
       align-items: center;
       font-weight: ${font.weight.medium};
-      border: ${t('1px solid ' + colors.gray[300], '1px solid transparent')};
+      border: ${t("1px solid " + colors.gray[300], "1px solid transparent")};
       user-select: none;
       position: relative;
       &:focus-visible {
@@ -3008,10 +3022,10 @@ const stylesFactory = (
         outline: 2px solid ${colors.blue[800]};
       }
     `,
-    queryStatusTagLabel: css`
+		queryStatusTagLabel: css`
       font-size: ${font.size.xs};
     `,
-    queryStatusCount: css`
+		queryStatusCount: css`
       font-size: ${font.size.xs};
       padding: 0 5px;
       display: flex;
@@ -3023,7 +3037,7 @@ const stylesFactory = (
       font-variant-numeric: tabular-nums;
       height: ${tokens.size[4.5]};
     `,
-    statusTooltip: css`
+		statusTooltip: css`
       position: absolute;
       z-index: 1;
       background-color: ${t(colors.gray[50], colors.darkGray[500])};
@@ -3034,7 +3048,7 @@ const stylesFactory = (
       border-radius: ${tokens.border.radius.sm};
       font-size: ${font.size.xs};
       border: 1px solid ${t(colors.gray[400], colors.gray[600])};
-      color: ${t(colors['gray'][600], colors['gray'][300])};
+      color: ${t(colors["gray"][600], colors["gray"][300])};
 
       &::before {
         top: 0px;
@@ -3063,7 +3077,7 @@ const stylesFactory = (
         border-width: 7px;
       }
     `,
-    filtersContainer: css`
+		filtersContainer: css`
       display: flex;
       gap: ${tokens.size[2]};
       & > button {
@@ -3092,7 +3106,7 @@ const stylesFactory = (
         }
       }
     `,
-    filterInput: css`
+		filterInput: css`
       padding: ${size[0.5]} ${size[2]};
       border-radius: ${tokens.border.radius.sm};
       background-color: ${t(colors.gray[100], colors.darkGray[400])};
@@ -3131,7 +3145,7 @@ const stylesFactory = (
         outline: 2px solid ${colors.blue[800]};
       }
     `,
-    filterSelect: css`
+		filterSelect: css`
       padding: ${tokens.size[0.5]} ${tokens.size[2]};
       border-radius: ${tokens.border.radius.sm};
       background-color: ${t(colors.gray[100], colors.darkGray[400])};
@@ -3165,11 +3179,11 @@ const stylesFactory = (
         outline: 2px solid ${colors.blue[800]};
       }
     `,
-    actionsContainer: css`
+		actionsContainer: css`
       display: flex;
       gap: ${tokens.size[2]};
     `,
-    actionsBtn: css`
+		actionsBtn: css`
       border-radius: ${tokens.border.radius.sm};
       background-color: ${t(colors.gray[100], colors.darkGray[400])};
       border: 1px solid ${t(colors.gray[300], colors.darkGray[200])};
@@ -3196,13 +3210,13 @@ const stylesFactory = (
         outline: 2px solid ${colors.blue[800]};
       }
     `,
-    actionsBtnOffline: css`
+		actionsBtnOffline: css`
       & svg {
         stroke: ${t(colors.yellow[700], colors.yellow[500])};
         fill: ${t(colors.yellow[700], colors.yellow[500])};
       }
     `,
-    overflowQueryContainer: css`
+		overflowQueryContainer: css`
       flex: 1;
       overflow-y: auto;
       & > div {
@@ -3210,7 +3224,7 @@ const stylesFactory = (
         flex-direction: column;
       }
     `,
-    queryRow: css`
+		queryRow: css`
       display: flex;
       align-items: center;
       padding: 0;
@@ -3284,10 +3298,10 @@ const stylesFactory = (
         font-size: ${font.size.xs};
       }
     `,
-    selectedQueryRow: css`
+		selectedQueryRow: css`
       background-color: ${t(colors.gray[200], colors.darkGray[500])};
     `,
-    detailsContainer: css`
+		detailsContainer: css`
       flex: 1 1 700px;
       background-color: ${t(colors.gray[50], colors.darkGray[700])};
       color: ${t(colors.gray[700], colors.gray[300])};
@@ -3298,7 +3312,7 @@ const stylesFactory = (
       display: flex;
       text-align: left;
     `,
-    detailsHeader: css`
+		detailsHeader: css`
       font-family: ui-sans-serif, Inter, system-ui, sans-serif, sans-serif;
       position: sticky;
       top: 0;
@@ -3310,7 +3324,7 @@ const stylesFactory = (
       line-height: ${font.lineHeight.xs};
       text-align: left;
     `,
-    detailsBody: css`
+		detailsBody: css`
       margin: ${tokens.size[1.5]} 0px ${tokens.size[2]} 0px;
       & > div {
         display: flex;
@@ -3349,13 +3363,13 @@ const stylesFactory = (
         align-items: center;
       }
     `,
-    queryDetailsStatus: css`
+		queryDetailsStatus: css`
       border: 1px solid ${colors.darkGray[200]};
       border-radius: ${tokens.border.radius.sm};
       font-weight: ${font.weight.medium};
       padding: ${tokens.size[1]} ${tokens.size[2.5]};
     `,
-    actionsBody: css`
+		actionsBody: css`
       flex-wrap: wrap;
       margin: ${tokens.size[2]} 0px ${tokens.size[2]} 0px;
       display: flex;
@@ -3395,7 +3409,7 @@ const stylesFactory = (
         }
       }
     `,
-    actionsSelect: css`
+		actionsSelect: css`
       font-size: ${font.size.xs};
       padding: ${tokens.size[0.5]} ${tokens.size[2]};
       display: flex;
@@ -3444,7 +3458,7 @@ const stylesFactory = (
         height: ${tokens.size[2]};
       }
     `,
-    settingsMenu: css`
+		settingsMenu: css`
       display: flex;
       & * {
         font-family: ui-sans-serif, Inter, system-ui, sans-serif, sans-serif;
@@ -3460,7 +3474,7 @@ const stylesFactory = (
       min-width: 120px;
       padding: ${size[0.5]};
     `,
-    settingsSubTrigger: css`
+		settingsSubTrigger: css`
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -3488,19 +3502,19 @@ const stylesFactory = (
         cursor: not-allowed;
       }
     `,
-    settingsMenuHeader: css`
+		settingsMenuHeader: css`
       padding: ${tokens.size[1]} ${tokens.size[1]};
       font-weight: ${font.weight.medium};
       border-bottom: 1px solid ${t(colors.gray[300], colors.darkGray[400])};
       color: ${t(colors.gray[500], colors.gray[400])};
-      font-size: ${font.size['xs']};
+      font-size: ${font.size["xs"]};
     `,
-    settingsSubButton: css`
+		settingsSubButton: css`
       display: flex;
       align-items: center;
       justify-content: space-between;
       color: ${t(colors.gray[700], colors.gray[300])};
-      font-size: ${font.size['xs']};
+      font-size: ${font.size["xs"]};
       border-radius: ${tokens.border.radius.xs};
       padding: ${tokens.size[1]} ${tokens.size[1]};
       cursor: pointer;
@@ -3527,7 +3541,7 @@ const stylesFactory = (
         }
       }
     `,
-    viewToggle: css`
+		viewToggle: css`
       border-radius: ${tokens.border.radius.sm};
       background-color: ${t(colors.gray[200], colors.darkGray[600])};
       border: 1px solid ${t(colors.gray[300], colors.darkGray[200])};
@@ -3577,7 +3591,7 @@ const stylesFactory = (
         }
       }
     `,
-    devtoolsEditForm: css`
+		devtoolsEditForm: css`
       padding: ${size[2]};
       & > [data-error='true'] {
         outline: 2px solid ${t(colors.red[200], colors.red[800])};
@@ -3585,7 +3599,7 @@ const stylesFactory = (
         border-radius: ${border.radius.xs};
       }
     `,
-    devtoolsEditTextarea: css`
+		devtoolsEditTextarea: css`
       width: 100%;
       max-height: 500px;
       font-family: 'Fira Code', monospace;
@@ -3603,7 +3617,7 @@ const stylesFactory = (
         outline: 2px solid ${t(colors.blue[200], colors.blue[800])};
       }
     `,
-    devtoolsEditFormActions: css`
+		devtoolsEditFormActions: css`
       display: flex;
       justify-content: space-between;
       gap: ${size[2]};
@@ -3611,14 +3625,14 @@ const stylesFactory = (
       padding-top: ${size[1]};
       font-size: ${font.size.xs};
     `,
-    devtoolsEditFormError: css`
+		devtoolsEditFormError: css`
       color: ${t(colors.red[700], colors.red[500])};
     `,
-    devtoolsEditFormActionContainer: css`
+		devtoolsEditFormActionContainer: css`
       display: flex;
       gap: ${size[2]};
     `,
-    devtoolsEditFormAction: css`
+		devtoolsEditFormAction: css`
       font-family: ui-sans-serif, Inter, system-ui, sans-serif, sans-serif;
       font-size: ${font.size.xs};
       padding: ${size[1]} ${tokens.size[2]};
@@ -3645,8 +3659,9 @@ const stylesFactory = (
         cursor: not-allowed;
       }
     `,
-  }
-}
+	};
+};
 
-const lightStyles = (css: (typeof goober)['css']) => stylesFactory('light', css)
-const darkStyles = (css: (typeof goober)['css']) => stylesFactory('dark', css)
+const lightStyles = (css: (typeof goober)["css"]) =>
+	stylesFactory("light", css);
+const darkStyles = (css: (typeof goober)["css"]) => stylesFactory("dark", css);

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/array/is-template-object');
+"use strict";
+module.exports = require("../../full/array/is-template-object");

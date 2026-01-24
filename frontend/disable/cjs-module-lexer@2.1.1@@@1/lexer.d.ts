@@ -1,6 +1,6 @@
 export interface Exports {
-  exports: string[];
-  reexports: string[];
+	exports: string[];
+	reexports: string[];
 }
 
 export declare function parse(source: string, name?: string): Exports;

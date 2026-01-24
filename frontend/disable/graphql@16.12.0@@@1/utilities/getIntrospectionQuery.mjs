@@ -3,32 +3,32 @@
  * Accepts optional IntrospectionOptions.
  */
 export function getIntrospectionQuery(options) {
-  const optionsWithDefault = {
-    descriptions: true,
-    specifiedByUrl: false,
-    directiveIsRepeatable: false,
-    schemaDescription: false,
-    inputValueDeprecation: false,
-    oneOf: false,
-    ...options,
-  };
-  const descriptions = optionsWithDefault.descriptions ? 'description' : '';
-  const specifiedByUrl = optionsWithDefault.specifiedByUrl
-    ? 'specifiedByURL'
-    : '';
-  const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
-    ? 'isRepeatable'
-    : '';
-  const schemaDescription = optionsWithDefault.schemaDescription
-    ? descriptions
-    : '';
+	const optionsWithDefault = {
+		descriptions: true,
+		specifiedByUrl: false,
+		directiveIsRepeatable: false,
+		schemaDescription: false,
+		inputValueDeprecation: false,
+		oneOf: false,
+		...options,
+	};
+	const descriptions = optionsWithDefault.descriptions ? "description" : "";
+	const specifiedByUrl = optionsWithDefault.specifiedByUrl
+		? "specifiedByURL"
+		: "";
+	const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
+		? "isRepeatable"
+		: "";
+	const schemaDescription = optionsWithDefault.schemaDescription
+		? descriptions
+		: "";
 
-  function inputDeprecation(str) {
-    return optionsWithDefault.inputValueDeprecation ? str : '';
-  }
+	function inputDeprecation(str) {
+		return optionsWithDefault.inputValueDeprecation ? str : "";
+	}
 
-  const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
-  return `
+	const oneOf = optionsWithDefault.oneOf ? "isOneOf" : "";
+	return `
     query IntrospectionQuery {
       __schema {
         ${schemaDescription}
@@ -43,7 +43,7 @@ export function getIntrospectionQuery(options) {
           ${descriptions}
           ${directiveIsRepeatable}
           locations
-          args${inputDeprecation('(includeDeprecated: true)')} {
+          args${inputDeprecation("(includeDeprecated: true)")} {
             ...InputValue
           }
         }
@@ -59,7 +59,7 @@ export function getIntrospectionQuery(options) {
       fields(includeDeprecated: true) {
         name
         ${descriptions}
-        args${inputDeprecation('(includeDeprecated: true)')} {
+        args${inputDeprecation("(includeDeprecated: true)")} {
           ...InputValue
         }
         type {
@@ -68,7 +68,7 @@ export function getIntrospectionQuery(options) {
         isDeprecated
         deprecationReason
       }
-      inputFields${inputDeprecation('(includeDeprecated: true)')} {
+      inputFields${inputDeprecation("(includeDeprecated: true)")} {
         ...InputValue
       }
       interfaces {
@@ -90,8 +90,8 @@ export function getIntrospectionQuery(options) {
       ${descriptions}
       type { ...TypeRef }
       defaultValue
-      ${inputDeprecation('isDeprecated')}
-      ${inputDeprecation('deprecationReason')}
+      ${inputDeprecation("isDeprecated")}
+      ${inputDeprecation("deprecationReason")}
     }
 
     fragment TypeRef on __Type {

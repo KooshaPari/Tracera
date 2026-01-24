@@ -30,8 +30,8 @@ var _index = require("./toDate.cjs");
  * //=> Mon Sep 01 2014 00:00:00
  */
 function startOfMonth(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setDate(1);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setDate(1);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
 }

@@ -1,1 +1,4 @@
-export default function scrollTo(selected: HTMLElement, scrollParent?: HTMLElement): (() => void) | undefined;
+export default function scrollTo(
+	selected: HTMLElement,
+	scrollParent?: HTMLElement,
+): (() => void) | undefined;

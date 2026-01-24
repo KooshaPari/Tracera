@@ -27,9 +27,9 @@ import { toDate } from "./toDate.js";
  * //=> Mon Sep 01 2014 11:30:40.300
  */
 export function setMilliseconds(date, milliseconds, options) {
-  const _date = toDate(date, options?.in);
-  _date.setMilliseconds(milliseconds);
-  return _date;
+	const _date = toDate(date, options?.in);
+	_date.setMilliseconds(milliseconds);
+	return _date;
 }
 
 // Fallback for modularized imports:

@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link subHours} function options.
  */
 export interface SubHoursOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name subHours
  * @category Hour Helpers
@@ -27,10 +27,10 @@ export interface SubHoursOptions<DateType extends Date = Date>
  * //=> Thu Jul 10 2014 23:00:00
  */
 export declare function subHours<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: SubHoursOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: SubHoursOptions<ResultDate> | undefined,
 ): ResultDate;

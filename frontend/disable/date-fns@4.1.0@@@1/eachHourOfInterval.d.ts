@@ -3,23 +3,23 @@ import type { ContextOptions, Interval, StepOptions } from "./types.js";
  * The {@link eachHourOfInterval} function options.
  */
 export interface EachHourOfIntervalOptions<DateType extends Date = Date>
-  extends StepOptions,
-    ContextOptions<DateType> {}
+	extends StepOptions,
+		ContextOptions<DateType> {}
 /**
  * The {@link eachHourOfInterval} function result type.
  * Resolves to the appropriate date type based on inputs.
  */
 export type EachHourOfIntervalResult<
-  IntervalType extends Interval,
-  Options extends EachHourOfIntervalOptions | undefined,
+	IntervalType extends Interval,
+	Options extends EachHourOfIntervalOptions | undefined,
 > = Array<
-  Options extends EachHourOfIntervalOptions<infer DateType>
-    ? DateType
-    : IntervalType["start"] extends Date
-      ? IntervalType["start"]
-      : IntervalType["end"] extends Date
-        ? IntervalType["end"]
-        : Date
+	Options extends EachHourOfIntervalOptions<infer DateType>
+		? DateType
+		: IntervalType["start"] extends Date
+			? IntervalType["start"]
+			: IntervalType["end"] extends Date
+				? IntervalType["end"]
+				: Date
 >;
 /**
  * @name eachHourOfInterval
@@ -51,9 +51,9 @@ export type EachHourOfIntervalResult<
  * // ]
  */
 export declare function eachHourOfInterval<
-  IntervalType extends Interval,
-  Options extends EachHourOfIntervalOptions | undefined = undefined,
+	IntervalType extends Interval,
+	Options extends EachHourOfIntervalOptions | undefined = undefined,
 >(
-  interval: IntervalType,
-  options?: Options,
+	interval: IntervalType,
+	options?: Options,
 ): EachHourOfIntervalResult<IntervalType, Options>;

@@ -34,26 +34,26 @@ var _index4 = require("./startOfISOWeek.cjs");
  * //=> 3
  */
 function differenceInCalendarISOWeeks(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = (0, _index2.normalizeDates)(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const startOfISOWeekLeft = (0, _index4.startOfISOWeek)(laterDate_);
-  const startOfISOWeekRight = (0, _index4.startOfISOWeek)(earlierDate_);
+	const startOfISOWeekLeft = (0, _index4.startOfISOWeek)(laterDate_);
+	const startOfISOWeekRight = (0, _index4.startOfISOWeek)(earlierDate_);
 
-  const timestampLeft =
-    +startOfISOWeekLeft -
-    (0, _index.getTimezoneOffsetInMilliseconds)(startOfISOWeekLeft);
-  const timestampRight =
-    +startOfISOWeekRight -
-    (0, _index.getTimezoneOffsetInMilliseconds)(startOfISOWeekRight);
+	const timestampLeft =
+		+startOfISOWeekLeft -
+		(0, _index.getTimezoneOffsetInMilliseconds)(startOfISOWeekLeft);
+	const timestampRight =
+		+startOfISOWeekRight -
+		(0, _index.getTimezoneOffsetInMilliseconds)(startOfISOWeekRight);
 
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(
-    (timestampLeft - timestampRight) / _index3.millisecondsInWeek,
-  );
+	// Round the number of weeks to the nearest integer because the number of
+	// milliseconds in a week is not constant (e.g. it's different in the week of
+	// the daylight saving time clock shift).
+	return Math.round(
+		(timestampLeft - timestampRight) / _index3.millisecondsInWeek,
+	);
 }

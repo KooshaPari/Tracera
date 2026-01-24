@@ -1,16 +1,16 @@
 import type {
-  ContextOptions,
-  DateArg,
-  LocalizedOptions,
-  WeekOptions,
+	ContextOptions,
+	DateArg,
+	LocalizedOptions,
+	WeekOptions,
 } from "./types.js";
 /**
  * The {@link differenceInCalendarWeeks} function options.
  */
 export interface DifferenceInCalendarWeeksOptions
-  extends LocalizedOptions<"options">,
-    WeekOptions,
-    ContextOptions<Date> {}
+	extends LocalizedOptions<"options">,
+		WeekOptions,
+		ContextOptions<Date> {}
 /**
  * @name differenceInCalendarWeeks
  * @category Week Helpers
@@ -44,7 +44,7 @@ export interface DifferenceInCalendarWeeksOptions
  * //=> 2
  */
 export declare function differenceInCalendarWeeks(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
-  options?: DifferenceInCalendarWeeksOptions | undefined,
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
+	options?: DifferenceInCalendarWeeksOptions | undefined,
 ): number;

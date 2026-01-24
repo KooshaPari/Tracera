@@ -37,6 +37,6 @@ import type { DateArg } from "./types.js";
  * //=> false
  */
 export declare function isSameSecond(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
 ): boolean;

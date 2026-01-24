@@ -18,6 +18,6 @@ import type { DateArg } from "./types.js";
  * //=> false
  */
 export declare function isBefore(
-  date: DateArg<Date> & {},
-  dateToCompare: DateArg<Date> & {},
+	date: DateArg<Date> & {},
+	dateToCompare: DateArg<Date> & {},
 ): boolean;

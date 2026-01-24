@@ -1,8 +1,8 @@
 /// <reference types="node"/>
-import {Stream} from 'stream';
+import { Stream } from "stream";
 
 declare class MaxBufferErrorClass extends Error {
-	readonly name: 'MaxBufferError';
+	readonly name: "MaxBufferError";
 	constructor();
 }
 
@@ -72,10 +72,7 @@ declare const getStream: {
 
 	It honors the `maxBuffer` option as above, but it refers to byte length rather than string length.
 	*/
-	buffer(
-		stream: Stream,
-		options?: getStream.Options
-	): Promise<Buffer>;
+	buffer(stream: Stream, options?: getStream.Options): Promise<Buffer>;
 
 	/**
 	Get the `stream` as an array of values.
@@ -88,15 +85,15 @@ declare const getStream: {
 	*/
 	array<StreamObjectModeType>(
 		stream: Stream,
-		options?: getStream.Options
+		options?: getStream.Options,
 	): Promise<StreamObjectModeType[]>;
 	array(
 		stream: Stream,
-		options: getStream.OptionsWithEncoding<'buffer'>
+		options: getStream.OptionsWithEncoding<"buffer">,
 	): Promise<Buffer[]>;
 	array(
 		stream: Stream,
-		options: getStream.OptionsWithEncoding<BufferEncoding>
+		options: getStream.OptionsWithEncoding<BufferEncoding>,
 	): Promise<string[]>;
 
 	MaxBufferError: typeof MaxBufferErrorClass;

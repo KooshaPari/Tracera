@@ -2,7 +2,7 @@
 const os = require("os");
 
 exports.implementation = class NavigatorConcurrentHardwareImpl {
-  get hardwareConcurrency() {
-    return os.cpus().length;
-  }
+	get hardwareConcurrency() {
+		return os.cpus().length;
+	}
 };

@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
-const featureRange = require('./common/feature-range.cjs');
+const featureRange = require("./common/feature-range.cjs");
 
-const name = 'MediaFeatureRange';
+const name = "MediaFeatureRange";
 const parse = featureRange.createParse(name);
 
 exports.generate = featureRange.generate;

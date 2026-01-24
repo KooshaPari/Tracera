@@ -32,26 +32,26 @@ import { subISOWeekYears } from "./subISOWeekYears.js";
  * // => 1
  */
 export function differenceInISOWeekYears(laterDate, earlierDate, options) {
-  const [laterDate_, earlierDate_] = normalizeDates(
-    options?.in,
-    laterDate,
-    earlierDate,
-  );
+	const [laterDate_, earlierDate_] = normalizeDates(
+		options?.in,
+		laterDate,
+		earlierDate,
+	);
 
-  const sign = compareAsc(laterDate_, earlierDate_);
-  const diff = Math.abs(
-    differenceInCalendarISOWeekYears(laterDate_, earlierDate_, options),
-  );
+	const sign = compareAsc(laterDate_, earlierDate_);
+	const diff = Math.abs(
+		differenceInCalendarISOWeekYears(laterDate_, earlierDate_, options),
+	);
 
-  const adjustedDate = subISOWeekYears(laterDate_, sign * diff, options);
+	const adjustedDate = subISOWeekYears(laterDate_, sign * diff, options);
 
-  const isLastISOWeekYearNotFull = Number(
-    compareAsc(adjustedDate, earlierDate_) === -sign,
-  );
-  const result = sign * (diff - isLastISOWeekYearNotFull);
+	const isLastISOWeekYearNotFull = Number(
+		compareAsc(adjustedDate, earlierDate_) === -sign,
+	);
+	const result = sign * (diff - isLastISOWeekYearNotFull);
 
-  // Prevent negative zero
-  return result === 0 ? 0 : result;
+	// Prevent negative zero
+	return result === 0 ? 0 : result;
 }
 
 // Fallback for modularized imports:

@@ -1,0 +1,835 @@
+---
+title: "Authentication Troubleshooting"
+description: "Comprehensive guide to diagnosing and fixing authentication issues in TraceRTM"
+---
+
+# Authentication Troubleshooting
+
+This guide provides practical solutions for common authentication problems in TraceRTM, including API authentication, session management, and external integration issues.
+
+## Common Authentication Issues
+
+### 1. Database Not Configured Error
+
+**Error Message:**
+```
+ValueError: Database not configured. Run 'rtm config init' first.
+```
+
+**Cause:** The database URL is not set in the configuration.
+
+**Solutions:**
+
+1. Initialize configuration:
+```bash
+rtm config init
+```
+
+2. Set database URL manually:
+```bash
+rtm config set database_url "postgresql://user:pass@localhost:5432/tracertm"
+```
+
+3. Set via environment variable:
+```bash
+export TRACERTM_DATABASE_URL="postgresql://user:pass@localhost:5432/tracertm"
+```
+
+4. Verify configuration:
+```bash
+rtm config show database_url
+```
+
+**Prevention:** Always run `rtm config init` before using the CLI or API client.
+
+---
+
+### 2. No Project Selected Error
+
+**Error Message:**
+```
+ValueError: No project selected. Run 'rtm project switch <name>' first.
+```
+
+**Cause:** Operations require an active project context.
+
+**Solutions:**
+
+1. List available projects:
+```bash
+rtm project list
+```
+
+2. Switch to a project:
+```bash
+rtm project switch my-project
+```
+
+3. Verify current project:
+```bash
+rtm config show current_project_id
+```
+
+4. Set directly in config:
+```bash
+rtm config set current_project_id "project-uuid-here"
+rtm config set current_project_name "my-project"
+```
+
+---
+
+### 3. Session Connection Failures
+
+**Error Message:**
+```
+HTTPException: status_code=500, detail="Database not configured"
+```
+
+**Cause:** FastAPI dependency injection fails to get database session.
+
+**Solutions:**
+
+1. Check database connectivity:
+```bash
+psql "postgresql://user:pass@localhost:5432/tracertm" -c "SELECT 1;"
+```
+
+2. Verify database URL format:
+```python
+# Valid formats:
+postgresql://user:password@host:port/database
+sqlite:///path/to/database.db
+```
+
+3. Check async session configuration:
+```python
+from tracertm.database.connection import DatabaseConnection
+
+db = DatabaseConnection("postgresql://...")
+db.connect()
+# Verify session is created
+assert db.session is not None
+```
+
+4. Review application logs for connection pool issues:
+```bash
+# Enable debug logging
+rtm config set log_level DEBUG
+```
+
+---
+
+## JWT Token Problems
+
+### 1. Missing API Token
+
+**Error Message:**
+```
+Sync operations require authentication token
+```
+
+**Cause:** `api_token` is not configured for sync operations.
+
+**Solutions:**
+
+1. Set API token:
+```bash
+rtm config set api_token "your-jwt-token-here"
+```
+
+2. Verify token is set:
+```bash
+rtm config show api_token
+```
+
+3. Enable sync with token:
+```bash
+rtm config set sync_enabled true
+rtm config set api_url "https://api.tracertm.io"
+```
+
+---
+
+### 2. Expired JWT Token
+
+**Symptoms:**
+- 401 Unauthorized responses
+- Sync operations fail intermittently
+- "Token expired" in logs
+
+**Solutions:**
+
+1. Check token expiration:
+```python
+import jwt
+from datetime import datetime
+
+token = "your-jwt-token"
+decoded = jwt.decode(token, options={"verify_signature": False})
+exp = datetime.fromtimestamp(decoded['exp'])
+print(f"Token expires: {exp}")
+```
+
+2. Refresh token (if refresh endpoint available):
+```bash
+curl -X POST https://api.tracertm.io/auth/refresh \
+  -H "Authorization: Bearer $OLD_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+3. Re-authenticate to get new token:
+```bash
+# Update with new token
+rtm config set api_token "new-jwt-token"
+```
+
+---
+
+### 3. Malformed JWT Token
+
+**Error Message:**
+```
+jwt.exceptions.DecodeError: Invalid token format
+```
+
+**Cause:** Token is corrupted or incorrectly formatted.
+
+**Solutions:**
+
+1. Validate token structure (should be 3 base64 parts separated by dots):
+```bash
+echo "your-token" | tr '.' '\n' | wc -l
+# Should output: 3
+```
+
+2. Check for whitespace/newlines:
+```bash
+# Remove whitespace
+TOKEN=$(echo "your-token" | tr -d '\n\r ')
+rtm config set api_token "$TOKEN"
+```
+
+3. Verify token encoding:
+```python
+import base64
+import json
+
+token = "header.payload.signature"
+parts = token.split('.')
+
+# Decode header
+header = json.loads(base64.urlsafe_b64decode(parts[0] + '=='))
+print(f"Algorithm: {header.get('alg')}")
+
+# Decode payload
+payload = json.loads(base64.urlsafe_b64decode(parts[1] + '=='))
+print(f"Issued at: {payload.get('iat')}")
+print(f"Expires: {payload.get('exp')}")
+```
+
+---
+
+## API Key Issues
+
+### 1. API Timeout Configuration
+
+**Error Message:**
+```
+TimeoutError: Request timed out after 30.0 seconds
+```
+
+**Cause:** API requests exceeding configured timeout.
+
+**Solutions:**
+
+1. Increase timeout:
+```bash
+rtm config set api_timeout 60.0
+```
+
+2. Check network connectivity:
+```bash
+curl -w "@-" -o /dev/null -s https://api.tracertm.io/health <<'EOF'
+time_namelookup:  %{time_namelookup}\n
+time_connect:  %{time_connect}\n
+time_starttransfer:  %{time_starttransfer}\n
+time_total:  %{time_total}\n
+EOF
+```
+
+3. Adjust retry configuration:
+```bash
+rtm config set api_max_retries 5
+```
+
+---
+
+### 2. API URL Misconfiguration
+
+**Error Message:**
+```
+ValueError: API URL must start with 'http://' or 'https://'
+```
+
+**Cause:** Invalid API URL format.
+
+**Solutions:**
+
+1. Set correct API URL:
+```bash
+# Production
+rtm config set api_url "https://api.tracertm.io"
+
+# Local development
+rtm config set api_url "http://localhost:8000"
+```
+
+2. Verify URL format (no trailing slash):
+```bash
+rtm config show api_url
+# Should be: https://api.tracertm.io (NOT https://api.tracertm.io/)
+```
+
+---
+
+## OAuth Configuration Problems
+
+### 1. GitHub Integration Token Issues
+
+**Error Message:**
+```
+GitHub token is required
+```
+
+**Cause:** GitHub integration not properly configured.
+
+**Solutions:**
+
+1. Generate GitHub personal access token:
+   - Go to GitHub Settings > Developer settings > Personal access tokens
+   - Generate new token with `repo` scope
+   - Copy token immediately
+
+2. Configure GitHub integration:
+```python
+from tracertm.services.external_integration_service import (
+    ExternalIntegrationService,
+    IntegrationType
+)
+
+service = ExternalIntegrationService()
+service.register_integration(
+    name="github-main",
+    integration_type=IntegrationType.GITHUB,
+    config={
+        "token": "ghp_your_token_here",
+        "repo": "owner/repository"
+    }
+)
+```
+
+3. Verify integration:
+```python
+integration = service.get_integration("github-main")
+errors = service.validate_integration_config(integration)
+if errors:
+    print(f"Validation errors: {errors}")
+```
+
+---
+
+### 2. Slack Webhook Configuration
+
+**Error Message:**
+```
+Slack webhook URL is required
+```
+
+**Cause:** Slack integration missing webhook URL.
+
+**Solutions:**
+
+1. Create Slack webhook:
+   - Go to Slack App settings
+   - Enable Incoming Webhooks
+   - Create new webhook URL
+   - Copy webhook URL
+
+2. Configure Slack integration:
+```python
+service.register_integration(
+    name="slack-notifications",
+    integration_type=IntegrationType.SLACK,
+    config={
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    }
+)
+```
+
+3. Test webhook:
+```bash
+curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
+  -H "Content-Type: application/json" \
+  -d '{"text": "TraceRTM test notification"}'
+```
+
+---
+
+### 3. JIRA OAuth Integration
+
+**Error Message:**
+```
+JIRA credentials not configured
+```
+
+**Cause:** JIRA integration requires authentication setup.
+
+**Solutions:**
+
+1. Generate JIRA API token:
+   - Go to Atlassian Account Settings > Security > API tokens
+   - Create and manage API tokens
+   - Generate new token
+
+2. Configure JIRA integration:
+```python
+service.register_integration(
+    name="jira-main",
+    integration_type=IntegrationType.JIRA,
+    config={
+        "url": "https://your-domain.atlassian.net",
+        "username": "your-email@example.com",
+        "api_token": "your-api-token",
+        "project_key": "PROJ"
+    }
+)
+```
+
+---
+
+## Session Management Issues
+
+### 1. Stale Database Connections
+
+**Error Message:**
+```
+StaleDataError: Session data is stale
+```
+
+**Cause:** Concurrent modifications or connection pool exhaustion.
+
+**Solutions:**
+
+1. Implement retry logic:
+```python
+from tracertm.services.concurrent_operations_service import retry_with_backoff
+
+@retry_with_backoff(max_retries=3)
+def perform_operation():
+    # Your database operation
+    pass
+```
+
+2. Use proper session management:
+```python
+from sqlalchemy.orm import Session
+
+def safe_operation(session: Session):
+    try:
+        # Perform operation
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+```
+
+3. Check connection pool settings:
+```python
+# In database connection configuration
+engine = create_engine(
+    database_url,
+    pool_size=20,
+    max_overflow=40,
+    pool_pre_ping=True  # Verify connections before use
+)
+```
+
+---
+
+### 2. Session Cleanup Failures
+
+**Error Message:**
+```
+Session already closed
+```
+
+**Cause:** Attempting to use closed session.
+
+**Solutions:**
+
+1. Use context managers:
+```python
+from tracertm.database.connection import DatabaseConnection
+
+database_url = config_manager.get("database_url")
+db = DatabaseConnection(database_url)
+db.connect()
+
+try:
+    session = Session(db.engine)
+    # Use session
+    session.commit()
+finally:
+    session.close()
+```
+
+2. Check async session handling in FastAPI:
+```python
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    db = DatabaseConnection(database_url)
+    db.connect()
+    try:
+        yield db.session
+    finally:
+        await db.session.close()
+```
+
+---
+
+## Debugging Authentication Flows
+
+### 1. Enable Debug Logging
+
+```bash
+# Set debug level
+rtm config set log_level DEBUG
+
+# Run command with verbose output
+rtm --verbose project list
+```
+
+### 2. Trace API Requests
+
+```python
+import logging
+
+# Enable HTTP request logging
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("urllib3").setLevel(logging.DEBUG)
+logging.getLogger("requests").setLevel(logging.DEBUG)
+```
+
+### 3. Inspect Authentication Headers
+
+```python
+import requests
+
+response = requests.get(
+    "https://api.tracertm.io/api/v1/projects",
+    headers={
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+)
+
+print(f"Status: {response.status_code}")
+print(f"Headers: {response.headers}")
+print(f"Body: {response.text}")
+```
+
+### 4. Verify Database Connection
+
+```python
+from sqlalchemy import text
+from tracertm.database.connection import DatabaseConnection
+
+db = DatabaseConnection("postgresql://...")
+db.connect()
+
+# Test connection
+result = db.session.execute(text("SELECT version()"))
+print(f"Database version: {result.scalar()}")
+
+# Check current user
+result = db.session.execute(text("SELECT current_user"))
+print(f"Connected as: {result.scalar()}")
+```
+
+---
+
+## Log Analysis for Auth Issues
+
+### 1. FastAPI Authentication Logs
+
+Look for these patterns in logs:
+
+```
+# Missing authentication
+ERROR: No authorization header found
+
+# Invalid token format
+ERROR: Invalid token format: 'Bearer malformed-token'
+
+# Expired token
+WARNING: Token expired at 2024-12-01T10:30:00Z
+
+# Database connection failure
+ERROR: Database connection failed: connection refused
+
+# Session timeout
+WARNING: Session timeout after 30s
+```
+
+### 2. Analyzing Audit Logs
+
+```python
+from tracertm.services.security_compliance_service import SecurityComplianceService
+
+service = SecurityComplianceService(session)
+
+# Get authentication events
+auth_events = service.get_audit_log(event_type="authentication")
+
+for event in auth_events:
+    print(f"User: {event['user_id']}")
+    print(f"Action: {event['action']}")
+    print(f"Status: {event['details'].get('status')}")
+    print(f"Timestamp: {event['timestamp']}")
+    print("---")
+
+# Get failed authentication attempts
+failed_auth = [e for e in auth_events if e['details'].get('status') == 'failed']
+print(f"Failed attempts: {len(failed_auth)}")
+```
+
+### 3. Sync Operation Logs
+
+```python
+from tracertm.services.external_integration_service import ExternalIntegrationService
+
+service = ExternalIntegrationService()
+
+# Review sync history
+history = service.get_sync_history()
+
+for record in history:
+    if record.get('status') != 'success':
+        print(f"Failed sync: {record['integration']}")
+        print(f"Error: {record.get('error')}")
+        print(f"Type: {record['type']}")
+```
+
+---
+
+## Security Best Practices
+
+### 1. Token Storage
+
+**DO:**
+- Store tokens in configuration files with restricted permissions:
+```bash
+chmod 600 ~/.config/tracertm/config.yaml
+```
+
+- Use environment variables for CI/CD:
+```bash
+export TRACERTM_API_TOKEN="token-here"
+```
+
+- Rotate tokens regularly (every 90 days)
+
+**DON'T:**
+- Commit tokens to version control
+- Share tokens in logs or error messages
+- Use tokens in URL parameters
+
+### 2. API Key Rotation
+
+```bash
+# 1. Generate new token
+NEW_TOKEN="new-token-here"
+
+# 2. Update configuration
+rtm config set api_token "$NEW_TOKEN"
+
+# 3. Verify new token works
+rtm project list
+
+# 4. Revoke old token (if possible)
+```
+
+### 3. Secure Database Connections
+
+```bash
+# Use SSL/TLS for database connections
+rtm config set database_url "postgresql://user:pass@host:5432/db?sslmode=require"
+
+# Verify SSL connection
+psql "postgresql://user:pass@host:5432/db?sslmode=require" -c "\conninfo"
+```
+
+### 4. Enable Audit Logging
+
+```python
+from tracertm.services.security_compliance_service import SecurityComplianceService
+
+service = SecurityComplianceService(session)
+
+# Log all authentication attempts
+service.log_audit_event(
+    event_type="authentication",
+    user_id="user-123",
+    resource="api",
+    action="login",
+    details={"ip": "192.168.1.100", "status": "success"}
+)
+
+# Generate compliance report
+report = service.generate_compliance_report()
+print(f"Compliance status: {report['compliance_status']}")
+```
+
+### 5. Implement Access Control
+
+```python
+service = SecurityComplianceService(session)
+
+# Validate user permissions
+result = service.validate_access_control(
+    user_id="user-123",
+    resource="projects",
+    action="delete"
+)
+
+if not result['allowed']:
+    raise PermissionError(f"User {result['user_id']} cannot {result['action']} {result['resource']}")
+```
+
+---
+
+## FAQ
+
+### Q: How do I reset my authentication configuration?
+
+**A:** Remove the configuration file and reinitialize:
+
+```bash
+# Backup current config
+cp ~/.config/tracertm/config.yaml ~/.config/tracertm/config.yaml.backup
+
+# Remove config
+rm ~/.config/tracertm/config.yaml
+
+# Reinitialize
+rtm config init
+
+# Restore specific settings
+rtm config set database_url "postgresql://..."
+rtm config set api_token "your-token"
+```
+
+### Q: Can I use multiple API tokens for different environments?
+
+**A:** Yes, use project-specific configuration:
+
+```bash
+# Production project
+rtm project switch production
+rtm config set api_token "prod-token" --project
+
+# Development project
+rtm project switch development
+rtm config set api_token "dev-token" --project
+```
+
+### Q: How do I troubleshoot CORS issues?
+
+**A:** The FastAPI app allows all origins by default. If you encounter CORS issues:
+
+1. Verify the API is running and accessible
+2. Check browser console for specific CORS errors
+3. Ensure requests include proper headers:
+
+```javascript
+fetch('http://localhost:8000/api/v1/projects', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'Content-Type': 'application/json'
+  },
+  credentials: 'include'
+})
+```
+
+### Q: What should I do if I see "Session data is stale" errors frequently?
+
+**A:** This indicates concurrent modification issues:
+
+1. Enable optimistic locking:
+```python
+# Add version column to models
+version = Column(Integer, default=1, nullable=False)
+```
+
+2. Implement retry logic with exponential backoff
+3. Reduce concurrent operations on same entities
+4. Check for long-running transactions
+
+### Q: How do I enable encryption for sensitive data?
+
+**A:** Use the security compliance service:
+
+```python
+from tracertm.services.security_compliance_service import SecurityComplianceService
+
+service = SecurityComplianceService(session)
+
+# Enable encryption
+result = service.enable_encryption()
+print(result['status'])
+
+# Hash sensitive data before storage
+hashed_password = service.hash_sensitive_data("sensitive-value")
+```
+
+### Q: How can I test authentication without affecting production?
+
+**A:** Use a separate SQLite database for testing:
+
+```bash
+# Set test database
+rtm config set database_url "sqlite:///test_tracertm.db"
+
+# Run tests
+rtm project list
+
+# Switch back to production
+rtm config set database_url "postgresql://..."
+```
+
+### Q: What's the difference between sync_enabled and sync_interval_seconds?
+
+**A:**
+- `sync_enabled`: Master switch to enable/disable all sync operations
+- `sync_interval_seconds`: How often automatic syncs occur (default: 300s)
+
+```bash
+# Disable all syncing
+rtm config set sync_enabled false
+
+# Enable with custom interval (every 10 minutes)
+rtm config set sync_enabled true
+rtm config set sync_interval_seconds 600
+```
+
+---
+
+## Next Steps
+
+- [Authorization and Access Control](/docs/wiki/guides/authorization)
+- [Security Best Practices](/docs/wiki/guides/security)
+- [API Reference](/docs/api-reference)
+- [Configuration Management](/docs/wiki/guides/configuration)
+- [Monitoring and Observability](/docs/wiki/guides/monitoring)

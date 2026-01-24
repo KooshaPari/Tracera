@@ -1,19 +1,19 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true,
 });
 exports.default = some;
 
 function some(values, test) {
-  if (typeof test !== "function") throw new TypeError("test is not a function");
-  let index = -1;
+	if (typeof test !== "function") throw new TypeError("test is not a function");
+	let index = -1;
 
-  for (const value of values) {
-    if (test(value, ++index, values)) {
-      return true;
-    }
-  }
+	for (const value of values) {
+		if (test(value, ++index, values)) {
+			return true;
+		}
+	}
 
-  return false;
+	return false;
 }

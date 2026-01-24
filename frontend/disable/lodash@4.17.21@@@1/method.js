@@ -1,5 +1,5 @@
-var baseInvoke = require('./_baseInvoke'),
-    baseRest = require('./_baseRest');
+var baseInvoke = require("./_baseInvoke"),
+	baseRest = require("./_baseRest");
 
 /**
  * Creates a function that invokes the method at `path` of a given object.
@@ -25,10 +25,8 @@ var baseInvoke = require('./_baseInvoke'),
  * _.map(objects, _.method(['a', 'b']));
  * // => [2, 1]
  */
-var method = baseRest(function(path, args) {
-  return function(object) {
-    return baseInvoke(object, path, args);
-  };
-});
+var method = baseRest(
+	(path, args) => (object) => baseInvoke(object, path, args),
+);
 
 module.exports = method;

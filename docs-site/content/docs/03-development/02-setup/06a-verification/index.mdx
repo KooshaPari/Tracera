@@ -1,0 +1,140 @@
+---
+title: "Verification"
+description: "Verify TraceRTM installation and configuration"
+keywords: [verification, testing, validation, setup]
+---
+
+# Verification
+
+Verify that TraceRTM is correctly installed and configured.
+
+## Quick Verification
+
+### Health Check
+
+```bash
+# API health
+curl http://localhost:8000/health
+
+# Expected response
+{"status": "healthy", "database": "connected"}
+```
+
+### Database Connection
+
+```bash
+# Test database connection
+psql $DATABASE_URL -c "SELECT version();"
+
+# Or using Python
+python -c "from tracertm.database import get_db; print('Connected')"
+```
+
+## Verification Script
+
+### Run Verification
+
+```bash
+# Run verification script
+python scripts/verify_installation.py
+```
+
+### Script Output
+
+```
+✓ Python version: 3.12.0
+✓ PostgreSQL connection: OK
+✓ Database migrations: Applied
+✓ API server: Running on port 8000
+✓ Frontend: Running on port 3000
+✓ All checks passed!
+```
+
+## Manual Verification
+
+### 1. Check Prerequisites
+
+```bash
+# Python
+python3 --version  # Should be 3.12+
+
+# Node.js
+node --version  # Should be 18+
+
+# PostgreSQL
+psql --version  # Should be 14+
+```
+
+### 2. Check Database
+
+```bash
+# Connect to database
+psql $DATABASE_URL
+
+# Check tables
+\dt
+
+# Check migrations
+SELECT * FROM alembic_version;
+```
+
+### 3. Check API
+
+```bash
+# Start API
+uvicorn tracertm.api.main:app --reload
+
+# Test endpoint
+curl http://localhost:8000/health
+```
+
+### 4. Check Frontend
+
+```bash
+# Start frontend
+cd docs-site
+npm run dev
+
+# Open browser
+open http://localhost:3000
+```
+
+## Common Issues
+
+### Database Not Connected
+
+```bash
+# Check PostgreSQL is running
+pg_isready
+
+# Check connection string
+echo $DATABASE_URL
+
+# Test connection
+psql $DATABASE_URL -c "SELECT 1;"
+```
+
+### Port Already in Use
+
+```bash
+# Find process using port
+lsof -i :8000
+
+# Kill process
+kill -9 <PID>
+```
+
+### Migration Errors
+
+```bash
+# Check migration status
+alembic current
+
+# Apply migrations
+alembic upgrade head
+```
+
+## Related Documentation
+
+- [First Run](./06-first-run) - First run guide
+- [Prerequisites](./01-prerequisites) - Required software

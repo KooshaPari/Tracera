@@ -4,9 +4,9 @@
  * MIT Licensed
  */
 
-import * as chai from '../../chai.js';
-import {Assertion} from '../assertion.js';
-import {AssertionError} from 'assertion-error';
+import { AssertionError } from "assertion-error";
+import * as chai from "../../chai.js";
+import { Assertion } from "../assertion.js";
 
 /**
  * @param {unknown} val
@@ -14,10 +14,10 @@ import {AssertionError} from 'assertion-error';
  * @returns {Assertion}
  */
 function expect(val, message) {
-  return new Assertion(val, message);
+	return new Assertion(val, message);
 }
 
-export {expect};
+export { expect };
 
 /**
  * ### .fail([message])
@@ -41,19 +41,19 @@ export {expect};
  * @public
  */
 expect.fail = function (actual, expected, message, operator) {
-  if (arguments.length < 2) {
-    message = actual;
-    actual = undefined;
-  }
+	if (arguments.length < 2) {
+		message = actual;
+		actual = undefined;
+	}
 
-  message = message || 'expect.fail()';
-  throw new AssertionError(
-    message,
-    {
-      actual: actual,
-      expected: expected,
-      operator: operator
-    },
-    chai.expect.fail
-  );
+	message = message || "expect.fail()";
+	throw new AssertionError(
+		message,
+		{
+			actual: actual,
+			expected: expected,
+			operator: operator,
+		},
+		chai.expect.fail,
+	);
 };

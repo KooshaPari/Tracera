@@ -18,7 +18,7 @@ import { minutesInHour } from "./constants.js";
  * //=> 120
  */
 export function hoursToMinutes(hours) {
-  return Math.trunc(hours * minutesInHour);
+	return Math.trunc(hours * minutesInHour);
 }
 
 // Fallback for modularized imports:

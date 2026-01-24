@@ -45,27 +45,27 @@ var _index3 = require("./constructFrom.cjs");
  * // ]
  */
 function eachMinuteOfInterval(interval, options) {
-  const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
-  // Set to the start of the minute
-  start.setSeconds(0, 0);
+	const { start, end } = (0, _index.normalizeInterval)(options?.in, interval);
+	// Set to the start of the minute
+	start.setSeconds(0, 0);
 
-  let reversed = +start > +end;
-  const endTime = reversed ? +start : +end;
-  let date = reversed ? end : start;
+	let reversed = +start > +end;
+	const endTime = reversed ? +start : +end;
+	let date = reversed ? end : start;
 
-  let step = options?.step ?? 1;
-  if (!step) return [];
-  if (step < 0) {
-    step = -step;
-    reversed = !reversed;
-  }
+	let step = options?.step ?? 1;
+	if (!step) return [];
+	if (step < 0) {
+		step = -step;
+		reversed = !reversed;
+	}
 
-  const dates = [];
+	const dates = [];
 
-  while (+date <= endTime) {
-    dates.push((0, _index3.constructFrom)(start, date));
-    date = (0, _index2.addMinutes)(date, step);
-  }
+	while (+date <= endTime) {
+		dates.push((0, _index3.constructFrom)(start, date));
+		date = (0, _index2.addMinutes)(date, step);
+	}
 
-  return reversed ? dates.reverse() : dates;
+	return reversed ? dates.reverse() : dates;
 }

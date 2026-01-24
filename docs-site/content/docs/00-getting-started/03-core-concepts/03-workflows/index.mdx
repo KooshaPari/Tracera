@@ -1,0 +1,248 @@
+---
+title: "Workflows"
+description: "State machines, transitions, and automation in TraceRTM"
+---
+
+# Workflows
+
+TraceRTM includes a flexible workflow engine for managing artifact lifecycles. Workflows define states, transitions, and automation rules.
+
+## Workflow Basics
+
+### State Machine
+
+Each artifact type has a configurable state machine:
+
+```
+┌────────┐     ┌─────────────┐     ┌────────┐     ┌──────┐
+│ Draft  │────>│ In Progress │────>│ Review │────>│ Done │
+└────────┘     └─────────────┘     └────────┘     └──────┘
+     │               │                  │
+     └───────────────┴──────────────────┘
+                 (reject)
+```
+
+### Default States
+
+| State | Description | Typical Next States |
+|-------|-------------|---------------------|
+| `draft` | Initial creation, incomplete | `in_progress` |
+| `in_progress` | Active work | `review`, `blocked` |
+| `review` | Awaiting approval | `done`, `in_progress` |
+| `blocked` | Waiting on dependency | `in_progress` |
+| `done` | Completed | (terminal) |
+| `archived` | Soft-deleted | (terminal) |
+
+## Configuring Workflows
+
+### Project-Level Configuration
+
+```yaml
+# .tracertm/config.yaml
+workflows:
+  feature:
+    states:
+      - draft
+      - in_progress
+      - review
+      - done
+    initial: draft
+    transitions:
+      - from: draft
+        to: in_progress
+        requires: []
+      - from: in_progress
+        to: review
+        requires:
+          - has_description
+          - has_test_links
+      - from: review
+        to: done
+        requires:
+          - approved_by_owner
+```
+
+### Transition Requirements
+
+Transitions can require conditions:
+
+| Requirement | Description |
+|-------------|-------------|
+| `has_description` | Artifact must have a description |
+| `has_test_links` | At least one test must link to this |
+| `has_code_links` | At least one code artifact must link |
+| `approved_by_owner` | Owner must approve |
+| `no_blocking_items` | No `blocked_by` links in active state |
+
+## Automation
+
+### Automatic Transitions
+
+Configure rules that trigger transitions automatically:
+
+```yaml
+automation:
+  rules:
+    - name: auto_done_on_all_tests_pass
+      trigger: link_created
+      conditions:
+        - artifact_type: feature
+        - all_linked_tests_pass: true
+      action:
+        transition_to: done
+
+    - name: auto_block_on_dependency
+      trigger: link_created
+      conditions:
+        - link_type: blocked_by
+        - target_status: [draft, in_progress]
+      action:
+        transition_to: blocked
+```
+
+### Webhooks
+
+Notify external systems on transitions:
+
+```yaml
+webhooks:
+  - url: https://slack.com/webhook/xxx
+    events:
+      - workflow_transition
+    filter:
+      to_state: done
+```
+
+## Agent-Driven Workflows
+
+### Agent Capabilities
+
+Agents can be authorized to make transitions:
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(agent_id="analyzer-001")
+
+# Agent transitions artifact
+client.transition_item(
+    item_id="FEAT-001",
+    to_state="in_progress",
+    reason="Dependencies resolved by analyzer"
+)
+```
+
+### Conflict Resolution
+
+When multiple agents try to transition the same item:
+
+1. **Optimistic Locking**: Version check prevents lost updates
+2. **Retry Logic**: Automatic retry with exponential backoff
+3. **Event Log**: All attempts are recorded for debugging
+
+## Workflow Events
+
+### Event Types
+
+| Event | Payload |
+|-------|---------|
+| `workflow_transition` | `{from_state, to_state, actor, reason}` |
+| `transition_blocked` | `{attempted_state, missing_requirements}` |
+| `workflow_error` | `{error_type, details}` |
+
+### Querying History
+
+```python
+# Get transition history for an item
+events = client.get_events(
+    entity_id="FEAT-001",
+    event_type="workflow_transition"
+)
+
+for event in events:
+    print(f"{event.timestamp}: {event.data['from_state']} → {event.data['to_state']}")
+```
+
+## Best Practices
+
+### 1. Keep States Simple
+
+- Start with 3-5 states
+- Add more only when needed
+- Avoid circular dependencies
+
+### 2. Define Clear Requirements
+
+- Document what each requirement means
+- Make requirements measurable
+- Avoid subjective conditions
+
+### 3. Use Automation Sparingly
+
+- Automate repetitive transitions
+- Keep manual control for critical states
+- Log all automatic transitions
+
+### 4. Monitor Workflow Metrics
+
+```python
+# Get workflow metrics
+metrics = client.get_workflow_metrics(project_id="proj-001")
+
+print(f"Avg time in 'review': {metrics['review']['avg_duration']}")
+print(f"Blocked items: {metrics['blocked']['count']}")
+```
+
+## Example: Feature Workflow
+
+```yaml
+workflows:
+  feature:
+    states:
+      - draft
+      - ready_for_dev
+      - in_development
+      - in_review
+      - ready_for_qa
+      - in_qa
+      - done
+
+    initial: draft
+
+    transitions:
+      - from: draft
+        to: ready_for_dev
+        requires:
+          - has_description
+          - has_acceptance_criteria
+
+      - from: ready_for_dev
+        to: in_development
+        requires: []
+
+      - from: in_development
+        to: in_review
+        requires:
+          - has_code_links
+
+      - from: in_review
+        to: ready_for_qa
+        requires:
+          - code_review_approved
+
+      - from: ready_for_qa
+        to: in_qa
+        requires:
+          - has_test_links
+
+      - from: in_qa
+        to: done
+        requires:
+          - all_tests_pass
+```
+
+## Related Topics
+
+- [Architecture](/docs/getting-started/core-concepts/architecture) - System design
+- [Data Model](/docs/getting-started/core-concepts/data-model) - Artifact structure
+- [Agent Coordination](/docs/wiki/concepts/agent-coordination) - Multi-agent workflows

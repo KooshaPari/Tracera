@@ -1,9 +1,89 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
-var _interopRequireWildcard = require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
+var _interopRequireDefault =
+	require("@babel/runtime-corejs3/helpers/interopRequireDefault").default;
+var _interopRequireWildcard =
+	require("@babel/runtime-corejs3/helpers/interopRequireWildcard").default;
 exports.__esModule = true;
-exports.specificationObj = exports.refractorPluginReplaceEmptyElement = exports.refract = exports.mediaTypes = exports.keyMap = exports.isWorkflowStepsElement = exports.isWorkflowOutputsElement = exports.isWorkflowElement = exports.isSuccessActionElement = exports.isSuccessActionCriteriaElement = exports.isStringElement = exports.isStepSuccessCriteriaElement = exports.isStepParametersElement = exports.isStepOutputsElement = exports.isStepOnSuccessElement = exports.isStepOnFailureElement = exports.isStepElement = exports.isStepDependsOnElement = exports.isSourceDescriptionsElement = exports.isSourceDescriptionElement = exports.isReferenceElement = exports.isRefElement = exports.isParameterElement = exports.isObjectElement = exports.isNumberElement = exports.isNullElement = exports.isMemberElement = exports.isLinkPrimitiveElement = exports.isJSONSchemaElement = exports.isInfoElement = exports.isFailureActionElement = exports.isFailureActionCriteriaElement = exports.isElement = exports.isCriterionElement = exports.isComponentsElement = exports.isBooleanElement = exports.isArrayElement = exports.isArazzoSpecificationExtension = exports.isArazzoSpecification1Element = exports.isArazzoSpecElement = exports.getNodeType = exports.default = exports.createRefractor = exports.WorkflowsElement = exports.WorkflowStepsElement = exports.WorkflowOutputsElement = exports.WorkflowElement = exports.Visitor = exports.SuccessActionElement = exports.SuccessActionCriteriaElement = exports.StepSuccessCriteriaElement = exports.StepParametersElement = exports.StepOutputsElement = exports.StepOnSuccessElement = exports.StepOnFailureElement = exports.StepElement = exports.StepDependsOnElement = exports.SpecificationVisitor = exports.SpecificationExtensionVisitor = exports.SourceDescriptionsElement = exports.SourceDescriptionElement = exports.ReferenceElement = exports.PatternedFieldsVisitor = exports.ParameterElement = exports.MapVisitor = exports.JSONSchemaElement = exports.InfoElement = exports.FixedFieldsVisitor = exports.FallbackVisitor = exports.FailureActionElement = exports.FailureActionCriteriaElement = exports.CriterionElement = exports.ComponentsSchemas = exports.ComponentsParameters = exports.ComponentsElement = exports.ArazzoSpecification1Element = exports.ArazzoSpecElement = exports.ArazzoMediaTypes = void 0;
+exports.specificationObj =
+	exports.refractorPluginReplaceEmptyElement =
+	exports.refract =
+	exports.mediaTypes =
+	exports.keyMap =
+	exports.isWorkflowStepsElement =
+	exports.isWorkflowOutputsElement =
+	exports.isWorkflowElement =
+	exports.isSuccessActionElement =
+	exports.isSuccessActionCriteriaElement =
+	exports.isStringElement =
+	exports.isStepSuccessCriteriaElement =
+	exports.isStepParametersElement =
+	exports.isStepOutputsElement =
+	exports.isStepOnSuccessElement =
+	exports.isStepOnFailureElement =
+	exports.isStepElement =
+	exports.isStepDependsOnElement =
+	exports.isSourceDescriptionsElement =
+	exports.isSourceDescriptionElement =
+	exports.isReferenceElement =
+	exports.isRefElement =
+	exports.isParameterElement =
+	exports.isObjectElement =
+	exports.isNumberElement =
+	exports.isNullElement =
+	exports.isMemberElement =
+	exports.isLinkPrimitiveElement =
+	exports.isJSONSchemaElement =
+	exports.isInfoElement =
+	exports.isFailureActionElement =
+	exports.isFailureActionCriteriaElement =
+	exports.isElement =
+	exports.isCriterionElement =
+	exports.isComponentsElement =
+	exports.isBooleanElement =
+	exports.isArrayElement =
+	exports.isArazzoSpecificationExtension =
+	exports.isArazzoSpecification1Element =
+	exports.isArazzoSpecElement =
+	exports.getNodeType =
+	exports.default =
+	exports.createRefractor =
+	exports.WorkflowsElement =
+	exports.WorkflowStepsElement =
+	exports.WorkflowOutputsElement =
+	exports.WorkflowElement =
+	exports.Visitor =
+	exports.SuccessActionElement =
+	exports.SuccessActionCriteriaElement =
+	exports.StepSuccessCriteriaElement =
+	exports.StepParametersElement =
+	exports.StepOutputsElement =
+	exports.StepOnSuccessElement =
+	exports.StepOnFailureElement =
+	exports.StepElement =
+	exports.StepDependsOnElement =
+	exports.SpecificationVisitor =
+	exports.SpecificationExtensionVisitor =
+	exports.SourceDescriptionsElement =
+	exports.SourceDescriptionElement =
+	exports.ReferenceElement =
+	exports.PatternedFieldsVisitor =
+	exports.ParameterElement =
+	exports.MapVisitor =
+	exports.JSONSchemaElement =
+	exports.InfoElement =
+	exports.FixedFieldsVisitor =
+	exports.FallbackVisitor =
+	exports.FailureActionElement =
+	exports.FailureActionCriteriaElement =
+	exports.CriterionElement =
+	exports.ComponentsSchemas =
+	exports.ComponentsParameters =
+	exports.ComponentsElement =
+	exports.ArazzoSpecification1Element =
+	exports.ArazzoSpecElement =
+	exports.ArazzoMediaTypes =
+		void 0;
 var _apidomCore = require("@swagger-api/apidom-core");
 exports.isRefElement = _apidomCore.isRefElement;
 exports.isLinkPrimitiveElement = _apidomCore.isLinkElement;
@@ -20,30 +100,49 @@ exports.mediaTypes = _mediaTypes.default;
 exports.ArazzoMediaTypes = _mediaTypes.ArazzoMediaTypes;
 var _namespace = _interopRequireDefault(require("./namespace.cjs"));
 exports.default = _namespace.default;
-var _replaceEmptyElement = _interopRequireDefault(require("./refractor/plugins/replace-empty-element.cjs"));
+var _replaceEmptyElement = _interopRequireDefault(
+	require("./refractor/plugins/replace-empty-element.cjs"),
+);
 exports.refractorPluginReplaceEmptyElement = _replaceEmptyElement.default;
 var _index = _interopRequireWildcard(require("./refractor/index.cjs"));
 exports.refract = _index.default;
 exports.createRefractor = _index.createRefractor;
-var _specification = _interopRequireDefault(require("./refractor/specification.cjs"));
+var _specification = _interopRequireDefault(
+	require("./refractor/specification.cjs"),
+);
 exports.specificationObj = _specification.default;
-var _FixedFieldsVisitor = _interopRequireDefault(require("./refractor/visitors/generics/FixedFieldsVisitor.cjs"));
+var _FixedFieldsVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/FixedFieldsVisitor.cjs"),
+);
 exports.FixedFieldsVisitor = _FixedFieldsVisitor.default;
-var _MapVisitor = _interopRequireDefault(require("./refractor/visitors/generics/MapVisitor.cjs"));
+var _MapVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/MapVisitor.cjs"),
+);
 exports.MapVisitor = _MapVisitor.default;
-var _PatternedFieldsVisitor = _interopRequireDefault(require("./refractor/visitors/generics/PatternedFieldsVisitor.cjs"));
+var _PatternedFieldsVisitor = _interopRequireDefault(
+	require("./refractor/visitors/generics/PatternedFieldsVisitor.cjs"),
+);
 exports.PatternedFieldsVisitor = _PatternedFieldsVisitor.default;
-var _FallbackVisitor = _interopRequireDefault(require("./refractor/visitors/FallbackVisitor.cjs"));
+var _FallbackVisitor = _interopRequireDefault(
+	require("./refractor/visitors/FallbackVisitor.cjs"),
+);
 exports.FallbackVisitor = _FallbackVisitor.default;
-var _SpecificationExtensionVisitor = _interopRequireDefault(require("./refractor/visitors/SpecificationExtensionVisitor.cjs"));
+var _SpecificationExtensionVisitor = _interopRequireDefault(
+	require("./refractor/visitors/SpecificationExtensionVisitor.cjs"),
+);
 exports.SpecificationExtensionVisitor = _SpecificationExtensionVisitor.default;
-var _SpecificationVisitor = _interopRequireDefault(require("./refractor/visitors/SpecificationVisitor.cjs"));
+var _SpecificationVisitor = _interopRequireDefault(
+	require("./refractor/visitors/SpecificationVisitor.cjs"),
+);
 exports.SpecificationVisitor = _SpecificationVisitor.default;
-var _Visitor = _interopRequireDefault(require("./refractor/visitors/Visitor.cjs"));
+var _Visitor = _interopRequireDefault(
+	require("./refractor/visitors/Visitor.cjs"),
+);
 exports.Visitor = _Visitor.default;
 var _predicates = require("./predicates.cjs");
 exports.isArazzoSpecElement = _predicates.isArazzoSpecElement;
-exports.isArazzoSpecification1Element = _predicates.isArazzoSpecification1Element;
+exports.isArazzoSpecification1Element =
+	_predicates.isArazzoSpecification1Element;
 exports.isInfoElement = _predicates.isInfoElement;
 exports.isSourceDescriptionElement = _predicates.isSourceDescriptionElement;
 exports.isSourceDescriptionsElement = _predicates.isSourceDescriptionsElement;
@@ -59,15 +158,18 @@ exports.isStepOnFailureElement = _predicates.isStepOnFailureElement;
 exports.isStepOutputsElement = _predicates.isStepOutputsElement;
 exports.isParameterElement = _predicates.isParameterElement;
 exports.isSuccessActionElement = _predicates.isSuccessActionElement;
-exports.isSuccessActionCriteriaElement = _predicates.isSuccessActionCriteriaElement;
+exports.isSuccessActionCriteriaElement =
+	_predicates.isSuccessActionCriteriaElement;
 exports.isFailureActionElement = _predicates.isFailureActionElement;
-exports.isFailureActionCriteriaElement = _predicates.isFailureActionCriteriaElement;
+exports.isFailureActionCriteriaElement =
+	_predicates.isFailureActionCriteriaElement;
 exports.isComponentsElement = _predicates.isComponentsElement;
 exports.isCriterionElement = _predicates.isCriterionElement;
 exports.isReferenceElement = _predicates.isReferenceElement;
 exports.isJSONSchemaElement = _predicates.isJSONSchemaElement;
 var _predicates2 = require("./refractor/predicates.cjs");
-exports.isArazzoSpecificationExtension = _predicates2.isArazzoSpecificationExtension;
+exports.isArazzoSpecificationExtension =
+	_predicates2.isArazzoSpecificationExtension;
 var _visitor = require("./traversal/visitor.cjs");
 exports.keyMap = _visitor.keyMap;
 exports.getNodeType = _visitor.getNodeType;
@@ -85,31 +187,59 @@ exports.ComponentsElement = _registration.ComponentsElement;
 exports.CriterionElement = _registration.CriterionElement;
 exports.ReferenceElement = _registration.ReferenceElement;
 exports.JSONSchemaElement = _registration.JSONSchemaElement;
-var _SourceDescriptions = _interopRequireDefault(require("./elements/nces/SourceDescriptions.cjs"));
+var _SourceDescriptions = _interopRequireDefault(
+	require("./elements/nces/SourceDescriptions.cjs"),
+);
 exports.SourceDescriptionsElement = _SourceDescriptions.default;
-var _Workflows = _interopRequireDefault(require("./elements/nces/Workflows.cjs"));
+var _Workflows = _interopRequireDefault(
+	require("./elements/nces/Workflows.cjs"),
+);
 exports.WorkflowsElement = _Workflows.default;
-var _WorkflowSteps = _interopRequireDefault(require("./elements/nces/WorkflowSteps.cjs"));
+var _WorkflowSteps = _interopRequireDefault(
+	require("./elements/nces/WorkflowSteps.cjs"),
+);
 exports.WorkflowStepsElement = _WorkflowSteps.default;
-var _WorkflowOutputs = _interopRequireDefault(require("./elements/nces/WorkflowOutputs.cjs"));
+var _WorkflowOutputs = _interopRequireDefault(
+	require("./elements/nces/WorkflowOutputs.cjs"),
+);
 exports.WorkflowOutputsElement = _WorkflowOutputs.default;
-var _StepParameters = _interopRequireDefault(require("./elements/nces/StepParameters.cjs"));
+var _StepParameters = _interopRequireDefault(
+	require("./elements/nces/StepParameters.cjs"),
+);
 exports.StepParametersElement = _StepParameters.default;
-var _StepDependsOn = _interopRequireDefault(require("./elements/nces/StepDependsOn.cjs"));
+var _StepDependsOn = _interopRequireDefault(
+	require("./elements/nces/StepDependsOn.cjs"),
+);
 exports.StepDependsOnElement = _StepDependsOn.default;
-var _StepSuccessCriteria = _interopRequireDefault(require("./elements/nces/StepSuccessCriteria.cjs"));
+var _StepSuccessCriteria = _interopRequireDefault(
+	require("./elements/nces/StepSuccessCriteria.cjs"),
+);
 exports.StepSuccessCriteriaElement = _StepSuccessCriteria.default;
-var _StepOnSuccess = _interopRequireDefault(require("./elements/nces/StepOnSuccess.cjs"));
+var _StepOnSuccess = _interopRequireDefault(
+	require("./elements/nces/StepOnSuccess.cjs"),
+);
 exports.StepOnSuccessElement = _StepOnSuccess.default;
-var _StepOnFailure = _interopRequireDefault(require("./elements/nces/StepOnFailure.cjs"));
+var _StepOnFailure = _interopRequireDefault(
+	require("./elements/nces/StepOnFailure.cjs"),
+);
 exports.StepOnFailureElement = _StepOnFailure.default;
-var _StepOutputs = _interopRequireDefault(require("./elements/nces/StepOutputs.cjs"));
+var _StepOutputs = _interopRequireDefault(
+	require("./elements/nces/StepOutputs.cjs"),
+);
 exports.StepOutputsElement = _StepOutputs.default;
-var _SuccessActionCriteria = _interopRequireDefault(require("./elements/nces/SuccessActionCriteria.cjs"));
+var _SuccessActionCriteria = _interopRequireDefault(
+	require("./elements/nces/SuccessActionCriteria.cjs"),
+);
 exports.SuccessActionCriteriaElement = _SuccessActionCriteria.default;
-var _FailureActionCriteria = _interopRequireDefault(require("./elements/nces/FailureActionCriteria.cjs"));
+var _FailureActionCriteria = _interopRequireDefault(
+	require("./elements/nces/FailureActionCriteria.cjs"),
+);
 exports.FailureActionCriteriaElement = _FailureActionCriteria.default;
-var _ComponentsInputs = _interopRequireDefault(require("./elements/nces/ComponentsInputs.cjs"));
+var _ComponentsInputs = _interopRequireDefault(
+	require("./elements/nces/ComponentsInputs.cjs"),
+);
 exports.ComponentsSchemas = _ComponentsInputs.default;
-var _ComponentsParameters = _interopRequireDefault(require("./elements/nces/ComponentsParameters.cjs"));
+var _ComponentsParameters = _interopRequireDefault(
+	require("./elements/nces/ComponentsParameters.cjs"),
+);
 exports.ComponentsParameters = _ComponentsParameters.default;

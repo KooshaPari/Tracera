@@ -1,15 +1,19 @@
-'use strict';
-
-let FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM, isTTY=true;
-if (typeof process !== 'undefined') {
+let FORCE_COLOR,
+	NODE_DISABLE_COLORS,
+	NO_COLOR,
+	TERM,
+	isTTY = true;
+if (typeof process !== "undefined") {
 	({ FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM } = process.env || {});
 	isTTY = process.stdout && process.stdout.isTTY;
 }
 
 const $ = {
-	enabled: !NODE_DISABLE_COLORS && NO_COLOR == null && TERM !== 'dumb' && (
-		FORCE_COLOR != null && FORCE_COLOR !== '0' || isTTY
-	),
+	enabled:
+		!NODE_DISABLE_COLORS &&
+		NO_COLOR == null &&
+		TERM !== "dumb" &&
+		((FORCE_COLOR != null && FORCE_COLOR !== "0") || isTTY),
 
 	// modifiers
 	reset: init(0, 0),
@@ -41,16 +45,19 @@ const $ = {
 	bgBlue: init(44, 49),
 	bgMagenta: init(45, 49),
 	bgCyan: init(46, 49),
-	bgWhite: init(47, 49)
+	bgWhite: init(47, 49),
 };
 
 function run(arr, str) {
-	let i=0, tmp, beg='', end='';
+	let i = 0,
+		tmp,
+		beg = "",
+		end = "";
 	for (; i < arr.length; i++) {
 		tmp = arr[i];
 		beg += tmp.open;
 		end += tmp.close;
-		if (!!~str.indexOf(tmp.close)) {
+		if (~str.indexOf(tmp.close)) {
 			str = str.replace(tmp.rgx, tmp.close + tmp.open);
 		}
 	}
@@ -58,7 +65,7 @@ function run(arr, str) {
 }
 
 function chain(has, keys) {
-	let ctx = { has, keys };
+	const ctx = { has, keys };
 
 	ctx.reset = $.reset.bind(ctx);
 	ctx.bold = $.bold.bind(ctx);
@@ -93,17 +100,25 @@ function chain(has, keys) {
 }
 
 function init(open, close) {
-	let blk = {
+	const blk = {
 		open: `\x1b[${open}m`,
 		close: `\x1b[${close}m`,
-		rgx: new RegExp(`\\x1b\\[${close}m`, 'g')
+		rgx: new RegExp(`\\x1b\\[${close}m`, "g"),
 	};
 	return function (txt) {
 		if (this !== void 0 && this.has !== void 0) {
-			!!~this.has.indexOf(open) || (this.has.push(open),this.keys.push(blk));
-			return txt === void 0 ? this : $.enabled ? run(this.keys, txt+'') : txt+'';
+			!!~this.has.indexOf(open) || (this.has.push(open), this.keys.push(blk));
+			return txt === void 0
+				? this
+				: $.enabled
+					? run(this.keys, txt + "")
+					: txt + "";
 		}
-		return txt === void 0 ? chain([open], [blk]) : $.enabled ? run([blk], txt+'') : txt+'';
+		return txt === void 0
+			? chain([open], [blk])
+			: $.enabled
+				? run([blk], txt + "")
+				: txt + "";
 	};
 }
 

@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../../es/array/virtual/find-last-index');
+"use strict";
+module.exports = require("../../../es/array/virtual/find-last-index");

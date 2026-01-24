@@ -2,19 +2,19 @@
 // a copy of every defined property listed in 'copy'. if the input is not an
 // object, assign it to the property named by 'wrap'
 const getOptions = (input, { copy, wrap }) => {
-  const result = {}
+	const result = {};
 
-  if (input && typeof input === 'object') {
-    for (const prop of copy) {
-      if (input[prop] !== undefined) {
-        result[prop] = input[prop]
-      }
-    }
-  } else {
-    result[wrap] = input
-  }
+	if (input && typeof input === "object") {
+		for (const prop of copy) {
+			if (input[prop] !== undefined) {
+				result[prop] = input[prop];
+			}
+		}
+	} else {
+		result[wrap] = input;
+	}
 
-  return result
-}
+	return result;
+};
 
-module.exports = getOptions
+module.exports = getOptions;

@@ -30,8 +30,8 @@ var _index2 = require("./toDate.cjs");
  * //=> Wed Apr 02 2014 00:00:00
  */
 function setQuarter(date, quarter, options) {
-  const date_ = (0, _index2.toDate)(date, options?.in);
-  const oldQuarter = Math.trunc(date_.getMonth() / 3) + 1;
-  const diff = quarter - oldQuarter;
-  return (0, _index.setMonth)(date_, date_.getMonth() + diff * 3);
+	const date_ = (0, _index2.toDate)(date, options?.in);
+	const oldQuarter = Math.trunc(date_.getMonth() / 3) + 1;
+	const diff = quarter - oldQuarter;
+	return (0, _index.setMonth)(date_, date_.getMonth() + diff * 3);
 }

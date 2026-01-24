@@ -22,6 +22,6 @@ import type { DateArg } from "./types.js";
  * //=> 1100
  */
 export declare function differenceInMilliseconds(
-  laterDate: DateArg<Date> & {},
-  earlierDate: DateArg<Date> & {},
+	laterDate: DateArg<Date> & {},
+	earlierDate: DateArg<Date> & {},
 ): number;

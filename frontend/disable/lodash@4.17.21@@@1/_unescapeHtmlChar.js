@@ -1,12 +1,12 @@
-var basePropertyOf = require('./_basePropertyOf');
+var basePropertyOf = require("./_basePropertyOf");
 
 /** Used to map HTML entities to characters. */
 var htmlUnescapes = {
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&#39;': "'"
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&quot;": '"',
+	"&#39;": "'",
 };
 
 /**

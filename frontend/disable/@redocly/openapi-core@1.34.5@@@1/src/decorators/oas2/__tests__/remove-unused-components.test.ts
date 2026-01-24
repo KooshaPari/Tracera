@@ -1,12 +1,12 @@
-import { outdent } from 'outdent';
-import { parseYamlToDocument, makeConfig } from '../../../../__tests__/utils';
-import { bundleDocument } from '../../../bundle';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import { makeConfig, parseYamlToDocument } from "../../../../__tests__/utils";
+import { bundleDocument } from "../../../bundle";
+import { BaseResolver } from "../../../resolve";
 
-describe('oas2 remove-unused-components', () => {
-  it('should remove unused components', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("oas2 remove-unused-components", () => {
+	it("should remove unused components", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         paths:
           /pets:
@@ -32,49 +32,49 @@ describe('oas2 remove-unused-components', () => {
                 type: string
             type: object
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await bundleDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: {} }),
-      removeUnusedComponents: true,
-    });
+		const results = await bundleDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: {} }),
+			removeUnusedComponents: true,
+		});
 
-    expect(results.bundle.parsed).toEqual({
-      swagger: '2.0',
-      definitions: {
-        Used: {
-          properties: {
-            link: { type: 'string' },
-          },
-          type: 'object',
-        },
-      },
-      paths: {
-        '/pets': {
-          get: {
-            produces: ['application/json'],
-            parameters: [],
-            summary: 'List all pets',
-            operationId: 'listPets',
-            responses: {
-              '200': {
-                schema: {
-                  $ref: '#/definitions/Used',
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  });
+		expect(results.bundle.parsed).toEqual({
+			swagger: "2.0",
+			definitions: {
+				Used: {
+					properties: {
+						link: { type: "string" },
+					},
+					type: "object",
+				},
+			},
+			paths: {
+				"/pets": {
+					get: {
+						produces: ["application/json"],
+						parameters: [],
+						summary: "List all pets",
+						operationId: "listPets",
+						responses: {
+							"200": {
+								schema: {
+									$ref: "#/definitions/Used",
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+	});
 
-  it('should not remove components used child reference', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not remove components used child reference", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         paths:
           /pets:
@@ -105,57 +105,57 @@ describe('oas2 remove-unused-components', () => {
                 $ref: '#/definitions/InnerUsed/properties/link'
             type: object
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await bundleDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: {} }),
-      removeUnusedComponents: true,
-    });
+		const results = await bundleDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: {} }),
+			removeUnusedComponents: true,
+		});
 
-    expect(results.bundle.parsed).toEqual({
-      swagger: '2.0',
-      definitions: {
-        InnerUsed: {
-          properties: {
-            link: {
-              type: 'string',
-            },
-          },
-          type: 'object',
-        },
-        Used: {
-          properties: {
-            link: { $ref: '#/definitions/InnerUsed/properties/link' },
-          },
-          type: 'object',
-        },
-      },
-      paths: {
-        '/pets': {
-          get: {
-            produces: ['application/json'],
-            parameters: [],
-            summary: 'List all pets',
-            operationId: 'listPets',
-            responses: {
-              '200': {
-                schema: {
-                  $ref: '#/definitions/Used',
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  });
+		expect(results.bundle.parsed).toEqual({
+			swagger: "2.0",
+			definitions: {
+				InnerUsed: {
+					properties: {
+						link: {
+							type: "string",
+						},
+					},
+					type: "object",
+				},
+				Used: {
+					properties: {
+						link: { $ref: "#/definitions/InnerUsed/properties/link" },
+					},
+					type: "object",
+				},
+			},
+			paths: {
+				"/pets": {
+					get: {
+						produces: ["application/json"],
+						parameters: [],
+						summary: "List all pets",
+						operationId: "listPets",
+						responses: {
+							"200": {
+								schema: {
+									$ref: "#/definitions/Used",
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+	});
 
-  it('should remove transitively unused components', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should remove transitively unused components", async () => {
+		const document = parseYamlToDocument(
+			outdent`
         swagger: '2.0'
         paths:
           /pets:
@@ -186,43 +186,43 @@ describe('oas2 remove-unused-components', () => {
                 type: string
             type: object
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await bundleDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: {} }),
-      removeUnusedComponents: true,
-    });
+		const results = await bundleDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({ rules: {} }),
+			removeUnusedComponents: true,
+		});
 
-    expect(results.bundle.parsed).toEqual({
-      swagger: '2.0',
-      definitions: {
-        Used: {
-          properties: {
-            link: { type: 'string' },
-          },
-          type: 'object',
-        },
-      },
-      paths: {
-        '/pets': {
-          get: {
-            produces: ['application/json'],
-            parameters: [],
-            summary: 'List all pets',
-            operationId: 'listPets',
-            responses: {
-              '200': {
-                schema: {
-                  $ref: '#/definitions/Used',
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  });
+		expect(results.bundle.parsed).toEqual({
+			swagger: "2.0",
+			definitions: {
+				Used: {
+					properties: {
+						link: { type: "string" },
+					},
+					type: "object",
+				},
+			},
+			paths: {
+				"/pets": {
+					get: {
+						produces: ["application/json"],
+						parameters: [],
+						summary: "List all pets",
+						operationId: "listPets",
+						responses: {
+							"200": {
+								schema: {
+									$ref: "#/definitions/Used",
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+	});
 });

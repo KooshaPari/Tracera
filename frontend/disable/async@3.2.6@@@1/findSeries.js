@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _createTester = require('./internal/createTester.js');
+var _createTester = require("./internal/createTester.js");
 
 var _createTester2 = _interopRequireDefault(_createTester);
 
-var _eachOfLimit = require('./internal/eachOfLimit.js');
+var _eachOfLimit = require("./internal/eachOfLimit.js");
 
 var _eachOfLimit2 = _interopRequireDefault(_eachOfLimit);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * The same as [`detect`]{@link module:Collections.detect} but runs only a single async operation at a time.
@@ -40,7 +40,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Promise} a promise, if a callback is omitted
  */
 function detectSeries(coll, iteratee, callback) {
-    return (0, _createTester2.default)(bool => bool, (res, item) => item)((0, _eachOfLimit2.default)(1), coll, iteratee, callback);
+	return (0, _createTester2.default)(
+		(bool) => bool,
+		(res, item) => item,
+	)((0, _eachOfLimit2.default)(1), coll, iteratee, callback);
 }
 
 exports.default = (0, _awaitify2.default)(detectSeries, 3);

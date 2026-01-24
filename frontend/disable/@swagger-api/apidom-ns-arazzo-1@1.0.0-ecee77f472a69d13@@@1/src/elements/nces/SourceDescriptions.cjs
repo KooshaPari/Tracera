@@ -7,10 +7,10 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class SourceDescriptions extends _apidomCore.ArrayElement {
-  static primaryClass = 'sourceDescriptions';
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.classes.push(SourceDescriptions.primaryClass);
-  }
+	static primaryClass = "sourceDescriptions";
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.classes.push(SourceDescriptions.primaryClass);
+	}
 }
-var _default = exports.default = SourceDescriptions;
+var _default = (exports.default = SourceDescriptions);

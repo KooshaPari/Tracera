@@ -1,1 +1,1 @@
-export * from './typeschema';
+export * from "./typeschema";

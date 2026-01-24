@@ -30,7 +30,7 @@ var _index2 = require("./toDate.cjs");
  * //=> Thu Jul 10 2014 12:30:00
  */
 function addMinutes(date, amount, options) {
-  const _date = (0, _index2.toDate)(date, options?.in);
-  _date.setTime(_date.getTime() + amount * _index.millisecondsInMinute);
-  return _date;
+	const _date = (0, _index2.toDate)(date, options?.in);
+	_date.setTime(_date.getTime() + amount * _index.millisecondsInMinute);
+	return _date;
 }

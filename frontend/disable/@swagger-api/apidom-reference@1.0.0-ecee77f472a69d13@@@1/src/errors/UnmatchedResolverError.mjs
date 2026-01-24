@@ -1,4 +1,5 @@
 import ResolverError from "./ResolverError.mjs";
+
 /**
  * @public
  */

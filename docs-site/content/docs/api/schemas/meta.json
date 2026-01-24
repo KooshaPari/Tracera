@@ -1,0 +1,15 @@
+{
+  "title": "Schemas",
+  "pages": [
+    "healthresponse",
+    "itemsummary",
+    "itemlistresponse",
+    "itemdetailresponse",
+    "linksummary",
+    "linklistresponse",
+    "impactanalysisresponse",
+    "cycledetectionresponse",
+    "shortestpathresponse",
+    "error"
+  ]
+}

@@ -1,12 +1,10 @@
-'use strict';
-
-var hasOwn = require('hasown');
+var hasOwn = require("hasown");
 
 function specifierIncluded(current, specifier) {
-	var nodeParts = current.split('.');
-	var parts = specifier.split(' ');
-	var op = parts.length > 1 ? parts[0] : '=';
-	var versionParts = (parts.length > 1 ? parts[1] : parts[0]).split('.');
+	var nodeParts = current.split(".");
+	var parts = specifier.split(" ");
+	var op = parts.length > 1 ? parts[0] : "=";
+	var versionParts = (parts.length > 1 ? parts[1] : parts[0]).split(".");
 
 	for (var i = 0; i < 3; ++i) {
 		var cur = parseInt(nodeParts[i] || 0, 10);
@@ -14,15 +12,15 @@ function specifierIncluded(current, specifier) {
 		if (cur === ver) {
 			continue; // eslint-disable-line no-restricted-syntax, no-continue
 		}
-		if (op === '<') {
+		if (op === "<") {
 			return cur < ver;
 		}
-		if (op === '>=') {
+		if (op === ">=") {
 			return cur >= ver;
 		}
 		return false;
 	}
-	return op === '>=';
+	return op === ">=";
 }
 
 function matchesRange(current, range) {
@@ -39,19 +37,24 @@ function matchesRange(current, range) {
 }
 
 function versionIncluded(nodeVersion, specifierValue) {
-	if (typeof specifierValue === 'boolean') {
+	if (typeof specifierValue === "boolean") {
 		return specifierValue;
 	}
 
-	var current = typeof nodeVersion === 'undefined'
-		? process.versions && process.versions.node
-		: nodeVersion;
+	var current =
+		typeof nodeVersion === "undefined"
+			? process.versions && process.versions.node
+			: nodeVersion;
 
-	if (typeof current !== 'string') {
-		throw new TypeError(typeof nodeVersion === 'undefined' ? 'Unable to determine current node version' : 'If provided, a valid node version is required');
+	if (typeof current !== "string") {
+		throw new TypeError(
+			typeof nodeVersion === "undefined"
+				? "Unable to determine current node version"
+				: "If provided, a valid node version is required",
+		);
 	}
 
-	if (specifierValue && typeof specifierValue === 'object') {
+	if (specifierValue && typeof specifierValue === "object") {
 		for (var i = 0; i < specifierValue.length; ++i) {
 			if (matchesRange(current, specifierValue[i])) {
 				return true;
@@ -62,7 +65,7 @@ function versionIncluded(nodeVersion, specifierValue) {
 	return matchesRange(current, specifierValue);
 }
 
-var data = require('./core.json');
+var data = require("./core.json");
 
 module.exports = function isCore(x, nodeVersion) {
 	return hasOwn(data, x) && versionIncluded(nodeVersion, data[x]);

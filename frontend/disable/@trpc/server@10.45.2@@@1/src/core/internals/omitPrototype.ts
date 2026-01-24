@@ -3,7 +3,7 @@
  * @internal
  */
 export function omitPrototype<TObj extends Record<string, unknown>>(
-  obj: TObj,
+	obj: TObj,
 ): TObj {
-  return Object.assign(Object.create(null), obj);
+	return Object.assign(Object.create(null), obj);
 }

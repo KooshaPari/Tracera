@@ -1,22 +1,21 @@
-'use strict';
-const path = require('path');
-const locatePath = require('locate-path');
-const pathExists = require('path-exists');
+const path = require("path");
+const locatePath = require("locate-path");
+const pathExists = require("path-exists");
 
-const stop = Symbol('findUp.stop');
+const stop = Symbol("findUp.stop");
 
 module.exports = async (name, options = {}) => {
-	let directory = path.resolve(options.cwd || '');
-	const {root} = path.parse(directory);
+	let directory = path.resolve(options.cwd || "");
+	const { root } = path.parse(directory);
 	const paths = [].concat(name);
 
-	const runMatcher = async locateOptions => {
-		if (typeof name !== 'function') {
+	const runMatcher = async (locateOptions) => {
+		if (typeof name !== "function") {
 			return locatePath(paths, locateOptions);
 		}
 
 		const foundPath = await name(locateOptions.cwd);
-		if (typeof foundPath === 'string') {
+		if (typeof foundPath === "string") {
 			return locatePath([foundPath], locateOptions);
 		}
 
@@ -26,7 +25,7 @@ module.exports = async (name, options = {}) => {
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		// eslint-disable-next-line no-await-in-loop
-		const foundPath = await runMatcher({...options, cwd: directory});
+		const foundPath = await runMatcher({ ...options, cwd: directory });
 
 		if (foundPath === stop) {
 			return;
@@ -45,17 +44,17 @@ module.exports = async (name, options = {}) => {
 };
 
 module.exports.sync = (name, options = {}) => {
-	let directory = path.resolve(options.cwd || '');
-	const {root} = path.parse(directory);
+	let directory = path.resolve(options.cwd || "");
+	const { root } = path.parse(directory);
 	const paths = [].concat(name);
 
-	const runMatcher = locateOptions => {
-		if (typeof name !== 'function') {
+	const runMatcher = (locateOptions) => {
+		if (typeof name !== "function") {
 			return locatePath.sync(paths, locateOptions);
 		}
 
 		const foundPath = name(locateOptions.cwd);
-		if (typeof foundPath === 'string') {
+		if (typeof foundPath === "string") {
 			return locatePath.sync([foundPath], locateOptions);
 		}
 
@@ -64,7 +63,7 @@ module.exports.sync = (name, options = {}) => {
 
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
-		const foundPath = runMatcher({...options, cwd: directory});
+		const foundPath = runMatcher({ ...options, cwd: directory });
 
 		if (foundPath === stop) {
 			return;

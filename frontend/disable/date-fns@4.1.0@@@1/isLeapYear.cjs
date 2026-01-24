@@ -21,7 +21,7 @@ var _index = require("./toDate.cjs");
  * //=> true
  */
 function isLeapYear(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const year = _date.getFullYear();
-  return year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
+	const _date = (0, _index.toDate)(date, options?.in);
+	const year = _date.getFullYear();
+	return year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
 }

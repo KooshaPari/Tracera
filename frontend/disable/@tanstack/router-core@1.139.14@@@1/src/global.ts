@@ -1,9 +1,7 @@
-import type { AnyRouter } from './router'
+import type { AnyRouter } from "./router";
 
 declare global {
-  interface Window {
-    __TSR_ROUTER__?: AnyRouter
-  }
+	interface Window {
+		__TSR_ROUTER__?: AnyRouter;
+	}
 }
-
-export {}

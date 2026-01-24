@@ -1,13 +1,13 @@
-import { keyMap as keyMapBase, isElement } from '@swagger-api/apidom-core';
+import { isElement, keyMap as keyMapBase } from "@swagger-api/apidom-core";
 
 /**
  * @public
  */
-export const getNodeType = element => {
-  if (!isElement(element)) {
-    return undefined;
-  }
-  return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
+export const getNodeType = (element) => {
+	if (!isElement(element)) {
+		return undefined;
+	}
+	return `${element.element.charAt(0).toUpperCase() + element.element.slice(1)}Element`;
 };
 
 /**
@@ -16,17 +16,17 @@ export const getNodeType = element => {
  */
 
 export const keyMap = {
-  ArazzoSpecification1Element: ['content'],
-  InfoElement: ['content'],
-  SourceDescriptionElement: ['content'],
-  WorkflowElement: ['content'],
-  StepElement: ['content'],
-  ParameterElement: ['content'],
-  SuccessActionElement: ['content'],
-  FailureActionElement: ['content'],
-  ComponentsElement: ['content'],
-  CriterionElement: ['content'],
-  ReferenceElement: ['content'],
-  JSONSchema202012Element: ['content'],
-  ...keyMapBase
+	ArazzoSpecification1Element: ["content"],
+	InfoElement: ["content"],
+	SourceDescriptionElement: ["content"],
+	WorkflowElement: ["content"],
+	StepElement: ["content"],
+	ParameterElement: ["content"],
+	SuccessActionElement: ["content"],
+	FailureActionElement: ["content"],
+	ComponentsElement: ["content"],
+	CriterionElement: ["content"],
+	ReferenceElement: ["content"],
+	JSONSchema202012Element: ["content"],
+	...keyMapBase,
 };

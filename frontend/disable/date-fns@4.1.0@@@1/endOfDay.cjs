@@ -29,7 +29,7 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 02 2014 23:59:59.999
  */
 function endOfDay(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  _date.setHours(23, 59, 59, 999);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	_date.setHours(23, 59, 59, 999);
+	return _date;
 }

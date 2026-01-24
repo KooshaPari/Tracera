@@ -1,5 +1,5 @@
-var baseFor = require('./_baseFor'),
-    keys = require('./keys');
+var baseFor = require("./_baseFor"),
+	keys = require("./keys");
 
 /**
  * The base implementation of `_.forOwn` without support for iteratee shorthands.
@@ -10,7 +10,7 @@ var baseFor = require('./_baseFor'),
  * @returns {Object} Returns `object`.
  */
 function baseForOwn(object, iteratee) {
-  return object && baseFor(object, iteratee, keys);
+	return object && baseFor(object, iteratee, keys);
 }
 
 module.exports = baseForOwn;

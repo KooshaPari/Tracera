@@ -1,43 +1,43 @@
-import { toNestErrors, validateFieldsNatively } from '@hookform/resolvers';
+import { toNestErrors, validateFieldsNatively } from "@hookform/resolvers";
 import type {
-  FieldError,
-  FieldErrors,
-  FieldValues,
-  Resolver,
-} from 'react-hook-form';
-import * as t from 'typanion';
+	FieldError,
+	FieldErrors,
+	FieldValues,
+	Resolver,
+} from "react-hook-form";
+import type * as t from "typanion";
 
 function parseErrors(errors: string[], parsedErrors: FieldErrors = {}) {
-  return errors.reduce((acc, error) => {
-    const fieldIndex = error.indexOf(':');
+	return errors.reduce((acc, error) => {
+		const fieldIndex = error.indexOf(":");
 
-    const field = error.slice(1, fieldIndex);
-    const message = error.slice(fieldIndex + 1).trim();
+		const field = error.slice(1, fieldIndex);
+		const message = error.slice(fieldIndex + 1).trim();
 
-    acc[field] = {
-      message,
-    } as FieldError;
+		acc[field] = {
+			message,
+		} as FieldError;
 
-    return acc;
-  }, parsedErrors);
+		return acc;
+	}, parsedErrors);
 }
 
 export function typanionResolver<Input extends FieldValues, Context, Output>(
-  schema: t.StrictValidator<Input, Input>,
-  schemaOptions?: Pick<t.ValidationState, 'coercions' | 'coercion'>,
-  resolverOptions?: {
-    mode?: 'async' | 'sync';
-    raw?: false;
-  },
+	schema: t.StrictValidator<Input, Input>,
+	schemaOptions?: Pick<t.ValidationState, "coercions" | "coercion">,
+	resolverOptions?: {
+		mode?: "async" | "sync";
+		raw?: false;
+	},
 ): Resolver<Input, Context, t.InferType<typeof schema>>;
 
 export function typanionResolver<Input extends FieldValues, Context, Output>(
-  schema: t.StrictValidator<Input, Input>,
-  schemaOptions: Pick<t.ValidationState, 'coercions' | 'coercion'> | undefined,
-  resolverOptions: {
-    mode?: 'async' | 'sync';
-    raw: true;
-  },
+	schema: t.StrictValidator<Input, Input>,
+	schemaOptions: Pick<t.ValidationState, "coercions" | "coercion"> | undefined,
+	resolverOptions: {
+		mode?: "async" | "sync";
+		raw: true;
+	},
 ): Resolver<Input, Context, Input>;
 
 /**
@@ -56,30 +56,30 @@ export function typanionResolver<Input extends FieldValues, Context, Output>(
  * });
  */
 export function typanionResolver<Input extends FieldValues, Context, Output>(
-  schema: t.StrictValidator<Input, Input>,
-  schemaOptions: Pick<t.ValidationState, 'coercions' | 'coercion'> = {},
+	schema: t.StrictValidator<Input, Input>,
+	schemaOptions: Pick<t.ValidationState, "coercions" | "coercion"> = {},
 ): Resolver<Input, Context, Output | Input> {
-  return (values: Input, _, options) => {
-    const rawErrors: string[] = [];
-    const isValid = schema(
-      values,
-      Object.assign(
-        {},
-        {
-          errors: rawErrors,
-        },
-        schemaOptions,
-      ),
-    );
-    const parsedErrors = parseErrors(rawErrors);
+	return (values: Input, _, options) => {
+		const rawErrors: string[] = [];
+		const isValid = schema(
+			values,
+			Object.assign(
+				{},
+				{
+					errors: rawErrors,
+				},
+				schemaOptions,
+			),
+		);
+		const parsedErrors = parseErrors(rawErrors);
 
-    if (isValid) {
-      options.shouldUseNativeValidation &&
-        validateFieldsNatively(parsedErrors, options);
+		if (isValid) {
+			options.shouldUseNativeValidation &&
+				validateFieldsNatively(parsedErrors, options);
 
-      return { values, errors: {} };
-    }
+			return { values, errors: {} };
+		}
 
-    return { values: {}, errors: toNestErrors(parsedErrors, options) };
-  };
+		return { values: {}, errors: toNestErrors(parsedErrors, options) };
+	};
 }

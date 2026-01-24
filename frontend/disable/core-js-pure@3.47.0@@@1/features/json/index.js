@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/json');
+"use strict";
+module.exports = require("../../full/json");

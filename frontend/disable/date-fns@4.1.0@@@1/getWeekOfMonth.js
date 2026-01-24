@@ -27,24 +27,24 @@ import { toDate } from "./toDate.js";
  * //=> 2
  */
 export function getWeekOfMonth(date, options) {
-  const defaultOptions = getDefaultOptions();
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
+	const defaultOptions = getDefaultOptions();
+	const weekStartsOn =
+		options?.weekStartsOn ??
+		options?.locale?.options?.weekStartsOn ??
+		defaultOptions.weekStartsOn ??
+		defaultOptions.locale?.options?.weekStartsOn ??
+		0;
 
-  const currentDayOfMonth = getDate(toDate(date, options?.in));
-  if (isNaN(currentDayOfMonth)) return NaN;
+	const currentDayOfMonth = getDate(toDate(date, options?.in));
+	if (isNaN(currentDayOfMonth)) return NaN;
 
-  const startWeekDay = getDay(startOfMonth(date, options));
+	const startWeekDay = getDay(startOfMonth(date, options));
 
-  let lastDayOfFirstWeek = weekStartsOn - startWeekDay;
-  if (lastDayOfFirstWeek <= 0) lastDayOfFirstWeek += 7;
+	let lastDayOfFirstWeek = weekStartsOn - startWeekDay;
+	if (lastDayOfFirstWeek <= 0) lastDayOfFirstWeek += 7;
 
-  const remainingDaysAfterFirstWeek = currentDayOfMonth - lastDayOfFirstWeek;
-  return Math.ceil(remainingDaysAfterFirstWeek / 7) + 1;
+	const remainingDaysAfterFirstWeek = currentDayOfMonth - lastDayOfFirstWeek;
+	return Math.ceil(remainingDaysAfterFirstWeek / 7) + 1;
 }
 
 // Fallback for modularized imports:

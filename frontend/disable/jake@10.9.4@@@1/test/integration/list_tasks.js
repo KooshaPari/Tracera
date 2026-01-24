@@ -1,15 +1,15 @@
 const PROJECT_DIR = process.env.PROJECT_DIR;
 const JAKE_CMD = `${PROJECT_DIR}/bin/cli.js`;
 
-let assert = require('assert');
-let proc = require('child_process');
+const assert = require("assert");
+const proc = require("child_process");
 
-suite('listTasks', function () {
-  test('execute "jake -T" without any errors', function () {
-    let message = 'cannot run "jake -T" command';
-    let listTasks = function () {
-      proc.execFileSync(JAKE_CMD, ['-T']);
-    };
-    assert.doesNotThrow(listTasks, TypeError, message);
-  });
+suite("listTasks", () => {
+	test('execute "jake -T" without any errors', () => {
+		const message = 'cannot run "jake -T" command';
+		const listTasks = () => {
+			proc.execFileSync(JAKE_CMD, ["-T"]);
+		};
+		assert.doesNotThrow(listTasks, TypeError, message);
+	});
 });

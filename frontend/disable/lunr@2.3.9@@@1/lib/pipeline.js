@@ -33,10 +33,10 @@
  * @constructor
  */
 lunr.Pipeline = function () {
-  this._stack = []
-}
+	this._stack = [];
+};
 
-lunr.Pipeline.registeredFunctions = Object.create(null)
+lunr.Pipeline.registeredFunctions = Object.create(null);
 
 /**
  * A pipeline function maps lunr.Token to lunr.Token. A lunr.Token contains the token
@@ -72,13 +72,13 @@ lunr.Pipeline.registeredFunctions = Object.create(null)
  * @param {String} label - The label to register this function with
  */
 lunr.Pipeline.registerFunction = function (fn, label) {
-  if (label in this.registeredFunctions) {
-    lunr.utils.warn('Overwriting existing registered function: ' + label)
-  }
+	if (label in this.registeredFunctions) {
+		lunr.utils.warn("Overwriting existing registered function: " + label);
+	}
 
-  fn.label = label
-  lunr.Pipeline.registeredFunctions[fn.label] = fn
-}
+	fn.label = label;
+	lunr.Pipeline.registeredFunctions[fn.label] = fn;
+};
 
 /**
  * Warns if the function is not registered as a Pipeline function.
@@ -87,12 +87,15 @@ lunr.Pipeline.registerFunction = function (fn, label) {
  * @private
  */
 lunr.Pipeline.warnIfFunctionNotRegistered = function (fn) {
-  var isRegistered = fn.label && (fn.label in this.registeredFunctions)
+	var isRegistered = fn.label && fn.label in this.registeredFunctions;
 
-  if (!isRegistered) {
-    lunr.utils.warn('Function is not registered with pipeline. This may cause problems when serialising the index.\n', fn)
-  }
-}
+	if (!isRegistered) {
+		lunr.utils.warn(
+			"Function is not registered with pipeline. This may cause problems when serialising the index.\n",
+			fn,
+		);
+	}
+};
 
 /**
  * Loads a previously serialised pipeline.
@@ -104,21 +107,21 @@ lunr.Pipeline.warnIfFunctionNotRegistered = function (fn) {
  * @param {Object} serialised - The serialised pipeline to load.
  * @returns {lunr.Pipeline}
  */
-lunr.Pipeline.load = function (serialised) {
-  var pipeline = new lunr.Pipeline
+lunr.Pipeline.load = (serialised) => {
+	var pipeline = new lunr.Pipeline();
 
-  serialised.forEach(function (fnName) {
-    var fn = lunr.Pipeline.registeredFunctions[fnName]
+	serialised.forEach((fnName) => {
+		var fn = lunr.Pipeline.registeredFunctions[fnName];
 
-    if (fn) {
-      pipeline.add(fn)
-    } else {
-      throw new Error('Cannot load unregistered function: ' + fnName)
-    }
-  })
+		if (fn) {
+			pipeline.add(fn);
+		} else {
+			throw new Error("Cannot load unregistered function: " + fnName);
+		}
+	});
 
-  return pipeline
-}
+	return pipeline;
+};
 
 /**
  * Adds new functions to the end of the pipeline.
@@ -128,13 +131,13 @@ lunr.Pipeline.load = function (serialised) {
  * @param {lunr.PipelineFunction[]} functions - Any number of functions to add to the pipeline.
  */
 lunr.Pipeline.prototype.add = function () {
-  var fns = Array.prototype.slice.call(arguments)
+	var fns = Array.prototype.slice.call(arguments);
 
-  fns.forEach(function (fn) {
-    lunr.Pipeline.warnIfFunctionNotRegistered(fn)
-    this._stack.push(fn)
-  }, this)
-}
+	fns.forEach(function (fn) {
+		lunr.Pipeline.warnIfFunctionNotRegistered(fn);
+		this._stack.push(fn);
+	}, this);
+};
 
 /**
  * Adds a single function after a function that already exists in the
@@ -146,16 +149,16 @@ lunr.Pipeline.prototype.add = function () {
  * @param {lunr.PipelineFunction} newFn - The new function to add to the pipeline.
  */
 lunr.Pipeline.prototype.after = function (existingFn, newFn) {
-  lunr.Pipeline.warnIfFunctionNotRegistered(newFn)
+	lunr.Pipeline.warnIfFunctionNotRegistered(newFn);
 
-  var pos = this._stack.indexOf(existingFn)
-  if (pos == -1) {
-    throw new Error('Cannot find existingFn')
-  }
+	var pos = this._stack.indexOf(existingFn);
+	if (pos == -1) {
+		throw new Error("Cannot find existingFn");
+	}
 
-  pos = pos + 1
-  this._stack.splice(pos, 0, newFn)
-}
+	pos = pos + 1;
+	this._stack.splice(pos, 0, newFn);
+};
 
 /**
  * Adds a single function before a function that already exists in the
@@ -167,15 +170,15 @@ lunr.Pipeline.prototype.after = function (existingFn, newFn) {
  * @param {lunr.PipelineFunction} newFn - The new function to add to the pipeline.
  */
 lunr.Pipeline.prototype.before = function (existingFn, newFn) {
-  lunr.Pipeline.warnIfFunctionNotRegistered(newFn)
+	lunr.Pipeline.warnIfFunctionNotRegistered(newFn);
 
-  var pos = this._stack.indexOf(existingFn)
-  if (pos == -1) {
-    throw new Error('Cannot find existingFn')
-  }
+	var pos = this._stack.indexOf(existingFn);
+	if (pos == -1) {
+		throw new Error("Cannot find existingFn");
+	}
 
-  this._stack.splice(pos, 0, newFn)
-}
+	this._stack.splice(pos, 0, newFn);
+};
 
 /**
  * Removes a function from the pipeline.
@@ -183,13 +186,13 @@ lunr.Pipeline.prototype.before = function (existingFn, newFn) {
  * @param {lunr.PipelineFunction} fn The function to remove from the pipeline.
  */
 lunr.Pipeline.prototype.remove = function (fn) {
-  var pos = this._stack.indexOf(fn)
-  if (pos == -1) {
-    return
-  }
+	var pos = this._stack.indexOf(fn);
+	if (pos == -1) {
+		return;
+	}
 
-  this._stack.splice(pos, 1)
-}
+	this._stack.splice(pos, 1);
+};
 
 /**
  * Runs the current list of functions that make up the pipeline against the
@@ -199,31 +202,31 @@ lunr.Pipeline.prototype.remove = function (fn) {
  * @returns {Array}
  */
 lunr.Pipeline.prototype.run = function (tokens) {
-  var stackLength = this._stack.length
+	var stackLength = this._stack.length;
 
-  for (var i = 0; i < stackLength; i++) {
-    var fn = this._stack[i]
-    var memo = []
+	for (var i = 0; i < stackLength; i++) {
+		var fn = this._stack[i];
+		var memo = [];
 
-    for (var j = 0; j < tokens.length; j++) {
-      var result = fn(tokens[j], j, tokens)
+		for (var j = 0; j < tokens.length; j++) {
+			var result = fn(tokens[j], j, tokens);
 
-      if (result === null || result === void 0 || result === '') continue
+			if (result === null || result === void 0 || result === "") continue;
 
-      if (Array.isArray(result)) {
-        for (var k = 0; k < result.length; k++) {
-          memo.push(result[k])
-        }
-      } else {
-        memo.push(result)
-      }
-    }
+			if (Array.isArray(result)) {
+				for (var k = 0; k < result.length; k++) {
+					memo.push(result[k]);
+				}
+			} else {
+				memo.push(result);
+			}
+		}
 
-    tokens = memo
-  }
+		tokens = memo;
+	}
 
-  return tokens
-}
+	return tokens;
+};
 
 /**
  * Convenience method for passing a string through a pipeline and getting
@@ -236,20 +239,18 @@ lunr.Pipeline.prototype.run = function (tokens) {
  * @returns {string[]}
  */
 lunr.Pipeline.prototype.runString = function (str, metadata) {
-  var token = new lunr.Token (str, metadata)
+	var token = new lunr.Token(str, metadata);
 
-  return this.run([token]).map(function (t) {
-    return t.toString()
-  })
-}
+	return this.run([token]).map((t) => t.toString());
+};
 
 /**
  * Resets the pipeline by removing any existing processors.
  *
  */
 lunr.Pipeline.prototype.reset = function () {
-  this._stack = []
-}
+	this._stack = [];
+};
 
 /**
  * Returns a representation of the pipeline ready for serialisation.
@@ -259,9 +260,9 @@ lunr.Pipeline.prototype.reset = function () {
  * @returns {Array}
  */
 lunr.Pipeline.prototype.toJSON = function () {
-  return this._stack.map(function (fn) {
-    lunr.Pipeline.warnIfFunctionNotRegistered(fn)
+	return this._stack.map((fn) => {
+		lunr.Pipeline.warnIfFunctionNotRegistered(fn);
 
-    return fn.label
-  })
-}
+		return fn.label;
+	});
+};

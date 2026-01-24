@@ -21,50 +21,46 @@
  * @returns {lunr.Token[]}
  * @see {@link lunr.Pipeline}
  */
-lunr.tokenizer = function (obj, metadata) {
-  if (obj == null || obj == undefined) {
-    return []
-  }
+lunr.tokenizer = (obj, metadata) => {
+	if (obj == null || obj == undefined) {
+		return [];
+	}
 
-  if (Array.isArray(obj)) {
-    return obj.map(function (t) {
-      return new lunr.Token(
-        lunr.utils.asString(t).toLowerCase(),
-        lunr.utils.clone(metadata)
-      )
-    })
-  }
+	if (Array.isArray(obj)) {
+		return obj.map(
+			(t) =>
+				new lunr.Token(
+					lunr.utils.asString(t).toLowerCase(),
+					lunr.utils.clone(metadata),
+				),
+		);
+	}
 
-  var str = obj.toString().toLowerCase(),
-      len = str.length,
-      tokens = []
+	var str = obj.toString().toLowerCase(),
+		len = str.length,
+		tokens = [];
 
-  for (var sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
-    var char = str.charAt(sliceEnd),
-        sliceLength = sliceEnd - sliceStart
+	for (var sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
+		var char = str.charAt(sliceEnd),
+			sliceLength = sliceEnd - sliceStart;
 
-    if ((char.match(lunr.tokenizer.separator) || sliceEnd == len)) {
+		if (char.match(lunr.tokenizer.separator) || sliceEnd == len) {
+			if (sliceLength > 0) {
+				var tokenMetadata = lunr.utils.clone(metadata) || {};
+				tokenMetadata["position"] = [sliceStart, sliceLength];
+				tokenMetadata["index"] = tokens.length;
 
-      if (sliceLength > 0) {
-        var tokenMetadata = lunr.utils.clone(metadata) || {}
-        tokenMetadata["position"] = [sliceStart, sliceLength]
-        tokenMetadata["index"] = tokens.length
+				tokens.push(
+					new lunr.Token(str.slice(sliceStart, sliceEnd), tokenMetadata),
+				);
+			}
 
-        tokens.push(
-          new lunr.Token (
-            str.slice(sliceStart, sliceEnd),
-            tokenMetadata
-          )
-        )
-      }
+			sliceStart = sliceEnd + 1;
+		}
+	}
 
-      sliceStart = sliceEnd + 1
-    }
-
-  }
-
-  return tokens
-}
+	return tokens;
+};
 
 /**
  * The separator used to split a string into tokens. Override this property to change the behaviour of
@@ -73,4 +69,4 @@ lunr.tokenizer = function (obj, metadata) {
  * @static
  * @see lunr.tokenizer
  */
-lunr.tokenizer.separator = /[\s\-]+/
+lunr.tokenizer.separator = /[\s-]+/;

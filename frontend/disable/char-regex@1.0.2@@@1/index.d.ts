@@ -7,7 +7,7 @@
  * "❤️👊🏽".match(charRegex());
  * //=> ["❤️", "👊🏽"]
  * ```
-*/
-declare function charRegex(): RegExp
+ */
+declare function charRegex(): RegExp;
 
-export = charRegex
+export = charRegex;

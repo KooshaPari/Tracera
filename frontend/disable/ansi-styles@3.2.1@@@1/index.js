@@ -1,20 +1,22 @@
-'use strict';
-const colorConvert = require('color-convert');
+const colorConvert = require("color-convert");
 
-const wrapAnsi16 = (fn, offset) => function () {
-	const code = fn.apply(colorConvert, arguments);
-	return `\u001B[${code + offset}m`;
-};
+const wrapAnsi16 = (fn, offset) =>
+	function () {
+		const code = fn.apply(colorConvert, arguments);
+		return `\u001B[${code + offset}m`;
+	};
 
-const wrapAnsi256 = (fn, offset) => function () {
-	const code = fn.apply(colorConvert, arguments);
-	return `\u001B[${38 + offset};5;${code}m`;
-};
+const wrapAnsi256 = (fn, offset) =>
+	function () {
+		const code = fn.apply(colorConvert, arguments);
+		return `\u001B[${38 + offset};5;${code}m`;
+	};
 
-const wrapAnsi16m = (fn, offset) => function () {
-	const rgb = fn.apply(colorConvert, arguments);
-	return `\u001B[${38 + offset};2;${rgb[0]};${rgb[1]};${rgb[2]}m`;
-};
+const wrapAnsi16m = (fn, offset) =>
+	function () {
+		const rgb = fn.apply(colorConvert, arguments);
+		return `\u001B[${38 + offset};2;${rgb[0]};${rgb[1]};${rgb[2]}m`;
+	};
 
 function assembleStyles() {
 	const codes = new Map();
@@ -28,7 +30,7 @@ function assembleStyles() {
 			underline: [4, 24],
 			inverse: [7, 27],
 			hidden: [8, 28],
-			strikethrough: [9, 29]
+			strikethrough: [9, 29],
 		},
 		color: {
 			black: [30, 39],
@@ -48,7 +50,7 @@ function assembleStyles() {
 			blueBright: [94, 39],
 			magentaBright: [95, 39],
 			cyanBright: [96, 39],
-			whiteBright: [97, 39]
+			whiteBright: [97, 39],
 		},
 		bgColor: {
 			bgBlack: [40, 49],
@@ -68,8 +70,8 @@ function assembleStyles() {
 			bgBlueBright: [104, 49],
 			bgMagentaBright: [105, 49],
 			bgCyanBright: [106, 49],
-			bgWhiteBright: [107, 49]
-		}
+			bgWhiteBright: [107, 49],
+		},
 	};
 
 	// Fix humans
@@ -83,7 +85,7 @@ function assembleStyles() {
 
 			styles[styleName] = {
 				open: `\u001B[${style[0]}m`,
-				close: `\u001B[${style[1]}m`
+				close: `\u001B[${style[1]}m`,
 			};
 
 			group[styleName] = styles[styleName];
@@ -93,63 +95,63 @@ function assembleStyles() {
 
 		Object.defineProperty(styles, groupName, {
 			value: group,
-			enumerable: false
+			enumerable: false,
 		});
 
-		Object.defineProperty(styles, 'codes', {
+		Object.defineProperty(styles, "codes", {
 			value: codes,
-			enumerable: false
+			enumerable: false,
 		});
 	}
 
-	const ansi2ansi = n => n;
+	const ansi2ansi = (n) => n;
 	const rgb2rgb = (r, g, b) => [r, g, b];
 
-	styles.color.close = '\u001B[39m';
-	styles.bgColor.close = '\u001B[49m';
+	styles.color.close = "\u001B[39m";
+	styles.bgColor.close = "\u001B[49m";
 
 	styles.color.ansi = {
-		ansi: wrapAnsi16(ansi2ansi, 0)
+		ansi: wrapAnsi16(ansi2ansi, 0),
 	};
 	styles.color.ansi256 = {
-		ansi256: wrapAnsi256(ansi2ansi, 0)
+		ansi256: wrapAnsi256(ansi2ansi, 0),
 	};
 	styles.color.ansi16m = {
-		rgb: wrapAnsi16m(rgb2rgb, 0)
+		rgb: wrapAnsi16m(rgb2rgb, 0),
 	};
 
 	styles.bgColor.ansi = {
-		ansi: wrapAnsi16(ansi2ansi, 10)
+		ansi: wrapAnsi16(ansi2ansi, 10),
 	};
 	styles.bgColor.ansi256 = {
-		ansi256: wrapAnsi256(ansi2ansi, 10)
+		ansi256: wrapAnsi256(ansi2ansi, 10),
 	};
 	styles.bgColor.ansi16m = {
-		rgb: wrapAnsi16m(rgb2rgb, 10)
+		rgb: wrapAnsi16m(rgb2rgb, 10),
 	};
 
 	for (let key of Object.keys(colorConvert)) {
-		if (typeof colorConvert[key] !== 'object') {
+		if (typeof colorConvert[key] !== "object") {
 			continue;
 		}
 
 		const suite = colorConvert[key];
 
-		if (key === 'ansi16') {
-			key = 'ansi';
+		if (key === "ansi16") {
+			key = "ansi";
 		}
 
-		if ('ansi16' in suite) {
+		if ("ansi16" in suite) {
 			styles.color.ansi[key] = wrapAnsi16(suite.ansi16, 0);
 			styles.bgColor.ansi[key] = wrapAnsi16(suite.ansi16, 10);
 		}
 
-		if ('ansi256' in suite) {
+		if ("ansi256" in suite) {
 			styles.color.ansi256[key] = wrapAnsi256(suite.ansi256, 0);
 			styles.bgColor.ansi256[key] = wrapAnsi256(suite.ansi256, 10);
 		}
 
-		if ('rgb' in suite) {
+		if ("rgb" in suite) {
 			styles.color.ansi16m[key] = wrapAnsi16m(suite.rgb, 0);
 			styles.bgColor.ansi16m[key] = wrapAnsi16m(suite.rgb, 10);
 		}
@@ -159,7 +161,7 @@ function assembleStyles() {
 }
 
 // Make the export immutable
-Object.defineProperty(module, 'exports', {
+Object.defineProperty(module, "exports", {
 	enumerable: true,
-	get: assembleStyles
+	get: assembleStyles,
 });

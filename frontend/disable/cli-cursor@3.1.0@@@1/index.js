@@ -1,5 +1,4 @@
-'use strict';
-const restoreCursor = require('restore-cursor');
+const restoreCursor = require("restore-cursor");
 
 let isHidden = false;
 
@@ -9,7 +8,7 @@ exports.show = (writableStream = process.stderr) => {
 	}
 
 	isHidden = false;
-	writableStream.write('\u001B[?25h');
+	writableStream.write("\u001B[?25h");
 };
 
 exports.hide = (writableStream = process.stderr) => {
@@ -19,7 +18,7 @@ exports.hide = (writableStream = process.stderr) => {
 
 	restoreCursor();
 	isHidden = true;
-	writableStream.write('\u001B[?25l');
+	writableStream.write("\u001B[?25l");
 };
 
 exports.toggle = (force, writableStream) => {

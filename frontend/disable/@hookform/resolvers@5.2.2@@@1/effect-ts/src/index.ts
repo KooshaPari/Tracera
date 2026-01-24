@@ -1,1 +1,1 @@
-export * from './effect-ts';
+export * from "./effect-ts";

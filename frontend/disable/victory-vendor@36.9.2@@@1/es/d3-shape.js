@@ -1,4 +1,3 @@
-
 // `victory-vendor/d3-shape` (ESM)
 // See upstream license: https://github.com/d3/d3-shape/blob/main/LICENSE
 //

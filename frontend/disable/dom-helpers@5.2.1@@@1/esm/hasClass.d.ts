@@ -4,4 +4,7 @@
  * @param element the element
  * @param className the CSS class name
  */
-export default function hasClass(element: Element | SVGElement, className: string): boolean;
+export default function hasClass(
+	element: Element | SVGElement,
+	className: string,
+): boolean;

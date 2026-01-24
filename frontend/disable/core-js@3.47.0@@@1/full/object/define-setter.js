@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/object/define-setter');
+"use strict";
+var parent = require("../../actual/object/define-setter");
 
 module.exports = parent;

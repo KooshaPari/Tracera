@@ -22,7 +22,7 @@ export class WalkerBase {
 		this.context = {
 			skip: () => (this.should_skip = true),
 			remove: () => (this.should_remove = true),
-			replace: (node) => (this.replacement = node)
+			replace: (node) => (this.replacement = node),
 		};
 	}
 

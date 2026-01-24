@@ -5,5 +5,5 @@
 // HTMLCollection or NodeList. However, note that selection.selectAll will use a
 // static NodeList as a group, since it safely derived from querySelectorAll.
 export default function array(x) {
-  return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
+	return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
 }

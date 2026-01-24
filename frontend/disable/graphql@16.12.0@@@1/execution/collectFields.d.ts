@@ -1,11 +1,11 @@
-import type { ObjMap } from '../jsutils/ObjMap';
+import type { ObjMap } from "../jsutils/ObjMap";
 import type {
-  FieldNode,
-  FragmentDefinitionNode,
-  SelectionSetNode,
-} from '../language/ast';
-import type { GraphQLObjectType } from '../type/definition';
-import type { GraphQLSchema } from '../type/schema';
+	FieldNode,
+	FragmentDefinitionNode,
+	SelectionSetNode,
+} from "../language/ast";
+import type { GraphQLObjectType } from "../type/definition";
+import type { GraphQLSchema } from "../type/schema";
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -16,13 +16,13 @@ import type { GraphQLSchema } from '../type/schema';
  * @internal
  */
 export declare function collectFields(
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: {
-    [variable: string]: unknown;
-  },
-  runtimeType: GraphQLObjectType,
-  selectionSet: SelectionSetNode,
+	schema: GraphQLSchema,
+	fragments: ObjMap<FragmentDefinitionNode>,
+	variableValues: {
+		[variable: string]: unknown;
+	},
+	runtimeType: GraphQLObjectType,
+	selectionSet: SelectionSetNode,
 ): Map<string, ReadonlyArray<FieldNode>>;
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -35,11 +35,11 @@ export declare function collectFields(
  * @internal
  */
 export declare function collectSubfields(
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: {
-    [variable: string]: unknown;
-  },
-  returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+	schema: GraphQLSchema,
+	fragments: ObjMap<FragmentDefinitionNode>,
+	variableValues: {
+		[variable: string]: unknown;
+	},
+	returnType: GraphQLObjectType,
+	fieldNodes: ReadonlyArray<FieldNode>,
 ): Map<string, ReadonlyArray<FieldNode>>;

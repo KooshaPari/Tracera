@@ -1,5 +1,5 @@
-var baseLodash = require('./_baseLodash'),
-    wrapperClone = require('./_wrapperClone');
+var baseLodash = require("./_baseLodash"),
+	wrapperClone = require("./_wrapperClone");
 
 /**
  * Creates a clone of the chain sequence planting `value` as the wrapped value.
@@ -26,23 +26,23 @@ var baseLodash = require('./_baseLodash'),
  * // => [1, 4]
  */
 function wrapperPlant(value) {
-  var result,
-      parent = this;
+	var result,
+		parent = this;
 
-  while (parent instanceof baseLodash) {
-    var clone = wrapperClone(parent);
-    clone.__index__ = 0;
-    clone.__values__ = undefined;
-    if (result) {
-      previous.__wrapped__ = clone;
-    } else {
-      result = clone;
-    }
-    var previous = clone;
-    parent = parent.__wrapped__;
-  }
-  previous.__wrapped__ = value;
-  return result;
+	while (parent instanceof baseLodash) {
+		var clone = wrapperClone(parent);
+		clone.__index__ = 0;
+		clone.__values__ = undefined;
+		if (result) {
+			previous.__wrapped__ = clone;
+		} else {
+			result = clone;
+		}
+		var previous = clone;
+		parent = parent.__wrapped__;
+	}
+	previous.__wrapped__ = value;
+	return result;
 }
 
 module.exports = wrapperPlant;

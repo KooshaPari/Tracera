@@ -7,14 +7,14 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class YamlMediaTypes extends _apidomCore.MediaTypes {
-  latest() {
-    return this[1];
-  }
+	latest() {
+		return this[1];
+	}
 }
 
 /**
  * @public
  */
 exports.YamlMediaTypes = YamlMediaTypes;
-const mediaTypes = new YamlMediaTypes('text/yaml', 'application/yaml');
-var _default = exports.default = mediaTypes;
+const mediaTypes = new YamlMediaTypes("text/yaml", "application/yaml");
+var _default = (exports.default = mediaTypes);

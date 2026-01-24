@@ -19,9 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require('./common');
-var assert = require('assert');
-var events = require('../');
+require("./common");
+var assert = require("assert");
+var events = require("../");
 
 var e = new events.EventEmitter();
 

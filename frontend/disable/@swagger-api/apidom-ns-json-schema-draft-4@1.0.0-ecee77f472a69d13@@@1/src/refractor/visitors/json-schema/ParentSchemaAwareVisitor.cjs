@@ -10,11 +10,9 @@ exports.default = void 0;
  * @public
  */
 class ParentSchemaAwareVisitor {
-  parent;
-  constructor({
-    parent
-  }) {
-    this.parent = parent;
-  }
+	parent;
+	constructor({ parent }) {
+		this.parent = parent;
+	}
 }
-var _default = exports.default = ParentSchemaAwareVisitor;
+var _default = (exports.default = ParentSchemaAwareVisitor);

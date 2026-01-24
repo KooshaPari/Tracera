@@ -1,11 +1,11 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import { makeConfig, parseYamlToDocument } from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('Oas3 response-contains-header', () => {
-  it('should report a response object not containing the header', async () => {
-    const document = parseYamlToDocument(outdent`
+describe("Oas3 response-contains-header", () => {
+	it("should report a response object not containing the header", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -23,19 +23,19 @@ describe('Oas3 response-contains-header', () => {
                       format: int32
 		`);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: { '200': ['Content-Length'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: { "200": ["Content-Length"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -70,10 +70,10 @@ describe('Oas3 response-contains-header', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should report response objects not containing headers for a subset of status codes', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should report response objects not containing headers for a subset of status codes", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -105,22 +105,22 @@ describe('Oas3 response-contains-header', () => {
                             error:
                               type: string
     `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: {
-              '2XX': ['x-request-id'],
-              '400': ['Content-Length'],
-            },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: {
+							"2XX": ["x-request-id"],
+							"400": ["Content-Length"],
+						},
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -216,10 +216,10 @@ describe('Oas3 response-contains-header', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report response objects containing specified headers', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report response objects containing specified headers", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -259,26 +259,26 @@ describe('Oas3 response-contains-header', () => {
                     schema:
                       type: integer
     `);
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: {
-              '2xx': ['x-request-id'],
-              '400': ['Content-Length'],
-            },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: {
+							"2xx": ["x-request-id"],
+							"400": ["Content-Length"],
+						},
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report response object containing header name upper cased', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report response object containing header name upper cased", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -296,23 +296,23 @@ describe('Oas3 response-contains-header', () => {
                       format: int32
 		`);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: { '2XX': ['x-test-header'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: { "2XX": ["x-test-header"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report response object containing header name in the rule upper cased', async () => {
-    const document = parseYamlToDocument(outdent`
+	it("should not report response object containing header name in the rule upper cased", async () => {
+		const document = parseYamlToDocument(outdent`
       openapi: 3.0.3
       info:
         version: 3.0.0
@@ -330,24 +330,24 @@ describe('Oas3 response-contains-header', () => {
                       format: int32
 		`);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: { '2XX': ['X-Test-Header'] },
-          },
-        },
-      }),
-    });
-    expect(results).toMatchInlineSnapshot(`[]`);
-  });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: { "2XX": ["X-Test-Header"] },
+					},
+				},
+			}),
+		});
+		expect(results).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should report even if the response is null', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should report even if the response is null", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           openapi: 3.0.0
           paths:
             '/test/':
@@ -355,23 +355,23 @@ describe('Oas3 response-contains-header', () => {
                 responses: 
                   '200': null
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({
-        rules: {
-          'response-contains-header': {
-            severity: 'error',
-            names: { '2XX': ['X-Test-Header'] },
-          },
-        },
-      }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: {
+					"response-contains-header": {
+						severity: "error",
+						names: { "2XX": ["X-Test-Header"] },
+					},
+				},
+			}),
+		});
 
-    expect(results).toMatchInlineSnapshot(`
+		expect(results).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -397,5 +397,5 @@ describe('Oas3 response-contains-header', () => {
         },
       ]
     `);
-  });
+	});
 });

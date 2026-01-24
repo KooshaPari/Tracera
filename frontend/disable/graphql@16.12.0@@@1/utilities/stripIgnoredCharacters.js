@@ -1,17 +1,15 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.stripIgnoredCharacters = stripIgnoredCharacters;
 
-var _blockString = require('../language/blockString.js');
+var _blockString = require("../language/blockString.js");
 
-var _lexer = require('../language/lexer.js');
+var _lexer = require("../language/lexer.js");
 
-var _source = require('../language/source.js');
+var _source = require("../language/source.js");
 
-var _tokenKind = require('../language/tokenKind.js');
+var _tokenKind = require("../language/tokenKind.js");
 
 /**
  * Strips characters that are not significant to the validity or execution
@@ -74,48 +72,48 @@ var _tokenKind = require('../language/tokenKind.js');
  * ```
  */
 function stripIgnoredCharacters(source) {
-  const sourceObj = (0, _source.isSource)(source)
-    ? source
-    : new _source.Source(source);
-  const body = sourceObj.body;
-  const lexer = new _lexer.Lexer(sourceObj);
-  let strippedBody = '';
-  let wasLastAddedTokenNonPunctuator = false;
+	const sourceObj = (0, _source.isSource)(source)
+		? source
+		: new _source.Source(source);
+	const body = sourceObj.body;
+	const lexer = new _lexer.Lexer(sourceObj);
+	let strippedBody = "";
+	let wasLastAddedTokenNonPunctuator = false;
 
-  while (lexer.advance().kind !== _tokenKind.TokenKind.EOF) {
-    const currentToken = lexer.token;
-    const tokenKind = currentToken.kind;
-    /**
-     * Every two non-punctuator tokens should have space between them.
-     * Also prevent case of non-punctuator token following by spread resulting
-     * in invalid token (e.g. `1...` is invalid Float token).
-     */
+	while (lexer.advance().kind !== _tokenKind.TokenKind.EOF) {
+		const currentToken = lexer.token;
+		const tokenKind = currentToken.kind;
+		/**
+		 * Every two non-punctuator tokens should have space between them.
+		 * Also prevent case of non-punctuator token following by spread resulting
+		 * in invalid token (e.g. `1...` is invalid Float token).
+		 */
 
-    const isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(
-      currentToken.kind,
-    );
+		const isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(
+			currentToken.kind,
+		);
 
-    if (wasLastAddedTokenNonPunctuator) {
-      if (
-        isNonPunctuator ||
-        currentToken.kind === _tokenKind.TokenKind.SPREAD
-      ) {
-        strippedBody += ' ';
-      }
-    }
+		if (wasLastAddedTokenNonPunctuator) {
+			if (
+				isNonPunctuator ||
+				currentToken.kind === _tokenKind.TokenKind.SPREAD
+			) {
+				strippedBody += " ";
+			}
+		}
 
-    const tokenBody = body.slice(currentToken.start, currentToken.end);
+		const tokenBody = body.slice(currentToken.start, currentToken.end);
 
-    if (tokenKind === _tokenKind.TokenKind.BLOCK_STRING) {
-      strippedBody += (0, _blockString.printBlockString)(currentToken.value, {
-        minimize: true,
-      });
-    } else {
-      strippedBody += tokenBody;
-    }
+		if (tokenKind === _tokenKind.TokenKind.BLOCK_STRING) {
+			strippedBody += (0, _blockString.printBlockString)(currentToken.value, {
+				minimize: true,
+			});
+		} else {
+			strippedBody += tokenBody;
+		}
 
-    wasLastAddedTokenNonPunctuator = isNonPunctuator;
-  }
+		wasLastAddedTokenNonPunctuator = isNonPunctuator;
+	}
 
-  return strippedBody;
+	return strippedBody;
 }

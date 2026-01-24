@@ -1,12 +1,16 @@
-import { outdent } from 'outdent';
-import { lintDocument } from '../../../lint';
-import { parseYamlToDocument, replaceSourceWithRef, makeConfig } from '../../../../__tests__/utils';
-import { BaseResolver } from '../../../resolve';
+import { outdent } from "outdent";
+import {
+	makeConfig,
+	parseYamlToDocument,
+	replaceSourceWithRef,
+} from "../../../../__tests__/utils";
+import { lintDocument } from "../../../lint";
+import { BaseResolver } from "../../../resolve";
 
-describe('no-channel-trailing-slash', () => {
-  it.only('should report on trailing slash in a channel path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+describe("no-channel-trailing-slash", () => {
+	it.only("should report on trailing slash in a channel path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           asyncapi: '3.0.0'
           info:
             title: Excellent API
@@ -17,15 +21,17 @@ describe('no-channel-trailing-slash', () => {
               payload:
                 type: object
         `,
-      'asyncapi.yaml'
-    );
+			"asyncapi.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-channel-trailing-slash': 'error' } }),
-    });
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-channel-trailing-slash": "error" },
+			}),
+		});
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`
       [
         {
           "location": [
@@ -42,11 +48,11 @@ describe('no-channel-trailing-slash', () => {
         },
       ]
     `);
-  });
+	});
 
-  it('should not report on if no trailing slash in path', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on if no trailing slash in path", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           asyncapi: '3.0.0'
           info:
             title: Excellent API
@@ -57,21 +63,23 @@ describe('no-channel-trailing-slash', () => {
             payload:
               type: object
         `,
-      'asyncapi.yaml'
-    );
+			"asyncapi.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-channel-trailing-slash': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-channel-trailing-slash": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 
-  it('should not report on trailing slash in path if the path is root', async () => {
-    const document = parseYamlToDocument(
-      outdent`
+	it("should not report on trailing slash in path if the path is root", async () => {
+		const document = parseYamlToDocument(
+			outdent`
           asyncapi: '3.0.0'
           info:
             title: Excellent API
@@ -82,15 +90,17 @@ describe('no-channel-trailing-slash', () => {
             payload:
               type: object
         `,
-      'foobar.yaml'
-    );
+			"foobar.yaml",
+		);
 
-    const results = await lintDocument({
-      externalRefResolver: new BaseResolver(),
-      document,
-      config: await makeConfig({ rules: { 'no-channel-trailing-slash': 'error' } }),
-    });
+		const results = await lintDocument({
+			externalRefResolver: new BaseResolver(),
+			document,
+			config: await makeConfig({
+				rules: { "no-channel-trailing-slash": "error" },
+			}),
+		});
 
-    expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
-  });
+		expect(replaceSourceWithRef(results)).toMatchInlineSnapshot(`[]`);
+	});
 });

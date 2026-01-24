@@ -1,24 +1,24 @@
-import * as React from 'react'
-import type { AnyRouter } from '@tanstack/router-core'
+import type { AnyRouter } from "@tanstack/router-core";
+import * as React from "react";
 
 declare global {
-  interface Window {
-    __TSR_ROUTER_CONTEXT__?: React.Context<AnyRouter>
-  }
+	interface Window {
+		__TSR_ROUTER_CONTEXT__?: React.Context<AnyRouter>;
+	}
 }
 
-const routerContext = React.createContext<AnyRouter>(null!)
+const routerContext = React.createContext<AnyRouter>(null!);
 
 export function getRouterContext() {
-  if (typeof document === 'undefined') {
-    return routerContext
-  }
+	if (typeof document === "undefined") {
+		return routerContext;
+	}
 
-  if (window.__TSR_ROUTER_CONTEXT__) {
-    return window.__TSR_ROUTER_CONTEXT__
-  }
+	if (window.__TSR_ROUTER_CONTEXT__) {
+		return window.__TSR_ROUTER_CONTEXT__;
+	}
 
-  window.__TSR_ROUTER_CONTEXT__ = routerContext as any
+	window.__TSR_ROUTER_CONTEXT__ = routerContext as any;
 
-  return routerContext
+	return routerContext;
 }

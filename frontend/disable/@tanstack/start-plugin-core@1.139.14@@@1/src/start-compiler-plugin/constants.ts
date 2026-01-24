@@ -1,6 +1,6 @@
 export const transformFuncs = [
-  'createServerOnlyFn',
-  'createClientOnlyFn',
-  'createIsomorphicFn',
-  'createMiddleware',
-] as const
+	"createServerOnlyFn",
+	"createClientOnlyFn",
+	"createIsomorphicFn",
+	"createMiddleware",
+] as const;

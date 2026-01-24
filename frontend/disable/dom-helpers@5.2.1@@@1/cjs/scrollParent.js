@@ -1,5 +1,3 @@
-"use strict";
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 exports.__esModule = true;
@@ -20,22 +18,29 @@ var _isDocument = _interopRequireDefault(require("./isDocument"));
  * @param firstPossible Stop at the first scrollable parent, even if it's not currently scrollable
  */
 function scrollParent(element, firstPossible) {
-  var position = (0, _css.default)(element, 'position');
-  var excludeStatic = position === 'absolute';
-  var ownerDoc = element.ownerDocument;
-  if (position === 'fixed') return ownerDoc || document; // @ts-ignore
+	var position = (0, _css.default)(element, "position");
+	var excludeStatic = position === "absolute";
+	var ownerDoc = element.ownerDocument;
+	if (position === "fixed") return ownerDoc || document; // @ts-ignore
 
-  while ((element = element.parentNode) && !(0, _isDocument.default)(element)) {
-    var isStatic = excludeStatic && (0, _css.default)(element, 'position') === 'static';
-    var style = ((0, _css.default)(element, 'overflow') || '') + ((0, _css.default)(element, 'overflow-y') || '') + (0, _css.default)(element, 'overflow-x');
-    if (isStatic) continue;
+	while ((element = element.parentNode) && !(0, _isDocument.default)(element)) {
+		var isStatic =
+			excludeStatic && (0, _css.default)(element, "position") === "static";
+		var style =
+			((0, _css.default)(element, "overflow") || "") +
+			((0, _css.default)(element, "overflow-y") || "") +
+			(0, _css.default)(element, "overflow-x");
+		if (isStatic) continue;
 
-    if (/(auto|scroll)/.test(style) && (firstPossible || (0, _height.default)(element) < element.scrollHeight)) {
-      return element;
-    }
-  }
+		if (
+			/(auto|scroll)/.test(style) &&
+			(firstPossible || (0, _height.default)(element) < element.scrollHeight)
+		) {
+			return element;
+		}
+	}
 
-  return ownerDoc || document;
+	return ownerDoc || document;
 }
 
 module.exports = exports["default"];

@@ -3,20 +3,20 @@
  * Tests light/dark mode switching and theme variable consistency
  */
 
-import { test, expect } from '@playwright/test'
+import { expect, test } from "@playwright/test";
 
-test.describe('Theme Switching Visual Tests', () => {
-  test('light theme components', async ({ page }) => {
-    await page.goto('http://localhost:5173')
+test.describe("Theme Switching Visual Tests", () => {
+	test("light theme components", async ({ page }) => {
+		await page.goto("http://localhost:5173");
 
-    // Set light theme
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('dark')
-    })
+		// Set light theme
+		await page.evaluate(() => {
+			document.documentElement.classList.remove("dark");
+		});
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background p-8 space-y-8">
           <header class="border-b pb-4">
             <h1 class="text-4xl font-bold text-foreground">Light Theme</h1>
@@ -82,26 +82,26 @@ test.describe('Theme Switching Visual Tests', () => {
             </div>
           </section>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('theme-light-full.png', {
-      fullPage: true,
-      maxDiffPixels: 200,
-    })
-  })
+		await expect(page).toHaveScreenshot("theme-light-full.png", {
+			fullPage: true,
+			maxDiffPixels: 200,
+		});
+	});
 
-  test('dark theme components', async ({ page }) => {
-    await page.goto('http://localhost:5173')
+	test("dark theme components", async ({ page }) => {
+		await page.goto("http://localhost:5173");
 
-    // Set dark theme
-    await page.evaluate(() => {
-      document.documentElement.classList.add('dark')
-    })
+		// Set dark theme
+		await page.evaluate(() => {
+			document.documentElement.classList.add("dark");
+		});
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background p-8 space-y-8">
           <header class="border-b pb-4">
             <h1 class="text-4xl font-bold text-foreground">Dark Theme</h1>
@@ -167,21 +167,21 @@ test.describe('Theme Switching Visual Tests', () => {
             </div>
           </section>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('theme-dark-full.png', {
-      fullPage: true,
-      maxDiffPixels: 200,
-    })
-  })
+		await expect(page).toHaveScreenshot("theme-dark-full.png", {
+			fullPage: true,
+			maxDiffPixels: 200,
+		});
+	});
 
-  test('theme toggle animation', async ({ page }) => {
-    await page.goto('http://localhost:5173')
+	test("theme toggle animation", async ({ page }) => {
+		await page.goto("http://localhost:5173");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background p-8 flex items-center justify-center">
           <div class="rounded-xl border bg-card text-card-foreground shadow-lg p-8 space-y-6 max-w-md">
             <div class="flex items-center justify-between">
@@ -207,45 +207,49 @@ test.describe('Theme Switching Visual Tests', () => {
             </div>
           </div>
         </div>
-      `
+      `;
 
-      // Add theme toggle functionality
-      const toggleBtn = document.getElementById('theme-toggle')!
-      const themeName = document.getElementById('theme-name')!
+			// Add theme toggle functionality
+			const toggleBtn = document.getElementById("theme-toggle")!;
+			const themeName = document.getElementById("theme-name")!;
 
-      toggleBtn.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.toggle('dark')
-        toggleBtn.textContent = isDark ? '☀️' : '🌙'
-        themeName.textContent = isDark ? 'Dark' : 'Light'
-      })
-    })
+			toggleBtn.addEventListener("click", () => {
+				const isDark = document.documentElement.classList.toggle("dark");
+				toggleBtn.textContent = isDark ? "☀️" : "🌙";
+				themeName.textContent = isDark ? "Dark" : "Light";
+			});
+		});
 
-    // Light theme
-    await expect(page.locator('.min-h-screen')).toHaveScreenshot('theme-toggle-light.png')
+		// Light theme
+		await expect(page.locator(".min-h-screen")).toHaveScreenshot(
+			"theme-toggle-light.png",
+		);
 
-    // Click toggle
-    await page.click('#theme-toggle')
-    await page.waitForTimeout(300) // Wait for transition
+		// Click toggle
+		await page.click("#theme-toggle");
+		await page.waitForTimeout(300); // Wait for transition
 
-    // Dark theme
-    await expect(page.locator('.min-h-screen')).toHaveScreenshot('theme-toggle-dark.png')
-  })
+		// Dark theme
+		await expect(page.locator(".min-h-screen")).toHaveScreenshot(
+			"theme-toggle-dark.png",
+		);
+	});
 
-  test('color palette consistency', async ({ page }) => {
-    await page.goto('http://localhost:5173')
+	test("color palette consistency", async ({ page }) => {
+		await page.goto("http://localhost:5173");
 
-    for (const theme of ['light', 'dark']) {
-      await page.evaluate((t) => {
-        if (t === 'dark') {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
-      }, theme)
+		for (const theme of ["light", "dark"]) {
+			await page.evaluate((t) => {
+				if (t === "dark") {
+					document.documentElement.classList.add("dark");
+				} else {
+					document.documentElement.classList.remove("dark");
+				}
+			}, theme);
 
-      await page.evaluate(() => {
-        const root = document.getElementById('root')!
-        root.innerHTML = `
+			await page.evaluate(() => {
+				const root = document.getElementById("root")!;
+				root.innerHTML = `
           <div class="bg-background p-8 space-y-8">
             <h1 class="text-3xl font-bold text-foreground">Color Palette</h1>
 
@@ -308,24 +312,27 @@ test.describe('Theme Switching Visual Tests', () => {
               </div>
             </section>
           </div>
-        `
-      })
+        `;
+			});
 
-      await expect(page.locator('#root')).toHaveScreenshot(`color-palette-${theme}.png`, {
-        maxDiffPixels: 200,
-      })
-    }
-  })
-})
+			await expect(page.locator("#root")).toHaveScreenshot(
+				`color-palette-${theme}.png`,
+				{
+					maxDiffPixels: 200,
+				},
+			);
+		}
+	});
+});
 
-test.describe('Accessibility in Themes', () => {
-  test('focus states in light theme', async ({ page }) => {
-    await page.goto('http://localhost:5173')
+test.describe("Accessibility in Themes", () => {
+	test("focus states in light theme", async ({ page }) => {
+		await page.goto("http://localhost:5173");
 
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('dark')
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			document.documentElement.classList.remove("dark");
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="bg-background p-8 space-y-6">
           <h1 class="text-2xl font-bold">Focus States - Light</h1>
           <div class="flex gap-4 flex-wrap">
@@ -338,25 +345,29 @@ test.describe('Accessibility in Themes', () => {
             <input id="input1" type="text" placeholder="Focus me" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
           </div>
         </div>
-      `
-    })
+      `;
+		});
 
-    // Focus first button
-    await page.locator('#btn1').focus()
-    await expect(page.locator('.bg-background')).toHaveScreenshot('focus-light-button1.png')
+		// Focus first button
+		await page.locator("#btn1").focus();
+		await expect(page.locator(".bg-background")).toHaveScreenshot(
+			"focus-light-button1.png",
+		);
 
-    // Focus input
-    await page.locator('#input1').focus()
-    await expect(page.locator('.bg-background')).toHaveScreenshot('focus-light-input.png')
-  })
+		// Focus input
+		await page.locator("#input1").focus();
+		await expect(page.locator(".bg-background")).toHaveScreenshot(
+			"focus-light-input.png",
+		);
+	});
 
-  test('focus states in dark theme', async ({ page }) => {
-    await page.goto('http://localhost:5173')
+	test("focus states in dark theme", async ({ page }) => {
+		await page.goto("http://localhost:5173");
 
-    await page.evaluate(() => {
-      document.documentElement.classList.add('dark')
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			document.documentElement.classList.add("dark");
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="bg-background p-8 space-y-6">
           <h1 class="text-2xl font-bold">Focus States - Dark</h1>
           <div class="flex gap-4 flex-wrap">
@@ -369,15 +380,19 @@ test.describe('Accessibility in Themes', () => {
             <input id="input1" type="text" placeholder="Focus me" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
           </div>
         </div>
-      `
-    })
+      `;
+		});
 
-    // Focus first button
-    await page.locator('#btn1').focus()
-    await expect(page.locator('.bg-background')).toHaveScreenshot('focus-dark-button1.png')
+		// Focus first button
+		await page.locator("#btn1").focus();
+		await expect(page.locator(".bg-background")).toHaveScreenshot(
+			"focus-dark-button1.png",
+		);
 
-    // Focus input
-    await page.locator('#input1').focus()
-    await expect(page.locator('.bg-background')).toHaveScreenshot('focus-dark-input.png')
-  })
-})
+		// Focus input
+		await page.locator("#input1").focus();
+		await expect(page.locator(".bg-background")).toHaveScreenshot(
+			"focus-dark-input.png",
+		);
+	});
+});

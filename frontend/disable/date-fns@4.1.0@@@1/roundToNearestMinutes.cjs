@@ -46,22 +46,22 @@ var _index3 = require("./toDate.cjs");
  * //=> Thu Jul 10 2014 12:30:00
  */
 function roundToNearestMinutes(date, options) {
-  const nearestTo = options?.nearestTo ?? 1;
+	const nearestTo = options?.nearestTo ?? 1;
 
-  if (nearestTo < 1 || nearestTo > 30)
-    return (0, _index2.constructFrom)(date, NaN);
+	if (nearestTo < 1 || nearestTo > 30)
+		return (0, _index2.constructFrom)(date, NaN);
 
-  const date_ = (0, _index3.toDate)(date, options?.in);
-  const fractionalSeconds = date_.getSeconds() / 60;
-  const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60;
-  const minutes =
-    date_.getMinutes() + fractionalSeconds + fractionalMilliseconds;
+	const date_ = (0, _index3.toDate)(date, options?.in);
+	const fractionalSeconds = date_.getSeconds() / 60;
+	const fractionalMilliseconds = date_.getMilliseconds() / 1000 / 60;
+	const minutes =
+		date_.getMinutes() + fractionalSeconds + fractionalMilliseconds;
 
-  const method = options?.roundingMethod ?? "round";
-  const roundingMethod = (0, _index.getRoundingMethod)(method);
+	const method = options?.roundingMethod ?? "round";
+	const roundingMethod = (0, _index.getRoundingMethod)(method);
 
-  const roundedMinutes = roundingMethod(minutes / nearestTo) * nearestTo;
+	const roundedMinutes = roundingMethod(minutes / nearestTo) * nearestTo;
 
-  date_.setMinutes(roundedMinutes, 0, 0);
-  return date_;
+	date_.setMinutes(roundedMinutes, 0, 0);
+	return date_;
 }

@@ -4,7 +4,7 @@
  * MIT Licensed
  */
 
-import {inspect} from './inspect.js';
+import { inspect } from "./inspect.js";
 
 /**
  * ### .compareByInspect(mixed, mixed)
@@ -22,5 +22,5 @@ import {inspect} from './inspect.js';
  * @public
  */
 export function compareByInspect(a, b) {
-  return inspect(a) < inspect(b) ? -1 : 1;
+	return inspect(a) < inspect(b) ? -1 : 1;
 }

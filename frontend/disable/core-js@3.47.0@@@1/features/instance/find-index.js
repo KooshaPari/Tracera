@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/instance/find-index');
+"use strict";
+module.exports = require("../../full/instance/find-index");

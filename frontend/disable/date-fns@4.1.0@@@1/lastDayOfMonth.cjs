@@ -29,9 +29,9 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 30 2014 00:00:00
  */
 function lastDayOfMonth(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const month = _date.getMonth();
-  _date.setFullYear(_date.getFullYear(), month + 1, 0);
-  _date.setHours(0, 0, 0, 0);
-  return (0, _index.toDate)(_date, options?.in);
+	const _date = (0, _index.toDate)(date, options?.in);
+	const month = _date.getMonth();
+	_date.setFullYear(_date.getFullYear(), month + 1, 0);
+	_date.setHours(0, 0, 0, 0);
+	return (0, _index.toDate)(_date, options?.in);
 }

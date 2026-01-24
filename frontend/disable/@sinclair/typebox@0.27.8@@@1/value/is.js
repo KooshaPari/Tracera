@@ -1,4 +1,3 @@
-"use strict";
 /*--------------------------------------------------------------------------
 
 @sinclair/typebox/value
@@ -29,25 +28,40 @@ THE SOFTWARE.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Is = void 0;
 var Is;
-(function (Is) {
-    function Object(value) {
-        return value !== null && typeof value === 'object' && !globalThis.Array.isArray(value) && !ArrayBuffer.isView(value) && !(value instanceof globalThis.Date);
-    }
-    Is.Object = Object;
-    function Date(value) {
-        return value instanceof globalThis.Date;
-    }
-    Is.Date = Date;
-    function Array(value) {
-        return globalThis.Array.isArray(value) && !ArrayBuffer.isView(value);
-    }
-    Is.Array = Array;
-    function Value(value) {
-        return value === null || value === undefined || typeof value === 'function' || typeof value === 'symbol' || typeof value === 'bigint' || typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string';
-    }
-    Is.Value = Value;
-    function TypedArray(value) {
-        return ArrayBuffer.isView(value);
-    }
-    Is.TypedArray = TypedArray;
-})(Is = exports.Is || (exports.Is = {}));
+((Is) => {
+	function Object(value) {
+		return (
+			value !== null &&
+			typeof value === "object" &&
+			!globalThis.Array.isArray(value) &&
+			!ArrayBuffer.isView(value) &&
+			!(value instanceof globalThis.Date)
+		);
+	}
+	Is.Object = Object;
+	function Date(value) {
+		return value instanceof globalThis.Date;
+	}
+	Is.Date = Date;
+	function Array(value) {
+		return globalThis.Array.isArray(value) && !ArrayBuffer.isView(value);
+	}
+	Is.Array = Array;
+	function Value(value) {
+		return (
+			value === null ||
+			value === undefined ||
+			typeof value === "function" ||
+			typeof value === "symbol" ||
+			typeof value === "bigint" ||
+			typeof value === "number" ||
+			typeof value === "boolean" ||
+			typeof value === "string"
+		);
+	}
+	Is.Value = Value;
+	function TypedArray(value) {
+		return ArrayBuffer.isView(value);
+	}
+	Is.TypedArray = TypedArray;
+})((Is = exports.Is || (exports.Is = {})));

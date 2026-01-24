@@ -1,7 +1,5 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.mapValue = mapValue;
 
@@ -10,11 +8,11 @@ exports.mapValue = mapValue;
  * running each value of `map` thru `fn`.
  */
 function mapValue(map, fn) {
-  const result = Object.create(null);
+	const result = Object.create(null);
 
-  for (const key of Object.keys(map)) {
-    result[key] = fn(map[key], key);
-  }
+	for (const key of Object.keys(map)) {
+		result[key] = fn(map[key], key);
+	}
 
-  return result;
+	return result;
 }

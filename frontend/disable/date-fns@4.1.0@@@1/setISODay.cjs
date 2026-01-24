@@ -33,8 +33,8 @@ var _index3 = require("./toDate.cjs");
  * //=> Sun Sep 07 2014 00:00:00
  */
 function setISODay(date, day, options) {
-  const date_ = (0, _index3.toDate)(date, options?.in);
-  const currentDay = (0, _index2.getISODay)(date_, options);
-  const diff = day - currentDay;
-  return (0, _index.addDays)(date_, diff, options);
+	const date_ = (0, _index3.toDate)(date, options?.in);
+	const currentDay = (0, _index2.getISODay)(date_, options);
+	const diff = day - currentDay;
+	return (0, _index.addDays)(date_, diff, options);
 }

@@ -1,8 +1,8 @@
-import { MediaTypes } from '@swagger-api/apidom-core';
-import { Namespace } from '@swagger-api/apidom-core';
-import { ParseResultElement } from '@swagger-api/apidom-core';
-import { Tree as Tree_2 } from 'web-tree-sitter';
-import { Tree as Tree_3 } from 'tree-sitter';
+import { MediaTypes } from "@swagger-api/apidom-core";
+import { Namespace } from "@swagger-api/apidom-core";
+import { ParseResultElement } from "@swagger-api/apidom-core";
+import { Tree as Tree_2 } from "web-tree-sitter";
+import { Tree as Tree_3 } from "tree-sitter";
 
 /**
  * This version of syntactic analysis translates TreeSitter CTS
@@ -18,11 +18,16 @@ import { Tree as Tree_3 } from 'tree-sitter';
  * Single traversal pass is needed to get from CST to ApiDOM.
  * @public
  */
-declare const analyze: (cst: Tree_3 | Tree_2, { sourceMap }?: {
-    sourceMap?: boolean | undefined;
-}) => ParseResultElement;
-export { analyze as syntacticAnalysis }
-export { analyze as syntacticAnalysisDirect }
+declare const analyze: (
+	cst: Tree_3 | Tree_2,
+	{
+		sourceMap,
+	}?: {
+		sourceMap?: boolean | undefined;
+	},
+) => ParseResultElement;
+export { analyze as syntacticAnalysis };
+export { analyze as syntacticAnalysisDirect };
 
 /**
  * @public
@@ -38,7 +43,7 @@ export declare const detectionRegExp: RegExp;
  * @public
  */
 export declare class JSONMediaTypes extends MediaTypes<string> {
-    latest(): string;
+	latest(): string;
 }
 
 /**
@@ -69,14 +74,17 @@ export declare const parse: ParseFunction;
 /**
  * @public
  */
-export declare type ParseFunction = (source: string, options?: ParseFunctionOptions) => Promise<ParseResultElement>;
+export declare type ParseFunction = (
+	source: string,
+	options?: ParseFunctionOptions,
+) => Promise<ParseResultElement>;
 
 /**
  * @public
  */
 export declare interface ParseFunctionOptions {
-    sourceMap?: boolean;
-    syntacticAnalysis?: 'direct' | 'indirect';
+	sourceMap?: boolean;
+	syntacticAnalysis?: "direct" | "indirect";
 }
 
 /**
@@ -95,13 +103,16 @@ export declare interface ParseFunctionOptions {
  * to do additional analysis magic on JSON AST.
  * @public
  */
-export declare const syntacticAnalysisIndirect: (cst: Tree, { sourceMap }?: {
-    sourceMap?: boolean | undefined;
-}) => ParseResultElement;
+export declare const syntacticAnalysisIndirect: (
+	cst: Tree,
+	{
+		sourceMap,
+	}?: {
+		sourceMap?: boolean | undefined;
+	},
+) => ParseResultElement;
 
 /**
  * @public
  */
 export declare type Tree = Tree_2 | Tree_3;
-
-export { }

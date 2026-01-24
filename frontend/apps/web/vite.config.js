@@ -1,37 +1,32 @@
-import react from '@vitejs/plugin-react'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { defineConfig } from 'vite'
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "url";
+import { defineConfig } from "vite";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
-  plugins: [
-    tanstackStart({
-      tsr: {
-        appDirectory: './src',
-        routesDirectory: './src/routes',
-        generatedRouteTree: './src/routeTree.gen.ts',
-      },
-    }),
-    react(),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-    },
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-  },
-})
+	plugins: [react(), TanStackRouterVite()],
+	resolve: {
+		alias: {
+			"@": path.resolve(__dirname, "./src"),
+		},
+	},
+	server: {
+		port: 5173,
+		proxy: {
+			"/api": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+			},
+		},
+	},
+	optimizeDeps: {
+		exclude: ["playwright-report"],
+	},
+	build: {
+		outDir: "dist",
+		sourcemap: true,
+	},
+});

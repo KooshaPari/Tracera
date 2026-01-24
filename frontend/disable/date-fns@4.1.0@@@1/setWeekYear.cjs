@@ -50,25 +50,25 @@ var _index5 = require("./toDate.cjs");
  * //=> Sat Jan 01 2005 00:00:00
  */
 function setWeekYear(date, weekYear, options) {
-  const defaultOptions = (0, _index.getDefaultOptions)();
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
+	const defaultOptions = (0, _index.getDefaultOptions)();
+	const firstWeekContainsDate =
+		options?.firstWeekContainsDate ??
+		options?.locale?.options?.firstWeekContainsDate ??
+		defaultOptions.firstWeekContainsDate ??
+		defaultOptions.locale?.options?.firstWeekContainsDate ??
+		1;
 
-  const diff = (0, _index3.differenceInCalendarDays)(
-    (0, _index5.toDate)(date, options?.in),
-    (0, _index4.startOfWeekYear)(date, options),
-    options,
-  );
+	const diff = (0, _index3.differenceInCalendarDays)(
+		(0, _index5.toDate)(date, options?.in),
+		(0, _index4.startOfWeekYear)(date, options),
+		options,
+	);
 
-  const firstWeek = (0, _index2.constructFrom)(options?.in || date, 0);
-  firstWeek.setFullYear(weekYear, 0, firstWeekContainsDate);
-  firstWeek.setHours(0, 0, 0, 0);
+	const firstWeek = (0, _index2.constructFrom)(options?.in || date, 0);
+	firstWeek.setFullYear(weekYear, 0, firstWeekContainsDate);
+	firstWeek.setHours(0, 0, 0, 0);
 
-  const date_ = (0, _index4.startOfWeekYear)(firstWeek, options);
-  date_.setDate(date_.getDate() + diff);
-  return date_;
+	const date_ = (0, _index4.startOfWeekYear)(firstWeek, options);
+	date_.setDate(date_.getDate() + diff);
+	return date_;
 }

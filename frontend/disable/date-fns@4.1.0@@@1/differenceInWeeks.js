@@ -46,8 +46,8 @@ import { differenceInDays } from "./differenceInDays.js";
  * //=> 8
  */
 export function differenceInWeeks(laterDate, earlierDate, options) {
-  const diff = differenceInDays(laterDate, earlierDate, options) / 7;
-  return getRoundingMethod(options?.roundingMethod)(diff);
+	const diff = differenceInDays(laterDate, earlierDate, options) / 7;
+	return getRoundingMethod(options?.roundingMethod)(diff);
 }
 
 // Fallback for modularized imports:

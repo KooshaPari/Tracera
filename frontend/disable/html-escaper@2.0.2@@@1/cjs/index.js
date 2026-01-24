@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /**
  * Copyright (C) 2017-present by Andrea Giammarchi - @WebReflection
  *
@@ -21,45 +21,45 @@
  * THE SOFTWARE.
  */
 
-var replace = ''.replace;
+var replace = "".replace;
 
 var ca = /[&<>'"]/g;
 var es = /&(?:amp|#38|lt|#60|gt|#62|apos|#39|quot|#34);/g;
 
 var esca = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  "'": '&#39;',
-  '"': '&quot;'
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	"'": "&#39;",
+	'"': "&quot;",
 };
 var unes = {
-  '&amp;': '&',
-  '&#38;': '&',
-  '&lt;': '<',
-  '&#60;': '<',
-  '&gt;': '>',
-  '&#62;': '>',
-  '&apos;': "'",
-  '&#39;': "'",
-  '&quot;': '"',
-  '&#34;': '"'
+	"&amp;": "&",
+	"&#38;": "&",
+	"&lt;": "<",
+	"&#60;": "<",
+	"&gt;": ">",
+	"&#62;": ">",
+	"&apos;": "'",
+	"&#39;": "'",
+	"&quot;": '"',
+	"&#34;": '"',
 };
 
 function escape(es) {
-  return replace.call(es, ca, pe);
+	return replace.call(es, ca, pe);
 }
 exports.escape = escape;
 
 function unescape(un) {
-  return replace.call(un, es, cape);
+	return replace.call(un, es, cape);
 }
 exports.unescape = unescape;
 
 function pe(m) {
-  return esca[m];
+	return esca[m];
 }
 
 function cape(m) {
-  return unes[m];
+	return unes[m];
 }

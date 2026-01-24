@@ -29,10 +29,10 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 30 2014 00:00:00
  */
 function lastDayOfQuarter(date, options) {
-  const date_ = (0, _index.toDate)(date, options?.in);
-  const currentMonth = date_.getMonth();
-  const month = currentMonth - (currentMonth % 3) + 3;
-  date_.setMonth(month, 0);
-  date_.setHours(0, 0, 0, 0);
-  return date_;
+	const date_ = (0, _index.toDate)(date, options?.in);
+	const currentMonth = date_.getMonth();
+	const month = currentMonth - (currentMonth % 3) + 3;
+	date_.setMonth(month, 0);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
 }

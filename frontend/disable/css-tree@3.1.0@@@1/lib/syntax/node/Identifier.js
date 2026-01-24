@@ -1,18 +1,18 @@
-import { Ident } from '../../tokenizer/index.js';
+import { Ident } from "../../tokenizer/index.js";
 
-export const name = 'Identifier';
+export const name = "Identifier";
 export const structure = {
-    name: String
+	name: String,
 };
 
 export function parse() {
-    return {
-        type: 'Identifier',
-        loc: this.getLocation(this.tokenStart, this.tokenEnd),
-        name: this.consume(Ident)
-    };
+	return {
+		type: "Identifier",
+		loc: this.getLocation(this.tokenStart, this.tokenEnd),
+		name: this.consume(Ident),
+	};
 }
 
 export function generate(node) {
-    this.token(Ident, node.name);
+	this.token(Ident, node.name);
 }

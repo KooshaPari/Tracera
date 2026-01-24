@@ -28,10 +28,10 @@ import { toDate } from "./toDate.js";
  * //=> Wed Apr 02 2014 00:00:00
  */
 export function setQuarter(date, quarter, options) {
-  const date_ = toDate(date, options?.in);
-  const oldQuarter = Math.trunc(date_.getMonth() / 3) + 1;
-  const diff = quarter - oldQuarter;
-  return setMonth(date_, date_.getMonth() + diff * 3);
+	const date_ = toDate(date, options?.in);
+	const oldQuarter = Math.trunc(date_.getMonth() / 3) + 1;
+	const diff = quarter - oldQuarter;
+	return setMonth(date_, date_.getMonth() + diff * 3);
 }
 
 // Fallback for modularized imports:

@@ -1,6 +1,5 @@
-"use strict";
 function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+	for (var p in m) if (!Object.hasOwn(exports, p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 const native_1 = require("./native");
@@ -15,9 +14,9 @@ __export(require("./native"));
  * @returns The decoded text, as a string.
  */
 function decode(text, encoding, options) {
-    if (typeof encoding === "string")
-        encoding = native_1.StringEncoding.byIANACharSetName(encoding);
-    return encoding.decode(text, options);
+	if (typeof encoding === "string")
+		encoding = native_1.StringEncoding.byIANACharSetName(encoding);
+	return encoding.decode(text, options);
 }
 exports.decode = decode;
 /**
@@ -32,9 +31,9 @@ exports.decode = decode;
  * @returns The encoded text, in a `Buffer`.
  */
 function encode(text, encoding, options) {
-    if (typeof encoding === "string")
-        encoding = native_1.StringEncoding.byIANACharSetName(encoding);
-    return encoding.encode(text, options);
+	if (typeof encoding === "string")
+		encoding = native_1.StringEncoding.byIANACharSetName(encoding);
+	return encoding.encode(text, options);
 }
 exports.encode = encode;
 //# sourceMappingURL=index.js.map

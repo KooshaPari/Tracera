@@ -27,9 +27,9 @@ import { toDate } from "./toDate.js";
  * //=> Mon Sep 01 2014 11:45:40
  */
 export function setMinutes(date, minutes, options) {
-  const date_ = toDate(date, options?.in);
-  date_.setMinutes(minutes);
-  return date_;
+	const date_ = toDate(date, options?.in);
+	date_.setMinutes(minutes);
+	return date_;
 }
 
 // Fallback for modularized imports:

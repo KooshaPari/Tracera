@@ -45,13 +45,13 @@ import { toDate } from "./toDate.js";
  * // => true
  */
 export function isWithinInterval(date, interval, options) {
-  const time = +toDate(date, options?.in);
-  const [startTime, endTime] = [
-    +toDate(interval.start, options?.in),
-    +toDate(interval.end, options?.in),
-  ].sort((a, b) => a - b);
+	const time = +toDate(date, options?.in);
+	const [startTime, endTime] = [
+		+toDate(interval.start, options?.in),
+		+toDate(interval.end, options?.in),
+	].sort((a, b) => a - b);
 
-  return time >= startTime && time <= endTime;
+	return time >= startTime && time <= endTime;
 }
 
 // Fallback for modularized imports:

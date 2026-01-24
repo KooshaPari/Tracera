@@ -33,8 +33,8 @@ var _index = require("./isSameWeek.cjs");
  * //=> false
  */
 function isSameISOWeek(laterDate, earlierDate, options) {
-  return (0, _index.isSameWeek)(laterDate, earlierDate, {
-    ...options,
-    weekStartsOn: 1,
-  });
+	return (0, _index.isSameWeek)(laterDate, earlierDate, {
+		...options,
+		weekStartsOn: 1,
+	});
 }

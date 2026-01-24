@@ -20,5 +20,5 @@ var _index = require("./constants.cjs");
  * //=> 2000
  */
 function secondsToMilliseconds(seconds) {
-  return seconds * _index.millisecondsInSecond;
+	return seconds * _index.millisecondsInSecond;
 }

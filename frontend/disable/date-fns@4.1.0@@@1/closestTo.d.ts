@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link closestTo} function options.
  */
 export interface ClosestToOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * The {@link closestTo} function result type. It resolves the proper data type.
  * It uses the first argument date object type, starting from the date argument,
@@ -11,17 +11,16 @@ export interface ClosestToOptions<DateType extends Date = Date>
  * a context function is passed, it uses the context function return type.
  */
 export type ClosestToResult<
-  DateToCompare extends DateArg<Date>,
-  DatesType extends DateArg<Date>[],
-  Options extends ClosestToOptions | undefined,
-> =
-  Options extends ClosestToOptions<infer DateType extends Date>
-    ? DateType
-    : DateToCompare extends Date
-      ? DateToCompare
-      : DatesType extends DateArg<infer DateType>[]
-        ? DateType
-        : Date;
+	DateToCompare extends DateArg<Date>,
+	DatesType extends DateArg<Date>[],
+	Options extends ClosestToOptions | undefined,
+> = Options extends ClosestToOptions<infer DateType extends Date>
+	? DateType
+	: DateToCompare extends Date
+		? DateToCompare
+		: DatesType extends DateArg<infer DateType>[]
+			? DateType
+			: Date;
 /**
  * @name closestTo
  * @category Common Helpers
@@ -49,11 +48,11 @@ export type ClosestToResult<
  * //=> Tue Jan 01 2030 00:00:00
  */
 export declare function closestTo<
-  DateToCompare extends DateArg<Date>,
-  DatesType extends DateArg<Date>[],
-  Options extends ClosestToOptions | undefined = undefined,
+	DateToCompare extends DateArg<Date>,
+	DatesType extends DateArg<Date>[],
+	Options extends ClosestToOptions | undefined = undefined,
 >(
-  dateToCompare: DateToCompare,
-  dates: DatesType,
-  options?: Options | undefined,
+	dateToCompare: DateToCompare,
+	dates: DatesType,
+	options?: Options | undefined,
 ): ClosestToResult<DateToCompare, DatesType, Options> | undefined;

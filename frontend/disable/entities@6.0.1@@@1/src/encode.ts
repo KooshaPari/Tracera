@@ -1,5 +1,5 @@
+import { getCodePoint, xmlReplacer } from "./escape.js";
 import { htmlTrie } from "./generated/encode-html.js";
-import { xmlReplacer, getCodePoint } from "./escape.js";
 
 const htmlReplacer = /[\t\n\f!-,./:-@[-`{-}\u0080-\uFFFF]/g;
 
@@ -15,7 +15,7 @@ const htmlReplacer = /[\t\n\f!-,./:-@[-`{-}\u0080-\uFFFF]/g;
  * (eg. `&#xfc;`) will be used.
  */
 export function encodeHTML(input: string): string {
-    return encodeHTMLTrieRe(htmlReplacer, input);
+	return encodeHTMLTrieRe(htmlReplacer, input);
 }
 /**
  * Encodes all non-ASCII characters, as well as characters not valid in HTML
@@ -26,52 +26,52 @@ export function encodeHTML(input: string): string {
  * (eg. `&#xfc;`) will be used.
  */
 export function encodeNonAsciiHTML(input: string): string {
-    return encodeHTMLTrieRe(xmlReplacer, input);
+	return encodeHTMLTrieRe(xmlReplacer, input);
 }
 
 function encodeHTMLTrieRe(regExp: RegExp, input: string): string {
-    let returnValue = "";
-    let lastIndex = 0;
-    let match;
+	let returnValue = "";
+	let lastIndex = 0;
+	let match;
 
-    while ((match = regExp.exec(input)) !== null) {
-        const { index } = match;
-        returnValue += input.substring(lastIndex, index);
-        const char = input.charCodeAt(index);
-        let next = htmlTrie.get(char);
+	while ((match = regExp.exec(input)) !== null) {
+		const { index } = match;
+		returnValue += input.substring(lastIndex, index);
+		const char = input.charCodeAt(index);
+		let next = htmlTrie.get(char);
 
-        if (typeof next === "object") {
-            // We are in a branch. Try to match the next char.
-            if (index + 1 < input.length) {
-                const nextChar = input.charCodeAt(index + 1);
-                const value =
-                    typeof next.n === "number"
-                        ? next.n === nextChar
-                            ? next.o
-                            : undefined
-                        : next.n.get(nextChar);
+		if (typeof next === "object") {
+			// We are in a branch. Try to match the next char.
+			if (index + 1 < input.length) {
+				const nextChar = input.charCodeAt(index + 1);
+				const value =
+					typeof next.n === "number"
+						? next.n === nextChar
+							? next.o
+							: undefined
+						: next.n.get(nextChar);
 
-                if (value !== undefined) {
-                    returnValue += value;
-                    lastIndex = regExp.lastIndex += 1;
-                    continue;
-                }
-            }
+				if (value !== undefined) {
+					returnValue += value;
+					lastIndex = regExp.lastIndex += 1;
+					continue;
+				}
+			}
 
-            next = next.v;
-        }
+			next = next.v;
+		}
 
-        // We might have a tree node without a value; skip and use a numeric entity.
-        if (next === undefined) {
-            const cp = getCodePoint(input, index);
-            returnValue += `&#x${cp.toString(16)};`;
-            // Increase by 1 if we have a surrogate pair
-            lastIndex = regExp.lastIndex += Number(cp !== char);
-        } else {
-            returnValue += next;
-            lastIndex = index + 1;
-        }
-    }
+		// We might have a tree node without a value; skip and use a numeric entity.
+		if (next === undefined) {
+			const cp = getCodePoint(input, index);
+			returnValue += `&#x${cp.toString(16)};`;
+			// Increase by 1 if we have a surrogate pair
+			lastIndex = regExp.lastIndex += Number(cp !== char);
+		} else {
+			returnValue += next;
+			lastIndex = index + 1;
+		}
+	}
 
-    return returnValue + input.substr(lastIndex);
+	return returnValue + input.substr(lastIndex);
 }

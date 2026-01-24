@@ -1,7 +1,7 @@
 //.CommonJS
 var CSSOM = {
-  CSSRule: require("./CSSRule").CSSRule,
-  CSSStyleDeclaration: require('./CSSStyleDeclaration').CSSStyleDeclaration
+	CSSRule: require("./CSSRule").CSSRule,
+	CSSStyleDeclaration: require("./CSSStyleDeclaration").CSSStyleDeclaration,
 };
 // Use cssstyle if available
 try {
@@ -11,15 +11,14 @@ try {
 }
 ///CommonJS
 
-
 /**
  * @constructor
  * @see https://drafts.csswg.org/css-nesting-1/
  */
 CSSOM.CSSNestedDeclarations = function CSSNestedDeclarations() {
-  CSSOM.CSSRule.call(this);
-  this.__style = new CSSOM.CSSStyleDeclaration();
-  this.__style.parentRule = this;
+	CSSOM.CSSRule.call(this);
+	this.__style = new CSSOM.CSSStyleDeclaration();
+	this.__style.parentRule = this;
 };
 
 CSSOM.CSSNestedDeclarations.prototype = new CSSOM.CSSRule();
@@ -27,24 +26,24 @@ CSSOM.CSSNestedDeclarations.prototype.constructor = CSSOM.CSSNestedDeclarations;
 CSSOM.CSSNestedDeclarations.prototype.type = 0;
 
 Object.defineProperty(CSSOM.CSSNestedDeclarations.prototype, "style", {
-	get: function() {
-		return this.__style;	
+	get: function () {
+		return this.__style;
 	},
-	set: function(value) {
+	set: function (value) {
 		if (typeof value === "string") {
 			this.__style.cssText = value;
 		} else {
 			this.__style = value;
 		}
-	}
+	},
 });
 
 Object.defineProperty(CSSOM.CSSNestedDeclarations.prototype, "cssText", {
-  get: function () {
-    return this.style.cssText;
-  },
-  configurable: true,
-  enumerable: true,
+	get: function () {
+		return this.style.cssText;
+	},
+	configurable: true,
+	enumerable: true,
 });
 
 //.CommonJS

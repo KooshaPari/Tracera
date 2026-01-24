@@ -25,7 +25,7 @@ import { toDate } from "./toDate.js";
  * //=> Wed Feb 29 2012 11:45:05
  */
 export function fromUnixTime(unixTime, options) {
-  return toDate(unixTime * 1000, options?.in);
+	return toDate(unixTime * 1000, options?.in);
 }
 
 // Fallback for modularized imports:

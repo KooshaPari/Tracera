@@ -1,45 +1,45 @@
-'use client'
-import * as React from 'react'
+"use client";
 
-import type { QueryClient } from '@tanstack/query-core'
+import type { QueryClient } from "@tanstack/query-core";
+import * as React from "react";
 
 export const QueryClientContext = React.createContext<QueryClient | undefined>(
-  undefined,
-)
+	undefined,
+);
 
 export const useQueryClient = (queryClient?: QueryClient) => {
-  const client = React.useContext(QueryClientContext)
+	const client = React.useContext(QueryClientContext);
 
-  if (queryClient) {
-    return queryClient
-  }
+	if (queryClient) {
+		return queryClient;
+	}
 
-  if (!client) {
-    throw new Error('No QueryClient set, use QueryClientProvider to set one')
-  }
+	if (!client) {
+		throw new Error("No QueryClient set, use QueryClientProvider to set one");
+	}
 
-  return client
-}
+	return client;
+};
 
 export type QueryClientProviderProps = {
-  client: QueryClient
-  children?: React.ReactNode
-}
+	client: QueryClient;
+	children?: React.ReactNode;
+};
 
 export const QueryClientProvider = ({
-  client,
-  children,
+	client,
+	children,
 }: QueryClientProviderProps): React.JSX.Element => {
-  React.useEffect(() => {
-    client.mount()
-    return () => {
-      client.unmount()
-    }
-  }, [client])
+	React.useEffect(() => {
+		client.mount();
+		return () => {
+			client.unmount();
+		};
+	}, [client]);
 
-  return (
-    <QueryClientContext.Provider value={client}>
-      {children}
-    </QueryClientContext.Provider>
-  )
-}
+	return (
+		<QueryClientContext.Provider value={client}>
+			{children}
+		</QueryClientContext.Provider>
+	);
+};

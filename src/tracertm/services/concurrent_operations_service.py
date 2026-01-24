@@ -26,7 +26,7 @@ def retry_with_backoff(
     max_delay: float = 2.0,
     exponential_base: float = 2.0,
     jitter: bool = True,
-):
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
     Decorator for retrying operations with exponential backoff (Story 5.3).
 
@@ -42,7 +42,7 @@ def retry_with_backoff(
     """
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> T:
+        def wrapper(*args: Any, **kwargs: Any) -> T:
             delay = initial_delay
             last_exception = None
 
@@ -93,7 +93,7 @@ class ConcurrentOperationsService:
     Provides retry logic, conflict detection, and transaction support.
     """
 
-    def __init__(self, session):
+    def __init__(self, session: Any) -> None:
         """Initialize concurrent operations service."""
         self.session = session
 

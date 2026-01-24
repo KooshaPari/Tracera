@@ -1,11 +1,9 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
+Object.defineProperty(exports, "__esModule", {
+	value: true,
 });
 exports.getOperationAST = getOperationAST;
 
-var _kinds = require('../language/kinds.js');
+var _kinds = require("../language/kinds.js");
 
 /**
  * Returns an operation AST given a document AST and optionally an operation
@@ -13,31 +11,31 @@ var _kinds = require('../language/kinds.js');
  * provided in the document.
  */
 function getOperationAST(documentAST, operationName) {
-  let operation = null;
+	let operation = null;
 
-  for (const definition of documentAST.definitions) {
-    if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
-      var _definition$name;
+	for (const definition of documentAST.definitions) {
+		if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
+			var _definition$name;
 
-      if (operationName == null) {
-        // If no operation name was provided, only return an Operation if there
-        // is one defined in the document. Upon encountering the second, return
-        // null.
-        if (operation) {
-          return null;
-        }
+			if (operationName == null) {
+				// If no operation name was provided, only return an Operation if there
+				// is one defined in the document. Upon encountering the second, return
+				// null.
+				if (operation) {
+					return null;
+				}
 
-        operation = definition;
-      } else if (
-        ((_definition$name = definition.name) === null ||
-        _definition$name === void 0
-          ? void 0
-          : _definition$name.value) === operationName
-      ) {
-        return definition;
-      }
-    }
-  }
+				operation = definition;
+			} else if (
+				((_definition$name = definition.name) === null ||
+				_definition$name === void 0
+					? void 0
+					: _definition$name.value) === operationName
+			) {
+				return definition;
+			}
+		}
+	}
 
-  return operation;
+	return operation;
 }

@@ -1,9 +1,11 @@
 function empty() {
-  return [];
+	return [];
 }
 
-export default function(selector) {
-  return selector == null ? empty : function() {
-    return this.querySelectorAll(selector);
-  };
+export default function (selector) {
+	return selector == null
+		? empty
+		: function () {
+				return this.querySelectorAll(selector);
+			};
 }

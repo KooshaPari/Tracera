@@ -1,10 +1,8 @@
 "use strict";
 exports.lightFormat = lightFormat;
 Object.defineProperty(exports, "lightFormatters", {
-  enumerable: true,
-  get: function () {
-    return _index.lightFormatters;
-  },
+	enumerable: true,
+	get: () => _index.lightFormatters,
 });
 var _index = require("./_lib/format/lightFormatters.cjs");
 var _index2 = require("./isValid.cjs");
@@ -90,51 +88,51 @@ const unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * //=> '2014-02-11'
  */
 function lightFormat(date, formatStr) {
-  const date_ = (0, _index3.toDate)(date);
+	const date_ = (0, _index3.toDate)(date);
 
-  if (!(0, _index2.isValid)(date_)) {
-    throw new RangeError("Invalid time value");
-  }
+	if (!(0, _index2.isValid)(date_)) {
+		throw new RangeError("Invalid time value");
+	}
 
-  const tokens = formatStr.match(formattingTokensRegExp);
+	const tokens = formatStr.match(formattingTokensRegExp);
 
-  // The only case when formattingTokensRegExp doesn't match the string is when it's empty
-  if (!tokens) return "";
+	// The only case when formattingTokensRegExp doesn't match the string is when it's empty
+	if (!tokens) return "";
 
-  const result = tokens
-    .map((substring) => {
-      // Replace two single quote characters with one single quote character
-      if (substring === "''") {
-        return "'";
-      }
+	const result = tokens
+		.map((substring) => {
+			// Replace two single quote characters with one single quote character
+			if (substring === "''") {
+				return "'";
+			}
 
-      const firstCharacter = substring[0];
-      if (firstCharacter === "'") {
-        return cleanEscapedString(substring);
-      }
+			const firstCharacter = substring[0];
+			if (firstCharacter === "'") {
+				return cleanEscapedString(substring);
+			}
 
-      const formatter = _index.lightFormatters[firstCharacter];
-      if (formatter) {
-        return formatter(date_, substring);
-      }
+			const formatter = _index.lightFormatters[firstCharacter];
+			if (formatter) {
+				return formatter(date_, substring);
+			}
 
-      if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
-        throw new RangeError(
-          "Format string contains an unescaped latin alphabet character `" +
-            firstCharacter +
-            "`",
-        );
-      }
+			if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
+				throw new RangeError(
+					"Format string contains an unescaped latin alphabet character `" +
+						firstCharacter +
+						"`",
+				);
+			}
 
-      return substring;
-    })
-    .join("");
+			return substring;
+		})
+		.join("");
 
-  return result;
+	return result;
 }
 
 function cleanEscapedString(input) {
-  const matches = input.match(escapedStringRegExp);
-  if (!matches) return input;
-  return matches[1].replace(doubleQuoteRegExp, "'");
+	const matches = input.match(escapedStringRegExp);
+	if (!matches) return input;
+	return matches[1].replace(doubleQuoteRegExp, "'");
 }

@@ -18,7 +18,7 @@ import { toDate } from "./toDate.js";
  * //=> 5
  */
 export function getSeconds(date) {
-  return toDate(date).getSeconds();
+	return toDate(date).getSeconds();
 }
 
 // Fallback for modularized imports:

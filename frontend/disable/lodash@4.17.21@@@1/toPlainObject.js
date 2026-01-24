@@ -1,5 +1,5 @@
-var copyObject = require('./_copyObject'),
-    keysIn = require('./keysIn');
+var copyObject = require("./_copyObject"),
+	keysIn = require("./keysIn");
 
 /**
  * Converts `value` to a plain object flattening inherited enumerable string
@@ -26,7 +26,7 @@ var copyObject = require('./_copyObject'),
  * // => { 'a': 1, 'b': 2, 'c': 3 }
  */
 function toPlainObject(value) {
-  return copyObject(value, keysIn(value));
+	return copyObject(value, keysIn(value));
 }
 
 module.exports = toPlainObject;

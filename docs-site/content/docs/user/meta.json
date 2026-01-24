@@ -1,0 +1,20 @@
+{
+  "title": "User Documentation",
+  "description": "Documentation for business users and analysts",
+  "icon": "Users",
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "getting-started",
+    "---Core Concepts---",
+    "concepts",
+    "---How-to Guides---",
+    "guides",
+    "---Use Cases---",
+    "use-cases",
+    "---Best Practices---",
+    "best-practices",
+    "---FAQ---",
+    "faq"
+  ]
+}

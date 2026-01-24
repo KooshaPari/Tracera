@@ -1,1 +1,1 @@
-export * from '../dist/subscription';
+export * from "../dist/subscription";

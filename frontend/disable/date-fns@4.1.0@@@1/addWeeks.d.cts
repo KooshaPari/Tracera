@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg } from "./types.js";
  * The {@link addWeeks} function options.
  */
 export interface AddWeeksOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name addWeeks
  * @category Week Helpers
@@ -27,10 +27,10 @@ export interface AddWeeksOptions<DateType extends Date = Date>
  * //=> Mon Sep 29 2014 00:00:00
  */
 export declare function addWeeks<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  amount: number,
-  options?: AddWeeksOptions<ResultDate> | undefined,
+	date: DateArg<DateType>,
+	amount: number,
+	options?: AddWeeksOptions<ResultDate> | undefined,
 ): ResultDate;

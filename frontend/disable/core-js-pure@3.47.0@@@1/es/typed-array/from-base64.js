@@ -1,2 +1,2 @@
-'use strict';
-require('../../modules/es.uint8-array.from-base64');
+"use strict";
+require("../../modules/es.uint8-array.from-base64");

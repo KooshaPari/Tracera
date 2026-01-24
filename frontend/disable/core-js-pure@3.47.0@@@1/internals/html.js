@@ -1,4 +1,4 @@
-'use strict';
-var getBuiltIn = require('../internals/get-built-in');
+"use strict";
+var getBuiltIn = require("../internals/get-built-in");
 
-module.exports = getBuiltIn('document', 'documentElement');
+module.exports = getBuiltIn("document", "documentElement");

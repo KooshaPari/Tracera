@@ -10,9 +10,16 @@ export function parse(xml: string): PlistValue;
 export function build(obj: PlistValue, opts?: PlistBuildOptions): string;
 
 // PlistValue
-export type PlistValue = string | number | boolean | Date | Buffer | PlistObject | PlistArray;
+export type PlistValue =
+	| string
+	| number
+	| boolean
+	| Date
+	| Buffer
+	| PlistObject
+	| PlistArray;
 export interface PlistObject {
-    readonly [x: string]: PlistValue;
+	readonly [x: string]: PlistValue;
 }
 export interface PlistArray extends ReadonlyArray<PlistValue> {}
 

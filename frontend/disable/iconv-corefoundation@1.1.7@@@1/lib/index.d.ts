@@ -1,5 +1,10 @@
 /// <reference types="node" />
-import { BufferLike, DecodeOptions, EncodeOptions, StringEncoding } from "./native";
+import {
+	BufferLike,
+	DecodeOptions,
+	EncodeOptions,
+	StringEncoding,
+} from "./native";
 export * from "./errors";
 export * from "./native";
 /**
@@ -10,7 +15,11 @@ export * from "./native";
  * @param options - Options for decoding.
  * @returns The decoded text, as a string.
  */
-export declare function decode(text: BufferLike, encoding: string | StringEncoding, options?: DecodeOptions): string;
+export declare function decode(
+	text: BufferLike,
+	encoding: string | StringEncoding,
+	options?: DecodeOptions,
+): string;
 /**
  * Convenience alias for {@link StringEncoding.encode}.
  *
@@ -22,5 +31,9 @@ export declare function decode(text: BufferLike, encoding: string | StringEncodi
  * @param options - Options for encoding.
  * @returns The encoded text, in a `Buffer`.
  */
-export declare function encode(text: string, encoding: string | StringEncoding, options?: EncodeOptions): Buffer;
+export declare function encode(
+	text: string,
+	encoding: string | StringEncoding,
+	options?: EncodeOptions,
+): Buffer;
 //# sourceMappingURL=index.d.ts.map

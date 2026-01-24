@@ -1,22 +1,22 @@
-'use strict';
-
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true,
 });
 
-var _once = require('./internal/once.js');
+var _once = require("./internal/once.js");
 
 var _once2 = _interopRequireDefault(_once);
 
-var _wrapAsync = require('./internal/wrapAsync.js');
+var _wrapAsync = require("./internal/wrapAsync.js");
 
 var _wrapAsync2 = _interopRequireDefault(_wrapAsync);
 
-var _awaitify = require('./internal/awaitify.js');
+var _awaitify = require("./internal/awaitify.js");
 
 var _awaitify2 = _interopRequireDefault(_awaitify);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
 
 /**
  * Runs the `tasks` array of functions in parallel, without waiting until the
@@ -55,12 +55,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * });
  */
 function race(tasks, callback) {
-    callback = (0, _once2.default)(callback);
-    if (!Array.isArray(tasks)) return callback(new TypeError('First argument to race must be an array of functions'));
-    if (!tasks.length) return callback();
-    for (var i = 0, l = tasks.length; i < l; i++) {
-        (0, _wrapAsync2.default)(tasks[i])(callback);
-    }
+	callback = (0, _once2.default)(callback);
+	if (!Array.isArray(tasks))
+		return callback(
+			new TypeError("First argument to race must be an array of functions"),
+		);
+	if (!tasks.length) return callback();
+	for (var i = 0, l = tasks.length; i < l; i++) {
+		(0, _wrapAsync2.default)(tasks[i])(callback);
+	}
 }
 
 exports.default = (0, _awaitify2.default)(race, 2);

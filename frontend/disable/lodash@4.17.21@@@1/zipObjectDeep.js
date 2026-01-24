@@ -1,5 +1,5 @@
-var baseSet = require('./_baseSet'),
-    baseZipObject = require('./_baseZipObject');
+var baseSet = require("./_baseSet"),
+	baseZipObject = require("./_baseZipObject");
 
 /**
  * This method is like `_.zipObject` except that it supports property paths.
@@ -17,7 +17,7 @@ var baseSet = require('./_baseSet'),
  * // => { 'a': { 'b': [{ 'c': 1 }, { 'd': 2 }] } }
  */
 function zipObjectDeep(props, values) {
-  return baseZipObject(props || [], values || [], baseSet);
+	return baseZipObject(props || [], values || [], baseSet);
 }
 
 module.exports = zipObjectDeep;

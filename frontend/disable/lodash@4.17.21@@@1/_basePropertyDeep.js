@@ -1,4 +1,4 @@
-var baseGet = require('./_baseGet');
+var baseGet = require("./_baseGet");
 
 /**
  * A specialized version of `baseProperty` which supports deep paths.
@@ -8,9 +8,7 @@ var baseGet = require('./_baseGet');
  * @returns {Function} Returns the new accessor function.
  */
 function basePropertyDeep(path) {
-  return function(object) {
-    return baseGet(object, path);
-  };
+	return (object) => baseGet(object, path);
 }
 
 module.exports = basePropertyDeep;

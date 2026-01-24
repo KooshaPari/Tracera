@@ -29,8 +29,8 @@ var _index3 = require("./toDate.cjs");
  * //=> true
  */
 function isThisHour(date, options) {
-  return (0, _index2.isSameHour)(
-    (0, _index3.toDate)(date, options?.in),
-    (0, _index.constructNow)(options?.in || date),
-  );
+	return (0, _index2.isSameHour)(
+		(0, _index3.toDate)(date, options?.in),
+		(0, _index.constructNow)(options?.in || date),
+	);
 }

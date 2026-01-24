@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Possible fragment spread
  *
@@ -8,5 +8,5 @@ import type { ValidationContext } from '../ValidationContext';
  * and possible types which pass the type condition.
  */
 export declare function PossibleFragmentSpreadsRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;

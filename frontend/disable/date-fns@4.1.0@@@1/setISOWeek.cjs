@@ -32,8 +32,8 @@ var _index2 = require("./toDate.cjs");
  * //=> Sat Jan 01 2005 00:00:00
  */
 function setISOWeek(date, week, options) {
-  const _date = (0, _index2.toDate)(date, options?.in);
-  const diff = (0, _index.getISOWeek)(_date, options) - week;
-  _date.setDate(_date.getDate() - diff * 7);
-  return _date;
+	const _date = (0, _index2.toDate)(date, options?.in);
+	const diff = (0, _index.getISOWeek)(_date, options) - week;
+	_date.setDate(_date.getDate() - diff * 7);
+	return _date;
 }

@@ -1,4 +1,4 @@
-'use strict';
-var parent = require('../../actual/string/fontsize');
+"use strict";
+var parent = require("../../actual/string/fontsize");
 
 module.exports = parent;

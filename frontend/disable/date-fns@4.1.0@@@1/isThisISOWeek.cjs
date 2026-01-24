@@ -30,8 +30,8 @@ var _index3 = require("./isSameISOWeek.cjs");
  * //=> true
  */
 function isThisISOWeek(date, options) {
-  return (0, _index3.isSameISOWeek)(
-    (0, _index.constructFrom)(options?.in || date, date),
-    (0, _index2.constructNow)(options?.in || date),
-  );
+	return (0, _index3.isSameISOWeek)(
+		(0, _index.constructFrom)(options?.in || date, date),
+		(0, _index2.constructNow)(options?.in || date),
+	);
 }

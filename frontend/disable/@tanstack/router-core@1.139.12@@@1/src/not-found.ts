@@ -1,22 +1,22 @@
-import type { RouteIds } from './routeInfo'
-import type { RegisteredRouter } from './router'
+import type { RouteIds } from "./routeInfo";
+import type { RegisteredRouter } from "./router";
 
 export type NotFoundError = {
-  /**
+	/**
     @deprecated
     Use `routeId: rootRouteId` instead
   */
-  global?: boolean
-  /**
+	global?: boolean;
+	/**
     @private
     Do not use this. It's used internally to indicate a path matching error
   */
-  _global?: boolean
-  data?: any
-  throw?: boolean
-  routeId?: RouteIds<RegisteredRouter['routeTree']>
-  headers?: HeadersInit
-}
+	_global?: boolean;
+	data?: any;
+	throw?: boolean;
+	routeId?: RouteIds<RegisteredRouter["routeTree"]>;
+	headers?: HeadersInit;
+};
 
 /**
  * Create a not-found error object recognized by TanStack Router.
@@ -30,12 +30,12 @@ export type NotFoundError = {
  * @link https://tanstack.com/router/latest/docs/router/framework/react/api/router/notFoundFunction
  */
 export function notFound(options: NotFoundError = {}) {
-  ;(options as any).isNotFound = true
-  if (options.throw) throw options
-  return options
+	(options as any).isNotFound = true;
+	if (options.throw) throw options;
+	return options;
 }
 
 /** Determine if a value is a TanStack Router not-found error. */
 export function isNotFound(obj: any): obj is NotFoundError {
-  return !!obj?.isNotFound
+	return !!obj?.isNotFound;
 }

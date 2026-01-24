@@ -27,9 +27,9 @@ import { toDate } from "./toDate.js";
  * //=> Mon Dec 01 2014 22:15:59.999
  */
 export function endOfMinute(date, options) {
-  const _date = toDate(date, options?.in);
-  _date.setSeconds(59, 999);
-  return _date;
+	const _date = toDate(date, options?.in);
+	_date.setSeconds(59, 999);
+	return _date;
 }
 
 // Fallback for modularized imports:

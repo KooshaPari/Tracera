@@ -6,13 +6,13 @@
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
 export function promiseForObject(object) {
-  return Promise.all(Object.values(object)).then((resolvedValues) => {
-    const resolvedObject = Object.create(null);
+	return Promise.all(Object.values(object)).then((resolvedValues) => {
+		const resolvedObject = Object.create(null);
 
-    for (const [i, key] of Object.keys(object).entries()) {
-      resolvedObject[key] = resolvedValues[i];
-    }
+		for (const [i, key] of Object.keys(object).entries()) {
+			resolvedObject[key] = resolvedValues[i];
+		}
 
-    return resolvedObject;
-  });
+		return resolvedObject;
+	});
 }

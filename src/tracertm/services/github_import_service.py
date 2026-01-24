@@ -166,7 +166,8 @@ class GitHubImportService:
         # Link PRs to related issues
         if item_data.get("type") == "pull_request":
             related_issues = item_data.get("related_issues", [])
-            source_id = item_map.get(item_data.get("id"))
+            item_id = item_data.get("id")
+            source_id = item_map.get(item_id) if isinstance(item_id, str) else None
 
             for issue_id in related_issues:
                 target_id = item_map.get(issue_id)

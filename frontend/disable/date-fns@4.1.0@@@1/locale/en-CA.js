@@ -1,9 +1,8 @@
+import { formatDistance } from "./en-CA/_lib/formatDistance.js";
+import { formatLong } from "./en-CA/_lib/formatLong.js";
 import { formatRelative } from "./en-US/_lib/formatRelative.js";
 import { localize } from "./en-US/_lib/localize.js";
 import { match } from "./en-US/_lib/match.js";
-
-import { formatDistance } from "./en-CA/_lib/formatDistance.js";
-import { formatLong } from "./en-CA/_lib/formatLong.js";
 
 /**
  * @category Locales
@@ -14,16 +13,16 @@ import { formatLong } from "./en-CA/_lib/formatLong.js";
  * @author Marco Imperatore [@mimperatore](https://github.com/mimperatore)
  */
 export const enCA = {
-  code: "en-CA",
-  formatDistance: formatDistance,
-  formatLong: formatLong,
-  formatRelative: formatRelative,
-  localize: localize,
-  match: match,
-  options: {
-    weekStartsOn: 0 /* Sunday */,
-    firstWeekContainsDate: 1,
-  },
+	code: "en-CA",
+	formatDistance: formatDistance,
+	formatLong: formatLong,
+	formatRelative: formatRelative,
+	localize: localize,
+	match: match,
+	options: {
+		weekStartsOn: 0 /* Sunday */,
+		firstWeekContainsDate: 1,
+	},
 };
 
 // Fallback for modularized imports:

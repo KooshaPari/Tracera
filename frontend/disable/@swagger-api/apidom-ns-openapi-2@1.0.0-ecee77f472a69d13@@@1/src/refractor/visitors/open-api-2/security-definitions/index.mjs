@@ -1,8 +1,9 @@
-import { Mixin } from 'ts-mixer';
-import { always } from 'ramda';
+import { always } from "ramda";
+import { Mixin } from "ts-mixer";
 import SecurityDefinitionsElement from "../../../../elements/SecurityDefinitions.mjs";
-import MapVisitor from "../../generics/MapVisitor.mjs";
 import FallbackVisitor from "../../FallbackVisitor.mjs";
+import MapVisitor from "../../generics/MapVisitor.mjs";
+
 /**
  * @public
  */
@@ -10,11 +11,11 @@ import FallbackVisitor from "../../FallbackVisitor.mjs";
  * @public
  */
 class SecurityDefinitionsVisitor extends Mixin(MapVisitor, FallbackVisitor) {
-  element;
-  constructor(options) {
-    super(options);
-    this.element = new SecurityDefinitionsElement();
-    this.specPath = always(['document', 'objects', 'SecurityScheme']);
-  }
+	element;
+	constructor(options) {
+		super(options);
+		this.element = new SecurityDefinitionsElement();
+		this.specPath = always(["document", "objects", "SecurityScheme"]);
+	}
 }
 export default SecurityDefinitionsVisitor;

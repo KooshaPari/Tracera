@@ -3,7 +3,7 @@ import type { ContextOptions, DateArg, Duration } from "./types.js";
  * The {@link sub} function options.
  */
 export interface SubOptions<DateType extends Date = Date>
-  extends ContextOptions<DateType> {}
+	extends ContextOptions<DateType> {}
 /**
  * @name sub
  * @category Common Helpers
@@ -47,10 +47,10 @@ export interface SubOptions<DateType extends Date = Date>
  * //=> Mon Sep 1 2014 10:19:50
  */
 export declare function sub<
-  DateType extends Date,
-  ResultDate extends Date = DateType,
+	DateType extends Date,
+	ResultDate extends Date = DateType,
 >(
-  date: DateArg<DateType>,
-  duration: Duration,
-  options?: SubOptions<ResultDate>,
+	date: DateArg<DateType>,
+	duration: Duration,
+	options?: SubOptions<ResultDate>,
 ): ResultDate;

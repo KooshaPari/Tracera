@@ -3,17 +3,21 @@
  * Tests complete page layouts including Dashboard, Projects, Items, and Settings
  */
 
-import { test, expect } from '@playwright/test'
-import { setupVisualTest, setTheme, LAYOUT_SCREENSHOT_OPTIONS } from './helpers/visual-test-helpers'
+import { expect, test } from "@playwright/test";
+import {
+	LAYOUT_SCREENSHOT_OPTIONS,
+	setTheme,
+	setupVisualTest,
+} from "./helpers/visual-test-helpers";
 
-test.describe('Dashboard Page Visual Tests', () => {
-  test('dashboard page light theme', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Dashboard Page Visual Tests", () => {
+	test("dashboard page light theme", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <!-- Dashboard Header -->
           <header class="border-b bg-card px-6 py-4">
@@ -132,19 +136,22 @@ test.describe('Dashboard Page Visual Tests', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('dashboard-light.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
+		await expect(page).toHaveScreenshot(
+			"dashboard-light.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
 
-  test('dashboard page dark theme', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'dark')
+	test("dashboard page dark theme", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "dark");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <h1 class="text-3xl font-bold text-foreground">Dashboard</h1>
@@ -176,21 +183,24 @@ test.describe('Dashboard Page Visual Tests', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('dashboard-dark.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
-})
+		await expect(page).toHaveScreenshot(
+			"dashboard-dark.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
+});
 
-test.describe('Projects List Page Visual Tests', () => {
-  test('projects list with cards', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Projects List Page Visual Tests", () => {
+	test("projects list with cards", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <div class="flex items-center justify-between">
@@ -313,21 +323,24 @@ test.describe('Projects List Page Visual Tests', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('projects-list.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
-})
+		await expect(page).toHaveScreenshot(
+			"projects-list.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
+});
 
-test.describe('Items Table Page Visual Tests', () => {
-  test('items table view', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Items Table Page Visual Tests", () => {
+	test("items table view", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <div class="flex items-center justify-between">
@@ -444,21 +457,24 @@ test.describe('Items Table Page Visual Tests', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('items-table.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
-})
+		await expect(page).toHaveScreenshot(
+			"items-table.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
+});
 
-test.describe('Empty State Pages', () => {
-  test('empty projects list', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Empty State Pages", () => {
+	test("empty projects list", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <h1 class="text-3xl font-bold text-foreground">Projects</h1>
@@ -485,19 +501,22 @@ test.describe('Empty State Pages', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('empty-projects.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
+		await expect(page).toHaveScreenshot(
+			"empty-projects.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
 
-  test('empty items list', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+	test("empty items list", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <h1 class="text-3xl font-bold text-foreground">Items</h1>
@@ -524,21 +543,24 @@ test.describe('Empty State Pages', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('empty-items.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
-})
+		await expect(page).toHaveScreenshot(
+			"empty-items.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
+});
 
-test.describe('Settings Page Visual Tests', () => {
-  test('settings page layout', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Settings Page Visual Tests", () => {
+	test("settings page layout", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <h1 class="text-3xl font-bold text-foreground">Settings</h1>
@@ -647,21 +669,24 @@ test.describe('Settings Page Visual Tests', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('settings-page.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
-})
+		await expect(page).toHaveScreenshot(
+			"settings-page.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
+});
 
-test.describe('Error State Pages', () => {
-  test('404 error page', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Error State Pages", () => {
+	test("404 error page", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background flex items-center justify-center p-6">
           <div class="text-center space-y-4 max-w-md">
             <div class="text-8xl font-bold text-primary">404</div>
@@ -679,19 +704,22 @@ test.describe('Error State Pages', () => {
             </div>
           </div>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('error-404.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
+		await expect(page).toHaveScreenshot(
+			"error-404.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
 
-  test('general error state', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+	test("general error state", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background">
           <header class="border-b bg-card px-6 py-4">
             <h1 class="text-3xl font-bold text-foreground">Dashboard</h1>
@@ -723,21 +751,24 @@ test.describe('Error State Pages', () => {
             </div>
           </main>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('error-general.png', LAYOUT_SCREENSHOT_OPTIONS)
-  })
-})
+		await expect(page).toHaveScreenshot(
+			"error-general.png",
+			LAYOUT_SCREENSHOT_OPTIONS,
+		);
+	});
+});
 
-test.describe('Command Palette Visual Tests', () => {
-  test('command palette open state', async ({ page }) => {
-    await setupVisualTest(page)
-    await setTheme(page, 'light')
+test.describe("Command Palette Visual Tests", () => {
+	test("command palette open state", async ({ page }) => {
+		await setupVisualTest(page);
+		await setTheme(page, "light");
 
-    await page.evaluate(() => {
-      const root = document.getElementById('root')!
-      root.innerHTML = `
+		await page.evaluate(() => {
+			const root = document.getElementById("root")!;
+			root.innerHTML = `
         <div class="min-h-screen bg-background relative">
           <!-- Backdrop -->
           <div class="fixed inset-0 bg-black/50 z-40"></div>
@@ -850,12 +881,12 @@ test.describe('Command Palette Visual Tests', () => {
             </header>
           </div>
         </div>
-      `
-    })
+      `;
+		});
 
-    await expect(page).toHaveScreenshot('command-palette-open.png', {
-      ...LAYOUT_SCREENSHOT_OPTIONS,
-      fullPage: false,
-    })
-  })
-})
+		await expect(page).toHaveScreenshot("command-palette-open.png", {
+			...LAYOUT_SCREENSHOT_OPTIONS,
+			fullPage: false,
+		});
+	});
+});

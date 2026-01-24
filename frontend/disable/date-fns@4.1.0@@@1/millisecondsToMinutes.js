@@ -23,8 +23,8 @@ import { millisecondsInMinute } from "./constants.js";
  * //=> 1
  */
 export function millisecondsToMinutes(milliseconds) {
-  const minutes = milliseconds / millisecondsInMinute;
-  return Math.trunc(minutes);
+	const minutes = milliseconds / millisecondsInMinute;
+	return Math.trunc(minutes);
 }
 
 // Fallback for modularized imports:

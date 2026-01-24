@@ -1,5 +1,5 @@
-declare module 'emoji-regex/text' {
-  function emojiRegex(): RegExp;
+declare module "emoji-regex/text" {
+	function emojiRegex(): RegExp;
 
-  export = emojiRegex;
+	export = emojiRegex;
 }

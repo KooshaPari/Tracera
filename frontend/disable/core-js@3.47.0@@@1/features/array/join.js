@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/array/join');
+"use strict";
+module.exports = require("../../full/array/join");

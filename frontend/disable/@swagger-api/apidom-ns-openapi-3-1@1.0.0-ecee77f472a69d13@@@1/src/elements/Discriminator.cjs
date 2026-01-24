@@ -7,4 +7,4 @@ var _apidomNsOpenapi = require("@swagger-api/apidom-ns-openapi-3-0");
  * @public
  */
 class Discriminator extends _apidomNsOpenapi.DiscriminatorElement {}
-var _default = exports.default = Discriminator;
+var _default = (exports.default = Discriminator);

@@ -1,14 +1,14 @@
 /// <reference types="node"/>
-import {LiteralUnion} from 'type-fest';
-import {Hash} from 'crypto';
+import { LiteralUnion } from "type-fest";
+import { Hash } from "crypto";
 
 declare namespace hasha {
-	type ToStringEncoding = 'hex' | 'base64' | 'latin1';
+	type ToStringEncoding = "hex" | "base64" | "latin1";
 	type HashaInput = Buffer | string | Array<Buffer | string>;
-	type HashaEncoding = ToStringEncoding | 'buffer';
+	type HashaEncoding = ToStringEncoding | "buffer";
 
 	type AlgorithmName = LiteralUnion<
-		'md5' | 'sha1' | 'sha256' | 'sha512',
+		"md5" | "sha1" | "sha256" | "sha512",
 		string
 	>;
 
@@ -54,9 +54,9 @@ declare const hasha: {
 	(input: hasha.HashaInput): string;
 	(
 		input: hasha.HashaInput,
-		options: hasha.Options<hasha.ToStringEncoding>
+		options: hasha.Options<hasha.ToStringEncoding>,
 	): string;
-	(input: hasha.HashaInput, options: hasha.Options<'buffer'>): Buffer;
+	(input: hasha.HashaInput, options: hasha.Options<"buffer">): Buffer;
 
 	/**
 	Asynchronously calculate the hash for a `string`, `Buffer`, or an array thereof.
@@ -84,9 +84,12 @@ declare const hasha: {
 	async(input: hasha.HashaInput): Promise<string>;
 	async(
 		input: hasha.HashaInput,
-		options: hasha.Options<hasha.ToStringEncoding>
+		options: hasha.Options<hasha.ToStringEncoding>,
 	): Promise<string>;
-	async(input: hasha.HashaInput, options: hasha.Options<'buffer'>): Promise<Buffer>;
+	async(
+		input: hasha.HashaInput,
+		options: hasha.Options<"buffer">,
+	): Promise<Buffer>;
 
 	/**
 	Create a [hash transform stream](https://nodejs.org/api/crypto.html#crypto_class_hash).
@@ -112,11 +115,11 @@ declare const hasha: {
 	fromStream(stream: NodeJS.ReadableStream): Promise<string>;
 	fromStream(
 		stream: NodeJS.ReadableStream,
-		options?: hasha.Options<hasha.ToStringEncoding>
+		options?: hasha.Options<hasha.ToStringEncoding>,
 	): Promise<string>;
 	fromStream(
 		stream: NodeJS.ReadableStream,
-		options?: hasha.Options<'buffer'>
+		options?: hasha.Options<"buffer">,
 	): Promise<Buffer>;
 
 	/**
@@ -143,12 +146,9 @@ declare const hasha: {
 	fromFile(filePath: string): Promise<string>;
 	fromFile(
 		filePath: string,
-		options: hasha.Options<hasha.ToStringEncoding>
+		options: hasha.Options<hasha.ToStringEncoding>,
 	): Promise<string>;
-	fromFile(
-		filePath: string,
-		options: hasha.Options<'buffer'>
-	): Promise<Buffer>;
+	fromFile(filePath: string, options: hasha.Options<"buffer">): Promise<Buffer>;
 
 	/**
 	Synchronously calculate the hash for a file.
@@ -159,9 +159,9 @@ declare const hasha: {
 	fromFileSync(filePath: string): string;
 	fromFileSync(
 		filePath: string,
-		options: hasha.Options<hasha.ToStringEncoding>
+		options: hasha.Options<hasha.ToStringEncoding>,
 	): string;
-	fromFileSync(filePath: string, options: hasha.Options<'buffer'>): Buffer;
+	fromFileSync(filePath: string, options: hasha.Options<"buffer">): Buffer;
 };
 
 export = hasha;

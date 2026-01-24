@@ -26,7 +26,7 @@ import { endOfDay } from "./endOfDay.js";
  * //=> Mon Oct 6 2014 23:59:59.999
  */
 export function endOfToday(options) {
-  return endOfDay(Date.now(), options);
+	return endOfDay(Date.now(), options);
 }
 
 // Fallback for modularized imports:

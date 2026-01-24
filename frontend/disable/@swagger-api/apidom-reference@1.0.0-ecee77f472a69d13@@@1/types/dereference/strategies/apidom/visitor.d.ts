@@ -1,6 +1,6 @@
-import { Element, RefElement } from '@swagger-api/apidom-core';
-import Reference from '../../../Reference.ts';
-import type { ReferenceOptions } from '../../../options/index.ts';
+import { Element, RefElement } from "@swagger-api/apidom-core";
+import Reference from "../../../Reference.ts";
+import type { ReferenceOptions } from "../../../options/index.ts";
 /**
  * The following rules apply:
  *
@@ -15,18 +15,24 @@ import type { ReferenceOptions } from '../../../options/index.ts';
  * @public
  */
 export interface ApiDOMDereferenceVisitorOptions {
-    readonly reference: Reference;
-    readonly options: ReferenceOptions;
+	readonly reference: Reference;
+	readonly options: ReferenceOptions;
 }
 /**
  * @public
  */
 declare class ApiDOMDereferenceVisitor {
-    protected readonly reference: Reference;
-    protected readonly options: ReferenceOptions;
-    constructor({ reference, options }: ApiDOMDereferenceVisitorOptions);
-    protected toBaseURI(uri: string): string;
-    protected toReference(uri: string): Promise<Reference>;
-    RefElement(refElement: RefElement, key: string | number, parent: Element | undefined, path: (string | number)[], ancestors: [Element | Element[]]): Promise<unknown>;
+	protected readonly reference: Reference;
+	protected readonly options: ReferenceOptions;
+	constructor({ reference, options }: ApiDOMDereferenceVisitorOptions);
+	protected toBaseURI(uri: string): string;
+	protected toReference(uri: string): Promise<Reference>;
+	RefElement(
+		refElement: RefElement,
+		key: string | number,
+		parent: Element | undefined,
+		path: (string | number)[],
+		ancestors: [Element | Element[]],
+	): Promise<unknown>;
 }
 export default ApiDOMDereferenceVisitor;

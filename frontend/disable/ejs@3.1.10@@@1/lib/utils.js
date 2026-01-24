@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 /**
  * Private utility functions
@@ -22,11 +22,9 @@
  * @private
  */
 
-'use strict';
-
 var regExpChars = /[|\\{}()[\]^$+*?.]/g;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-var hasOwn = function (obj, key) { return hasOwnProperty.apply(obj, [key]); };
+var hasOwn = (obj, key) => hasOwnProperty.apply(obj, [key]);
 
 /**
  * Escape characters reserved in regular expressions.
@@ -38,25 +36,25 @@ var hasOwn = function (obj, key) { return hasOwnProperty.apply(obj, [key]); };
  * @static
  * @private
  */
-exports.escapeRegExpChars = function (string) {
-  // istanbul ignore if
-  if (!string) {
-    return '';
-  }
-  return String(string).replace(regExpChars, '\\$&');
+exports.escapeRegExpChars = (string) => {
+	// istanbul ignore if
+	if (!string) {
+		return "";
+	}
+	return String(string).replace(regExpChars, "\\$&");
 };
 
 var _ENCODE_HTML_RULES = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&#34;',
-  "'": '&#39;'
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&#34;",
+	"'": "&#39;",
 };
 var _MATCH_HTML = /[&<>'"]/g;
 
 function encode_char(c) {
-  return _ENCODE_HTML_RULES[c] || c;
+	return _ENCODE_HTML_RULES[c] || c;
 }
 
 /**
@@ -69,17 +67,17 @@ function encode_char(c) {
  */
 
 var escapeFuncStr =
-  'var _ENCODE_HTML_RULES = {\n'
-+ '      "&": "&amp;"\n'
-+ '    , "<": "&lt;"\n'
-+ '    , ">": "&gt;"\n'
-+ '    , \'"\': "&#34;"\n'
-+ '    , "\'": "&#39;"\n'
-+ '    }\n'
-+ '  , _MATCH_HTML = /[&<>\'"]/g;\n'
-+ 'function encode_char(c) {\n'
-+ '  return _ENCODE_HTML_RULES[c] || c;\n'
-+ '};\n';
+	"var _ENCODE_HTML_RULES = {\n" +
+	'      "&": "&amp;"\n' +
+	'    , "<": "&lt;"\n' +
+	'    , ">": "&gt;"\n' +
+	'    , \'"\': "&#34;"\n' +
+	'    , "\'": "&#39;"\n' +
+	"    }\n" +
+	"  , _MATCH_HTML = /[&<>'\"]/g;\n" +
+	"function encode_char(c) {\n" +
+	"  return _ENCODE_HTML_RULES[c] || c;\n" +
+	"};\n";
 
 /**
  * Escape characters reserved in XML.
@@ -93,30 +91,30 @@ var escapeFuncStr =
  * @private
  */
 
-exports.escapeXML = function (markup) {
-  return markup == undefined
-    ? ''
-    : String(markup)
-      .replace(_MATCH_HTML, encode_char);
-};
+exports.escapeXML = (markup) =>
+	markup == undefined ? "" : String(markup).replace(_MATCH_HTML, encode_char);
 
 function escapeXMLToString() {
-  return Function.prototype.toString.call(this) + ';\n' + escapeFuncStr;
+	return Function.prototype.toString.call(this) + ";\n" + escapeFuncStr;
 }
 
 try {
-  if (typeof Object.defineProperty === 'function') {
-  // If the Function prototype is frozen, the "toString" property is non-writable. This means that any objects which inherit this property
-  // cannot have the property changed using an assignment. If using strict mode, attempting that will cause an error. If not using strict
-  // mode, attempting that will be silently ignored.
-  // However, we can still explicitly shadow the prototype's "toString" property by defining a new "toString" property on this object.
-    Object.defineProperty(exports.escapeXML, 'toString', { value: escapeXMLToString });
-  } else {
-    // If Object.defineProperty() doesn't exist, attempt to shadow this property using the assignment operator.
-    exports.escapeXML.toString = escapeXMLToString;
-  }
+	if (typeof Object.defineProperty === "function") {
+		// If the Function prototype is frozen, the "toString" property is non-writable. This means that any objects which inherit this property
+		// cannot have the property changed using an assignment. If using strict mode, attempting that will cause an error. If not using strict
+		// mode, attempting that will be silently ignored.
+		// However, we can still explicitly shadow the prototype's "toString" property by defining a new "toString" property on this object.
+		Object.defineProperty(exports.escapeXML, "toString", {
+			value: escapeXMLToString,
+		});
+	} else {
+		// If Object.defineProperty() doesn't exist, attempt to shadow this property using the assignment operator.
+		exports.escapeXML.toString = escapeXMLToString;
+	}
 } catch (err) {
-  console.warn('Unable to set escapeXML.toString (is the Function prototype frozen?)');
+	console.warn(
+		"Unable to set escapeXML.toString (is the Function prototype frozen?)",
+	);
 }
 
 /**
@@ -130,20 +128,20 @@ try {
  * @static
  * @private
  */
-exports.shallowCopy = function (to, from) {
-  from = from || {};
-  if ((to !== null) && (to !== undefined)) {
-    for (var p in from) {
-      if (!hasOwn(from, p)) {
-        continue;
-      }
-      if (p === '__proto__' || p === 'constructor') {
-        continue;
-      }
-      to[p] = from[p];
-    }
-  }
-  return to;
+exports.shallowCopy = (to, from) => {
+	from = from || {};
+	if (to !== null && to !== undefined) {
+		for (var p in from) {
+			if (!hasOwn(from, p)) {
+				continue;
+			}
+			if (p === "__proto__" || p === "constructor") {
+				continue;
+			}
+			to[p] = from[p];
+		}
+	}
+	return to;
 };
 
 /**
@@ -158,24 +156,24 @@ exports.shallowCopy = function (to, from) {
  * @static
  * @private
  */
-exports.shallowCopyFromList = function (to, from, list) {
-  list = list || [];
-  from = from || {};
-  if ((to !== null) && (to !== undefined)) {
-    for (var i = 0; i < list.length; i++) {
-      var p = list[i];
-      if (typeof from[p] != 'undefined') {
-        if (!hasOwn(from, p)) {
-          continue;
-        }
-        if (p === '__proto__' || p === 'constructor') {
-          continue;
-        }
-        to[p] = from[p];
-      }
-    }
-  }
-  return to;
+exports.shallowCopyFromList = (to, from, list) => {
+	list = list || [];
+	from = from || {};
+	if (to !== null && to !== undefined) {
+		for (var i = 0; i < list.length; i++) {
+			var p = list[i];
+			if (typeof from[p] != "undefined") {
+				if (!hasOwn(from, p)) {
+					continue;
+				}
+				if (p === "__proto__" || p === "constructor") {
+					continue;
+				}
+				to[p] = from[p];
+			}
+		}
+	}
+	return to;
 };
 
 /**
@@ -187,19 +185,19 @@ exports.shallowCopyFromList = function (to, from, list) {
  * @private
  */
 exports.cache = {
-  _data: {},
-  set: function (key, val) {
-    this._data[key] = val;
-  },
-  get: function (key) {
-    return this._data[key];
-  },
-  remove: function (key) {
-    delete this._data[key];
-  },
-  reset: function () {
-    this._data = {};
-  }
+	_data: {},
+	set: function (key, val) {
+		this._data[key] = val;
+	},
+	get: function (key) {
+		return this._data[key];
+	},
+	remove: function (key) {
+		delete this._data[key];
+	},
+	reset: function () {
+		this._data = {};
+	},
 };
 
 /**
@@ -210,9 +208,8 @@ exports.cache = {
  * @static
  * @private
  */
-exports.hyphenToCamel = function (str) {
-  return str.replace(/-[a-z]/g, function (match) { return match[1].toUpperCase(); });
-};
+exports.hyphenToCamel = (str) =>
+	str.replace(/-[a-z]/g, (match) => match[1].toUpperCase());
 
 /**
  * Returns a null-prototype object in runtimes that support it
@@ -221,30 +218,23 @@ exports.hyphenToCamel = function (str) {
  * @static
  * @private
  */
-exports.createNullProtoObjWherePossible = (function () {
-  if (typeof Object.create == 'function') {
-    return function () {
-      return Object.create(null);
-    };
-  }
-  if (!({__proto__: null} instanceof Object)) {
-    return function () {
-      return {__proto__: null};
-    };
-  }
-  // Not possible, just pass through
-  return function () {
-    return {};
-  };
+exports.createNullProtoObjWherePossible = (() => {
+	if (typeof Object.create == "function") {
+		return () => Object.create(null);
+	}
+	if (!({ __proto__: null } instanceof Object)) {
+		return () => ({ __proto__: null });
+	}
+	// Not possible, just pass through
+	return () => ({});
 })();
 
-exports.hasOwnOnlyObject = function (obj) {
-  var o = exports.createNullProtoObjWherePossible();
-  for (var p in obj) {
-    if (hasOwn(obj, p)) {
-      o[p] = obj[p];
-    }
-  }
-  return o;
+exports.hasOwnOnlyObject = (obj) => {
+	var o = exports.createNullProtoObjWherePossible();
+	for (var p in obj) {
+		if (hasOwn(obj, p)) {
+			o[p] = obj[p];
+		}
+	}
+	return o;
 };
-

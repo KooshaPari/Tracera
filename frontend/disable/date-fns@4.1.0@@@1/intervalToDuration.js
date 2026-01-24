@@ -33,33 +33,33 @@ import { differenceInYears } from "./differenceInYears.js";
  * //=> { years: 39, months: 2, days: 20, hours: 7, minutes: 5, seconds: 0 }
  */
 export function intervalToDuration(interval, options) {
-  const { start, end } = normalizeInterval(options?.in, interval);
-  const duration = {};
+	const { start, end } = normalizeInterval(options?.in, interval);
+	const duration = {};
 
-  const years = differenceInYears(end, start);
-  if (years) duration.years = years;
+	const years = differenceInYears(end, start);
+	if (years) duration.years = years;
 
-  const remainingMonths = add(start, { years: duration.years });
-  const months = differenceInMonths(end, remainingMonths);
-  if (months) duration.months = months;
+	const remainingMonths = add(start, { years: duration.years });
+	const months = differenceInMonths(end, remainingMonths);
+	if (months) duration.months = months;
 
-  const remainingDays = add(remainingMonths, { months: duration.months });
-  const days = differenceInDays(end, remainingDays);
-  if (days) duration.days = days;
+	const remainingDays = add(remainingMonths, { months: duration.months });
+	const days = differenceInDays(end, remainingDays);
+	if (days) duration.days = days;
 
-  const remainingHours = add(remainingDays, { days: duration.days });
-  const hours = differenceInHours(end, remainingHours);
-  if (hours) duration.hours = hours;
+	const remainingHours = add(remainingDays, { days: duration.days });
+	const hours = differenceInHours(end, remainingHours);
+	if (hours) duration.hours = hours;
 
-  const remainingMinutes = add(remainingHours, { hours: duration.hours });
-  const minutes = differenceInMinutes(end, remainingMinutes);
-  if (minutes) duration.minutes = minutes;
+	const remainingMinutes = add(remainingHours, { hours: duration.hours });
+	const minutes = differenceInMinutes(end, remainingMinutes);
+	if (minutes) duration.minutes = minutes;
 
-  const remainingSeconds = add(remainingMinutes, { minutes: duration.minutes });
-  const seconds = differenceInSeconds(end, remainingSeconds);
-  if (seconds) duration.seconds = seconds;
+	const remainingSeconds = add(remainingMinutes, { minutes: duration.minutes });
+	const seconds = differenceInSeconds(end, remainingSeconds);
+	if (seconds) duration.seconds = seconds;
 
-  return duration;
+	return duration;
 }
 
 // Fallback for modularized imports:

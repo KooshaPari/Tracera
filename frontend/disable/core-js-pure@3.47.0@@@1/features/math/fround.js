@@ -1,2 +1,2 @@
-'use strict';
-module.exports = require('../../full/math/fround');
+"use strict";
+module.exports = require("../../full/math/fround");

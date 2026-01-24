@@ -1,29 +1,29 @@
 "use strict";
 exports.secondsInYear =
-  exports.secondsInWeek =
-  exports.secondsInQuarter =
-  exports.secondsInMonth =
-  exports.secondsInMinute =
-  exports.secondsInHour =
-  exports.secondsInDay =
-  exports.quartersInYear =
-  exports.monthsInYear =
-  exports.monthsInQuarter =
-  exports.minutesInYear =
-  exports.minutesInMonth =
-  exports.minutesInHour =
-  exports.minutesInDay =
-  exports.minTime =
-  exports.millisecondsInWeek =
-  exports.millisecondsInSecond =
-  exports.millisecondsInMinute =
-  exports.millisecondsInHour =
-  exports.millisecondsInDay =
-  exports.maxTime =
-  exports.daysInYear =
-  exports.daysInWeek =
-  exports.constructFromSymbol =
-    void 0; /**
+	exports.secondsInWeek =
+	exports.secondsInQuarter =
+	exports.secondsInMonth =
+	exports.secondsInMinute =
+	exports.secondsInHour =
+	exports.secondsInDay =
+	exports.quartersInYear =
+	exports.monthsInYear =
+	exports.monthsInQuarter =
+	exports.minutesInYear =
+	exports.minutesInMonth =
+	exports.minutesInHour =
+	exports.minutesInDay =
+	exports.minTime =
+	exports.millisecondsInWeek =
+	exports.millisecondsInSecond =
+	exports.millisecondsInMinute =
+	exports.millisecondsInHour =
+	exports.millisecondsInDay =
+	exports.maxTime =
+	exports.daysInYear =
+	exports.daysInWeek =
+	exports.constructFromSymbol =
+		void 0; /**
  * @module constants
  * @summary Useful constants
  * @description
@@ -76,7 +76,7 @@ const daysInYear = (exports.daysInYear = 365.2425);
  * new Date(8640000000000001);
  * //=> Invalid Date
  */
-const maxTime = (exports.maxTime = Math.pow(10, 8) * 24 * 60 * 60 * 1000);
+const maxTime = (exports.maxTime = 10 ** 8 * 24 * 60 * 60 * 1000);
 
 /**
  * @constant
@@ -239,4 +239,4 @@ const secondsInQuarter = (exports.secondsInQuarter = secondsInMonth * 3);
  * a constructor argument.
  */
 const constructFromSymbol = (exports.constructFromSymbol =
-  Symbol.for("constructDateFrom"));
+	Symbol.for("constructDateFrom"));

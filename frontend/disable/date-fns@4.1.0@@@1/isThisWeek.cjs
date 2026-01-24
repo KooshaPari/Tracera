@@ -34,9 +34,9 @@ var _index3 = require("./isSameWeek.cjs");
  * //=> false
  */
 function isThisWeek(date, options) {
-  return (0, _index3.isSameWeek)(
-    (0, _index.constructFrom)(options?.in || date, date),
-    (0, _index2.constructNow)(options?.in || date),
-    options,
-  );
+	return (0, _index3.isSameWeek)(
+		(0, _index.constructFrom)(options?.in || date, date),
+		(0, _index2.constructNow)(options?.in || date),
+		options,
+	);
 }

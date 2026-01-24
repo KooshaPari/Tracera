@@ -7,9 +7,9 @@ var _apidomCore = require("@swagger-api/apidom-core");
  * @public
  */
 class StandardIdentifier extends _apidomCore.ArrayElement {
-  constructor(content, meta, attributes) {
-    super(content, meta, attributes);
-    this.element = 'standardIdentifier';
-  }
+	constructor(content, meta, attributes) {
+		super(content, meta, attributes);
+		this.element = "standardIdentifier";
+	}
 }
-var _default = exports.default = StandardIdentifier;
+var _default = (exports.default = StandardIdentifier);

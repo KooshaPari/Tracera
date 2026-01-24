@@ -29,9 +29,9 @@ var _index = require("./toDate.cjs");
  * //=> Tue Sep 30 2014 23:59:59.999
  */
 function endOfMonth(date, options) {
-  const _date = (0, _index.toDate)(date, options?.in);
-  const month = _date.getMonth();
-  _date.setFullYear(_date.getFullYear(), month + 1, 0);
-  _date.setHours(23, 59, 59, 999);
-  return _date;
+	const _date = (0, _index.toDate)(date, options?.in);
+	const month = _date.getMonth();
+	_date.setFullYear(_date.getFullYear(), month + 1, 0);
+	_date.setHours(23, 59, 59, 999);
+	return _date;
 }

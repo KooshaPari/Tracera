@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from "../../language/visitor";
+import type { ValidationContext } from "../ValidationContext";
 /**
  * Subscriptions must only include a non-introspection field.
  *
@@ -9,5 +9,5 @@ import type { ValidationContext } from '../ValidationContext';
  * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
 export declare function SingleFieldSubscriptionsRule(
-  context: ValidationContext,
+	context: ValidationContext,
 ): ASTVisitor;
