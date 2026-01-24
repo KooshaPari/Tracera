@@ -5,27 +5,26 @@ Displays real-time sync status, pending changes, and conflict notifications.
 """
 
 from datetime import datetime
+from typing import Any
 
 try:
     from textual.app import ComposeResult
-    from textual.containers import Horizontal
-    from textual.reactive import reactive
-    from textual.widgets import Static
+    from textual.containers import Horizontal as TextualHorizontal
+    from textual.reactive import reactive as textual_reactive
+    from textual.widgets import Static as TextualStatic
 
     TEXTUAL_AVAILABLE = True
+    Static = TextualStatic
+    Horizontal = TextualHorizontal
+    reactive = textual_reactive
 except ImportError:
     TEXTUAL_AVAILABLE = False
+    Static = object  # type: ignore
+    Horizontal = object  # type: ignore
 
-    class Static:
-        pass
-
-    class Horizontal:
-        pass
-
-    def reactive(*args, **kwargs):
-        def decorator(func):
+    def reactive(*args: Any, **kwargs: Any) -> Any:
+        def decorator(func: Any) -> Any:
             return func
-
         return decorator
 
 
@@ -306,15 +305,3 @@ if TEXTUAL_AVAILABLE:
             self.conflicts_count = count
 
 
-else:
-    # Fallback when Textual is not available
-
-    class SyncStatusWidget:
-        """Placeholder when Textual is not installed."""
-
-        pass
-
-    class CompactSyncStatus:
-        """Placeholder when Textual is not installed."""
-
-        pass

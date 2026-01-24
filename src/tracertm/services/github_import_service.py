@@ -1,7 +1,7 @@
 """Service for importing projects from GitHub."""
 
 import json
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +22,7 @@ class GitHubImportService:
         self.events = EventRepository(session)
 
     # GitHub to TraceRTM status mapping
-    STATUS_MAP = {
+    STATUS_MAP: ClassVar[dict[str, str]] = {
         "open": "todo",
         "in_progress": "in_progress",
         "in review": "in_progress",
@@ -31,7 +31,7 @@ class GitHubImportService:
     }
 
     # GitHub to TraceRTM type mapping
-    TYPE_MAP = {
+    TYPE_MAP: ClassVar[dict[str, str]] = {
         "issue": "task",
         "pull_request": "task",
         "discussion": "task",

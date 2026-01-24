@@ -13,6 +13,6 @@ class DrillDownService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def drill(self, *args, **kwargs) -> dict:
+    async def drill(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Return a minimal drill-down result."""
         return {"status": "ok", "items": []}

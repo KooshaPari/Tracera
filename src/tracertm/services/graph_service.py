@@ -13,5 +13,5 @@ class GraphService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def get_graph(self, *args, **kwargs) -> dict:
+    async def get_graph(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"nodes": [], "links": []}

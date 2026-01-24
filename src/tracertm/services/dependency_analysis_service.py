@@ -13,6 +13,6 @@ class DependencyAnalysisService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def analyze(self, *args, **kwargs) -> dict:
+    async def analyze(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Return a minimal analysis result."""
         return {"status": "ok", "dependencies": []}

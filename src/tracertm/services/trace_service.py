@@ -13,5 +13,5 @@ class TraceService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def trace(self, *args, **kwargs) -> dict:
+    async def trace(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"traced": True}

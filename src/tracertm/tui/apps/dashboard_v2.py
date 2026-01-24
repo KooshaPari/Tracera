@@ -8,44 +8,57 @@ Provides interactive dashboard with:
 - Offline-first operation
 """
 
+from typing import TYPE_CHECKING, ClassVar
 
 try:
     from textual.app import App, ComposeResult
     from textual.binding import Binding
     from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import DataTable, Footer, Header, Static, Tree
+    from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
 
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
-    # Create dummy classes for type checking
 
-    class App:
-        pass
+    if TYPE_CHECKING:
+        from textual.app import App, ComposeResult
+        from textual.binding import Binding
+        from textual.containers import Container, Horizontal, Vertical
+        from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
+    else:
+        # Create dummy classes for runtime when textual unavailable
+        class App:
+            pass
 
-    class ComposeResult:
-        pass
+        class ComposeResult:
+            pass
 
-    class Container:
-        pass
+        class Container:
+            pass
 
-    class Header:
-        pass
+        class Header:
+            pass
 
-    class Footer:
-        pass
+        class Footer:
+            pass
 
-    class DataTable:
-        pass
+        class DataTable:
+            pass
 
-    class Static:
-        pass
+        class Static:
+            pass
 
-    class Tree:
-        pass
+        class Tree:
+            pass
 
-    class Binding:
-        pass
+        class Binding:
+            pass
+
+        class Button:
+            pass
+
+        class Input:
+            pass
 
 
 from pathlib import Path
@@ -110,7 +123,7 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        BINDINGS = [
+        BINDINGS: ClassVar[list] = [
             Binding("q", "quit", "Quit", priority=True),
             Binding("v", "switch_view", "Switch View"),
             Binding("r", "refresh", "Refresh"),
@@ -347,9 +360,6 @@ if TEXTUAL_AVAILABLE:
         def action_search(self) -> None:
             """Open search dialog."""
             try:
-                from textual.widgets import Input, Button
-                from textual.containers import Container, Horizontal
-
                 class SearchDialog(Container):
                     """Search dialog for items."""
 
@@ -421,7 +431,7 @@ if TEXTUAL_AVAILABLE:
                     self.notify("Search complete", timeout=2)
 
             except Exception as e:
-                self.notify(f"Search error: {str(e)}", severity="error")
+                self.notify(f"Search error: {e!s}", severity="error")
 
         def action_show_conflicts(self) -> None:
             """Show conflicts panel."""
@@ -507,10 +517,10 @@ if TEXTUAL_AVAILABLE:
                 self._sync_timer.stop()
 
 
-else:
+if not TEXTUAL_AVAILABLE:
     # Fallback when Textual is not available
-
-    class EnhancedDashboardApp:
+    # Override the EnhancedDashboardApp with a placeholder
+    class EnhancedDashboardApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
         def __init__(self, *args, **kwargs) -> None:

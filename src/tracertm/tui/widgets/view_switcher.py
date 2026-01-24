@@ -1,30 +1,32 @@
 """View switcher widget for TUI."""
 
+from typing import Any
+
 try:
     from textual.widgets import Tree
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
-    class Tree:
-        pass
+    Tree = object
 
-if TEXTUAL_AVAILABLE:
-    class ViewSwitcherWidget(Tree):
-        """Widget for switching between views."""
 
-        def __init__(self, *args, **kwargs) -> None:
+class ViewSwitcherWidget(Tree):
+    """Widget for switching between views."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        if TEXTUAL_AVAILABLE:
             super().__init__("Views", *args, **kwargs)
+        else:
+            pass
 
-        def on_mount(self) -> None:
-            """Called when widget is mounted - setup views here."""
+    def on_mount(self) -> None:
+        """Called when widget is mounted - setup views here."""
+        if TEXTUAL_AVAILABLE:
             self.setup_views()
 
-        def setup_views(self) -> None:
-            """Setup view tree."""
-            views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
-            for view in views:
+    def setup_views(self) -> None:
+        """Setup view tree."""
+        views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
+        for view in views:
+            if TEXTUAL_AVAILABLE:
                 self.root.add(view, data=view)
-else:
-    class ViewSwitcherWidget:
-        """Placeholder when Textual is not installed."""
-        pass

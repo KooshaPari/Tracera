@@ -48,7 +48,7 @@ class AdvancedTraceabilityService:
         paths = []
         visited = set()
 
-        async def dfs(current: str, target: str, path: list[str], depth: int):
+        async def dfs(current: str, target: str, path: list[str], depth: int) -> None:
             if depth > max_depth:
                 return
 
@@ -90,17 +90,22 @@ class AdvancedTraceabilityService:
 
         # For each item, find all reachable items
         for item in items:
-            visited = set()
+            visited: set[str] = set()
+            item_id = item.id  # Capture loop variable
 
-            async def dfs(current_id: str):
-                if current_id in visited:
+            async def dfs(
+                current_id: str,
+                visited_set: set[str] = visited,
+                item_key: str = item_id,
+            ) -> None:
+                if current_id in visited_set:
                     return
-                visited.add(current_id)
+                visited_set.add(current_id)
 
                 links = await self.links.get_by_source(current_id)
                 for link in links:
-                    closure[item.id].add(link.target_item_id)
-                    await dfs(link.target_item_id)
+                    closure[item_key].add(link.target_item_id)
+                    await dfs(link.target_item_id, visited_set, item_key)
 
             await dfs(item.id)
 
@@ -159,31 +164,37 @@ class AdvancedTraceabilityService:
     ) -> list[list[str]]:
         """Find circular dependencies."""
         items = await self.items.query(project_id, {})
-        cycles = []
+        cycles: list[list[str]] = []
 
         for item in items:
-            visited = set()
-            rec_stack = set()
+            visited: set[str] = set()
+            rec_stack: set[str] = set()
+            item_id = item.id  # Capture loop variable
 
-            async def dfs(current_id: str, path: list[str]):
-                visited.add(current_id)
-                rec_stack.add(current_id)
+            async def dfs(
+                current_id: str,
+                path: list[str],
+                visited_set: set[str] = visited,
+                rec_stack_set: set[str] = rec_stack,
+            ) -> None:
+                visited_set.add(current_id)
+                rec_stack_set.add(current_id)
                 path.append(current_id)
 
                 links = await self.links.get_by_source(current_id)
                 for link in links:
-                    if link.target_item_id not in visited:
-                        await dfs(link.target_item_id, path.copy())
-                    elif link.target_item_id in rec_stack:
+                    if link.target_item_id not in visited_set:
+                        await dfs(link.target_item_id, path.copy(), visited_set, rec_stack_set)
+                    elif link.target_item_id in rec_stack_set:
                         # Found cycle
                         cycle_start = path.index(link.target_item_id)
                         cycle = [*path[cycle_start:], link.target_item_id]
                         if cycle not in cycles:
                             cycles.append(cycle)
 
-                rec_stack.remove(current_id)
+                rec_stack_set.remove(current_id)
 
-            if item.id not in visited:
-                await dfs(item.id, [])
+            if item_id not in visited:
+                await dfs(item_id, [])
 
         return cycles

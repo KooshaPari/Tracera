@@ -13,5 +13,5 @@ class RepairService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def repair(self, *args, **kwargs) -> dict:
+    async def repair(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"repaired": True}

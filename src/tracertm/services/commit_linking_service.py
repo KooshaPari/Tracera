@@ -1,7 +1,7 @@
 """Service for auto-linking commits to items."""
 
 import re
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,7 @@ class CommitLinkingService:
         self.events = EventRepository(session)
 
     # Regex patterns for different commit message formats
-    PATTERNS = {
+    PATTERNS: ClassVar[dict[str, str]] = {
         "hash": r"#(\d+)",  # #123
         "jira": r"([A-Z]+-\d+)",  # FEAT-123
         "github": r"GH-(\d+)",  # GH-123

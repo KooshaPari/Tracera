@@ -4,6 +4,8 @@ Conflict panel widget for TUI.
 Displays and manages sync conflicts with resolution options.
 """
 
+from typing import TYPE_CHECKING, ClassVar
+
 try:
     from textual.app import ComposeResult
     from textual.binding import Binding
@@ -15,29 +17,39 @@ try:
 except ImportError:
     TEXTUAL_AVAILABLE = False
 
-    class Container:
-        pass
+    if TYPE_CHECKING:
+        from textual.app import ComposeResult
+        from textual.binding import Binding
+        from textual.containers import Container, Vertical
+        from textual.message import Message
+        from textual.widgets import Button, DataTable, Label, Static
+    else:
+        class Container:
+            pass
 
-    class Vertical:
-        pass
+        class Vertical:
+            pass
 
-    class DataTable:
-        pass
+        class DataTable:
+            pass
 
-    class Label:
-        pass
+        class Label:
+            pass
 
-    class Static:
-        pass
+        class Static:
+            pass
 
-    class Button:
-        pass
+        class Button:
+            pass
 
-    class Binding:
-        pass
+        class Binding:
+            pass
 
-    class Message:
-        pass
+        class Message:
+            pass
+
+        class ComposeResult:
+            pass
 
 
 if TEXTUAL_AVAILABLE:
@@ -52,7 +64,7 @@ if TEXTUAL_AVAILABLE:
         - Resolution actions
         """
 
-        BINDINGS = [
+        BINDINGS: ClassVar[list] = [
             Binding("l", "resolve_local", "Use Local"),
             Binding("r", "resolve_remote", "Use Remote"),
             Binding("m", "resolve_manual", "Merge Manually"),
@@ -266,10 +278,9 @@ if TEXTUAL_AVAILABLE:
                 super().__init__()
 
 
-else:
+if not TEXTUAL_AVAILABLE:
     # Fallback when Textual is not available
-
-    class ConflictPanel:
+    class ConflictPanel:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
         pass

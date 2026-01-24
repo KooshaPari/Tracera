@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import update_with_retry

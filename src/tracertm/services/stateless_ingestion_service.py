@@ -192,7 +192,7 @@ class StatelessIngestionService:
                 if link_url.startswith("#"):
                     target_title = link_url[1:].replace("-", " ").title()
                     # Try to find matching header
-                    for level, item_id, title in headers:
+                    for _level, item_id, title in headers:
                         if title.lower() == target_title.lower():
                             link = Link(
                                 id=str(uuid4()),
@@ -356,7 +356,7 @@ class StatelessIngestionService:
         try:
             data = yaml.safe_load(content)
         except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML: {e}")
+            raise ValueError(f"Invalid YAML: {e}") from e
 
         if not isinstance(data, dict):
             raise ValueError("YAML root must be a dictionary")
@@ -544,7 +544,7 @@ class StatelessIngestionService:
                                     links_created.append((item.id, schema_items[schema_name]))
 
         # Create links between related endpoints (same path, different methods)
-        for path, methods in path_item_map.items():
+        for _path, methods in path_item_map.items():
             method_items = list(methods.values())
             for i in range(len(method_items)):
                 for j in range(i + 1, len(method_items)):
@@ -796,14 +796,8 @@ class StatelessIngestionService:
             return type_mapping[str(level)]
 
         # Default mapping
-        if level == 1:
-            return "epic"
-        elif level == 2:
-            return "feature"
-        elif level == 3:
-            return "story"
-        else:
-            return "task"
+        default_mapping = {1: "epic", 2: "feature", 3: "story"}
+        return default_mapping.get(level, "task")
 
     def _extract_section_content(self, body: str, header_line: str) -> str:
         """Extract content between current header and next header."""

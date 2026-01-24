@@ -13,5 +13,5 @@ class MetricsService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def collect(self) -> dict:
+    async def collect(self) -> dict[str, object]:
         return {"metrics": {}}

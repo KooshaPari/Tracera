@@ -297,10 +297,7 @@ class ProjectBackupService:
         template = self.session.query(Project).filter(Project.id == template_id).first()
         if template:
             # Get existing metadata or create new dict
-            if template.project_metadata is None:
-                metadata = {}
-            else:
-                metadata = dict(template.project_metadata)  # Copy to avoid mutation issues
+            metadata = {} if template.project_metadata is None else dict(template.project_metadata)  # Copy to avoid mutation issues
 
             metadata["is_template"] = True
             metadata["template_name"] = template_name

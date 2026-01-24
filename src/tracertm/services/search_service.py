@@ -13,5 +13,5 @@ class SearchService:
     def __init__(self, db_session: Any | None = None):
         self.db_session = db_session
 
-    async def search(self, query: str | None = None, filters: dict | None = None) -> list[dict]:
+    async def search(self, query: str | None = None, filters: dict[str, object] | None = None) -> list[dict[str, object]]:
         return []
