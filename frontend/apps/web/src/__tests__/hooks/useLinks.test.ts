@@ -8,9 +8,10 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCreateLink, useLinks } from "../../hooks/useLinks";
 
-// Mock fetch
+
+// Mock fetch at module level
 const mockFetch = vi.fn();
-global.fetch = mockFetch as unknown as typeof fetch;
+global.fetch = mockFetch as any;
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
@@ -26,7 +27,7 @@ const createWrapper = () => {
 
 describe("useLinks", () => {
 	beforeEach(() => {
-		vi.clearAllMocks();
+		mockFetch.mockClear();
 	});
 
 	it("should fetch links", async () => {
@@ -77,7 +78,7 @@ describe("useLinks", () => {
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toEqual(mockResponse);
-		expect(mockFetch).toHaveBeenCalledWith(
+		expect(global.fetch).toHaveBeenCalledWith(
 			expect.stringContaining("source_id=item-1"),
 			expect.any(Object),
 		);
@@ -104,7 +105,7 @@ describe("useLinks", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-		expect(mockFetch).toHaveBeenCalledWith(
+		expect(global.fetch).toHaveBeenCalledWith(
 			expect.stringContaining("target_id=item-2"),
 			expect.any(Object),
 		);
@@ -158,7 +159,7 @@ describe("useCreateLink", () => {
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toEqual(createdLink);
-		expect(mockFetch).toHaveBeenCalledWith(
+		expect(global.fetch).toHaveBeenCalledWith(
 			expect.stringContaining("/api/v1/links"),
 			expect.objectContaining({
 				method: "POST",
