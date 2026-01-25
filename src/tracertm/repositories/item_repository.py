@@ -66,8 +66,8 @@ class ItemRepository:
         from sqlalchemy import text
         
         sql = """
-            SELECT id, project_id, title, description, type, status, priority, 
-                   created_at, updated_at, metadata, deleted_at, parent_id
+            SELECT id, project_id, title, description, view, item_type, status, priority, 
+                   created_at, updated_at, item_metadata, deleted_at, parent_id, owner
             FROM items 
             WHERE id = :item_id AND deleted_at IS NULL
         """
@@ -88,16 +88,16 @@ class ItemRepository:
         item.project_id = str(row.project_id)
         item.title = row.title
         item.description = row.description
-        item.view = row.type  # Map type to view
-        item.item_type = row.type
-        item.type = row.type  # Alias
+        item.view = row.view
+        item.item_type = row.item_type
+        item.type = row.item_type  # Alias for compatibility
         item.status = row.status
         item.priority = str(row.priority) if row.priority is not None else "medium"
-        item.owner = None  # owner column doesn't exist in database
+        item.owner = row.owner
         item.parent_id = str(row.parent_id) if row.parent_id else None
         item.created_at = row.created_at
         item.updated_at = row.updated_at
-        item.item_metadata = row.metadata if row.metadata else {}
+        item.item_metadata = row.item_metadata if row.item_metadata else {}
         item.metadata = item.item_metadata  # Alias
         item.deleted_at = row.deleted_at
         return item
@@ -216,8 +216,8 @@ class ItemRepository:
         from sqlalchemy import text
         
         sql = """
-            SELECT id, project_id, title, description, type, status, priority, 
-                   created_at, updated_at, metadata, deleted_at
+            SELECT id, project_id, title, description, view, item_type, status, priority, 
+                   created_at, updated_at, item_metadata, deleted_at, parent_id, owner
             FROM items 
             WHERE project_id = :project_id AND deleted_at IS NULL
         """
@@ -240,14 +240,16 @@ class ItemRepository:
             item.project_id = str(row.project_id)
             item.title = row.title
             item.description = row.description
-            item.view = row.type  # Map type to view
-            item.item_type = row.type
-            item.type = row.type  # Alias
+            item.view = row.view
+            item.item_type = row.item_type
+            item.type = row.item_type  # Alias for compatibility
             item.status = row.status
             item.priority = str(row.priority) if row.priority is not None else "medium"
+            item.owner = row.owner
+            item.parent_id = str(row.parent_id) if row.parent_id else None
             item.created_at = row.created_at
             item.updated_at = row.updated_at
-            item.item_metadata = row.metadata if row.metadata else {}
+            item.item_metadata = row.item_metadata if row.item_metadata else {}
             item.metadata = item.item_metadata  # Alias
             item.deleted_at = row.deleted_at
             items.append(item)

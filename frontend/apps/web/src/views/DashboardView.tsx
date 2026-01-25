@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useProjects } from "../hooks/useProjects";
-import { useProjectStore } from "../stores";
 
 interface StatCardProps {
 	title: string;
@@ -231,7 +230,6 @@ function QuickActions() {
 
 export function DashboardView() {
 	const { data: projects, isLoading: projectsLoading } = useProjects();
-	const { currentProject } = useProjectStore();
 	const [allItems, setAllItems] = useState<any[]>([]);
 	const [itemsLoading, setItemsLoading] = useState(false);
 	const [projectItemCounts, setProjectItemCounts] = useState<

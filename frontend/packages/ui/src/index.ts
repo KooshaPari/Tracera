@@ -8,6 +8,7 @@ export * from "./components/DropdownMenu";
 export * from "./components/Input";
 export * from "./components/Label";
 export * from "./components/Progress";
+export * from "./components/ScrollArea";
 export * from "./components/Select";
 export * from "./components/Separator";
 export * from "./components/Skeleton";

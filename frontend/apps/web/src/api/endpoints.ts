@@ -309,7 +309,7 @@ export const agentsApi = {
 	): Promise<void> => {
 		// Submit task error with cancel status
 		await agentsApi.submitTaskError({
-			task_id: taskId,
+			taskId: taskId,
 			error: reason || "Task cancelled",
 		});
 	},

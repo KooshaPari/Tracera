@@ -77,18 +77,18 @@ export const saveSettings = async (settings: {
 	try {
 		const generalSettings: Record<string, any> = {};
 		if (settings.theme) {
-			generalSettings.theme = settings.theme as "light" | "dark" | "system";
+			generalSettings["theme"] = settings.theme as "light" | "dark" | "system";
 		}
 
 		const notificationSettings: Record<string, any> = {};
 		if (settings.emailNotifications !== undefined) {
-			notificationSettings.email = settings.emailNotifications;
+			notificationSettings["email"] = settings.emailNotifications;
 		}
 		if (settings.desktopNotifications !== undefined) {
-			notificationSettings.push = settings.desktopNotifications;
+			notificationSettings["push"] = settings.desktopNotifications;
 		}
 		if (settings.weeklySummary !== undefined) {
-			notificationSettings.inApp = settings.weeklySummary;
+			notificationSettings["inApp"] = settings.weeklySummary;
 		}
 
 		await updateSettings({

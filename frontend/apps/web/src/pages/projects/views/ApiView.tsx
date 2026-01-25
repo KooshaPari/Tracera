@@ -194,12 +194,12 @@ export function ApiView() {
 				<div className="flex gap-2 text-xs">
 					<span className="flex items-center gap-1">
 						<span
-							className={`h-2 w-2 rounded-full ${statusBadge.implemented}`}
+							className={`h-2 w-2 rounded-full ${statusBadge["implemented"] ?? ""}`}
 						/>{" "}
 						Implemented
 					</span>
 					<span className="flex items-center gap-1">
-						<span className={`h-2 w-2 rounded-full ${statusBadge.planned}`} />{" "}
+						<span className={`h-2 w-2 rounded-full ${statusBadge["planned"] ?? ""}`} />{" "}
 						Planned
 					</span>
 				</div>

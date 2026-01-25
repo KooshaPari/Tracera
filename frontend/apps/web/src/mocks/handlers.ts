@@ -29,10 +29,16 @@ import {
 	generateLinkId,
 	generateProjectId,
 	mockAgents,
-	mockItems,
-	mockLinks,
+	mockItems as mockItemsBaseline,
+	mockLinks as mockLinksBaseline,
 	mockProjects,
 } from "./data";
+import { enhancedItems, enhancedLinks } from "./enhanced-data";
+
+// Toggle between baseline and enhanced mock data
+const USE_ENHANCED_DATA = true;
+const mockItems = USE_ENHANCED_DATA ? enhancedItems : mockItemsBaseline;
+const mockLinks = USE_ENHANCED_DATA ? enhancedLinks : mockLinksBaseline;
 
 const API_BASE = "http://localhost:8000";
 
@@ -96,7 +102,6 @@ export const handlers = [
 			id: generateProjectId(),
 			name: body.name,
 			...(body.description !== undefined && { description: body.description }),
-			metadata: body.metadata || {},
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		};
@@ -123,11 +128,6 @@ export const handlers = [
 				? { description: body.description }
 				: baseProject.description !== undefined
 					? { description: baseProject.description }
-					: {}),
-			...(body.metadata !== undefined
-				? { metadata: body.metadata }
-				: baseProject.metadata !== undefined
-					? { metadata: baseProject.metadata }
 					: {}),
 			createdAt: baseProject.createdAt,
 			updatedAt: new Date().toISOString(),
@@ -186,16 +186,17 @@ export const handlers = [
 
 		const newItem: Item = {
 			id: generateItemId(),
-			projectId: body.project_id,
+			projectId: body.projectId,
 			type: body.type,
 			title: body.title,
 			...(body.description !== undefined && { description: body.description }),
-			status: body.status || ("pending" as any),
-			...(body.priority !== undefined && { priority: body.priority }),
-			metadata: body.metadata || {},
+			status: body.status || ("todo" as const),
+			priority: body.priority || ("medium" as const),
+			view: "FEATURE" as const,
+			version: 1,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
-			...(body.parent_id !== undefined && { parentId: body.parent_id }),
+			...(body.parentId !== undefined && { parentId: body.parentId }),
 		};
 
 		mockItems.push(newItem);
@@ -216,22 +217,19 @@ export const handlers = [
 		const updatedItem: Item = {
 			id: baseItem.id,
 			projectId: baseItem.projectId,
+			view: baseItem.view,
+			version: baseItem.version,
 			type: body.type ?? baseItem.type,
 			title: body.title ?? baseItem.title,
 			...((body.description ?? baseItem.description) !== undefined && {
 				description: body.description ?? baseItem.description,
 			}),
 			status: body.status ?? baseItem.status,
-			...((body.priority ?? baseItem.priority) !== undefined && {
-				priority: body.priority ?? baseItem.priority,
-			}),
-			...((body.metadata ?? baseItem.metadata) !== undefined && {
-				metadata: body.metadata ?? baseItem.metadata,
-			}),
+			priority: body.priority ?? baseItem.priority,
 			createdAt: baseItem.createdAt,
 			updatedAt: new Date().toISOString(),
-			...((body.parent_id ?? baseItem.parent_id) !== undefined && {
-				parentId: body.parent_id ?? baseItem.parent_id,
+			...((body.parentId ?? baseItem.parentId) !== undefined && {
+				parentId: body.parentId ?? baseItem.parentId,
 			}),
 		};
 
@@ -266,8 +264,8 @@ export const handlers = [
 		if (projectId) {
 			// Filter links by project (check source or target items)
 			links = mockLinks.filter((link) => {
-				const sourceItem = findItemById(link.source_id);
-				const targetItem = findItemById(link.target_id);
+				const sourceItem = findItemById(link.sourceId);
+				const targetItem = findItemById(link.targetId);
 				return (
 					sourceItem?.projectId === projectId ||
 					targetItem?.projectId === projectId
@@ -296,14 +294,18 @@ export const handlers = [
 		await delay();
 		const body = (await request.json()) as CreateLinkInput;
 
+		// Get source item to determine projectId
+		const sourceItem = findItemById(body.sourceId);
+		const projectId = sourceItem?.projectId || "unknown";
+
 		const newLink: Link = {
 			id: generateLinkId(),
-			sourceId: body.source_id,
-			targetId: body.target_id,
+			projectId: projectId,
+			sourceId: body.sourceId,
+			targetId: body.targetId,
 			type: body.type,
-			metadata: body.metadata || {},
+			...(body.description !== undefined && { description: body.description }),
 			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
 		};
 
 		mockLinks.push(newLink);
@@ -323,14 +325,12 @@ export const handlers = [
 		const baseLink = mockLinks[linkIndex]!;
 		const updatedLink: Link = {
 			id: baseLink.id,
-			sourceId: baseLink.source_id,
-			targetId: baseLink.target_id,
+			projectId: baseLink.projectId,
+			sourceId: baseLink.sourceId,
+			targetId: baseLink.targetId,
 			type: body.type ?? baseLink.type,
-			...((body.metadata ?? baseLink.metadata) !== undefined && {
-				metadata: body.metadata ?? baseLink.metadata,
-			}),
+			...(body.description !== undefined && { description: body.description }),
 			createdAt: baseLink.createdAt,
-			updatedAt: new Date().toISOString(),
 		};
 
 		mockLinks[linkIndex] = updatedLink;
@@ -383,12 +383,8 @@ export const handlers = [
 			id: generateAgentId(),
 			name: body.name,
 			type: body.type,
-			capabilities: body.capabilities,
-			status: "idle" as any,
-			metadata: body.metadata || {},
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-			last_heartbeat: new Date().toISOString(),
+			status: "idle" as const,
+			lastSeen: new Date().toISOString(),
 		};
 
 		mockAgents.push(newAgent);
@@ -414,10 +410,9 @@ export const handlers = [
 
 		const edges = mockLinks.map((link) => ({
 			id: link.id,
-			source: link.source_id,
-			target: link.target_id,
+			source: link.sourceId,
+			target: link.targetId,
 			type: link.type,
-			...(link.metadata !== undefined && { metadata: link.metadata }),
 		}));
 
 		const graphData: GraphData = { nodes, edges };
@@ -435,13 +430,13 @@ export const handlers = [
 
 		const affectedLinks = filterLinksByTarget(id as string);
 		const affectedItems = affectedLinks
-			.map((link) => findItemById(link.source_id))
+			.map((link) => findItemById(link.sourceId))
 			.filter(Boolean) as Item[];
 
 		const impactAnalysis: ImpactAnalysis = {
-			item_id: id as string,
-			affected_items: affectedItems,
-			affected_count: affectedItems.length,
+			itemId: id as string,
+			affectedItems: affectedItems,
+			affectedCount: affectedItems.length,
 			depth: 1,
 		};
 
@@ -459,13 +454,13 @@ export const handlers = [
 
 		const dependencyLinks = filterLinksBySource(id as string);
 		const dependencies = dependencyLinks
-			.map((link) => findItemById(link.target_id))
+			.map((link) => findItemById(link.targetId))
 			.filter(Boolean) as Item[];
 
 		const dependencyAnalysis: DependencyAnalysis = {
-			item_id: id as string,
+			itemId: id as string,
 			dependencies,
-			dependency_count: dependencies.length,
+			dependencyCount: dependencies.length,
 			depth: 1,
 		};
 

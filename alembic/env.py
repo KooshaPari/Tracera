@@ -44,6 +44,15 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
+    # Override database URL from environment if available
+    import os
+    database_url = os.getenv("TRACERTM_DATABASE_URL") or os.getenv("DATABASE_URL")
+    if database_url:
+        # Convert postgresql:// to postgresql+psycopg2:// for Alembic
+        if database_url.startswith("postgresql://"):
+            database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        config.set_main_option("sqlalchemy.url", database_url)
+    
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

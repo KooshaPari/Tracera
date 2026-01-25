@@ -2,13 +2,33 @@
 
 import inspect
 import logging
+import os
 from collections import defaultdict
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+
+# Load .env file if it exists
+try:
+    from dotenv import load_dotenv
+    # Try to find .env file relative to project root
+    env_path = Path(__file__).parent.parent.parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path, override=True)
+except ImportError:
+    # If python-dotenv not available, try to read .env manually
+    env_path = Path(__file__).parent.parent.parent.parent / ".env"
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ.setdefault(key.strip(), value.strip())
 
 import tracertm.repositories.item_repository as item_repository
 import tracertm.repositories.link_repository as link_repository
@@ -364,7 +384,7 @@ async def api_health_check():
 # Items endpoints
 @app.get("/api/v1/items")
 async def list_items(
-    project_id: str,
+    project_id: str | None = None,
     skip: int = 0,
     limit: int = 100,
     claims: dict = Depends(auth_guard),
@@ -472,25 +492,23 @@ async def list_links(
         count_sql = text("""
             SELECT COUNT(DISTINCT l.id)
             FROM links l
-            INNER JOIN items i1 ON l.source_id = i1.id
-            INNER JOIN items i2 ON l.target_id = i2.id
+            INNER JOIN items i1 ON l.source_item_id = i1.id
+            INNER JOIN items i2 ON l.target_item_id = i2.id
             WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
               AND i1.deleted_at IS NULL
               AND i2.deleted_at IS NULL
-              AND (l.deleted_at IS NULL)
         """)
         count_result = await db.execute(count_sql, {"project_id": project_id})
         total_count = count_result.scalar() or 0
         
         links_sql = text("""
-            SELECT DISTINCT l.id, l.source_id, l.target_id, l.link_type, l.created_at, l.metadata
+            SELECT DISTINCT l.id, l.source_item_id, l.target_item_id, l.link_type, l.created_at, l.link_metadata
             FROM links l
-            INNER JOIN items i1 ON l.source_id = i1.id
-            INNER JOIN items i2 ON l.target_id = i2.id
+            INNER JOIN items i1 ON l.source_item_id = i1.id
+            INNER JOIN items i2 ON l.target_item_id = i2.id
             WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
               AND i1.deleted_at IS NULL
               AND i2.deleted_at IS NULL
-              AND (l.deleted_at IS NULL)
             ORDER BY l.created_at DESC
             LIMIT :limit OFFSET :skip
         """)
@@ -499,43 +517,43 @@ async def list_links(
         # Get links where both source and target match
         count_sql = text("""
             SELECT COUNT(*) FROM links 
-            WHERE source_id = :source_id AND target_id = :target_id AND deleted_at IS NULL
+            WHERE source_item_id = :source_id AND target_item_id = :target_id
         """)
         count_result = await db.execute(count_sql, {"source_id": source_id, "target_id": target_id})
         total_count = count_result.scalar() or 0
         
         links_sql = text("""
-            SELECT id, source_id, target_id, link_type, created_at, metadata
+            SELECT id, source_item_id, target_item_id, link_type, created_at, link_metadata
             FROM links 
-            WHERE source_id = :source_id AND target_id = :target_id AND deleted_at IS NULL
+            WHERE source_item_id = :source_id AND target_item_id = :target_id
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :skip
         """)
         links_result = await db.execute(links_sql, {"source_id": source_id, "target_id": target_id, "limit": limit, "skip": skip})
     elif source_id:
         # Get links where source_id matches
-        count_sql = text("SELECT COUNT(*) FROM links WHERE source_id = :source_id AND deleted_at IS NULL")
+        count_sql = text("SELECT COUNT(*) FROM links WHERE source_item_id = :source_id")
         count_result = await db.execute(count_sql, {"source_id": source_id})
         total_count = count_result.scalar() or 0
         
         links_sql = text("""
-            SELECT id, source_id, target_id, link_type, created_at, metadata
+            SELECT id, source_item_id, target_item_id, link_type, created_at, link_metadata
             FROM links 
-            WHERE source_id = :source_id AND deleted_at IS NULL
+            WHERE source_item_id = :source_id
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :skip
         """)
         links_result = await db.execute(links_sql, {"source_id": source_id, "limit": limit, "skip": skip})
     elif target_id:
         # Get links where target_id matches
-        count_sql = text("SELECT COUNT(*) FROM links WHERE target_id = :target_id AND deleted_at IS NULL")
+        count_sql = text("SELECT COUNT(*) FROM links WHERE target_item_id = :target_id")
         count_result = await db.execute(count_sql, {"target_id": target_id})
         total_count = count_result.scalar() or 0
         
         links_sql = text("""
-            SELECT id, source_id, target_id, link_type, created_at, metadata
+            SELECT id, source_item_id, target_item_id, link_type, created_at, link_metadata
             FROM links 
-            WHERE target_id = :target_id AND deleted_at IS NULL
+            WHERE target_item_id = :target_id
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :skip
         """)
@@ -550,8 +568,8 @@ async def list_links(
         for row in links_result:
             links_list.append({
                 "id": str(row.id),
-                "source_id": str(row.source_id),
-                "target_id": str(row.target_id),
+                "source_id": str(row.source_item_id),
+                "target_id": str(row.target_item_id),
                 "type": row.link_type,
                 "project_id": project_id or "",
             })
@@ -850,14 +868,19 @@ async def get_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    # Get metadata from project_metadata or metadata alias
+    project_metadata = getattr(project, "project_metadata", None) or getattr(project, "metadata", None) or {}
+    description = getattr(project, "description", None)
+    if not description and isinstance(project_metadata, dict):
+        description = project_metadata.get("description")
+    
     return {
         "id": str(project.id),
         "name": project.name,
-        "description": (
-            project.metadata.get("description") if isinstance(project.metadata, dict) else None
-        ) if hasattr(project, "metadata") and project.metadata else None,
-        "metadata": project.metadata if hasattr(project, "metadata") else {},
+        "description": description,
+        "metadata": project_metadata,
         "created_at": project.created_at.isoformat() if hasattr(project, "created_at") and project.created_at else None,
+        "updated_at": project.updated_at.isoformat() if hasattr(project, "updated_at") and project.updated_at else None,
     }
 
 
@@ -1149,4 +1172,4 @@ async def get_graph_neighbors(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

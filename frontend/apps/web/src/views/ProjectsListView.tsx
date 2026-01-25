@@ -315,7 +315,7 @@ export function ProjectsListView() {
 		searchQuery,
 		sortBy,
 		sortOrder,
-		projectItemCounts[project.id],
+		projectItemCounts,
 	]);
 
 	if (projectsLoading) {

@@ -1,5 +1,11 @@
 // API Types - Re-exported from @tracertm/types with additional types
-import type { ItemStatus, LinkType, Priority } from "@tracertm/types";
+import type {
+	Item,
+	ItemStatus,
+	LinkType,
+	Priority,
+	ViewType,
+} from "@tracertm/types";
 
 export type {
 	Agent,

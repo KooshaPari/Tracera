@@ -8,7 +8,13 @@ async function fetchProjects(): Promise<Project[]> {
 	if (!res.ok) throw new Error("Failed to fetch projects");
 	const data = await res.json();
 	// API returns { total: number, projects: Project[] }, extract projects array
-	return Array.isArray(data) ? data : data.projects || [];
+	const projectsArray = Array.isArray(data) ? data : data.projects || [];
+	// Transform snake_case to camelCase for frontend compatibility
+	return projectsArray.map((project: any) => ({
+		...project,
+		createdAt: project.created_at || project.createdAt,
+		updatedAt: project.updated_at || project.updatedAt,
+	}));
 }
 
 async function fetchProject(id: string): Promise<Project> {
@@ -21,7 +27,13 @@ async function fetchProject(id: string): Promise<Project> {
 		const errorText = await res.text();
 		throw new Error(`Failed to fetch project: ${res.status} ${errorText}`);
 	}
-	return res.json() as Promise<Project>;
+	const data = await res.json();
+	// Transform snake_case to camelCase for frontend compatibility
+	return {
+		...data,
+		createdAt: data.created_at || data.createdAt,
+		updatedAt: data.updated_at || data.updatedAt,
+	} as Project;
 }
 
 async function createProject(data: {

@@ -37,54 +37,67 @@ class ProjectRepository:
         # Use raw SQL to avoid model column mismatches with database schema
         from sqlalchemy import text
         result = await self.session.execute(
-            text("SELECT id, name, metadata, created_at, updated_at FROM projects WHERE id = :project_id AND deleted_at IS NULL"),
+            text("SELECT id, name, description, project_metadata, created_at, updated_at FROM projects WHERE id = :project_id"),
             {"project_id": project_id}
         )
         row = result.fetchone()
         if not row:
             return None
         
-        # Create a Project-like object that works with the actual schema
+        # Access row using positional indexing to avoid SQLAlchemy column name mapping issues
         project = type('Project', (), {})()  # type: ignore
-        project.id = str(row.id)
-        project.name = row.name
-        project.project_metadata = row.metadata if row.metadata else {}
+        project.id = str(row[0])
+        project.name = row[1]
+        project.description = row[2] if len(row) > 2 else None
+        project.project_metadata = row[3] if len(row) > 3 and row[3] else {}
         project.metadata = project.project_metadata  # Alias for compatibility
-        project.created_at = row.created_at
-        project.updated_at = row.updated_at
-        # Add description property that reads from metadata
-        project.description = None
-        if isinstance(project.project_metadata, dict):
-            project.description = project.project_metadata.get("description")
+        project.created_at = row[4] if len(row) > 4 else None
+        project.updated_at = row[5] if len(row) > 5 else None
         return project
 
     async def get_by_name(self, name: str) -> Project | None:
         """Get project by name."""
-        result = await self.session.execute(select(Project).where(Project.name == name))
-        return result.scalar_one_or_none()
+        # Use raw SQL to avoid model column mismatches
+        from sqlalchemy import text
+        result = await self.session.execute(
+            text("SELECT id, name, description, project_metadata, created_at, updated_at FROM projects WHERE name = :name"),
+            {"name": name}
+        )
+        row = result.fetchone()
+        if not row:
+            return None
+        
+        # Create a Project-like object that works with the actual schema
+        # Use positional indexing to avoid SQLAlchemy column name mapping issues
+        project = type('Project', (), {})()  # type: ignore
+        project.id = str(row[0])
+        project.name = row[1]
+        project.description = row[2] if len(row) > 2 else None
+        project.project_metadata = row[3] if len(row) > 3 and row[3] else {}
+        project.metadata = project.project_metadata  # Alias for compatibility
+        project.created_at = row[4] if len(row) > 4 else None
+        project.updated_at = row[5] if len(row) > 5 else None
+        return project
 
     async def get_all(self) -> list[Project]:
         """Get all projects."""
         # Use raw SQL to avoid model column mismatches with database schema
         from sqlalchemy import text
         result = await self.session.execute(
-            text("SELECT id, name, metadata, created_at, updated_at FROM projects WHERE deleted_at IS NULL")
+            text("SELECT id, name, description, project_metadata, created_at, updated_at FROM projects")
         )
         projects = []
         for row in result:
             # Create a Project-like object that works with the actual schema
-            # Use type: ignore to bypass SQLAlchemy model validation
+            # Use positional indexing to avoid SQLAlchemy column name mapping issues
             project = type('Project', (), {})()  # type: ignore
-            project.id = str(row.id)
-            project.name = row.name
-            project.project_metadata = row.metadata if row.metadata else {}
+            project.id = str(row[0])
+            project.name = row[1]
+            project.description = row[2] if len(row) > 2 else None
+            project.project_metadata = row[3] if len(row) > 3 and row[3] else {}
             project.metadata = project.project_metadata  # Alias for compatibility
-            project.created_at = row.created_at
-            project.updated_at = row.updated_at
-            # Add description property that reads from metadata
-            project.description = None
-            if isinstance(project.project_metadata, dict):
-                project.description = project.project_metadata.get("description")
+            project.created_at = row[4] if len(row) > 4 else None
+            project.updated_at = row[5] if len(row) > 5 else None
             projects.append(project)
         return projects
 

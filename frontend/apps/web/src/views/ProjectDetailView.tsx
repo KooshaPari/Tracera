@@ -95,7 +95,7 @@ const priorityColors: Record<string, string> = {
 function ProjectStats({
 	items,
 	itemsTotal,
-	links,
+	links: _links,
 	linksTotal,
 }: ProjectStatsProps & { itemsTotal: number; linksTotal: number }) {
 	const stats = useMemo(() => {
@@ -117,15 +117,15 @@ function ProjectStats({
 
 		const completionRate =
 			itemsTotal > 0
-				? Math.round(((itemsByStatus.completed || 0) / itemsTotal) * 100)
+				? Math.round(((itemsByStatus["done"] || 0) / itemsTotal) * 100)
 				: 0;
 
 		return {
 			total: itemsTotal,
-			todo: itemsByStatus.pending || 0,
-			in_progress: itemsByStatus.in_progress || 0,
-			done: itemsByStatus.completed || 0,
-			blocked: itemsByStatus.blocked || 0,
+			todo: itemsByStatus["todo"] || 0,
+			in_progress: itemsByStatus["in_progress"] || 0,
+			done: itemsByStatus["done"] || 0,
+			blocked: itemsByStatus["blocked"] || 0,
 			completionRate,
 			links: linksTotal,
 			itemsByType,
@@ -232,7 +232,7 @@ function RichItemCard({ item }: RichItemCardProps) {
 								{item.status === "in_progress" && (
 									<Clock className="h-3 w-3 mr-1" />
 								)}
-								{item.status === "completed" && (
+								{item.status === "done" && (
 									<CheckCircle2 className="h-3 w-3 mr-1" />
 								)}
 								{item.status === "blocked" && (
@@ -507,9 +507,9 @@ export function ProjectDetailView() {
 						<h1 className="text-4xl font-bold text-gray-900 dark:text-white">
 							{project.name}
 						</h1>
-						{project.metadata?.domain && (
+						{project.metadata && typeof project.metadata === "object" && "domain" in project.metadata && (
 							<Badge variant="outline" className="text-sm">
-								{project.metadata.domain}
+								{String((project.metadata as Record<string, unknown>)["domain"])}
 							</Badge>
 						)}
 					</div>
@@ -587,7 +587,7 @@ export function ProjectDetailView() {
 						{typeStats.length > 0 ? (
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 								{typeStats.map(
-									({ type, items: typeItems, count, completed }) => (
+									({ type, items: typeItems }) => (
 										<TypeSection
 											key={type}
 											type={type}

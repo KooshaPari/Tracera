@@ -143,10 +143,8 @@ export function ItemsTableView() {
 		isLoading,
 		error,
 	} = useItems({ projectId: projectFilter });
-	// Extract items array from new hook structure
+	// Extract items array from new hook structure - itemsData may be paginated
 	const items = itemsData?.items || [];
-	// Extract items array from new hook structure
-	const _itemsArray = itemsData?.items || items || [];
 	const { data: projects } = useProjects();
 	// Ensure projects is always an array
 	const projectsArray = Array.isArray(projects) ? projects : [];

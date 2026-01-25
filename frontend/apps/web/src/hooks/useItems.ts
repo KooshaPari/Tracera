@@ -40,19 +40,31 @@ async function fetchItems(
 	}
 	const data = await res.json();
 	// API returns { total: number, items: Item[] }
-	if (Array.isArray(data)) {
-		return { items: data, total: data.length };
-	}
+	const itemsArray = Array.isArray(data) ? data : (data.items || []);
+	// Transform snake_case to camelCase for frontend compatibility
+	const transformedItems = itemsArray.map((item: any) => ({
+		...item,
+		createdAt: item.created_at || item.createdAt,
+		updatedAt: item.updated_at || item.updatedAt,
+		projectId: item.project_id || item.projectId,
+	}));
 	return {
-		items: data.items || [],
-		total: data.total || 0,
+		items: transformedItems,
+		total: data.total || (Array.isArray(data) ? data.length : itemsArray.length),
 	};
 }
 
 async function fetchItem(id: string): Promise<Item> {
 	const res = await fetch(`${API_URL}/api/v1/items/${id}`);
 	if (!res.ok) throw new Error("Failed to fetch item");
-	return res.json() as Promise<Item>;
+	const data = await res.json();
+	// Transform snake_case to camelCase for frontend compatibility
+	return {
+		...data,
+		createdAt: data.created_at || data.createdAt,
+		updatedAt: data.updated_at || data.updatedAt,
+		projectId: data.project_id || data.projectId,
+	} as Item;
 }
 
 interface CreateItemData {

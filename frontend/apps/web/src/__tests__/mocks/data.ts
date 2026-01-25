@@ -163,13 +163,12 @@ export const createMockProject = (overrides?: Partial<Project>): Project => {
 
 export const createMockItem = (overrides?: Partial<Item>): Item => ({
 	id: `item-${Date.now()}`,
-	project_id: "proj-1",
+	projectId: "proj-1",
 	type: "feature" as ItemType,
 	title: "Test Item",
 	description: "Test description",
 	status: "pending" as ItemStatus,
 	priority: "medium" as ItemPriority,
-	metadata: {},
 	created_at: new Date().toISOString(),
 	updated_at: new Date().toISOString(),
 	...overrides,

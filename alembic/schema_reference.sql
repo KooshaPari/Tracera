@@ -14,8 +14,10 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE projects (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
-    description TEXT,
-    project_metadata JSONB NOT NULL DEFAULT '{}',
+    slug VARCHAR(255) UNIQUE,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    metadata JSONB NOT NULL DEFAULT '{}',
+    deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -28,14 +30,11 @@ CREATE TABLE items (
     project_id VARCHAR(255) NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     title VARCHAR(500) NOT NULL,
     description TEXT,
-    view VARCHAR(50) NOT NULL,
-    item_type VARCHAR(50) NOT NULL,
+    type VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'todo',
-    priority VARCHAR(50) NOT NULL DEFAULT 'medium',
-    owner VARCHAR(255),
+    priority INTEGER NOT NULL DEFAULT 0,
     parent_id VARCHAR(255) REFERENCES items(id) ON DELETE SET NULL,
-    item_metadata JSONB NOT NULL DEFAULT '{}',
-    version INTEGER NOT NULL DEFAULT 1,
+    metadata JSONB NOT NULL DEFAULT '{}',
     deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -43,40 +42,35 @@ CREATE TABLE items (
 
 -- Items indexes
 CREATE INDEX idx_items_project_id ON items(project_id);
-CREATE INDEX idx_items_view ON items(view);
-CREATE INDEX idx_items_item_type ON items(item_type);
+CREATE INDEX idx_items_type ON items(type);
 CREATE INDEX idx_items_status ON items(status);
 CREATE INDEX idx_items_priority ON items(priority);
-CREATE INDEX idx_items_owner ON items(owner);
 CREATE INDEX idx_items_parent_id ON items(parent_id);
 CREATE INDEX idx_items_deleted_at ON items(deleted_at);
-CREATE INDEX idx_items_project_view ON items(project_id, view);
 CREATE INDEX idx_items_project_status ON items(project_id, status);
-CREATE INDEX idx_items_project_type ON items(project_id, item_type);
+CREATE INDEX idx_items_project_type ON items(project_id, type);
 
 -- Full-text search indexes
 CREATE INDEX idx_items_title_trgm ON items USING gin (title gin_trgm_ops);
 CREATE INDEX idx_items_description_trgm ON items USING gin (description gin_trgm_ops);
 
--- Links table
+-- Links table (NOTE: links table does NOT have project_id column - it's inferred from items)
 CREATE TABLE links (
     id VARCHAR(255) PRIMARY KEY,
-    project_id VARCHAR(255) NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    source_item_id VARCHAR(255) NOT NULL REFERENCES items(id) ON DELETE CASCADE,
-    target_item_id VARCHAR(255) NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    source_id VARCHAR(255) NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    target_id VARCHAR(255) NOT NULL REFERENCES items(id) ON DELETE CASCADE,
     link_type VARCHAR(50) NOT NULL,
-    link_metadata JSONB NOT NULL DEFAULT '{}',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    metadata JSONB NOT NULL DEFAULT '{}',
+    deleted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Links indexes
-CREATE INDEX idx_links_project_id ON links(project_id);
-CREATE INDEX idx_links_source_item_id ON links(source_item_id);
-CREATE INDEX idx_links_target_item_id ON links(target_item_id);
+-- Links indexes (NOTE: links table uses source_id/target_id, not source_item_id/target_item_id)
+CREATE INDEX idx_links_source_id ON links(source_id);
+CREATE INDEX idx_links_target_id ON links(target_id);
 CREATE INDEX idx_links_link_type ON links(link_type);
-CREATE INDEX idx_links_source_target ON links(source_item_id, target_item_id);
-CREATE INDEX idx_links_project_type ON links(project_id, link_type);
+CREATE INDEX idx_links_source_target ON links(source_id, target_id);
+CREATE INDEX idx_links_deleted_at ON links(deleted_at);
 
 -- Agents table
 CREATE TABLE agents (

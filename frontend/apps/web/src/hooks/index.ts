@@ -10,5 +10,7 @@ export {
 	useIsTablet,
 	useMediaQuery,
 } from "./useMediaQuery";
+export { useNodeExpansion, useExpansionStateSelector, type NodeExpansionState, type NodeExpansionInfo, type NavigationHistory } from "./useNodeExpansion";
 export { useOnClickOutside } from "./useOnClickOutside";
+export { usePerformance } from "./usePerformance";
 export * from "./useProjects";
