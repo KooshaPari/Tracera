@@ -25,27 +25,31 @@ test.describe("Application Navigation", () => {
 		await page.goto("/projects");
 		await expect(page).toHaveURL("/projects");
 
-		// Should show projects list
-		// Look for project cards or table
-		await page.waitForSelector("text=/TraceRTM Core|Mobile App/", {
-			timeout: 5000,
-		});
+		// Should show projects list with projects heading
+		const projectsHeading = page.getByRole("heading", { name: /projects/i });
+		await expect(projectsHeading).toBeVisible({ timeout: 5000 });
+
+		// Wait for project cards to load
+		const projectCards = page.locator("a >> text=/TraceRTM|Pokemon|E-Commerce|Banking/i");
+		await expect(projectCards.first()).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should navigate to items view", async ({ page }) => {
 		await page.goto("/items");
 		await expect(page).toHaveURL("/items");
 
-		// Items table should be visible
-		await page.waitForLoadState("networkidle");
+		// Items table view should be visible - look for table headers
+		const titleHeader = page.getByRole("columnheader", { name: /title/i });
+		await expect(titleHeader).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should navigate to agents view", async ({ page }) => {
 		await page.goto("/agents");
 		await expect(page).toHaveURL("/agents");
 
-		// Agents list should be visible
-		await page.waitForLoadState("networkidle");
+		// Agents heading should be visible
+		const agentsHeading = page.getByRole("heading", { name: /agents/i });
+		await expect(agentsHeading).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should navigate to graph view", async ({ page }) => {
