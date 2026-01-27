@@ -34,72 +34,21 @@ class ProjectRepository:
 
     async def get_by_id(self, project_id: str) -> Project | None:
         """Get project by ID."""
-        # Use raw SQL to avoid model column mismatches with database schema
-        from sqlalchemy import text
-        result = await self.session.execute(
-            text("SELECT id, name, description, project_metadata, created_at, updated_at FROM projects WHERE id = :project_id"),
-            {"project_id": project_id}
-        )
-        row = result.fetchone()
-        if not row:
-            return None
-        
-        # Access row using positional indexing to avoid SQLAlchemy column name mapping issues
-        project = type('Project', (), {})()  # type: ignore
-        project.id = str(row[0])
-        project.name = row[1]
-        project.description = row[2] if len(row) > 2 else None
-        project.project_metadata = row[3] if len(row) > 3 and row[3] else {}
-        project.metadata = project.project_metadata  # Alias for compatibility
-        project.created_at = row[4] if len(row) > 4 else None
-        project.updated_at = row[5] if len(row) > 5 else None
-        return project
+        query = select(Project).where(Project.id == project_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_by_name(self, name: str) -> Project | None:
         """Get project by name."""
-        # Use raw SQL to avoid model column mismatches
-        from sqlalchemy import text
-        result = await self.session.execute(
-            text("SELECT id, name, description, project_metadata, created_at, updated_at FROM projects WHERE name = :name"),
-            {"name": name}
-        )
-        row = result.fetchone()
-        if not row:
-            return None
-        
-        # Create a Project-like object that works with the actual schema
-        # Use positional indexing to avoid SQLAlchemy column name mapping issues
-        project = type('Project', (), {})()  # type: ignore
-        project.id = str(row[0])
-        project.name = row[1]
-        project.description = row[2] if len(row) > 2 else None
-        project.project_metadata = row[3] if len(row) > 3 and row[3] else {}
-        project.metadata = project.project_metadata  # Alias for compatibility
-        project.created_at = row[4] if len(row) > 4 else None
-        project.updated_at = row[5] if len(row) > 5 else None
-        return project
+        query = select(Project).where(Project.name == name)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_all(self) -> list[Project]:
         """Get all projects."""
-        # Use raw SQL to avoid model column mismatches with database schema
-        from sqlalchemy import text
-        result = await self.session.execute(
-            text("SELECT id, name, description, project_metadata, created_at, updated_at FROM projects")
-        )
-        projects = []
-        for row in result:
-            # Create a Project-like object that works with the actual schema
-            # Use positional indexing to avoid SQLAlchemy column name mapping issues
-            project = type('Project', (), {})()  # type: ignore
-            project.id = str(row[0])
-            project.name = row[1]
-            project.description = row[2] if len(row) > 2 else None
-            project.project_metadata = row[3] if len(row) > 3 and row[3] else {}
-            project.metadata = project.project_metadata  # Alias for compatibility
-            project.created_at = row[4] if len(row) > 4 else None
-            project.updated_at = row[5] if len(row) > 5 else None
-            projects.append(project)
-        return projects
+        query = select(Project)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
 
     async def update(
         self,
@@ -109,7 +58,11 @@ class ProjectRepository:
         metadata: dict | None = None,
     ) -> Project | None:
         """Update project."""
-        project = await self.get_by_id(project_id)
+        # Get project using ORM for tracking
+        query = select(Project).where(Project.id == project_id)
+        result = await self.session.execute(query)
+        project = result.scalar_one_or_none()
+
         if not project:
             return None
 

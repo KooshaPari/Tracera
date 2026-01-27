@@ -82,13 +82,13 @@ export interface AgentTask {
 }
 
 export interface TaskResult {
-	taskId: string;
+	task_id: string;
 	result: Record<string, any>;
-	status: string;
+	status?: string;
 }
 
 export interface TaskError {
-	taskId: string;
+	task_id: string;
 	error: string;
 }
 

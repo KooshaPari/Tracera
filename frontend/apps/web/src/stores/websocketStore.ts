@@ -33,12 +33,31 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 
 	// Actions
 	connect: () => {
+		const state = get();
+		// Prevent multiple connection attempts
+		if (state.isConnected) {
+			return;
+		}
+
 		const wsManager = getWebSocketManager();
 		wsManager.connect();
 
+		// Clear any existing interval first
+		if (
+			typeof globalThis.window !== "undefined" &&
+			(globalThis.window as any).__wsCheckInterval
+		) {
+			clearInterval((globalThis.window as any).__wsCheckInterval);
+		}
+
 		// Monitor connection status
 		const checkConnection = setInterval(() => {
-			set({ isConnected: wsManager.connected });
+			const currentState = get();
+			const connected = wsManager.connected;
+			// Only update if state actually changed to prevent infinite loops
+			if (currentState.isConnected !== connected) {
+				set({ isConnected: connected });
+			}
 		}, 1000);
 
 		// Store interval ID for cleanup

@@ -62,45 +62,13 @@ class ItemRepository:
 
     async def get_by_id(self, item_id: str, project_id: str | None = None) -> Item | None:
         """Get item by ID, optionally scoped to project."""
-        # Use raw SQL to avoid model column mismatches with database schema
-        from sqlalchemy import text
-        
-        sql = """
-            SELECT id, project_id, title, description, view, item_type, status, priority, 
-                   created_at, updated_at, item_metadata, deleted_at, parent_id, owner
-            FROM items 
-            WHERE id = :item_id AND deleted_at IS NULL
-        """
-        params = {"item_id": item_id}
-        
+        query = select(Item).where(Item.id == item_id, Item.deleted_at.is_(None))
+
         if project_id:
-            sql += " AND project_id = :project_id"
-            params["project_id"] = project_id
-        
-        result = await self.session.execute(text(sql), params)
-        row = result.fetchone()
-        if not row:
-            return None
-        
-        # Create an Item-like object that works with the actual schema
-        item = type('Item', (), {})()  # type: ignore
-        item.id = str(row.id)
-        item.project_id = str(row.project_id)
-        item.title = row.title
-        item.description = row.description
-        item.view = row.view
-        item.item_type = row.item_type
-        item.type = row.item_type  # Alias for compatibility
-        item.status = row.status
-        item.priority = str(row.priority) if row.priority is not None else "medium"
-        item.owner = row.owner
-        item.parent_id = str(row.parent_id) if row.parent_id else None
-        item.created_at = row.created_at
-        item.updated_at = row.updated_at
-        item.item_metadata = row.item_metadata if row.item_metadata else {}
-        item.metadata = item.item_metadata  # Alias
-        item.deleted_at = row.deleted_at
-        return item
+            query = query.where(Item.project_id == project_id)
+
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
 
     async def list_by_view(
         self,
@@ -137,8 +105,11 @@ class ItemRepository:
         **updates: Any,
     ) -> Item:
         """Update item with optimistic locking."""
-        # Get current item
-        item = await self.get_by_id(item_id)
+        # Get current item using ORM query for SQLAlchemy tracking
+        query = select(Item).where(Item.id == item_id)
+        result = await self.session.execute(query)
+        item = result.scalar_one_or_none()
+
         if not item:
             raise ValueError(f"Item {item_id} not found")
 
@@ -164,15 +135,23 @@ class ItemRepository:
     async def delete(self, item_id: str, soft: bool = True) -> bool:
         """Delete item (soft delete by default)."""
         if soft:
-            item = await self.get_by_id(item_id)
+            # Get item using ORM for tracking
+            query = select(Item).where(Item.id == item_id)
+            result = await self.session.execute(query)
+            item = result.scalar_one_or_none()
+
             if not item:
                 return False
+
             item.deleted_at = datetime.now(UTC)
 
             # Cascade soft delete to children
-            query = select(Item).where(Item.parent_id == item_id, Item.deleted_at.is_(None))
-            result = await self.session.execute(query)
-            children = result.scalars().all()
+            children_query = select(Item).where(
+                Item.parent_id == item_id,
+                Item.deleted_at.is_(None)
+            )
+            children_result = await self.session.execute(children_query)
+            children = children_result.scalars().all()
             for child in children:
                 child.deleted_at = datetime.now(UTC)
 
@@ -212,48 +191,17 @@ class ItemRepository:
         offset: int = 0,
     ) -> list[Item]:
         """Get all items in a project, optionally filtered by status."""
-        # Use raw SQL to avoid model column mismatches with database schema
-        from sqlalchemy import text
-        
-        sql = """
-            SELECT id, project_id, title, description, view, item_type, status, priority, 
-                   created_at, updated_at, item_metadata, deleted_at, parent_id, owner
-            FROM items 
-            WHERE project_id = :project_id AND deleted_at IS NULL
-        """
-        params = {"project_id": project_id}
-        
+        query = select(Item).where(
+            Item.project_id == project_id,
+            Item.deleted_at.is_(None),
+        )
+
         if status:
-            sql += " AND status = :status"
-            params["status"] = status
-            
-        sql += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
-        params["limit"] = limit
-        params["offset"] = offset
-        
-        result = await self.session.execute(text(sql), params)
-        items = []
-        for row in result:
-            # Create an Item-like object that works with the actual schema
-            item = type('Item', (), {})()  # type: ignore
-            item.id = str(row.id)
-            item.project_id = str(row.project_id)
-            item.title = row.title
-            item.description = row.description
-            item.view = row.view
-            item.item_type = row.item_type
-            item.type = row.item_type  # Alias for compatibility
-            item.status = row.status
-            item.priority = str(row.priority) if row.priority is not None else "medium"
-            item.owner = row.owner
-            item.parent_id = str(row.parent_id) if row.parent_id else None
-            item.created_at = row.created_at
-            item.updated_at = row.updated_at
-            item.item_metadata = row.item_metadata if row.item_metadata else {}
-            item.metadata = item.item_metadata  # Alias
-            item.deleted_at = row.deleted_at
-            items.append(item)
-        return items
+            query = query.where(Item.status == status)
+
+        query = query.order_by(Item.created_at.desc()).limit(limit).offset(offset)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
 
     async def get_by_view(
         self,

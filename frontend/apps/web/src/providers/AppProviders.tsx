@@ -24,13 +24,14 @@ const queryClient = new QueryClient({
 function WebSocketInitializer() {
 	const connect = useWebSocketStore((state) => state.connect);
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+	const isConnected = useWebSocketStore((state) => state.isConnected);
 
 	useEffect(() => {
-		// Connect to WebSocket if authenticated
-		if (isAuthenticated) {
+		// Connect to WebSocket if authenticated and not already connected
+		if (isAuthenticated && !isConnected) {
 			connect();
 		}
-	}, [isAuthenticated, connect]);
+	}, [isAuthenticated, isConnected, connect]);
 
 	return null;
 }
