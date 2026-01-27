@@ -396,18 +396,25 @@ class TestConcurrentOperationsPerformance:
         """Test concurrent operations with retries."""
         operation_states = {}
 
-        @retry_with_backoff(max_retries=2, initial_delay=0.01)
         async def operation(op_id: int):
-            """Operation with retry."""
-            if op_id not in operation_states:
-                operation_states[op_id] = 0
-            operation_states[op_id] += 1
+            """Operation with retry (manual retry logic for async)."""
+            max_retries = 2
+            delay = 0.01
 
-            if operation_states[op_id] < 2:
-                raise StaleDataError(f"Conflict in {op_id}")
+            for attempt in range(max_retries + 1):
+                if op_id not in operation_states:
+                    operation_states[op_id] = 0
+                operation_states[op_id] += 1
 
-            await asyncio.sleep(0.01)
-            return f"success-{op_id}"
+                if operation_states[op_id] < 2:
+                    if attempt < max_retries:
+                        await asyncio.sleep(delay)
+                        delay *= 2.0
+                        continue
+                    raise StaleDataError(f"Conflict in {op_id}")
+
+                await asyncio.sleep(0.01)
+                return f"success-{op_id}"
 
         start_time = time.time()
         results = await asyncio.gather(*[

@@ -13,6 +13,7 @@ Target: +2% coverage on performance-sensitive paths
 """
 
 import pytest
+import pytest_asyncio
 import time
 import asyncio
 from datetime import datetime, timezone
@@ -27,7 +28,7 @@ from tracertm.models.item import Item
 from tracertm.core.concurrency import ConcurrencyError
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_async_session() -> AsyncMock:
     """Create mock async session."""
     session = AsyncMock(spec=AsyncSession)
@@ -108,13 +109,13 @@ class TestItemRepositoryPerformance:
         """Test get item by ID performance."""
         repo = ItemRepository(mock_async_session)
 
-        # Mock execute
+        # Mock execute - scalar_one_or_none is SYNC, not async
         item = MagicMock(spec=Item)
         item.id = "item-001"
         item.title = "Test Item"
 
-        mock_result = AsyncMock()
-        mock_result.scalar_one_or_none = AsyncMock(return_value=item)
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none = MagicMock(return_value=item)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         start_time = time.time()
@@ -138,14 +139,18 @@ class TestItemRepositoryPerformance:
             item.view = "requirements"
             items.append(item)
 
-        mock_result = AsyncMock()
-        mock_result.scalars = AsyncMock(return_value=MagicMock(__iter__=lambda x: iter(items)))
+        # Mock scalars result with .all() method
+        mock_scalars_result = MagicMock()
+        mock_scalars_result.all = MagicMock(return_value=items)
+        mock_result = MagicMock()
+        mock_result.scalars = MagicMock(return_value=mock_scalars_result)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         start_time = time.time()
         result = await repo.list_by_view("proj-001", "requirements")
         elapsed = time.time() - start_time
 
+        assert len(result) == 100, f"Expected 100 items, got {len(result)}"
         assert elapsed < 0.1, "Listing 100 items should be < 100ms"
 
     @pytest.mark.asyncio
@@ -161,8 +166,11 @@ class TestItemRepositoryPerformance:
             item.title = f"Item {i}"
             items.append(item)
 
-        mock_result = AsyncMock()
-        mock_result.scalars = AsyncMock(return_value=MagicMock(__iter__=lambda x: iter(items)))
+        # Mock scalars result with .all() method
+        mock_scalars_result = MagicMock()
+        mock_scalars_result.all = MagicMock(return_value=items)
+        mock_result = MagicMock()
+        mock_result.scalars = MagicMock(return_value=mock_scalars_result)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         start_time = time.time()
@@ -182,8 +190,8 @@ class TestItemRepositoryPerformance:
             item = MagicMock(spec=Item)
             item.id = f"item-{item_id:04d}"
 
-            mock_result = AsyncMock()
-            mock_result.scalar_one_or_none = AsyncMock(return_value=item)
+            mock_result = MagicMock()
+            mock_result.scalar_one_or_none = MagicMock(return_value=item)
             mock_async_session.execute = AsyncMock(return_value=mock_result)
 
             return await repo.get_by_id(f"item-{item_id:04d}")
@@ -210,10 +218,11 @@ class TestItemRepositoryPerformance:
             item.owner = "user1"
             filtered_items.append(item)
 
-        mock_result = AsyncMock()
-        mock_result.scalars = AsyncMock(
-            return_value=MagicMock(__iter__=lambda x: iter(filtered_items))
-        )
+        # Mock scalars result with .all() method
+        mock_scalars_result = MagicMock()
+        mock_scalars_result.all = MagicMock(return_value=filtered_items)
+        mock_result = MagicMock()
+        mock_result.scalars = MagicMock(return_value=mock_scalars_result)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         start_time = time.time()
@@ -233,8 +242,8 @@ class TestItemRepositoryPerformance:
         item.title = "Original"
         item.version = 1
 
-        mock_result = AsyncMock()
-        mock_result.scalar_one_or_none = AsyncMock(return_value=item)
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none = MagicMock(return_value=item)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         # Update item
@@ -262,10 +271,11 @@ class TestItemRepositoryPerformance:
             item.description = f"Description {i}" * 10  # Larger descriptions
             items.append(item)
 
-        mock_result = AsyncMock()
-        mock_result.scalars = AsyncMock(
-            return_value=MagicMock(__iter__=lambda x: iter(items))
-        )
+        # Mock scalars result with .all() method
+        mock_scalars_result = MagicMock()
+        mock_scalars_result.all = MagicMock(return_value=items)
+        mock_result = MagicMock()
+        mock_result.scalars = MagicMock(return_value=mock_scalars_result)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         tracemalloc.start()
@@ -292,8 +302,8 @@ class TestItemRepositoryPerformance:
         parent_item.id = "parent-001"
         parent_item.project_id = "proj-001"
 
-        mock_result = AsyncMock()
-        mock_result.scalar_one_or_none = AsyncMock(return_value=parent_item)
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none = MagicMock(return_value=parent_item)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         start_time = time.time()
@@ -324,10 +334,11 @@ class TestItemRepositoryPerformance:
                 item.id = f"item-{page * page_size + i:04d}"
                 items.append(item)
 
-            mock_result = AsyncMock()
-            mock_result.scalars = AsyncMock(
-                return_value=MagicMock(__iter__=lambda x: iter(items))
-            )
+            # Mock scalars result with .all() method
+            mock_scalars_result = MagicMock()
+            mock_scalars_result.all = MagicMock(return_value=items)
+            mock_result = MagicMock()
+            mock_result.scalars = MagicMock(return_value=mock_scalars_result)
             mock_async_session.execute = AsyncMock(return_value=mock_result)
 
             return await repo.list_by_view("proj-001", "requirements")
@@ -392,10 +403,11 @@ class TestItemRepositoryPerformance:
             item.title = f"Search Match {i}"
             matched_items.append(item)
 
-        mock_result = AsyncMock()
-        mock_result.scalars = AsyncMock(
-            return_value=MagicMock(__iter__=lambda x: iter(matched_items))
-        )
+        # Mock scalars result with .all() method
+        mock_scalars_result = MagicMock()
+        mock_scalars_result.all = MagicMock(return_value=matched_items)
+        mock_result = MagicMock()
+        mock_result.scalars = MagicMock(return_value=mock_scalars_result)
         mock_async_session.execute = AsyncMock(return_value=mock_result)
 
         start_time = time.time()
