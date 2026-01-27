@@ -14,8 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Force pytest-asyncio plugin to load
-pytest_plugins = ("pytest_asyncio",)
+# Force pytest plugins to load
+pytest_plugins = ("pytest_asyncio", "pytest_benchmark.plugin")
 
 try:
     from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
