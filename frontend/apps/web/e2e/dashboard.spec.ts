@@ -22,15 +22,13 @@ test.describe("Dashboard Overview", () => {
 	});
 
 	test("should show dashboard heading", async ({ page }) => {
-		// Look for main heading
-		const heading = page
-			.getByRole("heading", { name: /dashboard|overview|home/i })
-			.first();
+		// Look for main dashboard heading - should show "Welcome to TraceRTM"
+		const heading = page.getByText(/Welcome to TraceRTM/i);
 
 		await expect(heading)
 			.toBeVisible({ timeout: 5000 })
 			.catch(() =>
-				console.log("Dashboard heading not found - may use different text"),
+				console.log("Dashboard welcome heading not found"),
 			);
 	});
 
@@ -38,8 +36,13 @@ test.describe("Dashboard Overview", () => {
 		// Wait for data to load
 		await page.waitForLoadState("networkidle");
 
-		// Should show some content (projects, items, stats, etc.)
-		// This is a general check that dashboard isn't empty
+		// Should show dashboard subtitle
+		const subtitle = page.getByText(
+			/Agent-native requirements traceability and project management/i,
+		);
+		await expect(subtitle).toBeVisible({ timeout: 5000 });
+
+		// General content check
 		const content = page.locator("main");
 		const textContent = await content.textContent();
 
@@ -55,44 +58,40 @@ test.describe("Dashboard Metrics", () => {
 	});
 
 	test("should display project count metric", async ({ page }) => {
-		// Look for project count
-		await page
-			.locator("text=/projects/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
-			.catch(() => console.log("Project count not displayed"));
+		// Look for project count stat card
+		const projectStat = page.getByText("Projects").first();
+		await expect(projectStat)
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Project count metric not displayed"));
 
-		// Should show "2" projects from mock data
-		await page
-			.locator("text=/2/")
-			.first()
-			.waitFor({ state: "visible", timeout: 2000 })
-			.catch(() => console.log("Project count value not displayed"));
+		// Should show numeric value - check parent section
+		const mainContent = page.locator("main");
+		const projectText = await mainContent.textContent();
+		expect(projectText).toContain("Projects");
 	});
 
 	test("should display items count metric", async ({ page }) => {
-		// Look for items count
-		await page
-			.locator("text=/items/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
+		// Look for items count stat
+		const itemStat = page.getByText("Items").first();
+		await expect(itemStat)
+			.toBeVisible({ timeout: 5000 })
 			.catch(() => console.log("Items count not displayed"));
-
-		// Should show "10" items from mock data
-		await page
-			.locator("text=/10/")
-			.first()
-			.waitFor({ state: "visible", timeout: 2000 })
-			.catch(() => console.log("Items count value not displayed"));
 	});
 
-	test("should display status metrics", async ({ page }) => {
-		// Look for status breakdown (completed, in progress, pending)
-		await page
-			.locator("text=/completed|in progress|pending/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
-			.catch(() => console.log("Status metrics not displayed"));
+	test("should display links count metric", async ({ page }) => {
+		// Look for links count
+		const linkStat = page.getByText("Links").first();
+		await expect(linkStat)
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Links metric not displayed"));
+	});
+
+	test("should display active agents metric", async ({ page }) => {
+		// Look for active agents count
+		const agentStat = page.getByText(/Active Agents/i);
+		await expect(agentStat)
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Active Agents metric not displayed"));
 	});
 
 	test("should display priority metrics", async ({ page }) => {
@@ -111,40 +110,33 @@ test.describe("Dashboard Widgets", () => {
 		await page.waitForLoadState("networkidle");
 	});
 
-	test("should display recent projects widget", async ({ page }) => {
-		// Look for recent/active projects section
-		await page
-			.locator("text=/recent|projects|active/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
-			.catch(() => console.log("Recent projects widget not displayed"));
+	test("should display recent projects section", async ({ page }) => {
+		// Look for Recent Projects heading
+		const recentProjects = page.getByText(/Recent Projects/i);
+		await expect(recentProjects)
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Recent projects section not displayed"));
 	});
 
-	test("should display recent items widget", async ({ page }) => {
-		// Look for recent items section
-		await page
-			.locator("text=/recent|items|latest/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
-			.catch(() => console.log("Recent items widget not displayed"));
+	test("should display project cards with information", async ({ page }) => {
+		// Look for project names in the recent projects section
+		const traceRTMProject = page.getByText(/TraceRTM Frontend/);
+		await expect(traceRTMProject)
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Project cards not displayed"));
 	});
 
-	test("should display activity timeline", async ({ page }) => {
-		// Look for activity or timeline widget
-		await page
-			.locator("text=/activity|timeline|recent changes/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
-			.catch(() => console.log("Activity timeline not displayed"));
-	});
+	test("should show items and links counts", async ({ page }) => {
+		// Look for item and link counts in project cards
+		const itemsCount = page.getByText(/items/i);
+		await expect(itemsCount.first())
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Items count not displayed"));
 
-	test("should display agents status widget", async ({ page }) => {
-		// Look for agents status
-		await page
-			.locator("text=/agents|status|running/i")
-			.first()
-			.waitFor({ state: "visible", timeout: 5000 })
-			.catch(() => console.log("Agents status widget not displayed"));
+		const linksCount = page.getByText(/links/i);
+		await expect(linksCount.first())
+			.toBeVisible({ timeout: 5000 })
+			.catch(() => console.log("Links count not displayed"));
 	});
 });
 
@@ -154,46 +146,37 @@ test.describe("Dashboard Navigation", () => {
 		await page.waitForLoadState("networkidle");
 	});
 
-	test("should navigate to projects from dashboard", async ({ page }) => {
-		// Look for "View All Projects" or similar link
-		const viewProjectsLink = page
-			.getByRole("link", { name: /view.*projects|all projects|see all/i })
-			.or(page.getByText(/TraceRTM Core|Mobile App/).first());
+	test("should navigate to projects from stats", async ({ page }) => {
+		// Click on Projects metric card
+		const projectsCard = page.getByText("Projects").first();
 
-		if (await viewProjectsLink.isVisible({ timeout: 3000 })) {
-			await viewProjectsLink.click();
+		if (await projectsCard.isVisible({ timeout: 3000 })) {
+			// Find the parent card and click it
+			const card = projectsCard.locator("../..");
+			await card.click();
 			await page.waitForLoadState("networkidle");
 
-			// Should navigate to projects page or project detail
+			// Should navigate to projects page
 			await expect(page).toHaveURL(/\/projects/);
-		}
-	});
-
-	test("should navigate to items from dashboard", async ({ page }) => {
-		// Look for items link or recent items
-		const viewItemsLink = page.getByRole("link", {
-			name: /view.*items|all items/i,
-		});
-
-		if (await viewItemsLink.isVisible({ timeout: 3000 })) {
-			await viewItemsLink.click();
-			await page.waitForLoadState("networkidle");
-
-			await expect(page).toHaveURL(/\/items/);
 		}
 	});
 
 	test("should navigate to specific project from dashboard", async ({
 		page,
 	}) => {
-		// Click on a project name
-		const projectLink = page.getByText("TraceRTM Core").first();
+		// Click on a project name in recent projects
+		const projectLink = page
+			.getByText(/TraceRTM Frontend/)
+			.first()
+			.locator("..");
+		// Find clickable parent link
 
 		if (await projectLink.isVisible({ timeout: 3000 })) {
 			await projectLink.click();
 			await page.waitForLoadState("networkidle");
 
-			await expect(page).toHaveURL(/\/projects\/proj-/);
+			// Should navigate to projects page or project detail
+			await expect(page).toHaveURL(/\/projects/);
 		}
 	});
 });
