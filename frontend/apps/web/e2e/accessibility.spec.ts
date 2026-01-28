@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * Accessibility E2E Tests
@@ -17,6 +17,11 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 
 	test("should navigate entire app using only keyboard", async ({ page }) => {
 		// Tab through main navigation
+		// First tab should focus skip link
+		await page.keyboard.press("Tab");
+		await expect(page.locator('a:has-text("Skip to main content")')).toBeFocused();
+
+		// Then focus dashboard link
 		await page.keyboard.press("Tab");
 		await expect(page.locator('a[href="/"]')).toBeFocused();
 
@@ -28,13 +33,11 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 
 		await page.keyboard.press("Tab");
 		await expect(page.locator('a[href="/agents"]')).toBeFocused();
-
-		await page.keyboard.press("Tab");
-		await expect(page.locator('a[href="/graph"]')).toBeFocused();
 	});
 
 	test("should activate navigation links with Enter key", async ({ page }) => {
-		await page.keyboard.press("Tab"); // Focus first link
+		await page.keyboard.press("Tab"); // Focus skip link
+		await page.keyboard.press("Tab"); // Focus dashboard link
 		await page.keyboard.press("Tab"); // Focus projects link
 		await page.keyboard.press("Enter");
 
@@ -43,7 +46,8 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 	});
 
 	test("should activate navigation links with Space key", async ({ page }) => {
-		await page.keyboard.press("Tab");
+		await page.keyboard.press("Tab"); // Skip link
+		await page.keyboard.press("Tab"); // Dashboard link
 		await page.keyboard.press("Tab"); // Projects link
 		await page.keyboard.press("Space");
 

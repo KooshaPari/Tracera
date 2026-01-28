@@ -1,74 +1,73 @@
 import { useLocation, useParams } from "@tanstack/react-router";
-import { Bell, Moon, Plus, Search, Sun, User } from "lucide-react";
+import { Bell, Moon, Search, Sun, User } from "lucide-react";
 import { useTheme } from "@/providers/ThemeProvider";
+import { Breadcrumbs } from "./Breadcrumb";
+import { Button } from "@tracertm/ui";
 
 export function Header() {
 	const location = useLocation();
 	const params = useParams({ strict: false });
-	const projectId = params.projectId as string | undefined;
 	const { theme, toggleTheme } = useTheme();
 
-	// Get page title based on current route
-	const getTitle = () => {
-		if (location.pathname === "/") return "Dashboard";
-		if (location.pathname === "/projects") return "Projects";
-		if (location.pathname === "/settings") return "Settings";
-		if (projectId) {
-			const view = location.pathname.split("/").pop();
-			return view
-				? `${view.charAt(0).toUpperCase() + view.slice(1)} View`
-				: "Project";
-		}
-		return "TraceRTM";
-	};
-
 	return (
-		<header className="flex h-16 items-center justify-between border-b bg-card px-6">
-			{/* Title */}
-			<h1 className="text-2xl font-semibold">{getTitle()}</h1>
+		<header
+			role="banner"
+			className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-md px-6 transition-all duration-300"
+		>
+			{/* Breadcrumbs */}
+			<div className="flex items-center gap-4 overflow-hidden">
+				<Breadcrumbs />
+			</div>
 
-			{/* Search & Actions */}
-			<div className="flex items-center gap-4">
+			{/* Actions */}
+			<div className="flex items-center gap-3">
 				{/* Search */}
-				<div className="relative">
-					<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<div className="relative hidden md:block group">
+					<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
 					<input
 						type="text"
-						placeholder="Search items... (⌘K)"
-						className="h-9 w-64 rounded-lg border bg-background pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+						placeholder="Search everything... (⌘K)"
+						className="h-9 w-64 rounded-full border bg-muted/50 pl-9 pr-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:bg-background transition-all"
 					/>
 				</div>
 
-				{/* Create button */}
-				<button className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-					<Plus className="h-4 w-4" />
-					Create
-				</button>
-
 				{/* Theme toggle */}
-				<button
+				<Button
+					variant="ghost"
+					size="icon"
 					onClick={toggleTheme}
-					className="flex h-9 w-9 items-center justify-center rounded-lg border hover:bg-accent"
+					className="h-9 w-9 rounded-full"
 				>
 					{theme === "dark" ? (
 						<Sun className="h-4 w-4" />
 					) : (
 						<Moon className="h-4 w-4" />
 					)}
-				</button>
+				</Button>
 
 				{/* Notifications */}
-				<button className="relative flex h-9 w-9 items-center justify-center rounded-lg border hover:bg-accent">
+				<Button 
+					variant="ghost" 
+					size="icon" 
+					className="h-9 w-9 rounded-full relative"
+				>
 					<Bell className="h-4 w-4" />
-					<span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-						3
-					</span>
-				</button>
+					<span className="absolute right-2 top-2 flex h-2 w-2 items-center justify-center rounded-full bg-primary" />
+				</Button>
 
-				{/* User */}
-				<button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-					<User className="h-4 w-4" />
-				</button>
+				{/* User Profile */}
+				<div className="h-8 w-px bg-border mx-1 hidden sm:block" />
+				
+				<Button 
+					variant="ghost" 
+					size="sm" 
+					className="gap-2 px-2 hover:bg-muted rounded-full"
+				>
+					<div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
+						<User className="h-4 w-4" />
+					</div>
+					<span className="text-xs font-semibold hidden sm:inline-block">Admin</span>
+				</Button>
 			</div>
 		</header>
 	);
