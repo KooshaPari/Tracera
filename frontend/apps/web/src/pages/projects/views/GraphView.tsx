@@ -76,7 +76,7 @@ export function GraphView() {
 	}, [linksQuery.hasNextPage, linksQuery.isFetchingNextPage]);
 
 	const items = itemsQuery.data?.pages.flatMap((p: any) => p.items || []) || [];
-	const links = linksQuery.data?.pages.flatMap((p: any) => p.links || []) || [];
+	const rawLinks = linksQuery.data?.pages.flatMap((p: any) => p.links || []) || [];
 	const itemsTotal =
 		itemsQuery.data?.pages?.[itemsQuery.data.pages.length - 1]?.total ?? 0;
 	const linksTotal =
@@ -84,6 +84,14 @@ export function GraphView() {
 	const itemsLoading = itemsQuery.isLoading || itemsQuery.isFetching;
 	const linksLoading = linksQuery.isLoading || linksQuery.isFetching;
 	const isPriming = (itemsLoading || linksLoading) && items.length === 0;
+
+	// ✅ FIX: Map snake_case API response to camelCase for graph components
+	const links = rawLinks.map((link: any) => ({
+		...link,
+		sourceId: link.source_id || link.sourceId,
+		targetId: link.target_id || link.targetId,
+		type: link.link_type || link.type,
+	}));
 
 	// ✅ NEW: Progressive edge loading
 	const visibleLinks = links.slice(0, visibleEdgeCount);
