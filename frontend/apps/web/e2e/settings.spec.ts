@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * User Settings E2E Tests
@@ -52,12 +52,8 @@ test.describe("Settings Page Navigation", () => {
 		await page.waitForLoadState("networkidle");
 
 		// Check for all tab triggers
-		await expect(
-			page.getByRole("tab", { name: /general/i }),
-		).toBeVisible();
-		await expect(
-			page.getByRole("tab", { name: /appearance/i }),
-		).toBeVisible();
+		await expect(page.getByRole("tab", { name: /general/i })).toBeVisible();
+		await expect(page.getByRole("tab", { name: /appearance/i })).toBeVisible();
 		await expect(page.getByRole("tab", { name: /api/i })).toBeVisible();
 		await expect(
 			page.getByRole("tab", { name: /notifications/i }),
@@ -72,7 +68,9 @@ test.describe("General Settings Tab", () => {
 
 		// General tab should be selected by default
 		const generalTab = page.getByRole("tab", { name: /general/i });
-		if (!(await generalTab.evaluate((el) => el.getAttribute("aria-selected")))) {
+		if (
+			!(await generalTab.evaluate((el) => el.getAttribute("aria-selected")))
+		) {
 			await generalTab.click();
 		}
 	});
@@ -112,11 +110,11 @@ test.describe("General Settings Tab", () => {
 
 		// Wait for success message
 		const successMessage = page.getByText(/success|saved/i);
-		await successMessage.waitFor({ state: "visible", timeout: 5000 }).catch(
-			() => {
+		await successMessage
+			.waitFor({ state: "visible", timeout: 5000 })
+			.catch(() => {
 				// Success message might not appear in mocked environment
-			},
-		);
+			});
 	});
 
 	test("should update email address", async ({ page }) => {
@@ -344,9 +342,7 @@ test.describe("Notifications Settings Tab", () => {
 		await expect(emailNotifCheckbox).toBeVisible();
 
 		// Desktop Notifications
-		const desktopNotifCheckbox = page.getByLabel(
-			/desktop notifications/i,
-		);
+		const desktopNotifCheckbox = page.getByLabel(/desktop notifications/i);
 		await expect(desktopNotifCheckbox).toBeVisible();
 
 		// Weekly Summary
@@ -367,9 +363,7 @@ test.describe("Notifications Settings Tab", () => {
 	test("should display notification descriptions", async ({ page }) => {
 		// Check for descriptions
 		await expect(page.getByText(/Receive email updates/i)).toBeVisible();
-		await expect(
-			page.getByText(/Browser push notifications/i),
-		).toBeVisible();
+		await expect(page.getByText(/Browser push notifications/i)).toBeVisible();
 		await expect(page.getByText(/Get a weekly digest/i)).toBeVisible();
 		await expect(page.getByText(/Notify when items change/i)).toBeVisible();
 	});
@@ -398,9 +392,7 @@ test.describe("Notifications Settings Tab", () => {
 	});
 
 	test("should toggle desktop notifications", async ({ page }) => {
-		const desktopNotifCheckbox = page.getByLabel(
-			/desktop notifications/i,
-		);
+		const desktopNotifCheckbox = page.getByLabel(/desktop notifications/i);
 
 		// Get initial state
 		const initialChecked = await desktopNotifCheckbox.isChecked();
@@ -473,9 +465,7 @@ test.describe("Notifications Settings Tab", () => {
 	}) => {
 		// Toggle multiple checkboxes
 		const emailNotifCheckbox = page.getByLabel(/email notifications/i);
-		const desktopNotifCheckbox = page.getByLabel(
-			/desktop notifications/i,
-		);
+		const desktopNotifCheckbox = page.getByLabel(/desktop notifications/i);
 		const weeklySummaryCheckbox = page.getByLabel(/weekly summary/i);
 
 		await emailNotifCheckbox.click();
@@ -849,9 +839,7 @@ test.describe("Settings Integration", () => {
 		).toBeVisible();
 	});
 
-	test("should persist to settings page after navigation", async ({
-		page,
-	}) => {
+	test("should persist to settings page after navigation", async ({ page }) => {
 		// Navigate to settings
 		await page.goto("/settings");
 		await page.waitForLoadState("networkidle");

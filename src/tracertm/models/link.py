@@ -27,6 +27,7 @@ class Link(Base, TimestampMixin):
     __table_args__ = (
         Index("idx_links_source_target", "source_item_id", "target_item_id"),
         Index("idx_links_project_type", "project_id", "link_type"),
+        Index("idx_links_project_graph", "project_id", "graph_id"),
         {"extend_existing": True},
     )
 
@@ -36,6 +37,13 @@ class Link(Base, TimestampMixin):
     project_id: Mapped[str] = mapped_column(
         String(255),
         ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    graph_id: Mapped[str] = mapped_column(
+        String(255),
+        ForeignKey("graphs.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

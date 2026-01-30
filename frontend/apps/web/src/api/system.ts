@@ -1,24 +1,38 @@
 // System status API stub
 import { apiClient } from "./client";
+import { getMcpConfig } from "./mcpClient";
 
 export interface SystemStatus {
 	status: "healthy" | "degraded" | "unhealthy";
 	uptime: number;
-	activeAgents: number;
 	queuedJobs: number;
 	version?: string;
+	mcp?: {
+		baseUrl?: string | null;
+		authMode?: string | null;
+		requiresAuth?: boolean;
+	};
 }
 
 export const fetchSystemStatus = async (): Promise<SystemStatus> => {
 	// Try to fetch from health endpoint, fallback to mock data
 	try {
-		const response = await apiClient.GET("/api/v1/health", {});
+		const [response, mcpConfig] = await Promise.all([
+			apiClient.GET("/api/v1/health", {}),
+			getMcpConfig().catch(() => null),
+		]);
 		if (response.data) {
 			return {
 				status: "healthy",
 				uptime: 99.9,
-				activeAgents: 0,
 				queuedJobs: 0,
+				mcp: mcpConfig
+					? {
+							baseUrl: mcpConfig.mcp_base_url ?? null,
+							authMode: mcpConfig.auth_mode ?? null,
+							requiresAuth: mcpConfig.requires_auth ?? false,
+						}
+					: undefined,
 				...response.data,
 			};
 		}
@@ -28,7 +42,6 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
 	return {
 		status: "healthy",
 		uptime: 99.9,
-		activeAgents: 0,
 		queuedJobs: 0,
 	};
 };

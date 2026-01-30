@@ -1,0 +1,295 @@
+================================================================================
+                    EXECUTION SERVICE ARCHITECTURE
+                      Before vs After Refactoring
+================================================================================
+
+BEFORE: Docker-First Architecture
+─────────────────────────────────────────────────────────────────────────────
+
+    ExecutionService
+         │
+         ├─ Constructor
+         │   └─ docker: DockerOrchestrator (always instantiated)
+         │
+         ├─ start()
+         │   └─ Always uses DockerOrchestrator
+         │       ├─ Create container
+         │       ├─ Mount volumes
+         │       └─ Start process
+         │
+         ├─ complete()
+         │   └─ Always uses DockerOrchestrator
+         │       └─ Stop container
+         │
+         └─ docker() → DockerOrchestrator
+
+
+AFTER: Native-First, Docker-Optional Architecture
+────────────────────────────────────────────────────────────────────────────
+
+    ExecutionService
+         │
+         ├─ Constructor
+         │   ├─ orchestrator: NativeOrchestrator (default)
+         │   └─ docker: DockerOrchestrator (optional, None if not provided)
+         │
+         ├─ start(use_docker=False)
+         │   ├─ if use_docker: _start_with_docker()
+         │   │   └─ DockerOrchestrator path (unchanged)
+         │   │       ├─ Create container
+         │   │       ├─ Mount volumes
+         │   │       └─ Start process
+         │   │
+         │   └─ else: _start_with_native()
+         │       └─ NativeOrchestrator path (new default)
+         │           ├─ Create workspace
+         │           ├─ Copy files
+         │           └─ Apply limits
+         │
+         ├─ complete(use_docker=False)
+         │   ├─ if use_docker: docker.stop()
+         │   └─ else: orchestrator.cleanup()
+         │
+         ├─ orchestrator() → NativeOrchestrator (NEW)
+         └─ docker() → DockerOrchestrator | None (UPDATED)
+
+
+EXECUTION FLOW COMPARISON
+───────────────────────────────────────────────────────────────────────────
+
+Before (Docker Always):
+  start() → Create Container → Mount → Start → container_id
+
+After (Native Default):
+  start() → Create Workspace → Copy/Mount → Limits → workspace_id
+       OR → Create Container → Mount → Start → container_id (use_docker=True)
+
+Before (Complete):
+  complete() → Stop Container → Cleanup done elsewhere
+
+After (Complete):
+  complete() → cleanup(workspace_id)  [native]
+           OR → stop(container_id)    [docker]
+
+
+DEPENDENCY INJECTION PATTERNS
+─────────────────────────────────────────────────────────────────────────────
+
+Default (Native Only):
+  service = ExecutionService(session)
+  └─ _orchestrator = NativeOrchestrator()
+  └─ _docker = None
+
+Native + Optional Docker:
+  docker = DockerOrchestrator()
+  service = ExecutionService(session, docker_orchestrator=docker)
+  ├─ _orchestrator = NativeOrchestrator()
+  └─ _docker = docker
+
+Custom Native + Docker (for testing):
+  native = MyNativeOrchestrator()
+  docker = MyDockerOrchestrator()
+  service = ExecutionService(
+      session,
+      orchestrator=native,
+      docker_orchestrator=docker
+  )
+
+Mock for Testing:
+  service = ExecutionService(
+      session,
+      orchestrator=AsyncMock(spec=NativeOrchestrator)
+  )
+
+
+ORCHESTRATOR INTERFACE MAPPING
+────────────────────────────────────────────────────────────────────────────
+
+Operation                 NativeOrchestrator        DockerOrchestrator
+─────────────────────────────────────────────────────────────────────────
+
+Initialize               create_workspace()        create_and_start()
+Check Available          is_available()            is_available()
+Apply Limits             apply_resource_limits()   resource_limits param
+Copy In                  copy_to()                 N/A
+Copy Out                 copy_from()               N/A
+Run Command              run_command()             exec()
+Start Background         start_background()        N/A
+Stop Process             stop()                    stop()
+Cleanup                  cleanup()                 stop()
+Direct Access            get_workspace_path()      N/A
+
+
+ERROR HANDLING EVOLUTION
+────────────────────────────────────────────────────────────────────────────
+
+Before:
+  try:
+      container_id = await docker.create_and_start()
+  except DockerOrchestratorError as e:
+      # Handle
+
+After:
+  try:
+      if use_docker:
+          container_id = await docker.create_and_start()
+      else:
+          workspace_id = await orchestrator.create_workspace()
+  except (NativeOrchestratorError, DockerOrchestratorError) as e:
+      # Handle both uniformly
+
+
+BACKWARD COMPATIBILITY MATRIX
+─────────────────────────────────────────────────────────────────────────────
+
+Code Pattern              Before    After     Breaking?
+─────────────────────────────────────────────────────────
+
+service = ExecutionService(session)
+  Uses Docker executor   Uses Native executor   NO
+
+await service.start(id)
+  Works with Docker      Works with Native      NO
+
+await service.complete(id)
+  Works with Docker      Works with Native      NO
+
+docker = service.docker()
+  Returns instance       Returns None           NO
+                         (if not configured)
+
+service.orchestrator()
+  Doesn't exist          Returns instance       N/A
+
+use_docker parameter
+  Doesn't exist          Optional=False         NO
+
+
+PERFORMANCE CHARACTERISTICS
+─────────────────────────────────────────────────────────────────────────────
+
+                    Native              Docker
+─────────────────────────────────────────────────
+
+Startup Time        ~100ms              ~500-2000ms
+Memory/Execution    5-10MB              50-500MB
+Isolation Level     Process             Container
+Dependency Check    Always succeeds     Requires daemon
+Use Case            Most tests          Complex, isolated
+Overhead            Minimal             High
+
+
+API CHANGES SUMMARY
+────────────────────────────────────────────────────────────────────────────
+
+Type: Backward Compatible - Extension Only
+
+Additions:
+  + Constructor parameter: orchestrator
+  + Method: orchestrator()
+  + Parameter: use_docker (start, complete)
+  + Private methods: _start_with_native(), _start_with_docker()
+
+Modifications:
+  ~ Constructor: docker now optional
+  ~ docker() return type: DockerOrchestrator | None
+  ~ Error handling: catches both error types
+
+Removals:
+  - None (all existing APIs preserved)
+
+Breaking Changes:
+  - None
+
+
+WORKFLOW COMPARISON
+────────────────────────────────────────────────────────────────────────────
+
+Before - Docker Always:
+  1. Call start(exec_id)
+  2. Docker daemon check
+  3. Pull/create image
+  4. Create container
+  5. Mount volume
+  6. Start container
+  7. Return container_id
+
+After - Native Default:
+  1. Call start(exec_id)
+  2. Create temp directory workspace
+  3. Setup environment
+  4. Copy files if needed
+  5. Apply resource limits
+  6. Return workspace_id
+
+After - Docker Opt-In:
+  1. Call start(exec_id, use_docker=True)
+  2. Docker daemon check
+  3. Pull/create image
+  4. Create container
+  5. Mount volume
+  6. Start container
+  7. Return container_id
+
+
+KEY IMPROVEMENTS
+────────────────────────────────────────────────────────────────────────────
+
+1. No Docker Dependency
+   ├─ Lighter weight deployments
+   ├─ Faster startup
+   └─ Simpler local development
+
+2. Flexible Execution
+   ├─ Use native by default
+   ├─ Switch to Docker when needed
+   └─ No code changes required
+
+3. Better Testing
+   ├─ Easier to mock
+   ├─ No daemon requirement
+   └─ Isolated workspaces
+
+4. Architecture Agnostic
+   ├─ Same API for both
+   ├─ Unified error handling
+   └─ Easy to add more orchestrators
+
+5. Backward Compatible
+   ├─ Existing code works unchanged
+   ├─ No database migrations
+   └─ Gradual adoption possible
+
+
+DECISION TREE FOR ORCHESTRATOR SELECTION
+──────────────────────────────────────────────────────────────────────────
+
+Do you need Docker?
+  ├─ NO → Use default (Native) ✓
+  └─ YES
+      ├─ Need Docker daemon? → YES
+      │   └─ Pass docker_orchestrator to constructor ✓
+      │   └─ Use start(use_docker=True) ✓
+      └─ Want to skip Docker? → Use Native (default) ✓
+
+
+TESTING STRATEGY
+────────────────────────────────────────────────────────────────────────────
+
+Unit Tests:
+  ├─ Mock NativeOrchestrator
+  ├─ Mock DockerOrchestrator
+  └─ Test both code paths
+
+Integration Tests:
+  ├─ Real NativeOrchestrator + temp directory
+  ├─ Real DockerOrchestrator + daemon
+  └─ Full execution lifecycle
+
+Error Tests:
+  ├─ NativeOrchestratorError handling
+  ├─ DockerOrchestratorError handling
+  ├─ Missing docker_orchestrator case
+  └─ Resource limit failures
+
+================================================================================

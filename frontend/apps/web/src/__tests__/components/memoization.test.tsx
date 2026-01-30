@@ -1,0 +1,414 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { memo, useCallback, useState } from "react";
+
+describe("React Memoization Optimizations", () => {
+	describe("ItemCard Memoization", () => {
+		it("should only re-render when relevant props change", () => {
+			const renderSpy = vi.fn();
+
+			const TestItemCard = memo(
+				({
+					item,
+					onDragStart,
+				}: {
+					item: any;
+					onDragStart: (item: any) => void;
+				}) => {
+					renderSpy();
+					return <div>{item.title}</div>;
+				},
+				(prev, next) => {
+					// Return true if props are equal (skip re-render)
+					return (
+						prev.item.id === next.item.id &&
+						prev.item.title === next.item.title &&
+						prev.item.type === next.item.type &&
+						prev.item.status === next.item.status &&
+						prev.item.priority === next.item.priority &&
+						prev.item.owner === next.item.owner
+					);
+				},
+			);
+
+			const { rerender } = render(
+				<TestItemCard
+					item={{
+						id: "1",
+						title: "Test",
+						type: "feature",
+						status: "todo",
+						priority: "medium",
+						owner: "John",
+					}}
+					onDragStart={vi.fn()}
+				/>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(1);
+
+			// Re-render with same props - should skip re-render
+			rerender(
+				<TestItemCard
+					item={{
+						id: "1",
+						title: "Test",
+						type: "feature",
+						status: "todo",
+						priority: "medium",
+						owner: "John",
+					}}
+					onDragStart={vi.fn()}
+				/>,
+			);
+
+			// Still 1 because memo prevented re-render
+			expect(renderSpy).toHaveBeenCalledTimes(1);
+
+			// Re-render with changed title - should re-render
+			rerender(
+				<TestItemCard
+					item={{
+						id: "1",
+						title: "Test Updated",
+						type: "feature",
+						status: "todo",
+						priority: "medium",
+						owner: "John",
+					}}
+					onDragStart={vi.fn()}
+				/>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(2);
+		});
+
+		it("should use useCallback for drag handlers to maintain reference equality", async () => {
+			const handleDragStartSpy = vi.fn();
+			let callbackReference: Function | null = null;
+
+			function TestComponent() {
+				const handleDragStart = useCallback((item: any) => {
+					handleDragStartSpy(item);
+				}, []);
+
+				// Store reference to verify it doesn't change on re-render
+				callbackReference = handleDragStart;
+
+				return (
+					<button onClick={() => handleDragStart({ id: "1", title: "Test" })}>
+						Drag
+					</button>
+				);
+			}
+
+			const { rerender } = render(<TestComponent />);
+			const initialReference = callbackReference;
+
+			rerender(<TestComponent />);
+			const secondReference = callbackReference;
+
+			// useCallback should return same reference across renders
+			expect(initialReference).toBe(secondReference);
+		});
+	});
+
+	describe("TreeItem Memoization", () => {
+		it("should skip re-render when only parent expandedIds Set reference changes but item stays same", () => {
+			const renderSpy = vi.fn();
+
+			const TestTreeItem = memo(
+				({
+					nodeId,
+					expandedIds,
+					onToggle,
+				}: {
+					nodeId: string;
+					expandedIds: Set<string>;
+					onToggle: (id: string) => void;
+				}) => {
+					renderSpy();
+					return <div>{nodeId}</div>;
+				},
+				(prev, next) => {
+					return (
+						prev.nodeId === next.nodeId &&
+						prev.expandedIds.has(prev.nodeId) ===
+							next.expandedIds.has(next.nodeId)
+					);
+				},
+			);
+
+			const expandedIds = new Set<string>(["1", "2"]);
+
+			const { rerender } = render(
+				<TestTreeItem
+					nodeId="1"
+					expandedIds={expandedIds}
+					onToggle={vi.fn()}
+				/>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(1);
+
+			// Re-render with same Set content but different reference
+			const newExpandedIds = new Set<string>(["1", "2"]);
+
+			rerender(
+				<TestTreeItem
+					nodeId="1"
+					expandedIds={newExpandedIds}
+					onToggle={vi.fn()}
+				/>,
+			);
+
+			// Still 1 because custom comparison checks Set content, not reference
+			expect(renderSpy).toHaveBeenCalledTimes(1);
+
+			// Re-render where item is not in expanded set - should re-render
+			const changedExpandedIds = new Set<string>(["2", "3"]);
+
+			rerender(
+				<TestTreeItem
+					nodeId="1"
+					expandedIds={changedExpandedIds}
+					onToggle={vi.fn()}
+				/>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(2);
+		});
+
+		it("should use useCallback for toggle handler", async () => {
+			let lastCallbackRef: ((id: string) => void) | null = null;
+
+			function TestComponent() {
+				const handleToggle = useCallback((id: string) => {
+					// Toggle logic
+				}, []);
+
+				lastCallbackRef = handleToggle;
+				return <button onClick={() => handleToggle("1")}>Toggle</button>;
+			}
+
+			const { rerender } = render(<TestComponent />);
+			const firstRef = lastCallbackRef;
+
+			rerender(<TestComponent />);
+			const secondRef = lastCallbackRef;
+
+			// Callback should maintain same reference
+			expect(firstRef).toBe(secondRef);
+		});
+	});
+
+	describe("VirtualTableRow Memoization", () => {
+		it("should only re-render when item data or handlers change", () => {
+			const renderSpy = vi.fn();
+
+			const TestTableRow = memo(
+				({
+					item,
+					onDelete,
+					onNavigate,
+				}: {
+					item: any;
+					onDelete: (id: string) => void;
+					onNavigate: (path: string) => void;
+				}) => {
+					renderSpy();
+					return (
+						<tr>
+							<td>{item.title}</td>
+						</tr>
+					);
+				},
+				(prev, next) => {
+					return (
+						prev.item.id === next.item.id &&
+						prev.item.title === next.item.title &&
+						prev.item.type === next.item.type &&
+						prev.item.status === next.item.status &&
+						prev.item.priority === next.item.priority &&
+						prev.item.owner === next.item.owner
+					);
+				},
+			);
+
+			const { rerender } = render(
+				<table>
+					<tbody>
+						<TestTableRow
+							item={{
+								id: "1",
+								title: "Task 1",
+								type: "feature",
+								status: "todo",
+								priority: "high",
+								owner: "Alice",
+							}}
+							onDelete={vi.fn()}
+							onNavigate={vi.fn()}
+						/>
+					</tbody>
+				</table>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(1);
+
+			// Same item data should not trigger re-render
+			rerender(
+				<table>
+					<tbody>
+						<TestTableRow
+							item={{
+								id: "1",
+								title: "Task 1",
+								type: "feature",
+								status: "todo",
+								priority: "high",
+								owner: "Alice",
+							}}
+							onDelete={vi.fn()}
+							onNavigate={vi.fn()}
+						/>
+					</tbody>
+				</table>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(1);
+
+			// Different item should trigger re-render
+			rerender(
+				<table>
+					<tbody>
+						<TestTableRow
+							item={{
+								id: "1",
+								title: "Task 1 Updated",
+								type: "feature",
+								status: "done",
+								priority: "high",
+								owner: "Alice",
+							}}
+							onDelete={vi.fn()}
+							onNavigate={vi.fn()}
+						/>
+					</tbody>
+				</table>,
+			);
+
+			expect(renderSpy).toHaveBeenCalledTimes(2);
+		});
+
+		it("should use useCallback for click handlers in table row", async () => {
+			let navCallbackRef: ((path: string) => void) | null = null;
+			let deleteCallbackRef: ((id: string) => void) | null = null;
+
+			function TestTableRow({
+				item,
+				onDelete,
+				onNavigate,
+			}: {
+				item: any;
+				onDelete: (id: string) => void;
+				onNavigate: (path: string) => void;
+			}) {
+				const handleNavigate = useCallback(() => {
+					onNavigate(`/items/${item.id}`);
+				}, [item.id, onNavigate]);
+
+				const handleDelete = useCallback(() => {
+					onDelete(item.id);
+				}, [item.id, onDelete]);
+
+				navCallbackRef = handleNavigate;
+				deleteCallbackRef = handleDelete;
+
+				return (
+					<tr>
+						<td>
+							<button onClick={handleNavigate}>{item.title}</button>
+						</td>
+						<td>
+							<button onClick={handleDelete}>Delete</button>
+						</td>
+					</tr>
+				);
+			}
+
+			const { rerender } = render(
+				<table>
+					<tbody>
+						<TestTableRow
+							item={{ id: "1", title: "Task" }}
+							onDelete={vi.fn()}
+							onNavigate={vi.fn()}
+						/>
+					</tbody>
+				</table>,
+			);
+
+			const navRef1 = navCallbackRef;
+			const delRef1 = deleteCallbackRef;
+
+			rerender(
+				<table>
+					<tbody>
+						<TestTableRow
+							item={{ id: "1", title: "Task" }}
+							onDelete={vi.fn()}
+							onNavigate={vi.fn()}
+						/>
+					</tbody>
+				</table>,
+			);
+
+			// Callbacks should maintain same reference across renders
+			expect(navCallbackRef).toBe(navRef1);
+			expect(deleteCallbackRef).toBe(delRef1);
+		});
+	});
+
+	describe("useMemo for Computed Values", () => {
+		it("should only recompute filtered items when dependencies change", () => {
+			const computeSpy = vi.fn();
+
+			function TestComponent({
+				items,
+				filter,
+			}: {
+				items: any[];
+				filter: string;
+			}) {
+				const computed = useMemo(() => {
+					computeSpy();
+					return items.filter((item) =>
+						item.title.toLowerCase().includes(filter.toLowerCase()),
+					);
+				}, [items, filter]);
+
+				return <div>{computed.length}</div>;
+			}
+
+			const items = [{ id: "1", title: "Test" }];
+			const { rerender } = render(
+				<TestComponent items={items} filter="test" />,
+			);
+
+			expect(computeSpy).toHaveBeenCalledTimes(1);
+
+			// Same items and filter - should not recompute
+			rerender(<TestComponent items={items} filter="test" />);
+
+			// Still 1 because items reference is same and filter is same
+			expect(computeSpy).toHaveBeenCalledTimes(1);
+
+			// Different filter - should recompute
+			rerender(<TestComponent items={items} filter="other" />);
+
+			expect(computeSpy).toHaveBeenCalledTimes(2);
+		});
+	});
+});

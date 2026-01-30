@@ -3,7 +3,7 @@
  *
  * Tests the integration between:
  * - Views (Dashboard, Reports, Settings, Search, etc.)
- * - API endpoints (projects, items, links, agents, graph, search)
+ * - API endpoints (projects, items, links, graph, search)
  * - Stores (auth, items, project, sync)
  * - Components (forms, layouts, UI components)
  *
@@ -39,7 +39,6 @@ vi.mock("@tanstack/react-router", async () => {
 // API
 import { api } from "../../api/endpoints";
 import type {
-	Agent,
 	DependencyAnalysis,
 	GraphData,
 	ImpactAnalysis,
@@ -92,18 +91,6 @@ const createMockLink = (overrides?: Partial<Link>): Link => ({
 	source_id: "item-1",
 	target_id: "item-2",
 	type: "implements" as any,
-	metadata: {},
-	created_at: new Date().toISOString(),
-	updated_at: new Date().toISOString(),
-	...overrides,
-});
-
-const createMockAgent = (overrides?: Partial<Agent>): Agent => ({
-	id: "agent-1",
-	name: "Test Agent",
-	type: "automation",
-	capabilities: ["analyze", "suggest"],
-	status: "idle" as any,
 	metadata: {},
 	created_at: new Date().toISOString(),
 	updated_at: new Date().toISOString(),
@@ -685,28 +672,6 @@ describe("API Integration Tests", () => {
 
 			const suggestions = await api.search.suggest("test", 5);
 			expect(suggestions).toHaveLength(2);
-		});
-	});
-
-	describe("Agents API Integration", () => {
-		it("should list registered agents", async () => {
-			const agents = [
-				createMockAgent({ id: "a1", name: "Agent 1" }),
-				createMockAgent({ id: "a2", name: "Agent 2" }),
-			];
-
-			vi.spyOn(api.agents, "list").mockResolvedValue(agents);
-
-			const result = await api.agents.list();
-			expect(result).toHaveLength(2);
-		});
-
-		it("should send agent heartbeat", async () => {
-			vi.spyOn(api.agents, "heartbeat").mockResolvedValue(undefined);
-
-			await api.agents.heartbeat("agent-1");
-
-			expect(api.agents.heartbeat).toHaveBeenCalledWith("agent-1");
 		});
 	});
 });

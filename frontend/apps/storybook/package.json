@@ -5,7 +5,9 @@
 	"scripts": {
 		"dev": "storybook dev -p 6006",
 		"build": "storybook build",
-		"test": "test-storybook"
+		"test": "test-storybook",
+		"dev:node22": "NODE_OPTIONS=--no-experimental-require-module storybook dev -p 6006",
+		"build:node22": "NODE_OPTIONS=--no-experimental-require-module storybook build"
 	},
 	"dependencies": {
 		"@tracertm/ui": "workspace:*",
@@ -13,14 +15,16 @@
 		"react-dom": "^19.0.0"
 	},
 	"devDependencies": {
-		"@storybook/addon-links": "^10.1.2",
-		"@storybook/react": "^10.1.2",
-		"@storybook/react-vite": "^10.1.2",
+		"@chromatic-com/storybook": "^3.0.0",
+		"@storybook/addon-docs": "^8.0.0",
+		"@storybook/addon-links": "^8.0.0",
+		"@storybook/react": "^8.0.0",
+		"@storybook/react-vite": "^8.0.0",
 		"@storybook/test-runner": "^0.24.2",
-		"storybook": "^10.1.2",
 		"@types/react": "^19.0.1",
+		"chromatic": "^11.0.0",
+		"storybook": "^8.0.0",
 		"typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
-		"vite": "^6.0.1",
-		"@storybook/addon-docs": "^10.1.2"
+		"vite": "^6.0.1"
 	}
 }

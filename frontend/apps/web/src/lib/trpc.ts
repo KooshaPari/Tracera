@@ -53,40 +53,10 @@ export type AppRouter = {
 		validateRelationships: { useQuery: (projectId: string) => any };
 		mergeDuplicateLinks: { useMutation: () => any };
 	};
-	agents: {
-		list: { useQuery: () => any };
-		get: { useQuery: (id: string) => any };
-		create: { useMutation: () => any };
-		update: { useMutation: () => any };
-		delete: { useMutation: () => any };
-		coordinate: { useMutation: () => any };
-		broadcast: { useMutation: () => any };
-		negotiate: { useMutation: () => any };
-		getMetrics: { useQuery: () => any };
-		getWorkload: { useQuery: () => any };
-		getConflicts: { useQuery: () => any };
-	};
-	search: {
-		semantic: { useQuery: (query: string) => any };
-		hybrid: { useQuery: (query: string) => any };
-		suggestions: { useQuery: (query: string) => any };
-		withContext: { useQuery: (params: any) => any };
-		fuzzy: { useQuery: (query: string) => any };
-		phonetic: { useQuery: (query: string) => any };
-	};
-	graph: {
-		getData: { useQuery: (params: any) => any };
-		getSubgraph: { useQuery: (params: any) => any };
-		getNeighbors: { useQuery: (id: string) => any };
-		shortestPath: { useQuery: (params: { from: string; to: string }) => any };
-		centrality: { useQuery: (projectId: string) => any };
-		clustering: { useQuery: (projectId: string) => any };
-	};
 	subscriptions: {
 		onProjectChange: { useSubscription: (params: any, options?: any) => any };
 		onItemUpdate: { useSubscription: (params: any, options?: any) => any };
 		onLinkChange: { useSubscription: (params: any, options?: any) => any };
-		onAgentActivity: { useSubscription: (params: any, options?: any) => any };
 	};
 };
 
@@ -246,31 +216,6 @@ export const trpc = {
 			useMutation: () => ({ mutate: () => {}, isLoading: false }),
 		},
 	},
-	agents: {
-		list: { useQuery: () => ({ data: [], isLoading: false, error: null }) },
-		get: {
-			useQuery: (_id: string) => ({
-				data: null,
-				isLoading: false,
-				error: null,
-			}),
-		},
-		create: { useMutation: () => ({ mutate: () => {}, isLoading: false }) },
-		update: { useMutation: () => ({ mutate: () => {}, isLoading: false }) },
-		delete: { useMutation: () => ({ mutate: () => {}, isLoading: false }) },
-		coordinate: { useMutation: () => ({ mutate: () => {}, isLoading: false }) },
-		broadcast: { useMutation: () => ({ mutate: () => {}, isLoading: false }) },
-		negotiate: { useMutation: () => ({ mutate: () => {}, isLoading: false }) },
-		getMetrics: {
-			useQuery: () => ({ data: null, isLoading: false, error: null }),
-		},
-		getWorkload: {
-			useQuery: () => ({ data: null, isLoading: false, error: null }),
-		},
-		getConflicts: {
-			useQuery: () => ({ data: [], isLoading: false, error: null }),
-		},
-	},
 	search: {
 		semantic: {
 			useQuery: (_query: string) => ({
@@ -373,13 +318,6 @@ export const trpc = {
 				error: null,
 			}),
 		},
-		onAgentActivity: {
-			useSubscription: (_params: any, _options?: any) => ({
-				data: null,
-				isLoading: false,
-				error: null,
-			}),
-		},
 	},
 } as any;
 
@@ -401,7 +339,6 @@ export const apiProcedures = {
 	projects: trpc.projects,
 	items: trpc.items,
 	links: trpc.links,
-	agents: trpc.agents,
 	search: trpc.search,
 	graph: trpc.graph,
 	subscriptions: trpc.subscriptions,

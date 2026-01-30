@@ -1,5 +1,37 @@
 @import "tailwindcss";
 
+/* Global interactive element styles */
+button,
+[role="button"],
+a[href],
+[onclick],
+[tabindex]:not([tabindex="-1"]) {
+	cursor: pointer;
+}
+
+/* Ensure buttons have proper hover states */
+button:not(:disabled):hover,
+[role="button"]:not(:disabled):hover {
+	transition:
+		background-color 0.2s,
+		color 0.2s,
+		transform 0.2s;
+}
+
+/* Links should have hover states */
+a[href]:hover {
+	transition:
+		color 0.2s,
+		background-color 0.2s;
+}
+
+/* Clickable elements should show visual feedback */
+[onclick]:hover {
+	transition:
+		background-color 0.2s,
+		transform 0.2s;
+}
+
 @layer base {
 	:root {
 		--background: 0 0% 100%;

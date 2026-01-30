@@ -2,7 +2,7 @@
 
 ## 🎉 What Was Built
 
-A complete **Model Context Protocol (MCP) server** and **beautiful CLI** for BMad Method workflow automation using **FastMCP 2.13+**, **Typer**, and **Rich**.
+A complete **Model Context Protocol (MCP) server** and **beautiful CLI** for BMad Method workflow automation using **FastMCP 3.0.0b1**, **Typer**, and **Rich**.
 
 ## 📦 Deliverables
 
@@ -16,7 +16,7 @@ A complete **Model Context Protocol (MCP) server** and **beautiful CLI** for BMa
 - ✅ **Sampling**: Server can invoke LLMs for workflow execution
 - ✅ **Progress Reporting**: Real-time progress updates via `ctx.report_progress()`
 - ✅ **Middleware**: Logging middleware for monitoring
-- ✅ **Icons**: Tool icons for better UX (NEW in 2.13)
+- ✅ **Icons**: Tool icons for better UX (NEW in 2.13, supported in 3.0.0b1)
 - ✅ **Storage**: File-based (extensible to Redis/SQLite)
 
 ### 2. CLI (`bmm_cli.py`) - 322 lines
@@ -195,7 +195,7 @@ workflow_status = await client.read_resource("bmm://workflow-status")
 prompt = await client.get_prompt("workflow_execution_prompt", {"workflow_id": "prd"})
 ```
 
-## 🎯 FastMCP 2.13 Features Used
+## 🎯 FastMCP 3.0.0b1 Features Used
 
 ### ✅ Elicitation
 ```python
@@ -226,7 +226,7 @@ async def workflow_execution_prompt(workflow_id: str) -> List[Dict]:
     return [{"role": "user", "content": f"Execute {workflow_id}"}]
 ```
 
-### ✅ Middleware (NEW in 2.13)
+### ✅ Middleware (NEW in 2.13, supported in 3.0.0b1)
 ```python
 class LoggingMiddleware(Middleware):
     async def on_tool_call(self, ctx, tool_name, arguments):
@@ -234,14 +234,14 @@ class LoggingMiddleware(Middleware):
         await ctx.next()
 ```
 
-### ✅ Icons (NEW in 2.13)
+### ✅ Icons (NEW in 2.13, supported in 3.0.0b1)
 ```python
 @mcp.tool(icon="🚀")
 async def init_project(ctx: Context) -> str:
     ...
 ```
 
-### ✅ Storage Backends (NEW in 2.13)
+### ✅ Storage Backends (NEW in 2.13, supported in 3.0.0b1)
 ```python
 # Ready for Redis/SQLite
 # mcp.set_storage(RedisStorage(url="redis://localhost:6379"))
@@ -339,4 +339,3 @@ The BMM MCP server represents a **complete modernization** of the workflow autom
 - ✅ **Universal** (works with any MCP client)
 
 **Ready for production use!** 🚀
-

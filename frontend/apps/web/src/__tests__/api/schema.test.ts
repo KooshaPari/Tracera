@@ -3,7 +3,6 @@
  */
 
 import type {
-	Agent,
 	Item,
 	Link,
 	Mutation,
@@ -36,12 +35,6 @@ describe("OpenAPI Schema Types", () => {
 
 		it("should support link endpoints", () => {
 			// Validates that link-related endpoints are defined in the schema
-			const _schema: Record<string, unknown> = {} as paths;
-			expect(_schema).toBeDefined();
-		});
-
-		it("should support agent endpoints", () => {
-			// Validates that agent-related endpoints are defined in the schema
 			const _schema: Record<string, unknown> = {} as paths;
 			expect(_schema).toBeDefined();
 		});
@@ -218,15 +211,6 @@ describe("OpenAPI Schema Types", () => {
 			expect(link.id).toBe("link-1");
 		});
 
-		it("should include Agent type", () => {
-			// Agents are defined in schema
-			const agent: Agent = {
-				id: "agent-1",
-				name: "Test Agent",
-			};
-			expect(agent.id).toBe("agent-1");
-		});
-
 		it("should include Mutation type", () => {
 			// Mutations are defined in schema
 			const mutation: Mutation = {
@@ -338,12 +322,10 @@ describe("OpenAPI Schema Types", () => {
 				source_id: "1",
 				target_id: "2",
 			};
-			const agent: Agent = { id: "1", name: "test" };
 
 			expect(project).toBeDefined();
 			expect(item).toBeDefined();
 			expect(link).toBeDefined();
-			expect(agent).toBeDefined();
 		});
 
 		it("should support common HTTP methods", () => {

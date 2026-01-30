@@ -22,7 +22,6 @@
 // import { Settings } from './pages/settings/Settings'
 // Import all views
 // import {
-//   AgentsView,
 //   DashboardView,
 //   EventsTimelineView,
 //   GraphView,
@@ -58,7 +57,6 @@ export default function App() {
           <Route path="items/:itemId" element={<ItemDetailView />} />
           <Route path="links" element={<LinksView />} />
           <Route path="graph" element={<GraphView />} />
-          <Route path="agents" element={<AgentsView />} />
           <Route path="events" element={<EventsTimelineView />} />
           <Route path="search" element={<SearchView />} />
           <Route path="matrix" element={<TraceabilityMatrixView />} />

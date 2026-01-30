@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -25,13 +25,18 @@ test.describe("Export Functionality", () => {
 		});
 
 		test("should display export button on items page", async ({ page }) => {
-			// Wait for items to load
-			await page.waitForSelector("text=/User Authentication|Project Dashboard/", {
-				timeout: 5000,
-			});
+			// Wait for items to load - use mock data item names
+			await page.waitForSelector(
+				"text=/User Authentication|Dashboard View|API Integration/",
+				{
+					timeout: 5000,
+				},
+			);
 
 			// Look for export button
-			const exportButton = page.getByRole("button", { name: /export/i }).first();
+			const exportButton = page
+				.getByRole("button", { name: /export/i })
+				.first();
 
 			await expect(exportButton)
 				.toBeVisible({ timeout: 5000 })
@@ -40,7 +45,9 @@ test.describe("Export Functionality", () => {
 
 		test("should export all items as JSON", async ({ page }) => {
 			// Wait for items to load
-			await page.waitForSelector("text=/User Authentication/", { timeout: 5000 });
+			await page.waitForSelector("text=/User Authentication/", {
+				timeout: 5000,
+			});
 
 			// Find export button
 			const exportButton = page
@@ -49,7 +56,9 @@ test.describe("Export Functionality", () => {
 
 			if (await exportButton.isVisible()) {
 				// Set up download listener
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				// Click export button
 				await exportButton.click();
@@ -78,7 +87,9 @@ test.describe("Export Functionality", () => {
 
 		test("should handle export with filters", async ({ page }) => {
 			// Wait for items to load
-			await page.waitForSelector("text=/User Authentication/", { timeout: 5000 });
+			await page.waitForSelector("text=/User Authentication/", {
+				timeout: 5000,
+			});
 
 			// Try to find and apply filters
 			const filterSelect = page
@@ -91,7 +102,9 @@ test.describe("Export Functionality", () => {
 				await filterSelect.click();
 				await page.waitForTimeout(300);
 
-				const filterOption = page.locator("text=/Pending|In Progress|Completed/").first();
+				const filterOption = page
+					.locator("text=/Pending|In Progress|Completed/")
+					.first();
 				if (await filterOption.isVisible()) {
 					await filterOption.click();
 					await page.waitForTimeout(500);
@@ -99,9 +112,13 @@ test.describe("Export Functionality", () => {
 			}
 
 			// Now export
-			const exportButton = page.getByRole("button", { name: /export/i }).first();
+			const exportButton = page
+				.getByRole("button", { name: /export/i })
+				.first();
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(300);
@@ -112,7 +129,9 @@ test.describe("Export Functionality", () => {
 
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
-						console.log(`Filtered items exported: ${await download.suggestedFilename()}`);
+						console.log(
+							`Filtered items exported: ${await download.suggestedFilename()}`,
+						);
 					}
 				}
 			}
@@ -120,7 +139,9 @@ test.describe("Export Functionality", () => {
 
 		test("should show export progress/confirmation", async ({ page }) => {
 			// Wait for items
-			await page.waitForSelector("text=/User Authentication/", { timeout: 5000 });
+			await page.waitForSelector("text=/User Authentication/", {
+				timeout: 5000,
+			});
 
 			const exportButton = page
 				.getByRole("button", { name: /export/i })
@@ -149,14 +170,18 @@ test.describe("Export Functionality", () => {
 
 		test("should export items as CSV", async ({ page }) => {
 			// Wait for items to load
-			await page.waitForSelector("text=/User Authentication/", { timeout: 5000 });
+			await page.waitForSelector("text=/User Authentication/", {
+				timeout: 5000,
+			});
 
 			const exportButton = page
 				.getByRole("button", { name: /export/i })
 				.first();
 
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(500);
@@ -184,14 +209,18 @@ test.describe("Export Functionality", () => {
 
 		test("should handle large CSV exports", async ({ page }) => {
 			// Wait for items
-			await page.waitForSelector("text=/User Authentication/", { timeout: 5000 });
+			await page.waitForSelector("text=/User Authentication/", {
+				timeout: 5000,
+			});
 
 			const exportButton = page
 				.getByRole("button", { name: /export/i })
 				.first();
 
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 10000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 10000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(500);
@@ -219,10 +248,13 @@ test.describe("Export Functionality", () => {
 		});
 
 		test("should display export button on projects page", async ({ page }) => {
-			// Wait for projects to load
-			await page.waitForSelector("text=/TraceRTM Core|Mobile App/", {
-				timeout: 5000,
-			});
+			// Wait for projects to load - use mock data project names
+			await page.waitForSelector(
+				"text=/TraceRTM Frontend|Pokemon Go|E-Commerce/",
+				{
+					timeout: 5000,
+				},
+			);
 
 			const exportButton = page
 				.getByRole("button", { name: /export/i })
@@ -243,7 +275,9 @@ test.describe("Export Functionality", () => {
 				.first();
 
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(500);
@@ -272,7 +306,9 @@ test.describe("Export Functionality", () => {
 				.first();
 
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(500);
@@ -395,9 +431,7 @@ test.describe("Import Functionality", () => {
 					await page.waitForTimeout(1000);
 
 					// Should show validation error
-					const errorMessage = page
-						.getByText(/invalid|error|format/i)
-						.first();
+					const errorMessage = page.getByText(/invalid|error|format/i).first();
 
 					await expect(errorMessage)
 						.toBeVisible({ timeout: 3000 })
@@ -460,7 +494,9 @@ Test Item 2,Feature,In Progress,Medium`;
 					await page.waitForTimeout(500);
 
 					// Submit import
-					const importSubmitBtn = page.getByRole("button", { name: /import|submit/i });
+					const importSubmitBtn = page.getByRole("button", {
+						name: /import|submit/i,
+					});
 					if (await importSubmitBtn.isVisible()) {
 						await importSubmitBtn.click();
 						await page.waitForLoadState("networkidle");
@@ -521,15 +557,15 @@ Test Item 2,Feature,In Progress,Medium`;
 					await page.waitForTimeout(500);
 
 					// Look for item count preview
-					const countText = page
-						.getByText(/5.*items?|import.*5/i)
-						.first();
+					const countText = page.getByText(/5.*items?|import.*5/i).first();
 
 					await expect(countText)
 						.toBeVisible({ timeout: 3000 })
 						.catch(() => console.log("Import count not displayed in preview"));
 
-					const importSubmitBtn = page.getByRole("button", { name: /import|submit/i });
+					const importSubmitBtn = page.getByRole("button", {
+						name: /import|submit/i,
+					});
 					if (await importSubmitBtn.isVisible()) {
 						await importSubmitBtn.click();
 						await page.waitForLoadState("networkidle");
@@ -587,9 +623,7 @@ Test Item,Requirement`;
 					await page.waitForTimeout(1000);
 
 					// Should show error about missing columns
-					const errorMsg = page
-						.getByText(/missing|required|column/i)
-						.first();
+					const errorMsg = page.getByText(/missing|required|column/i).first();
 
 					await expect(errorMsg)
 						.toBeVisible({ timeout: 3000 })
@@ -688,7 +722,9 @@ Test Item,Requirement,Pending,High`;
 
 					await expect(sizeError)
 						.toBeVisible({ timeout: 3000 })
-						.catch(() => console.log("File size validation may not be enforced"));
+						.catch(() =>
+							console.log("File size validation may not be enforced"),
+						);
 				}
 
 				// Clean up
@@ -737,7 +773,9 @@ Another Valid,Feature,In Progress,Medium`;
 					await page.waitForTimeout(500);
 
 					// Submit import
-					const importSubmitBtn = page.getByRole("button", { name: /import|submit/i });
+					const importSubmitBtn = page.getByRole("button", {
+						name: /import|submit/i,
+					});
 					if (await importSubmitBtn.isVisible()) {
 						await importSubmitBtn.click();
 						await page.waitForLoadState("networkidle");
@@ -785,7 +823,9 @@ Another Valid,Feature,In Progress,Medium`;
 				.first();
 
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(500);
@@ -841,9 +881,7 @@ test.describe("Export/Import Round-trip", () => {
 		await page.goto("/items");
 		await page.waitForLoadState("networkidle");
 
-		const exportButton = page
-			.getByRole("button", { name: /export/i })
-			.first();
+		const exportButton = page.getByRole("button", { name: /export/i }).first();
 
 		if (await exportButton.isVisible()) {
 			const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
@@ -906,9 +944,7 @@ test.describe("Export/Import Round-trip", () => {
 		await page.goto("/items");
 		await page.waitForLoadState("networkidle");
 
-		const exportButton = page
-			.getByRole("button", { name: /export/i })
-			.first();
+		const exportButton = page.getByRole("button", { name: /export/i }).first();
 
 		if (await exportButton.isVisible()) {
 			const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
@@ -977,13 +1013,13 @@ test.describe("Export/Import Round-trip", () => {
 });
 
 test.describe("Export/Import Edge Cases", () => {
-	test("should handle special characters in exported data", async ({ page }) => {
+	test("should handle special characters in exported data", async ({
+		page,
+	}) => {
 		await page.goto("/items");
 		await page.waitForLoadState("networkidle");
 
-		const exportButton = page
-			.getByRole("button", { name: /export/i })
-			.first();
+		const exportButton = page.getByRole("button", { name: /export/i }).first();
 
 		if (await exportButton.isVisible()) {
 			const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
@@ -1027,7 +1063,9 @@ test.describe("Export/Import Edge Cases", () => {
 				.first();
 
 			if (await exportButton.isVisible()) {
-				const downloadPromise = page.waitForEvent("download", { timeout: 5000 });
+				const downloadPromise = page.waitForEvent("download", {
+					timeout: 5000,
+				});
 
 				await exportButton.click();
 				await page.waitForTimeout(500);
@@ -1038,7 +1076,9 @@ test.describe("Export/Import Edge Cases", () => {
 
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
-						console.log(`Empty project export: ${await download.suggestedFilename()}`);
+						console.log(
+							`Empty project export: ${await download.suggestedFilename()}`,
+						);
 					}
 				}
 			}
@@ -1049,9 +1089,7 @@ test.describe("Export/Import Edge Cases", () => {
 		await page.goto("/items");
 		await page.waitForLoadState("networkidle");
 
-		const importButton = page
-			.getByRole("button", { name: /import/i })
-			.first();
+		const importButton = page.getByRole("button", { name: /import/i }).first();
 
 		if (await importButton.isVisible()) {
 			await importButton.click();
@@ -1068,9 +1106,7 @@ test.describe("Export/Import Edge Cases", () => {
 				await page.waitForTimeout(1000);
 
 				// Should show validation error
-				const errorMsg = page
-					.getByText(/invalid|corrupted|error/i)
-					.first();
+				const errorMsg = page.getByText(/invalid|corrupted|error/i).first();
 
 				await expect(errorMsg)
 					.toBeVisible({ timeout: 3000 })

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * Dashboard E2E Tests
@@ -16,9 +16,11 @@ test.describe("Dashboard Overview", () => {
 		// Should be on dashboard
 		await expect(page).toHaveURL("/");
 
-		// Dashboard content should be visible
-		const main = page.locator("main");
-		await expect(main).toBeVisible();
+		// Dashboard content should be visible - look for the Traceability Dashboard heading
+		const dashboardHeading = page.getByRole("heading", {
+			name: /traceability dashboard/i,
+		});
+		await expect(dashboardHeading).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should show dashboard heading", async ({ page }) => {
@@ -27,23 +29,21 @@ test.describe("Dashboard Overview", () => {
 
 		await expect(heading)
 			.toBeVisible({ timeout: 5000 })
-			.catch(() =>
-				console.log("Dashboard welcome heading not found"),
-			);
+			.catch(() => console.log("Dashboard welcome heading not found"));
 	});
 
 	test("should load dashboard data", async ({ page }) => {
 		// Wait for data to load
 		await page.waitForLoadState("networkidle");
 
-		// Should show dashboard subtitle
+		// Should show dashboard subtitle - the actual DashboardView shows this message
 		const subtitle = page.getByText(
-			/Agent-native requirements traceability and project management/i,
+			/Monitor project health and system-wide traceability status/i,
 		);
 		await expect(subtitle).toBeVisible({ timeout: 5000 });
 
-		// General content check
-		const content = page.locator("main");
+		// General content check - look for dashboard container
+		const content = page.locator('[class*="space-y"]').first();
 		const textContent = await content.textContent();
 
 		expect(textContent).toBeTruthy();
@@ -58,16 +58,14 @@ test.describe("Dashboard Metrics", () => {
 	});
 
 	test("should display project count metric", async ({ page }) => {
-		// Look for project count stat card
-		const projectStat = page.getByText("Projects").first();
-		await expect(projectStat)
-			.toBeVisible({ timeout: 5000 })
-			.catch(() => console.log("Project count metric not displayed"));
+		// Look for project section - DashboardView shows "Active Projects" heading
+		const projectStat = page.getByRole("heading", { name: /Active Projects/i });
+		await expect(projectStat).toBeVisible({ timeout: 5000 });
 
-		// Should show numeric value - check parent section
-		const mainContent = page.locator("main");
-		const projectText = await mainContent.textContent();
-		expect(projectText).toContain("Projects");
+		// Should show the projects section - check the page content
+		const pageContent = page.locator("body");
+		const projectText = await pageContent.textContent();
+		expect(projectText).toContain("Active Projects");
 	});
 
 	test("should display items count metric", async ({ page }) => {
@@ -147,36 +145,40 @@ test.describe("Dashboard Navigation", () => {
 	});
 
 	test("should navigate to projects from stats", async ({ page }) => {
-		// Click on Projects metric card
-		const projectsCard = page.getByText("Projects").first();
+		// Click on "New Project" button which links to /projects
+		const newProjectButton = page.getByRole("link", { name: /new project/i });
 
-		if (await projectsCard.isVisible({ timeout: 3000 })) {
-			// Find the parent card and click it
-			const card = projectsCard.locator("../..");
-			await card.click();
+		if (await newProjectButton.isVisible({ timeout: 3000 })) {
+			await newProjectButton.click();
 			await page.waitForLoadState("networkidle");
 
 			// Should navigate to projects page
 			await expect(page).toHaveURL(/\/projects/);
+		} else {
+			// Alternative: Click on Active Projects heading which should be a link
+			const projectsHeading = page.getByRole("heading", {
+				name: /active projects/i,
+			});
+			await expect(projectsHeading).toBeVisible({ timeout: 3000 });
 		}
 	});
 
 	test("should navigate to specific project from dashboard", async ({
 		page,
 	}) => {
-		// Click on a project name in recent projects
-		const projectLink = page
-			.getByText(/TraceRTM Frontend/)
-			.first()
-			.locator("..");
-		// Find clickable parent link
+		// Look for any project link in the Active Projects section
+		const projectLinks = page.locator('a[href*="/projects/"]');
+		const count = await projectLinks.count();
 
-		if (await projectLink.isVisible({ timeout: 3000 })) {
-			await projectLink.click();
+		if (count > 0) {
+			await projectLinks.first().click();
 			await page.waitForLoadState("networkidle");
 
 			// Should navigate to projects page or project detail
 			await expect(page).toHaveURL(/\/projects/);
+		} else {
+			// Dashboard may show no projects with mocked data
+			console.log("No project links found on dashboard - may be acceptable");
 		}
 	});
 });
@@ -357,8 +359,10 @@ test.describe("Dashboard Refresh", () => {
 		await page.goto("/");
 		await page.waitForLoadState("networkidle");
 
-		// Dashboard should reload data
-		const main = page.locator("main");
-		await expect(main).toBeVisible();
+		// Dashboard should reload data - look for the dashboard heading
+		const dashboardHeading = page.getByRole("heading", {
+			name: /traceability dashboard/i,
+		});
+		await expect(dashboardHeading).toBeVisible({ timeout: 5000 });
 	});
 });

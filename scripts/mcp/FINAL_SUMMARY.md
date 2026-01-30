@@ -14,7 +14,7 @@ The BMM MCP server and beautiful CLI are fully implemented and tested.
 - ✅ Sampling support (server can invoke LLMs)
 - ✅ Progress reporting
 - ✅ Middleware (logging)
-- ✅ Ready for FastMCP 2.13+ features
+- ✅ Ready for FastMCP 3.0.0b1 features
 
 ### 2. **Beautiful CLI** (`bmm_cli.py`) - 322 lines
 - ✅ 10 Commands with Rich UI

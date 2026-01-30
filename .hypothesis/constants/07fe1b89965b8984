@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/miniforge3/bin/pytest
+# hypothesis_version: 6.148.7
+
+['.exe', '__main__']

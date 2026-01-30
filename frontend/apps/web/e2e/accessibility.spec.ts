@@ -19,7 +19,9 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 		// Tab through main navigation
 		// First tab should focus skip link
 		await page.keyboard.press("Tab");
-		await expect(page.locator('a:has-text("Skip to main content")')).toBeFocused();
+		await expect(
+			page.locator('a:has-text("Skip to main content")'),
+		).toBeFocused();
 
 		// Then focus dashboard link
 		await page.keyboard.press("Tab");

@@ -1,0 +1,196 @@
+// TimelineView component tests
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { TimelineView } from "../TimelineView";
+import type { Version } from "../TemporalNavigator";
+
+describe("TimelineView", () => {
+	const mockVersions: Version[] = [
+		{
+			id: "v-1",
+			branchId: "branch-1",
+			title: "Initial Release",
+			tag: "1.0.0",
+			timestamp: new Date("2024-01-01"),
+			author: "Alice",
+			status: "published",
+			description: "First stable release",
+		},
+		{
+			id: "v-2",
+			branchId: "branch-1",
+			title: "Patch Release",
+			tag: "1.0.1",
+			timestamp: new Date("2024-01-08"),
+			author: "Bob",
+			status: "published",
+			description: "Bug fixes",
+		},
+		{
+			id: "v-3",
+			branchId: "branch-1",
+			title: "Development Build",
+			timestamp: new Date("2024-01-15"),
+			author: "Charlie",
+			status: "draft",
+		},
+	];
+
+	const mockOnVersionChange = vi.fn();
+
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("renders version markers", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		expect(screen.getByText("Initial Release")).toBeInTheDocument();
+		expect(screen.getByText("Patch Release")).toBeInTheDocument();
+	});
+
+	it("shows version count", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		expect(screen.getByText(/3 versions/)).toBeInTheDocument();
+	});
+
+	it("highlights current version", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-2"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		const cards = screen.getAllByText(/Patch Release/);
+		expect(cards.length).toBeGreaterThan(0);
+	});
+
+	it("calls onVersionChange when version is clicked", async () => {
+		const user = userEvent.setup();
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		const versionCards = screen.getAllByText(/Patch Release/);
+		if (versionCards.length > 0) {
+			await user.click(versionCards[0]);
+			expect(mockOnVersionChange).toHaveBeenCalledWith("v-2");
+		}
+	});
+
+	it("displays version tags", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		expect(screen.getByText("1.0.0")).toBeInTheDocument();
+		expect(screen.getByText("1.0.1")).toBeInTheDocument();
+	});
+
+	it("displays version status badges", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		const publishedBadges = screen.getAllByText("published");
+		const draftBadges = screen.getAllByText("draft");
+
+		expect(publishedBadges.length).toBeGreaterThan(0);
+		expect(draftBadges.length).toBeGreaterThan(0);
+	});
+
+	it("displays author information", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		expect(screen.getByText(/by Alice/)).toBeInTheDocument();
+		expect(screen.getByText(/by Bob/)).toBeInTheDocument();
+	});
+
+	it("handles zoom controls", async () => {
+		const user = userEvent.setup();
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		const buttons = screen.getAllByRole("button");
+		expect(buttons.length).toBeGreaterThan(0);
+	});
+
+	it("renders empty state for no versions", () => {
+		render(
+			<TimelineView
+				versions={[]}
+				currentVersionId=""
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		expect(
+			screen.getByText(/No versions in this branch yet/),
+		).toBeInTheDocument();
+	});
+
+	it("displays date range", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		const dateText = screen.getByText(/1\/1\/2024/);
+		expect(dateText).toBeInTheDocument();
+	});
+
+	it("displays version descriptions", () => {
+		render(
+			<TimelineView
+				versions={mockVersions}
+				currentVersionId="v-1"
+				onVersionChange={mockOnVersionChange}
+			/>,
+		);
+
+		expect(screen.getByText("First stable release")).toBeInTheDocument();
+		expect(screen.getByText("Bug fixes")).toBeInTheDocument();
+	});
+});

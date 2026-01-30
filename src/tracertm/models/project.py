@@ -5,8 +5,8 @@ Project model for TraceRTM.
 import uuid
 from typing import Any
 
-from sqlalchemy import String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Text, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
@@ -30,12 +30,20 @@ class Project(Base, TimestampMixin):
     id: Mapped[str] = mapped_column(
         String(255), primary_key=True, default=generate_uuid
     )
+    account_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     name: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False, index=True
+        String(255), nullable=False, index=True
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     project_metadata: Mapped[dict[str, object]] = mapped_column(
         JSONType, nullable=False, default=dict
+    )
+
+    # Relationships
+    account: Mapped["Account"] = relationship(
+        "Account", back_populates="projects"
     )
 
     def __getattribute__(self, name: str) -> object:

@@ -170,8 +170,8 @@ eval (env _RTM_COMPLETE=fish_source rtm)
 - `ConfigManager` supports hierarchical configuration:
   1. CLI flags (highest precedence)
   2. Environment variables (`TRACERTM_*`)
-  3. Project config (`~/.config/tracertm/projects/<id>/config.yaml`)
-  4. Global config (`~/.config/tracertm/config.yaml`)
+  3. Project config (`~/.tracertm/projects/<id>/config.yaml`)
+  4. Global config (`~/.tracertm/config.yaml`)
 
 **Environment Variables:**
 - `TRACERTM_DATABASE_URL`

@@ -640,6 +640,7 @@ class TestProjectRepository:
 
 
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("link_test_setup")
 class TestLinkRepository:
     """Tests for LinkRepository CRUD operations."""
 
@@ -1342,6 +1343,7 @@ class TestRepositoryErrorHandling:
 
 
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("link_test_setup")
 class TestRepositoryEdgeCases:
     """Tests for edge cases and boundary conditions."""
 

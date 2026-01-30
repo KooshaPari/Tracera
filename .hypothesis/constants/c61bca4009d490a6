@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/dashboard.py
+# hypothesis_version: 6.148.7
+
+[100, '#items', '#items-table', '#items-title', '#search_input', '#state-summary', '#stats-table', '#view-tree', '?', 'API', 'CODE', 'Cancel', 'DATABASE', 'FEATURE', 'Help', 'ID', 'Items', 'Links', 'No items to search', 'PROGRESS', 'Project State', 'Project Statistics', 'Quit', 'ROADMAP', 'Refresh', 'Search', 'Search Items', 'Search Results:\n\n', 'Status', 'Switch View', 'TEST', 'TOTAL', 'Title', 'Type', 'View', 'Views', 'WIREFRAME', 'cancel_btn', 'current_project_id', 'database_url', 'error', 'help', 'items-panel', 'items-table', 'items-title', 'main', 'q', 'quit', 'r', 'refresh', 's', 'search', 'search_btn', 'search_input', 'sidebar', 'state-panel', 'state-summary', 'state-title', 'stats-table', 'stats-title', 'status', 'switch_view', 'title', 'type', 'v', 'view-tree', 'views-title', 'warning']

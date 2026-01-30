@@ -24,6 +24,15 @@ from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
+# Import blockchain models for version tracking and baselines
+from tracertm.models.blockchain import (
+    VersionBlock,
+    VersionChainIndex,
+    Baseline,
+    BaselineItem,
+    MerkleProofCache,
+    SpecEmbedding,
+)
 
 
 # Mark every test in this directory as integration to keep layering explicit.

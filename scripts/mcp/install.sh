@@ -86,13 +86,8 @@ if $PYTHON_CMD -c "import fastmcp; print(f'FastMCP {fastmcp.__version__}')" 2>/d
     echo -e "${GREEN}✅ FastMCP installed${NC}"
 else
     echo -e "${RED}❌ FastMCP installation failed${NC}"
-    echo -e "${YELLOW}Trying to import mcp.server.fastmcp instead...${NC}"
-    if $PYTHON_CMD -c "from mcp.server.fastmcp import FastMCP; print('FastMCP available')" 2>/dev/null; then
-        echo -e "${GREEN}✅ FastMCP available via mcp.server.fastmcp${NC}"
-    else
-        echo -e "${RED}❌ FastMCP not available${NC}"
-        exit 1
-    fi
+    echo -e "${RED}❌ FastMCP not available${NC}"
+    exit 1
 fi
 
 # Test Typer
@@ -185,4 +180,3 @@ echo -e "   ${YELLOW}$SCRIPT_DIR/INDEX.md${NC}"
 echo -e "   ${YELLOW}$SCRIPT_DIR/DROID_SETUP.md${NC}"
 echo ""
 echo -e "${GREEN}Happy automating! 🚀${NC}"
-

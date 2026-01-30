@@ -5,6 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
  * Test endpoint for authentication validation
  * Note: This is a placeholder - actual API routes should be handled by the backend
  */
+
 export const Route = createFileRoute("/api/auth-test")({
 	component: AuthTestComponent,
 	loader: async () => {

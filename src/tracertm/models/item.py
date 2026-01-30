@@ -32,6 +32,7 @@ class Item(Base, TimestampMixin):
         Index("idx_items_project_view", "project_id", "view"),
         Index("idx_items_project_status", "project_id", "status"),
         Index("idx_items_project_type", "project_id", "item_type"),
+        Index("idx_items_project_node_kind", "project_id", "node_kind_id"),
         {"extend_existing": True},  # Allow re-definition if table exists
     )
 
@@ -50,6 +51,12 @@ class Item(Base, TimestampMixin):
 
     view: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     item_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    node_kind_id: Mapped[str | None] = mapped_column(
+        String(255),
+        ForeignKey("node_kinds.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     status: Mapped[str] = mapped_column(
         String(50), nullable=False, default="todo", index=True
     )

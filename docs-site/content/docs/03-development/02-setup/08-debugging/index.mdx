@@ -28,7 +28,7 @@ TRACERTM_ENABLE_CACHE=false  # Disable cache during debugging
 
 ### Settings Configuration
 
-For persistent debug settings, modify `~/.config/tracertm/config.yaml`:
+For persistent debug settings, modify `~/.tracertm/config.yaml`:
 
 ```yaml
 log_level: DEBUG
@@ -694,7 +694,7 @@ tail -100 ~/.tracertm/logs/tracertm_errors.log
 **Verify configuration:**
 ```bash
 # Check config file
-cat ~/.config/tracertm/config.yaml
+cat ~/.tracertm/config.yaml
 
 # Validate environment
 env | grep TRACERTM

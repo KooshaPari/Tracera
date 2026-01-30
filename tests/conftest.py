@@ -37,6 +37,8 @@ try:
     from tracertm.models.item import Item
     from tracertm.models.link import Link
     from tracertm.models.project import Project
+    from tracertm.models.problem import Problem, ProblemActivity
+    from tracertm.models.process import Process, ProcessExecution
 except ImportError:
     Base = None
 

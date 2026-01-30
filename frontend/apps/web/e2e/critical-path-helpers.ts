@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test";
+import { type Page, expect } from "@playwright/test";
 
 /**
  * Critical Path Test Helpers
@@ -85,11 +85,7 @@ export async function createProject(
 		.getByRole("button", { name: /create|new|add.*project/i })
 		.first();
 
-	if (
-		!(await createBtn
-			.isVisible({ timeout: 2000 })
-			.catch(() => false))
-	) {
+	if (!(await createBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
 		return false;
 	}
 
@@ -114,11 +110,7 @@ export async function createProject(
 			.or(page.getByPlaceholder(/description/i))
 			.first();
 
-		if (
-			await descInput
-				.isVisible({ timeout: 1000 })
-				.catch(() => false)
-		) {
+		if (await descInput.isVisible({ timeout: 1000 }).catch(() => false)) {
 			await descInput.fill(project.description);
 		}
 	}
@@ -137,28 +129,19 @@ export async function createProject(
 
 	// Verify creation
 	const projectText = page.getByText(project.name);
-	return await projectText
-		.isVisible({ timeout: 5000 })
-		.catch(() => false);
+	return await projectText.isVisible({ timeout: 5000 }).catch(() => false);
 }
 
 /**
  * Item CRUD Helpers
  */
 
-export async function createItem(
-	page: Page,
-	item: TestItem,
-): Promise<boolean> {
+export async function createItem(page: Page, item: TestItem): Promise<boolean> {
 	const createBtn = page
 		.getByRole("button", { name: /create|new|add.*item/i })
 		.first();
 
-	if (
-		!(await createBtn
-			.isVisible({ timeout: 2000 })
-			.catch(() => false))
-	) {
+	if (!(await createBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
 		return false;
 	}
 
@@ -184,31 +167,19 @@ export async function createItem(
 			.or(page.getByPlaceholder(/description/i))
 			.first();
 
-		if (
-			await descInput
-				.isVisible({ timeout: 1000 })
-				.catch(() => false)
-		) {
+		if (await descInput.isVisible({ timeout: 1000 }).catch(() => false)) {
 			await descInput.fill(item.description);
 		}
 	}
 
 	if (item.type) {
 		const typeSelect = page.getByLabel(/type/i).first();
-		if (
-			await typeSelect
-				.isVisible({ timeout: 1000 })
-				.catch(() => false)
-		) {
+		if (await typeSelect.isVisible({ timeout: 1000 }).catch(() => false)) {
 			await typeSelect.click();
 			await page.waitForTimeout(300);
 
 			const option = page.getByText(new RegExp(item.type, "i"));
-			if (
-				await option
-					.isVisible({ timeout: 1000 })
-					.catch(() => false)
-			) {
+			if (await option.isVisible({ timeout: 1000 }).catch(() => false)) {
 				await option.click();
 			}
 		}
@@ -228,9 +199,7 @@ export async function createItem(
 
 	// Verify
 	const itemText = page.getByText(item.title);
-	return await itemText
-		.isVisible({ timeout: 5000 })
-		.catch(() => false);
+	return await itemText.isVisible({ timeout: 5000 }).catch(() => false);
 }
 
 export async function updateItemStatus(
@@ -275,11 +244,7 @@ export async function deleteItem(page: Page): Promise<boolean> {
 		name: /confirm|yes|delete/i,
 	});
 
-	if (
-		!(await confirmBtn
-			.isVisible({ timeout: 2000 })
-			.catch(() => false))
-	) {
+	if (!(await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
 		// Might delete without confirmation
 		await page.waitForLoadState("networkidle");
 		return true;
@@ -295,19 +260,12 @@ export async function deleteItem(page: Page): Promise<boolean> {
  * Link Helpers
  */
 
-export async function createLink(
-	page: Page,
-	link: TestLink,
-): Promise<boolean> {
+export async function createLink(page: Page, link: TestLink): Promise<boolean> {
 	const createLinkBtn = page.getByRole("button", {
 		name: /add link|create link|new link/i,
 	});
 
-	if (
-		!(await createLinkBtn
-			.isVisible({ timeout: 2000 })
-			.catch(() => false))
-	) {
+	if (!(await createLinkBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
 		return false;
 	}
 
@@ -326,11 +284,7 @@ export async function createLink(
 	// Type target item ID and select from dropdown
 	// This would depend on the actual UI implementation
 	const targetOption = page.locator(`text=${link.targetId}`).first();
-	if (
-		!(await targetOption
-			.isVisible({ timeout: 1000 })
-			.catch(() => false))
-	) {
+	if (!(await targetOption.isVisible({ timeout: 1000 }).catch(() => false))) {
 		return false;
 	}
 
@@ -339,11 +293,7 @@ export async function createLink(
 
 	// Select link type
 	const typeSelect = page.getByLabel(/link type|type/i).first();
-	if (
-		!(await typeSelect
-			.isVisible({ timeout: 1000 })
-			.catch(() => false))
-	) {
+	if (!(await typeSelect.isVisible({ timeout: 1000 }).catch(() => false))) {
 		return false;
 	}
 
@@ -351,11 +301,7 @@ export async function createLink(
 	await page.waitForTimeout(300);
 
 	const typeOption = page.getByText(new RegExp(link.type, "i"));
-	if (
-		!(await typeOption
-			.isVisible({ timeout: 1000 })
-			.catch(() => false))
-	) {
+	if (!(await typeOption.isVisible({ timeout: 1000 }).catch(() => false))) {
 		return false;
 	}
 
@@ -378,10 +324,7 @@ export async function createLink(
  * Search and Filter Helpers
  */
 
-export async function searchItems(
-	page: Page,
-	query: string,
-): Promise<number> {
+export async function searchItems(page: Page, query: string): Promise<number> {
 	const searchInput = page
 		.getByRole("searchbox")
 		.or(page.getByPlaceholder(/search/i))
@@ -398,10 +341,7 @@ export async function searchItems(
 	return await results.count().catch(() => 0);
 }
 
-export async function filterByType(
-	page: Page,
-	type: string,
-): Promise<boolean> {
+export async function filterByType(page: Page, type: string): Promise<boolean> {
 	const typeFilter = page
 		.getByLabel(/type|filter.*type/i)
 		.first()
@@ -432,7 +372,12 @@ export async function filterByStatus(
 	const statusFilter = page
 		.getByLabel(/status|filter.*status/i)
 		.first()
-		.or(page.locator("select").filter({ hasText: /status/i }).first());
+		.or(
+			page
+				.locator("select")
+				.filter({ hasText: /status/i })
+				.first(),
+		);
 
 	if (!(await statusFilter.isVisible({ timeout: 2000 }).catch(() => false))) {
 		return false;
@@ -453,9 +398,7 @@ export async function filterByStatus(
 }
 
 export async function clearSearchAndFilters(page: Page): Promise<boolean> {
-	const clearBtn = page
-		.getByRole("button", { name: /clear|reset/i })
-		.first();
+	const clearBtn = page.getByRole("button", { name: /clear|reset/i }).first();
 
 	if (!(await clearBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
 		return false;
@@ -520,9 +463,7 @@ export async function generateProject(
 	};
 }
 
-export async function generateItem(
-	overrides?: Partial<TestItem>,
-): TestItem {
+export async function generateItem(overrides?: Partial<TestItem>): TestItem {
 	return {
 		title: `Test Item ${Date.now()}`,
 		type: "Requirement",
@@ -538,9 +479,7 @@ export async function generateItem(
  */
 
 export async function getTableRowCount(page: Page): Promise<number> {
-	const rows = page
-		.locator("tbody tr")
-		.or(page.locator("[role='row']"));
+	const rows = page.locator("tbody tr").or(page.locator("[role='row']"));
 	return await rows.count().catch(() => 0);
 }
 
@@ -571,9 +510,7 @@ export async function clickTableRowByText(
 
 export async function expectDialogOpen(page: Page): Promise<boolean> {
 	const dialog = page.getByRole("dialog").first();
-	return await dialog
-		.isVisible({ timeout: 2000 })
-		.catch(() => false);
+	return await dialog.isVisible({ timeout: 2000 }).catch(() => false);
 }
 
 export async function closeDialog(page: Page): Promise<boolean> {

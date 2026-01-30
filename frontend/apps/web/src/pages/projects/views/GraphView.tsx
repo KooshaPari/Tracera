@@ -76,7 +76,8 @@ export function GraphView() {
 	}, [linksQuery.hasNextPage, linksQuery.isFetchingNextPage]);
 
 	const items = itemsQuery.data?.pages.flatMap((p: any) => p.items || []) || [];
-	const rawLinks = linksQuery.data?.pages.flatMap((p: any) => p.links || []) || [];
+	const rawLinks =
+		linksQuery.data?.pages.flatMap((p: any) => p.links || []) || [];
 	const itemsTotal =
 		itemsQuery.data?.pages?.[itemsQuery.data.pages.length - 1]?.total ?? 0;
 	const linksTotal =

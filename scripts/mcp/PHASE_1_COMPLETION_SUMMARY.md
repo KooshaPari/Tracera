@@ -2,12 +2,12 @@
 
 ## What Was Delivered
 
-A production-ready **TraceRTM MCP server** (FastMCP 2.13+) with **21 fully implemented tools** organized into 5 categories.
+A production-ready **TraceRTM MCP server** (FastMCP 3.0.0b1) with **21 fully implemented tools** organized into 5 categories.
 
 ### Files Created/Modified
 
 1. **scripts/mcp/tracertm_mcp_server.py** (1013 lines)
-   - Complete FastMCP 2.13 server implementation
+   - Complete FastMCP 3.0.0b1 server implementation
    - All 21 tools with full error handling
    - Logging middleware for debugging
    - STDIO transport for Claude Desktop / droid

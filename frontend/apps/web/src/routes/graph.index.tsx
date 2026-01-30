@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { GraphView } from "@/views/GraphView";
+import { lazy, Suspense } from "react";
+import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
+
+const GraphView = lazy(() =>
+	import("@/views/GraphView").then((m) => ({ default: m.GraphView })),
+);
 
 export const Route = createFileRoute("/graph/")({
 	component: GraphComponent,
@@ -23,7 +28,13 @@ function GraphComponent() {
 				</div>
 			</div>
 
-			<GraphView />
+			<Suspense
+				fallback={
+					<ChunkLoadingSkeleton message="Loading graph visualization..." />
+				}
+			>
+				<GraphView />
+			</Suspense>
 		</div>
 	);
 }

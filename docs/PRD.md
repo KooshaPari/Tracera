@@ -665,7 +665,7 @@ pip install -e .
 - **CSV**: Spreadsheet import
 
 **Configuration**:
-- YAML config file: `~/.config/tracertm/config.yaml`
+- YAML config file: `~/.tracertm/config.yaml`
 - Project-specific: `.tracertm/config.yaml`
 - Environment variables: `TRACERTM_PROJECT`, `TRACERTM_DB_URL`
 - CLI flags override config

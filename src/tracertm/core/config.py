@@ -14,8 +14,11 @@ class DatabaseConfig(BaseModel):
     database: str = Field(default="tracertm")
     username: str = Field(default="tracertm")
     password: str = Field(default="tracertm")
-    pool_size: int = Field(default=20)
-    max_overflow: int = Field(default=10)
+    # Connection pool settings optimized for performance
+    pool_size: int = Field(default=20)  # Base number of connections
+    max_overflow: int = Field(default=30)  # Extra connections when pool exhausted
+    pool_timeout: int = Field(default=30)  # Seconds to wait for available connection
+    pool_recycle: int = Field(default=1800)  # Recycle connections after 30 minutes
 
     @property
     def url(self) -> str:

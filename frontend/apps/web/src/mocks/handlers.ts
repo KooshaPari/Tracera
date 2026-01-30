@@ -1,8 +1,6 @@
 // MSW handlers for TraceRTM API mocking
 import { HttpResponse, http } from "msw";
 import type {
-	Agent,
-	CreateAgentInput,
 	CreateItemInput,
 	CreateLinkInput,
 	CreateProjectInput,
@@ -20,15 +18,12 @@ import {
 	filterItemsByProject,
 	filterLinksBySource,
 	filterLinksByTarget,
-	findAgentById,
 	findItemById,
 	findLinkById,
 	findProjectById,
-	generateAgentId,
 	generateItemId,
 	generateLinkId,
 	generateProjectId,
-	mockAgents,
 	mockItems as mockItemsBaseline,
 	mockLinks as mockLinksBaseline,
 	mockProjects,
@@ -348,47 +343,6 @@ export const handlers = [
 
 		mockLinks.splice(linkIndex, 1);
 		return HttpResponse.json(null, { status: 204 });
-	}),
-
-	// ============================================================================
-	// AGENT ENDPOINTS
-	// ============================================================================
-	http.get(`${API_BASE}/api/v1/agents`, async ({ request }) => {
-		await delay();
-		const url = new URL(request.url);
-		const limit = Number(url.searchParams.get("limit")) || mockAgents.length;
-		const offset = Number(url.searchParams.get("offset")) || 0;
-
-		const paginatedAgents = mockAgents.slice(offset, offset + limit);
-		return HttpResponse.json(paginatedAgents);
-	}),
-
-	http.get(`${API_BASE}/api/v1/agents/:id`, async ({ params }) => {
-		await delay();
-		const { id } = params;
-		const agent = findAgentById(id as string);
-
-		if (!agent) {
-			return HttpResponse.json({ error: "Agent not found" }, { status: 404 });
-		}
-
-		return HttpResponse.json(agent);
-	}),
-
-	http.post(`${API_BASE}/api/v1/agents`, async ({ request }) => {
-		await delay();
-		const body = (await request.json()) as CreateAgentInput;
-
-		const newAgent: Agent = {
-			id: generateAgentId(),
-			name: body.name,
-			type: body.type,
-			status: "idle" as const,
-			lastSeen: new Date().toISOString(),
-		};
-
-		mockAgents.push(newAgent);
-		return HttpResponse.json(newAgent, { status: 201 });
 	}),
 
 	// ============================================================================

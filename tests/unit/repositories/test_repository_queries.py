@@ -11,6 +11,10 @@ from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
 
 
+# Use link_test_setup fixture for link-related tests
+pytestmark = pytest.mark.usefixtures("link_test_setup")
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_item_query_with_filters(db_session: AsyncSession):

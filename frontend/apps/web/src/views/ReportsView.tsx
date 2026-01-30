@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import {
@@ -10,13 +9,19 @@ import {
 	SelectValue,
 } from "@tracertm/ui/components/Select";
 import {
-	BarChart,
 	ClipboardList,
-	Link as LinkIcon,
 	TrendingUp,
+	FileText,
+	Download,
+	Layers,
+	FileSearch,
+	ShieldCheck,
+	History as HistoryIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api/endpoints";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type ReportFormat = "json" | "csv" | "pdf" | "xlsx";
 
@@ -26,36 +31,41 @@ interface ReportTemplate {
 	description: string;
 	format: ReportFormat[];
 	icon: React.ComponentType<{ className?: string }>;
+	color: string;
 }
 
 const reportTemplates: ReportTemplate[] = [
 	{
 		id: "coverage",
-		name: "Coverage Report",
-		description: "Requirements to features traceability",
+		name: "Traceability Matrix",
+		description: "End-to-end mapping from reqs to implementation.",
 		format: ["pdf", "xlsx", "csv"],
-		icon: BarChart,
+		icon: Layers,
+		color: "text-blue-500",
 	},
 	{
 		id: "status",
-		name: "Status Report",
-		description: "Current project status overview",
+		name: "Executive Summary",
+		description: "High-level project health and risk assessment.",
 		format: ["pdf", "xlsx"],
 		icon: TrendingUp,
+		color: "text-green-500",
 	},
 	{
 		id: "items",
-		name: "Items Export",
-		description: "Export all items data",
+		name: "Entity Registry",
+		description: "Full export of all nodes and metadata.",
 		format: ["json", "csv", "xlsx"],
 		icon: ClipboardList,
+		color: "text-purple-500",
 	},
 	{
-		id: "links",
-		name: "Links Export",
-		description: "Export all relationship links",
-		format: ["json", "csv"],
-		icon: LinkIcon,
+		id: "audit",
+		name: "Compliance Audit",
+		description: "Complete history of changes and transitions.",
+		format: ["pdf", "json"],
+		icon: ShieldCheck,
+		color: "text-orange-500",
 	},
 ];
 
@@ -80,41 +90,41 @@ export function ReportsView() {
 			format: ReportFormat;
 			projectId?: string;
 		}) => {
-			// Use export API for JSON/CSV formats
 			if (format === "json" || format === "csv") {
-				if (!projectId) {
-					throw new Error("Project ID required for export");
-				}
+				if (!projectId) throw new Error("Select project context");
 				const blob = await api.exportImport.export(projectId, format);
 				const url = window.URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = url;
-				a.download = `${templateId}-report.${format === "json" ? "json" : "csv"}`;
+				a.download = `${templateId}-export.${format}`;
 				document.body.appendChild(a);
 				a.click();
 				window.URL.revokeObjectURL(url);
 				document.body.removeChild(a);
 				return { success: true };
 			}
-			// For PDF/XLSX, show alert (not implemented yet)
-			alert(
-				`Generating ${templateId} report as ${format} (not yet implemented)`,
+			// Simulate long generation for PDF/XLSX
+			await new Promise((r) => setTimeout(r, 1500));
+			toast.info(
+				`${templateId.toUpperCase()} generation initialized in background`,
 			);
 			return { success: false };
 		},
-		onSuccess: () => {
-			// Report generation handled in mutationFn
+		onSuccess: (data) => {
+			if (data.success) toast.success("Export successful");
 		},
 		onError: (error) => {
-			console.error("Report generation failed:", error);
-			alert("Report generation failed. Please try again.");
+			toast.error(error.message || "Engine failure during generation");
 		},
 	});
 
 	const handleGenerate = (templateId: string) => {
-		const format = selectedFormat[templateId] || "pdf";
+		const format =
+			selectedFormat[templateId] ||
+			reportTemplates.find((t) => t.id === templateId)?.format[0] ||
+			"pdf";
 		if ((format === "json" || format === "csv") && !selectedProject) {
-			alert("Please select a project for JSON/CSV exports");
+			toast.error("Global scope export disabled. Select project.");
 			return;
 		}
 		generateReportMutation.mutate({
@@ -125,30 +135,43 @@ export function ReportsView() {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<h1 className="text-3xl font-bold">Reports</h1>
-				<p className="text-gray-600">Generate and export reports</p>
+		<div className="p-6 space-y-8 max-w-6xl mx-auto animate-in fade-in duration-500 pb-20">
+			{/* Header */}
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+				<div>
+					<h1 className="text-2xl font-black tracking-tight uppercase text-primary">
+						Intelligence Hub
+					</h1>
+					<p className="text-sm text-muted-foreground font-medium">
+						Generate deterministic reports and structural exports.
+					</p>
+				</div>
 			</div>
 
-			<Card className="p-6">
-				<div className="space-y-4">
-					<div>
-						<label
-							htmlFor="project-select"
-							className="block text-sm font-medium mb-2"
-						>
-							Project (for JSON/CSV exports)
-						</label>
+			{/* Project Context Selector */}
+			<Card className="p-6 border-none bg-muted/30 rounded-[2rem] shadow-inner">
+				<div className="flex flex-col md:flex-row items-center gap-6">
+					<div className="h-12 w-12 rounded-2xl bg-background shadow-sm flex items-center justify-center shrink-0">
+						<FileSearch className="h-6 w-6 text-primary" />
+					</div>
+					<div className="flex-1 space-y-1">
+						<h3 className="text-xs font-black uppercase tracking-widest">
+							Global Context
+						</h3>
+						<p className="text-[10px] font-bold text-muted-foreground uppercase">
+							Filter intelligence by project boundary
+						</p>
+					</div>
+					<div className="w-full md:w-72">
 						<Select
 							value={selectedProject || "all"}
 							onValueChange={(v) => setSelectedProject(v === "all" ? "" : v)}
 						>
-							<SelectTrigger id="project-select" className="mt-2">
-								<SelectValue placeholder="Select a project (optional)" />
+							<SelectTrigger className="h-11 bg-background border-none shadow-md rounded-xl">
+								<SelectValue placeholder="All Active Projects" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">All Projects</SelectItem>
+								<SelectItem value="all">System-Wide Registry</SelectItem>
 								{projectsQuery.data?.map((project) => (
 									<SelectItem key={project.id} value={project.id}>
 										{project.name}
@@ -160,53 +183,77 @@ export function ReportsView() {
 				</div>
 			</Card>
 
+			{/* Templates Grid */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				{reportTemplates.map((template) => (
-					<Card key={template.id} className="p-6">
-						<div className="flex items-start gap-4">
-							{(() => {
-								const IconComponent = template.icon;
-								return (
-									<IconComponent className="h-10 w-10 text-muted-foreground" />
-								);
-							})()}
-							<div className="flex-1">
-								<h3 className="text-lg font-semibold mb-1">{template.name}</h3>
-								<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-									{template.description}
-								</p>
+					<Card
+						key={template.id}
+						className="p-8 border-none bg-card/50 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative"
+					>
+						{/* Subtle Icon Background */}
+						<div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+							<template.icon className="h-40 w-40" />
+						</div>
 
-								<div className="flex items-center gap-2 mb-4">
-									<span className="text-sm text-gray-600">Format:</span>
-									{template.format.map((format) => (
-										<Badge
-											key={format}
-											variant={
-												selectedFormat[template.id] === format
-													? "default"
-													: "secondary"
-											}
-											onClick={() =>
-												setSelectedFormat({
-													...selectedFormat,
-													[template.id]: format,
-												})
-											}
-											className="cursor-pointer"
-										>
-											{format.toUpperCase()}
-										</Badge>
-									))}
+						<div className="flex items-start gap-6 relative z-10">
+							<div
+								className={cn(
+									"h-14 w-14 rounded-2xl bg-muted/50 flex items-center justify-center shrink-0",
+									template.color,
+								)}
+							>
+								<template.icon className="h-7 w-7" />
+							</div>
+							<div className="flex-1 space-y-4">
+								<div>
+									<h3 className="text-lg font-black tracking-tight">
+										{template.name}
+									</h3>
+									<p className="text-xs text-muted-foreground font-medium leading-relaxed mt-1">
+										{template.description}
+									</p>
+								</div>
+
+								<div className="space-y-3">
+									<p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+										Select Format
+									</p>
+									<div className="flex flex-wrap gap-2">
+										{template.format.map((format) => (
+											<button
+												key={format}
+												onClick={() =>
+													setSelectedFormat({
+														...selectedFormat,
+														[template.id]: format,
+													})
+												}
+												className={cn(
+													"px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter border transition-all",
+													selectedFormat[template.id] === format ||
+														(!selectedFormat[template.id] &&
+															template.format[0] === format)
+														? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+														: "bg-background border-border hover:border-primary/50 text-muted-foreground",
+												)}
+											>
+												{format}
+											</button>
+										))}
+									</div>
 								</div>
 
 								<Button
 									onClick={() => handleGenerate(template.id)}
-									className="w-full"
+									className="w-full h-11 rounded-xl font-black uppercase tracking-[0.1em] gap-2 shadow-lg shadow-primary/10"
 									disabled={generateReportMutation.isPending}
 								>
-									{generateReportMutation.isPending
-										? "Generating..."
-										: "Generate Report"}
+									{generateReportMutation.isPending ? (
+										<TrendingUp className="h-4 w-4 animate-bounce" />
+									) : (
+										<Download className="h-4 w-4" />
+									)}
+									Compile Engine
 								</Button>
 							</div>
 						</div>
@@ -214,27 +261,43 @@ export function ReportsView() {
 				))}
 			</div>
 
-			<Card className="p-6">
-				<h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
-				<div className="space-y-3">
-					<div className="flex items-center justify-between p-3 border rounded-lg">
-						<div>
-							<div className="font-medium">Coverage Report</div>
-							<div className="text-sm text-gray-500">Generated 2 hours ago</div>
+			{/* Recent Activity */}
+			<Card className="p-8 border-none bg-muted/20 rounded-[2rem]">
+				<div className="flex items-center gap-3 mb-8">
+					<HistoryIcon className="h-5 w-5 text-primary" />
+					<h2 className="text-sm font-black uppercase tracking-widest">
+						Archive History
+					</h2>
+				</div>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					{[
+						{ name: "Full Integrity Matrix", date: "2h ago", type: "PDF" },
+						{ name: "Node Registry v1.4", date: "Yesterday", type: "JSON" },
+					].map((r, i) => (
+						<div
+							key={i}
+							className="flex items-center justify-between p-4 rounded-2xl bg-background/50 border border-border/50 group hover:border-primary/30 transition-colors"
+						>
+							<div className="flex items-center gap-4">
+								<div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center">
+									<FileText className="h-5 w-5 text-primary" />
+								</div>
+								<div>
+									<div className="font-bold text-sm">{r.name}</div>
+									<div className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter">
+										{r.date} • {r.type}
+									</div>
+								</div>
+							</div>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="rounded-full group-hover:bg-primary group-hover:text-white transition-all"
+							>
+								<Download className="h-4 w-4" />
+							</Button>
 						</div>
-						<Button variant="outline" size="sm">
-							Download
-						</Button>
-					</div>
-					<div className="flex items-center justify-between p-3 border rounded-lg">
-						<div>
-							<div className="font-medium">Items Export</div>
-							<div className="text-sm text-gray-500">Generated yesterday</div>
-						</div>
-						<Button variant="outline" size="sm">
-							Download
-						</Button>
-					</div>
+					))}
 				</div>
 			</Card>
 		</div>

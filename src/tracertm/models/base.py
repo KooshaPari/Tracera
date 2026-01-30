@@ -3,6 +3,7 @@ Base SQLAlchemy model for TraceRTM.
 """
 
 from datetime import datetime
+import uuid
 
 from sqlalchemy import DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -27,3 +28,8 @@ class TimestampMixin:
         onupdate=func.now(),
         nullable=False,
     )
+
+
+def generate_uuid() -> str:
+    """Generate a UUID string."""
+    return str(uuid.uuid4())

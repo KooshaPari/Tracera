@@ -78,7 +78,7 @@ rtm config init --database-url postgresql://user:pass@localhost/tracertm
 **Status:** ✅ Complete
 
 **Implementation:**
-- Configuration stored in `~/.config/tracertm/config.yaml`
+- Configuration stored in `~/.tracertm/config.yaml`
 - YAML format with Pydantic validation
 - `rtm config show` displays current config
 - `rtm config set <key> <value>` updates config
@@ -136,7 +136,7 @@ export TRACERTM_OUTPUT_FORMAT=json
 **Status:** ✅ Complete
 
 **Implementation:**
-- Project config stored in `~/.config/tracertm/projects/<project_id>/config.yaml`
+- Project config stored in `~/.tracertm/projects/<project_id>/config.yaml`
 - Project config overrides global config
 - Config hierarchy: CLI > Env > Project > Global
 - Project-specific settings isolated per project
@@ -144,8 +144,8 @@ export TRACERTM_OUTPUT_FORMAT=json
 **Config Hierarchy:**
 1. CLI flags (highest precedence)
 2. Environment variables (`TRACERTM_*`)
-3. Project config (`~/.config/tracertm/projects/<id>/config.yaml`)
-4. Global config (`~/.config/tracertm/config.yaml`) (lowest precedence)
+3. Project config (`~/.tracertm/projects/<id>/config.yaml`)
+4. Global config (`~/.tracertm/config.yaml`) (lowest precedence)
 
 **Files:**
 - `src/tracertm/config/manager.py` - `load()` method with project_id support

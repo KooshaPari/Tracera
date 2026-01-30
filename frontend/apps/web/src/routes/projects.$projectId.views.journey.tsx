@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ItemsTableView } from "@/views/ItemsTableView";
 
 export function JourneyView() {
-	return <ItemsTableView />;
+	const { projectId } = useParams({
+		from: "/projects/$projectId/views/journey",
+	});
+	return <ItemsTableView projectId={projectId} view="journey" />;
 }
 
 export const JOURNEY_VIEW = JourneyView;

@@ -3,6 +3,29 @@
  * Helper functions for working with OpenAPI specifications
  */
 
+/**
+ * Paths object in OpenAPI spec
+ */
+export interface OpenAPIPaths {
+	[path: string]: {
+		[method: string]: unknown;
+	};
+}
+
+/**
+ * Schemas components in OpenAPI spec
+ */
+export interface OpenAPISchemas {
+	[name: string]: unknown;
+}
+
+/**
+ * Security schemes components in OpenAPI spec
+ */
+export interface OpenAPISecuritySchemes {
+	[name: string]: unknown;
+}
+
 export interface OpenAPISpec {
 	openapi: string;
 	info: {
@@ -14,10 +37,10 @@ export interface OpenAPISpec {
 		url: string;
 		description?: string;
 	}>;
-	paths: Record<string, any>;
+	paths: OpenAPIPaths;
 	components?: {
-		schemas?: Record<string, any>;
-		securitySchemes?: Record<string, any>;
+		schemas?: OpenAPISchemas;
+		securitySchemes?: OpenAPISecuritySchemes;
 	};
 }
 
@@ -99,7 +122,7 @@ export function getTags(spec: OpenAPISpec): string[] {
  */
 export function getSecuritySchemes(
 	spec: OpenAPISpec,
-): Record<string, any> | undefined {
+): OpenAPISecuritySchemes | undefined {
 	return spec.components?.securitySchemes;
 }
 
@@ -148,6 +171,16 @@ export function getServerUrls(spec: OpenAPISpec): string[] {
 }
 
 /**
+ * Code examples by language
+ */
+export interface CodeExamples {
+	curl: string;
+	javascript: string;
+	python: string;
+	typescript: string;
+}
+
+/**
  * Generate code examples for an endpoint
  */
 export function generateCodeExamples(
@@ -155,10 +188,10 @@ export function generateCodeExamples(
 	path: string,
 	baseUrl: string,
 	authToken?: string,
-): Record<string, string> {
+): CodeExamples {
 	const url = `${baseUrl}${path}`;
 
-	const examples: Record<string, string> = {
+	const examples: CodeExamples = {
 		curl: generateCurlExample(method, url, authToken),
 		javascript: generateJavaScriptExample(method, url, authToken),
 		python: generatePythonExample(method, url, authToken),
@@ -309,12 +342,16 @@ export function getEndpointByOperationId(
 }
 
 /**
+ * Path parameters map
+ */
+export interface PathParams {
+	[key: string]: string;
+}
+
+/**
  * Format path parameters
  */
-export function formatPathWithParams(
-	path: string,
-	params: Record<string, string>,
-): string {
+export function formatPathWithParams(path: string, params: PathParams): string {
 	let formattedPath = path;
 	Object.entries(params).forEach(([key, value]) => {
 		formattedPath = formattedPath.replace(`{${key}}`, value);
@@ -323,10 +360,17 @@ export function formatPathWithParams(
 }
 
 /**
+ * Response examples map by status code
+ */
+export interface ResponseExamples {
+	[statusCode: string]: unknown;
+}
+
+/**
  * Parse response examples from operation
  */
-export function getResponseExamples(operation: any): Record<string, any> {
-	const examples: Record<string, any> = {};
+export function getResponseExamples(operation: any): ResponseExamples {
+	const examples: ResponseExamples = {};
 
 	if (operation.responses) {
 		Object.entries(operation.responses).forEach(

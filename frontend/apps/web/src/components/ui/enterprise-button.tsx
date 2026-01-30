@@ -102,7 +102,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 			>
 				{/* Ripple effect */}
 				{ripple && !loading && !success && (
-					<span className="absolute inset-0 overflow-hidden rounded-md">
+					<span className="absolute inset-0 overflow-hidden rounded-md pointer-events-none">
 						<span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 transform -skew-x-12 -translate-x-full hover:translate-x-full" />
 					</span>
 				)}

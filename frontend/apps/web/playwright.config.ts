@@ -11,17 +11,18 @@ export default defineConfig({
 	// Maximum time one test can run for
 	timeout: 30 * 1000,
 
-	// Run tests in files in parallel
-	fullyParallel: true,
+	// Run tests in files in parallel - disabled due to API mock isolation issues
+	fullyParallel: false,
 
 	// Fail the build on CI if you accidentally left test.only in the source code
 	forbidOnly: !!process.env.CI,
 
 	// Retry on CI only
-	retries: process.env.CI ? 2 : 0,
+	retries: process.env.CI ? 2 : 1,
 
-	// Opt out of parallel tests on CI
-	workers: process.env.CI ? 1 : undefined,
+	// Limit workers to prevent API mock interference between tests
+	// Use 2 workers locally for faster execution while maintaining stability
+	workers: process.env.CI ? 1 : 2,
 
 	// Reporter to use
 	reporter: [
@@ -34,6 +35,9 @@ export default defineConfig({
 	use: {
 		// Base URL to use in actions like `await page.goto('/')`
 		baseURL: "http://localhost:5173",
+
+		// Run tests in headless mode (default for CI and local)
+		headless: true,
 
 		// Collect trace when retrying the failed test
 		trace: "on-first-retry",

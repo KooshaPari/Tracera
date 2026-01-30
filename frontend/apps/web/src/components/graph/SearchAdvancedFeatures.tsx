@@ -326,59 +326,61 @@ interface DimensionFilterGroupProps {
 /**
  * Component for dimension-based filtering
  */
-export const DimensionFilterGroup = memo(function DimensionFilterGroupComponent({
-	dimensions,
-	selectedDimension,
-	selectedValue,
-	onDimensionSelect,
-	onValueSelect,
-	className,
-}: DimensionFilterGroupProps) {
-	if (dimensions.length === 0) {
-		return null;
-	}
+export const DimensionFilterGroup = memo(
+	function DimensionFilterGroupComponent({
+		dimensions,
+		selectedDimension,
+		selectedValue,
+		onDimensionSelect,
+		onValueSelect,
+		className,
+	}: DimensionFilterGroupProps) {
+		if (dimensions.length === 0) {
+			return null;
+		}
 
-	return (
-		<div className={cn("space-y-2", className)}>
-			<p className="text-xs font-semibold text-muted-foreground uppercase">
-				Dimensions
-			</p>
-			<div className="space-y-2">
-				{dimensions.map((dim) => (
-					<div key={dim.key} className="space-y-1">
-						<button
-							onClick={() => onDimensionSelect(dim.key)}
-							className={cn(
-								"text-xs font-medium w-full text-left px-2 py-1 rounded transition-colors",
-								selectedDimension === dim.key
-									? "bg-primary text-primary-foreground"
-									: "text-muted-foreground hover:text-foreground",
+		return (
+			<div className={cn("space-y-2", className)}>
+				<p className="text-xs font-semibold text-muted-foreground uppercase">
+					Dimensions
+				</p>
+				<div className="space-y-2">
+					{dimensions.map((dim) => (
+						<div key={dim.key} className="space-y-1">
+							<button
+								onClick={() => onDimensionSelect(dim.key)}
+								className={cn(
+									"text-xs font-medium w-full text-left px-2 py-1 rounded transition-colors",
+									selectedDimension === dim.key
+										? "bg-primary text-primary-foreground"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{dim.key}
+							</button>
+							{selectedDimension === dim.key && (
+								<div className="flex flex-wrap gap-1 px-2">
+									{dim.values.map((value) => (
+										<Button
+											key={value}
+											variant="outline"
+											size="sm"
+											className={cn(
+												"h-6 text-[10px]",
+												selectedValue === value &&
+													"bg-primary text-primary-foreground border-primary",
+											)}
+											onClick={() => onValueSelect(dim.key, value)}
+										>
+											{value}
+										</Button>
+									))}
+								</div>
 							)}
-						>
-							{dim.key}
-						</button>
-						{selectedDimension === dim.key && (
-							<div className="flex flex-wrap gap-1 px-2">
-								{dim.values.map((value) => (
-									<Button
-										key={value}
-										variant="outline"
-										size="sm"
-										className={cn(
-											"h-6 text-[10px]",
-											selectedValue === value &&
-												"bg-primary text-primary-foreground border-primary",
-										)}
-										onClick={() => onValueSelect(dim.key, value)}
-									>
-										{value}
-									</Button>
-								))}
-							</div>
-						)}
-					</div>
-				))}
+						</div>
+					))}
+				</div>
 			</div>
-		</div>
-	);
-});
+		);
+	},
+);

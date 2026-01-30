@@ -139,9 +139,11 @@ export function useViewportCulling({
  * console.log(`Rendering ${stats.visibleEdges} of ${stats.totalEdges} edges`);
  * ```
  */
-export function useViewportCullingStats(
-	stats: CullingStats | null,
-): { culledCount: number; visibleCount: number; savedPercentage: number } {
+export function useViewportCullingStats(stats: CullingStats | null): {
+	culledCount: number;
+	visibleCount: number;
+	savedPercentage: number;
+} {
 	return {
 		culledCount: stats?.culledEdges ?? 0,
 		visibleCount: stats?.visibleEdges ?? 0,

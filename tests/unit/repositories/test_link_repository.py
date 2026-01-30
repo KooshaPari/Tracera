@@ -8,6 +8,10 @@ from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
 
 
+# Use link_test_setup fixture to auto-create graphs when projects are created
+pytestmark = pytest.mark.usefixtures("link_test_setup")
+
+
 
 @pytest.mark.unit
 @pytest.mark.asyncio

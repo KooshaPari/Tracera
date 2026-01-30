@@ -2,11 +2,15 @@
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
 
+logger = logging.getLogger(__name__)
+
 try:
-    import redis
+    import redis.asyncio as aioredis
 
     REDIS_AVAILABLE = True
 except ImportError:
@@ -24,8 +28,59 @@ class CacheStats:
     evictions: int
 
 
+# Cache configuration by data type
+CACHE_CONFIG = {
+    "projects": {
+        "ttl": 600,  # 10 minutes - projects list rarely changes
+        "prefix": "projects",
+    },
+    "project": {
+        "ttl": 300,  # 5 minutes - individual project
+        "prefix": "project",
+    },
+    "items": {
+        "ttl": 60,  # 1 minute - items change more frequently
+        "prefix": "items",
+    },
+    "links": {
+        "ttl": 60,  # 1 minute - links change frequently
+        "prefix": "links",
+    },
+    "graph": {
+        "ttl": 300,  # 5 minutes - graph is expensive to compute
+        "prefix": "graph",
+    },
+    "graph_full": {
+        "ttl": 600,  # 10 minutes - full graph projection
+        "prefix": "graph_full",
+    },
+    "ancestors": {
+        "ttl": 300,  # 5 minutes - ancestry traversal
+        "prefix": "ancestors",
+    },
+    "descendants": {
+        "ttl": 300,  # 5 minutes - descendant traversal
+        "prefix": "descendants",
+    },
+    "impact": {
+        "ttl": 180,  # 3 minutes - impact analysis is more volatile
+        "prefix": "impact",
+    },
+    "search": {
+        "ttl": 120,  # 2 minutes - search results
+        "prefix": "search",
+    },
+    "system": {
+        "ttl": 30,  # 30 seconds - system status
+        "prefix": "system",
+    },
+}
+
+
 class CacheService:
-    """Service for caching using Redis."""
+    """Service for caching using async Redis."""
+
+    _instance: "CacheService | None" = None
 
     def __init__(self, redis_url: str | None = None):
         """
@@ -36,14 +91,21 @@ class CacheService:
         """
         if not REDIS_AVAILABLE:
             self.redis_client = None
+            logger.warning("Redis not available - caching disabled")
             return
 
         redis_url = redis_url or "redis://localhost:6379"
         try:
-            self.redis_client = redis.from_url(redis_url, decode_responses=True)
-            self.redis_client.ping()
-        except Exception:
+            self.redis_client = aioredis.from_url(
+                redis_url,
+                encoding="utf-8",
+                decode_responses=True,
+                max_connections=20,  # Connection pooling
+            )
+            logger.info(f"CacheService initialized with Redis at {redis_url}")
+        except Exception as e:
             self.redis_client = None
+            logger.warning(f"Failed to connect to Redis: {e} - caching disabled")
 
         self.stats = {
             "hits": 0,
@@ -51,10 +113,30 @@ class CacheService:
             "evictions": 0,
         }
 
-    def _generate_key(self, prefix: str, **kwargs: Any) -> str:
-        """Generate cache key from prefix and parameters."""
-        key_str = f"{prefix}:" + ":".join(f"{k}={v}" for k, v in sorted(kwargs.items()))
-        return hashlib.md5(key_str.encode()).hexdigest()
+    @classmethod
+    def get_instance(cls, redis_url: str | None = None) -> "CacheService":
+        """Get singleton instance of CacheService."""
+        if cls._instance is None:
+            cls._instance = cls(redis_url)
+        return cls._instance
+
+    def _generate_key(self, cache_type: str, **kwargs: Any) -> str:
+        """Generate cache key from type and parameters."""
+        config = CACHE_CONFIG.get(cache_type, {"prefix": cache_type})
+        prefix = config["prefix"]
+
+        # Build key string from sorted kwargs
+        key_parts = [f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None]
+        key_str = f"{prefix}:" + ":".join(key_parts) if key_parts else prefix
+
+        # Hash for consistent key length
+        key_hash = hashlib.md5(key_str.encode()).hexdigest()
+        return f"tracertm:{prefix}:{key_hash}"
+
+    def _get_ttl(self, cache_type: str) -> int:
+        """Get TTL for cache type."""
+        config = CACHE_CONFIG.get(cache_type, {"ttl": 300})
+        return config["ttl"]
 
     async def get(self, key: str) -> Any | None:
         """
@@ -71,14 +153,15 @@ class CacheService:
             return None
 
         try:
-            value = self.redis_client.get(key)
+            value = await self.redis_client.get(key)
             if value:
                 self.stats["hits"] += 1
                 return json.loads(value)
             else:
                 self.stats["misses"] += 1
                 return None
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Cache get error: {e}")
             self.stats["misses"] += 1
             return None
 
@@ -86,7 +169,8 @@ class CacheService:
         self,
         key: str,
         value: Any,
-        ttl_seconds: int = 3600,
+        ttl_seconds: int | None = None,
+        cache_type: str | None = None,
     ) -> bool:
         """
         Set value in cache.
@@ -94,7 +178,8 @@ class CacheService:
         Args:
             key: Cache key
             value: Value to cache
-            ttl_seconds: Time to live in seconds (default: 1 hour)
+            ttl_seconds: Time to live in seconds (overrides cache_type config)
+            cache_type: Cache type for default TTL lookup
 
         Returns:
             True if successful, False otherwise
@@ -102,14 +187,21 @@ class CacheService:
         if not self.redis_client:
             return False
 
+        # Determine TTL
+        if ttl_seconds is None and cache_type:
+            ttl_seconds = self._get_ttl(cache_type)
+        elif ttl_seconds is None:
+            ttl_seconds = 300  # Default 5 minutes
+
         try:
-            self.redis_client.setex(
+            await self.redis_client.setex(
                 key,
                 ttl_seconds,
-                json.dumps(value),
+                json.dumps(value, default=str),
             )
             return True
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Cache set error: {e}")
             return False
 
     async def delete(self, key: str) -> bool:
@@ -126,10 +218,25 @@ class CacheService:
             return False
 
         try:
-            self.redis_client.delete(key)
+            await self.redis_client.delete(key)
             return True
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Cache delete error: {e}")
             return False
+
+    async def invalidate(self, cache_type: str, **kwargs: Any) -> bool:
+        """
+        Invalidate cache for a specific type and parameters.
+
+        Args:
+            cache_type: Type of cache to invalidate
+            **kwargs: Parameters to identify specific cache entry
+
+        Returns:
+            True if successful, False otherwise
+        """
+        key = self._generate_key(cache_type, **kwargs)
+        return await self.delete(key)
 
     async def clear(self) -> bool:
         """
@@ -142,10 +249,11 @@ class CacheService:
             return False
 
         try:
-            self.redis_client.flushdb()
+            await self.redis_client.flushdb()
             self.stats = {"hits": 0, "misses": 0, "evictions": 0}
             return True
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Cache clear error: {e}")
             return False
 
     async def clear_prefix(self, prefix: str) -> int:
@@ -162,14 +270,45 @@ class CacheService:
             return 0
 
         try:
-            pattern = f"{prefix}:*"
-            keys = self.redis_client.keys(pattern)
+            pattern = f"tracertm:{prefix}:*"
+            keys = []
+            async for key in self.redis_client.scan_iter(pattern):
+                keys.append(key)
+
             if keys:
-                deleted: int = self.redis_client.delete(*keys)
+                deleted: int = await self.redis_client.delete(*keys)
                 return deleted
             return 0
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Cache clear_prefix error: {e}")
             return 0
+
+    async def invalidate_project(self, project_id: str) -> int:
+        """
+        Invalidate all cache entries for a project.
+
+        Args:
+            project_id: Project ID
+
+        Returns:
+            Number of keys deleted
+        """
+        if not self.redis_client:
+            return 0
+
+        total_deleted = 0
+
+        # Invalidate project-specific caches
+        for cache_type in ["project", "items", "links", "graph", "graph_full", "ancestors", "descendants", "impact"]:
+            key = self._generate_key(cache_type, project_id=project_id)
+            if await self.delete(key):
+                total_deleted += 1
+
+        # Also clear prefix-based entries
+        total_deleted += await self.clear_prefix(f"graph:{project_id}")
+        total_deleted += await self.clear_prefix(f"items:{project_id}")
+
+        return total_deleted
 
     async def get_stats(self) -> CacheStats:
         """
@@ -184,7 +323,7 @@ class CacheService:
         total_size = 0
         if self.redis_client:
             try:
-                info = self.redis_client.info("memory")
+                info = await self.redis_client.info("memory")
                 total_size = info.get("used_memory", 0)
             except Exception:
                 pass
@@ -196,3 +335,53 @@ class CacheService:
             total_size_bytes=total_size,
             evictions=self.stats["evictions"],
         )
+
+    async def health_check(self) -> bool:
+        """Check if Redis is healthy."""
+        if not self.redis_client:
+            return False
+
+        try:
+            await self.redis_client.ping()
+            return True
+        except Exception:
+            return False
+
+
+# Cached operations helper functions
+async def cached_get(
+    cache: CacheService,
+    cache_type: str,
+    fetch_fn,
+    **kwargs,
+) -> Any:
+    """
+    Get value from cache or fetch and cache it.
+
+    Args:
+        cache: CacheService instance
+        cache_type: Type of cache for key generation and TTL
+        fetch_fn: Async function to fetch data if not cached
+        **kwargs: Parameters for cache key and fetch function
+
+    Returns:
+        Cached or freshly fetched value
+    """
+    key = cache._generate_key(cache_type, **kwargs)
+
+    # Try cache first
+    cached = await cache.get(key)
+    if cached is not None:
+        return cached
+
+    # Fetch and cache
+    result = await fetch_fn()
+    await cache.set(key, result, cache_type=cache_type)
+
+    return result
+
+
+@lru_cache()
+def get_cache_service() -> CacheService:
+    """Get singleton CacheService for dependency injection."""
+    return CacheService.get_instance()

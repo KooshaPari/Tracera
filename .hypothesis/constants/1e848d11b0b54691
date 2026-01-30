@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/github_import_service.py
+# hypothesis_version: 6.148.7
+
+['FEATURE', 'Imported from GitHub', 'Untitled', 'body', 'closed', 'complete', 'discussion', 'done', 'errors', 'github_id', 'github_item_imported', 'github_number', 'github_url', 'id', 'implements', 'in review', 'in_progress', 'issue', 'issues', 'item', 'items', 'items_imported', 'links_imported', 'number', 'open', 'project_id', 'pull_request', 'related_issues', 'state', 'success', 'system', 'task', 'title', 'todo', 'type', 'url']

@@ -1,0 +1,1741 @@
+"""Parameterized MCP tools (atoms-style) for TraceRTM."""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+import gzip
+import json
+import yaml
+import subprocess
+from pathlib import Path
+from typing import Any
+
+from fastmcp import Context
+from fastmcp.exceptions import ToolError
+
+try:
+    from tracertm.mcp.core import mcp
+except Exception:  # pragma: no cover - test fallback when FastMCP isn't available
+    class _StubMCP:
+        def tool(self, *args: Any, **kwargs: Any):
+            def decorator(fn):
+                return fn
+            return decorator
+
+    mcp = _StubMCP()  # type: ignore[assignment]
+from tracertm.config.manager import ConfigManager
+from tracertm.database.connection import DatabaseConnection
+from tracertm.storage.local_storage import LocalStorageManager
+from tracertm.storage.sync_engine import SyncEngine
+from tracertm.storage.conflict_resolver import ConflictStrategy as StorageConflictStrategy
+from tracertm.api.client import TraceRTMClient
+from tracertm.services.stateless_ingestion_service import StatelessIngestionService
+from tracertm.services.progress_service import ProgressService
+from tracertm.storage.file_watcher import TraceFileWatcher
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# Import tool modules (tolerate missing FastMCP deps in tests)
+try:
+    from tracertm.mcp.tools import core_tools as legacy
+except Exception:  # pragma: no cover - test fallback
+    async def _legacy_unavailable(*_args: Any, **_kwargs: Any):
+        raise ToolError("Legacy MCP tools are unavailable in this environment.")
+
+    class _LegacyStub:
+        select_project = _legacy_unavailable
+        query_items = _legacy_unavailable
+
+    legacy = _LegacyStub()  # type: ignore[assignment]
+
+try:
+    from tracertm.mcp.tools import specifications as spec_tools
+except Exception:  # pragma: no cover - test fallback
+    class _SpecStub:
+        pass
+
+    spec_tools = _SpecStub()  # type: ignore[assignment]
+from tracertm.cli.commands import export as export_cmd
+from tracertm.cli.commands import import_cmd as import_cmd_module
+from tracertm.cli.commands import saved_queries as saved_queries_module
+from tracertm.cli.commands import test as test_module
+from tracertm.cli.commands import design as design_module
+from tracertm.models.agent import Agent
+from tracertm.models.event import Event
+from tracertm.models.item import Item
+from tracertm.services.benchmark_service import BenchmarkService
+from tracertm.services.chaos_mode_service import ChaosModeService
+
+# Temporary wiring: map unified dispatch to legacy tool implementations.
+project_tools = legacy
+item_tools = legacy
+link_tools = legacy
+trace_tools = legacy
+graph_tools = legacy
+
+
+def _actor_from_context(ctx: Context | None) -> dict[str, Any] | None:
+    if ctx is None:
+        return None
+    try:
+        from fastmcp.server.dependencies import get_access_token
+    except Exception:
+        return None
+
+    token = get_access_token()
+    if token is None:
+        return None
+
+    claims = getattr(token, "claims", {}) or {}
+    return {
+        "client_id": getattr(token, "client_id", None),
+        "sub": claims.get("sub"),
+        "email": claims.get("email"),
+        "auth_type": claims.get("auth_type"),
+        "scopes": getattr(token, "scopes", None),
+        "project_id": claims.get("project_id"),
+        "project_ids": claims.get("project_ids"),
+    }
+
+
+def _wrap(result: Any, ctx: Context | None, action: str) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "action": action,
+        "data": result,
+        "actor": _actor_from_context(ctx),
+    }
+
+
+def _get_access_token_from_ctx() -> Any | None:
+    try:
+        from fastmcp.server.dependencies import get_access_token
+    except Exception:
+        return None
+    return get_access_token()
+
+
+def _resolve_project_id(payload: dict[str, Any], ctx: Context | None) -> str | None:
+    project_id = payload.get("project_id")
+    token = _get_access_token_from_ctx() if ctx else None
+    if token is None:
+        return project_id
+
+    claims = getattr(token, "claims", {}) or {}
+    allowed = []
+    if claims.get("project_id"):
+        allowed.append(claims["project_id"])
+    project_ids = claims.get("project_ids")
+    if isinstance(project_ids, str):
+        allowed.extend([p.strip() for p in project_ids.split(",") if p.strip()])
+    elif isinstance(project_ids, (list, tuple, set)):
+        allowed.extend([str(p) for p in project_ids if p])
+
+    if allowed:
+        if project_id:
+            if project_id not in allowed:
+                raise ToolError("Project access denied for requested project_id.")
+            return project_id
+        if len(allowed) == 1:
+            return allowed[0]
+        raise ToolError("project_id required for this request.")
+
+    return project_id
+
+
+async def _maybe_select_project(payload: dict[str, Any], ctx: Context | None) -> None:
+    project_id = _resolve_project_id(payload, ctx)
+    if project_id:
+        payload["project_id"] = project_id
+        try:
+            await project_tools.select_project(project_id=project_id, ctx=ctx)
+        except TypeError:
+            await project_tools.select_project(project_id=project_id)
+
+
+def _build_sync_engine() -> SyncEngine:
+    config = ConfigManager()
+    database_url = config.get("database_url")
+    if not database_url:
+        base_dir = Path.home() / ".tracertm"
+        base_dir.mkdir(parents=True, exist_ok=True)
+        database_url = f"sqlite:///{base_dir / 'tracertm.db'}"
+
+    db_connection = DatabaseConnection(database_url)
+    db_connection.connect()
+
+    storage_manager = LocalStorageManager()
+    strategy_name = config.get("sync_conflict_strategy") or "last_write_wins"
+    conflict_strategy = StorageConflictStrategy[strategy_name.upper()]
+
+    class _NoopApiClient:
+        async def get_changes(self, **_kwargs: Any) -> list[dict[str, Any]]:
+            return []
+
+    try:
+        api_client = TraceRTMClient()
+    except Exception:
+        api_client = _NoopApiClient()
+
+    return SyncEngine(
+        db_connection=db_connection,
+        api_client=api_client,
+        storage_manager=storage_manager,
+        conflict_strategy=conflict_strategy,
+    )
+
+
+_WATCHERS: dict[str, TraceFileWatcher] = {}
+
+
+def _parse_since(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        if value.endswith("h"):
+            hours = int(value[:-1])
+            return datetime.utcnow() - timedelta(hours=hours)
+        if value.endswith("d"):
+            days = int(value[:-1])
+            return datetime.utcnow() - timedelta(days=days)
+    except Exception:
+        return None
+    return None
+
+
+async def _get_async_session() -> AsyncSession:
+    config = ConfigManager()
+    database_url = config.get("database_url")
+    if not database_url:
+        raise ToolError("Database URL not configured.")
+
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
+    elif database_url.startswith("sqlite:///"):
+        database_url = database_url.replace("sqlite:///", "sqlite+aiosqlite:///")
+
+    engine = create_async_engine(database_url, echo=False)
+    async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    session = async_session_maker()
+    session._tracertm_engine = engine  # type: ignore[attr-defined]
+    return session
+
+
+@mcp.tool(description="Unified project operations")
+async def project_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    if action == "create":
+        result = await project_tools.create_project(
+            name=payload.get("name"),
+            description=payload.get("description"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "list":
+        result = await project_tools.list_projects(ctx=ctx)
+        return _wrap(result, ctx, action)
+    if action == "select":
+        result = await project_tools.select_project(
+            project_id=payload.get("project_id"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "snapshot":
+        result = await project_tools.snapshot_project(
+            project_id=payload.get("project_id"),
+            label=payload.get("label"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+
+    raise ToolError(f"Unknown project action: {action}")
+
+
+@mcp.tool(description="Unified item operations")
+async def item_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    return await _item_manage_impl(action, payload, ctx)
+
+
+async def _item_manage_impl(
+    action: str,
+    payload: dict[str, Any] | None,
+    ctx: Context | None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    await _maybe_select_project(payload, ctx)
+
+    if action == "create":
+        result = await item_tools.create_item(
+            title=payload.get("title"),
+            view=payload.get("view"),
+            item_type=payload.get("item_type"),
+            description=payload.get("description"),
+            status=payload.get("status", "todo"),
+            priority=payload.get("priority", "medium"),
+            owner=payload.get("owner"),
+            parent_id=payload.get("parent_id"),
+            metadata=payload.get("metadata"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "get":
+        result = await item_tools.get_item(
+            item_id=payload.get("item_id"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "update":
+        result = await item_tools.update_item(
+            item_id=payload.get("item_id"),
+            title=payload.get("title"),
+            description=payload.get("description"),
+            status=payload.get("status"),
+            priority=payload.get("priority"),
+            owner=payload.get("owner"),
+            metadata=payload.get("metadata"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "delete":
+        result = await item_tools.delete_item(
+            item_id=payload.get("item_id"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "query":
+        result = await item_tools.query_items(
+            view=payload.get("view"),
+            item_type=payload.get("item_type"),
+            status=payload.get("status"),
+            owner=payload.get("owner"),
+            limit=payload.get("limit", 50),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "summarize_view":
+        result = await item_tools.summarize_view(
+            view=payload.get("view"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "bulk_update":
+        result = await item_tools.bulk_update_items(
+            view=payload.get("view"),
+            status=payload.get("status"),
+            new_status=payload.get("new_status"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+
+    raise ToolError(f"Unknown item action: {action}")
+
+
+@mcp.tool(description="Unified link operations")
+async def link_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    await _maybe_select_project(payload, ctx)
+
+    if action == "create":
+        result = await link_tools.create_link(
+            source_id=payload.get("source_id"),
+            target_id=payload.get("target_id"),
+            link_type=payload.get("link_type"),
+            metadata=payload.get("metadata"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "list":
+        result = await link_tools.list_links(
+            item_id=payload.get("item_id"),
+            link_type=payload.get("link_type"),
+            limit=payload.get("limit", 50),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+    if action == "show":
+        result = await link_tools.show_links(
+            item_id=payload.get("item_id"),
+            view=payload.get("view"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, action)
+
+    raise ToolError(f"Unknown link action: {action}")
+
+
+@mcp.tool(description="Unified traceability analysis")
+async def trace_analyze(
+    kind: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    kind = kind.lower()
+
+    await _maybe_select_project(payload, ctx)
+
+    if kind == "gaps":
+        result = await trace_tools.find_gaps(
+            from_view=payload.get("from_view"),
+            to_view=payload.get("to_view"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, kind)
+    if kind == "trace_matrix":
+        result = await trace_tools.get_trace_matrix(
+            source_view=payload.get("source_view"),
+            target_view=payload.get("target_view"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, kind)
+    if kind == "impact":
+        result = await trace_tools.analyze_impact(
+            item_id=payload.get("item_id"),
+            max_depth=payload.get("max_depth", 5),
+            link_types=payload.get("link_types"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, kind)
+    if kind == "reverse_impact":
+        result = await trace_tools.analyze_reverse_impact(
+            item_id=payload.get("item_id"),
+            max_depth=payload.get("max_depth", 5),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, kind)
+    if kind == "project_health":
+        result = await trace_tools.project_health(ctx=ctx)
+        return _wrap(result, ctx, kind)
+
+    raise ToolError(f"Unknown trace analysis kind: {kind}")
+
+
+@mcp.tool(description="Unified graph analysis")
+async def graph_analyze(
+    kind: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    kind = kind.lower()
+
+    await _maybe_select_project(payload, ctx)
+
+    if kind == "detect_cycles":
+        result = await graph_tools.detect_cycles(ctx=ctx)
+        return _wrap(result, ctx, kind)
+    if kind == "shortest_path":
+        result = await graph_tools.shortest_path(
+            source_id=payload.get("source_id"),
+            target_id=payload.get("target_id"),
+            ctx=ctx,
+        )
+        return _wrap(result, ctx, kind)
+
+    raise ToolError(f"Unknown graph analysis kind: {kind}")
+
+
+@mcp.tool(description="Unified specification operations")
+async def spec_manage(
+    kind: str,
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    kind = kind.lower()
+    action = action.lower()
+
+    await _maybe_select_project(payload, ctx)
+
+    if kind == "adr":
+        if action == "create":
+            result = await spec_tools.create_adr(
+                project_id=payload.get("project_id"),
+                title=payload.get("title"),
+                context=payload.get("context"),
+                decision=payload.get("decision"),
+                consequences=payload.get("consequences"),
+                status=payload.get("status", "proposed"),
+                decision_drivers=payload.get("decision_drivers", []),
+                tags=payload.get("tags", []),
+            )
+            return _wrap(result, ctx, f"{kind}.{action}")
+        if action == "list":
+            result = await spec_tools.list_adrs(
+                project_id=payload.get("project_id"),
+                status=payload.get("status"),
+            )
+            return _wrap(result, ctx, f"{kind}.{action}")
+
+    if kind == "contract" and action == "create":
+        result = await spec_tools.create_contract(
+            project_id=payload.get("project_id"),
+            item_id=payload.get("item_id"),
+            title=payload.get("title"),
+            contract_type=payload.get("contract_type"),
+            status=payload.get("status", "draft"),
+        )
+        return _wrap(result, ctx, f"{kind}.{action}")
+
+    if kind == "feature" and action == "create":
+        result = await spec_tools.create_feature(
+            project_id=payload.get("project_id"),
+            name=payload.get("name"),
+            description=payload.get("description"),
+            as_a=payload.get("as_a"),
+            i_want=payload.get("i_want"),
+            so_that=payload.get("so_that"),
+        )
+        return _wrap(result, ctx, f"{kind}.{action}")
+
+    if kind == "scenario" and action == "create":
+        result = await spec_tools.create_scenario(
+            feature_id=payload.get("feature_id"),
+            title=payload.get("title"),
+            gherkin_text=payload.get("gherkin_text"),
+        )
+        return _wrap(result, ctx, f"{kind}.{action}")
+
+    raise ToolError(f"Unknown spec action: {kind}.{action}")
+
+
+@mcp.tool(description="Unified quality analysis")
+async def quality_analyze(
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    result = await spec_tools.analyze_quality(item_id=payload.get("item_id"))
+    return _wrap(result, ctx, "quality.analyze")
+
+
+@mcp.tool(description="Unified configuration operations")
+async def config_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    return await _config_manage_impl(action, payload, ctx)
+
+
+async def _config_manage_impl(
+    action: str,
+    payload: dict[str, Any] | None,
+    ctx: Context | None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    config = ConfigManager()
+    project_id = payload.get("project_id")
+
+    if action == "init":
+        database_url = payload.get("database_url")
+        if not database_url:
+            raise ToolError("database_url is required for config init.")
+        result = config.init(database_url=database_url).model_dump()
+        return _wrap(result, ctx, action)
+    if action == "get":
+        key = payload.get("key")
+        if not key:
+            raise ToolError("key is required for config get.")
+        config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
+        if config_path.exists():
+            with open(config_path) as handle:
+                stored = yaml.safe_load(handle) or {}
+            if key in stored:
+                return _wrap({"key": key, "value": stored.get(key)}, ctx, action)
+        value = config.get(key, project_id=project_id)
+        return _wrap({"key": key, "value": value}, ctx, action)
+    if action == "set":
+        key = payload.get("key")
+        if key is None:
+            raise ToolError("key is required for config set.")
+        value = payload.get("value")
+        config.set(key, value, project_id=project_id)
+        return _wrap({"key": key, "value": value}, ctx, action)
+    if action == "unset":
+        key = payload.get("key")
+        if not key:
+            raise ToolError("key is required for config unset.")
+        config.set(key, None, project_id=project_id)
+        return _wrap({"key": key}, ctx, action)
+    if action == "list":
+        result = config.get_config(project_id=project_id)
+        return _wrap(result, ctx, action)
+
+    raise ToolError(f"Unknown config action: {action}")
+
+
+@mcp.tool(description="Unified sync operations")
+async def sync_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    return await _sync_manage_impl(action, payload, ctx)
+
+
+async def _sync_manage_impl(
+    action: str,
+    payload: dict[str, Any] | None,
+    ctx: Context | None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    sync_engine = _build_sync_engine()
+
+    if action == "status":
+        state = sync_engine.get_status()
+        return _wrap(
+            {
+                "status": state.status.value,
+                "last_sync": state.last_sync.isoformat() if state.last_sync else None,
+                "pending_changes": state.pending_changes,
+                "conflicts_count": state.conflicts_count,
+                "last_error": state.last_error,
+            },
+            ctx,
+            action,
+        )
+    if action == "sync":
+        force = bool(payload.get("force", False))
+        result = await sync_engine.sync(force=force)
+        return _wrap(
+            {
+                "success": result.success,
+                "entities_synced": result.entities_synced,
+                "conflicts": result.conflicts,
+                "errors": result.errors,
+                "duration_seconds": result.duration_seconds,
+            },
+            ctx,
+            action,
+        )
+    if action == "pull":
+        result = await sync_engine.pull_changes()
+        return _wrap(
+            {
+                "success": result.success,
+                "entities_synced": result.entities_synced,
+                "conflicts": result.conflicts,
+                "errors": result.errors,
+                "duration_seconds": result.duration_seconds,
+            },
+            ctx,
+            action,
+        )
+
+    raise ToolError(f"Unknown sync action: {action}")
+
+
+@mcp.tool(description="Unified export operations")
+async def export_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    format_map = {
+        "json": export_cmd.export_to_json,
+        "yaml": export_cmd.export_to_yaml,
+        "csv": export_cmd.export_to_csv,
+        "markdown": export_cmd.export_to_markdown,
+    }
+    if action not in format_map:
+        raise ToolError("Unsupported export format. Use json|yaml|csv|markdown.")
+
+    config = ConfigManager()
+    project_id = payload.get("project_id") or config.get("current_project_id")
+    if not project_id:
+        raise ToolError("project_id is required for export.")
+
+    storage = LocalStorageManager()
+    with storage.get_session() as session:
+        content = format_map[action](session, project_id)
+
+    output = payload.get("output")
+    if output:
+        output_path = Path(output)
+        output_path.write_text(content, encoding="utf-8")
+        return _wrap(
+            {"format": action, "output": str(output_path), "bytes": len(content)},
+            ctx,
+            action,
+        )
+
+    return _wrap({"format": action, "content": content}, ctx, action)
+
+
+@mcp.tool(description="Unified import operations")
+async def import_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    project_name = payload.get("project_name")
+
+    def _load_data() -> dict[str, Any]:
+        data = payload.get("data")
+        if isinstance(data, dict):
+            return data
+        content = payload.get("content")
+        path = payload.get("path")
+        if content:
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                import yaml
+                return yaml.safe_load(content)
+        if path:
+            file_path = Path(path)
+            if not file_path.exists():
+                raise ToolError(f"File not found: {path}")
+            if file_path.suffix.lower() in {".yaml", ".yml"}:
+                import yaml
+                return yaml.safe_load(file_path.read_text(encoding="utf-8"))
+            return json.loads(file_path.read_text(encoding="utf-8"))
+        raise ToolError("Provide data, content, or path for import.")
+
+    if action == "validate":
+        data = _load_data()
+        errors = import_cmd_module._validate_import_data(data)
+        return _wrap({"errors": errors, "valid": len(errors) == 0}, ctx, action)
+
+    data = _load_data()
+
+    if action == "json":
+        errors = import_cmd_module._validate_import_data(data)
+        if errors:
+            return _wrap({"errors": errors, "valid": False}, ctx, action)
+        import_cmd_module._import_data(data, project_name, "json")
+        return _wrap({"imported": True, "source": "json"}, ctx, action)
+
+    if action == "yaml":
+        errors = import_cmd_module._validate_import_data(data)
+        if errors:
+            return _wrap({"errors": errors, "valid": False}, ctx, action)
+        import_cmd_module._import_data(data, project_name, "yaml")
+        return _wrap({"imported": True, "source": "yaml"}, ctx, action)
+
+    if action == "jira":
+        errors = import_cmd_module._validate_jira_format(data)
+        if errors:
+            return _wrap({"errors": errors, "valid": False}, ctx, action)
+        import_cmd_module._import_jira_data(data, project_name)
+        return _wrap({"imported": True, "source": "jira"}, ctx, action)
+
+    if action == "github":
+        errors = import_cmd_module._validate_github_format(data)
+        if errors:
+            return _wrap({"errors": errors, "valid": False}, ctx, action)
+        import_cmd_module._import_github_data(data, project_name)
+        return _wrap({"imported": True, "source": "github"}, ctx, action)
+
+    raise ToolError(f"Unknown import action: {action}")
+
+
+@mcp.tool(description="Unified ingestion operations")
+async def ingest_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    file_path = payload.get("path")
+    if not file_path:
+        raise ToolError("path is required for ingestion.")
+
+    project_id = payload.get("project_id")
+    view = payload.get("view", "FEATURE")
+    dry_run = bool(payload.get("dry_run", False))
+    validate = bool(payload.get("validate", True))
+
+    storage = LocalStorageManager()
+    with storage.get_session() as session:
+        service = StatelessIngestionService(session)
+        if action in {"markdown", "md"}:
+            result = service.ingest_markdown(file_path, project_id, view, dry_run, validate)
+        elif action == "mdx":
+            result = service.ingest_mdx(file_path, project_id, view, dry_run, validate)
+        elif action in {"yaml", "yml"}:
+            result = service.ingest_yaml(file_path, project_id, view, dry_run, validate)
+        elif action == "directory":
+            directory = Path(file_path)
+            if not directory.exists():
+                raise ToolError(f"Directory not found: {file_path}")
+            recursive = bool(payload.get("recursive", True))
+            patterns = {".md", ".mdx", ".yaml", ".yml"}
+            files = (
+                directory.rglob("*")
+                if recursive
+                else directory.iterdir()
+            )
+            results = []
+            for path in files:
+                if path.is_file() and path.suffix.lower() in patterns:
+                    if path.suffix.lower() in {".md", ".markdown"}:
+                        res = service.ingest_markdown(str(path), project_id, view, dry_run, validate)
+                    elif path.suffix.lower() == ".mdx":
+                        res = service.ingest_mdx(str(path), project_id, view, dry_run, validate)
+                    else:
+                        res = service.ingest_yaml(str(path), project_id, view, dry_run, validate)
+                    results.append({"path": str(path), "result": res})
+            if not dry_run:
+                session.commit()
+            return _wrap({"count": len(results), "results": results}, ctx, action)
+        else:
+            raise ToolError(f"Unknown ingest action: {action}")
+
+        if not dry_run:
+            session.commit()
+
+    return _wrap(result, ctx, action)
+
+
+@mcp.tool(description="Unified backup operations")
+async def backup_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    storage = LocalStorageManager()
+
+    if action == "backup":
+        project_id = payload.get("project_id")
+        output = payload.get("output")
+        compress = bool(payload.get("compress", True))
+
+        if not output:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            suffix = ".json.gz" if compress else ".json"
+            output = f"tracertm_backup_{timestamp}{suffix}"
+
+        backup_data: dict[str, Any] = {
+            "version": "1.0",
+            "timestamp": datetime.now().isoformat(),
+            "project_id": project_id,
+            "tables": {},
+        }
+
+        with storage.get_session() as session:
+            result = session.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+            tables = [row[0] for row in result]
+            for table in tables:
+                if table.startswith("alembic"):
+                    continue
+                rows = session.execute(f"SELECT * FROM {table}").all()
+                records = [dict(row._mapping) for row in rows]
+                for row in records:
+                    for key, value in row.items():
+                        if isinstance(value, datetime):
+                            row[key] = value.isoformat()
+                backup_data["tables"][table] = records
+
+        output_path = Path(output)
+        if compress:
+            with gzip.open(output_path, "wt", encoding="utf-8") as f:
+                json.dump(backup_data, f, indent=2, default=str)
+        else:
+            output_path.write_text(json.dumps(backup_data, indent=2, default=str), encoding="utf-8")
+
+        return _wrap({"output": str(output_path), "tables": len(backup_data["tables"])}, ctx, action)
+
+    if action == "restore":
+        path = payload.get("path")
+        if not path:
+            raise ToolError("path is required for restore.")
+        backup_file = Path(path)
+        if not backup_file.exists():
+            raise ToolError(f"Backup file not found: {path}")
+        if backup_file.suffix == ".gz":
+            with gzip.open(backup_file, "rt", encoding="utf-8") as f:
+                backup_data = json.load(f)
+        else:
+            backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
+
+        if not isinstance(backup_data, dict) or "tables" not in backup_data:
+            raise ToolError("Invalid backup format.")
+
+        with storage.get_session() as session:
+            for table, rows in backup_data["tables"].items():
+                session.execute(f"DELETE FROM {table}")
+                for row in rows:
+                    columns = ", ".join(row.keys())
+                    placeholders = ", ".join([f":{k}" for k in row.keys()])
+                    session.execute(
+                        f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
+                        row,
+                    )
+            session.commit()
+
+        return _wrap({"restored": True, "tables": len(backup_data["tables"])}, ctx, action)
+
+    raise ToolError(f"Unknown backup action: {action}")
+
+
+@mcp.tool(description="Unified file watch operations")
+async def watch_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    if action == "start":
+        path = Path(payload.get("path") or Path.cwd())
+        debounce = int(payload.get("debounce", 500))
+        auto_sync = bool(payload.get("auto_sync", False))
+        storage = LocalStorageManager()
+        watcher = TraceFileWatcher(
+            project_path=path,
+            storage=storage,
+            debounce_ms=debounce,
+            auto_sync=auto_sync,
+        )
+        watcher.start()
+        watch_id = payload.get("watch_id") or f"watch-{len(_WATCHERS) + 1}"
+        _WATCHERS[watch_id] = watcher
+        return _wrap({"watch_id": watch_id, "path": str(path)}, ctx, action)
+
+    if action == "stop":
+        watch_id = payload.get("watch_id")
+        if not watch_id or watch_id not in _WATCHERS:
+            raise ToolError("watch_id not found.")
+        watcher = _WATCHERS.pop(watch_id)
+        watcher.stop()
+        return _wrap({"watch_id": watch_id, "stopped": True}, ctx, action)
+
+    if action == "status":
+        watch_id = payload.get("watch_id")
+        if watch_id:
+            watcher = _WATCHERS.get(watch_id)
+            if not watcher:
+                raise ToolError("watch_id not found.")
+            return _wrap({"watch_id": watch_id, "stats": watcher.get_stats()}, ctx, action)
+        return _wrap({k: v.get_stats() for k, v in _WATCHERS.items()}, ctx, action)
+
+    raise ToolError(f"Unknown watch action: {action}")
+
+
+@mcp.tool(description="Unified database operations")
+async def db_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    from tracertm.database.connection import DatabaseConnection
+
+    payload = payload or {}
+    action = action.lower()
+    config = ConfigManager()
+
+    if action == "init":
+        database_url = payload.get("database_url")
+        if database_url:
+            config.set("database_url", database_url)
+        return _wrap({"database_url": config.get("database_url")}, ctx, action)
+
+    database_url = config.get("database_url")
+    if not database_url:
+        raise ToolError("Database URL not configured.")
+
+    db = DatabaseConnection(database_url)
+    db.connect()
+
+    if action == "status":
+        health = db.health_check()
+        db.close()
+        return _wrap(health, ctx, action)
+
+    if action == "migrate":
+        db.create_tables()
+        health = db.health_check()
+        db.close()
+        return _wrap(health, ctx, action)
+
+    if action in {"reset", "rollback"}:
+        confirm = bool(payload.get("confirm", False))
+        if not confirm:
+            raise ToolError("confirm=true is required for destructive operations.")
+        if action == "rollback":
+            db.drop_tables()
+        else:
+            db.drop_tables()
+            db.create_tables()
+        db.close()
+        return _wrap({"status": "ok", "action": action}, ctx, action)
+
+    db.close()
+    raise ToolError(f"Unknown db action: {action}")
+
+
+@mcp.tool(description="Unified agent operations")
+async def agents_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    config = ConfigManager()
+    project_id = payload.get("project_id") or config.get("current_project_id")
+    if not project_id:
+        raise ToolError("project_id is required.")
+
+    storage = LocalStorageManager()
+    with storage.get_session() as session:
+        if action == "list":
+            agents = session.query(Agent).filter(Agent.project_id == project_id).all()
+            return _wrap(
+                {
+                    "agents": [
+                        {
+                            "id": str(agent.id),
+                            "name": agent.name,
+                            "type": agent.agent_type,
+                            "status": agent.status,
+                            "last_activity_at": agent.last_activity_at,
+                        }
+                        for agent in agents
+                    ]
+                },
+                ctx,
+                action,
+            )
+
+        if action == "activity":
+            agent_id = payload.get("agent_id")
+            since_date = _parse_since(payload.get("since"))
+            limit = int(payload.get("limit", 50))
+
+            query = session.query(Event).filter(Event.project_id == project_id)
+            if agent_id:
+                query = query.filter(Event.agent_id == agent_id)
+            if since_date:
+                query = query.filter(Event.created_at >= since_date)
+            events = query.order_by(Event.created_at.desc()).limit(limit).all()
+
+            return _wrap(
+                {
+                    "events": [
+                        {
+                            "id": str(event.id),
+                            "agent_id": event.agent_id,
+                            "event_type": event.event_type,
+                            "entity_type": event.entity_type,
+                            "entity_id": event.entity_id,
+                            "created_at": event.created_at.isoformat() if event.created_at else None,
+                            "data": event.data,
+                        }
+                        for event in events
+                    ]
+                },
+                ctx,
+                action,
+            )
+
+        if action == "metrics":
+            agent_id = payload.get("agent_id")
+            since_date = _parse_since(payload.get("since")) or datetime.utcnow() - timedelta(hours=24)
+            query = session.query(Event).filter(
+                Event.project_id == project_id,
+                Event.created_at >= since_date,
+            )
+            if agent_id:
+                agent_ids = [agent_id]
+            else:
+                agent_ids = [a.id for a in session.query(Agent).filter(Agent.project_id == project_id).all()]
+
+            metrics_list = []
+            for aid in agent_ids:
+                agent_events = query.filter(Event.agent_id == aid).all()
+                if not agent_events:
+                    continue
+                total_ops = len(agent_events)
+                successful_ops = sum(1 for e in agent_events if e.event_type != "conflict_detected")
+                conflicts = sum(1 for e in agent_events if e.event_type == "conflict_detected")
+                hours_float = (datetime.utcnow() - since_date).total_seconds() / 3600
+                ops_per_hour = total_ops / hours_float if hours_float > 0 else 0
+                success_rate = (successful_ops / total_ops * 100) if total_ops else 0
+                conflict_rate = (conflicts / total_ops * 100) if total_ops else 0
+                agent = session.query(Agent).filter(Agent.id == aid).first()
+                metrics_list.append(
+                    {
+                        "agent_id": str(aid),
+                        "agent_name": agent.name if agent else str(aid)[:8],
+                        "total_operations": total_ops,
+                        "operations_per_hour": round(ops_per_hour, 2),
+                        "success_rate": round(success_rate, 2),
+                        "conflict_rate": round(conflict_rate, 2),
+                        "conflicts": conflicts,
+                    }
+                )
+
+            return _wrap({"metrics": metrics_list}, ctx, action)
+
+        if action == "workload":
+            agent_id = payload.get("agent_id")
+            agents = (
+                [session.query(Agent).filter(Agent.id == agent_id).first()]
+                if agent_id
+                else session.query(Agent).filter(Agent.project_id == project_id).all()
+            )
+            agents = [a for a in agents if a]
+            workloads = []
+            for agent in agents:
+                items = (
+                    session.query(Item)
+                    .filter(
+                        Item.project_id == project_id,
+                        Item.owner == agent.id,
+                        Item.deleted_at.is_(None),
+                    )
+                    .all()
+                )
+                status_counts: dict[str, int] = {}
+                for item in items:
+                    status_counts[item.status] = status_counts.get(item.status, 0) + 1
+                workloads.append(
+                    {
+                        "agent_id": str(agent.id),
+                        "agent_name": agent.name,
+                        "todo": status_counts.get("todo", 0),
+                        "in_progress": status_counts.get("in_progress", 0),
+                        "blocked": status_counts.get("blocked", 0),
+                        "total": len(items),
+                    }
+                )
+            return _wrap({"workloads": workloads}, ctx, action)
+
+        if action == "health":
+            agent_id = payload.get("agent_id")
+            agents = (
+                [session.query(Agent).filter(Agent.id == agent_id).first()]
+                if agent_id
+                else session.query(Agent).filter(Agent.project_id == project_id).all()
+            )
+            agents = [a for a in agents if a]
+            healths = []
+            for agent in agents:
+                health = "unknown"
+                if agent.last_activity_at:
+                    try:
+                        last_activity = datetime.fromisoformat(agent.last_activity_at.replace("Z", "+00:00"))
+                        hours_since = (datetime.utcnow() - last_activity.replace(tzinfo=None)).total_seconds() / 3600
+                        if hours_since < 1:
+                            health = "healthy"
+                        elif hours_since < 24:
+                            health = "idle"
+                        else:
+                            health = "stale"
+                    except Exception:
+                        health = "unknown"
+                else:
+                    health = "no_activity"
+                healths.append(
+                    {
+                        "agent_id": str(agent.id),
+                        "agent_name": agent.name,
+                        "status": agent.status or "active",
+                        "last_activity_at": agent.last_activity_at,
+                        "health": health,
+                    }
+                )
+            return _wrap({"health": healths}, ctx, action)
+
+    raise ToolError(f"Unknown agents action: {action}")
+
+
+@mcp.tool(description="Unified progress operations")
+async def progress_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    config = ConfigManager()
+    project_id = payload.get("project_id") or config.get("current_project_id")
+    if not project_id:
+        raise ToolError("project_id is required.")
+
+    storage = LocalStorageManager()
+    with storage.get_session() as session:
+        service = ProgressService(session)
+        if action == "show":
+            item_id = payload.get("item_id")
+            view = payload.get("view")
+            if item_id:
+                item = (
+                    session.query(Item)
+                    .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
+                    .first()
+                )
+                if not item:
+                    raise ToolError(f"Item not found: {item_id}")
+                completion = service.calculate_completion(item.id)
+                return _wrap(
+                    {
+                        "item_id": str(item.id),
+                        "title": item.title,
+                        "status": item.status,
+                        "completion": completion,
+                    },
+                    ctx,
+                    action,
+                )
+            if view:
+                items = (
+                    session.query(Item)
+                    .filter(
+                        Item.project_id == project_id,
+                        Item.view == view.upper(),
+                        Item.deleted_at.is_(None),
+                    )
+                    .all()
+                )
+                avg_completion = (
+                    sum(service.calculate_completion(item.id) for item in items) / len(items)
+                    if items
+                    else 0
+                )
+                return _wrap(
+                    {"view": view, "items": len(items), "average_completion": avg_completion},
+                    ctx,
+                    action,
+                )
+            items = (
+                session.query(Item)
+                .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
+                .all()
+            )
+            avg_completion = (
+                sum(service.calculate_completion(item.id) for item in items) / len(items)
+                if items
+                else 0
+            )
+            return _wrap({"items": len(items), "average_completion": avg_completion}, ctx, action)
+
+        if action == "blocked":
+            limit = int(payload.get("limit", 50))
+            blocked = service.get_blocked_items(project_id)
+            return _wrap({"blocked": blocked[:limit]}, ctx, action)
+
+        if action == "stalled":
+            days = int(payload.get("days", 7))
+            limit = int(payload.get("limit", 50))
+            stalled = service.get_stalled_items(project_id, days)
+            return _wrap({"stalled": stalled[:limit]}, ctx, action)
+
+        if action == "velocity":
+            days = int(payload.get("days", 7))
+            velocity = service.calculate_velocity(project_id, days)
+            return _wrap(velocity, ctx, action)
+
+        if action == "report":
+            days = int(payload.get("days", 30))
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=days)
+            report = service.generate_progress_report(project_id, start_date, end_date)
+            return _wrap(report, ctx, action)
+
+    raise ToolError(f"Unknown progress action: {action}")
+
+
+@mcp.tool(description="Unified saved query operations")
+async def saved_queries_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    return await _saved_queries_manage_impl(action, payload, ctx)
+
+
+async def _saved_queries_manage_impl(
+    action: str,
+    payload: dict[str, Any] | None,
+    ctx: Context | None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    if action == "list":
+        return _wrap({"queries": saved_queries_module.load_saved_queries()}, ctx, action)
+
+    if action == "save":
+        name = payload.get("name")
+        if not name:
+            raise ToolError("name is required.")
+        queries = saved_queries_module.load_saved_queries()
+        query_def = {
+            "filter": payload.get("filter"),
+            "view": payload.get("view"),
+            "status": payload.get("status"),
+            "query": payload.get("query"),
+        }
+        query_def = {k: v for k, v in query_def.items() if v is not None}
+        queries[name] = query_def
+        saved_queries_module.save_queries(queries)
+        return _wrap({"saved": name, "query": query_def}, ctx, action)
+
+    if action == "delete":
+        name = payload.get("name")
+        if not name:
+            raise ToolError("name is required.")
+        queries = saved_queries_module.load_saved_queries()
+        if name in queries:
+            del queries[name]
+            saved_queries_module.save_queries(queries)
+        return _wrap({"deleted": name}, ctx, action)
+
+    if action == "get":
+        name = payload.get("name")
+        if not name:
+            raise ToolError("name is required.")
+        queries = saved_queries_module.load_saved_queries()
+        return _wrap({"name": name, "query": queries.get(name)}, ctx, action)
+
+    raise ToolError(f"Unknown saved-queries action: {action}")
+
+
+@mcp.tool(description="Unified test operations")
+async def test_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    return await _test_manage_impl(action, payload, ctx)
+
+
+async def _test_manage_impl(
+    action: str,
+    payload: dict[str, Any] | None,
+    ctx: Context | None,
+) -> dict[str, Any]:
+    from tracertm.cli.commands.test.discovery import TestDiscovery
+    from tracertm.cli.commands.test.runner import TestRunner
+
+    payload = payload or {}
+    action = action.lower()
+
+    if action == "discover":
+        scope = payload.get("scope", "all")
+        language = payload.get("language")
+        languages = [language] if language else None
+        tests = TestDiscovery(Path.cwd()).discover(languages=languages, scope=scope)
+        return _wrap(
+            {
+                "count": len(tests),
+                "tests": [
+                    {
+                        "path": test.path,
+                        "language": test.language,
+                        "package": test.package,
+                    }
+                    for test in tests
+                ],
+            },
+            ctx,
+            action,
+        )
+
+    if action == "run":
+        language = payload.get("language", "python")
+        scope = payload.get("scope", "all")
+        tests = TestDiscovery(Path.cwd()).discover(languages=[language], scope=scope)
+        runner = TestRunner()
+        results = [runner.run_test(test) for test in tests]
+        return _wrap(
+            {
+                "results": [
+                    {
+                        "path": result.test_file.path,
+                        "language": result.test_file.language,
+                        "passed": result.passed,
+                        "duration_ms": result.duration_ms,
+                        "output": result.output,
+                    }
+                    for result in results
+                ]
+            },
+            ctx,
+            action,
+        )
+
+    raise ToolError(f"Unknown test action: {action}")
+
+
+@mcp.tool(description="Unified TUI operations")
+async def tui_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+
+    if action == "list":
+        return _wrap(
+            {
+                "apps": [
+                    {"name": "dashboard", "command": "rtm tui dashboard"},
+                    {"name": "browser", "command": "rtm tui browser"},
+                    {"name": "graph", "command": "rtm tui graph"},
+                ]
+            },
+            ctx,
+            action,
+        )
+
+    if action == "launch":
+        app_name = payload.get("app", "dashboard")
+        legacy = bool(payload.get("legacy", False))
+        watch = bool(payload.get("watch", False))
+        project_path = payload.get("path")
+        spawn = bool(payload.get("spawn", False))
+
+        cmd = ["rtm", "tui", app_name]
+        if legacy:
+            cmd.append("--legacy")
+        if watch:
+            cmd.append("--watch")
+        if project_path:
+            cmd.extend(["--path", project_path])
+
+        if not spawn:
+            return _wrap({"command": " ".join(cmd), "spawned": False}, ctx, action)
+
+        process = subprocess.Popen(cmd)
+        return _wrap({"command": " ".join(cmd), "spawned": True, "pid": process.pid}, ctx, action)
+
+    raise ToolError(f"Unknown tui action: {action}")
+
+
+@mcp.tool(description="Unified benchmark operations")
+async def benchmark_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    session = await _get_async_session()
+    engine = getattr(session, "_tracertm_engine", None)
+    try:
+        service = BenchmarkService(session)
+        if action == "views":
+            results = await service.benchmark_all_views()
+            data = [
+                {
+                    "view_name": r.view_name,
+                    "query_time_ms": r.query_time_ms,
+                    "target_ms": r.target_ms,
+                    "meets_target": r.meets_target,
+                    "row_count": r.row_count,
+                    "size_bytes": r.size_bytes,
+                }
+                for r in results
+            ]
+            return _wrap({"views": data}, ctx, action)
+        if action == "refresh":
+            incremental = await service.benchmark_refresh_incremental()
+            full = await service.benchmark_refresh_full()
+            return _wrap(
+                {
+                    "incremental": {
+                        "duration_ms": incremental.duration_ms,
+                        "metadata": incremental.metadata,
+                    },
+                    "full": {
+                        "duration_ms": full.duration_ms,
+                        "metadata": full.metadata,
+                    },
+                },
+                ctx,
+                action,
+            )
+        if action == "report":
+            report = await service.get_performance_report()
+            return _wrap(report, ctx, action)
+    finally:
+        await session.close()
+        if engine is not None:
+            await engine.dispose()
+
+    raise ToolError(f"Unknown benchmark action: {action}")
+
+
+@mcp.tool(description="Unified chaos operations")
+async def chaos_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    project_id = payload.get("project_id") or ConfigManager().get("current_project_id")
+    if action in {"explode", "crash", "zombies", "snapshot"} and not project_id:
+        raise ToolError("project_id is required.")
+
+    session = await _get_async_session()
+    engine = getattr(session, "_tracertm_engine", None)
+    try:
+        service = ChaosModeService(session)
+
+        if action == "explode":
+            file_path = payload.get("path")
+            view = payload.get("view", "FEATURE")
+            if not file_path:
+                raise ToolError("path is required for explode.")
+            content = Path(file_path).read_text(encoding="utf-8")
+            items_created = await service.explode_file(content, project_id, view)
+            await session.commit()
+            return _wrap({"items_created": items_created}, ctx, action)
+
+        if action == "crash":
+            reason = payload.get("reason")
+            if not reason:
+                raise ToolError("reason is required for crash.")
+            item_ids = payload.get("item_ids") or []
+            result = await service.track_scope_crash(project_id, reason, item_ids)
+            await session.commit()
+            return _wrap(result, ctx, action)
+
+        if action == "zombies":
+            days_inactive = int(payload.get("days_inactive", 30))
+            cleanup = bool(payload.get("cleanup", False))
+            result = await service.detect_zombies(project_id, days_inactive)
+            if cleanup:
+                deleted = await service.cleanup_zombies(project_id, days_inactive)
+                result["deleted"] = deleted
+                await session.commit()
+            return _wrap(result, ctx, action)
+
+        if action == "snapshot":
+            name = payload.get("name")
+            description = payload.get("description")
+            if not name:
+                raise ToolError("name is required for snapshot.")
+            result = await service.create_snapshot(project_id, name, description)
+            await session.commit()
+            return _wrap(result, ctx, action)
+
+        if action == "enable":
+            return _wrap({"enabled": True}, ctx, action)
+        if action == "disable":
+            return _wrap({"enabled": False}, ctx, action)
+    finally:
+        await session.close()
+        if engine is not None:
+            await engine.dispose()
+
+    raise ToolError(f"Unknown chaos action: {action}")
+
+
+@mcp.tool(description="Unified design integration operations")
+async def design_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
+    payload = payload or {}
+    action = action.lower()
+    path = payload.get("path")
+
+    trace_dir = design_module._get_trace_dir(path)
+
+    if action == "init":
+        figma_key = payload.get("figma_key", "")
+        figma_token = payload.get("figma_token", "")
+        designs_config = dict(design_module.DESIGNS_YAML_TEMPLATE)
+        figma_config = designs_config.get("figma")
+        if isinstance(figma_config, dict):
+            figma_config["file_key"] = figma_key
+            figma_config["access_token"] = figma_token
+        design_module._save_designs_config(trace_dir, designs_config)
+
+        components_config = dict(design_module.COMPONENTS_YAML_TEMPLATE)
+        metadata = components_config.get("metadata")
+        if isinstance(metadata, dict):
+            metadata["created_at"] = datetime.now().isoformat()
+        design_module._save_components_config(trace_dir, components_config)
+        return _wrap({"initialized": True}, ctx, action)
+
+    if action == "link":
+        component = payload.get("component")
+        figma_url = payload.get("figma_url")
+        component_path = payload.get("component_path")
+        if not component or not figma_url:
+            raise ToolError("component and figma_url are required.")
+        file_key, node_id = design_module._validate_figma_url(figma_url)
+        designs_config = design_module._load_designs_config(trace_dir)
+        components_config = design_module._load_components_config(trace_dir)
+        if "components" not in designs_config:
+            designs_config["components"] = {}
+        designs_config["components"][component] = {
+            "figma_file_key": file_key,
+            "figma_node_id": node_id,
+            "figma_url": figma_url,
+            "linked_at": datetime.now().isoformat(),
+        }
+        design_module._save_designs_config(trace_dir, designs_config)
+
+        components_list = components_config.get("components", [])
+        existing_idx = None
+        for idx, comp in enumerate(components_list):
+            if comp.get("name") == component:
+                existing_idx = idx
+                break
+        component_entry = {
+            "name": component,
+            "path": component_path or f"src/components/{component}",
+            "figma_url": figma_url,
+            "figma_node_id": node_id,
+            "has_story": False,
+            "sync_status": "unsynced",
+            "last_synced": None,
+        }
+        if existing_idx is not None:
+            components_list[existing_idx] = component_entry
+        else:
+            components_list.append(component_entry)
+        components_config["components"] = components_list
+        design_module._save_components_config(trace_dir, components_config)
+        return _wrap({"linked": component, "figma_url": figma_url}, ctx, action)
+
+    if action == "status":
+        designs_config = design_module._load_designs_config(trace_dir)
+        components_config = design_module._load_components_config(trace_dir)
+        figma_config = designs_config.get("figma", {})
+        components_list = components_config.get("components", [])
+        synced_count = sum(1 for c in components_list if c.get("sync_status") == "synced")
+        unsynced_count = sum(1 for c in components_list if c.get("sync_status") == "unsynced")
+        with_stories = sum(1 for c in components_list if c.get("has_story"))
+        return _wrap(
+            {
+                "figma_file_key": figma_config.get("file_key"),
+                "last_sync": designs_config.get("last_sync"),
+                "total_components": len(components_list),
+                "synced": synced_count,
+                "unsynced": unsynced_count,
+                "with_stories": with_stories,
+            },
+            ctx,
+            action,
+        )
+
+    if action == "list":
+        components_config = design_module._load_components_config(trace_dir)
+        components_list = components_config.get("components", [])
+        filter_status = payload.get("status")
+        if filter_status:
+            components_list = [
+                c for c in components_list if c.get("sync_status") == filter_status
+            ]
+        return _wrap({"components": components_list}, ctx, action)
+
+    if action == "sync":
+        direction = payload.get("direction", "both")
+        dry_run = bool(payload.get("dry_run", False))
+        if dry_run:
+            return _wrap({"dry_run": True, "direction": direction}, ctx, action)
+        designs_config = design_module._load_designs_config(trace_dir)
+        components_config = design_module._load_components_config(trace_dir)
+        if direction in ("pull", "both"):
+            subprocess.run(["bun", "run", "figma:pull"], cwd=Path.cwd())
+        if direction in ("push", "both"):
+            subprocess.run(["bun", "run", "figma:push"], cwd=Path.cwd())
+        designs_config["last_sync"] = datetime.now().isoformat()
+        design_module._save_designs_config(trace_dir, designs_config)
+        for component in components_config.get("components", []):
+            component["sync_status"] = "synced"
+            component["last_synced"] = datetime.now().isoformat()
+        design_module._save_components_config(trace_dir, components_config)
+        return _wrap({"synced": True, "direction": direction}, ctx, action)
+
+    if action == "generate":
+        component = payload.get("component")
+        all_components = bool(payload.get("all", False))
+        template = payload.get("template", "default")
+        if not all_components and not component:
+            raise ToolError("Specify component or all=true.")
+        components_config = design_module._load_components_config(trace_dir)
+        components_list = components_config.get("components", [])
+        target_components = (
+            components_list if all_components else [c for c in components_list if c.get("name") == component]
+        )
+        generated = []
+        for comp in target_components:
+            comp_name = comp.get("name")
+            subprocess.run(
+                ["bun", "run", "storybook:generate", comp_name, "--template", template],
+                cwd=Path.cwd(),
+            )
+            comp["has_story"] = True
+            generated.append(comp_name)
+        design_module._save_components_config(trace_dir, components_config)
+        return _wrap({"generated": generated}, ctx, action)
+
+    if action == "export":
+        component = payload.get("component")
+        all_components = bool(payload.get("all", False))
+        if not all_components and not component:
+            raise ToolError("Specify component or all=true.")
+        designs_config = design_module._load_designs_config(trace_dir)
+        components_config = design_module._load_components_config(trace_dir)
+        figma_config = designs_config.get("figma", {})
+        figma_file_key = figma_config.get("file_key")
+        figma_token = figma_config.get("access_token")
+        if not figma_file_key or not figma_token:
+            raise ToolError("Figma credentials not configured.")
+        components_list = components_config.get("components", [])
+        target_components = components_list if all_components else [c for c in components_list if c.get("name") == component]
+        exported = []
+        for comp in target_components:
+            if not comp.get("has_story"):
+                continue
+            subprocess.run(
+                [
+                    "bun",
+                    "run",
+                    "figma:export",
+                    comp.get("name"),
+                    "--file-key",
+                    figma_file_key,
+                    "--token",
+                    figma_token,
+                ],
+                cwd=Path.cwd(),
+            )
+            exported.append(comp.get("name"))
+        return _wrap({"exported": exported}, ctx, action)
+
+    raise ToolError(f"Unknown design action: {action}")

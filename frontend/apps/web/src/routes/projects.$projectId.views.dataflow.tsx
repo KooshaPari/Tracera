@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ItemsTableView } from "@/views/ItemsTableView";
 
 export function DataflowView() {
-	return <ItemsTableView />;
+	const { projectId } = useParams({
+		from: "/projects/$projectId/views/dataflow",
+	});
+	return <ItemsTableView projectId={projectId} view="dataflow" />;
 }
 
 export const DATAFLOW_VIEW = DataflowView;

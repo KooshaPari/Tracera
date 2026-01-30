@@ -8,983 +8,1543 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as SettingsIndexRouteImport } from './routes/settings.index'
-import { Route as SearchIndexRouteImport } from './routes/search.index'
-import { Route as ReportsIndexRouteImport } from './routes/reports.index'
-import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
-import { Route as MatrixIndexRouteImport } from './routes/matrix.index'
-import { Route as LinksIndexRouteImport } from './routes/links.index'
-import { Route as ItemsIndexRouteImport } from './routes/items.index'
-import { Route as ImpactIndexRouteImport } from './routes/impact.index'
-import { Route as GraphIndexRouteImport } from './routes/graph.index'
-import { Route as EventsIndexRouteImport } from './routes/events.index'
-import { Route as ApiDocsIndexRouteImport } from './routes/api-docs.index'
-import { Route as AgentsIndexRouteImport } from './routes/agents.index'
-import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
-import { Route as ItemsTreeRouteImport } from './routes/items.tree'
-import { Route as ItemsKanbanRouteImport } from './routes/items.kanban'
-import { Route as ItemsItemIdRouteImport } from './routes/items.$itemId'
-import { Route as ApiSwaggerConfigRouteImport } from './routes/api/swagger-config'
-import { Route as ApiSpecRouteImport } from './routes/api/spec'
-import { Route as ApiAuthTestRouteImport } from './routes/api/auth-test'
-import { Route as ApiDocsSwaggerRouteImport } from './routes/api-docs.swagger'
-import { Route as ApiDocsRedocRouteImport } from './routes/api-docs.redoc'
-import { Route as MatrixTraceabilityIndexRouteImport } from './routes/matrix.traceability.index'
-import { Route as ImpactAnalysisIndexRouteImport } from './routes/impact.analysis.index'
-import { Route as EventsTimelineIndexRouteImport } from './routes/events.timeline.index'
-import { Route as ProjectsProjectIdViewsWireframeRouteImport } from './routes/projects.$projectId.views.wireframe'
-import { Route as ProjectsProjectIdViewsTestRouteImport } from './routes/projects.$projectId.views.test'
-import { Route as ProjectsProjectIdViewsSecurityRouteImport } from './routes/projects.$projectId.views.security'
-import { Route as ProjectsProjectIdViewsPerformanceRouteImport } from './routes/projects.$projectId.views.performance'
-import { Route as ProjectsProjectIdViewsMonitoringRouteImport } from './routes/projects.$projectId.views.monitoring'
-import { Route as ProjectsProjectIdViewsJourneyRouteImport } from './routes/projects.$projectId.views.journey'
-import { Route as ProjectsProjectIdViewsInfrastructureRouteImport } from './routes/projects.$projectId.views.infrastructure'
-import { Route as ProjectsProjectIdViewsFeatureRouteImport } from './routes/projects.$projectId.views.feature'
-import { Route as ProjectsProjectIdViewsDomainRouteImport } from './routes/projects.$projectId.views.domain'
-import { Route as ProjectsProjectIdViewsDependencyRouteImport } from './routes/projects.$projectId.views.dependency'
-import { Route as ProjectsProjectIdViewsDataflowRouteImport } from './routes/projects.$projectId.views.dataflow'
-import { Route as ProjectsProjectIdViewsDatabaseRouteImport } from './routes/projects.$projectId.views.database'
-import { Route as ProjectsProjectIdViewsConfigurationRouteImport } from './routes/projects.$projectId.views.configuration'
-import { Route as ProjectsProjectIdViewsCodeRouteImport } from './routes/projects.$projectId.views.code'
-import { Route as ProjectsProjectIdViewsArchitectureRouteImport } from './routes/projects.$projectId.views.architecture'
-import { Route as ProjectsProjectIdViewsApiRouteImport } from './routes/projects.$projectId.views.api'
-import { Route as ProjectsProjectIdViewsViewTypeRouteImport } from './routes/projects.$projectId.views.$viewType'
-import { Route as ProjectsProjectIdViewsViewTypeItemIdRouteImport } from './routes/projects.$projectId.views.$viewType.$itemId'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as SettingsIndexRouteImport } from "./routes/settings.index";
+import { Route as SearchIndexRouteImport } from "./routes/search.index";
+import { Route as ReportsIndexRouteImport } from "./routes/reports.index";
+import { Route as ProjectsIndexRouteImport } from "./routes/projects.index";
+import { Route as MatrixIndexRouteImport } from "./routes/matrix.index";
+import { Route as LinksIndexRouteImport } from "./routes/links.index";
+import { Route as ItemsIndexRouteImport } from "./routes/items.index";
+import { Route as ImpactIndexRouteImport } from "./routes/impact.index";
+import { Route as GraphIndexRouteImport } from "./routes/graph.index";
+import { Route as EventsIndexRouteImport } from "./routes/events.index";
+import { Route as ApiDocsIndexRouteImport } from "./routes/api-docs.index";
+import { Route as ProjectsProjectIdRouteImport } from "./routes/projects.$projectId";
+import { Route as ItemsTreeRouteImport } from "./routes/items.tree";
+import { Route as ItemsKanbanRouteImport } from "./routes/items.kanban";
+import { Route as ItemsItemIdRouteImport } from "./routes/items.$itemId";
+import { Route as IntegrationsCallbackRouteImport } from "./routes/integrations.callback";
+import { Route as AuthResetPasswordRouteImport } from "./routes/auth.reset-password";
+import { Route as AuthRegisterRouteImport } from "./routes/auth.register";
+import { Route as AuthLogoutRouteImport } from "./routes/auth.logout";
+import { Route as AuthLoginRouteImport } from "./routes/auth.login";
+import { Route as AuthCallbackRouteImport } from "./routes/auth.callback";
+import { Route as ApiSwaggerConfigRouteImport } from "./routes/api/swagger-config";
+import { Route as ApiSpecRouteImport } from "./routes/api/spec";
+import { Route as ApiAuthTestRouteImport } from "./routes/api/auth-test";
+import { Route as ApiDocsSwaggerRouteImport } from "./routes/api-docs.swagger";
+import { Route as ApiDocsRedocRouteImport } from "./routes/api-docs.redoc";
+import { Route as MatrixTraceabilityIndexRouteImport } from "./routes/matrix.traceability.index";
+import { Route as ImpactAnalysisIndexRouteImport } from "./routes/impact.analysis.index";
+import { Route as EventsTimelineIndexRouteImport } from "./routes/events.timeline.index";
+import { Route as ProjectsProjectIdSpecificationsRouteImport } from "./routes/projects.$projectId.specifications";
+import { Route as ProjectsProjectIdSettingsRouteImport } from "./routes/projects.$projectId.settings";
+import { Route as ProjectsProjectIdFeaturesRouteImport } from "./routes/projects.$projectId.features";
+import { Route as ProjectsProjectIdContractsRouteImport } from "./routes/projects.$projectId.contracts";
+import { Route as ProjectsProjectIdComplianceRouteImport } from "./routes/projects.$projectId.compliance";
+import { Route as ProjectsProjectIdAgentsRouteImport } from "./routes/projects.$projectId.agents";
+import { Route as ProjectsProjectIdAdrsRouteImport } from "./routes/projects.$projectId.adrs";
+import { Route as ProjectsProjectIdViewsWireframeRouteImport } from "./routes/projects.$projectId.views.wireframe";
+import { Route as ProjectsProjectIdViewsWebhooksRouteImport } from "./routes/projects.$projectId.views.webhooks";
+import { Route as ProjectsProjectIdViewsTestSuitesRouteImport } from "./routes/projects.$projectId.views.test-suites";
+import { Route as ProjectsProjectIdViewsTestRunsRouteImport } from "./routes/projects.$projectId.views.test-runs";
+import { Route as ProjectsProjectIdViewsTestCasesRouteImport } from "./routes/projects.$projectId.views.test-cases";
+import { Route as ProjectsProjectIdViewsTestRouteImport } from "./routes/projects.$projectId.views.test";
+import { Route as ProjectsProjectIdViewsSecurityRouteImport } from "./routes/projects.$projectId.views.security";
+import { Route as ProjectsProjectIdViewsQaDashboardRouteImport } from "./routes/projects.$projectId.views.qa-dashboard";
+import { Route as ProjectsProjectIdViewsProcessRouteImport } from "./routes/projects.$projectId.views.process";
+import { Route as ProjectsProjectIdViewsProblemRouteImport } from "./routes/projects.$projectId.views.problem";
+import { Route as ProjectsProjectIdViewsPerformanceRouteImport } from "./routes/projects.$projectId.views.performance";
+import { Route as ProjectsProjectIdViewsMonitoringRouteImport } from "./routes/projects.$projectId.views.monitoring";
+import { Route as ProjectsProjectIdViewsJourneyRouteImport } from "./routes/projects.$projectId.views.journey";
+import { Route as ProjectsProjectIdViewsIntegrationsRouteImport } from "./routes/projects.$projectId.views.integrations";
+import { Route as ProjectsProjectIdViewsInfrastructureRouteImport } from "./routes/projects.$projectId.views.infrastructure";
+import { Route as ProjectsProjectIdViewsFeatureRouteImport } from "./routes/projects.$projectId.views.feature";
+import { Route as ProjectsProjectIdViewsDomainRouteImport } from "./routes/projects.$projectId.views.domain";
+import { Route as ProjectsProjectIdViewsDependencyRouteImport } from "./routes/projects.$projectId.views.dependency";
+import { Route as ProjectsProjectIdViewsDataflowRouteImport } from "./routes/projects.$projectId.views.dataflow";
+import { Route as ProjectsProjectIdViewsDatabaseRouteImport } from "./routes/projects.$projectId.views.database";
+import { Route as ProjectsProjectIdViewsCoverageRouteImport } from "./routes/projects.$projectId.views.coverage";
+import { Route as ProjectsProjectIdViewsConfigurationRouteImport } from "./routes/projects.$projectId.views.configuration";
+import { Route as ProjectsProjectIdViewsCodeRouteImport } from "./routes/projects.$projectId.views.code";
+import { Route as ProjectsProjectIdViewsArchitectureRouteImport } from "./routes/projects.$projectId.views.architecture";
+import { Route as ProjectsProjectIdViewsApiRouteImport } from "./routes/projects.$projectId.views.api";
+import { Route as ProjectsProjectIdViewsViewTypeRouteImport } from "./routes/projects.$projectId.views.$viewType";
+import { Route as ProjectsProjectIdFeaturesFeatureIdRouteImport } from "./routes/projects.$projectId.features.$featureId";
+import { Route as ProjectsProjectIdContractsContractIdRouteImport } from "./routes/projects.$projectId.contracts.$contractId";
+import { Route as ProjectsProjectIdAdrsAdrIdRouteImport } from "./routes/projects.$projectId.adrs.$adrId";
+import { Route as ProjectsProjectIdViewsViewTypeItemIdRouteImport } from "./routes/projects.$projectId.views.$viewType.$itemId";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/",
+	path: "/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/settings/",
+	path: "/settings/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const SearchIndexRoute = SearchIndexRouteImport.update({
-  id: '/search/',
-  path: '/search/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/search/",
+	path: "/search/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ReportsIndexRoute = ReportsIndexRouteImport.update({
-  id: '/reports/',
-  path: '/reports/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/reports/",
+	path: "/reports/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
-  id: '/projects/',
-  path: '/projects/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/projects/",
+	path: "/projects/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const MatrixIndexRoute = MatrixIndexRouteImport.update({
-  id: '/matrix/',
-  path: '/matrix/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/matrix/",
+	path: "/matrix/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const LinksIndexRoute = LinksIndexRouteImport.update({
-  id: '/links/',
-  path: '/links/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/links/",
+	path: "/links/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ItemsIndexRoute = ItemsIndexRouteImport.update({
-  id: '/items/',
-  path: '/items/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/items/",
+	path: "/items/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ImpactIndexRoute = ImpactIndexRouteImport.update({
-  id: '/impact/',
-  path: '/impact/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/impact/",
+	path: "/impact/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const GraphIndexRoute = GraphIndexRouteImport.update({
-  id: '/graph/',
-  path: '/graph/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/graph/",
+	path: "/graph/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const EventsIndexRoute = EventsIndexRouteImport.update({
-  id: '/events/',
-  path: '/events/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/events/",
+	path: "/events/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ApiDocsIndexRoute = ApiDocsIndexRouteImport.update({
-  id: '/api-docs/',
-  path: '/api-docs/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgentsIndexRoute = AgentsIndexRouteImport.update({
-  id: '/agents/',
-  path: '/agents/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/api-docs/",
+	path: "/api-docs/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
-  id: '/projects/$projectId',
-  path: '/projects/$projectId',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/projects/$projectId",
+	path: "/projects/$projectId",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ItemsTreeRoute = ItemsTreeRouteImport.update({
-  id: '/items/tree',
-  path: '/items/tree',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/items/tree",
+	path: "/items/tree",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ItemsKanbanRoute = ItemsKanbanRouteImport.update({
-  id: '/items/kanban',
-  path: '/items/kanban',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/items/kanban",
+	path: "/items/kanban",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ItemsItemIdRoute = ItemsItemIdRouteImport.update({
-  id: '/items/$itemId',
-  path: '/items/$itemId',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/items/$itemId",
+	path: "/items/$itemId",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const IntegrationsCallbackRoute = IntegrationsCallbackRouteImport.update({
+	id: "/integrations/callback",
+	path: "/integrations/callback",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+	id: "/auth/reset-password",
+	path: "/auth/reset-password",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+	id: "/auth/register",
+	path: "/auth/register",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const AuthLogoutRoute = AuthLogoutRouteImport.update({
+	id: "/auth/logout",
+	path: "/auth/logout",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const AuthLoginRoute = AuthLoginRouteImport.update({
+	id: "/auth/login",
+	path: "/auth/login",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+	id: "/auth/callback",
+	path: "/auth/callback",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ApiSwaggerConfigRoute = ApiSwaggerConfigRouteImport.update({
-  id: '/api/swagger-config',
-  path: '/api/swagger-config',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/api/swagger-config",
+	path: "/api/swagger-config",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ApiSpecRoute = ApiSpecRouteImport.update({
-  id: '/api/spec',
-  path: '/api/spec',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/api/spec",
+	path: "/api/spec",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ApiAuthTestRoute = ApiAuthTestRouteImport.update({
-  id: '/api/auth-test',
-  path: '/api/auth-test',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/api/auth-test",
+	path: "/api/auth-test",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ApiDocsSwaggerRoute = ApiDocsSwaggerRouteImport.update({
-  id: '/api-docs/swagger',
-  path: '/api-docs/swagger',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/api-docs/swagger",
+	path: "/api-docs/swagger",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ApiDocsRedocRoute = ApiDocsRedocRouteImport.update({
-  id: '/api-docs/redoc',
-  path: '/api-docs/redoc',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/api-docs/redoc",
+	path: "/api-docs/redoc",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const MatrixTraceabilityIndexRoute = MatrixTraceabilityIndexRouteImport.update({
-  id: '/matrix/traceability/',
-  path: '/matrix/traceability/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/matrix/traceability/",
+	path: "/matrix/traceability/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const ImpactAnalysisIndexRoute = ImpactAnalysisIndexRouteImport.update({
-  id: '/impact/analysis/',
-  path: '/impact/analysis/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/impact/analysis/",
+	path: "/impact/analysis/",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const EventsTimelineIndexRoute = EventsTimelineIndexRouteImport.update({
-  id: '/events/timeline/',
-  path: '/events/timeline/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/events/timeline/",
+	path: "/events/timeline/",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const ProjectsProjectIdSpecificationsRoute =
+	ProjectsProjectIdSpecificationsRouteImport.update({
+		id: "/specifications",
+		path: "/specifications",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdSettingsRoute =
+	ProjectsProjectIdSettingsRouteImport.update({
+		id: "/settings",
+		path: "/settings",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdFeaturesRoute =
+	ProjectsProjectIdFeaturesRouteImport.update({
+		id: "/features",
+		path: "/features",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdContractsRoute =
+	ProjectsProjectIdContractsRouteImport.update({
+		id: "/contracts",
+		path: "/contracts",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdComplianceRoute =
+	ProjectsProjectIdComplianceRouteImport.update({
+		id: "/compliance",
+		path: "/compliance",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdAgentsRoute = ProjectsProjectIdAgentsRouteImport.update({
+	id: "/agents",
+	path: "/agents",
+	getParentRoute: () => ProjectsProjectIdRoute,
+} as any);
+const ProjectsProjectIdAdrsRoute = ProjectsProjectIdAdrsRouteImport.update({
+	id: "/adrs",
+	path: "/adrs",
+	getParentRoute: () => ProjectsProjectIdRoute,
+} as any);
 const ProjectsProjectIdViewsWireframeRoute =
-  ProjectsProjectIdViewsWireframeRouteImport.update({
-    id: '/views/wireframe',
-    path: '/views/wireframe',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsWireframeRouteImport.update({
+		id: "/views/wireframe",
+		path: "/views/wireframe",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsWebhooksRoute =
+	ProjectsProjectIdViewsWebhooksRouteImport.update({
+		id: "/views/webhooks",
+		path: "/views/webhooks",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsTestSuitesRoute =
+	ProjectsProjectIdViewsTestSuitesRouteImport.update({
+		id: "/views/test-suites",
+		path: "/views/test-suites",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsTestRunsRoute =
+	ProjectsProjectIdViewsTestRunsRouteImport.update({
+		id: "/views/test-runs",
+		path: "/views/test-runs",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsTestCasesRoute =
+	ProjectsProjectIdViewsTestCasesRouteImport.update({
+		id: "/views/test-cases",
+		path: "/views/test-cases",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsTestRoute =
-  ProjectsProjectIdViewsTestRouteImport.update({
-    id: '/views/test',
-    path: '/views/test',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsTestRouteImport.update({
+		id: "/views/test",
+		path: "/views/test",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsSecurityRoute =
-  ProjectsProjectIdViewsSecurityRouteImport.update({
-    id: '/views/security',
-    path: '/views/security',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsSecurityRouteImport.update({
+		id: "/views/security",
+		path: "/views/security",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsQaDashboardRoute =
+	ProjectsProjectIdViewsQaDashboardRouteImport.update({
+		id: "/views/qa-dashboard",
+		path: "/views/qa-dashboard",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsProcessRoute =
+	ProjectsProjectIdViewsProcessRouteImport.update({
+		id: "/views/process",
+		path: "/views/process",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsProblemRoute =
+	ProjectsProjectIdViewsProblemRouteImport.update({
+		id: "/views/problem",
+		path: "/views/problem",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsPerformanceRoute =
-  ProjectsProjectIdViewsPerformanceRouteImport.update({
-    id: '/views/performance',
-    path: '/views/performance',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsPerformanceRouteImport.update({
+		id: "/views/performance",
+		path: "/views/performance",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsMonitoringRoute =
-  ProjectsProjectIdViewsMonitoringRouteImport.update({
-    id: '/views/monitoring',
-    path: '/views/monitoring',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsMonitoringRouteImport.update({
+		id: "/views/monitoring",
+		path: "/views/monitoring",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsJourneyRoute =
-  ProjectsProjectIdViewsJourneyRouteImport.update({
-    id: '/views/journey',
-    path: '/views/journey',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsJourneyRouteImport.update({
+		id: "/views/journey",
+		path: "/views/journey",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsIntegrationsRoute =
+	ProjectsProjectIdViewsIntegrationsRouteImport.update({
+		id: "/views/integrations",
+		path: "/views/integrations",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsInfrastructureRoute =
-  ProjectsProjectIdViewsInfrastructureRouteImport.update({
-    id: '/views/infrastructure',
-    path: '/views/infrastructure',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsInfrastructureRouteImport.update({
+		id: "/views/infrastructure",
+		path: "/views/infrastructure",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsFeatureRoute =
-  ProjectsProjectIdViewsFeatureRouteImport.update({
-    id: '/views/feature',
-    path: '/views/feature',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsFeatureRouteImport.update({
+		id: "/views/feature",
+		path: "/views/feature",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsDomainRoute =
-  ProjectsProjectIdViewsDomainRouteImport.update({
-    id: '/views/domain',
-    path: '/views/domain',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsDomainRouteImport.update({
+		id: "/views/domain",
+		path: "/views/domain",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsDependencyRoute =
-  ProjectsProjectIdViewsDependencyRouteImport.update({
-    id: '/views/dependency',
-    path: '/views/dependency',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsDependencyRouteImport.update({
+		id: "/views/dependency",
+		path: "/views/dependency",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsDataflowRoute =
-  ProjectsProjectIdViewsDataflowRouteImport.update({
-    id: '/views/dataflow',
-    path: '/views/dataflow',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsDataflowRouteImport.update({
+		id: "/views/dataflow",
+		path: "/views/dataflow",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsDatabaseRoute =
-  ProjectsProjectIdViewsDatabaseRouteImport.update({
-    id: '/views/database',
-    path: '/views/database',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsDatabaseRouteImport.update({
+		id: "/views/database",
+		path: "/views/database",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdViewsCoverageRoute =
+	ProjectsProjectIdViewsCoverageRouteImport.update({
+		id: "/views/coverage",
+		path: "/views/coverage",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsConfigurationRoute =
-  ProjectsProjectIdViewsConfigurationRouteImport.update({
-    id: '/views/configuration',
-    path: '/views/configuration',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsConfigurationRouteImport.update({
+		id: "/views/configuration",
+		path: "/views/configuration",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsCodeRoute =
-  ProjectsProjectIdViewsCodeRouteImport.update({
-    id: '/views/code',
-    path: '/views/code',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsCodeRouteImport.update({
+		id: "/views/code",
+		path: "/views/code",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsArchitectureRoute =
-  ProjectsProjectIdViewsArchitectureRouteImport.update({
-    id: '/views/architecture',
-    path: '/views/architecture',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsArchitectureRouteImport.update({
+		id: "/views/architecture",
+		path: "/views/architecture",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsApiRoute =
-  ProjectsProjectIdViewsApiRouteImport.update({
-    id: '/views/api',
-    path: '/views/api',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsApiRouteImport.update({
+		id: "/views/api",
+		path: "/views/api",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
 const ProjectsProjectIdViewsViewTypeRoute =
-  ProjectsProjectIdViewsViewTypeRouteImport.update({
-    id: '/views/$viewType',
-    path: '/views/$viewType',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
+	ProjectsProjectIdViewsViewTypeRouteImport.update({
+		id: "/views/$viewType",
+		path: "/views/$viewType",
+		getParentRoute: () => ProjectsProjectIdRoute,
+	} as any);
+const ProjectsProjectIdFeaturesFeatureIdRoute =
+	ProjectsProjectIdFeaturesFeatureIdRouteImport.update({
+		id: "/$featureId",
+		path: "/$featureId",
+		getParentRoute: () => ProjectsProjectIdFeaturesRoute,
+	} as any);
+const ProjectsProjectIdContractsContractIdRoute =
+	ProjectsProjectIdContractsContractIdRouteImport.update({
+		id: "/$contractId",
+		path: "/$contractId",
+		getParentRoute: () => ProjectsProjectIdContractsRoute,
+	} as any);
+const ProjectsProjectIdAdrsAdrIdRoute =
+	ProjectsProjectIdAdrsAdrIdRouteImport.update({
+		id: "/$adrId",
+		path: "/$adrId",
+		getParentRoute: () => ProjectsProjectIdAdrsRoute,
+	} as any);
 const ProjectsProjectIdViewsViewTypeItemIdRoute =
-  ProjectsProjectIdViewsViewTypeItemIdRouteImport.update({
-    id: '/$itemId',
-    path: '/$itemId',
-    getParentRoute: () => ProjectsProjectIdViewsViewTypeRoute,
-  } as any)
+	ProjectsProjectIdViewsViewTypeItemIdRouteImport.update({
+		id: "/$itemId",
+		path: "/$itemId",
+		getParentRoute: () => ProjectsProjectIdViewsViewTypeRoute,
+	} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/api-docs/redoc': typeof ApiDocsRedocRoute
-  '/api-docs/swagger': typeof ApiDocsSwaggerRoute
-  '/api/auth-test': typeof ApiAuthTestRoute
-  '/api/spec': typeof ApiSpecRoute
-  '/api/swagger-config': typeof ApiSwaggerConfigRoute
-  '/items/$itemId': typeof ItemsItemIdRoute
-  '/items/kanban': typeof ItemsKanbanRoute
-  '/items/tree': typeof ItemsTreeRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
-  '/agents': typeof AgentsIndexRoute
-  '/api-docs': typeof ApiDocsIndexRoute
-  '/events': typeof EventsIndexRoute
-  '/graph': typeof GraphIndexRoute
-  '/impact': typeof ImpactIndexRoute
-  '/items': typeof ItemsIndexRoute
-  '/links': typeof LinksIndexRoute
-  '/matrix': typeof MatrixIndexRoute
-  '/projects': typeof ProjectsIndexRoute
-  '/reports': typeof ReportsIndexRoute
-  '/search': typeof SearchIndexRoute
-  '/settings': typeof SettingsIndexRoute
-  '/events/timeline': typeof EventsTimelineIndexRoute
-  '/impact/analysis': typeof ImpactAnalysisIndexRoute
-  '/matrix/traceability': typeof MatrixTraceabilityIndexRoute
-  '/projects/$projectId/views/$viewType': typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
-  '/projects/$projectId/views/api': typeof ProjectsProjectIdViewsApiRoute
-  '/projects/$projectId/views/architecture': typeof ProjectsProjectIdViewsArchitectureRoute
-  '/projects/$projectId/views/code': typeof ProjectsProjectIdViewsCodeRoute
-  '/projects/$projectId/views/configuration': typeof ProjectsProjectIdViewsConfigurationRoute
-  '/projects/$projectId/views/database': typeof ProjectsProjectIdViewsDatabaseRoute
-  '/projects/$projectId/views/dataflow': typeof ProjectsProjectIdViewsDataflowRoute
-  '/projects/$projectId/views/dependency': typeof ProjectsProjectIdViewsDependencyRoute
-  '/projects/$projectId/views/domain': typeof ProjectsProjectIdViewsDomainRoute
-  '/projects/$projectId/views/feature': typeof ProjectsProjectIdViewsFeatureRoute
-  '/projects/$projectId/views/infrastructure': typeof ProjectsProjectIdViewsInfrastructureRoute
-  '/projects/$projectId/views/journey': typeof ProjectsProjectIdViewsJourneyRoute
-  '/projects/$projectId/views/monitoring': typeof ProjectsProjectIdViewsMonitoringRoute
-  '/projects/$projectId/views/performance': typeof ProjectsProjectIdViewsPerformanceRoute
-  '/projects/$projectId/views/security': typeof ProjectsProjectIdViewsSecurityRoute
-  '/projects/$projectId/views/test': typeof ProjectsProjectIdViewsTestRoute
-  '/projects/$projectId/views/wireframe': typeof ProjectsProjectIdViewsWireframeRoute
-  '/projects/$projectId/views/$viewType/$itemId': typeof ProjectsProjectIdViewsViewTypeItemIdRoute
+	"/": typeof IndexRoute;
+	"/api-docs/redoc": typeof ApiDocsRedocRoute;
+	"/api-docs/swagger": typeof ApiDocsSwaggerRoute;
+	"/api/auth-test": typeof ApiAuthTestRoute;
+	"/api/spec": typeof ApiSpecRoute;
+	"/api/swagger-config": typeof ApiSwaggerConfigRoute;
+	"/auth/callback": typeof AuthCallbackRoute;
+	"/auth/login": typeof AuthLoginRoute;
+	"/auth/logout": typeof AuthLogoutRoute;
+	"/auth/register": typeof AuthRegisterRoute;
+	"/auth/reset-password": typeof AuthResetPasswordRoute;
+	"/integrations/callback": typeof IntegrationsCallbackRoute;
+	"/items/$itemId": typeof ItemsItemIdRoute;
+	"/items/kanban": typeof ItemsKanbanRoute;
+	"/items/tree": typeof ItemsTreeRoute;
+	"/projects/$projectId": typeof ProjectsProjectIdRouteWithChildren;
+	"/api-docs/": typeof ApiDocsIndexRoute;
+	"/events/": typeof EventsIndexRoute;
+	"/graph/": typeof GraphIndexRoute;
+	"/impact/": typeof ImpactIndexRoute;
+	"/items/": typeof ItemsIndexRoute;
+	"/links/": typeof LinksIndexRoute;
+	"/matrix/": typeof MatrixIndexRoute;
+	"/projects/": typeof ProjectsIndexRoute;
+	"/reports/": typeof ReportsIndexRoute;
+	"/search/": typeof SearchIndexRoute;
+	"/settings/": typeof SettingsIndexRoute;
+	"/projects/$projectId/adrs": typeof ProjectsProjectIdAdrsRouteWithChildren;
+	"/projects/$projectId/agents": typeof ProjectsProjectIdAgentsRoute;
+	"/projects/$projectId/compliance": typeof ProjectsProjectIdComplianceRoute;
+	"/projects/$projectId/contracts": typeof ProjectsProjectIdContractsRouteWithChildren;
+	"/projects/$projectId/features": typeof ProjectsProjectIdFeaturesRouteWithChildren;
+	"/projects/$projectId/settings": typeof ProjectsProjectIdSettingsRoute;
+	"/projects/$projectId/specifications": typeof ProjectsProjectIdSpecificationsRoute;
+	"/events/timeline/": typeof EventsTimelineIndexRoute;
+	"/impact/analysis/": typeof ImpactAnalysisIndexRoute;
+	"/matrix/traceability/": typeof MatrixTraceabilityIndexRoute;
+	"/projects/$projectId/adrs/$adrId": typeof ProjectsProjectIdAdrsAdrIdRoute;
+	"/projects/$projectId/contracts/$contractId": typeof ProjectsProjectIdContractsContractIdRoute;
+	"/projects/$projectId/features/$featureId": typeof ProjectsProjectIdFeaturesFeatureIdRoute;
+	"/projects/$projectId/views/$viewType": typeof ProjectsProjectIdViewsViewTypeRouteWithChildren;
+	"/projects/$projectId/views/api": typeof ProjectsProjectIdViewsApiRoute;
+	"/projects/$projectId/views/architecture": typeof ProjectsProjectIdViewsArchitectureRoute;
+	"/projects/$projectId/views/code": typeof ProjectsProjectIdViewsCodeRoute;
+	"/projects/$projectId/views/configuration": typeof ProjectsProjectIdViewsConfigurationRoute;
+	"/projects/$projectId/views/coverage": typeof ProjectsProjectIdViewsCoverageRoute;
+	"/projects/$projectId/views/database": typeof ProjectsProjectIdViewsDatabaseRoute;
+	"/projects/$projectId/views/dataflow": typeof ProjectsProjectIdViewsDataflowRoute;
+	"/projects/$projectId/views/dependency": typeof ProjectsProjectIdViewsDependencyRoute;
+	"/projects/$projectId/views/domain": typeof ProjectsProjectIdViewsDomainRoute;
+	"/projects/$projectId/views/feature": typeof ProjectsProjectIdViewsFeatureRoute;
+	"/projects/$projectId/views/infrastructure": typeof ProjectsProjectIdViewsInfrastructureRoute;
+	"/projects/$projectId/views/integrations": typeof ProjectsProjectIdViewsIntegrationsRoute;
+	"/projects/$projectId/views/journey": typeof ProjectsProjectIdViewsJourneyRoute;
+	"/projects/$projectId/views/monitoring": typeof ProjectsProjectIdViewsMonitoringRoute;
+	"/projects/$projectId/views/performance": typeof ProjectsProjectIdViewsPerformanceRoute;
+	"/projects/$projectId/views/problem": typeof ProjectsProjectIdViewsProblemRoute;
+	"/projects/$projectId/views/process": typeof ProjectsProjectIdViewsProcessRoute;
+	"/projects/$projectId/views/qa-dashboard": typeof ProjectsProjectIdViewsQaDashboardRoute;
+	"/projects/$projectId/views/security": typeof ProjectsProjectIdViewsSecurityRoute;
+	"/projects/$projectId/views/test": typeof ProjectsProjectIdViewsTestRoute;
+	"/projects/$projectId/views/test-cases": typeof ProjectsProjectIdViewsTestCasesRoute;
+	"/projects/$projectId/views/test-runs": typeof ProjectsProjectIdViewsTestRunsRoute;
+	"/projects/$projectId/views/test-suites": typeof ProjectsProjectIdViewsTestSuitesRoute;
+	"/projects/$projectId/views/webhooks": typeof ProjectsProjectIdViewsWebhooksRoute;
+	"/projects/$projectId/views/wireframe": typeof ProjectsProjectIdViewsWireframeRoute;
+	"/projects/$projectId/views/$viewType/$itemId": typeof ProjectsProjectIdViewsViewTypeItemIdRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/api-docs/redoc': typeof ApiDocsRedocRoute
-  '/api-docs/swagger': typeof ApiDocsSwaggerRoute
-  '/api/auth-test': typeof ApiAuthTestRoute
-  '/api/spec': typeof ApiSpecRoute
-  '/api/swagger-config': typeof ApiSwaggerConfigRoute
-  '/items/$itemId': typeof ItemsItemIdRoute
-  '/items/kanban': typeof ItemsKanbanRoute
-  '/items/tree': typeof ItemsTreeRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
-  '/agents': typeof AgentsIndexRoute
-  '/api-docs': typeof ApiDocsIndexRoute
-  '/events': typeof EventsIndexRoute
-  '/graph': typeof GraphIndexRoute
-  '/impact': typeof ImpactIndexRoute
-  '/items': typeof ItemsIndexRoute
-  '/links': typeof LinksIndexRoute
-  '/matrix': typeof MatrixIndexRoute
-  '/projects': typeof ProjectsIndexRoute
-  '/reports': typeof ReportsIndexRoute
-  '/search': typeof SearchIndexRoute
-  '/settings': typeof SettingsIndexRoute
-  '/events/timeline': typeof EventsTimelineIndexRoute
-  '/impact/analysis': typeof ImpactAnalysisIndexRoute
-  '/matrix/traceability': typeof MatrixTraceabilityIndexRoute
-  '/projects/$projectId/views/$viewType': typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
-  '/projects/$projectId/views/api': typeof ProjectsProjectIdViewsApiRoute
-  '/projects/$projectId/views/architecture': typeof ProjectsProjectIdViewsArchitectureRoute
-  '/projects/$projectId/views/code': typeof ProjectsProjectIdViewsCodeRoute
-  '/projects/$projectId/views/configuration': typeof ProjectsProjectIdViewsConfigurationRoute
-  '/projects/$projectId/views/database': typeof ProjectsProjectIdViewsDatabaseRoute
-  '/projects/$projectId/views/dataflow': typeof ProjectsProjectIdViewsDataflowRoute
-  '/projects/$projectId/views/dependency': typeof ProjectsProjectIdViewsDependencyRoute
-  '/projects/$projectId/views/domain': typeof ProjectsProjectIdViewsDomainRoute
-  '/projects/$projectId/views/feature': typeof ProjectsProjectIdViewsFeatureRoute
-  '/projects/$projectId/views/infrastructure': typeof ProjectsProjectIdViewsInfrastructureRoute
-  '/projects/$projectId/views/journey': typeof ProjectsProjectIdViewsJourneyRoute
-  '/projects/$projectId/views/monitoring': typeof ProjectsProjectIdViewsMonitoringRoute
-  '/projects/$projectId/views/performance': typeof ProjectsProjectIdViewsPerformanceRoute
-  '/projects/$projectId/views/security': typeof ProjectsProjectIdViewsSecurityRoute
-  '/projects/$projectId/views/test': typeof ProjectsProjectIdViewsTestRoute
-  '/projects/$projectId/views/wireframe': typeof ProjectsProjectIdViewsWireframeRoute
-  '/projects/$projectId/views/$viewType/$itemId': typeof ProjectsProjectIdViewsViewTypeItemIdRoute
+	"/": typeof IndexRoute;
+	"/api-docs/redoc": typeof ApiDocsRedocRoute;
+	"/api-docs/swagger": typeof ApiDocsSwaggerRoute;
+	"/api/auth-test": typeof ApiAuthTestRoute;
+	"/api/spec": typeof ApiSpecRoute;
+	"/api/swagger-config": typeof ApiSwaggerConfigRoute;
+	"/auth/callback": typeof AuthCallbackRoute;
+	"/auth/login": typeof AuthLoginRoute;
+	"/auth/logout": typeof AuthLogoutRoute;
+	"/auth/register": typeof AuthRegisterRoute;
+	"/auth/reset-password": typeof AuthResetPasswordRoute;
+	"/integrations/callback": typeof IntegrationsCallbackRoute;
+	"/items/$itemId": typeof ItemsItemIdRoute;
+	"/items/kanban": typeof ItemsKanbanRoute;
+	"/items/tree": typeof ItemsTreeRoute;
+	"/projects/$projectId": typeof ProjectsProjectIdRouteWithChildren;
+	"/api-docs": typeof ApiDocsIndexRoute;
+	"/events": typeof EventsIndexRoute;
+	"/graph": typeof GraphIndexRoute;
+	"/impact": typeof ImpactIndexRoute;
+	"/items": typeof ItemsIndexRoute;
+	"/links": typeof LinksIndexRoute;
+	"/matrix": typeof MatrixIndexRoute;
+	"/projects": typeof ProjectsIndexRoute;
+	"/reports": typeof ReportsIndexRoute;
+	"/search": typeof SearchIndexRoute;
+	"/settings": typeof SettingsIndexRoute;
+	"/projects/$projectId/adrs": typeof ProjectsProjectIdAdrsRouteWithChildren;
+	"/projects/$projectId/agents": typeof ProjectsProjectIdAgentsRoute;
+	"/projects/$projectId/compliance": typeof ProjectsProjectIdComplianceRoute;
+	"/projects/$projectId/contracts": typeof ProjectsProjectIdContractsRouteWithChildren;
+	"/projects/$projectId/features": typeof ProjectsProjectIdFeaturesRouteWithChildren;
+	"/projects/$projectId/settings": typeof ProjectsProjectIdSettingsRoute;
+	"/projects/$projectId/specifications": typeof ProjectsProjectIdSpecificationsRoute;
+	"/events/timeline": typeof EventsTimelineIndexRoute;
+	"/impact/analysis": typeof ImpactAnalysisIndexRoute;
+	"/matrix/traceability": typeof MatrixTraceabilityIndexRoute;
+	"/projects/$projectId/adrs/$adrId": typeof ProjectsProjectIdAdrsAdrIdRoute;
+	"/projects/$projectId/contracts/$contractId": typeof ProjectsProjectIdContractsContractIdRoute;
+	"/projects/$projectId/features/$featureId": typeof ProjectsProjectIdFeaturesFeatureIdRoute;
+	"/projects/$projectId/views/$viewType": typeof ProjectsProjectIdViewsViewTypeRouteWithChildren;
+	"/projects/$projectId/views/api": typeof ProjectsProjectIdViewsApiRoute;
+	"/projects/$projectId/views/architecture": typeof ProjectsProjectIdViewsArchitectureRoute;
+	"/projects/$projectId/views/code": typeof ProjectsProjectIdViewsCodeRoute;
+	"/projects/$projectId/views/configuration": typeof ProjectsProjectIdViewsConfigurationRoute;
+	"/projects/$projectId/views/coverage": typeof ProjectsProjectIdViewsCoverageRoute;
+	"/projects/$projectId/views/database": typeof ProjectsProjectIdViewsDatabaseRoute;
+	"/projects/$projectId/views/dataflow": typeof ProjectsProjectIdViewsDataflowRoute;
+	"/projects/$projectId/views/dependency": typeof ProjectsProjectIdViewsDependencyRoute;
+	"/projects/$projectId/views/domain": typeof ProjectsProjectIdViewsDomainRoute;
+	"/projects/$projectId/views/feature": typeof ProjectsProjectIdViewsFeatureRoute;
+	"/projects/$projectId/views/infrastructure": typeof ProjectsProjectIdViewsInfrastructureRoute;
+	"/projects/$projectId/views/integrations": typeof ProjectsProjectIdViewsIntegrationsRoute;
+	"/projects/$projectId/views/journey": typeof ProjectsProjectIdViewsJourneyRoute;
+	"/projects/$projectId/views/monitoring": typeof ProjectsProjectIdViewsMonitoringRoute;
+	"/projects/$projectId/views/performance": typeof ProjectsProjectIdViewsPerformanceRoute;
+	"/projects/$projectId/views/problem": typeof ProjectsProjectIdViewsProblemRoute;
+	"/projects/$projectId/views/process": typeof ProjectsProjectIdViewsProcessRoute;
+	"/projects/$projectId/views/qa-dashboard": typeof ProjectsProjectIdViewsQaDashboardRoute;
+	"/projects/$projectId/views/security": typeof ProjectsProjectIdViewsSecurityRoute;
+	"/projects/$projectId/views/test": typeof ProjectsProjectIdViewsTestRoute;
+	"/projects/$projectId/views/test-cases": typeof ProjectsProjectIdViewsTestCasesRoute;
+	"/projects/$projectId/views/test-runs": typeof ProjectsProjectIdViewsTestRunsRoute;
+	"/projects/$projectId/views/test-suites": typeof ProjectsProjectIdViewsTestSuitesRoute;
+	"/projects/$projectId/views/webhooks": typeof ProjectsProjectIdViewsWebhooksRoute;
+	"/projects/$projectId/views/wireframe": typeof ProjectsProjectIdViewsWireframeRoute;
+	"/projects/$projectId/views/$viewType/$itemId": typeof ProjectsProjectIdViewsViewTypeItemIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/api-docs/redoc': typeof ApiDocsRedocRoute
-  '/api-docs/swagger': typeof ApiDocsSwaggerRoute
-  '/api/auth-test': typeof ApiAuthTestRoute
-  '/api/spec': typeof ApiSpecRoute
-  '/api/swagger-config': typeof ApiSwaggerConfigRoute
-  '/items/$itemId': typeof ItemsItemIdRoute
-  '/items/kanban': typeof ItemsKanbanRoute
-  '/items/tree': typeof ItemsTreeRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
-  '/agents/': typeof AgentsIndexRoute
-  '/api-docs/': typeof ApiDocsIndexRoute
-  '/events/': typeof EventsIndexRoute
-  '/graph/': typeof GraphIndexRoute
-  '/impact/': typeof ImpactIndexRoute
-  '/items/': typeof ItemsIndexRoute
-  '/links/': typeof LinksIndexRoute
-  '/matrix/': typeof MatrixIndexRoute
-  '/projects/': typeof ProjectsIndexRoute
-  '/reports/': typeof ReportsIndexRoute
-  '/search/': typeof SearchIndexRoute
-  '/settings/': typeof SettingsIndexRoute
-  '/events/timeline/': typeof EventsTimelineIndexRoute
-  '/impact/analysis/': typeof ImpactAnalysisIndexRoute
-  '/matrix/traceability/': typeof MatrixTraceabilityIndexRoute
-  '/projects/$projectId/views/$viewType': typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
-  '/projects/$projectId/views/api': typeof ProjectsProjectIdViewsApiRoute
-  '/projects/$projectId/views/architecture': typeof ProjectsProjectIdViewsArchitectureRoute
-  '/projects/$projectId/views/code': typeof ProjectsProjectIdViewsCodeRoute
-  '/projects/$projectId/views/configuration': typeof ProjectsProjectIdViewsConfigurationRoute
-  '/projects/$projectId/views/database': typeof ProjectsProjectIdViewsDatabaseRoute
-  '/projects/$projectId/views/dataflow': typeof ProjectsProjectIdViewsDataflowRoute
-  '/projects/$projectId/views/dependency': typeof ProjectsProjectIdViewsDependencyRoute
-  '/projects/$projectId/views/domain': typeof ProjectsProjectIdViewsDomainRoute
-  '/projects/$projectId/views/feature': typeof ProjectsProjectIdViewsFeatureRoute
-  '/projects/$projectId/views/infrastructure': typeof ProjectsProjectIdViewsInfrastructureRoute
-  '/projects/$projectId/views/journey': typeof ProjectsProjectIdViewsJourneyRoute
-  '/projects/$projectId/views/monitoring': typeof ProjectsProjectIdViewsMonitoringRoute
-  '/projects/$projectId/views/performance': typeof ProjectsProjectIdViewsPerformanceRoute
-  '/projects/$projectId/views/security': typeof ProjectsProjectIdViewsSecurityRoute
-  '/projects/$projectId/views/test': typeof ProjectsProjectIdViewsTestRoute
-  '/projects/$projectId/views/wireframe': typeof ProjectsProjectIdViewsWireframeRoute
-  '/projects/$projectId/views/$viewType/$itemId': typeof ProjectsProjectIdViewsViewTypeItemIdRoute
+	__root__: typeof rootRouteImport;
+	"/": typeof IndexRoute;
+	"/api-docs/redoc": typeof ApiDocsRedocRoute;
+	"/api-docs/swagger": typeof ApiDocsSwaggerRoute;
+	"/api/auth-test": typeof ApiAuthTestRoute;
+	"/api/spec": typeof ApiSpecRoute;
+	"/api/swagger-config": typeof ApiSwaggerConfigRoute;
+	"/auth/callback": typeof AuthCallbackRoute;
+	"/auth/login": typeof AuthLoginRoute;
+	"/auth/logout": typeof AuthLogoutRoute;
+	"/auth/register": typeof AuthRegisterRoute;
+	"/auth/reset-password": typeof AuthResetPasswordRoute;
+	"/integrations/callback": typeof IntegrationsCallbackRoute;
+	"/items/$itemId": typeof ItemsItemIdRoute;
+	"/items/kanban": typeof ItemsKanbanRoute;
+	"/items/tree": typeof ItemsTreeRoute;
+	"/projects/$projectId": typeof ProjectsProjectIdRouteWithChildren;
+	"/api-docs/": typeof ApiDocsIndexRoute;
+	"/events/": typeof EventsIndexRoute;
+	"/graph/": typeof GraphIndexRoute;
+	"/impact/": typeof ImpactIndexRoute;
+	"/items/": typeof ItemsIndexRoute;
+	"/links/": typeof LinksIndexRoute;
+	"/matrix/": typeof MatrixIndexRoute;
+	"/projects/": typeof ProjectsIndexRoute;
+	"/reports/": typeof ReportsIndexRoute;
+	"/search/": typeof SearchIndexRoute;
+	"/settings/": typeof SettingsIndexRoute;
+	"/projects/$projectId/adrs": typeof ProjectsProjectIdAdrsRouteWithChildren;
+	"/projects/$projectId/agents": typeof ProjectsProjectIdAgentsRoute;
+	"/projects/$projectId/compliance": typeof ProjectsProjectIdComplianceRoute;
+	"/projects/$projectId/contracts": typeof ProjectsProjectIdContractsRouteWithChildren;
+	"/projects/$projectId/features": typeof ProjectsProjectIdFeaturesRouteWithChildren;
+	"/projects/$projectId/settings": typeof ProjectsProjectIdSettingsRoute;
+	"/projects/$projectId/specifications": typeof ProjectsProjectIdSpecificationsRoute;
+	"/events/timeline/": typeof EventsTimelineIndexRoute;
+	"/impact/analysis/": typeof ImpactAnalysisIndexRoute;
+	"/matrix/traceability/": typeof MatrixTraceabilityIndexRoute;
+	"/projects/$projectId/adrs/$adrId": typeof ProjectsProjectIdAdrsAdrIdRoute;
+	"/projects/$projectId/contracts/$contractId": typeof ProjectsProjectIdContractsContractIdRoute;
+	"/projects/$projectId/features/$featureId": typeof ProjectsProjectIdFeaturesFeatureIdRoute;
+	"/projects/$projectId/views/$viewType": typeof ProjectsProjectIdViewsViewTypeRouteWithChildren;
+	"/projects/$projectId/views/api": typeof ProjectsProjectIdViewsApiRoute;
+	"/projects/$projectId/views/architecture": typeof ProjectsProjectIdViewsArchitectureRoute;
+	"/projects/$projectId/views/code": typeof ProjectsProjectIdViewsCodeRoute;
+	"/projects/$projectId/views/configuration": typeof ProjectsProjectIdViewsConfigurationRoute;
+	"/projects/$projectId/views/coverage": typeof ProjectsProjectIdViewsCoverageRoute;
+	"/projects/$projectId/views/database": typeof ProjectsProjectIdViewsDatabaseRoute;
+	"/projects/$projectId/views/dataflow": typeof ProjectsProjectIdViewsDataflowRoute;
+	"/projects/$projectId/views/dependency": typeof ProjectsProjectIdViewsDependencyRoute;
+	"/projects/$projectId/views/domain": typeof ProjectsProjectIdViewsDomainRoute;
+	"/projects/$projectId/views/feature": typeof ProjectsProjectIdViewsFeatureRoute;
+	"/projects/$projectId/views/infrastructure": typeof ProjectsProjectIdViewsInfrastructureRoute;
+	"/projects/$projectId/views/integrations": typeof ProjectsProjectIdViewsIntegrationsRoute;
+	"/projects/$projectId/views/journey": typeof ProjectsProjectIdViewsJourneyRoute;
+	"/projects/$projectId/views/monitoring": typeof ProjectsProjectIdViewsMonitoringRoute;
+	"/projects/$projectId/views/performance": typeof ProjectsProjectIdViewsPerformanceRoute;
+	"/projects/$projectId/views/problem": typeof ProjectsProjectIdViewsProblemRoute;
+	"/projects/$projectId/views/process": typeof ProjectsProjectIdViewsProcessRoute;
+	"/projects/$projectId/views/qa-dashboard": typeof ProjectsProjectIdViewsQaDashboardRoute;
+	"/projects/$projectId/views/security": typeof ProjectsProjectIdViewsSecurityRoute;
+	"/projects/$projectId/views/test": typeof ProjectsProjectIdViewsTestRoute;
+	"/projects/$projectId/views/test-cases": typeof ProjectsProjectIdViewsTestCasesRoute;
+	"/projects/$projectId/views/test-runs": typeof ProjectsProjectIdViewsTestRunsRoute;
+	"/projects/$projectId/views/test-suites": typeof ProjectsProjectIdViewsTestSuitesRoute;
+	"/projects/$projectId/views/webhooks": typeof ProjectsProjectIdViewsWebhooksRoute;
+	"/projects/$projectId/views/wireframe": typeof ProjectsProjectIdViewsWireframeRoute;
+	"/projects/$projectId/views/$viewType/$itemId": typeof ProjectsProjectIdViewsViewTypeItemIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/api-docs/redoc'
-    | '/api-docs/swagger'
-    | '/api/auth-test'
-    | '/api/spec'
-    | '/api/swagger-config'
-    | '/items/$itemId'
-    | '/items/kanban'
-    | '/items/tree'
-    | '/projects/$projectId'
-    | '/agents'
-    | '/api-docs'
-    | '/events'
-    | '/graph'
-    | '/impact'
-    | '/items'
-    | '/links'
-    | '/matrix'
-    | '/projects'
-    | '/reports'
-    | '/search'
-    | '/settings'
-    | '/events/timeline'
-    | '/impact/analysis'
-    | '/matrix/traceability'
-    | '/projects/$projectId/views/$viewType'
-    | '/projects/$projectId/views/api'
-    | '/projects/$projectId/views/architecture'
-    | '/projects/$projectId/views/code'
-    | '/projects/$projectId/views/configuration'
-    | '/projects/$projectId/views/database'
-    | '/projects/$projectId/views/dataflow'
-    | '/projects/$projectId/views/dependency'
-    | '/projects/$projectId/views/domain'
-    | '/projects/$projectId/views/feature'
-    | '/projects/$projectId/views/infrastructure'
-    | '/projects/$projectId/views/journey'
-    | '/projects/$projectId/views/monitoring'
-    | '/projects/$projectId/views/performance'
-    | '/projects/$projectId/views/security'
-    | '/projects/$projectId/views/test'
-    | '/projects/$projectId/views/wireframe'
-    | '/projects/$projectId/views/$viewType/$itemId'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/api-docs/redoc'
-    | '/api-docs/swagger'
-    | '/api/auth-test'
-    | '/api/spec'
-    | '/api/swagger-config'
-    | '/items/$itemId'
-    | '/items/kanban'
-    | '/items/tree'
-    | '/projects/$projectId'
-    | '/agents'
-    | '/api-docs'
-    | '/events'
-    | '/graph'
-    | '/impact'
-    | '/items'
-    | '/links'
-    | '/matrix'
-    | '/projects'
-    | '/reports'
-    | '/search'
-    | '/settings'
-    | '/events/timeline'
-    | '/impact/analysis'
-    | '/matrix/traceability'
-    | '/projects/$projectId/views/$viewType'
-    | '/projects/$projectId/views/api'
-    | '/projects/$projectId/views/architecture'
-    | '/projects/$projectId/views/code'
-    | '/projects/$projectId/views/configuration'
-    | '/projects/$projectId/views/database'
-    | '/projects/$projectId/views/dataflow'
-    | '/projects/$projectId/views/dependency'
-    | '/projects/$projectId/views/domain'
-    | '/projects/$projectId/views/feature'
-    | '/projects/$projectId/views/infrastructure'
-    | '/projects/$projectId/views/journey'
-    | '/projects/$projectId/views/monitoring'
-    | '/projects/$projectId/views/performance'
-    | '/projects/$projectId/views/security'
-    | '/projects/$projectId/views/test'
-    | '/projects/$projectId/views/wireframe'
-    | '/projects/$projectId/views/$viewType/$itemId'
-  id:
-    | '__root__'
-    | '/'
-    | '/api-docs/redoc'
-    | '/api-docs/swagger'
-    | '/api/auth-test'
-    | '/api/spec'
-    | '/api/swagger-config'
-    | '/items/$itemId'
-    | '/items/kanban'
-    | '/items/tree'
-    | '/projects/$projectId'
-    | '/agents/'
-    | '/api-docs/'
-    | '/events/'
-    | '/graph/'
-    | '/impact/'
-    | '/items/'
-    | '/links/'
-    | '/matrix/'
-    | '/projects/'
-    | '/reports/'
-    | '/search/'
-    | '/settings/'
-    | '/events/timeline/'
-    | '/impact/analysis/'
-    | '/matrix/traceability/'
-    | '/projects/$projectId/views/$viewType'
-    | '/projects/$projectId/views/api'
-    | '/projects/$projectId/views/architecture'
-    | '/projects/$projectId/views/code'
-    | '/projects/$projectId/views/configuration'
-    | '/projects/$projectId/views/database'
-    | '/projects/$projectId/views/dataflow'
-    | '/projects/$projectId/views/dependency'
-    | '/projects/$projectId/views/domain'
-    | '/projects/$projectId/views/feature'
-    | '/projects/$projectId/views/infrastructure'
-    | '/projects/$projectId/views/journey'
-    | '/projects/$projectId/views/monitoring'
-    | '/projects/$projectId/views/performance'
-    | '/projects/$projectId/views/security'
-    | '/projects/$projectId/views/test'
-    | '/projects/$projectId/views/wireframe'
-    | '/projects/$projectId/views/$viewType/$itemId'
-  fileRoutesById: FileRoutesById
+	fileRoutesByFullPath: FileRoutesByFullPath;
+	fullPaths:
+		| "/"
+		| "/api-docs/redoc"
+		| "/api-docs/swagger"
+		| "/api/auth-test"
+		| "/api/spec"
+		| "/api/swagger-config"
+		| "/auth/callback"
+		| "/auth/login"
+		| "/auth/logout"
+		| "/auth/register"
+		| "/auth/reset-password"
+		| "/integrations/callback"
+		| "/items/$itemId"
+		| "/items/kanban"
+		| "/items/tree"
+		| "/projects/$projectId"
+		| "/api-docs/"
+		| "/events/"
+		| "/graph/"
+		| "/impact/"
+		| "/items/"
+		| "/links/"
+		| "/matrix/"
+		| "/projects/"
+		| "/reports/"
+		| "/search/"
+		| "/settings/"
+		| "/projects/$projectId/adrs"
+		| "/projects/$projectId/agents"
+		| "/projects/$projectId/compliance"
+		| "/projects/$projectId/contracts"
+		| "/projects/$projectId/features"
+		| "/projects/$projectId/settings"
+		| "/projects/$projectId/specifications"
+		| "/events/timeline/"
+		| "/impact/analysis/"
+		| "/matrix/traceability/"
+		| "/projects/$projectId/adrs/$adrId"
+		| "/projects/$projectId/contracts/$contractId"
+		| "/projects/$projectId/features/$featureId"
+		| "/projects/$projectId/views/$viewType"
+		| "/projects/$projectId/views/api"
+		| "/projects/$projectId/views/architecture"
+		| "/projects/$projectId/views/code"
+		| "/projects/$projectId/views/configuration"
+		| "/projects/$projectId/views/coverage"
+		| "/projects/$projectId/views/database"
+		| "/projects/$projectId/views/dataflow"
+		| "/projects/$projectId/views/dependency"
+		| "/projects/$projectId/views/domain"
+		| "/projects/$projectId/views/feature"
+		| "/projects/$projectId/views/infrastructure"
+		| "/projects/$projectId/views/integrations"
+		| "/projects/$projectId/views/journey"
+		| "/projects/$projectId/views/monitoring"
+		| "/projects/$projectId/views/performance"
+		| "/projects/$projectId/views/problem"
+		| "/projects/$projectId/views/process"
+		| "/projects/$projectId/views/qa-dashboard"
+		| "/projects/$projectId/views/security"
+		| "/projects/$projectId/views/test"
+		| "/projects/$projectId/views/test-cases"
+		| "/projects/$projectId/views/test-runs"
+		| "/projects/$projectId/views/test-suites"
+		| "/projects/$projectId/views/webhooks"
+		| "/projects/$projectId/views/wireframe"
+		| "/projects/$projectId/views/$viewType/$itemId";
+	fileRoutesByTo: FileRoutesByTo;
+	to:
+		| "/"
+		| "/api-docs/redoc"
+		| "/api-docs/swagger"
+		| "/api/auth-test"
+		| "/api/spec"
+		| "/api/swagger-config"
+		| "/auth/callback"
+		| "/auth/login"
+		| "/auth/logout"
+		| "/auth/register"
+		| "/auth/reset-password"
+		| "/integrations/callback"
+		| "/items/$itemId"
+		| "/items/kanban"
+		| "/items/tree"
+		| "/projects/$projectId"
+		| "/api-docs"
+		| "/events"
+		| "/graph"
+		| "/impact"
+		| "/items"
+		| "/links"
+		| "/matrix"
+		| "/projects"
+		| "/reports"
+		| "/search"
+		| "/settings"
+		| "/projects/$projectId/adrs"
+		| "/projects/$projectId/agents"
+		| "/projects/$projectId/compliance"
+		| "/projects/$projectId/contracts"
+		| "/projects/$projectId/features"
+		| "/projects/$projectId/settings"
+		| "/projects/$projectId/specifications"
+		| "/events/timeline"
+		| "/impact/analysis"
+		| "/matrix/traceability"
+		| "/projects/$projectId/adrs/$adrId"
+		| "/projects/$projectId/contracts/$contractId"
+		| "/projects/$projectId/features/$featureId"
+		| "/projects/$projectId/views/$viewType"
+		| "/projects/$projectId/views/api"
+		| "/projects/$projectId/views/architecture"
+		| "/projects/$projectId/views/code"
+		| "/projects/$projectId/views/configuration"
+		| "/projects/$projectId/views/coverage"
+		| "/projects/$projectId/views/database"
+		| "/projects/$projectId/views/dataflow"
+		| "/projects/$projectId/views/dependency"
+		| "/projects/$projectId/views/domain"
+		| "/projects/$projectId/views/feature"
+		| "/projects/$projectId/views/infrastructure"
+		| "/projects/$projectId/views/integrations"
+		| "/projects/$projectId/views/journey"
+		| "/projects/$projectId/views/monitoring"
+		| "/projects/$projectId/views/performance"
+		| "/projects/$projectId/views/problem"
+		| "/projects/$projectId/views/process"
+		| "/projects/$projectId/views/qa-dashboard"
+		| "/projects/$projectId/views/security"
+		| "/projects/$projectId/views/test"
+		| "/projects/$projectId/views/test-cases"
+		| "/projects/$projectId/views/test-runs"
+		| "/projects/$projectId/views/test-suites"
+		| "/projects/$projectId/views/webhooks"
+		| "/projects/$projectId/views/wireframe"
+		| "/projects/$projectId/views/$viewType/$itemId";
+	id:
+		| "__root__"
+		| "/"
+		| "/api-docs/redoc"
+		| "/api-docs/swagger"
+		| "/api/auth-test"
+		| "/api/spec"
+		| "/api/swagger-config"
+		| "/auth/callback"
+		| "/auth/login"
+		| "/auth/logout"
+		| "/auth/register"
+		| "/auth/reset-password"
+		| "/integrations/callback"
+		| "/items/$itemId"
+		| "/items/kanban"
+		| "/items/tree"
+		| "/projects/$projectId"
+		| "/api-docs/"
+		| "/events/"
+		| "/graph/"
+		| "/impact/"
+		| "/items/"
+		| "/links/"
+		| "/matrix/"
+		| "/projects/"
+		| "/reports/"
+		| "/search/"
+		| "/settings/"
+		| "/projects/$projectId/adrs"
+		| "/projects/$projectId/agents"
+		| "/projects/$projectId/compliance"
+		| "/projects/$projectId/contracts"
+		| "/projects/$projectId/features"
+		| "/projects/$projectId/settings"
+		| "/projects/$projectId/specifications"
+		| "/events/timeline/"
+		| "/impact/analysis/"
+		| "/matrix/traceability/"
+		| "/projects/$projectId/adrs/$adrId"
+		| "/projects/$projectId/contracts/$contractId"
+		| "/projects/$projectId/features/$featureId"
+		| "/projects/$projectId/views/$viewType"
+		| "/projects/$projectId/views/api"
+		| "/projects/$projectId/views/architecture"
+		| "/projects/$projectId/views/code"
+		| "/projects/$projectId/views/configuration"
+		| "/projects/$projectId/views/coverage"
+		| "/projects/$projectId/views/database"
+		| "/projects/$projectId/views/dataflow"
+		| "/projects/$projectId/views/dependency"
+		| "/projects/$projectId/views/domain"
+		| "/projects/$projectId/views/feature"
+		| "/projects/$projectId/views/infrastructure"
+		| "/projects/$projectId/views/integrations"
+		| "/projects/$projectId/views/journey"
+		| "/projects/$projectId/views/monitoring"
+		| "/projects/$projectId/views/performance"
+		| "/projects/$projectId/views/problem"
+		| "/projects/$projectId/views/process"
+		| "/projects/$projectId/views/qa-dashboard"
+		| "/projects/$projectId/views/security"
+		| "/projects/$projectId/views/test"
+		| "/projects/$projectId/views/test-cases"
+		| "/projects/$projectId/views/test-runs"
+		| "/projects/$projectId/views/test-suites"
+		| "/projects/$projectId/views/webhooks"
+		| "/projects/$projectId/views/wireframe"
+		| "/projects/$projectId/views/$viewType/$itemId";
+	fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ApiDocsRedocRoute: typeof ApiDocsRedocRoute
-  ApiDocsSwaggerRoute: typeof ApiDocsSwaggerRoute
-  ApiAuthTestRoute: typeof ApiAuthTestRoute
-  ApiSpecRoute: typeof ApiSpecRoute
-  ApiSwaggerConfigRoute: typeof ApiSwaggerConfigRoute
-  ItemsItemIdRoute: typeof ItemsItemIdRoute
-  ItemsKanbanRoute: typeof ItemsKanbanRoute
-  ItemsTreeRoute: typeof ItemsTreeRoute
-  ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
-  AgentsIndexRoute: typeof AgentsIndexRoute
-  ApiDocsIndexRoute: typeof ApiDocsIndexRoute
-  EventsIndexRoute: typeof EventsIndexRoute
-  GraphIndexRoute: typeof GraphIndexRoute
-  ImpactIndexRoute: typeof ImpactIndexRoute
-  ItemsIndexRoute: typeof ItemsIndexRoute
-  LinksIndexRoute: typeof LinksIndexRoute
-  MatrixIndexRoute: typeof MatrixIndexRoute
-  ProjectsIndexRoute: typeof ProjectsIndexRoute
-  ReportsIndexRoute: typeof ReportsIndexRoute
-  SearchIndexRoute: typeof SearchIndexRoute
-  SettingsIndexRoute: typeof SettingsIndexRoute
-  EventsTimelineIndexRoute: typeof EventsTimelineIndexRoute
-  ImpactAnalysisIndexRoute: typeof ImpactAnalysisIndexRoute
-  MatrixTraceabilityIndexRoute: typeof MatrixTraceabilityIndexRoute
+	IndexRoute: typeof IndexRoute;
+	ApiDocsRedocRoute: typeof ApiDocsRedocRoute;
+	ApiDocsSwaggerRoute: typeof ApiDocsSwaggerRoute;
+	ApiAuthTestRoute: typeof ApiAuthTestRoute;
+	ApiSpecRoute: typeof ApiSpecRoute;
+	ApiSwaggerConfigRoute: typeof ApiSwaggerConfigRoute;
+	AuthCallbackRoute: typeof AuthCallbackRoute;
+	AuthLoginRoute: typeof AuthLoginRoute;
+	AuthLogoutRoute: typeof AuthLogoutRoute;
+	AuthRegisterRoute: typeof AuthRegisterRoute;
+	AuthResetPasswordRoute: typeof AuthResetPasswordRoute;
+	IntegrationsCallbackRoute: typeof IntegrationsCallbackRoute;
+	ItemsItemIdRoute: typeof ItemsItemIdRoute;
+	ItemsKanbanRoute: typeof ItemsKanbanRoute;
+	ItemsTreeRoute: typeof ItemsTreeRoute;
+	ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren;
+	ApiDocsIndexRoute: typeof ApiDocsIndexRoute;
+	EventsIndexRoute: typeof EventsIndexRoute;
+	GraphIndexRoute: typeof GraphIndexRoute;
+	ImpactIndexRoute: typeof ImpactIndexRoute;
+	ItemsIndexRoute: typeof ItemsIndexRoute;
+	LinksIndexRoute: typeof LinksIndexRoute;
+	MatrixIndexRoute: typeof MatrixIndexRoute;
+	ProjectsIndexRoute: typeof ProjectsIndexRoute;
+	ReportsIndexRoute: typeof ReportsIndexRoute;
+	SearchIndexRoute: typeof SearchIndexRoute;
+	SettingsIndexRoute: typeof SettingsIndexRoute;
+	EventsTimelineIndexRoute: typeof EventsTimelineIndexRoute;
+	ImpactAnalysisIndexRoute: typeof ImpactAnalysisIndexRoute;
+	MatrixTraceabilityIndexRoute: typeof MatrixTraceabilityIndexRoute;
 }
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings/': {
-      id: '/settings/'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search/': {
-      id: '/search/'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports/': {
-      id: '/reports/'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects/': {
-      id: '/projects/'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/matrix/': {
-      id: '/matrix/'
-      path: '/matrix'
-      fullPath: '/matrix'
-      preLoaderRoute: typeof MatrixIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/links/': {
-      id: '/links/'
-      path: '/links'
-      fullPath: '/links'
-      preLoaderRoute: typeof LinksIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/items/': {
-      id: '/items/'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof ItemsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/impact/': {
-      id: '/impact/'
-      path: '/impact'
-      fullPath: '/impact'
-      preLoaderRoute: typeof ImpactIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/graph/': {
-      id: '/graph/'
-      path: '/graph'
-      fullPath: '/graph'
-      preLoaderRoute: typeof GraphIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events/': {
-      id: '/events/'
-      path: '/events'
-      fullPath: '/events'
-      preLoaderRoute: typeof EventsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api-docs/': {
-      id: '/api-docs/'
-      path: '/api-docs'
-      fullPath: '/api-docs'
-      preLoaderRoute: typeof ApiDocsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agents/': {
-      id: '/agents/'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AgentsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects/$projectId': {
-      id: '/projects/$projectId'
-      path: '/projects/$projectId'
-      fullPath: '/projects/$projectId'
-      preLoaderRoute: typeof ProjectsProjectIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/items/tree': {
-      id: '/items/tree'
-      path: '/items/tree'
-      fullPath: '/items/tree'
-      preLoaderRoute: typeof ItemsTreeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/items/kanban': {
-      id: '/items/kanban'
-      path: '/items/kanban'
-      fullPath: '/items/kanban'
-      preLoaderRoute: typeof ItemsKanbanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/items/$itemId': {
-      id: '/items/$itemId'
-      path: '/items/$itemId'
-      fullPath: '/items/$itemId'
-      preLoaderRoute: typeof ItemsItemIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/swagger-config': {
-      id: '/api/swagger-config'
-      path: '/api/swagger-config'
-      fullPath: '/api/swagger-config'
-      preLoaderRoute: typeof ApiSwaggerConfigRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/spec': {
-      id: '/api/spec'
-      path: '/api/spec'
-      fullPath: '/api/spec'
-      preLoaderRoute: typeof ApiSpecRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth-test': {
-      id: '/api/auth-test'
-      path: '/api/auth-test'
-      fullPath: '/api/auth-test'
-      preLoaderRoute: typeof ApiAuthTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api-docs/swagger': {
-      id: '/api-docs/swagger'
-      path: '/api-docs/swagger'
-      fullPath: '/api-docs/swagger'
-      preLoaderRoute: typeof ApiDocsSwaggerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api-docs/redoc': {
-      id: '/api-docs/redoc'
-      path: '/api-docs/redoc'
-      fullPath: '/api-docs/redoc'
-      preLoaderRoute: typeof ApiDocsRedocRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/matrix/traceability/': {
-      id: '/matrix/traceability/'
-      path: '/matrix/traceability'
-      fullPath: '/matrix/traceability'
-      preLoaderRoute: typeof MatrixTraceabilityIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/impact/analysis/': {
-      id: '/impact/analysis/'
-      path: '/impact/analysis'
-      fullPath: '/impact/analysis'
-      preLoaderRoute: typeof ImpactAnalysisIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events/timeline/': {
-      id: '/events/timeline/'
-      path: '/events/timeline'
-      fullPath: '/events/timeline'
-      preLoaderRoute: typeof EventsTimelineIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects/$projectId/views/wireframe': {
-      id: '/projects/$projectId/views/wireframe'
-      path: '/views/wireframe'
-      fullPath: '/projects/$projectId/views/wireframe'
-      preLoaderRoute: typeof ProjectsProjectIdViewsWireframeRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/test': {
-      id: '/projects/$projectId/views/test'
-      path: '/views/test'
-      fullPath: '/projects/$projectId/views/test'
-      preLoaderRoute: typeof ProjectsProjectIdViewsTestRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/security': {
-      id: '/projects/$projectId/views/security'
-      path: '/views/security'
-      fullPath: '/projects/$projectId/views/security'
-      preLoaderRoute: typeof ProjectsProjectIdViewsSecurityRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/performance': {
-      id: '/projects/$projectId/views/performance'
-      path: '/views/performance'
-      fullPath: '/projects/$projectId/views/performance'
-      preLoaderRoute: typeof ProjectsProjectIdViewsPerformanceRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/monitoring': {
-      id: '/projects/$projectId/views/monitoring'
-      path: '/views/monitoring'
-      fullPath: '/projects/$projectId/views/monitoring'
-      preLoaderRoute: typeof ProjectsProjectIdViewsMonitoringRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/journey': {
-      id: '/projects/$projectId/views/journey'
-      path: '/views/journey'
-      fullPath: '/projects/$projectId/views/journey'
-      preLoaderRoute: typeof ProjectsProjectIdViewsJourneyRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/infrastructure': {
-      id: '/projects/$projectId/views/infrastructure'
-      path: '/views/infrastructure'
-      fullPath: '/projects/$projectId/views/infrastructure'
-      preLoaderRoute: typeof ProjectsProjectIdViewsInfrastructureRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/feature': {
-      id: '/projects/$projectId/views/feature'
-      path: '/views/feature'
-      fullPath: '/projects/$projectId/views/feature'
-      preLoaderRoute: typeof ProjectsProjectIdViewsFeatureRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/domain': {
-      id: '/projects/$projectId/views/domain'
-      path: '/views/domain'
-      fullPath: '/projects/$projectId/views/domain'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDomainRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/dependency': {
-      id: '/projects/$projectId/views/dependency'
-      path: '/views/dependency'
-      fullPath: '/projects/$projectId/views/dependency'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDependencyRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/dataflow': {
-      id: '/projects/$projectId/views/dataflow'
-      path: '/views/dataflow'
-      fullPath: '/projects/$projectId/views/dataflow'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDataflowRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/database': {
-      id: '/projects/$projectId/views/database'
-      path: '/views/database'
-      fullPath: '/projects/$projectId/views/database'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDatabaseRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/configuration': {
-      id: '/projects/$projectId/views/configuration'
-      path: '/views/configuration'
-      fullPath: '/projects/$projectId/views/configuration'
-      preLoaderRoute: typeof ProjectsProjectIdViewsConfigurationRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/code': {
-      id: '/projects/$projectId/views/code'
-      path: '/views/code'
-      fullPath: '/projects/$projectId/views/code'
-      preLoaderRoute: typeof ProjectsProjectIdViewsCodeRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/architecture': {
-      id: '/projects/$projectId/views/architecture'
-      path: '/views/architecture'
-      fullPath: '/projects/$projectId/views/architecture'
-      preLoaderRoute: typeof ProjectsProjectIdViewsArchitectureRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/api': {
-      id: '/projects/$projectId/views/api'
-      path: '/views/api'
-      fullPath: '/projects/$projectId/views/api'
-      preLoaderRoute: typeof ProjectsProjectIdViewsApiRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/$viewType': {
-      id: '/projects/$projectId/views/$viewType'
-      path: '/views/$viewType'
-      fullPath: '/projects/$projectId/views/$viewType'
-      preLoaderRoute: typeof ProjectsProjectIdViewsViewTypeRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/$viewType/$itemId': {
-      id: '/projects/$projectId/views/$viewType/$itemId'
-      path: '/$itemId'
-      fullPath: '/projects/$projectId/views/$viewType/$itemId'
-      preLoaderRoute: typeof ProjectsProjectIdViewsViewTypeItemIdRouteImport
-      parentRoute: typeof ProjectsProjectIdViewsViewTypeRoute
-    }
-  }
+declare module "@tanstack/react-router" {
+	interface FileRoutesByPath {
+		"/": {
+			id: "/";
+			path: "/";
+			fullPath: "/";
+			preLoaderRoute: typeof IndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/settings/": {
+			id: "/settings/";
+			path: "/settings";
+			fullPath: "/settings/";
+			preLoaderRoute: typeof SettingsIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/search/": {
+			id: "/search/";
+			path: "/search";
+			fullPath: "/search/";
+			preLoaderRoute: typeof SearchIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/reports/": {
+			id: "/reports/";
+			path: "/reports";
+			fullPath: "/reports/";
+			preLoaderRoute: typeof ReportsIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/projects/": {
+			id: "/projects/";
+			path: "/projects";
+			fullPath: "/projects/";
+			preLoaderRoute: typeof ProjectsIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/matrix/": {
+			id: "/matrix/";
+			path: "/matrix";
+			fullPath: "/matrix/";
+			preLoaderRoute: typeof MatrixIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/links/": {
+			id: "/links/";
+			path: "/links";
+			fullPath: "/links/";
+			preLoaderRoute: typeof LinksIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/items/": {
+			id: "/items/";
+			path: "/items";
+			fullPath: "/items/";
+			preLoaderRoute: typeof ItemsIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/impact/": {
+			id: "/impact/";
+			path: "/impact";
+			fullPath: "/impact/";
+			preLoaderRoute: typeof ImpactIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/graph/": {
+			id: "/graph/";
+			path: "/graph";
+			fullPath: "/graph/";
+			preLoaderRoute: typeof GraphIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/events/": {
+			id: "/events/";
+			path: "/events";
+			fullPath: "/events/";
+			preLoaderRoute: typeof EventsIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/api-docs/": {
+			id: "/api-docs/";
+			path: "/api-docs";
+			fullPath: "/api-docs/";
+			preLoaderRoute: typeof ApiDocsIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/projects/$projectId": {
+			id: "/projects/$projectId";
+			path: "/projects/$projectId";
+			fullPath: "/projects/$projectId";
+			preLoaderRoute: typeof ProjectsProjectIdRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/items/tree": {
+			id: "/items/tree";
+			path: "/items/tree";
+			fullPath: "/items/tree";
+			preLoaderRoute: typeof ItemsTreeRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/items/kanban": {
+			id: "/items/kanban";
+			path: "/items/kanban";
+			fullPath: "/items/kanban";
+			preLoaderRoute: typeof ItemsKanbanRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/items/$itemId": {
+			id: "/items/$itemId";
+			path: "/items/$itemId";
+			fullPath: "/items/$itemId";
+			preLoaderRoute: typeof ItemsItemIdRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/integrations/callback": {
+			id: "/integrations/callback";
+			path: "/integrations/callback";
+			fullPath: "/integrations/callback";
+			preLoaderRoute: typeof IntegrationsCallbackRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/auth/reset-password": {
+			id: "/auth/reset-password";
+			path: "/auth/reset-password";
+			fullPath: "/auth/reset-password";
+			preLoaderRoute: typeof AuthResetPasswordRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/auth/register": {
+			id: "/auth/register";
+			path: "/auth/register";
+			fullPath: "/auth/register";
+			preLoaderRoute: typeof AuthRegisterRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/auth/logout": {
+			id: "/auth/logout";
+			path: "/auth/logout";
+			fullPath: "/auth/logout";
+			preLoaderRoute: typeof AuthLogoutRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/auth/login": {
+			id: "/auth/login";
+			path: "/auth/login";
+			fullPath: "/auth/login";
+			preLoaderRoute: typeof AuthLoginRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/auth/callback": {
+			id: "/auth/callback";
+			path: "/auth/callback";
+			fullPath: "/auth/callback";
+			preLoaderRoute: typeof AuthCallbackRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/api/swagger-config": {
+			id: "/api/swagger-config";
+			path: "/api/swagger-config";
+			fullPath: "/api/swagger-config";
+			preLoaderRoute: typeof ApiSwaggerConfigRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/api/spec": {
+			id: "/api/spec";
+			path: "/api/spec";
+			fullPath: "/api/spec";
+			preLoaderRoute: typeof ApiSpecRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/api/auth-test": {
+			id: "/api/auth-test";
+			path: "/api/auth-test";
+			fullPath: "/api/auth-test";
+			preLoaderRoute: typeof ApiAuthTestRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/api-docs/swagger": {
+			id: "/api-docs/swagger";
+			path: "/api-docs/swagger";
+			fullPath: "/api-docs/swagger";
+			preLoaderRoute: typeof ApiDocsSwaggerRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/api-docs/redoc": {
+			id: "/api-docs/redoc";
+			path: "/api-docs/redoc";
+			fullPath: "/api-docs/redoc";
+			preLoaderRoute: typeof ApiDocsRedocRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/matrix/traceability/": {
+			id: "/matrix/traceability/";
+			path: "/matrix/traceability";
+			fullPath: "/matrix/traceability/";
+			preLoaderRoute: typeof MatrixTraceabilityIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/impact/analysis/": {
+			id: "/impact/analysis/";
+			path: "/impact/analysis";
+			fullPath: "/impact/analysis/";
+			preLoaderRoute: typeof ImpactAnalysisIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/events/timeline/": {
+			id: "/events/timeline/";
+			path: "/events/timeline";
+			fullPath: "/events/timeline/";
+			preLoaderRoute: typeof EventsTimelineIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/projects/$projectId/specifications": {
+			id: "/projects/$projectId/specifications";
+			path: "/specifications";
+			fullPath: "/projects/$projectId/specifications";
+			preLoaderRoute: typeof ProjectsProjectIdSpecificationsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/settings": {
+			id: "/projects/$projectId/settings";
+			path: "/settings";
+			fullPath: "/projects/$projectId/settings";
+			preLoaderRoute: typeof ProjectsProjectIdSettingsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/features": {
+			id: "/projects/$projectId/features";
+			path: "/features";
+			fullPath: "/projects/$projectId/features";
+			preLoaderRoute: typeof ProjectsProjectIdFeaturesRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/contracts": {
+			id: "/projects/$projectId/contracts";
+			path: "/contracts";
+			fullPath: "/projects/$projectId/contracts";
+			preLoaderRoute: typeof ProjectsProjectIdContractsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/compliance": {
+			id: "/projects/$projectId/compliance";
+			path: "/compliance";
+			fullPath: "/projects/$projectId/compliance";
+			preLoaderRoute: typeof ProjectsProjectIdComplianceRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/agents": {
+			id: "/projects/$projectId/agents";
+			path: "/agents";
+			fullPath: "/projects/$projectId/agents";
+			preLoaderRoute: typeof ProjectsProjectIdAgentsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/adrs": {
+			id: "/projects/$projectId/adrs";
+			path: "/adrs";
+			fullPath: "/projects/$projectId/adrs";
+			preLoaderRoute: typeof ProjectsProjectIdAdrsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/wireframe": {
+			id: "/projects/$projectId/views/wireframe";
+			path: "/views/wireframe";
+			fullPath: "/projects/$projectId/views/wireframe";
+			preLoaderRoute: typeof ProjectsProjectIdViewsWireframeRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/webhooks": {
+			id: "/projects/$projectId/views/webhooks";
+			path: "/views/webhooks";
+			fullPath: "/projects/$projectId/views/webhooks";
+			preLoaderRoute: typeof ProjectsProjectIdViewsWebhooksRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/test-suites": {
+			id: "/projects/$projectId/views/test-suites";
+			path: "/views/test-suites";
+			fullPath: "/projects/$projectId/views/test-suites";
+			preLoaderRoute: typeof ProjectsProjectIdViewsTestSuitesRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/test-runs": {
+			id: "/projects/$projectId/views/test-runs";
+			path: "/views/test-runs";
+			fullPath: "/projects/$projectId/views/test-runs";
+			preLoaderRoute: typeof ProjectsProjectIdViewsTestRunsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/test-cases": {
+			id: "/projects/$projectId/views/test-cases";
+			path: "/views/test-cases";
+			fullPath: "/projects/$projectId/views/test-cases";
+			preLoaderRoute: typeof ProjectsProjectIdViewsTestCasesRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/test": {
+			id: "/projects/$projectId/views/test";
+			path: "/views/test";
+			fullPath: "/projects/$projectId/views/test";
+			preLoaderRoute: typeof ProjectsProjectIdViewsTestRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/security": {
+			id: "/projects/$projectId/views/security";
+			path: "/views/security";
+			fullPath: "/projects/$projectId/views/security";
+			preLoaderRoute: typeof ProjectsProjectIdViewsSecurityRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/qa-dashboard": {
+			id: "/projects/$projectId/views/qa-dashboard";
+			path: "/views/qa-dashboard";
+			fullPath: "/projects/$projectId/views/qa-dashboard";
+			preLoaderRoute: typeof ProjectsProjectIdViewsQaDashboardRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/process": {
+			id: "/projects/$projectId/views/process";
+			path: "/views/process";
+			fullPath: "/projects/$projectId/views/process";
+			preLoaderRoute: typeof ProjectsProjectIdViewsProcessRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/problem": {
+			id: "/projects/$projectId/views/problem";
+			path: "/views/problem";
+			fullPath: "/projects/$projectId/views/problem";
+			preLoaderRoute: typeof ProjectsProjectIdViewsProblemRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/performance": {
+			id: "/projects/$projectId/views/performance";
+			path: "/views/performance";
+			fullPath: "/projects/$projectId/views/performance";
+			preLoaderRoute: typeof ProjectsProjectIdViewsPerformanceRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/monitoring": {
+			id: "/projects/$projectId/views/monitoring";
+			path: "/views/monitoring";
+			fullPath: "/projects/$projectId/views/monitoring";
+			preLoaderRoute: typeof ProjectsProjectIdViewsMonitoringRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/journey": {
+			id: "/projects/$projectId/views/journey";
+			path: "/views/journey";
+			fullPath: "/projects/$projectId/views/journey";
+			preLoaderRoute: typeof ProjectsProjectIdViewsJourneyRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/integrations": {
+			id: "/projects/$projectId/views/integrations";
+			path: "/views/integrations";
+			fullPath: "/projects/$projectId/views/integrations";
+			preLoaderRoute: typeof ProjectsProjectIdViewsIntegrationsRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/infrastructure": {
+			id: "/projects/$projectId/views/infrastructure";
+			path: "/views/infrastructure";
+			fullPath: "/projects/$projectId/views/infrastructure";
+			preLoaderRoute: typeof ProjectsProjectIdViewsInfrastructureRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/feature": {
+			id: "/projects/$projectId/views/feature";
+			path: "/views/feature";
+			fullPath: "/projects/$projectId/views/feature";
+			preLoaderRoute: typeof ProjectsProjectIdViewsFeatureRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/domain": {
+			id: "/projects/$projectId/views/domain";
+			path: "/views/domain";
+			fullPath: "/projects/$projectId/views/domain";
+			preLoaderRoute: typeof ProjectsProjectIdViewsDomainRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/dependency": {
+			id: "/projects/$projectId/views/dependency";
+			path: "/views/dependency";
+			fullPath: "/projects/$projectId/views/dependency";
+			preLoaderRoute: typeof ProjectsProjectIdViewsDependencyRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/dataflow": {
+			id: "/projects/$projectId/views/dataflow";
+			path: "/views/dataflow";
+			fullPath: "/projects/$projectId/views/dataflow";
+			preLoaderRoute: typeof ProjectsProjectIdViewsDataflowRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/database": {
+			id: "/projects/$projectId/views/database";
+			path: "/views/database";
+			fullPath: "/projects/$projectId/views/database";
+			preLoaderRoute: typeof ProjectsProjectIdViewsDatabaseRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/coverage": {
+			id: "/projects/$projectId/views/coverage";
+			path: "/views/coverage";
+			fullPath: "/projects/$projectId/views/coverage";
+			preLoaderRoute: typeof ProjectsProjectIdViewsCoverageRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/configuration": {
+			id: "/projects/$projectId/views/configuration";
+			path: "/views/configuration";
+			fullPath: "/projects/$projectId/views/configuration";
+			preLoaderRoute: typeof ProjectsProjectIdViewsConfigurationRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/code": {
+			id: "/projects/$projectId/views/code";
+			path: "/views/code";
+			fullPath: "/projects/$projectId/views/code";
+			preLoaderRoute: typeof ProjectsProjectIdViewsCodeRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/architecture": {
+			id: "/projects/$projectId/views/architecture";
+			path: "/views/architecture";
+			fullPath: "/projects/$projectId/views/architecture";
+			preLoaderRoute: typeof ProjectsProjectIdViewsArchitectureRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/api": {
+			id: "/projects/$projectId/views/api";
+			path: "/views/api";
+			fullPath: "/projects/$projectId/views/api";
+			preLoaderRoute: typeof ProjectsProjectIdViewsApiRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/views/$viewType": {
+			id: "/projects/$projectId/views/$viewType";
+			path: "/views/$viewType";
+			fullPath: "/projects/$projectId/views/$viewType";
+			preLoaderRoute: typeof ProjectsProjectIdViewsViewTypeRouteImport;
+			parentRoute: typeof ProjectsProjectIdRoute;
+		};
+		"/projects/$projectId/features/$featureId": {
+			id: "/projects/$projectId/features/$featureId";
+			path: "/$featureId";
+			fullPath: "/projects/$projectId/features/$featureId";
+			preLoaderRoute: typeof ProjectsProjectIdFeaturesFeatureIdRouteImport;
+			parentRoute: typeof ProjectsProjectIdFeaturesRoute;
+		};
+		"/projects/$projectId/contracts/$contractId": {
+			id: "/projects/$projectId/contracts/$contractId";
+			path: "/$contractId";
+			fullPath: "/projects/$projectId/contracts/$contractId";
+			preLoaderRoute: typeof ProjectsProjectIdContractsContractIdRouteImport;
+			parentRoute: typeof ProjectsProjectIdContractsRoute;
+		};
+		"/projects/$projectId/adrs/$adrId": {
+			id: "/projects/$projectId/adrs/$adrId";
+			path: "/$adrId";
+			fullPath: "/projects/$projectId/adrs/$adrId";
+			preLoaderRoute: typeof ProjectsProjectIdAdrsAdrIdRouteImport;
+			parentRoute: typeof ProjectsProjectIdAdrsRoute;
+		};
+		"/projects/$projectId/views/$viewType/$itemId": {
+			id: "/projects/$projectId/views/$viewType/$itemId";
+			path: "/$itemId";
+			fullPath: "/projects/$projectId/views/$viewType/$itemId";
+			preLoaderRoute: typeof ProjectsProjectIdViewsViewTypeItemIdRouteImport;
+			parentRoute: typeof ProjectsProjectIdViewsViewTypeRoute;
+		};
+	}
 }
+
+interface ProjectsProjectIdAdrsRouteChildren {
+	ProjectsProjectIdAdrsAdrIdRoute: typeof ProjectsProjectIdAdrsAdrIdRoute;
+}
+
+const ProjectsProjectIdAdrsRouteChildren: ProjectsProjectIdAdrsRouteChildren = {
+	ProjectsProjectIdAdrsAdrIdRoute: ProjectsProjectIdAdrsAdrIdRoute,
+};
+
+const ProjectsProjectIdAdrsRouteWithChildren =
+	ProjectsProjectIdAdrsRoute._addFileChildren(
+		ProjectsProjectIdAdrsRouteChildren,
+	);
+
+interface ProjectsProjectIdContractsRouteChildren {
+	ProjectsProjectIdContractsContractIdRoute: typeof ProjectsProjectIdContractsContractIdRoute;
+}
+
+const ProjectsProjectIdContractsRouteChildren: ProjectsProjectIdContractsRouteChildren =
+	{
+		ProjectsProjectIdContractsContractIdRoute:
+			ProjectsProjectIdContractsContractIdRoute,
+	};
+
+const ProjectsProjectIdContractsRouteWithChildren =
+	ProjectsProjectIdContractsRoute._addFileChildren(
+		ProjectsProjectIdContractsRouteChildren,
+	);
+
+interface ProjectsProjectIdFeaturesRouteChildren {
+	ProjectsProjectIdFeaturesFeatureIdRoute: typeof ProjectsProjectIdFeaturesFeatureIdRoute;
+}
+
+const ProjectsProjectIdFeaturesRouteChildren: ProjectsProjectIdFeaturesRouteChildren =
+	{
+		ProjectsProjectIdFeaturesFeatureIdRoute:
+			ProjectsProjectIdFeaturesFeatureIdRoute,
+	};
+
+const ProjectsProjectIdFeaturesRouteWithChildren =
+	ProjectsProjectIdFeaturesRoute._addFileChildren(
+		ProjectsProjectIdFeaturesRouteChildren,
+	);
 
 interface ProjectsProjectIdViewsViewTypeRouteChildren {
-  ProjectsProjectIdViewsViewTypeItemIdRoute: typeof ProjectsProjectIdViewsViewTypeItemIdRoute
+	ProjectsProjectIdViewsViewTypeItemIdRoute: typeof ProjectsProjectIdViewsViewTypeItemIdRoute;
 }
 
 const ProjectsProjectIdViewsViewTypeRouteChildren: ProjectsProjectIdViewsViewTypeRouteChildren =
-  {
-    ProjectsProjectIdViewsViewTypeItemIdRoute:
-      ProjectsProjectIdViewsViewTypeItemIdRoute,
-  }
+	{
+		ProjectsProjectIdViewsViewTypeItemIdRoute:
+			ProjectsProjectIdViewsViewTypeItemIdRoute,
+	};
 
 const ProjectsProjectIdViewsViewTypeRouteWithChildren =
-  ProjectsProjectIdViewsViewTypeRoute._addFileChildren(
-    ProjectsProjectIdViewsViewTypeRouteChildren,
-  )
+	ProjectsProjectIdViewsViewTypeRoute._addFileChildren(
+		ProjectsProjectIdViewsViewTypeRouteChildren,
+	);
 
 interface ProjectsProjectIdRouteChildren {
-  ProjectsProjectIdViewsViewTypeRoute: typeof ProjectsProjectIdViewsViewTypeRouteWithChildren
-  ProjectsProjectIdViewsApiRoute: typeof ProjectsProjectIdViewsApiRoute
-  ProjectsProjectIdViewsArchitectureRoute: typeof ProjectsProjectIdViewsArchitectureRoute
-  ProjectsProjectIdViewsCodeRoute: typeof ProjectsProjectIdViewsCodeRoute
-  ProjectsProjectIdViewsConfigurationRoute: typeof ProjectsProjectIdViewsConfigurationRoute
-  ProjectsProjectIdViewsDatabaseRoute: typeof ProjectsProjectIdViewsDatabaseRoute
-  ProjectsProjectIdViewsDataflowRoute: typeof ProjectsProjectIdViewsDataflowRoute
-  ProjectsProjectIdViewsDependencyRoute: typeof ProjectsProjectIdViewsDependencyRoute
-  ProjectsProjectIdViewsDomainRoute: typeof ProjectsProjectIdViewsDomainRoute
-  ProjectsProjectIdViewsFeatureRoute: typeof ProjectsProjectIdViewsFeatureRoute
-  ProjectsProjectIdViewsInfrastructureRoute: typeof ProjectsProjectIdViewsInfrastructureRoute
-  ProjectsProjectIdViewsJourneyRoute: typeof ProjectsProjectIdViewsJourneyRoute
-  ProjectsProjectIdViewsMonitoringRoute: typeof ProjectsProjectIdViewsMonitoringRoute
-  ProjectsProjectIdViewsPerformanceRoute: typeof ProjectsProjectIdViewsPerformanceRoute
-  ProjectsProjectIdViewsSecurityRoute: typeof ProjectsProjectIdViewsSecurityRoute
-  ProjectsProjectIdViewsTestRoute: typeof ProjectsProjectIdViewsTestRoute
-  ProjectsProjectIdViewsWireframeRoute: typeof ProjectsProjectIdViewsWireframeRoute
+	ProjectsProjectIdAdrsRoute: typeof ProjectsProjectIdAdrsRouteWithChildren;
+	ProjectsProjectIdAgentsRoute: typeof ProjectsProjectIdAgentsRoute;
+	ProjectsProjectIdComplianceRoute: typeof ProjectsProjectIdComplianceRoute;
+	ProjectsProjectIdContractsRoute: typeof ProjectsProjectIdContractsRouteWithChildren;
+	ProjectsProjectIdFeaturesRoute: typeof ProjectsProjectIdFeaturesRouteWithChildren;
+	ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRoute;
+	ProjectsProjectIdSpecificationsRoute: typeof ProjectsProjectIdSpecificationsRoute;
+	ProjectsProjectIdViewsViewTypeRoute: typeof ProjectsProjectIdViewsViewTypeRouteWithChildren;
+	ProjectsProjectIdViewsApiRoute: typeof ProjectsProjectIdViewsApiRoute;
+	ProjectsProjectIdViewsArchitectureRoute: typeof ProjectsProjectIdViewsArchitectureRoute;
+	ProjectsProjectIdViewsCodeRoute: typeof ProjectsProjectIdViewsCodeRoute;
+	ProjectsProjectIdViewsConfigurationRoute: typeof ProjectsProjectIdViewsConfigurationRoute;
+	ProjectsProjectIdViewsCoverageRoute: typeof ProjectsProjectIdViewsCoverageRoute;
+	ProjectsProjectIdViewsDatabaseRoute: typeof ProjectsProjectIdViewsDatabaseRoute;
+	ProjectsProjectIdViewsDataflowRoute: typeof ProjectsProjectIdViewsDataflowRoute;
+	ProjectsProjectIdViewsDependencyRoute: typeof ProjectsProjectIdViewsDependencyRoute;
+	ProjectsProjectIdViewsDomainRoute: typeof ProjectsProjectIdViewsDomainRoute;
+	ProjectsProjectIdViewsFeatureRoute: typeof ProjectsProjectIdViewsFeatureRoute;
+	ProjectsProjectIdViewsInfrastructureRoute: typeof ProjectsProjectIdViewsInfrastructureRoute;
+	ProjectsProjectIdViewsIntegrationsRoute: typeof ProjectsProjectIdViewsIntegrationsRoute;
+	ProjectsProjectIdViewsJourneyRoute: typeof ProjectsProjectIdViewsJourneyRoute;
+	ProjectsProjectIdViewsMonitoringRoute: typeof ProjectsProjectIdViewsMonitoringRoute;
+	ProjectsProjectIdViewsPerformanceRoute: typeof ProjectsProjectIdViewsPerformanceRoute;
+	ProjectsProjectIdViewsProblemRoute: typeof ProjectsProjectIdViewsProblemRoute;
+	ProjectsProjectIdViewsProcessRoute: typeof ProjectsProjectIdViewsProcessRoute;
+	ProjectsProjectIdViewsQaDashboardRoute: typeof ProjectsProjectIdViewsQaDashboardRoute;
+	ProjectsProjectIdViewsSecurityRoute: typeof ProjectsProjectIdViewsSecurityRoute;
+	ProjectsProjectIdViewsTestRoute: typeof ProjectsProjectIdViewsTestRoute;
+	ProjectsProjectIdViewsTestCasesRoute: typeof ProjectsProjectIdViewsTestCasesRoute;
+	ProjectsProjectIdViewsTestRunsRoute: typeof ProjectsProjectIdViewsTestRunsRoute;
+	ProjectsProjectIdViewsTestSuitesRoute: typeof ProjectsProjectIdViewsTestSuitesRoute;
+	ProjectsProjectIdViewsWebhooksRoute: typeof ProjectsProjectIdViewsWebhooksRoute;
+	ProjectsProjectIdViewsWireframeRoute: typeof ProjectsProjectIdViewsWireframeRoute;
 }
 
 const ProjectsProjectIdRouteChildren: ProjectsProjectIdRouteChildren = {
-  ProjectsProjectIdViewsViewTypeRoute:
-    ProjectsProjectIdViewsViewTypeRouteWithChildren,
-  ProjectsProjectIdViewsApiRoute: ProjectsProjectIdViewsApiRoute,
-  ProjectsProjectIdViewsArchitectureRoute:
-    ProjectsProjectIdViewsArchitectureRoute,
-  ProjectsProjectIdViewsCodeRoute: ProjectsProjectIdViewsCodeRoute,
-  ProjectsProjectIdViewsConfigurationRoute:
-    ProjectsProjectIdViewsConfigurationRoute,
-  ProjectsProjectIdViewsDatabaseRoute: ProjectsProjectIdViewsDatabaseRoute,
-  ProjectsProjectIdViewsDataflowRoute: ProjectsProjectIdViewsDataflowRoute,
-  ProjectsProjectIdViewsDependencyRoute: ProjectsProjectIdViewsDependencyRoute,
-  ProjectsProjectIdViewsDomainRoute: ProjectsProjectIdViewsDomainRoute,
-  ProjectsProjectIdViewsFeatureRoute: ProjectsProjectIdViewsFeatureRoute,
-  ProjectsProjectIdViewsInfrastructureRoute:
-    ProjectsProjectIdViewsInfrastructureRoute,
-  ProjectsProjectIdViewsJourneyRoute: ProjectsProjectIdViewsJourneyRoute,
-  ProjectsProjectIdViewsMonitoringRoute: ProjectsProjectIdViewsMonitoringRoute,
-  ProjectsProjectIdViewsPerformanceRoute:
-    ProjectsProjectIdViewsPerformanceRoute,
-  ProjectsProjectIdViewsSecurityRoute: ProjectsProjectIdViewsSecurityRoute,
-  ProjectsProjectIdViewsTestRoute: ProjectsProjectIdViewsTestRoute,
-  ProjectsProjectIdViewsWireframeRoute: ProjectsProjectIdViewsWireframeRoute,
-}
+	ProjectsProjectIdAdrsRoute: ProjectsProjectIdAdrsRouteWithChildren,
+	ProjectsProjectIdAgentsRoute: ProjectsProjectIdAgentsRoute,
+	ProjectsProjectIdComplianceRoute: ProjectsProjectIdComplianceRoute,
+	ProjectsProjectIdContractsRoute: ProjectsProjectIdContractsRouteWithChildren,
+	ProjectsProjectIdFeaturesRoute: ProjectsProjectIdFeaturesRouteWithChildren,
+	ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute,
+	ProjectsProjectIdSpecificationsRoute: ProjectsProjectIdSpecificationsRoute,
+	ProjectsProjectIdViewsViewTypeRoute:
+		ProjectsProjectIdViewsViewTypeRouteWithChildren,
+	ProjectsProjectIdViewsApiRoute: ProjectsProjectIdViewsApiRoute,
+	ProjectsProjectIdViewsArchitectureRoute:
+		ProjectsProjectIdViewsArchitectureRoute,
+	ProjectsProjectIdViewsCodeRoute: ProjectsProjectIdViewsCodeRoute,
+	ProjectsProjectIdViewsConfigurationRoute:
+		ProjectsProjectIdViewsConfigurationRoute,
+	ProjectsProjectIdViewsCoverageRoute: ProjectsProjectIdViewsCoverageRoute,
+	ProjectsProjectIdViewsDatabaseRoute: ProjectsProjectIdViewsDatabaseRoute,
+	ProjectsProjectIdViewsDataflowRoute: ProjectsProjectIdViewsDataflowRoute,
+	ProjectsProjectIdViewsDependencyRoute: ProjectsProjectIdViewsDependencyRoute,
+	ProjectsProjectIdViewsDomainRoute: ProjectsProjectIdViewsDomainRoute,
+	ProjectsProjectIdViewsFeatureRoute: ProjectsProjectIdViewsFeatureRoute,
+	ProjectsProjectIdViewsInfrastructureRoute:
+		ProjectsProjectIdViewsInfrastructureRoute,
+	ProjectsProjectIdViewsIntegrationsRoute:
+		ProjectsProjectIdViewsIntegrationsRoute,
+	ProjectsProjectIdViewsJourneyRoute: ProjectsProjectIdViewsJourneyRoute,
+	ProjectsProjectIdViewsMonitoringRoute: ProjectsProjectIdViewsMonitoringRoute,
+	ProjectsProjectIdViewsPerformanceRoute:
+		ProjectsProjectIdViewsPerformanceRoute,
+	ProjectsProjectIdViewsProblemRoute: ProjectsProjectIdViewsProblemRoute,
+	ProjectsProjectIdViewsProcessRoute: ProjectsProjectIdViewsProcessRoute,
+	ProjectsProjectIdViewsQaDashboardRoute:
+		ProjectsProjectIdViewsQaDashboardRoute,
+	ProjectsProjectIdViewsSecurityRoute: ProjectsProjectIdViewsSecurityRoute,
+	ProjectsProjectIdViewsTestRoute: ProjectsProjectIdViewsTestRoute,
+	ProjectsProjectIdViewsTestCasesRoute: ProjectsProjectIdViewsTestCasesRoute,
+	ProjectsProjectIdViewsTestRunsRoute: ProjectsProjectIdViewsTestRunsRoute,
+	ProjectsProjectIdViewsTestSuitesRoute: ProjectsProjectIdViewsTestSuitesRoute,
+	ProjectsProjectIdViewsWebhooksRoute: ProjectsProjectIdViewsWebhooksRoute,
+	ProjectsProjectIdViewsWireframeRoute: ProjectsProjectIdViewsWireframeRoute,
+};
 
 const ProjectsProjectIdRouteWithChildren =
-  ProjectsProjectIdRoute._addFileChildren(ProjectsProjectIdRouteChildren)
+	ProjectsProjectIdRoute._addFileChildren(ProjectsProjectIdRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ApiDocsRedocRoute: ApiDocsRedocRoute,
-  ApiDocsSwaggerRoute: ApiDocsSwaggerRoute,
-  ApiAuthTestRoute: ApiAuthTestRoute,
-  ApiSpecRoute: ApiSpecRoute,
-  ApiSwaggerConfigRoute: ApiSwaggerConfigRoute,
-  ItemsItemIdRoute: ItemsItemIdRoute,
-  ItemsKanbanRoute: ItemsKanbanRoute,
-  ItemsTreeRoute: ItemsTreeRoute,
-  ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
-  AgentsIndexRoute: AgentsIndexRoute,
-  ApiDocsIndexRoute: ApiDocsIndexRoute,
-  EventsIndexRoute: EventsIndexRoute,
-  GraphIndexRoute: GraphIndexRoute,
-  ImpactIndexRoute: ImpactIndexRoute,
-  ItemsIndexRoute: ItemsIndexRoute,
-  LinksIndexRoute: LinksIndexRoute,
-  MatrixIndexRoute: MatrixIndexRoute,
-  ProjectsIndexRoute: ProjectsIndexRoute,
-  ReportsIndexRoute: ReportsIndexRoute,
-  SearchIndexRoute: SearchIndexRoute,
-  SettingsIndexRoute: SettingsIndexRoute,
-  EventsTimelineIndexRoute: EventsTimelineIndexRoute,
-  ImpactAnalysisIndexRoute: ImpactAnalysisIndexRoute,
-  MatrixTraceabilityIndexRoute: MatrixTraceabilityIndexRoute,
-}
+	IndexRoute: IndexRoute,
+	ApiDocsRedocRoute: ApiDocsRedocRoute,
+	ApiDocsSwaggerRoute: ApiDocsSwaggerRoute,
+	ApiAuthTestRoute: ApiAuthTestRoute,
+	ApiSpecRoute: ApiSpecRoute,
+	ApiSwaggerConfigRoute: ApiSwaggerConfigRoute,
+	AuthCallbackRoute: AuthCallbackRoute,
+	AuthLoginRoute: AuthLoginRoute,
+	AuthLogoutRoute: AuthLogoutRoute,
+	AuthRegisterRoute: AuthRegisterRoute,
+	AuthResetPasswordRoute: AuthResetPasswordRoute,
+	IntegrationsCallbackRoute: IntegrationsCallbackRoute,
+	ItemsItemIdRoute: ItemsItemIdRoute,
+	ItemsKanbanRoute: ItemsKanbanRoute,
+	ItemsTreeRoute: ItemsTreeRoute,
+	ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
+	ApiDocsIndexRoute: ApiDocsIndexRoute,
+	EventsIndexRoute: EventsIndexRoute,
+	GraphIndexRoute: GraphIndexRoute,
+	ImpactIndexRoute: ImpactIndexRoute,
+	ItemsIndexRoute: ItemsIndexRoute,
+	LinksIndexRoute: LinksIndexRoute,
+	MatrixIndexRoute: MatrixIndexRoute,
+	ProjectsIndexRoute: ProjectsIndexRoute,
+	ReportsIndexRoute: ReportsIndexRoute,
+	SearchIndexRoute: SearchIndexRoute,
+	SettingsIndexRoute: SettingsIndexRoute,
+	EventsTimelineIndexRoute: EventsTimelineIndexRoute,
+	ImpactAnalysisIndexRoute: ImpactAnalysisIndexRoute,
+	MatrixTraceabilityIndexRoute: MatrixTraceabilityIndexRoute,
+};
 export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+	._addFileChildren(rootRouteChildren)
+	._addFileTypes<FileRouteTypes>();

@@ -52,7 +52,7 @@
 ```
 MCP Client (Claude Desktop / droid)
     ↓
-tracertm-mcp (FastMCP 2.13)
+tracertm-mcp (FastMCP 3.0.0b1)
     ├─ Sync tools (CRUD) → DatabaseConnection → SQLAlchemy
     └─ Async tools (Analysis) → get_session → Services
         ├─ TraceabilityService

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The TraceRTM MCP server (`tracertm-mcp`) is a FastMCP 2.13+ implementation that exposes TraceRTM's project/requirements/traceability model as a set of MCP tools, resources, and prompts.
+The TraceRTM MCP server (`tracertm-mcp`) is a FastMCP 3.0.0b1 implementation that exposes TraceRTM's project/requirements/traceability model as a set of MCP tools, resources, and prompts.
 
 **Current Status:** Phase 1 complete – 21 tools fully implemented and tested.
 

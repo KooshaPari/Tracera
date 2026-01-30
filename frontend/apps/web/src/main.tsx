@@ -1,10 +1,8 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
-import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { AppProviders } from "@/providers/AppProviders";
 import { createRouter } from "./router";
 import "./index.css";
 
@@ -17,16 +15,6 @@ async function prepare() {
 		await startMockServiceWorker();
 	}
 }
-
-// Create a client
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 60 * 1000, // 1 minute
-			retry: 1,
-		},
-	},
-});
 
 // Create router
 const router = createRouter();
@@ -56,13 +44,11 @@ prepare().then(() => {
 
 	root.render(
 		<ThemeProvider>
-			<QueryClientProvider client={queryClient}>
+			<AppProviders>
 				<TooltipProvider>
 					<RouterProvider router={router} />
-					<Toaster />
-					<ReactQueryDevtools initialIsOpen={false} />
 				</TooltipProvider>
-			</QueryClientProvider>
+			</AppProviders>
 		</ThemeProvider>,
 	);
 });

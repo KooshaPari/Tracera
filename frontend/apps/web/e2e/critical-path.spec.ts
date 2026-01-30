@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * Critical Path E2E Tests
@@ -34,7 +34,9 @@ test.describe("CRITICAL PATH: Project Creation Flow", () => {
 			.catch(() => false);
 
 		if (!isCreateVisible) {
-			console.log("Create button not found - project creation UI may not be ready");
+			console.log(
+				"Create button not found - project creation UI may not be ready",
+			);
 			return;
 		}
 
@@ -75,7 +77,9 @@ test.describe("CRITICAL PATH: Project Creation Flow", () => {
 				await expect(projectNameText)
 					.toBeVisible({ timeout: 5000 })
 					.catch(() => {
-						console.log("Project creation may have succeeded but is not visible yet");
+						console.log(
+							"Project creation may have succeeded but is not visible yet",
+						);
 					});
 			}
 		}
@@ -87,7 +91,7 @@ test.describe("CRITICAL PATH: Project Creation Flow", () => {
 
 		// Look for any project name in the list
 		const projectItems = page.locator(
-			'text=/TraceRTM Core|Mobile App|project/i',
+			"text=/TraceRTM Core|Mobile App|project/i",
 		);
 
 		const count = await projectItems.count().catch(() => 0);
@@ -119,7 +123,9 @@ test.describe("CRITICAL PATH: Item Creation and Management", () => {
 			.catch(() => false);
 
 		if (!isVisible) {
-			console.log("Create item button not found - item creation may not be ready");
+			console.log(
+				"Create item button not found - item creation may not be ready",
+			);
 			return;
 		}
 
@@ -154,9 +160,7 @@ test.describe("CRITICAL PATH: Item Creation and Management", () => {
 				await typeSelect.click();
 				await page.waitForTimeout(300);
 
-				const requirementOption = page
-					.getByText(/requirement/i)
-					.first();
+				const requirementOption = page.getByText(/requirement/i).first();
 				if (await requirementOption.isVisible({ timeout: 1000 })) {
 					await requirementOption.click();
 				}
@@ -176,9 +180,7 @@ test.describe("CRITICAL PATH: Item Creation and Management", () => {
 				await expect(itemText)
 					.toBeVisible({ timeout: 5000 })
 					.catch(() => {
-						console.log(
-							"Item creation may have succeeded but is not visible",
-						);
+						console.log("Item creation may have succeeded but is not visible");
 					});
 			}
 		}
@@ -332,19 +334,33 @@ test.describe("CRITICAL PATH: Navigation Between Views", () => {
 		await expect(page).toHaveURL("/");
 		await page.waitForLoadState("networkidle");
 
-		// Verify page loaded - check for common dashboard content
+		// Verify page loaded - check for dashboard content
+		// Use first() to handle multiple elements, and increase timeout
 		const hasContent =
 			(await page
 				.locator("main")
-				.isVisible({ timeout: 2000 })
+				.first()
+				.isVisible({ timeout: 3000 })
 				.catch(() => false)) ||
 			(await page
 				.locator("[role='main']")
-				.isVisible({ timeout: 2000 })
+				.first()
+				.isVisible({ timeout: 3000 })
 				.catch(() => false)) ||
 			(await page
-				.locator("h1, h2")
-				.isVisible({ timeout: 2000 })
+				.locator("h1")
+				.first()
+				.isVisible({ timeout: 3000 })
+				.catch(() => false)) ||
+			(await page
+				.getByRole("heading", { level: 1 })
+				.first()
+				.isVisible({ timeout: 3000 })
+				.catch(() => false)) ||
+			(await page
+				.getByText(/dashboard/i)
+				.first()
+				.isVisible({ timeout: 3000 })
 				.catch(() => false));
 
 		expect(hasContent).toBe(true);
@@ -356,25 +372,23 @@ test.describe("CRITICAL PATH: Navigation Between Views", () => {
 		await page.waitForLoadState("networkidle");
 		await expect(page).toHaveURL("/projects");
 
-		// 2. Navigate to items
-		const itemsLink = page.getByRole("link", { name: /items/i }).first();
-		if (await itemsLink.isVisible({ timeout: 2000 })) {
-			await itemsLink.click();
-			await page.waitForLoadState("networkidle");
-			await expect(page).toHaveURL(/\/items/);
-		}
+		// 2. Navigate to items page directly (items page is not in sidebar navigation)
+		await page.goto("/items");
+		await page.waitForLoadState("networkidle");
+		await expect(page).toHaveURL(/\/items/);
 
-		// 3. Navigate to an item detail
-		const firstItem = page
-			.getByRole("link", { name: /authentication|dashboard|feature/i })
-			.first();
+		// 3. Navigate to an item detail by clicking on an item
+		const firstItem = page.locator("a[href^='/items/']").first();
 
-		if (await firstItem.isVisible({ timeout: 2000 })) {
+		if (await firstItem.isVisible({ timeout: 3000 }).catch(() => false)) {
 			await firstItem.click();
 			await page.waitForLoadState("networkidle");
 
 			// Should be on detail page
-			await expect(page).toHaveURL(/\/items\/[a-z0-9\-]+/);
+			await expect(page).toHaveURL(/\/items\/[a-z0-9-]+/);
+		} else {
+			// Items may not be loaded yet, verify we're at least on items page
+			await expect(page).toHaveURL(/\/items/);
 		}
 	});
 
@@ -449,9 +463,7 @@ test.describe("CRITICAL PATH: Search and Filter Functionality", () => {
 
 		// 3. Verify results updated
 		const results = page.getByText(/authentication/i);
-		const resultCount = await results
-			.count()
-			.catch(() => 0);
+		const resultCount = await results.count().catch(() => 0);
 
 		console.log(`Found ${resultCount} results for "authentication" search`);
 		expect(resultCount).toBeGreaterThanOrEqual(0);
@@ -492,7 +504,10 @@ test.describe("CRITICAL PATH: Search and Filter Functionality", () => {
 			.getByLabel(/status|filter.*status/i)
 			.first()
 			.or(
-				page.locator("select").filter({ hasText: /status/i }).first(),
+				page
+					.locator("select")
+					.filter({ hasText: /status/i })
+					.first(),
 			);
 
 		const hasFilter = await statusFilter
@@ -543,7 +558,9 @@ test.describe("CRITICAL PATH: Search and Filter Functionality", () => {
 });
 
 test.describe("CRITICAL PATH: Core Data Integrity", () => {
-	test("should load and display initial data on dashboard", async ({ page }) => {
+	test("should load and display initial data on dashboard", async ({
+		page,
+	}) => {
 		// Critical: app should show data on initial load
 		await page.goto("/");
 		await page.waitForLoadState("networkidle");

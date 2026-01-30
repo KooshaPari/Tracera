@@ -17,8 +17,8 @@ class Config(BaseModel):
     Configuration hierarchy (highest to lowest precedence):
     1. CLI flags (--flag)
     2. Environment variables (TRACERTM_*)
-    3. Project config (~/.config/tracertm/projects/<project_id>/config.yaml)
-    4. Global config (~/.config/tracertm/config.yaml)
+    3. Project config (~/.tracertm/projects/<project_id>/config.yaml)
+    4. Global config (~/.tracertm/config.yaml)
     """
 
     # Database

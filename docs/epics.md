@@ -113,7 +113,7 @@ This document provides the complete epic and story breakdown for TraceRTM, decom
 
 **Given** I have PostgreSQL 16+ running
 **When** I run `rtm config init` and provide database URL
-**Then** TraceRTM creates config file at `~/.config/tracertm/config.yaml`
+**Then** TraceRTM creates config file at `~/.tracertm/config.yaml`
 
 **And** Database connection is validated
 **And** Alembic migrations create all required tables (projects, items, links, events, agents)
@@ -177,7 +177,7 @@ This document provides the complete epic and story breakdown for TraceRTM, decom
 **And** I can set output format: `rtm config set output_format json`
 **And** I can view current config: `rtm config show`
 **And** Project-specific config overrides global config
-**And** Config changes are persisted to `~/.config/tracertm/config.yaml`
+**And** Config changes are persisted to `~/.tracertm/config.yaml`
 
 **Prerequisites:** Story 1.3
 
@@ -247,7 +247,7 @@ This document provides the complete epic and story breakdown for TraceRTM, decom
 - Implement exception hierarchy (TraceRTMError, ValidationError, NotFoundError, ConcurrencyError, DatabaseError)
 - Use Rich for colored error output
 - Implement error handling pattern in CLI commands
-- Log errors to `~/.config/tracertm/logs/tracertm.log`
+- Log errors to `~/.tracertm/logs/tracertm.log`
 - Include suggestions in error messages (e.g., "Did you mean 'rtm project init'?")
 
 **FRs Covered:** NFR-U3 (error messages), NFR-R3 (error handling)
@@ -718,7 +718,7 @@ This document provides the complete epic and story breakdown for TraceRTM, decom
 **Prerequisites:** Story 1.4
 
 **Technical Notes:**
-- Store aliases in config file: `~/.config/tracertm/aliases.yaml`
+- Store aliases in config file: `~/.tracertm/aliases.yaml`
 - Implement alias expansion before command parsing
 - Support parameter substitution: $1, $2, etc.
 - Validate alias names (no conflicts with built-in commands)

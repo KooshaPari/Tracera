@@ -1,29 +1,31 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
-	ArrowRight,
+	Activity,
+	ChevronRight,
+	ClipboardCheck,
 	Code,
-	Database,
+	Command,
+	FileCode,
 	FileText,
 	FolderOpen,
 	GitBranch,
-	Globe,
 	Home,
-	Image,
-	Layout,
-	Search,
+	Layers,
 	Settings,
-	TestTube,
+	Shield,
+	Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
-interface Command {
+interface CommandItem {
 	id: string;
 	title: string;
 	description?: string;
-	icon: typeof Search;
+	icon: any;
 	action: () => void;
 	keywords?: string[];
-	category: "navigation" | "view" | "action" | "recent";
+	category: "NAVIGATE" | "VIEWS" | "SYSTEM" | "ACTIONS" | "SPECS";
 }
 
 export function CommandPalette() {
@@ -33,159 +35,160 @@ export function CommandPalette() {
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	// Extract project ID from current location if available
 	const projectIdMatch = location.pathname.match(/\/projects\/([^/]+)/);
 	const currentProjectId = projectIdMatch ? projectIdMatch[1] : null;
 
-	const commands: Command[] = useMemo(() => {
-		const baseCommands: Command[] = [
-			// Navigation
+	const commands: CommandItem[] = useMemo(() => {
+		const baseCommands: CommandItem[] = [
 			{
 				id: "nav-home",
-				title: "Go to Dashboard",
+				title: "Mission Control",
+				description: "Main operational dashboard",
 				icon: Home,
 				action: () => navigate({ to: "/" }),
-				category: "navigation",
+				category: "NAVIGATE",
 				keywords: ["home", "dashboard"],
 			},
 			{
 				id: "nav-projects",
-				title: "Go to Projects",
+				title: "Project Registry",
+				description: "All active graph containers",
 				icon: FolderOpen,
 				action: () => navigate({ to: "/projects" }),
-				category: "navigation",
+				category: "NAVIGATE",
 				keywords: ["projects", "list"],
 			},
 			{
-				id: "nav-settings",
-				title: "Go to Settings",
-				icon: Settings,
-				action: () => navigate({ to: "/settings" }),
-				category: "navigation",
-				keywords: ["settings", "config"],
-			},
-			{
 				id: "view-graph",
-				title: "Graph View",
-				description: "Traceability visualization",
+				title: "Neural Graph",
+				description: "Global traceability network",
 				icon: GitBranch,
 				action: () => navigate({ to: "/graph" }),
-				category: "view",
+				category: "NAVIGATE",
 				keywords: ["graph", "trace", "link"],
 			},
-			// Actions
 			{
-				id: "action-new-item",
-				title: "Create New Item",
-				description: "Add a new requirement or artifact",
-				icon: FileText,
-				action: () => console.log("Create item"),
-				category: "action",
-				keywords: ["create", "new", "add", "item"],
+				id: "sys-settings",
+				title: "System Parameters",
+				description: "Core configuration panel",
+				icon: Settings,
+				action: () => navigate({ to: "/settings" }),
+				category: "SYSTEM",
+				keywords: ["settings", "config"],
 			},
 		];
 
-		// Add project-specific views if we're on a project page
 		if (currentProjectId) {
-			const projectViews: Command[] = [
+			const projectViews: CommandItem[] = [
 				{
 					id: "view-feature",
-					title: "Feature View",
-					description: "Epics, features, stories",
-					icon: Layout,
+					title: "Feature Layer",
+					description: "Logic & requirements",
+					icon: Layers,
 					action: () =>
 						navigate({
 							to: "/projects/$projectId/views/$viewType",
-							params: {
-								projectId: currentProjectId,
-								viewType: "feature",
-							},
+							params: { projectId: currentProjectId, viewType: "feature" },
 						}),
-					category: "view",
-					keywords: ["feature", "epic", "story"],
+					category: "VIEWS",
 				},
 				{
 					id: "view-code",
-					title: "Code View",
-					description: "Modules and files",
+					title: "Source Mapping",
+					description: "Repository links",
 					icon: Code,
 					action: () =>
 						navigate({
 							to: "/projects/$projectId/views/$viewType",
-							params: {
-								projectId: currentProjectId,
-								viewType: "code",
-							},
+							params: { projectId: currentProjectId, viewType: "code" },
 						}),
-					category: "view",
-					keywords: ["code", "module", "file"],
+					category: "VIEWS",
 				},
 				{
 					id: "view-test",
-					title: "Test View",
-					description: "Test suites and cases",
-					icon: TestTube,
+					title: "Validation Suite",
+					description: "Test coverage matrix",
+					icon: Shield,
 					action: () =>
 						navigate({
 							to: "/projects/$projectId/views/$viewType",
-							params: {
-								projectId: currentProjectId,
-								viewType: "test",
-							},
+							params: { projectId: currentProjectId, viewType: "test" },
 						}),
-					category: "view",
-					keywords: ["test", "suite", "case"],
+					category: "VIEWS",
 				},
 				{
-					id: "view-api",
-					title: "API View",
-					description: "Endpoints and schemas",
-					icon: Globe,
+					id: "view-workflows",
+					title: "Workflow Runs",
+					description: "Hatchet runs and schedules",
+					icon: Activity,
 					action: () =>
 						navigate({
 							to: "/projects/$projectId/views/$viewType",
-							params: {
-								projectId: currentProjectId,
-								viewType: "api",
-							},
+							params: { projectId: currentProjectId, viewType: "workflows" },
 						}),
-					category: "view",
-					keywords: ["api", "endpoint", "rest"],
-				},
-				{
-					id: "view-db",
-					title: "Database View",
-					description: "Tables and schemas",
-					icon: Database,
-					action: () =>
-						navigate({
-							to: "/projects/$projectId/views/$viewType",
-							params: {
-								projectId: currentProjectId,
-								viewType: "database",
-							},
-						}),
-					category: "view",
-					keywords: ["database", "table", "schema"],
-				},
-				{
-					id: "view-wireframe",
-					title: "Wireframe View",
-					description: "UI mockups",
-					icon: Image,
-					action: () =>
-						navigate({
-							to: "/projects/$projectId/views/$viewType",
-							params: {
-								projectId: currentProjectId,
-								viewType: "wireframe",
-							},
-						}),
-					category: "view",
-					keywords: ["wireframe", "mockup", "ui"],
+					category: "VIEWS",
 				},
 			];
-			return [...baseCommands, ...projectViews];
+
+			const specCommands: CommandItem[] = [
+				{
+					id: "specs-dashboard",
+					title: "Specifications Dashboard",
+					description: "View all specifications",
+					icon: FileCode,
+					action: () =>
+						navigate({
+							to: "/projects/$projectId/specifications",
+							params: { projectId: currentProjectId },
+						}),
+					category: "SPECS",
+					keywords: ["specifications", "specs", "dashboard"],
+				},
+				{
+					id: "specs-adr",
+					title: "Architecture Decision Records",
+					description: "ADRs for this project",
+					icon: FileText,
+					action: () =>
+						navigate({
+							to: "/projects/$projectId/specifications",
+							params: { projectId: currentProjectId },
+							search: { tab: "adrs" },
+						}),
+					category: "SPECS",
+					keywords: ["adr", "architecture", "decision"],
+				},
+				{
+					id: "specs-contracts",
+					title: "Contracts",
+					description: "Service and API contracts",
+					icon: ClipboardCheck,
+					action: () =>
+						navigate({
+							to: "/projects/$projectId/specifications",
+							params: { projectId: currentProjectId },
+							search: { tab: "contracts" },
+						}),
+					category: "SPECS",
+					keywords: ["contract", "api", "service"],
+				},
+				{
+					id: "specs-compliance",
+					title: "Compliance",
+					description: "Compliance and regulatory requirements",
+					icon: Shield,
+					action: () =>
+						navigate({
+							to: "/projects/$projectId/specifications",
+							params: { projectId: currentProjectId },
+							search: { tab: "compliance" },
+						}),
+					category: "SPECS",
+					keywords: ["compliance", "regulatory", "requirements"],
+				},
+			];
+
+			return [...baseCommands, ...projectViews, ...specCommands];
 		}
 
 		return baseCommands;
@@ -233,102 +236,150 @@ export function CommandPalette() {
 	);
 
 	useEffect(() => {
-		if (typeof globalThis.window === "undefined") {
-			return;
-		}
-
-		globalThis.window.addEventListener("keydown", handleKeyDown);
-		return () =>
-			globalThis.window.removeEventListener("keydown", handleKeyDown);
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [handleKeyDown]);
-
-	useEffect(() => {
-		setSelected(0);
-	}, []);
 
 	if (!open) return null;
 
-	const grouped = {
-		navigation: filtered.filter((c) => c.category === "navigation"),
-		view: filtered.filter((c) => c.category === "view"),
-		action: filtered.filter((c) => c.category === "action"),
-	};
+	const categories = [
+		"NAVIGATE",
+		"VIEWS",
+		"SPECS",
+		"SYSTEM",
+		"ACTIONS",
+	] as const;
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
+			className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 animate-in fade-in duration-300"
 			onClick={() => setOpen(false)}
 		>
-			<div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+			<div className="fixed inset-0 bg-background/80 backdrop-blur-sm" />
 			<div
-				className="relative w-full max-w-lg rounded-xl border bg-background shadow-2xl"
+				className="relative w-full max-w-2xl bg-card border border-border/50 shadow-2xl rounded-[2rem] overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300 ring-1 ring-primary/20"
 				onClick={(e) => e.stopPropagation()}
 			>
-				<div className="flex items-center gap-3 border-b px-4 py-3">
-					<Search className="h-5 w-5 text-muted-foreground" />
+				{/* Top Command Bar */}
+				<div className="flex items-center gap-4 px-6 py-5 border-b bg-muted/30">
+					<Command className="h-6 w-6 text-primary animate-pulse" />
 					<input
 						type="text"
-						placeholder="Search commands, views, items..."
+						placeholder="Execute command or jump to view..."
 						value={query}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-							setQuery(e.target.value)
-						}
-						className="flex-1 bg-transparent text-lg outline-none placeholder:text-muted-foreground"
+						onChange={(e) => setQuery(e.target.value)}
+						className="flex-1 bg-transparent text-xl font-black uppercase tracking-tight outline-none placeholder:text-muted-foreground/50"
 					/>
-					<kbd className="rounded border bg-muted px-2 py-0.5 text-xs">ESC</kbd>
+					<div className="flex items-center gap-1.5">
+						<kbd className="h-6 px-2 rounded-lg border bg-background flex items-center justify-center text-[10px] font-black uppercase shadow-sm">
+							ESC
+						</kbd>
+					</div>
 				</div>
-				<div className="max-h-[400px] overflow-y-auto p-2">
-					{Object.entries(grouped).map(
-						([category, items]) =>
-							items.length > 0 && (
-								<div key={category}>
-									<div className="px-2 py-1 text-xs font-medium text-muted-foreground uppercase">
-										{category}
-									</div>
-									{items.map((cmd) => {
-										const globalIndex = filtered.indexOf(cmd);
-										return (
-											<button
-												key={cmd.id}
-												onClick={() => {
-													cmd.action();
-													setOpen(false);
-													setQuery("");
-												}}
-												className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left ${globalIndex === selected ? "bg-accent" : "hover:bg-accent/50"}`}
-											>
-												<cmd.icon className="h-5 w-5 text-muted-foreground" />
-												<div className="flex-1">
-													<div className="font-medium">{cmd.title}</div>
-													{cmd.description && (
-														<div className="text-xs text-muted-foreground">
-															{cmd.description}
-														</div>
-													)}
-												</div>
-												<ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100" />
-											</button>
-										);
-									})}
+
+				{/* Results Surface */}
+				<div className="max-h-[50vh] overflow-y-auto p-3 custom-scrollbar">
+					{categories.map((cat) => {
+						const items = filtered.filter((c) => c.category === cat);
+						if (items.length === 0) return null;
+
+						return (
+							<div key={cat} className="space-y-1 mb-4 last:mb-0">
+								<div className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+									{cat}
 								</div>
-							),
-					)}
+								{items.map((cmd) => {
+									const globalIndex = filtered.indexOf(cmd);
+									const isSelected = globalIndex === selected;
+
+									return (
+										<button
+											key={cmd.id}
+											onClick={() => {
+												cmd.action();
+												setOpen(false);
+												setQuery("");
+											}}
+											onMouseEnter={() => setSelected(globalIndex)}
+											className={cn(
+												"group flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left transition-all duration-200",
+												isSelected
+													? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 translate-x-1"
+													: "hover:bg-muted/50",
+											)}
+										>
+											<div
+												className={cn(
+													"h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+													isSelected
+														? "bg-primary-foreground/20"
+														: "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+												)}
+											>
+												<cmd.icon className="h-5 w-5" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<div className="font-bold text-sm tracking-tight">
+													{cmd.title}
+												</div>
+												{cmd.description && (
+													<div
+														className={cn(
+															"text-[10px] font-bold uppercase tracking-widest leading-none mt-1",
+															isSelected
+																? "text-primary-foreground/60"
+																: "text-muted-foreground",
+														)}
+													>
+														{cmd.description}
+													</div>
+												)}
+											</div>
+											{isSelected && (
+												<div className="flex items-center gap-2 pr-2 animate-in slide-in-from-left-2">
+													<span className="text-[9px] font-black uppercase tracking-tighter opacity-60">
+														Execute
+													</span>
+													<ChevronRight className="h-4 w-4" />
+												</div>
+											)}
+										</button>
+									);
+								})}
+							</div>
+						);
+					})}
+
 					{filtered.length === 0 && (
-						<div className="p-8 text-center text-muted-foreground">
-							No results found for "{query}"
+						<div className="flex flex-col items-center justify-center py-20 text-muted-foreground/40">
+							<Zap className="h-12 w-12 mb-4 opacity-10" />
+							<p className="text-xs font-black uppercase tracking-[0.2em]">
+								Zero Command Matches
+							</p>
 						</div>
 					)}
 				</div>
-				<div className="border-t px-4 py-2 text-xs text-muted-foreground">
-					<span className="mr-4">
-						<kbd className="rounded border bg-muted px-1">↑↓</kbd> Navigate
-					</span>
-					<span className="mr-4">
-						<kbd className="rounded border bg-muted px-1">↵</kbd> Select
-					</span>
-					<span>
-						<kbd className="rounded border bg-muted px-1">⌘K</kbd> Toggle
-					</span>
+
+				{/* Global Shortcuts Hint */}
+				<div className="border-t bg-muted/20 px-6 py-4 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+					<div className="flex items-center gap-6">
+						<span className="flex items-center gap-2">
+							<kbd className="h-5 px-1.5 rounded border bg-background shadow-sm">
+								↑↓
+							</kbd>
+							NAVIGATE
+						</span>
+						<span className="flex items-center gap-2">
+							<kbd className="h-5 px-1.5 rounded border bg-background shadow-sm">
+								↵
+							</kbd>
+							CONFIRM
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+						READY
+					</div>
 				</div>
 			</div>
 		</div>

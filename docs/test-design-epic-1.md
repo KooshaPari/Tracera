@@ -127,7 +127,7 @@
 - **Given**: PostgreSQL 16+ running
 - **When**: User runs `rtm config init` with valid database URL
 - **Then**: Connection established successfully
-- **And**: Config file created at `~/.config/tracertm/config.yaml`
+- **And**: Config file created at `~/.tracertm/config.yaml`
 - **Validation**: Connection pool created, health check passes
 
 **TC-1.2.2: Initial Migration**
@@ -246,7 +246,7 @@
 - **Type**: Integration
 - **Given**: Project initialized
 - **When**: User runs `rtm config set default_view FEATURE`
-- **Then**: Config value persisted to `~/.config/tracertm/config.yaml`
+- **Then**: Config value persisted to `~/.tracertm/config.yaml`
 - **And**: `rtm config show` displays updated value
 - **Validation**: Config file contains correct value
 
@@ -400,7 +400,7 @@
 - **Type**: Integration
 - **Given**: Error occurs
 - **When**: Error handled
-- **Then**: Error logged to `~/.config/tracertm/logs/tracertm.log`
+- **Then**: Error logged to `~/.tracertm/logs/tracertm.log`
 - **And**: Log includes timestamp, level, message, stack trace
 - **Validation**: Log file contains error details
 

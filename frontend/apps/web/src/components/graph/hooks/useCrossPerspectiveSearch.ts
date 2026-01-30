@@ -527,7 +527,11 @@ export function useCrossPerspectiveSearch() {
 	 * Save a search query for later reference
 	 */
 	const saveSearch = useCallback(
-		(query: string, filters: SearchFilters, results: CrossPerspectiveSearchResult[]) => {
+		(
+			query: string,
+			filters: SearchFilters,
+			results: CrossPerspectiveSearchResult[],
+		) => {
 			const id = `saved-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 			const newSearch: SavedSearch = {
 				id,

@@ -6,7 +6,6 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import type {
-	Agent,
 	Item,
 	Link,
 	Mutation,
@@ -24,7 +23,6 @@ export const queryKeys = {
 	item: (id: string) => ["items", id] as const,
 	projectLinks: (projectId: string) =>
 		["projects", projectId, "links"] as const,
-	agents: ["agents"] as const,
 	mutations: (filters?: Record<string, unknown>) =>
 		["mutations", filters] as const,
 };
@@ -309,19 +307,9 @@ export function useDeleteLink(
 	});
 }
 
-// Agents
-export function useAgents(options?: UseQueryOptions<Agent[]>) {
-	return useQuery({
-		queryKey: queryKeys.agents,
-		queryFn: () => handleApiResponse(apiClient.GET("/api/v1/agents", {})),
-		refetchInterval: 5000, // Poll every 5 seconds
-		...options,
-	});
-}
-
 // Mutations (for sync)
 export function useMutations(
-	filters?: { agentId?: string; synced?: boolean; since?: string },
+	filters?: { synced?: boolean; since?: string },
 	options?: UseQueryOptions<Mutation[]>,
 ) {
 	return useQuery({

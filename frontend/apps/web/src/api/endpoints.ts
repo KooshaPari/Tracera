@@ -1,9 +1,6 @@
 // Complete API Client for TraceRTM Backend
 import { apiClient, handleApiResponse, safeApiCall } from "./client";
 import type {
-	Agent,
-	AgentTask,
-	CreateAgentInput,
 	CreateItemInput,
 	CreateLinkInput,
 	CreateProjectInput,
@@ -16,9 +13,6 @@ import type {
 	Project,
 	SearchQuery,
 	SearchResult,
-	TaskError,
-	TaskResult,
-	UpdateAgentInput,
 	UpdateItemInput,
 	UpdateLinkInput,
 	UpdateProjectInput,
@@ -175,143 +169,6 @@ export const linksApi = {
 				params: { path: { id } },
 			}),
 		);
-	},
-};
-
-// ============================================================================
-// AGENT ENDPOINTS
-// ============================================================================
-
-export const agentsApi = {
-	list: async (params?: PaginationParams): Promise<Agent[]> => {
-		return handleApiResponse(
-			apiClient.GET("/api/v1/agents", {
-				params: { query: params },
-			}),
-		);
-	},
-
-	get: async (id: string): Promise<Agent> => {
-		return handleApiResponse(
-			apiClient.GET("/api/v1/agents/{id}", {
-				params: { path: { id } },
-			}),
-		);
-	},
-
-	create: async (data: CreateAgentInput): Promise<Agent> => {
-		return handleApiResponse(
-			apiClient.POST("/api/v1/agents", {
-				body: data,
-			}),
-		);
-	},
-
-	update: async (id: string, data: UpdateAgentInput): Promise<Agent> => {
-		return handleApiResponse(
-			apiClient.PUT("/api/v1/agents/{id}", {
-				params: { path: { id } },
-				body: data,
-			}),
-		);
-	},
-
-	delete: async (id: string): Promise<void> => {
-		await handleApiResponse(
-			apiClient.DELETE("/api/v1/agents/{id}", {
-				params: { path: { id } },
-			}),
-		);
-	},
-
-	// Agent Coordination
-	register: async (data: CreateAgentInput): Promise<Agent> => {
-		return handleApiResponse(
-			apiClient.POST("/api/v1/agents/register", {
-				body: data,
-			}),
-		);
-	},
-
-	heartbeat: async (agentId: string): Promise<void> => {
-		await handleApiResponse(
-			apiClient.POST("/api/v1/agents/heartbeat", {
-				body: { agent_id: agentId },
-			}),
-		);
-	},
-
-	getNextTask: async (agentId: string): Promise<AgentTask | null> => {
-		return handleApiResponse(
-			apiClient.GET("/api/v1/agents/{id}/task", {
-				params: { path: { id: agentId } },
-			}),
-		);
-	},
-
-	submitTaskResult: async (data: TaskResult): Promise<void> => {
-		await handleApiResponse(
-			apiClient.POST("/api/v1/agents/task/result", {
-				body: data,
-			}),
-		);
-	},
-
-	submitTaskError: async (data: TaskError): Promise<void> => {
-		await handleApiResponse(
-			apiClient.POST("/api/v1/agents/task/error", {
-				body: data,
-			}),
-		);
-	},
-
-	assignTask: async (
-		agentId: string,
-		task: Partial<AgentTask>,
-	): Promise<AgentTask> => {
-		return handleApiResponse(
-			apiClient.POST("/api/v1/agents/task/assign", {
-				body: { agent_id: agentId, ...task },
-			}),
-		);
-	},
-
-	listRegistered: async (): Promise<Agent[]> => {
-		return handleApiResponse(apiClient.GET("/api/v1/agents/registered", {}));
-	},
-
-	getStatus: async (id: string): Promise<Agent> => {
-		return handleApiResponse(
-			apiClient.GET("/api/v1/agents/{id}/status", {
-				params: { path: { id } },
-			}),
-		);
-	},
-
-	// Task management methods (aliases for compatibility)
-	runTask: async (
-		agentId: string,
-		task: Partial<AgentTask>,
-	): Promise<AgentTask> => {
-		// Assign task and return it
-		return agentsApi.assignTask(agentId, task);
-	},
-
-	getTask: async (agentId: string): Promise<AgentTask | null> => {
-		// Get next task for agent
-		return agentsApi.getNextTask(agentId);
-	},
-
-	cancelTask: async (
-		_agentId: string,
-		taskId: string,
-		reason?: string,
-	): Promise<void> => {
-		// Submit task error with cancel status
-		await agentsApi.submitTaskError({
-			task_id: taskId,
-			error: reason || "Task cancelled",
-		});
 	},
 };
 
@@ -598,7 +455,6 @@ export const api = {
 	projects: projectsApi,
 	items: itemsApi,
 	links: linksApi,
-	agents: agentsApi,
 	graph: graphApi,
 	search: searchApi,
 	exportImport: exportImportApi,

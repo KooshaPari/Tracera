@@ -663,7 +663,6 @@ function PivotView({
 						links={links}
 						perspective="all"
 						onNavigateToItem={onNavigateToItem}
-						highlightedItemId={focusedItemId}
 					/>
 				</ReactFlowProvider>
 			</div>

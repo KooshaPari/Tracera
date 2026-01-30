@@ -12,7 +12,7 @@ Configure the TraceRTM CLI using configuration files for persistent settings.
 
 Configuration files are stored in:
 
-- **macOS/Linux**: `~/.config/tracertm/config.json`
+- **macOS/Linux**: `~/.tracertm/config.json`
 - **Windows**: `%APPDATA%\tracertm\config.json`
 
 ## Config File Format
@@ -47,7 +47,7 @@ Edit the config file directly:
 
 ```bash
 # macOS/Linux
-nano ~/.config/tracertm/config.json
+nano ~/.tracertm/config.json
 
 # Windows
 notepad %APPDATA%\tracertm\config.json
@@ -70,7 +70,7 @@ Use different config files for different environments:
 
 ```bash
 # Use specific config
-trace --config ~/.config/tracertm/prod.json project list
+trace --config ~/.tracertm/prod.json project list
 ```
 
 ## Related Documentation

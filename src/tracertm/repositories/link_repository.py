@@ -20,15 +20,50 @@ class LinkRepository:
         source_item_id: str,
         target_item_id: str,
         link_type: str,
+        graph_id: str | None = None,
         link_metadata: dict | None = None,
         metadata: dict | None = None,
     ) -> Link:
         """Create new link."""
+        if graph_id is None:
+            from sqlalchemy import select
+            from tracertm.models.graph import Graph
+            from tracertm.models.item_view import ItemView
+            from tracertm.models.view import View
+
+            graph_result = await self.session.execute(
+                select(Graph.id)
+                .join(View, View.name == Graph.graph_type)
+                .join(ItemView, ItemView.view_id == View.id)
+                .where(
+                    Graph.project_id == project_id,
+                    ItemView.item_id == source_item_id,
+                    ItemView.is_primary.is_(True),
+                )
+                .limit(1)
+            )
+            graph_id = graph_result.scalar_one_or_none()
+
+        if graph_id is None:
+            from sqlalchemy import select
+            from tracertm.models.graph import Graph
+
+            fallback = await self.session.execute(
+                select(Graph.id).where(
+                    Graph.project_id == project_id, Graph.graph_type == "default"
+                )
+            )
+            graph_id = fallback.scalar_one_or_none()
+
+        if graph_id is None:
+            raise ValueError("graph_id is required and could not be resolved")
+
         # Handle both parameter names for compatibility
         final_metadata = link_metadata or metadata or {}
         link = Link(
             id=str(uuid4()),
             project_id=project_id,
+            graph_id=graph_id,
             source_item_id=source_item_id,
             target_item_id=target_item_id,
             link_type=link_type,
@@ -44,35 +79,39 @@ class LinkRepository:
         result = await self.session.execute(select(Link).where(Link.id == link_id))
         return result.scalar_one_or_none()
 
-    async def get_by_project(self, project_id: str) -> list[Link]:
+    async def get_by_project(self, project_id: str, graph_id: str | None = None) -> list[Link]:
         """Get all links in a project."""
         # Links can be in a project if either source or target item is in that project
-        result = await self.session.execute(
-            select(Link).where(Link.project_id == project_id)
-        )
+        query = select(Link).where(Link.project_id == project_id)
+        if graph_id:
+            query = query.where(Link.graph_id == graph_id)
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_source(self, source_item_id: str) -> list[Link]:
+    async def get_by_source(self, source_item_id: str, graph_id: str | None = None) -> list[Link]:
         """Get all links from source item."""
-        result = await self.session.execute(
-            select(Link).where(Link.source_item_id == source_item_id)
-        )
+        query = select(Link).where(Link.source_item_id == source_item_id)
+        if graph_id:
+            query = query.where(Link.graph_id == graph_id)
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_target(self, target_item_id: str) -> list[Link]:
+    async def get_by_target(self, target_item_id: str, graph_id: str | None = None) -> list[Link]:
         """Get all links to target item."""
-        result = await self.session.execute(
-            select(Link).where(Link.target_item_id == target_item_id)
-        )
+        query = select(Link).where(Link.target_item_id == target_item_id)
+        if graph_id:
+            query = query.where(Link.graph_id == graph_id)
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_item(self, item_id: str) -> list[Link]:
+    async def get_by_item(self, item_id: str, graph_id: str | None = None) -> list[Link]:
         """Get all links connected to item (source or target)."""
-        result = await self.session.execute(
-            select(Link).where(
-                (Link.source_item_id == item_id) | (Link.target_item_id == item_id)
-            )
+        query = select(Link).where(
+            (Link.source_item_id == item_id) | (Link.target_item_id == item_id)
         )
+        if graph_id:
+            query = query.where(Link.graph_id == graph_id)
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
     async def delete(self, link_id: str) -> bool:
