@@ -16,6 +16,19 @@ from tracertm.models.event import Event
 from tracertm.models.agent import Agent
 from tracertm.models.agent_lock import AgentLock
 from tracertm.models.agent_event import AgentEvent
+from tracertm.models.external_link import ExternalLink
+from tracertm.models.graph_change import GraphChange
+from tracertm.models.graph_snapshot import GraphSnapshot
+from tracertm.models.graph_type import GraphType
+from tracertm.models.graph import Graph
+from tracertm.models.graph_node import GraphNode
+from tracertm.models.item_view import ItemView
+from tracertm.models.problem import Problem, ProblemActivity
+from tracertm.models.process import Process, ProcessExecution
+from tracertm.models.node_kind import NodeKind
+from tracertm.models.link_type import LinkType
+from tracertm.models.view import View
+from tracertm.models.node_kind_rule import NodeKindRule
 
 # this is the Alembic Config object
 config = context.config
@@ -72,4 +85,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

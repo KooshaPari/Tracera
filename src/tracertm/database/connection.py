@@ -235,3 +235,8 @@ def get_session(database_url: str) -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
+
+
+def get_db_session(database_url: str) -> Generator[Session, None, None]:
+    """Backward-compatible alias for dependency injection."""
+    return get_session(database_url)

@@ -139,6 +139,15 @@ export interface TableColumn<T = any> {
 	cell?: (value: any, row: T) => React.ReactNode;
 }
 
+export interface ValidationRule {
+	required?: boolean;
+	minLength?: number;
+	maxLength?: number;
+	pattern?: string;
+	custom?: (value: any) => boolean | string;
+	[key: string]: any;
+}
+
 export interface FormField {
 	name: string;
 	label: string;
@@ -154,7 +163,7 @@ export interface FormField {
 	placeholder?: string;
 	required?: boolean;
 	options?: { label: string; value: string }[];
-	validation?: Record<string, any>;
+	validation?: ValidationRule;
 	helpText?: string;
 }
 
@@ -181,11 +190,15 @@ export interface UploadFile {
 	url?: string;
 }
 
+export interface ExportFilter {
+	[key: string]: string | number | boolean | string[] | undefined;
+}
+
 export interface ExportConfig {
 	format: "json" | "csv" | "xlsx" | "pdf";
 	filename: string;
 	includeMetadata?: boolean;
-	filters?: Record<string, any>;
+	filters?: ExportFilter;
 }
 
 // Utility types
@@ -231,19 +244,27 @@ export interface ErrorBoundaryProps extends BaseComponentProps {
 
 // API request/response types
 
+export interface SearchFilter {
+	[key: string]: string | number | boolean | string[] | undefined;
+}
+
 export interface SearchParams {
 	query: string;
-	filters?: Record<string, any>;
+	filters?: SearchFilter;
 	sort?: string;
 	order?: "asc" | "desc";
 	page?: number;
 	pageSize?: number;
 }
 
+export interface BulkOperationData {
+	[key: string]: string | number | boolean | null | undefined;
+}
+
 export interface BulkOperation {
 	operation: "update" | "delete";
 	ids: string[];
-	data?: Record<string, any>;
+	data?: BulkOperationData;
 }
 
 export interface ImportResult {

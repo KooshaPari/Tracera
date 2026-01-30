@@ -4,7 +4,7 @@
 
 This document defines the **TraceRTM MCP Server**, an MCP-native interface for TraceRTM, the agent-native requirements traceability and multi-view project management system described in the PRD, architecture, and UX docs.
 
-The goal is to expose TraceRTM's project model (projects, items, views, links, traceability, progress) as a **typed, toolable API** to LLM-based agents and UIs via the **Model Context Protocol (MCP)** using **FastMCP 2.13**.
+The goal is to expose TraceRTM's project model (projects, items, views, links, traceability, progress) as a **typed, toolable API** to LLM-based agents and UIs via the **Model Context Protocol (MCP)** using **FastMCP 3.0.0b1**.
 
 The TraceRTM MCP Server becomes the primary way agents:
 - Discover and select projects
@@ -20,7 +20,7 @@ BMM and other workflow systems are treated as **clients** of this MCP server, no
 ## 2. System Context & Roles
 
 **Server:** `tracertm-mcp`
-- Implemented with FastMCP 2.13
+- Implemented with FastMCP 3.0.0b1
 - Runs alongside the `tracertm` Python package and database
 - Exposes tools/resources/prompts
 
@@ -120,7 +120,7 @@ Resources expose frequently accessed, read-only views optimized for agents.
 - `tracertm://project/{id}/activity-log`
   - Recent changes (items created/updated, links created, snapshots).
 
-All resources are suitable for FastMCP 2.13 response caching.
+All resources are suitable for FastMCP 3.0.0b1 response caching.
 
 ---
 
@@ -148,7 +148,7 @@ Examples:
 ## 6. Data, State, and Storage
 
 - Primary truth remains in TraceRTM's database (projects, items, links, etc.).
-- MCP server uses FastMCP 2.13 storage layer for:
+- MCP server uses FastMCP 3.0.0b1 storage layer for:
   - Caching expensive derived views (trace matrix, gap reports)
   - Storing MCP-level metadata (plans, snapshots, per-client state)
   - Securely storing any access tokens (for future remote deployments)
@@ -161,7 +161,7 @@ Initial local usage:
 - Run `tracertm-mcp` locally via stdio, no auth, trusted single-user environment.
 
 Future remote/multi-tenant:
-- Use FastMCP 2.13 OAuth proxy for authentication.
+- Use FastMCP 3.0.0b1 OAuth proxy for authentication.
 - Restrict tool surface by tags for untrusted clients.
 
 ---
@@ -169,7 +169,7 @@ Future remote/multi-tenant:
 ## 8. Implementation Phases
 
 1. **Phase 1: Core MCP Server Skeleton**
-   - Create `tracertm_mcp_server.py` with FastMCP 2.13
+   - Create `tracertm_mcp_server.py` with FastMCP 3.0.0b1
    - Implement minimal tools: `list_projects`, `select_project`, `create_item`, `create_link`
 
 2. **Phase 2: Traceability & Health**

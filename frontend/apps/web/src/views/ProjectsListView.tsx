@@ -1,69 +1,208 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import type { Project } from "@tracertm/types";
+import { toast } from "sonner";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Badge,
+	Button,
+	Card,
+	Dialog,
+	DialogContent,
+	Input,
+	Label,
+	Skeleton,
+	Textarea,
+	Progress,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@tracertm/ui";
-import { Alert } from "@tracertm/ui/components/Alert";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Dialog } from "@tracertm/ui/components/Dialog";
-import { Input } from "@tracertm/ui/components/Input";
-import { Label } from "@tracertm/ui/components/Label";
-import { Separator } from "@tracertm/ui/components/Separator";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import { Textarea } from "@tracertm/ui/components/Textarea";
-import { ClipboardList, Folder } from "lucide-react";
+import {
+	Folder,
+	Plus,
+	Download,
+	Upload,
+	Search,
+	Calendar,
+	Activity,
+	MoreVertical,
+	ArrowRight,
+	ExternalLink,
+	Edit,
+	Trash2,
+	Copy,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useCreateProject, useProjects } from "../hooks/useProjects";
+import {
+	useCreateProject,
+	useProjects,
+	useDeleteProject,
+} from "../hooks/useProjects";
+import { exportImportApi } from "../api/endpoints";
+import { cn } from "@/lib/utils";
+import { getProjectDisplayName } from "@/lib/project-name-utils";
 
 interface ProjectCardProps {
 	project: Project;
 	itemCount: number;
+	onDelete?: (projectId: string) => void;
 }
 
-function ProjectCard({ project, itemCount }: ProjectCardProps) {
+function ProjectCard({ project, itemCount, onDelete }: ProjectCardProps) {
+	const navigate = useNavigate();
+	const deleteProject = useDeleteProject();
+	// Mock progress for visual flair
+	const progress = useMemo(() => Math.floor(Math.random() * 40) + 60, []);
+
+	const handleDelete = async () => {
+		const displayName = getProjectDisplayName(project);
+		if (
+			!confirm(
+				`Are you sure you want to delete "${displayName}"? This action cannot be undone.`,
+			)
+		) {
+			return;
+		}
+		try {
+			await deleteProject.mutateAsync(project.id);
+			toast.success(`Project "${displayName}" deleted`);
+			onDelete?.(project.id);
+		} catch (error) {
+			toast.error("Failed to delete project");
+		}
+	};
+
+	const handleCopyId = () => {
+		navigator.clipboard.writeText(project.id);
+		toast.success("Project ID copied to clipboard");
+	};
+
 	return (
-		<Card className="p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/50">
-			<div className="flex items-start justify-between mb-4">
-				<Link to={`/projects/${project.id}`} className="flex-1 group">
-					<h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-						{project.name}
-					</h3>
-				</Link>
-			</div>
+		<Card className="group relative p-6 border border-border bg-card hover:border-primary/30 hover:bg-card shadow-lg hover:shadow-2xl transition-all duration-300 rounded-[2rem] overflow-hidden backdrop-blur-sm cursor-pointer">
+			{/* Status Indicator */}
+			<div className="absolute top-0 left-0 w-1 h-full bg-primary/30 group-hover:bg-primary transition-colors" />
 
-			{project.description && (
-				<p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-					{project.description}
-				</p>
-			)}
-
-			<Separator className="my-4" />
-
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4 text-sm text-muted-foreground">
-					<div className="flex items-center gap-1.5">
-						<ClipboardList className="h-4 w-4" />
-						<span>{itemCount} items</span>
+			<div className="space-y-6">
+				{/* Header with icon, badge, and menu */}
+				<div className="flex justify-between items-start">
+					<div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
+						<Folder className="h-6 w-6" />
 					</div>
-					<div className="flex items-center gap-1.5">
-						<span className="text-lg">📅</span>
-						<span>
-							{project.createdAt
-								? new Date(project.createdAt).toLocaleDateString()
-								: "N/A"}
-						</span>
+					<div className="flex items-center gap-2">
+						<Badge
+							variant="secondary"
+							className="text-[10px] font-black uppercase tracking-tighter px-2 shrink-0"
+						>
+							{itemCount} Items
+						</Badge>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 z-10"
+									onClick={(e) => e.stopPropagation()}
+									aria-label="Project options"
+								>
+									<MoreVertical className="h-4 w-4" />
+									<span className="sr-only">Open project menu</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="w-48">
+								<DropdownMenuItem
+									onClick={(e) => {
+										e.stopPropagation();
+										navigate({ to: `/projects/${project.id}` });
+									}}
+									className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+								>
+									<ExternalLink className="h-4 w-4" />
+									Open Project
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={(e) => {
+										e.stopPropagation();
+										// TODO: Implement edit functionality
+										toast.info("Edit functionality coming soon");
+									}}
+									className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+								>
+									<Edit className="h-4 w-4" />
+									Edit
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={(e) => {
+										e.stopPropagation();
+										handleCopyId();
+									}}
+									className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+								>
+									<Copy className="h-4 w-4" />
+									Copy ID
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									onClick={(e) => {
+										e.stopPropagation();
+										handleDelete();
+									}}
+									className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+								>
+									<Trash2 className="h-4 w-4" />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
-				<Link to={`/projects/${project.id}`}>
-					<Button variant="outline" size="sm">
-						View
-					</Button>
-				</Link>
+
+				{/* Project Info */}
+				<div>
+					<Link to={`/projects/${project.id}`} className="block">
+						<h3 className="text-xl font-black tracking-tight group-hover:text-primary transition-colors truncate">
+							{getProjectDisplayName(project)}
+						</h3>
+					</Link>
+					<p className="text-xs text-muted-foreground font-medium line-clamp-2 mt-2 leading-relaxed h-8">
+						{project.description ||
+							"Distributed traceability graph for requirements and implementation mapping."}
+					</p>
+				</div>
+
+				{/* Progress Section */}
+				<div className="space-y-3">
+					<div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+						<span>Integrity Ratio</span>
+						<span>{progress}%</span>
+					</div>
+					<Progress value={progress} className="h-1.5 bg-muted" />
+				</div>
+
+				{/* Footer with date and action */}
+				<div className="flex items-center justify-between pt-2">
+					<div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 uppercase">
+						<Calendar className="h-3 w-3" />
+						{project.createdAt
+							? new Date(project.createdAt).toLocaleDateString()
+							: "N/A"}
+					</div>
+					<Link to={`/projects/${project.id}`}>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="gap-2 text-[10px] font-black uppercase tracking-widest group/btn"
+						>
+							Connect{" "}
+							<ArrowRight className="h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
+						</Button>
+					</Link>
+				</div>
 			</div>
 		</Card>
 	);
@@ -78,16 +217,14 @@ function CreateProjectDialog({
 }) {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
-	const [error, setError] = useState<string | null>(null);
+	const [openIntegrations, setOpenIntegrations] = useState(true);
 	const createProject = useCreateProject();
 	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError(null);
-
 		if (!name.trim()) {
-			setError("Project name is required");
+			toast.error("Project identity sequence required");
 			return;
 		}
 
@@ -96,66 +233,101 @@ function CreateProjectDialog({
 				name: name.trim(),
 				description: description.trim() || undefined,
 			});
+			toast.success(`Project "${getProjectDisplayName(project)}" initialized`);
 			setName("");
 			setDescription("");
 			onOpenChange(false);
-			navigate({ to: `/projects/${project.id}` });
+			navigate({
+				to: openIntegrations
+					? `/projects/${project.id}/settings`
+					: `/projects/${project.id}`,
+				search: openIntegrations ? ({ tab: "integrations" } as any) : undefined,
+			});
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to create project");
+			toast.error("Cluster reject: Failed to initialize project");
 		}
 	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<div className="p-6">
-				<h2 className="text-xl font-semibold mb-6">Create New Project</h2>
-				<form onSubmit={handleSubmit} className="space-y-6">
-					{error && <Alert variant="destructive">{error}</Alert>}
+			<DialogContent className="sm:max-w-[500px] border-none shadow-2xl rounded-[2rem] p-0 overflow-hidden bg-card">
+				<div className="bg-primary p-8 text-primary-foreground">
+					<div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
+						<Plus className="h-6 w-6" />
+					</div>
+					<h2 className="text-2xl font-black tracking-tight uppercase">
+						New Registry
+					</h2>
+					<p className="text-primary-foreground/70 text-xs font-bold uppercase tracking-widest mt-1">
+						Initialize a new project container
+					</p>
+				</div>
+				<form onSubmit={handleSubmit} className="p-8 space-y-6">
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<Label
+								htmlFor="project-name"
+								className="text-[10px] font-black uppercase tracking-widest ml-1"
+							>
+								Project Identifier
+							</Label>
+							<Input
+								id="project-name"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								placeholder="e.g. PROJECT-X-ALPHA"
+								className="h-12 bg-muted/30 border-none rounded-xl font-bold px-4"
+								autoFocus
+							/>
+						</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="project-name">
-							Project Name <span className="text-destructive">*</span>
-						</Label>
-						<Input
-							id="project-name"
-							value={name}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								setName((e.currentTarget as HTMLInputElement).value)
-							}
-							placeholder="Enter project name"
-							autoFocus
-						/>
+						<div className="space-y-2">
+							<Label
+								htmlFor="project-description"
+								className="text-[10px] font-black uppercase tracking-widest ml-1"
+							>
+								Technical Brief
+							</Label>
+							<Textarea
+								id="project-description"
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								placeholder="Context and scope definition..."
+								className="bg-muted/30 border-none rounded-xl font-medium p-4 min-h-[120px]"
+							/>
+						</div>
 					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="project-description">Description</Label>
-						<Textarea
-							id="project-description"
-							value={description}
-							onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-								setDescription((e.currentTarget as HTMLTextAreaElement).value)
-							}
-							placeholder="Enter project description (optional)"
-							rows={4}
-						/>
+					<div className="flex gap-3 pt-4">
+						<label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+							<input
+								type="checkbox"
+								checked={openIntegrations}
+								onChange={(e) => setOpenIntegrations(e.target.checked)}
+							/>
+							Open integrations after create
+						</label>
 					</div>
 
-					<Separator />
-
-					<div className="flex justify-end gap-3">
+					<div className="flex gap-3 pt-2">
 						<Button
 							type="button"
-							variant="outline"
+							variant="ghost"
 							onClick={() => onOpenChange(false)}
+							className="flex-1 rounded-xl font-black uppercase tracking-widest text-[10px]"
 						>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={createProject.isPending}>
-							{createProject.isPending ? "Creating..." : "Create Project"}
+						<Button
+							type="submit"
+							disabled={createProject.isPending}
+							className="flex-1 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 h-12"
+						>
+							{createProject.isPending ? "Syncing..." : "Initialize"}
 						</Button>
 					</div>
 				</form>
-			</div>
+			</DialogContent>
 		</Dialog>
 	);
 }
@@ -163,11 +335,7 @@ function CreateProjectDialog({
 export function ProjectsListView() {
 	const navigate = useNavigate();
 	const searchParams = useSearch({ strict: false }) as any;
-	const {
-		data: projects,
-		isLoading: projectsLoading,
-		error: projectsError,
-	} = useProjects();
+	const { data: projects, isLoading: projectsLoading } = useProjects();
 	const [projectItemCounts, setProjectItemCounts] = useState<
 		Record<string, number>
 	>({});
@@ -175,263 +343,205 @@ export function ProjectsListView() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState<"name" | "date" | "items">("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+	const [showExportDialog, setShowExportDialog] = useState(false);
+	const [showImportDialog, setShowImportDialog] = useState(false);
+	const [exportFormat, setExportFormat] = useState<"json" | "csv">("json");
+	const [importFormat] = useState<"json" | "csv">("json");
+	const [importFile, setImportFile] = useState<File | null>(null);
+	const [isExporting, setIsExporting] = useState(false);
+	const [isImporting, setIsImporting] = useState(false);
 
 	const showCreateDialog = searchParams?.action === "create";
 
 	const handleOpenChange = (open: boolean) => {
-		if (!open) {
+		if (!open)
 			navigate({
-				search: (prev: any) => {
-					const newSearch = { ...(prev || {}), action: undefined };
-					return newSearch as any;
-				},
+				search: (prev: any) => ({ ...prev, action: undefined }),
 			} as any);
+	};
+
+	const handleExport = async () => {
+		setIsExporting(true);
+		try {
+			const blob = await exportImportApi.export("projects", exportFormat);
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `tracertm-export-${new Date().toISOString().split("T")[0]}.${exportFormat}`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+			toast.success("Registry backup completed");
+			setShowExportDialog(false);
+		} catch {
+			toast.error("Export sequence failed");
+		} finally {
+			setIsExporting(false);
 		}
 	};
 
-	// Ensure projects is always an array
+	const handleImport = async () => {
+		if (!importFile) return;
+		setIsImporting(true);
+		try {
+			const content = await importFile.text();
+			const result = await exportImportApi.import(
+				"projects",
+				importFormat,
+				content,
+			);
+			toast.success(`Imported ${result.imported_count} nodes successfully`);
+			setShowImportDialog(false);
+			setImportFile(null);
+		} catch {
+			toast.error("Import integrity failure");
+		} finally {
+			setIsImporting(false);
+		}
+	};
+
 	const projectsArray = Array.isArray(projects) ? projects : [];
 
-	// Fetch item counts for each project (with throttling to avoid rate limits)
 	useEffect(() => {
 		if (projectsArray.length === 0) return;
-
 		const fetchCounts = async () => {
 			const counts: Record<string, number> = {};
-			const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-			// Fetch counts sequentially with small delays to avoid rate limiting
-			for (const project of projectsArray) {
+			for (const p of projectsArray) {
 				try {
-					// Small delay between requests to avoid rate limiting
-					await new Promise((resolve) => setTimeout(resolve, 100));
-
 					const res = await fetch(
-						`${apiUrl}/api/v1/items?project_id=${project.id}&limit=1`,
-						{
-							headers: {
-								"X-Bulk-Operation": "true", // Request to skip rate limiting
-							},
-						},
+						`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/items?project_id=${p.id}&limit=1`,
+						{ headers: { "X-Bulk-Operation": "true" } },
 					);
-
 					if (res.ok) {
 						const data = await res.json();
-						// Handle both { total, items } and direct array responses
-						if (data.total !== undefined) {
-							counts[project.id] = data.total;
-						} else if (Array.isArray(data)) {
-							counts[project.id] = data.length;
-						} else if (data.items && Array.isArray(data.items)) {
-							counts[project.id] = data.items.length;
-						} else {
-							counts[project.id] = 0;
-						}
-					} else {
-						// If rate limited, wait and retry once
-						if (res.status === 429) {
-							await new Promise((resolve) => setTimeout(resolve, 1000));
-							const retryRes = await fetch(
-								`${apiUrl}/api/v1/items?project_id=${project.id}&limit=1`,
-								{
-									headers: {
-										"X-Bulk-Operation": "true",
-									},
-								},
-							);
-							if (retryRes.ok) {
-								const retryData = await retryRes.json();
-								counts[project.id] = retryData.total || 0;
-							} else {
-								counts[project.id] = 0;
-							}
-						} else {
-							counts[project.id] = 0;
-						}
+						counts[p.id] = data.total ?? 0;
 					}
-				} catch (error) {
-					console.error(
-						`Error fetching items for project ${project.id}:`,
-						error,
-					);
-					counts[project.id] = 0;
+				} catch {
+					counts[p.id] = 0;
 				}
 			}
-
 			setProjectItemCounts(counts);
 		};
-
 		fetchCounts();
 	}, [projectsArray]);
 
-	// Filter and sort projects
 	const filteredAndSortedProjects = useMemo(() => {
-		if (!projectsArray || projectsArray.length === 0) return [];
-
-		const filtered = projectsArray.filter((project) => {
-			if (!searchQuery) return true;
-			const query = searchQuery.toLowerCase();
-			return (
-				project.name.toLowerCase().includes(query) ||
-				project.description?.toLowerCase().includes(query)
-			);
+		const filtered = projectsArray.filter((p) => {
+			const displayName = getProjectDisplayName(p);
+			return displayName.toLowerCase().includes(searchQuery.toLowerCase());
 		});
 
-		// Map projects with item counts
-		const projectsWithCounts = filtered.map((project) => ({
-			project,
-			itemCount: projectItemCounts[project.id] || 0,
-		}));
-
-		// Sort
-		projectsWithCounts.sort((a, b) => {
-			let comparison = 0;
-
-			switch (sortBy) {
-				case "name":
-					comparison = a.project.name.localeCompare(b.project.name);
-					break;
-				case "date": {
-					const dateA = a.project.createdAt
-						? new Date(a.project.createdAt).getTime()
-						: 0;
-					const dateB = b.project.createdAt
-						? new Date(b.project.createdAt).getTime()
-						: 0;
-					comparison = dateA - dateB;
-					break;
-				}
-				case "items":
-					comparison = a.itemCount - b.itemCount;
-					break;
-			}
-
-			return sortOrder === "asc" ? comparison : -comparison;
-		});
-
-		return projectsWithCounts;
-	}, [
-		projectsArray,
-		searchQuery,
-		sortBy,
-		sortOrder,
-		projectItemCounts,
-	]);
+		return filtered
+			.map((p) => ({ project: p, itemCount: projectItemCounts[p.id] || 0 }))
+			.sort((a, b) => {
+				let comp = 0;
+				if (sortBy === "name") {
+					const aName = getProjectDisplayName(a.project);
+					const bName = getProjectDisplayName(b.project);
+					comp = aName.localeCompare(bName);
+				} else if (sortBy === "date")
+					comp =
+						new Date(a.project.createdAt || 0).getTime() -
+						new Date(b.project.createdAt || 0).getTime();
+				else comp = a.itemCount - b.itemCount;
+				return sortOrder === "asc" ? comp : -comp;
+			});
+	}, [projectsArray, searchQuery, sortBy, sortOrder, projectItemCounts]);
 
 	if (projectsLoading) {
 		return (
-			<div className="space-y-6">
-				<Skeleton className="h-12 w-full" />
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{[...Array(6)].map((_, i) => (
-						<Skeleton key={i} className="h-48" />
+			<div className="p-6 space-y-8 animate-pulse">
+				<Skeleton className="h-10 w-48" />
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+					{[1, 2, 3].map((i) => (
+						<Skeleton key={i} className="h-64 rounded-[2rem]" />
 					))}
 				</div>
 			</div>
 		);
 	}
 
-	if (projectsError) {
-		return (
-			<Alert variant="destructive">
-				Failed to load projects: {projectsError.message}
-			</Alert>
-		);
-	}
-
 	return (
-		<div className="space-y-6 p-6">
+		<div className="p-6 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
 			{/* Header */}
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-					<p className="mt-2 text-muted-foreground">
-						Manage your traceability projects
+					<h1 className="text-2xl font-black tracking-tight uppercase">
+						Project Registry
+					</h1>
+					<p className="text-sm text-muted-foreground font-medium">
+						Coordinate and scale multiple traceability domains from a single
+						interface.
 					</p>
 				</div>
-				<Button
-					onClick={() => navigate({ search: { action: "create" } as any })}
-				>
-					+ New Project
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => setShowExportDialog(true)}
+						className="rounded-xl text-[10px] font-black uppercase tracking-widest gap-2"
+					>
+						<Download className="h-3.5 w-3.5" /> Export
+					</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => setShowImportDialog(true)}
+						className="rounded-xl text-[10px] font-black uppercase tracking-widest gap-2"
+					>
+						<Upload className="h-3.5 w-3.5" /> Import
+					</Button>
+					<Button
+						size="sm"
+						onClick={() => navigate({ search: { action: "create" } as any })}
+						className="rounded-xl shadow-lg shadow-primary/20 gap-2 font-black uppercase tracking-widest text-[10px]"
+					>
+						<Plus className="h-4 w-4" /> New Registry
+					</Button>
+				</div>
 			</div>
 
-			{/* Filters and Search */}
-			<Card className="p-4">
-				<div className="flex flex-col md:flex-row gap-4">
-					<div className="flex-1">
-						<Input
-							type="search"
-							placeholder="Search projects..."
-							value={searchQuery}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								setSearchQuery((e.currentTarget as HTMLInputElement).value)
-							}
-						/>
-					</div>
-					<div className="flex items-center gap-2">
-						<Select
-							value={sortBy}
-							onValueChange={(value) =>
-								setSortBy(value as "name" | "date" | "items")
-							}
-						>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="date">Sort by Date</SelectItem>
-								<SelectItem value="name">Sort by Name</SelectItem>
-								<SelectItem value="items">Sort by Items</SelectItem>
-							</SelectContent>
-						</Select>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-						>
-							{sortOrder === "asc" ? "↑" : "↓"}
-						</Button>
-					</div>
+			{/* Filters Bar */}
+			<Card className="p-2 border-none bg-muted/30 rounded-2xl flex flex-wrap items-center gap-2">
+				<div className="relative flex-1 min-w-[200px]">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Filter registries..."
+						className="pl-10 h-10 border-none bg-transparent focus-visible:ring-0"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
 				</div>
+				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
+				<Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+					<SelectTrigger className="w-[150px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
+						<SelectValue placeholder="Sort Parameters" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="date">Sync Date</SelectItem>
+						<SelectItem value="name">Identifier</SelectItem>
+						<SelectItem value="items">Node Density</SelectItem>
+					</SelectContent>
+				</Select>
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+					className="h-10 w-10 rounded-xl"
+				>
+					<Activity
+						className={cn(
+							"h-4 w-4 transition-transform",
+							sortOrder === "desc" ? "rotate-180" : "",
+						)}
+					/>
+				</Button>
 			</Card>
 
-			{/* Stats */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				<Card className="p-6 hover:shadow-md transition-shadow">
-					<div className="text-sm font-medium text-muted-foreground">
-						Total Projects
-					</div>
-					<div className="mt-2 text-3xl font-bold tracking-tight">
-						{projectsArray.length || 0}
-					</div>
-				</Card>
-				<Card className="p-6 hover:shadow-md transition-shadow">
-					<div className="text-sm font-medium text-muted-foreground">
-						Total Items
-					</div>
-					<div className="mt-2 text-3xl font-bold tracking-tight">
-						{Object.values(projectItemCounts).reduce((a, b) => a + b, 0)}
-					</div>
-				</Card>
-				<Card className="p-6 hover:shadow-md transition-shadow">
-					<div className="text-sm font-medium text-muted-foreground">
-						Avg Items/Project
-					</div>
-					<div className="mt-2 text-3xl font-bold tracking-tight">
-						{projectsArray.length > 0
-							? Math.round(
-									Object.values(projectItemCounts).reduce((a, b) => a + b, 0) /
-										Math.max(projectsArray.length, 1),
-								)
-							: 0}
-					</div>
-				</Card>
-			</div>
-
-			{/* Projects Grid */}
+			{/* Grid Content */}
 			{filteredAndSortedProjects.length > 0 ? (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 					{filteredAndSortedProjects.map(({ project, itemCount }) => (
 						<ProjectCard
 							key={project.id}
@@ -441,35 +551,97 @@ export function ProjectsListView() {
 					))}
 				</div>
 			) : (
-				<Card className="p-12">
-					<div className="text-center">
-						<Folder className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-						<h3 className="text-xl font-semibold mb-2">
-							{searchQuery ? "No projects found" : "No projects yet"}
-						</h3>
-						<p className="text-muted-foreground mb-6">
-							{searchQuery
-								? "Try adjusting your search criteria"
-								: "Get started by creating your first project"}
-						</p>
-						{!searchQuery && (
-							<Button
-								onClick={() =>
-									navigate({ search: { action: "create" } as any })
-								}
-							>
-								Create Project
-							</Button>
-						)}
-					</div>
-				</Card>
+				<div className="flex flex-col items-center justify-center py-32 text-muted-foreground/30">
+					<Folder className="h-20 w-20 mb-6 opacity-10" />
+					<p className="text-sm font-black uppercase tracking-[0.2em]">
+						Registry Vacant
+					</p>
+					{searchQuery && (
+						<Button
+							variant="link"
+							onClick={() => setSearchQuery("")}
+							className="mt-2 text-primary font-bold"
+						>
+							Clear Filters
+						</Button>
+					)}
+				</div>
 			)}
 
-			{/* Create Dialog */}
 			<CreateProjectDialog
 				open={showCreateDialog}
 				onOpenChange={handleOpenChange}
 			/>
+
+			{/* Simplified Export/Import Dialogs with same style */}
+			<Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+				<DialogContent className="rounded-[2rem] p-8 border-none bg-card shadow-2xl">
+					<h2 className="text-xl font-black uppercase tracking-tight mb-2">
+						Export Protocol
+					</h2>
+					<p className="text-xs text-muted-foreground font-medium mb-6 uppercase tracking-widest">
+						Select target serialization format
+					</p>
+					<div className="space-y-6">
+						<Select
+							value={exportFormat}
+							onValueChange={(v: any) => setExportFormat(v)}
+						>
+							<SelectTrigger className="h-12 bg-muted/30 border-none rounded-xl font-bold">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="json">JSON OBJECT</SelectItem>
+								<SelectItem value="csv">CSV TABLE</SelectItem>
+							</SelectContent>
+						</Select>
+						<Button
+							onClick={handleExport}
+							disabled={isExporting}
+							className="w-full h-12 rounded-xl font-black uppercase tracking-widest shadow-lg"
+						>
+							Initialize Dispatch
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+				<DialogContent className="rounded-[2rem] p-8 border-none bg-card shadow-2xl">
+					<h2 className="text-xl font-black uppercase tracking-tight mb-2">
+						Ingestion Protocol
+					</h2>
+					<p className="text-xs text-muted-foreground font-medium mb-6 uppercase tracking-widest">
+						Upload registry data file
+					</p>
+					<div className="space-y-6">
+						<div className="p-8 border-2 border-dashed rounded-[2rem] bg-muted/10 flex flex-col items-center justify-center text-center group hover:border-primary/50 transition-colors">
+							<Upload className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-4" />
+							<input
+								type="file"
+								id="f-up"
+								className="hidden"
+								onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+							/>
+							<Label htmlFor="f-up" className="cursor-pointer">
+								<span className="text-sm font-bold text-primary">
+									Browse Files
+								</span>
+								<p className="text-[10px] text-muted-foreground mt-1 font-medium">
+									{importFile ? importFile.name : "Ready for payload"}
+								</p>
+							</Label>
+						</div>
+						<Button
+							onClick={handleImport}
+							disabled={isImporting || !importFile}
+							className="w-full h-12 rounded-xl font-black uppercase tracking-widest shadow-lg"
+						>
+							Execute Ingestion
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

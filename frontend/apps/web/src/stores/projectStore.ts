@@ -42,6 +42,7 @@ interface ProjectState {
 	// Actions
 	setCurrentProject: (project: Project | null) => void;
 	addRecentProject: (projectId: string) => void;
+	setRecentProjects: (projectIds: string[]) => void;
 	getProjectSettings: (projectId: string) => any;
 	updateProjectSettings: (
 		projectId: string,
@@ -80,6 +81,11 @@ export const useProjectStore = create<ProjectState>()(
 					return {
 						recentProjects: [projectId, ...filtered].slice(0, 10), // Keep last 10
 					};
+				}),
+
+			setRecentProjects: (projectIds) =>
+				set({
+					recentProjects: projectIds.slice(0, 10), // Keep last 10
 				}),
 
 			getProjectSettings: (projectId) => {

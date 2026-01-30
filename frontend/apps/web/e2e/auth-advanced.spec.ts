@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * Advanced Authentication E2E Tests

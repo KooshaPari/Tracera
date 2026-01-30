@@ -28,6 +28,10 @@ dev: ## Start development environment with Docker Compose
 	@echo '  Redis UI: http://localhost:8082'
 	@echo '  Grafana:  http://localhost:3000'
 
+dev-backend: ## Start backend server with hot reload (Python/FastAPI)
+	@echo '$(GREEN)Starting backend server with hot reload...$(NC)'
+	@bash scripts/dev-backend.sh
+
 dev-logs: ## Follow development logs
 	docker-compose -f docker-compose.yml -f docker-compose.dev.yml logs -f
 

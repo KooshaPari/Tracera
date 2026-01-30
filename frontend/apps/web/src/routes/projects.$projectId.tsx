@@ -1,10 +1,21 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	useParams,
+	Outlet,
+	useLocation,
+} from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
-import { ProjectDetailView } from "@/views/ProjectDetailView";
+
+const ProjectDetailView = lazy(() =>
+	import("@/views/ProjectDetailView").then((m) => ({
+		default: m.ProjectDetailView,
+	})),
+);
 
 export const Route = createFileRoute("/projects/$projectId")({
 	component: ProjectDetailComponent,
-	loader: async ({ params }) => {
+	loader: async ({ params }: { params: { projectId: string } }) => {
 		// ProjectDetailView fetches its own data
 		// Don't throw errors here - let ProjectDetailView handle them
 		return { projectId: params.projectId };
@@ -13,10 +24,29 @@ export const Route = createFileRoute("/projects/$projectId")({
 });
 
 function ProjectDetailComponent() {
-	// Wrap in ErrorBoundary to catch React Query errors before they reach route boundary
+	const params = Route.useParams();
+	const location = useLocation();
+
+	// Check if we are deeper than the project root (i.e. showing a child route)
+	const currentPath = location.pathname.replace(/\/$/, "");
+	const rootPath = `/projects/${params.projectId}`;
+	const isChildRoute = currentPath !== rootPath;
+
 	return (
 		<ErrorBoundary>
-			<ProjectDetailView />
+			{isChildRoute ? (
+				<Outlet />
+			) : (
+				<Suspense
+					fallback={
+						<div className="flex items-center justify-center h-64">
+							Loading project...
+						</div>
+					}
+				>
+					<ProjectDetailView />
+				</Suspense>
+			)}
 		</ErrorBoundary>
 	);
 }

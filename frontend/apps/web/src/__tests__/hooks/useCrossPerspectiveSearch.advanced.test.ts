@@ -132,11 +132,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			// Fill cache with many entries
 			act(() => {
 				for (let i = 0; i < 55; i++) {
-					result.current.performSearch(
-						mockItems,
-						mockLinks,
-						`query${i}`,
-					);
+					result.current.performSearch(mockItems, mockLinks, `query${i}`);
 				}
 			});
 
@@ -331,10 +327,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
 			act(() => {
-				const suggestions = result.current.getSuggestions(
-					mockItems,
-					"auth",
-				);
+				const suggestions = result.current.getSuggestions(mockItems, "auth");
 				expect(suggestions).toContain("Authentication System");
 			});
 		});
@@ -343,10 +336,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
 			act(() => {
-				const suggestions = result.current.getSuggestions(
-					mockItems,
-					"api",
-				);
+				const suggestions = result.current.getSuggestions(mockItems, "api");
 				expect(suggestions).toContain("API");
 			});
 		});
@@ -371,11 +361,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
 			act(() => {
-				const suggestions = result.current.getSuggestions(
-					mockItems,
-					"",
-					3,
-				);
+				const suggestions = result.current.getSuggestions(mockItems, "", 3);
 				expect(suggestions.length).toBeLessThanOrEqual(3);
 			});
 		});
@@ -384,10 +370,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
 			act(() => {
-				const suggestions = result.current.getSuggestions(
-					mockItems,
-					"",
-				);
+				const suggestions = result.current.getSuggestions(mockItems, "");
 				expect(suggestions).toHaveLength(0);
 			});
 		});
@@ -601,9 +584,9 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 				filters,
 			);
 
-			expect(results.every((r) =>
-				filters.perspectives!.includes(r.perspective),
-			)).toBe(true);
+			expect(
+				results.every((r) => filters.perspectives!.includes(r.perspective)),
+			).toBe(true);
 		});
 
 		it("should apply multiple filters together", () => {
@@ -655,9 +638,7 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 				for (const result of group.results) {
 					if (result.equivalences.length > 1) {
 						for (let i = 0; i < result.equivalences.length - 1; i++) {
-							expect(
-								result.equivalences[i].confidence,
-							).toBeGreaterThanOrEqual(
+							expect(result.equivalences[i].confidence).toBeGreaterThanOrEqual(
 								result.equivalences[i + 1].confidence,
 							);
 						}

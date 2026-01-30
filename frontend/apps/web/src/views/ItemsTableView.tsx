@@ -1,21 +1,35 @@
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import type { ItemStatus, Priority } from "@tracertm/types";
-import { Alert } from "@tracertm/ui/components/Alert";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Input } from "@tracertm/ui/components/Input";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { ItemStatus, Priority, ViewType } from "@tracertm/types";
 import {
+	Badge,
+	Button,
+	Card,
+	Input,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@tracertm/ui/components/Select";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import { ArrowDown, ArrowUp, ArrowUpDown, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+	Skeleton,
+} from "@tracertm/ui";
+import {
+	ArrowDown,
+	ArrowUp,
+	X,
+	Plus,
+	Search,
+	Trash2,
+	ExternalLink,
+	Filter,
+	Activity,
+	CheckCircle2,
+	Clock,
+	AlertCircle,
+	Terminal,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useCallback, useEffect, useMemo, useState, useRef, memo } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
 	Table,
 	TableBody,
@@ -25,528 +39,602 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useDeleteItem, useItems, useUpdateItem } from "../hooks/useItems";
+import { useCreateItem, useDeleteItem, useItems } from "../hooks/useItems";
 import { useProjects } from "../hooks/useProjects";
 
-interface TableColumn {
-	id: string;
-	header: string;
-	width?: string;
-	sortable?: boolean;
-}
-
-const columns: TableColumn[] = [
-	{ id: "select", header: "", width: "w-12" },
-	{ id: "title", header: "Title", sortable: true },
-	{ id: "type", header: "Type", width: "w-32", sortable: true },
-	{ id: "status", header: "Status", width: "w-32", sortable: true },
-	{ id: "priority", header: "Priority", width: "w-24", sortable: true },
-	{ id: "owner", header: "Owner", width: "w-32", sortable: true },
-	{ id: "created", header: "Created", width: "w-32", sortable: true },
-	{ id: "actions", header: "", width: "w-24" },
-];
-
-function getStatusColor(status: ItemStatus): string {
-	switch (status) {
-		case "done":
-			return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20";
-		case "in_progress":
-			return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20";
-		case "blocked":
-			return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
-		default:
-			return "bg-muted text-muted-foreground";
-	}
-}
-
-function getPriorityColor(priority?: Priority): string {
-	switch (priority) {
-		case "critical":
-			return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
-		case "high":
-			return "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20";
-		case "medium":
-			return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20";
-		case "low":
-			return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20";
-		default:
-			return "bg-muted text-muted-foreground";
-	}
-}
-
-interface BulkActionsBarProps {
-	selectedCount: number;
-	onClearSelection: () => void;
-	onBulkDelete: () => void;
-	onBulkStatusChange: (status: ItemStatus) => void;
-}
-
-function BulkActionsBar({
-	selectedCount,
-	onClearSelection,
-	onBulkDelete,
-	onBulkStatusChange,
-}: BulkActionsBarProps) {
+function getStatusBadge(status: ItemStatus) {
+	const config = {
+		done: {
+			color: "bg-green-500/10 text-green-600 border-green-500/20",
+			icon: CheckCircle2,
+		},
+		in_progress: {
+			color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+			icon: Clock,
+		},
+		blocked: {
+			color: "bg-red-500/10 text-red-600 border-red-500/20",
+			icon: AlertCircle,
+		},
+		todo: { color: "bg-muted text-muted-foreground", icon: Terminal },
+		cancelled: {
+			color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+			icon: X,
+		},
+	};
+	const c = config[status] || config.todo;
 	return (
-		<Card className="border-primary/20 bg-primary/5 p-4">
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<Badge variant="secondary" className="px-3 py-1">
-						{selectedCount} item{selectedCount !== 1 ? "s" : ""} selected
-					</Badge>
-					<Button variant="ghost" size="sm" onClick={onClearSelection}>
-						<X className="mr-2 h-4 w-4" />
-						Clear
-					</Button>
-				</div>
-				<div className="flex items-center gap-2">
-					<Select
-						onValueChange={(value) => onBulkStatusChange(value as ItemStatus)}
-					>
-						<SelectTrigger className="w-[180px]">
-							<SelectValue placeholder="Change Status..." />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="todo">To Do</SelectItem>
-							<SelectItem value="in_progress">In Progress</SelectItem>
-							<SelectItem value="done">Done</SelectItem>
-							<SelectItem value="blocked">Blocked</SelectItem>
-						</SelectContent>
-					</Select>
-					<Button variant="destructive" size="sm" onClick={onBulkDelete}>
-						Delete
-					</Button>
-				</div>
-			</div>
-		</Card>
+		<Badge
+			className={cn(
+				"text-[9px] font-black uppercase tracking-tighter gap-1 border",
+				c.color,
+			)}
+		>
+			<c.icon className="h-2.5 w-2.5" />
+			{status.replace("_", " ")}
+		</Badge>
 	);
 }
 
-export function ItemsTableView() {
+function getPriorityDot(priority?: Priority) {
+	const colors = {
+		critical: "bg-red-500",
+		high: "bg-orange-500",
+		medium: "bg-blue-500",
+		low: "bg-green-500",
+	};
+	return (
+		<div
+			className={cn("h-1.5 w-1.5 rounded-full", colors[priority || "medium"])}
+		/>
+	);
+}
+
+// Memoized row component for optimal rendering performance
+interface VirtualTableRowProps {
+	item: any;
+	onDelete: (id: string) => void;
+	onNavigate: (path: string) => void;
+}
+
+const VirtualTableRow = memo(
+	({ item, onDelete, onNavigate }: VirtualTableRowProps) => {
+		const handleNavigate = useCallback(() => {
+			onNavigate(`/items/${item.id}`);
+		}, [item.id, onNavigate]);
+
+		const handleDelete = useCallback(() => {
+			onDelete(item.id);
+		}, [item.id, onDelete]);
+
+		return (
+			<TableRow className="group border-b border-border/30 hover:bg-muted/30 transition-colors">
+				<TableCell className="px-6 py-4">
+					<button
+						onClick={handleNavigate}
+						className="block group/link w-full text-left"
+					>
+						<div className="font-bold text-sm group-hover/link:text-primary transition-colors truncate">
+							{item.title}
+						</div>
+						<div className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">
+							{item.id.slice(0, 12)}
+						</div>
+					</button>
+				</TableCell>
+				<TableCell>
+					<Badge
+						variant="outline"
+						className="text-[8px] font-black uppercase tracking-tighter px-1.5 h-4"
+					>
+						{item.type}
+					</Badge>
+				</TableCell>
+				<TableCell>{getStatusBadge(item.status)}</TableCell>
+				<TableCell>
+					<div className="flex items-center gap-2">
+						{getPriorityDot(item.priority)}
+						<span className="text-[10px] font-bold uppercase text-muted-foreground">
+							{item.priority || "medium"}
+						</span>
+					</div>
+				</TableCell>
+				<TableCell>
+					<div className="flex items-center gap-2">
+						<div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-black uppercase">
+							{item.owner?.charAt(0) || "?"}
+						</div>
+						<span className="text-[10px] font-bold uppercase text-muted-foreground">
+							{item.owner || "Unassigned"}
+						</span>
+					</div>
+				</TableCell>
+				<TableCell className="text-right px-6">
+					<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 rounded-lg"
+							onClick={handleNavigate}
+						>
+							<ExternalLink className="h-3.5 w-3.5" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
+							onClick={handleDelete}
+						>
+							<Trash2 className="h-3.5 w-3.5" />
+						</Button>
+					</div>
+				</TableCell>
+			</TableRow>
+		);
+	},
+	(prev, next) => {
+		// Custom comparison for memoization
+		// Return true if props are equal (skip re-render), false if different
+		return (
+			prev.item.id === next.item.id &&
+			prev.item.title === next.item.title &&
+			prev.item.type === next.item.type &&
+			prev.item.status === next.item.status &&
+			prev.item.priority === next.item.priority &&
+			prev.item.owner === next.item.owner
+		);
+	},
+);
+
+interface ItemsTableViewProps {
+	projectId?: string;
+	view?: ViewType;
+	type?: string;
+}
+
+export function ItemsTableView({
+	projectId,
+	view,
+	type,
+}: ItemsTableViewProps = {}) {
 	const navigate = useNavigate();
 	const searchParams = useSearch({ strict: false }) as any;
-	const projectFilter = searchParams?.project || undefined;
-	const typeFilter = searchParams?.type || undefined;
-	const statusFilter = searchParams?.status || undefined;
+	const projectFilter = searchParams?.project;
+	const typeFilter = searchParams?.type;
+	const actionParam = searchParams?.action;
 
-	const updateSearchParams = (updates: Record<string, string | undefined>) => {
-		navigate({
-			search: (prev: any) => {
-				const newSearch = { ...(prev || {}), ...updates };
-				return newSearch as any;
-			},
-		} as any);
-	};
+	const effectiveProjectId = projectId || projectFilter;
+	const effectiveTypeFilter = type || typeFilter;
 
-	const {
-		data: itemsData,
-		isLoading,
-		error,
-	} = useItems({ projectId: projectFilter });
-	// Extract items array from new hook structure - itemsData may be paginated
+	const { data: itemsData, isLoading } = useItems({
+		projectId: effectiveProjectId,
+		view,
+	});
 	const items = itemsData?.items || [];
 	const { data: projects } = useProjects();
-	// Ensure projects is always an array
 	const projectsArray = Array.isArray(projects) ? projects : [];
-	const updateItem = useUpdateItem();
 	const deleteItem = useDeleteItem();
+	const createItem = useCreateItem();
+
+	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [newTitle, setNewTitle] = useState("");
+	const [newType, setNewType] = useState(type || "feature");
+	const [newPriority, setNewPriority] = useState<Priority>("medium");
+	const [newStatus, setNewStatus] = useState<ItemStatus>("todo");
 
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 	const [sortColumn, setSortColumn] = useState<string>("created");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 20;
 
-	// Filter and sort items
+	// Virtual scroll container ref
+	const parentRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (actionParam === "create") {
+			setShowCreateModal(true);
+		}
+	}, [actionParam]);
+
+	const closeCreateModal = useCallback(() => {
+		setShowCreateModal(false);
+		navigate({
+			search: (prev: any) => {
+				const { action, ...rest } = prev || {};
+				return rest;
+			},
+		} as any);
+	}, [navigate]);
+
+	const handleCreate = useCallback(async () => {
+		if (!effectiveProjectId) {
+			toast.error("Select a project before creating a node.");
+			return;
+		}
+		if (!newTitle.trim()) {
+			toast.error("Title is required.");
+			return;
+		}
+		try {
+			await createItem.mutateAsync({
+				projectId: effectiveProjectId,
+				view: (view as any) || "feature",
+				type: newType || (view as any) || "feature",
+				title: newTitle.trim(),
+				status: newStatus,
+				priority: newPriority,
+			});
+			toast.success("Node created");
+			setNewTitle("");
+			setNewType(type || "feature");
+			closeCreateModal();
+		} catch {
+			toast.error("Failed to create node");
+		}
+	}, [
+		effectiveProjectId,
+		newTitle,
+		newType,
+		newStatus,
+		newPriority,
+		view,
+		type,
+		createItem,
+		closeCreateModal,
+	]);
+
 	const filteredAndSortedItems = useMemo(() => {
-		if (!items) return [];
+		const filtered = items.filter((i) => {
+			const matchesType =
+				!effectiveTypeFilter || i.type === effectiveTypeFilter;
+			const matchesQuery =
+				i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				i.id.toLowerCase().includes(searchQuery.toLowerCase());
+			return matchesType && matchesQuery;
+		});
 
-		const filtered = items.filter((item) => {
-			if (typeFilter && item.type !== typeFilter) return false;
-			if (statusFilter && item.status !== statusFilter) return false;
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
+		return filtered.sort((a, b) => {
+			const dir = sortOrder === "asc" ? 1 : -1;
+			if (sortColumn === "title") return a.title.localeCompare(b.title) * dir;
+			if (sortColumn === "created")
 				return (
-					item.title.toLowerCase().includes(query) ||
-					item.description?.toLowerCase().includes(query) ||
-					item.type.toLowerCase().includes(query)
+					(new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
+					dir
 				);
-			}
-			return true;
+			return 0;
 		});
+	}, [items, effectiveTypeFilter, searchQuery, sortColumn, sortOrder]);
 
-		filtered.sort((a, b) => {
-			let comparison = 0;
+	// Virtual scroll setup
+	const rowVirtualizer = useVirtualizer({
+		count: filteredAndSortedItems.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize: () => 68, // Estimated row height (TableRow with padding)
+		overscan: 10, // Render 10 extra rows outside viewport for smoother scrolling
+	});
 
-			switch (sortColumn) {
-				case "title":
-					comparison = a.title.localeCompare(b.title);
-					break;
-				case "type":
-					comparison = a.type.localeCompare(b.type);
-					break;
-				case "status":
-					comparison = a.status.localeCompare(b.status);
-					break;
-				case "priority":
-					comparison = (a.priority || "").localeCompare(b.priority || "");
-					break;
-				case "owner":
-					comparison = (a.owner || "").localeCompare(b.owner || "");
-					break;
-				case "created": {
-					const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-					const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-					comparison = dateA - dateB;
-					break;
-				}
+	const handleDelete = useCallback(
+		async (id: string) => {
+			try {
+				await deleteItem.mutateAsync(id);
+				toast.success("Node purged from registry");
+			} catch {
+				toast.error("Purge failure");
 			}
-
-			return sortOrder === "asc" ? comparison : -comparison;
-		});
-
-		return filtered;
-	}, [items, typeFilter, statusFilter, searchQuery, sortColumn, sortOrder]);
-
-	// Pagination
-	const totalPages = Math.ceil(filteredAndSortedItems.length / pageSize);
-	const paginatedItems = filteredAndSortedItems.slice(
-		(currentPage - 1) * pageSize,
-		currentPage * pageSize,
+		},
+		[deleteItem],
 	);
-
-	const handleSort = (column: string) => {
-		if (sortColumn === column) {
-			setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-		} else {
-			setSortColumn(column);
-			setSortOrder("asc");
-		}
-	};
-
-	const handleSelectAll = (checked: boolean) => {
-		if (checked) {
-			setSelectedItems(new Set(paginatedItems.map((item) => item.id)));
-		} else {
-			setSelectedItems(new Set());
-		}
-	};
-
-	const handleSelectItem = (id: string, checked: boolean) => {
-		const newSelection = new Set(selectedItems);
-		if (checked) {
-			newSelection.add(id);
-		} else {
-			newSelection.delete(id);
-		}
-		setSelectedItems(newSelection);
-	};
-
-	const handleBulkDelete = async () => {
-		if (!confirm(`Delete ${selectedItems.size} items?`)) return;
-
-		for (const id of selectedItems) {
-			await deleteItem.mutateAsync(id);
-		}
-		setSelectedItems(new Set());
-	};
-
-	const handleBulkStatusChange = async (status: ItemStatus) => {
-		if (!status) return;
-
-		for (const id of selectedItems) {
-			await updateItem.mutateAsync({ id, data: { status } });
-		}
-		setSelectedItems(new Set());
-	};
 
 	if (isLoading) {
 		return (
-			<div className="space-y-6">
-				<Skeleton className="h-12 w-full" />
-				<Skeleton className="h-96" />
+			<div className="p-6 space-y-8 animate-pulse">
+				<Skeleton className="h-10 w-48" />
+				<div className="space-y-4">
+					{[1, 2, 3, 4, 5, 6].map((i) => (
+						<Skeleton key={i} className="h-16 w-full rounded-xl" />
+					))}
+				</div>
 			</div>
 		);
 	}
 
-	if (error) {
-		return (
-			<Alert variant="destructive">Failed to load items: {error.message}</Alert>
-		);
-	}
-
-	const allSelected =
-		paginatedItems.length > 0 &&
-		paginatedItems.every((item) => selectedItems.has(item.id));
-
 	return (
-		<div className="space-y-6">
+		<div className="p-6 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500 pb-20">
 			{/* Header */}
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Items</h1>
-					<p className="mt-2 text-muted-foreground">
-						Manage all project items in table view
+					<h1 className="text-2xl font-black tracking-tight uppercase">
+						Node Registry
+					</h1>
+					<p className="text-sm text-muted-foreground font-medium">
+						Flat-file management of project entities and artifacts.
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
-					<Link to="/items/kanban">
-						<Button variant="outline" size="sm">
-							Kanban View
-						</Button>
-					</Link>
-					<Link to="/items/tree">
-						<Button variant="outline" size="sm">
-							Tree View
-						</Button>
-					</Link>
-					<Link to={`/items?${searchParams}&action=create`}>
-						<Button size="sm">+ New Item</Button>
-					</Link>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							navigate({ to: "/items/kanban", search: searchParams } as any)
+						}
+						className="gap-2 rounded-xl"
+					>
+						<Activity className="h-4 w-4" /> Workflow
+					</Button>
+					<Button
+						size="sm"
+						onClick={() =>
+							navigate({
+								search: (prev: any) => ({ ...prev, action: "create" }),
+							} as any)
+						}
+						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
+					>
+						<Plus className="h-4 w-4" /> New Node
+					</Button>
 				</div>
 			</div>
 
-			{/* Filters */}
-			<Card className="p-4">
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+			{/* Filters Bar */}
+			<Card className="p-2 border-none bg-muted/30 rounded-2xl flex flex-wrap items-center gap-2">
+				<div className="relative flex-1 min-w-[250px]">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<Input
-						type="search"
-						placeholder="Search items..."
+						placeholder="Search identifiers..."
+						className="pl-10 h-10 border-none bg-transparent focus-visible:ring-0"
 						value={searchQuery}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-							setSearchQuery((e.currentTarget as HTMLInputElement).value)
-						}
-						className="w-full"
+						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
-					{projects && (
-						<Select
-							value={projectFilter || "all"}
-							onValueChange={(value) =>
-								updateSearchParams({
-									project: value === "all" ? undefined : value,
-								})
-							}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="All Projects" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All Projects</SelectItem>
-								{projectsArray.map((project) => (
-									<SelectItem key={project.id} value={project.id}>
-										{project.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					)}
+				</div>
+				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
+				{!projectId && (
 					<Select
-						value={typeFilter || "all"}
-						onValueChange={(value) =>
-							updateSearchParams({ type: value === "all" ? undefined : value })
+						value={projectFilter || "all"}
+						onValueChange={(v) =>
+							navigate({
+								search: (prev: any) => ({
+									...prev,
+									project: v === "all" ? undefined : v,
+								}),
+							} as any)
 						}
 					>
-						<SelectTrigger>
+						<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
+							<div className="flex items-center gap-2">
+								<Filter className="h-3.5 w-3.5 text-muted-foreground" />
+								<SelectValue placeholder="All Projects" />
+							</div>
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Global Scope</SelectItem>
+							{projectsArray.map((p) => (
+								<SelectItem key={p.id} value={p.id}>
+									{p.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
+				{!type && (
+					<Select
+						value={effectiveTypeFilter || "all"}
+						onValueChange={(v) =>
+							navigate({
+								search: (prev: any) => ({
+									...prev,
+									type: v === "all" ? undefined : v,
+								}),
+							} as any)
+						}
+					>
+						<SelectTrigger className="w-[140px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
 							<SelectValue placeholder="All Types" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All Types</SelectItem>
-							<SelectItem value="requirement">Requirement</SelectItem>
-							<SelectItem value="feature">Feature</SelectItem>
-							<SelectItem value="test">Test</SelectItem>
-							<SelectItem value="bug">Bug</SelectItem>
+							<SelectItem value="all">Any Type</SelectItem>
+							{["requirement", "feature", "test", "bug", "task"].map((t) => (
+								<SelectItem key={t} value={t} className="capitalize">
+									{t}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
-					<Select
-						value={statusFilter || "all"}
-						onValueChange={(value) =>
-							updateSearchParams({
-								status: value === "all" ? undefined : value,
-							})
-						}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder="All Statuses" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All Statuses</SelectItem>
-							<SelectItem value="todo">To Do</SelectItem>
-							<SelectItem value="in_progress">In Progress</SelectItem>
-							<SelectItem value="done">Done</SelectItem>
-							<SelectItem value="blocked">Blocked</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
+				)}
 			</Card>
 
-			{/* Bulk Actions */}
-			{selectedItems.size > 0 && (
-				<BulkActionsBar
-					selectedCount={selectedItems.size}
-					onClearSelection={() => setSelectedItems(new Set())}
-					onBulkDelete={handleBulkDelete}
-					onBulkStatusChange={handleBulkStatusChange}
-				/>
-			)}
-
-			{/* Table */}
-			<Card>
-				<div className="overflow-x-auto">
+			{/* Table Content with Virtual Scrolling */}
+			<Card className="border-none bg-card/50 shadow-sm rounded-[2rem] overflow-hidden flex flex-col">
+				<div className="overflow-x-auto custom-scrollbar">
 					<Table>
 						<TableHeader>
-							<TableRow>
-								{columns.map((column) => (
-									<TableHead
-										key={column.id}
-										className={cn(
-											column.width,
-											column.id === "select" && "w-12",
-											column.id === "actions" && "w-24",
-										)}
+							<TableRow className="hover:bg-transparent border-b border-border/50">
+								<TableHead className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10">
+									<button
+										onClick={() => {
+											setSortColumn("title");
+											setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+										}}
+										className="flex items-center gap-2"
 									>
-										{column.id === "select" ? (
-											<Checkbox
-												checked={allSelected}
-												onCheckedChange={handleSelectAll}
-												aria-label="Select all"
-											/>
-										) : column.sortable ? (
-											<button
-												onClick={() => handleSort(column.id)}
-												className="flex items-center gap-2 hover:text-foreground transition-colors"
-											>
-												{column.header}
-												{sortColumn === column.id ? (
-													sortOrder === "asc" ? (
-														<ArrowUp className="h-4 w-4 text-foreground" />
-													) : (
-														<ArrowDown className="h-4 w-4 text-foreground" />
-													)
-												) : (
-													<ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-												)}
-											</button>
-										) : (
-											column.header
-										)}
-									</TableHead>
-								))}
+										Node Identifier{" "}
+										{sortColumn === "title" &&
+											(sortOrder === "asc" ? (
+												<ArrowUp className="h-3 w-3" />
+											) : (
+												<ArrowDown className="h-3 w-3" />
+											))}
+									</button>
+								</TableHead>
+								<TableHead className="text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10">
+									Type
+								</TableHead>
+								<TableHead className="text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10">
+									Status
+								</TableHead>
+								<TableHead className="text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10">
+									Priority
+								</TableHead>
+								<TableHead className="text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10">
+									Owner
+								</TableHead>
+								<TableHead className="text-right px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10">
+									Actions
+								</TableHead>
 							</TableRow>
 						</TableHeader>
-						<TableBody>
-							{paginatedItems.length === 0 ? (
-								<TableRow>
-									<TableCell
-										colSpan={columns.length}
-										className="h-24 text-center text-muted-foreground"
-									>
-										No items found
-									</TableCell>
-								</TableRow>
-							) : (
-								paginatedItems.map((item) => (
-									<TableRow key={item.id}>
-										<TableCell>
-											<Checkbox
-												checked={selectedItems.has(item.id)}
-												onCheckedChange={(checked) =>
-													handleSelectItem(item.id, checked as boolean)
-												}
-												aria-label={`Select ${item.title}`}
-											/>
-										</TableCell>
-										<TableCell>
-											<Link
-												to={`/items/${item.id}`}
-												className="font-medium hover:text-primary transition-colors"
-											>
-												{item.title}
-											</Link>
-										</TableCell>
-										<TableCell>
-											<Badge variant="secondary">{item.type}</Badge>
-										</TableCell>
-										<TableCell>
-											<Badge
-												variant="outline"
-												className={cn(
-													"capitalize",
-													getStatusColor(item.status),
-												)}
-											>
-												{item.status.replace("_", " ")}
-											</Badge>
-										</TableCell>
-										<TableCell>
-											{item.priority && (
-												<Badge
-													variant="outline"
-													className={cn(
-														"capitalize",
-														getPriorityColor(item.priority),
-													)}
-												>
-													{item.priority}
-												</Badge>
-											)}
-										</TableCell>
-										<TableCell className="text-muted-foreground">
-											{item.owner || "-"}
-										</TableCell>
-										<TableCell className="text-muted-foreground">
-											{item.createdAt
-												? new Date(item.createdAt).toLocaleDateString()
-												: "N/A"}
-										</TableCell>
-										<TableCell>
-											<Link to={`/items/${item.id}`}>
-												<Button variant="ghost" size="sm">
-													View
-												</Button>
-											</Link>
-										</TableCell>
-									</TableRow>
-								))
-							)}
-						</TableBody>
 					</Table>
 				</div>
 
-				{/* Pagination */}
-				{totalPages > 1 && (
-					<div className="flex flex-col gap-4 border-t px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-						<div className="text-sm text-muted-foreground">
-							Showing {(currentPage - 1) * pageSize + 1} to{" "}
-							{Math.min(currentPage * pageSize, filteredAndSortedItems.length)}{" "}
-							of {filteredAndSortedItems.length} items
+				{/* Virtual scrolling container */}
+				<div
+					ref={parentRef}
+					className="h-[600px] overflow-y-auto overflow-x-hidden custom-scrollbar flex-1"
+				>
+					{filteredAndSortedItems.length > 0 ? (
+						<div
+							style={{
+								height: `${rowVirtualizer.getTotalSize()}px`,
+								width: "100%",
+								position: "relative",
+							}}
+						>
+							{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+								const item = filteredAndSortedItems[virtualRow.index];
+								if (!item) return null;
+
+								return (
+									<div
+										key={item.id}
+										style={{
+											position: "absolute",
+											top: 0,
+											left: 0,
+											width: "100%",
+											height: `${virtualRow.size}px`,
+											transform: `translateY(${virtualRow.start}px)`,
+										}}
+									>
+										<div className="overflow-x-auto custom-scrollbar">
+											<Table>
+												<TableBody>
+													<VirtualTableRow
+														item={item}
+														onDelete={handleDelete}
+														onNavigate={(path: string) =>
+															navigate({ to: path } as any)
+														}
+													/>
+												</TableBody>
+											</Table>
+										</div>
+									</div>
+								);
+							})}
 						</div>
-						<div className="flex items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-								disabled={currentPage === 1}
+					) : (
+						<div className="h-[600px] flex items-center justify-center">
+							<div className="flex flex-col items-center justify-center text-muted-foreground/30">
+								<Terminal className="h-12 w-12 mb-4 opacity-10" />
+								<p className="text-[10px] font-black uppercase tracking-[0.3em]">
+									Registry Vacant
+								</p>
+							</div>
+						</div>
+					)}
+				</div>
+			</Card>
+
+			{showCreateModal && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center">
+					<div
+						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+						onClick={closeCreateModal}
+					/>
+					<div className="relative w-full max-w-lg rounded-xl border bg-background p-6 shadow-2xl">
+						<div className="flex items-center justify-between">
+							<h2 className="text-lg font-semibold">Create Node</h2>
+							<button
+								onClick={closeCreateModal}
+								aria-label="Close dialog"
+								className="rounded-lg p-1 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
 							>
-								Previous
-							</Button>
-							<span className="text-sm text-muted-foreground">
-								Page {currentPage} of {totalPages}
-							</span>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									setCurrentPage((p) => Math.min(totalPages, p + 1))
-								}
-								disabled={currentPage === totalPages}
-							>
-								Next
-							</Button>
+								<X className="h-5 w-5" />
+							</button>
+						</div>
+						<div className="mt-4 space-y-4">
+							<div>
+								<label className="block text-sm font-medium">Title</label>
+								<Input
+									value={newTitle}
+									onChange={(e) => setNewTitle(e.target.value)}
+									placeholder="Enter node title"
+									className="mt-1"
+								/>
+							</div>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<div>
+									<label className="block text-sm font-medium">Type</label>
+									<Input
+										value={newType}
+										onChange={(e) => setNewType(e.target.value)}
+										placeholder="feature, requirement, ui_component..."
+										className="mt-1"
+									/>
+								</div>
+								<div>
+									<label className="block text-sm font-medium">Status</label>
+									<Select
+										value={newStatus}
+										onValueChange={(v) => setNewStatus(v as ItemStatus)}
+									>
+										<SelectTrigger className="mt-1">
+											<SelectValue placeholder="Status" />
+										</SelectTrigger>
+										<SelectContent>
+											{[
+												"todo",
+												"in_progress",
+												"done",
+												"blocked",
+												"cancelled",
+											].map((s) => (
+												<SelectItem key={s} value={s}>
+													{s.replace("_", " ")}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+							<div>
+								<label className="block text-sm font-medium">Priority</label>
+								<Select
+									value={newPriority}
+									onValueChange={(v) => setNewPriority(v as Priority)}
+								>
+									<SelectTrigger className="mt-1">
+										<SelectValue placeholder="Priority" />
+									</SelectTrigger>
+									<SelectContent>
+										{["low", "medium", "high", "critical"].map((p) => (
+											<SelectItem key={p} value={p}>
+												{p}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div className="flex justify-end gap-2 pt-2">
+								<Button variant="ghost" onClick={closeCreateModal}>
+									Cancel
+								</Button>
+								<Button onClick={handleCreate} disabled={createItem.isPending}>
+									{createItem.isPending ? "Creating..." : "Create Node"}
+								</Button>
+							</div>
 						</div>
 					</div>
-				)}
-			</Card>
+				</div>
+			)}
 		</div>
 	);
 }

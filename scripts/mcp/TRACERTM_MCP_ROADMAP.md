@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-A 4-phase plan to build a production-grade TraceRTM MCP server (FastMCP 2.13+) with 21 tools, 10 resources, 8 prompts, and 15 production features.
+A 4-phase plan to build a production-grade TraceRTM MCP server (FastMCP 3.0.0b1) with 21 tools, 10 resources, 8 prompts, and 15 production features.
 
 **Total Effort:** ~73 days  
 **Status:** Phase 1 complete; Phases 2–4 planned
@@ -132,7 +132,7 @@ A 4-phase plan to build a production-grade TraceRTM MCP server (FastMCP 2.13+) w
 ```
 MCP Client (Claude Desktop / droid)
     ↓
-tracertm-mcp (FastMCP 2.13)
+tracertm-mcp (FastMCP 3.0.0b1)
     ├─ Tools (21) – Active operations
     ├─ Resources (10) – Read-only context
     ├─ Prompts (8) – Guided workflows

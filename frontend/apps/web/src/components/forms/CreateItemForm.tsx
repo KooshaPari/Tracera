@@ -86,38 +86,37 @@ export function CreateItemForm({
 	);
 
 	// Focus trap: keep focus within the dialog
-	const handleDialogKeyDown = useCallback(
-		(e: KeyboardEvent) => {
-			if (e.key !== "Tab" || !dialogRef.current) {
-				return;
+	const handleDialogKeyDown = useCallback((e: KeyboardEvent) => {
+		if (e.key !== "Tab" || !dialogRef.current) {
+			return;
+		}
+
+		const focusableElements = dialogRef.current.querySelectorAll(
+			"button, [href], input, select, textarea",
+		);
+		const focusableArray = Array.from(focusableElements);
+
+		if (focusableArray.length === 0) return;
+
+		const firstElement = focusableArray[0] as HTMLElement;
+		const lastElement = focusableArray[
+			focusableArray.length - 1
+		] as HTMLElement;
+
+		if (e.shiftKey) {
+			// Shift+Tab
+			if (document.activeElement === firstElement) {
+				e.preventDefault();
+				lastElement.focus();
 			}
-
-			const focusableElements = dialogRef.current.querySelectorAll(
-				"button, [href], input, select, textarea",
-			);
-			const focusableArray = Array.from(focusableElements);
-
-			if (focusableArray.length === 0) return;
-
-			const firstElement = focusableArray[0] as HTMLElement;
-			const lastElement = focusableArray[focusableArray.length - 1] as HTMLElement;
-
-			if (e.shiftKey) {
-				// Shift+Tab
-				if (document.activeElement === firstElement) {
-					e.preventDefault();
-					lastElement.focus();
-				}
-			} else {
-				// Tab
-				if (document.activeElement === lastElement) {
-					e.preventDefault();
-					firstElement.focus();
-				}
+		} else {
+			// Tab
+			if (document.activeElement === lastElement) {
+				e.preventDefault();
+				firstElement.focus();
 			}
-		},
-		[],
-	);
+		}
+	}, []);
 
 	useEffect(() => {
 		document.addEventListener("keydown", handleKeyDown);
@@ -222,11 +221,11 @@ export function CreateItemForm({
 						</label>
 						<input
 							id="title"
-							name="title"
 							{...register("title")}
 							placeholder="Enter item title"
 							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
 							ref={(el) => {
+								register("title").ref(el);
 								if (el && !firstFocusableRef.current) {
 									firstFocusableRef.current = el;
 								}
@@ -249,7 +248,6 @@ export function CreateItemForm({
 						</label>
 						<textarea
 							id="description"
-							name="description"
 							{...register("description")}
 							rows={3}
 							placeholder="Describe this item..."
@@ -302,7 +300,6 @@ export function CreateItemForm({
 						</label>
 						<input
 							id="owner"
-							name="owner"
 							{...register("owner")}
 							placeholder="Assigned to..."
 							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"

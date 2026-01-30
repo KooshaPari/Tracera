@@ -82,7 +82,7 @@
 - ✅ `rtm config set output_format json` works
 - ✅ `rtm config show` displays current config
 - ✅ Project-specific config overrides global
-- ✅ Config persisted to `~/.config/tracertm/config.yaml`
+- ✅ Config persisted to `~/.tracertm/config.yaml`
 
 **Technical:**
 - Config hierarchy: CLI flags > env vars > project config > global config
@@ -129,7 +129,7 @@
 - Exception hierarchy (TraceRTMError, ValidationError, NotFoundError, etc.)
 - Rich for colored error output
 - Error handling pattern in CLI commands
-- Logging to `~/.config/tracertm/logs/tracertm.log`
+- Logging to `~/.tracertm/logs/tracertm.log`
 - Suggestions in error messages
 
 **FRs:** NFR-U3, NFR-R3

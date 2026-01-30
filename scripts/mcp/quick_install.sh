@@ -18,7 +18,7 @@ echo ""
 
 # Install dependencies
 echo "📦 Installing dependencies..."
-$PYTHON_CMD -m pip install -q fastmcp typer rich pyyaml pydantic
+$PYTHON_CMD -m pip install -q fastmcp==3.0.0b1 mcp==1.25.0 typer rich pyyaml pydantic
 
 echo "✅ Dependencies installed"
 echo ""
@@ -34,9 +34,7 @@ echo ""
 
 # Test
 echo "🧪 Testing..."
-if $PYTHON_CMD -c "from mcp.server.fastmcp import FastMCP" 2>/dev/null; then
-    echo "✅ FastMCP available"
-elif $PYTHON_CMD -c "import fastmcp" 2>/dev/null; then
+if $PYTHON_CMD -c "import fastmcp" 2>/dev/null; then
     echo "✅ FastMCP available"
 else
     echo "⚠️  FastMCP import issue (may still work)"
@@ -51,4 +49,3 @@ echo "✅ Installation complete!"
 echo ""
 echo "Try: ./scripts/mcp/run_bmm.sh status"
 echo "Or:  python scripts/mcp/bmm_cli.py status"
-

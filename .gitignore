@@ -18,10 +18,15 @@ coverage/
 test-results/
 playwright-report/
 
-# Environment
+# Environment - NEVER commit production secrets
 .env
 .env.local
 .env.*.local
+.env.production
+.env.*.production
+backend/.env.production
+*.creds
+*credentials*.json
 
 # Python
 __pycache__/
@@ -41,6 +46,11 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# TraceRTM local-only project metadata
+.trace/.meta/sync.yaml
+.trace/.meta/cache/
+.trace/.meta/cache/**
 
 # Logs
 *.log

@@ -12,14 +12,14 @@
 rtm config init --database-url "sqlite:///./trace.db"
 ```
 **What it does:**
-- Creates `~/.config/tracertm/config.yaml`
+- Creates `~/.tracertm/config.yaml`
 - Sets database connection URL
 - Enables local-first development
 
 **Output:**
 ```
 ✓ Configuration initialized successfully
-Config file: /Users/kooshapari/.config/tracertm/config.yaml
+Config file: ~/.tracertm/config.yaml
 ```
 
 ### 2. Project Initialization ✅

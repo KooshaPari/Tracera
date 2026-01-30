@@ -22,8 +22,8 @@ class ConfigManager:
     Manages TraceRTM configuration with hierarchical precedence.
 
     Configuration locations:
-    - Global: ~/.config/tracertm/config.yaml
-    - Project: ~/.config/tracertm/projects/<project_id>/config.yaml
+    - Global: ~/.tracertm/config.yaml
+    - Project: ~/.tracertm/projects/<project_id>/config.yaml
     """
 
     def __init__(self, config_dir: Path | None = None):
@@ -33,13 +33,36 @@ class ConfigManager:
         Args:
             config_dir: Override default config directory (for testing)
         """
-        if config_dir:
-            self.config_dir = Path(config_dir)
-        else:
-            self.config_dir = Path.home() / ".config" / "tracertm"
-
+        self.config_dir = self._resolve_config_dir(config_dir)
         self.config_path = self.config_dir / "config.yaml"
         self.projects_dir = self.config_dir / "projects"
+
+    def _resolve_config_dir(self, config_dir: Path | None) -> Path:
+        """
+        Resolve the config directory.
+
+        Precedence:
+        1) Explicit config_dir argument (tests/overrides)
+        2) TRACERTM_CONFIG_DIR env var
+        3) ~/.tracertm (preferred)
+        4) Legacy ~/.config/tracertm (fallback if it exists and preferred dir does not)
+        """
+        if config_dir:
+            return Path(config_dir)
+
+        env_dir = os.getenv("TRACERTM_CONFIG_DIR")
+        if env_dir:
+            return Path(env_dir)
+
+        preferred = Path.home() / ".tracertm"
+        legacy = Path.home() / ".config" / "tracertm"
+
+        if preferred.exists():
+            return preferred
+        if legacy.exists() and not preferred.exists():
+            return legacy
+
+        return preferred
 
     def init(self, database_url: str) -> Config:
         """
@@ -148,6 +171,9 @@ class ConfigManager:
         # Validate by creating Config instance
         Config(**config_data)
 
+        # Convert Path objects to strings before saving
+        config_data = self._convert_paths_to_strings(config_data)
+
         # Save
         with open(config_path, "w") as f:
             yaml.safe_dump(config_data, f, default_flow_style=False)
@@ -210,8 +236,28 @@ class ConfigManager:
 
     def _save_config(self, config: Config, path: Path) -> None:
         """Save config to YAML file."""
+        config_dict = config.model_dump()
+        # Convert Path objects to strings for YAML serialization
+        config_dict = self._convert_paths_to_strings(config_dict)
         with open(path, "w") as f:
-            yaml.safe_dump(config.model_dump(), f, default_flow_style=False)
+            yaml.safe_dump(config_dict, f, default_flow_style=False)
+    
+    def _convert_paths_to_strings(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Recursively convert Path objects to strings in a dictionary."""
+        result = {}
+        for key, value in data.items():
+            if isinstance(value, Path):
+                result[key] = str(value)
+            elif isinstance(value, dict):
+                result[key] = self._convert_paths_to_strings(value)
+            elif isinstance(value, list):
+                result[key] = [
+                    str(item) if isinstance(item, Path) else item
+                    for item in value
+                ]
+            else:
+                result[key] = value
+        return result
 
     def _load_from_env(self) -> dict[str, Any]:
         """Load configuration from environment variables."""

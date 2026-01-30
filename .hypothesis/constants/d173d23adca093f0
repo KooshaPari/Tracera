@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/example_with_helper.py
+# hypothesis_version: 6.148.7
+
+['--description', '--limit', '--priority', '--status', '--type', '-d', '-l', '-p', '-s', '-t', 'Description', 'Item ID to display', 'Item title', 'Item type', 'Item type to list', 'Priority', 'Status', 'blue', 'compare', 'create', 'epic', 'list', 'medium', 'show', 'sync-status', 'todo']

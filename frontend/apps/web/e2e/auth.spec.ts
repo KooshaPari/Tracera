@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * Authentication E2E Tests
@@ -25,13 +25,19 @@ test.describe("Authentication Flows", () => {
 	});
 
 	test("should display main navigation", async ({ page }) => {
-		// Wait for navigation to be visible
-		const nav = page.locator("nav");
-		await expect(nav).toBeVisible();
+		// Wait for page to fully load
+		await page.waitForLoadState("networkidle");
 
-		// Check for key navigation items
-		await expect(page.getByRole("link", { name: /dashboard/i })).toBeVisible();
-		await expect(page.getByRole("link", { name: /projects/i })).toBeVisible();
+		// Wait for dashboard heading first to ensure page is rendered
+		const dashboardHeading = page.getByRole("heading", {
+			name: /traceability dashboard/i,
+		});
+		await expect(dashboardHeading).toBeVisible({ timeout: 5000 });
+
+		// Check for navigation elements
+		// The dashboard shows "New Project" button and project links
+		const newProjectLink = page.getByRole("link", { name: "New Project" });
+		await expect(newProjectLink).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should handle user session", async ({ page }) => {
@@ -46,14 +52,21 @@ test.describe("Authentication Flows", () => {
 	test("should persist session across page reloads", async ({ page }) => {
 		// Navigate to dashboard
 		await page.goto("/");
-		await page.waitForLoadState("networkidle");
+		await page.waitForLoadState("domcontentloaded");
+
+		// Wait for dashboard content to appear
+		const heading = page.getByRole("heading", {
+			name: /traceability dashboard/i,
+		});
+		await expect(heading).toBeVisible({ timeout: 10000 });
 
 		// Reload the page
 		await page.reload();
-		await page.waitForLoadState("networkidle");
+		await page.waitForLoadState("domcontentloaded");
 
-		// Should still be on dashboard
+		// Should still be on dashboard with content
 		await expect(page).toHaveURL("/");
+		await expect(heading).toBeVisible({ timeout: 10000 });
 	});
 });
 

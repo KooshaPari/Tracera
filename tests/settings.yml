@@ -30,7 +30,7 @@ database:
 # Directory Paths
 # These are auto-created if they don't exist
 # data_dir: ~/.tracertm
-# config_dir: ~/.config/tracertm
+# config_dir: ~/.tracertm
 
 # Feature Flags
 enable_cache: true       # Enable caching layer
@@ -41,4 +41,3 @@ enable_validation: true  # Enable strict validation
 # TRACERTM_LOG_LEVEL=DEBUG
 # TRACERTM_DATABASE__URL=sqlite:///test.db
 # TRACERTM_ENABLE_CACHE=false
-

@@ -107,7 +107,9 @@ export function cullEdges(
  * @param reactFlowInstance - The ReactFlow instance
  * @returns Viewport bounds in world coordinates
  */
-export function getViewportBounds(reactFlowInstance: any): ViewportBounds | null {
+export function getViewportBounds(
+	reactFlowInstance: any,
+): ViewportBounds | null {
 	if (!reactFlowInstance) return null;
 
 	const viewport = reactFlowInstance.getViewport?.();
@@ -132,7 +134,9 @@ export function getViewportBounds(reactFlowInstance: any): ViewportBounds | null
  * @param nodes - Array of ReactFlow nodes
  * @returns Map of node IDs to positions
  */
-export function extractNodePositions(nodes: any[]): Record<string, NodePosition> {
+export function extractNodePositions(
+	nodes: any[],
+): Record<string, NodePosition> {
 	const positions: Record<string, NodePosition> = {};
 
 	for (const node of nodes) {

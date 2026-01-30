@@ -1,0 +1,4736 @@
+{
+  "graph_edges": {
+    "15d259f7-af26-4344-a3a9-166364e5481f": [
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q1",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_CREATE_TASK",
+        "target_kind": "test",
+        "target_title": "Create task API test",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q2",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_UPDATE_TASK",
+        "target_kind": "test",
+        "target_title": "Update task API test",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q3",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_DELETE_TASK",
+        "target_kind": "test",
+        "target_title": "Delete task API test",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q4",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_LIST_TASKS",
+        "target_kind": "test",
+        "target_title": "List tasks API test",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q5",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_FILTER_TASKS",
+        "target_kind": "test",
+        "target_title": "Filter tasks by status",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q6",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_TOGGLE_TASK",
+        "target_kind": "test",
+        "target_title": "Toggle task status",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q7",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_EMPTY_STATE",
+        "target_kind": "test",
+        "target_title": "Empty state UI test",
+        "type": "contains"
+      },
+      {
+        "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+        "id": "L_Q8",
+        "metadata": {},
+        "source_item_id": "QA_SUITE_TASKS",
+        "source_kind": "test",
+        "source_title": "Task CRUD Suite",
+        "target_item_id": "QA_TST_ERROR_BANNER",
+        "target_kind": "test",
+        "target_title": "Error banner UI test",
+        "type": "contains"
+      }
+    ],
+    "180ae207-3926-4077-bdeb-681dfb977c5f": [
+      {
+        "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+        "id": "L_D1",
+        "metadata": {},
+        "source_item_id": "D_ENTITY_TASK",
+        "source_kind": "data_entity",
+        "source_title": "Task Entity",
+        "target_item_id": "D_TABLE_TASKS",
+        "target_kind": "table",
+        "target_title": "tasks table",
+        "type": "realized_by"
+      },
+      {
+        "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+        "id": "L_D2",
+        "metadata": {},
+        "source_item_id": "D_TABLE_TASKS",
+        "source_kind": "table",
+        "source_title": "tasks table",
+        "target_item_id": "D_INDEX_TASKS_STATUS",
+        "target_kind": "index",
+        "target_title": "Tasks Index (Status)",
+        "type": "uses"
+      },
+      {
+        "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+        "id": "L_D3",
+        "metadata": {},
+        "source_item_id": "D_TABLE_TASKS",
+        "source_kind": "table",
+        "source_title": "tasks table",
+        "target_item_id": "T_FIELD_TASK_ID",
+        "target_kind": "data_entity",
+        "target_title": "tasks.id",
+        "type": "contains"
+      },
+      {
+        "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+        "id": "L_D4",
+        "metadata": {},
+        "source_item_id": "D_TABLE_TASKS",
+        "source_kind": "table",
+        "source_title": "tasks table",
+        "target_item_id": "T_FIELD_TASK_TITLE",
+        "target_kind": "data_entity",
+        "target_title": "tasks.title",
+        "type": "contains"
+      },
+      {
+        "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+        "id": "L_D5",
+        "metadata": {},
+        "source_item_id": "D_TABLE_TASKS",
+        "source_kind": "table",
+        "source_title": "tasks table",
+        "target_item_id": "T_FIELD_TASK_STATUS",
+        "target_kind": "data_entity",
+        "target_title": "tasks.status",
+        "type": "contains"
+      },
+      {
+        "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+        "id": "L_D6",
+        "metadata": {},
+        "source_item_id": "D_TABLE_TASKS",
+        "source_kind": "table",
+        "source_title": "tasks table",
+        "target_item_id": "T_FIELD_TASK_CREATED",
+        "target_kind": "data_entity",
+        "target_title": "Tasks Created at",
+        "type": "contains"
+      }
+    ],
+    "1c4e5ac5-177c-4cac-b344-6389c03cd83b": [
+      {
+        "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+        "id": "L_AN1",
+        "metadata": {},
+        "source_item_id": "T_EVENT_TASK_CREATED",
+        "source_kind": "event",
+        "source_title": "TaskCreated event",
+        "target_item_id": "AN_EVENT_TASK_CREATED",
+        "target_kind": "event",
+        "target_title": "Event: Task Created",
+        "type": "emits"
+      },
+      {
+        "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+        "id": "L_AN2",
+        "metadata": {},
+        "source_item_id": "AN_EVENT_TASK_CREATED",
+        "source_kind": "event",
+        "source_title": "Event: Task Created",
+        "target_item_id": "AN_METRIC_TASK_COMPLETED",
+        "target_kind": "metric",
+        "target_title": "Metric: Task Completed Count",
+        "type": "instrumented_by"
+      },
+      {
+        "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+        "id": "L_AN3",
+        "metadata": {},
+        "source_item_id": "AN_METRIC_TASK_COMPLETED",
+        "source_kind": "metric",
+        "source_title": "Metric: Task Completed Count",
+        "target_item_id": "AN_DASH_PRODUCTIVITY",
+        "target_kind": "dashboard",
+        "target_title": "Dashboard: productivity",
+        "type": "monitored_by"
+      }
+    ],
+    "406af0e1-5378-454c-8037-54c5d7db1289": [
+      {
+        "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+        "id": "L_A11Y1",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+        "source_kind": "component",
+        "source_title": "Task List Container",
+        "target_item_id": "A11Y_CHECK_KEYBOARD",
+        "target_kind": "a11y_check",
+        "target_title": "Check: keyboard navigation",
+        "type": "a11y_validated_by"
+      },
+      {
+        "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+        "id": "L_A11Y2",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+        "source_kind": "component",
+        "source_title": "Task List Container",
+        "target_item_id": "A11Y_CHECK_CONTRAST",
+        "target_kind": "a11y_check",
+        "target_title": "Check: contrast ratio",
+        "type": "a11y_validated_by"
+      }
+    ],
+    "639e5dcd-c2ab-4878-9d35-9ffe7dbab265": [
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U1",
+        "metadata": {},
+        "source_item_id": "U_CAP_TODO_CRUD",
+        "source_kind": "capability",
+        "source_title": "Manage tasks (Create/Read/Update/Delete)",
+        "target_item_id": "U_EXP_CREATE_TASK",
+        "target_kind": "expectation",
+        "target_title": "Create a new task",
+        "type": "decomposes"
+      },
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U2",
+        "metadata": {},
+        "source_item_id": "U_CAP_TODO_CRUD",
+        "source_kind": "capability",
+        "source_title": "Manage tasks (Create/Read/Update/Delete)",
+        "target_item_id": "U_EXP_VIEW_TASKS",
+        "target_kind": "expectation",
+        "target_title": "View task list",
+        "type": "decomposes"
+      },
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U3",
+        "metadata": {},
+        "source_item_id": "U_CAP_TODO_CRUD",
+        "source_kind": "capability",
+        "source_title": "Manage tasks (Create/Read/Update/Delete)",
+        "target_item_id": "U_EXP_UPDATE_TASK",
+        "target_kind": "expectation",
+        "target_title": "Update a task",
+        "type": "decomposes"
+      },
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U4",
+        "metadata": {},
+        "source_item_id": "U_CAP_TODO_CRUD",
+        "source_kind": "capability",
+        "source_title": "Manage tasks (Create/Read/Update/Delete)",
+        "target_item_id": "U_EXP_DELETE_TASK",
+        "target_kind": "expectation",
+        "target_title": "Delete a task",
+        "type": "decomposes"
+      },
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U5",
+        "metadata": {},
+        "source_item_id": "U_EXP_CREATE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Create a new task",
+        "target_item_id": "U_ACC_CREATE_TASK",
+        "target_kind": "acceptance_check",
+        "target_title": "New task appears in list",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U6",
+        "metadata": {},
+        "source_item_id": "U_EXP_UPDATE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Update a task",
+        "target_item_id": "U_ACC_UPDATE_TASK",
+        "target_kind": "acceptance_check",
+        "target_title": "Edited task persists",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+        "id": "L_U7",
+        "metadata": {},
+        "source_item_id": "U_EXP_DELETE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Delete a task",
+        "target_item_id": "U_ACC_DELETE_TASK",
+        "target_kind": "acceptance_check",
+        "target_title": "Deleted task is removed",
+        "type": "verified_by"
+      }
+    ],
+    "63a3e456-428f-48ce-a957-a24442267433": [
+      {
+        "graph_id": "63a3e456-428f-48ce-a957-a24442267433",
+        "id": "L_OPS1",
+        "metadata": {},
+        "source_item_id": "INF_ALERT_TASK_CREATE_SPIKE",
+        "source_kind": "alert",
+        "source_title": "Alert: task create spike",
+        "target_item_id": "OPS_RUNBOOK_TASK_SPIKE",
+        "target_kind": "runbook",
+        "target_title": "Runbook: task spike",
+        "type": "triggers"
+      }
+    ],
+    "63b92a57-4f05-4599-894e-3073a9ddfdae": [
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J1",
+        "metadata": {},
+        "source_item_id": "J_CREATE_TASK",
+        "source_kind": "journey",
+        "source_title": "Journey: Create Task",
+        "target_item_id": "UI_S_TASK_LIST",
+        "target_kind": "screen",
+        "target_title": "Task List Screen",
+        "type": "includes_step"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J2",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_NEW_TASK_INPUT",
+        "target_kind": "component",
+        "target_title": "New Task Input",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J3",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_ADD_TASK_BUTTON",
+        "target_kind": "component",
+        "target_title": "Add Task Button",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J4",
+        "metadata": {},
+        "source_item_id": "UI_C_ADD_TASK_BUTTON",
+        "source_kind": "component",
+        "source_title": "Add Task Button",
+        "target_item_id": "UI_I_ADD_TASK_CLICK",
+        "target_kind": "interaction",
+        "target_title": "Click Add Task",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J5",
+        "metadata": {},
+        "source_item_id": "UI_I_ADD_TASK_CLICK",
+        "source_kind": "interaction",
+        "source_title": "Click Add Task",
+        "target_item_id": "T_API_TASK_CREATE",
+        "target_kind": "api_endpoint",
+        "target_title": "POST /api/tasks",
+        "type": "calls"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J6",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_TASK_ROW",
+        "target_kind": "component",
+        "target_title": "Task Row",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J7",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_I_EDIT_TASK",
+        "target_kind": "interaction",
+        "target_title": "Edit Task",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J8",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_I_DELETE_TASK",
+        "target_kind": "interaction",
+        "target_title": "Delete Task",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J9",
+        "metadata": {},
+        "source_item_id": "UI_I_EDIT_TASK",
+        "source_kind": "interaction",
+        "source_title": "Edit Task",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "calls"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J10",
+        "metadata": {},
+        "source_item_id": "UI_I_DELETE_TASK",
+        "source_kind": "interaction",
+        "source_title": "Delete Task",
+        "target_item_id": "T_API_TASK_DELETE",
+        "target_kind": "api_endpoint",
+        "target_title": "DELETE /api/tasks/:id",
+        "type": "calls"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J11",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_C_TASK_TITLE_CELL",
+        "target_kind": "component",
+        "target_title": "Task Title Cell",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J12",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_C_TASK_STATUS_TOGGLE",
+        "target_kind": "component",
+        "target_title": "Task Status Toggle",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J13",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_C_TASK_DELETE_BUTTON",
+        "target_kind": "component",
+        "target_title": "Task Delete Button",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J14",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_STATUS_TOGGLE",
+        "source_kind": "component",
+        "source_title": "Task Status Toggle",
+        "target_item_id": "UI_I_TOGGLE_TASK",
+        "target_kind": "interaction",
+        "target_title": "Toggle Task Status",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J15",
+        "metadata": {},
+        "source_item_id": "UI_I_TOGGLE_TASK",
+        "source_kind": "interaction",
+        "source_title": "Toggle Task Status",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "calls"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J16",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_TITLE_CELL",
+        "source_kind": "component",
+        "source_title": "Task Title Cell",
+        "target_item_id": "UI_I_INLINE_EDIT_TITLE",
+        "target_kind": "interaction",
+        "target_title": "Inline Edit Task Title",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J17",
+        "metadata": {},
+        "source_item_id": "UI_I_INLINE_EDIT_TITLE",
+        "source_kind": "interaction",
+        "source_title": "Inline Edit Task Title",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "calls"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J18",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_FILTER_STATUS",
+        "target_kind": "component",
+        "target_title": "Status Filter Dropdown",
+        "type": "contains"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J19",
+        "metadata": {},
+        "source_item_id": "UI_C_FILTER_STATUS",
+        "source_kind": "component",
+        "source_title": "Status Filter Dropdown",
+        "target_item_id": "UI_I_FILTER_CHANGE",
+        "target_kind": "interaction",
+        "target_title": "Change Status Filter",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+        "id": "L_J20",
+        "metadata": {},
+        "source_item_id": "UI_I_FILTER_CHANGE",
+        "source_kind": "interaction",
+        "source_title": "Change Status Filter",
+        "target_item_id": "T_API_TASK_LIST",
+        "target_kind": "api_endpoint",
+        "target_title": "GET /api/tasks",
+        "type": "calls"
+      }
+    ],
+    "6843db43e74264354637cc025ba7081f": [],
+    "7dcfd911-0d04-4177-8901-ac79e7abb355": [
+      {
+        "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+        "id": "L_SEC1",
+        "metadata": {},
+        "source_item_id": "SEC_POLICY_TASK_AUTHZ",
+        "source_kind": "policy",
+        "source_title": "Policy: task authz",
+        "target_item_id": "SEC_ROLE_USER",
+        "target_kind": "role",
+        "target_title": "Role: user",
+        "type": "contains"
+      },
+      {
+        "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+        "id": "L_SEC2",
+        "metadata": {},
+        "source_item_id": "SEC_ROLE_USER",
+        "source_kind": "role",
+        "source_title": "Role: user",
+        "target_item_id": "SEC_PERMISSION_TASK_WRITE",
+        "target_kind": "permission",
+        "target_title": "Permission: task.write",
+        "type": "contains"
+      },
+      {
+        "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+        "id": "L_SEC3",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_CREATE",
+        "source_kind": "api_endpoint",
+        "source_title": "POST /api/tasks",
+        "target_item_id": "SEC_POLICY_TASK_AUTHZ",
+        "target_kind": "policy",
+        "target_title": "Policy: task authz",
+        "type": "authz_checks"
+      },
+      {
+        "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+        "id": "L_SEC4",
+        "metadata": {},
+        "source_item_id": "SEC_FEATURE_FLAG_BULK",
+        "source_kind": "feature_flag",
+        "source_title": "Feature flag: bulk edit",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "guarded_by"
+      }
+    ],
+    "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2": [
+      {
+        "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+        "id": "L_LOC1",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_EMPTY_STATE",
+        "source_kind": "component",
+        "source_title": "Empty State Panel",
+        "target_item_id": "LOC_STRING_EMPTY",
+        "target_kind": "locale_string",
+        "target_title": "I18n Empty State",
+        "type": "localizes"
+      },
+      {
+        "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+        "id": "L_LOC2",
+        "metadata": {},
+        "source_item_id": "UI_C_ERROR_BANNER",
+        "source_kind": "component",
+        "source_title": "Error Banner",
+        "target_item_id": "LOC_STRING_ERROR",
+        "target_kind": "locale_string",
+        "target_title": "I18n Error Banner",
+        "type": "localizes"
+      }
+    ],
+    "931a3965-c401-4a75-a13b-fcf0a6722f8d": [
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T1",
+        "metadata": {},
+        "source_item_id": "T_SVC_TASK",
+        "source_kind": "service",
+        "source_title": "task-service",
+        "target_item_id": "T_API_TASK_CREATE",
+        "target_kind": "api_endpoint",
+        "target_title": "POST /api/tasks",
+        "type": "contains"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T2",
+        "metadata": {},
+        "source_item_id": "T_SVC_TASK",
+        "source_kind": "service",
+        "source_title": "task-service",
+        "target_item_id": "T_API_TASK_LIST",
+        "target_kind": "api_endpoint",
+        "target_title": "GET /api/tasks",
+        "type": "contains"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T3",
+        "metadata": {},
+        "source_item_id": "T_SVC_TASK",
+        "source_kind": "service",
+        "source_title": "task-service",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "contains"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T4",
+        "metadata": {},
+        "source_item_id": "T_SVC_TASK",
+        "source_kind": "service",
+        "source_title": "task-service",
+        "target_item_id": "T_API_TASK_DELETE",
+        "target_kind": "api_endpoint",
+        "target_title": "DELETE /api/tasks/:id",
+        "type": "contains"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T5",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_CREATE",
+        "source_kind": "api_endpoint",
+        "source_title": "POST /api/tasks",
+        "target_item_id": "T_FN_CREATE_TASK",
+        "target_kind": "function",
+        "target_title": "CreateTaskHandler",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T6",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_UPDATE",
+        "source_kind": "api_endpoint",
+        "source_title": "PATCH /api/tasks/:id",
+        "target_item_id": "T_FN_UPDATE_TASK",
+        "target_kind": "function",
+        "target_title": "UpdateTaskHandler",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T7",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_DELETE",
+        "source_kind": "api_endpoint",
+        "source_title": "DELETE /api/tasks/:id",
+        "target_item_id": "T_FN_DELETE_TASK",
+        "target_kind": "function",
+        "target_title": "DeleteTaskHandler",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T11",
+        "metadata": {},
+        "source_item_id": "QA_TST_CREATE_TASK",
+        "source_kind": "test",
+        "source_title": "Create task API test",
+        "target_item_id": "T_API_TASK_CREATE",
+        "target_kind": "api_endpoint",
+        "target_title": "POST /api/tasks",
+        "type": "tests"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T12",
+        "metadata": {},
+        "source_item_id": "QA_TST_UPDATE_TASK",
+        "source_kind": "test",
+        "source_title": "Update task API test",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "tests"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T13",
+        "metadata": {},
+        "source_item_id": "QA_TST_DELETE_TASK",
+        "source_kind": "test",
+        "source_title": "Delete task API test",
+        "target_item_id": "T_API_TASK_DELETE",
+        "target_kind": "api_endpoint",
+        "target_title": "DELETE /api/tasks/:id",
+        "type": "tests"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T7A",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_LIST",
+        "source_kind": "api_endpoint",
+        "source_title": "GET /api/tasks",
+        "target_item_id": "T_FN_LIST_TASKS",
+        "target_kind": "function",
+        "target_title": "ListTasksHandler",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T7B",
+        "metadata": {},
+        "source_item_id": "T_FN_CREATE_TASK",
+        "source_kind": "function",
+        "source_title": "CreateTaskHandler",
+        "target_item_id": "T_FN_VALIDATE_TASK",
+        "target_kind": "function",
+        "target_title": "ValidateTaskInput",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T7C",
+        "metadata": {},
+        "source_item_id": "T_FN_UPDATE_TASK",
+        "source_kind": "function",
+        "source_title": "UpdateTaskHandler",
+        "target_item_id": "T_FN_VALIDATE_TASK",
+        "target_kind": "function",
+        "target_title": "ValidateTaskInput",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T7D",
+        "metadata": {},
+        "source_item_id": "T_FN_LIST_TASKS",
+        "source_kind": "function",
+        "source_title": "ListTasksHandler",
+        "target_item_id": "T_FN_BUILD_QUERY",
+        "target_kind": "function",
+        "target_title": "BuildTaskQuery",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T7E",
+        "metadata": {},
+        "source_item_id": "T_FN_BUILD_QUERY",
+        "source_kind": "function",
+        "source_title": "BuildTaskQuery",
+        "target_item_id": "T_FN_APPLY_FILTERS",
+        "target_kind": "function",
+        "target_title": "ApplyTaskFilters",
+        "type": "calls"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T10E",
+        "metadata": {},
+        "source_item_id": "T_FN_CREATE_TASK",
+        "source_kind": "function",
+        "source_title": "CreateTaskHandler",
+        "target_item_id": "T_EVENT_TASK_CREATED",
+        "target_kind": "event",
+        "target_title": "TaskCreated event",
+        "type": "publishes"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T10F",
+        "metadata": {},
+        "source_item_id": "T_FN_UPDATE_TASK",
+        "source_kind": "function",
+        "source_title": "UpdateTaskHandler",
+        "target_item_id": "T_EVENT_TASK_UPDATED",
+        "target_kind": "event",
+        "target_title": "TaskUpdated event",
+        "type": "publishes"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T10G",
+        "metadata": {},
+        "source_item_id": "T_FN_DELETE_TASK",
+        "source_kind": "function",
+        "source_title": "DeleteTaskHandler",
+        "target_item_id": "T_EVENT_TASK_DELETED",
+        "target_kind": "event",
+        "target_title": "TaskDeleted event",
+        "type": "publishes"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T10H",
+        "metadata": {},
+        "source_item_id": "T_EVENT_TASK_CREATED",
+        "source_kind": "event",
+        "source_title": "TaskCreated event",
+        "target_item_id": "T_JOB_REINDEX_TASKS",
+        "target_kind": "job",
+        "target_title": "Reindex Tasks Job",
+        "type": "triggers"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T14",
+        "metadata": {},
+        "source_item_id": "QA_TST_LIST_TASKS",
+        "source_kind": "test",
+        "source_title": "List tasks API test",
+        "target_item_id": "T_API_TASK_LIST",
+        "target_kind": "api_endpoint",
+        "target_title": "GET /api/tasks",
+        "type": "tests"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T15",
+        "metadata": {},
+        "source_item_id": "QA_TST_FILTER_TASKS",
+        "source_kind": "test",
+        "source_title": "Filter tasks by status",
+        "target_item_id": "T_API_TASK_LIST",
+        "target_kind": "api_endpoint",
+        "target_title": "GET /api/tasks",
+        "type": "tests"
+      },
+      {
+        "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+        "id": "L_T16",
+        "metadata": {},
+        "source_item_id": "QA_TST_TOGGLE_TASK",
+        "source_kind": "test",
+        "source_title": "Toggle task status",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "tests"
+      }
+    ],
+    "93df47e6-0b36-4e3c-8a9b-b4e6aecc2e2f": [
+      {
+        "graph_id": "93df47e6-0b36-4e3c-8a9b-b4e6aecc2e2f",
+        "id": "L_COMP1",
+        "metadata": {},
+        "source_item_id": "COMP_POLICY_RETENTION",
+        "source_kind": "policy",
+        "source_title": "Policy: task retention 365d",
+        "target_item_id": "D_TABLE_TASKS",
+        "target_kind": "table",
+        "target_title": "tasks table",
+        "type": "conforms_to"
+      }
+    ],
+    "ad8ef3b5-caed-497a-a601-f97077c2fbaa": [
+      {
+        "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+        "id": "L_PERF1",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_LIST",
+        "source_kind": "api_endpoint",
+        "source_title": "GET /api/tasks",
+        "target_item_id": "PERF_BUDGET_TASK_LIST",
+        "target_kind": "metric",
+        "target_title": "Budget: task list p95 < 150ms",
+        "type": "instrumented_by"
+      },
+      {
+        "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+        "id": "L_PERF2",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_LIST",
+        "source_kind": "api_endpoint",
+        "source_title": "GET /api/tasks",
+        "target_item_id": "PERF_QUERY_PLAN",
+        "target_kind": "log",
+        "target_title": "Task list query plan",
+        "type": "logs"
+      }
+    ],
+    "c1dc3782-3aac-4183-949f-fe9475bd57b0": [
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M1",
+        "metadata": {},
+        "source_item_id": "U_EXP_CREATE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Create a new task",
+        "target_item_id": "UI_I_ADD_TASK_CLICK",
+        "target_kind": "interaction",
+        "target_title": "Click Add Task",
+        "type": "represented_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M2",
+        "metadata": {},
+        "source_item_id": "U_EXP_CREATE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Create a new task",
+        "target_item_id": "T_API_TASK_CREATE",
+        "target_kind": "api_endpoint",
+        "target_title": "POST /api/tasks",
+        "type": "realized_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M3",
+        "metadata": {},
+        "source_item_id": "U_ACC_CREATE_TASK",
+        "source_kind": "acceptance_check",
+        "source_title": "New task appears in list",
+        "target_item_id": "QA_TST_CREATE_TASK",
+        "target_kind": "test",
+        "target_title": "Create task API test",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M4",
+        "metadata": {},
+        "source_item_id": "U_EXP_UPDATE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Update a task",
+        "target_item_id": "T_API_TASK_UPDATE",
+        "target_kind": "api_endpoint",
+        "target_title": "PATCH /api/tasks/:id",
+        "type": "realized_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M5",
+        "metadata": {},
+        "source_item_id": "U_ACC_UPDATE_TASK",
+        "source_kind": "acceptance_check",
+        "source_title": "Edited task persists",
+        "target_item_id": "QA_TST_UPDATE_TASK",
+        "target_kind": "test",
+        "target_title": "Update task API test",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M6",
+        "metadata": {},
+        "source_item_id": "U_EXP_DELETE_TASK",
+        "source_kind": "expectation",
+        "source_title": "Delete a task",
+        "target_item_id": "T_API_TASK_DELETE",
+        "target_kind": "api_endpoint",
+        "target_title": "DELETE /api/tasks/:id",
+        "type": "realized_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M7",
+        "metadata": {},
+        "source_item_id": "U_ACC_DELETE_TASK",
+        "source_kind": "acceptance_check",
+        "source_title": "Deleted task is removed",
+        "target_item_id": "QA_TST_DELETE_TASK",
+        "target_kind": "test",
+        "target_title": "Delete task API test",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M8",
+        "metadata": {},
+        "source_item_id": "U_EXP_VIEW_TASKS",
+        "source_kind": "expectation",
+        "source_title": "View task list",
+        "target_item_id": "T_API_TASK_LIST",
+        "target_kind": "api_endpoint",
+        "target_title": "GET /api/tasks",
+        "type": "realized_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M9",
+        "metadata": {},
+        "source_item_id": "U_EXP_VIEW_TASKS",
+        "source_kind": "expectation",
+        "source_title": "View task list",
+        "target_item_id": "UI_S_TASK_LIST",
+        "target_kind": "screen",
+        "target_title": "Task List Screen",
+        "type": "represented_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M10",
+        "metadata": {},
+        "source_item_id": "U_ACC_CREATE_TASK",
+        "source_kind": "acceptance_check",
+        "source_title": "New task appears in list",
+        "target_item_id": "UI_C_TASK_ROW",
+        "target_kind": "component",
+        "target_title": "Task Row",
+        "type": "represented_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M11",
+        "metadata": {},
+        "source_item_id": "U_ACC_UPDATE_TASK",
+        "source_kind": "acceptance_check",
+        "source_title": "Edited task persists",
+        "target_item_id": "UI_I_INLINE_EDIT_TITLE",
+        "target_kind": "interaction",
+        "target_title": "Inline Edit Task Title",
+        "type": "represented_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M12",
+        "metadata": {},
+        "source_item_id": "U_ACC_UPDATE_TASK",
+        "source_kind": "acceptance_check",
+        "source_title": "Edited task persists",
+        "target_item_id": "QA_TST_TOGGLE_TASK",
+        "target_kind": "test",
+        "target_title": "Toggle task status",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M13",
+        "metadata": {},
+        "source_item_id": "U_EXP_VIEW_TASKS",
+        "source_kind": "expectation",
+        "source_title": "View task list",
+        "target_item_id": "QA_TST_LIST_TASKS",
+        "target_kind": "test",
+        "target_title": "List tasks API test",
+        "type": "verified_by"
+      },
+      {
+        "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+        "id": "L_M14",
+        "metadata": {},
+        "source_item_id": "U_EXP_VIEW_TASKS",
+        "source_kind": "expectation",
+        "source_title": "View task list",
+        "target_item_id": "QA_TST_FILTER_TASKS",
+        "target_kind": "test",
+        "target_title": "Filter tasks by status",
+        "type": "verified_by"
+      }
+    ],
+    "dc4dc42d-6463-4f76-a13b-93aa119794a0": [
+      {
+        "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+        "id": "L_INF1",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_CREATE",
+        "source_kind": "api_endpoint",
+        "source_title": "POST /api/tasks",
+        "target_item_id": "INF_METRIC_TASK_CREATE_RATE",
+        "target_kind": "metric",
+        "target_title": "Metric: Tasks Create Rate",
+        "type": "instrumented_by"
+      },
+      {
+        "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+        "id": "L_INF2",
+        "metadata": {},
+        "source_item_id": "INF_METRIC_TASK_CREATE_RATE",
+        "source_kind": "metric",
+        "source_title": "Metric: Tasks Create Rate",
+        "target_item_id": "INF_ALERT_TASK_CREATE_SPIKE",
+        "target_kind": "alert",
+        "target_title": "Alert: task create spike",
+        "type": "alerts_on"
+      },
+      {
+        "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+        "id": "L_INF3",
+        "metadata": {},
+        "source_item_id": "T_API_TASK_UPDATE",
+        "source_kind": "api_endpoint",
+        "source_title": "PATCH /api/tasks/:id",
+        "target_item_id": "INF_LOG_TASK_MUTATION",
+        "target_kind": "log",
+        "target_title": "Log: task mutation audit",
+        "type": "logs"
+      },
+      {
+        "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+        "id": "L_INF4",
+        "metadata": {},
+        "source_item_id": "INF_METRIC_TASK_CREATE_RATE",
+        "source_kind": "metric",
+        "source_title": "Metric: Tasks Create Rate",
+        "target_item_id": "INF_DASH_TASKS",
+        "target_kind": "dashboard",
+        "target_title": "Dashboard: task health",
+        "type": "monitored_by"
+      },
+      {
+        "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+        "id": "L_INF5",
+        "metadata": {},
+        "source_item_id": "INF_SLI_TASK_CREATE_LAT",
+        "source_kind": "sli",
+        "source_title": "SLI: task create latency",
+        "target_item_id": "INF_SLO_TASK_CREATE_LAT",
+        "target_kind": "slo",
+        "target_title": "SLO: task create latency p95",
+        "type": "conforms_to"
+      }
+    ],
+    "e37b885e-ac68-4e52-92c9-b449a7932ab3": [
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI1",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_TASK_LIST_CONTAINER",
+        "target_kind": "component",
+        "target_title": "Task List Container",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI2",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+        "source_kind": "component",
+        "source_title": "Task List Container",
+        "target_item_id": "UI_C_NEW_TASK_INPUT",
+        "target_kind": "component",
+        "target_title": "New Task Input",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI3",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+        "source_kind": "component",
+        "source_title": "Task List Container",
+        "target_item_id": "UI_C_ADD_TASK_BUTTON",
+        "target_kind": "component",
+        "target_title": "Add Task Button",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI4",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+        "source_kind": "component",
+        "source_title": "Task List Container",
+        "target_item_id": "UI_C_TASK_ROW",
+        "target_kind": "component",
+        "target_title": "Task Row",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI5",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_C_TASK_TITLE_CELL",
+        "target_kind": "component",
+        "target_title": "Task Title Cell",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI6",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_C_TASK_STATUS_TOGGLE",
+        "target_kind": "component",
+        "target_title": "Task Status Toggle",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI7",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW",
+        "source_kind": "component",
+        "source_title": "Task Row",
+        "target_item_id": "UI_C_TASK_ROW_ACTIONS",
+        "target_kind": "component",
+        "target_title": "Task Row Actions",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI8",
+        "metadata": {},
+        "source_item_id": "UI_C_TASK_ROW_ACTIONS",
+        "source_kind": "component",
+        "source_title": "Task Row Actions",
+        "target_item_id": "UI_C_TASK_DELETE_BUTTON",
+        "target_kind": "component",
+        "target_title": "Task Delete Button",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI9",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_TASK_EMPTY_STATE",
+        "target_kind": "component",
+        "target_title": "Empty State Panel",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI10",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_ERROR_BANNER",
+        "target_kind": "component",
+        "target_title": "Error Banner",
+        "type": "contains"
+      },
+      {
+        "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+        "id": "L_UI11",
+        "metadata": {},
+        "source_item_id": "UI_S_TASK_LIST",
+        "source_kind": "screen",
+        "source_title": "Task List Screen",
+        "target_item_id": "UI_C_FILTER_STATUS",
+        "target_kind": "component",
+        "target_title": "Status Filter Dropdown",
+        "type": "contains"
+      }
+    ]
+  },
+  "graph_nodes": [
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_CAP_TODO_CRUD"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_EXP_CREATE_TASK"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_EXP_VIEW_TASKS"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_EXP_UPDATE_TASK"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_EXP_DELETE_TASK"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_ACC_CREATE_TASK"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_ACC_UPDATE_TASK"
+    },
+    {
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "item_id": "U_ACC_DELETE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_SVC_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_API_TASK_CREATE"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_API_TASK_LIST"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_API_TASK_UPDATE"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_API_TASK_DELETE"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_CREATE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_UPDATE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_DELETE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_INDEX_TASKS_STATUS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "QA_TST_CREATE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "QA_TST_UPDATE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "QA_TST_DELETE_TASK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "J_CREATE_TASK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_S_TASK_LIST"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_NEW_TASK_INPUT"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_ADD_TASK_BUTTON"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_I_ADD_TASK_CLICK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_TASK_ROW"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_I_EDIT_TASK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_I_DELETE_TASK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "T_API_TASK_CREATE"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "T_API_TASK_LIST"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_CAP_TODO_CRUD"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_EXP_CREATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_EXP_VIEW_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_EXP_UPDATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_EXP_DELETE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_ACC_CREATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_ACC_UPDATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "U_ACC_DELETE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_S_TASK_LIST"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_NEW_TASK_INPUT"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_ADD_TASK_BUTTON"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_I_ADD_TASK_CLICK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_ROW"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_I_EDIT_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_I_DELETE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "J_CREATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_SVC_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_API_TASK_CREATE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_API_TASK_LIST"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_API_TASK_UPDATE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_API_TASK_DELETE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_CREATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_UPDATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_DELETE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_INDEX_TASKS_STATUS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_CREATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_UPDATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_DELETE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_LIST_TASKS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_VALIDATE_TASK"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_BUILD_QUERY"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FN_APPLY_FILTERS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FIELD_TASK_ID"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FIELD_TASK_TITLE"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FIELD_TASK_STATUS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_FIELD_TASK_CREATED"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_EVENT_TASK_CREATED"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_EVENT_TASK_UPDATED"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_EVENT_TASK_DELETED"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "T_JOB_REINDEX_TASKS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "QA_TST_LIST_TASKS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "QA_TST_FILTER_TASKS"
+    },
+    {
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "item_id": "QA_TST_TOGGLE_TASK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_TASK_TITLE_CELL"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_TASK_STATUS_TOGGLE"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_TASK_DELETE_BUTTON"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_I_TOGGLE_TASK"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_I_INLINE_EDIT_TITLE"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_C_FILTER_STATUS"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "UI_I_FILTER_CHANGE"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "T_API_TASK_UPDATE"
+    },
+    {
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "item_id": "T_API_TASK_DELETE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_TITLE_CELL"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_STATUS_TOGGLE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_DELETE_BUTTON"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_I_TOGGLE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_I_INLINE_EDIT_TITLE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_FILTER_STATUS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_I_FILTER_CHANGE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_LIST_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_VALIDATE_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_BUILD_QUERY"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FN_APPLY_FILTERS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FIELD_TASK_ID"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FIELD_TASK_TITLE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FIELD_TASK_STATUS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_FIELD_TASK_CREATED"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_EVENT_TASK_CREATED"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_EVENT_TASK_UPDATED"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_EVENT_TASK_DELETED"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "T_JOB_REINDEX_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_LIST_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_FILTER_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_TOGGLE_TASK"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_S_TASK_LIST"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_LIST_CONTAINER"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_NEW_TASK_INPUT"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_ADD_TASK_BUTTON"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_ROW"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_TITLE_CELL"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_STATUS_TOGGLE"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_DELETE_BUTTON"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_ROW_ACTIONS"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_TASK_EMPTY_STATE"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_ERROR_BANNER"
+    },
+    {
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "item_id": "UI_C_FILTER_STATUS"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "D_ENTITY_TASK"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "D_TABLE_TASKS"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "D_INDEX_TASKS_STATUS"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "T_FIELD_TASK_ID"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "T_FIELD_TASK_TITLE"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "T_FIELD_TASK_STATUS"
+    },
+    {
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "item_id": "T_FIELD_TASK_CREATED"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_SUITE_TASKS"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_CREATE_TASK"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_UPDATE_TASK"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_DELETE_TASK"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_LIST_TASKS"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_FILTER_TASKS"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_TOGGLE_TASK"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_EMPTY_STATE"
+    },
+    {
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "item_id": "QA_TST_ERROR_BANNER"
+    },
+    {
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "item_id": "INF_METRIC_TASK_CREATE_RATE"
+    },
+    {
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "item_id": "INF_ALERT_TASK_CREATE_SPIKE"
+    },
+    {
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "item_id": "INF_LOG_TASK_MUTATION"
+    },
+    {
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "item_id": "INF_DASH_TASKS"
+    },
+    {
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "item_id": "INF_SLI_TASK_CREATE_LAT"
+    },
+    {
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "item_id": "INF_SLO_TASK_CREATE_LAT"
+    },
+    {
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "item_id": "SEC_POLICY_TASK_AUTHZ"
+    },
+    {
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "item_id": "SEC_ROLE_USER"
+    },
+    {
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "item_id": "SEC_PERMISSION_TASK_WRITE"
+    },
+    {
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "item_id": "SEC_FEATURE_FLAG_BULK"
+    },
+    {
+      "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+      "item_id": "PERF_BUDGET_TASK_LIST"
+    },
+    {
+      "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+      "item_id": "PERF_QUERY_PLAN"
+    },
+    {
+      "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+      "item_id": "T_INDEX_TASKS_STATUS"
+    },
+    {
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "item_id": "AN_EVENT_TASK_CREATED"
+    },
+    {
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "item_id": "AN_METRIC_TASK_COMPLETED"
+    },
+    {
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "item_id": "AN_DASH_PRODUCTIVITY"
+    },
+    {
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "item_id": "T_EVENT_TASK_CREATED"
+    },
+    {
+      "graph_id": "93df47e6-0b36-4e3c-8a9b-b4e6aecc2e2f",
+      "item_id": "COMP_POLICY_RETENTION"
+    },
+    {
+      "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "item_id": "LOC_STRING_EMPTY"
+    },
+    {
+      "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "item_id": "LOC_STRING_ERROR"
+    },
+    {
+      "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "item_id": "UI_C_TASK_EMPTY_STATE"
+    },
+    {
+      "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "item_id": "UI_C_ERROR_BANNER"
+    },
+    {
+      "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "item_id": "A11Y_CHECK_CONTRAST"
+    },
+    {
+      "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "item_id": "A11Y_CHECK_KEYBOARD"
+    },
+    {
+      "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "item_id": "UI_C_TASK_LIST_CONTAINER"
+    },
+    {
+      "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "item_id": "UI_C_TASK_ROW"
+    },
+    {
+      "graph_id": "63a3e456-428f-48ce-a957-a24442267433",
+      "item_id": "OPS_RUNBOOK_TASK_SPIKE"
+    },
+    {
+      "graph_id": "63a3e456-428f-48ce-a957-a24442267433",
+      "item_id": "INF_ALERT_TASK_CREATE_SPIKE"
+    },
+    {
+      "graph_id": "63a3e456-428f-48ce-a957-a24442267433",
+      "item_id": "INF_DASH_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_LIST_CONTAINER"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_ROW_ACTIONS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_TASK_EMPTY_STATE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "UI_C_ERROR_BANNER"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "D_ENTITY_TASK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "D_TABLE_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "D_INDEX_TASKS_STATUS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_SUITE_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_EMPTY_STATE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "QA_TST_ERROR_BANNER"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "INF_METRIC_TASK_CREATE_RATE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "INF_ALERT_TASK_CREATE_SPIKE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "INF_LOG_TASK_MUTATION"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "INF_DASH_TASKS"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "INF_SLI_TASK_CREATE_LAT"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "INF_SLO_TASK_CREATE_LAT"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "SEC_POLICY_TASK_AUTHZ"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "SEC_ROLE_USER"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "SEC_PERMISSION_TASK_WRITE"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "SEC_FEATURE_FLAG_BULK"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "PERF_BUDGET_TASK_LIST"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "PERF_QUERY_PLAN"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "AN_EVENT_TASK_CREATED"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "AN_METRIC_TASK_COMPLETED"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "AN_DASH_PRODUCTIVITY"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "COMP_POLICY_RETENTION"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "LOC_STRING_EMPTY"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "LOC_STRING_ERROR"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "A11Y_CHECK_CONTRAST"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "A11Y_CHECK_KEYBOARD"
+    },
+    {
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "item_id": "OPS_RUNBOOK_TASK_SPIKE"
+    }
+  ],
+  "graphs": [
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_rules": {},
+      "graph_type": "user_requirements",
+      "graph_version": 1,
+      "id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "name": "User Requirements Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_rules": {},
+      "graph_type": "technical_requirements",
+      "graph_version": 1,
+      "id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "name": "Technical Requirements Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_rules": {},
+      "graph_type": "journey",
+      "graph_version": 1,
+      "id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "name": "Journey: Create Task",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_rules": {},
+      "graph_type": "mapping",
+      "graph_version": 1,
+      "id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "name": "Mapping Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:56:00.483557-07:00",
+      "graph_rules": {},
+      "graph_type": "default",
+      "graph_version": 1,
+      "id": "6843db43e74264354637cc025ba7081f",
+      "name": "default graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:56:00.483557-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "ui_components",
+      "graph_version": 1,
+      "id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "name": "UI Component Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "data_model",
+      "graph_version": 1,
+      "id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "name": "Data Model Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "qa",
+      "graph_version": 1,
+      "id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "name": "QA Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "infra",
+      "graph_version": 1,
+      "id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "name": "Infra Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "security",
+      "graph_version": 1,
+      "id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "name": "Security Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "performance",
+      "graph_version": 1,
+      "id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+      "name": "Performance Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "analytics",
+      "graph_version": 1,
+      "id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "name": "Analytics Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "compliance",
+      "graph_version": 1,
+      "id": "93df47e6-0b36-4e3c-8a9b-b4e6aecc2e2f",
+      "name": "Compliance Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "localization",
+      "graph_version": 1,
+      "id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "name": "Localization Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "accessibility",
+      "graph_version": 1,
+      "id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "name": "Accessibility Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_rules": {},
+      "graph_type": "ops",
+      "graph_version": 1,
+      "id": "63a3e456-428f-48ce-a957-a24442267433",
+      "name": "Ops Graph",
+      "root_item_id": null,
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    }
+  ],
+  "items": [
+    {
+      "description": null,
+      "id": "U_CAP_TODO_CRUD",
+      "item_metadata": {
+        "priority": "P0"
+      },
+      "node_kind_id": "2bf73211-b894-4cfa-9b1e-b8ce72f407b3",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Manage tasks (Create/Read/Update/Delete)"
+    },
+    {
+      "description": null,
+      "id": "U_EXP_CREATE_TASK",
+      "item_metadata": {
+        "user_language": "I can add a task and see it in my list."
+      },
+      "node_kind_id": "a54d76ba-70fe-4944-8fdc-1addfb877323",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Create a new task"
+    },
+    {
+      "description": null,
+      "id": "U_EXP_VIEW_TASKS",
+      "item_metadata": {
+        "user_language": "I can see all my tasks in a list."
+      },
+      "node_kind_id": "a54d76ba-70fe-4944-8fdc-1addfb877323",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "View task list"
+    },
+    {
+      "description": null,
+      "id": "U_EXP_UPDATE_TASK",
+      "item_metadata": {
+        "user_language": "I can edit a task title or status."
+      },
+      "node_kind_id": "a54d76ba-70fe-4944-8fdc-1addfb877323",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Update a task"
+    },
+    {
+      "description": null,
+      "id": "U_EXP_DELETE_TASK",
+      "item_metadata": {
+        "user_language": "I can remove a task from my list."
+      },
+      "node_kind_id": "a54d76ba-70fe-4944-8fdc-1addfb877323",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Delete a task"
+    },
+    {
+      "description": null,
+      "id": "U_ACC_CREATE_TASK",
+      "item_metadata": {
+        "given": "Task list is open",
+        "then": "Task appears",
+        "when": "User adds a task"
+      },
+      "node_kind_id": "0978a232-0260-4a96-a401-0d630e2c3f0d",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "New task appears in list"
+    },
+    {
+      "description": null,
+      "id": "U_ACC_UPDATE_TASK",
+      "item_metadata": {
+        "given": "Task exists",
+        "then": "Task shows updated fields",
+        "when": "User edits"
+      },
+      "node_kind_id": "0978a232-0260-4a96-a401-0d630e2c3f0d",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Edited task persists"
+    },
+    {
+      "description": null,
+      "id": "U_ACC_DELETE_TASK",
+      "item_metadata": {
+        "given": "Task exists",
+        "then": "Task no longer listed",
+        "when": "User deletes"
+      },
+      "node_kind_id": "0978a232-0260-4a96-a401-0d630e2c3f0d",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Deleted task is removed"
+    },
+    {
+      "description": null,
+      "id": "UI_S_TASK_LIST",
+      "item_metadata": {
+        "route": "/tasks"
+      },
+      "node_kind_id": "f7aacaff-02eb-4066-8d8b-021ca82d5ceb",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task List Screen"
+    },
+    {
+      "description": null,
+      "id": "UI_C_NEW_TASK_INPUT",
+      "item_metadata": {
+        "type": "text"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "New Task Input"
+    },
+    {
+      "description": null,
+      "id": "UI_C_ADD_TASK_BUTTON",
+      "item_metadata": {
+        "label": "Add"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Add Task Button"
+    },
+    {
+      "description": null,
+      "id": "UI_I_ADD_TASK_CLICK",
+      "item_metadata": {
+        "trigger": "onClick"
+      },
+      "node_kind_id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Click Add Task"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_ROW",
+      "item_metadata": {
+        "type": "row"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task Row"
+    },
+    {
+      "description": null,
+      "id": "UI_I_EDIT_TASK",
+      "item_metadata": {
+        "trigger": "onBlur"
+      },
+      "node_kind_id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Edit Task"
+    },
+    {
+      "description": null,
+      "id": "UI_I_DELETE_TASK",
+      "item_metadata": {
+        "trigger": "onClick"
+      },
+      "node_kind_id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Delete Task"
+    },
+    {
+      "description": null,
+      "id": "J_CREATE_TASK",
+      "item_metadata": {
+        "intent": "Add a new task"
+      },
+      "node_kind_id": "2b32f272-4ee7-4ae8-8da4-59f26d176586",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Journey: Create Task"
+    },
+    {
+      "description": null,
+      "id": "T_SVC_TASK",
+      "item_metadata": {
+        "protocol": "HTTP"
+      },
+      "node_kind_id": "8c509f22-7430-474f-9143-d3d412532665",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "task-service"
+    },
+    {
+      "description": null,
+      "id": "T_API_TASK_CREATE",
+      "item_metadata": {},
+      "node_kind_id": "1830d698-03a3-401c-8e66-2a33dab6d218",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "POST /api/tasks"
+    },
+    {
+      "description": null,
+      "id": "T_API_TASK_LIST",
+      "item_metadata": {},
+      "node_kind_id": "1830d698-03a3-401c-8e66-2a33dab6d218",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "GET /api/tasks"
+    },
+    {
+      "description": null,
+      "id": "T_API_TASK_UPDATE",
+      "item_metadata": {},
+      "node_kind_id": "1830d698-03a3-401c-8e66-2a33dab6d218",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "PATCH /api/tasks/:id"
+    },
+    {
+      "description": null,
+      "id": "T_API_TASK_DELETE",
+      "item_metadata": {},
+      "node_kind_id": "1830d698-03a3-401c-8e66-2a33dab6d218",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "DELETE /api/tasks/:id"
+    },
+    {
+      "description": null,
+      "id": "T_FN_CREATE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "CreateTaskHandler"
+    },
+    {
+      "description": null,
+      "id": "T_FN_UPDATE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "UpdateTaskHandler"
+    },
+    {
+      "description": null,
+      "id": "T_FN_DELETE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "DeleteTaskHandler"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_CREATE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Create task API test"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_UPDATE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Update task API test"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_DELETE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Delete task API test"
+    },
+    {
+      "description": null,
+      "id": "T_INDEX_TASKS_STATUS",
+      "item_metadata": {
+        "original_title": "tasks(status) index"
+      },
+      "node_kind_id": "d30c8f5f-c8f6-45ee-8991-cdc9e9b52738",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Tasks Index (Status)"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_TITLE_CELL",
+      "item_metadata": {
+        "type": "cell"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task Title Cell"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_STATUS_TOGGLE",
+      "item_metadata": {
+        "type": "toggle"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task Status Toggle"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_DELETE_BUTTON",
+      "item_metadata": {
+        "label": "Delete",
+        "type": "button"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task Delete Button"
+    },
+    {
+      "description": null,
+      "id": "UI_I_TOGGLE_TASK",
+      "item_metadata": {
+        "trigger": "onChange"
+      },
+      "node_kind_id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Toggle Task Status"
+    },
+    {
+      "description": null,
+      "id": "UI_I_INLINE_EDIT_TITLE",
+      "item_metadata": {
+        "trigger": "onBlur"
+      },
+      "node_kind_id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Inline Edit Task Title"
+    },
+    {
+      "description": null,
+      "id": "UI_C_FILTER_STATUS",
+      "item_metadata": {
+        "type": "select"
+      },
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Status Filter Dropdown"
+    },
+    {
+      "description": null,
+      "id": "UI_I_FILTER_CHANGE",
+      "item_metadata": {
+        "trigger": "onChange"
+      },
+      "node_kind_id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Change Status Filter"
+    },
+    {
+      "description": null,
+      "id": "T_FN_LIST_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "ListTasksHandler"
+    },
+    {
+      "description": null,
+      "id": "T_FN_VALIDATE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "ValidateTaskInput"
+    },
+    {
+      "description": null,
+      "id": "T_FN_BUILD_QUERY",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "BuildTaskQuery"
+    },
+    {
+      "description": null,
+      "id": "T_FN_APPLY_FILTERS",
+      "item_metadata": {},
+      "node_kind_id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "ApplyTaskFilters"
+    },
+    {
+      "description": null,
+      "id": "T_FIELD_TASK_ID",
+      "item_metadata": {
+        "field": "id",
+        "type": "uuid"
+      },
+      "node_kind_id": "bc8eec70-23fe-4f85-970e-ea5d5b7719bb",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "tasks.id"
+    },
+    {
+      "description": null,
+      "id": "T_FIELD_TASK_TITLE",
+      "item_metadata": {
+        "field": "title",
+        "type": "text"
+      },
+      "node_kind_id": "bc8eec70-23fe-4f85-970e-ea5d5b7719bb",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "tasks.title"
+    },
+    {
+      "description": null,
+      "id": "T_FIELD_TASK_STATUS",
+      "item_metadata": {
+        "field": "status",
+        "type": "text"
+      },
+      "node_kind_id": "bc8eec70-23fe-4f85-970e-ea5d5b7719bb",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "tasks.status"
+    },
+    {
+      "description": null,
+      "id": "T_EVENT_TASK_CREATED",
+      "item_metadata": {},
+      "node_kind_id": "46308081-b628-4351-b69a-b989b724732e",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "TaskCreated event"
+    },
+    {
+      "description": null,
+      "id": "T_EVENT_TASK_UPDATED",
+      "item_metadata": {},
+      "node_kind_id": "46308081-b628-4351-b69a-b989b724732e",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "TaskUpdated event"
+    },
+    {
+      "description": null,
+      "id": "T_EVENT_TASK_DELETED",
+      "item_metadata": {},
+      "node_kind_id": "46308081-b628-4351-b69a-b989b724732e",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "TaskDeleted event"
+    },
+    {
+      "description": null,
+      "id": "T_JOB_REINDEX_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "49abe5d4-ac88-420d-98e8-19566ffade96",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Reindex Tasks Job"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_LIST_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "List tasks API test"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_FILTER_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Filter tasks by status"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_TOGGLE_TASK",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Toggle task status"
+    },
+    {
+      "description": null,
+      "id": "T_FIELD_TASK_CREATED",
+      "item_metadata": {
+        "field": "created_at",
+        "original_title": "tasks.created_at",
+        "type": "timestamptz"
+      },
+      "node_kind_id": "bc8eec70-23fe-4f85-970e-ea5d5b7719bb",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Tasks Created at"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_LIST_CONTAINER",
+      "item_metadata": {},
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task List Container"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_ROW_ACTIONS",
+      "item_metadata": {},
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task Row Actions"
+    },
+    {
+      "description": null,
+      "id": "UI_C_TASK_EMPTY_STATE",
+      "item_metadata": {},
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Empty State Panel"
+    },
+    {
+      "description": null,
+      "id": "UI_C_ERROR_BANNER",
+      "item_metadata": {},
+      "node_kind_id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Error Banner"
+    },
+    {
+      "description": null,
+      "id": "D_ENTITY_TASK",
+      "item_metadata": {},
+      "node_kind_id": "bc8eec70-23fe-4f85-970e-ea5d5b7719bb",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task Entity"
+    },
+    {
+      "description": null,
+      "id": "D_TABLE_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "720ffab1-c13d-4399-8e95-fd87f300dc2a",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "tasks table"
+    },
+    {
+      "description": null,
+      "id": "QA_SUITE_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task CRUD Suite"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_EMPTY_STATE",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Empty state UI test"
+    },
+    {
+      "description": null,
+      "id": "QA_TST_ERROR_BANNER",
+      "item_metadata": {},
+      "node_kind_id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Error banner UI test"
+    },
+    {
+      "description": null,
+      "id": "INF_ALERT_TASK_CREATE_SPIKE",
+      "item_metadata": {},
+      "node_kind_id": "c5cd323a-55d7-4082-9c1d-679d624703ad",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Alert: task create spike"
+    },
+    {
+      "description": null,
+      "id": "INF_LOG_TASK_MUTATION",
+      "item_metadata": {},
+      "node_kind_id": "4735b74c-f1e7-44ee-8cc7-aeb69c372afd",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Log: task mutation audit"
+    },
+    {
+      "description": null,
+      "id": "INF_DASH_TASKS",
+      "item_metadata": {},
+      "node_kind_id": "37c51058-b5c2-48e0-b424-19e9c3f31b03",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Dashboard: task health"
+    },
+    {
+      "description": null,
+      "id": "INF_SLI_TASK_CREATE_LAT",
+      "item_metadata": {},
+      "node_kind_id": "1ff2294a-9039-4261-9d6d-b75cead64d3e",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "SLI: task create latency"
+    },
+    {
+      "description": null,
+      "id": "INF_SLO_TASK_CREATE_LAT",
+      "item_metadata": {},
+      "node_kind_id": "53ce9b94-7964-4240-a6ac-932f574f4954",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "SLO: task create latency p95"
+    },
+    {
+      "description": null,
+      "id": "SEC_POLICY_TASK_AUTHZ",
+      "item_metadata": {},
+      "node_kind_id": "7771392e-bcd9-4c92-a9ee-5a92fd84b728",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Policy: task authz"
+    },
+    {
+      "description": null,
+      "id": "SEC_ROLE_USER",
+      "item_metadata": {},
+      "node_kind_id": "05c8e682-3c72-472d-bede-c40b23eac399",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Role: user"
+    },
+    {
+      "description": null,
+      "id": "SEC_PERMISSION_TASK_WRITE",
+      "item_metadata": {},
+      "node_kind_id": "3ef1e162-d32b-45b3-9ef0-7ca6109d2ec0",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Permission: task.write"
+    },
+    {
+      "description": null,
+      "id": "SEC_FEATURE_FLAG_BULK",
+      "item_metadata": {},
+      "node_kind_id": "156ffcdd-0352-44c6-85bd-546c222b6a71",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Feature flag: bulk edit"
+    },
+    {
+      "description": null,
+      "id": "D_INDEX_TASKS_STATUS",
+      "item_metadata": {
+        "original_title": "tasks(status) index"
+      },
+      "node_kind_id": "d30c8f5f-c8f6-45ee-8991-cdc9e9b52738",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Tasks Index (Status)"
+    },
+    {
+      "description": null,
+      "id": "INF_METRIC_TASK_CREATE_RATE",
+      "item_metadata": {
+        "original_title": "metric.tasks.create_rate"
+      },
+      "node_kind_id": "6a2bed3a-3efc-419f-a364-e624ea1511d5",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Metric: Tasks Create Rate"
+    },
+    {
+      "description": null,
+      "id": "PERF_BUDGET_TASK_LIST",
+      "item_metadata": {},
+      "node_kind_id": "6a2bed3a-3efc-419f-a364-e624ea1511d5",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Budget: task list p95 < 150ms"
+    },
+    {
+      "description": null,
+      "id": "PERF_QUERY_PLAN",
+      "item_metadata": {},
+      "node_kind_id": "4735b74c-f1e7-44ee-8cc7-aeb69c372afd",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Task list query plan"
+    },
+    {
+      "description": null,
+      "id": "AN_DASH_PRODUCTIVITY",
+      "item_metadata": {},
+      "node_kind_id": "37c51058-b5c2-48e0-b424-19e9c3f31b03",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Dashboard: productivity"
+    },
+    {
+      "description": null,
+      "id": "COMP_POLICY_RETENTION",
+      "item_metadata": {},
+      "node_kind_id": "7771392e-bcd9-4c92-a9ee-5a92fd84b728",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Policy: task retention 365d"
+    },
+    {
+      "description": null,
+      "id": "A11Y_CHECK_CONTRAST",
+      "item_metadata": {},
+      "node_kind_id": "cc957d52-a70a-47d9-a8ff-8171ec760c17",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Check: contrast ratio"
+    },
+    {
+      "description": null,
+      "id": "A11Y_CHECK_KEYBOARD",
+      "item_metadata": {},
+      "node_kind_id": "cc957d52-a70a-47d9-a8ff-8171ec760c17",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Check: keyboard navigation"
+    },
+    {
+      "description": null,
+      "id": "OPS_RUNBOOK_TASK_SPIKE",
+      "item_metadata": {},
+      "node_kind_id": "ddd54247-a72b-4a54-b4b8-64ecd3fb860a",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Runbook: task spike"
+    },
+    {
+      "description": null,
+      "id": "AN_EVENT_TASK_CREATED",
+      "item_metadata": {
+        "original_title": "Event: task_created"
+      },
+      "node_kind_id": "46308081-b628-4351-b69a-b989b724732e",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Event: Task Created"
+    },
+    {
+      "description": null,
+      "id": "AN_METRIC_TASK_COMPLETED",
+      "item_metadata": {
+        "original_title": "Metric: task_completed_count"
+      },
+      "node_kind_id": "6a2bed3a-3efc-419f-a364-e624ea1511d5",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "Metric: Task Completed Count"
+    },
+    {
+      "description": null,
+      "id": "LOC_STRING_EMPTY",
+      "item_metadata": {
+        "original_title": "i18n.empty_state"
+      },
+      "node_kind_id": "63cf8213-d1d8-4f33-958b-5ed82a696735",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "I18n Empty State"
+    },
+    {
+      "description": null,
+      "id": "LOC_STRING_ERROR",
+      "item_metadata": {
+        "original_title": "i18n.error_banner"
+      },
+      "node_kind_id": "63cf8213-d1d8-4f33-958b-5ed82a696735",
+      "owner": null,
+      "parent_id": null,
+      "priority": "medium",
+      "status": "planned",
+      "title": "I18n Error Banner"
+    }
+  ],
+  "link_types": [
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "1c0dea08-0748-4ac0-a91f-30274f012bba",
+      "link_metadata": {},
+      "name": "decomposes",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "0ef18dc5-6064-437b-a6c4-a3c4e9268ab6",
+      "link_metadata": {},
+      "name": "verified_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "08d5f318-1e91-4ca8-8c58-67a5f1ea3249",
+      "link_metadata": {},
+      "name": "contains",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "a2176d13-358a-4fbe-ab58-1aa30b46ef32",
+      "link_metadata": {},
+      "name": "calls",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "7a6daf7b-5501-4373-8357-eb871dc8eed1",
+      "link_metadata": {},
+      "name": "reads",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "c488d66d-7872-4499-a9bb-fe7e6ef03a5b",
+      "link_metadata": {},
+      "name": "writes",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "3563b02e-6228-4fbc-979e-777a302cd664",
+      "link_metadata": {},
+      "name": "uses",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "52e3cbd4-3b8e-41b4-9a7a-95bc9a923d24",
+      "link_metadata": {},
+      "name": "tests",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "0de069c2-9119-434f-a180-72adceb8f838",
+      "link_metadata": {},
+      "name": "includes_step",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "832545c3-7e6a-4c6d-9421-725b2995418b",
+      "link_metadata": {},
+      "name": "triggers",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "dd21c813-5056-453f-a544-bbb0672617dc",
+      "link_metadata": {},
+      "name": "represented_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "description": null,
+      "id": "935ba8c0-3e87-4b29-9e92-41f4190787ad",
+      "link_metadata": {},
+      "name": "realized_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "dba1b215-3d33-4af3-9b15-89c68ff62a49",
+      "link_metadata": {},
+      "name": "instrumented_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "886e2896-a482-4646-9acb-401a289a234d",
+      "link_metadata": {},
+      "name": "guarded_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "637ecac3-3c8f-4e8c-9109-c056d69de0a2",
+      "link_metadata": {},
+      "name": "authz_checks",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "5fafe25b-9aa4-4a90-9ed9-2a1e32317148",
+      "link_metadata": {},
+      "name": "emits",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "68434bba-4195-4a75-942a-9b4a6174c606",
+      "link_metadata": {},
+      "name": "logs",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "d548b2dc-a21d-4070-b916-83052aa2f0f5",
+      "link_metadata": {},
+      "name": "alerts_on",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "5c298545-f8d0-442e-ad79-f225665c210c",
+      "link_metadata": {},
+      "name": "monitored_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "ff7d040e-84ae-4316-a50a-cd2a048daf32",
+      "link_metadata": {},
+      "name": "localizes",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "b6101c21-638c-416f-bf77-a48abdc7a036",
+      "link_metadata": {},
+      "name": "a11y_validated_by",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "description": null,
+      "id": "ca6e2fd3-55cd-4f70-aa95-8eb8dded2d74",
+      "link_metadata": {},
+      "name": "conforms_to",
+      "project_id": "proj_todo_graph_001",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    }
+  ],
+  "links": [
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U1",
+      "link_metadata": {},
+      "link_type": "decomposes",
+      "source_item_id": "U_CAP_TODO_CRUD",
+      "target_item_id": "U_EXP_CREATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U2",
+      "link_metadata": {},
+      "link_type": "decomposes",
+      "source_item_id": "U_CAP_TODO_CRUD",
+      "target_item_id": "U_EXP_VIEW_TASKS",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U3",
+      "link_metadata": {},
+      "link_type": "decomposes",
+      "source_item_id": "U_CAP_TODO_CRUD",
+      "target_item_id": "U_EXP_UPDATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U4",
+      "link_metadata": {},
+      "link_type": "decomposes",
+      "source_item_id": "U_CAP_TODO_CRUD",
+      "target_item_id": "U_EXP_DELETE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U5",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_EXP_CREATE_TASK",
+      "target_item_id": "U_ACC_CREATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U6",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_EXP_UPDATE_TASK",
+      "target_item_id": "U_ACC_UPDATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "639e5dcd-c2ab-4878-9d35-9ffe7dbab265",
+      "id": "L_U7",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_EXP_DELETE_TASK",
+      "target_item_id": "U_ACC_DELETE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T1",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "T_SVC_TASK",
+      "target_item_id": "T_API_TASK_CREATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T2",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "T_SVC_TASK",
+      "target_item_id": "T_API_TASK_LIST",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T3",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "T_SVC_TASK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T4",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "T_SVC_TASK",
+      "target_item_id": "T_API_TASK_DELETE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T5",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_API_TASK_CREATE",
+      "target_item_id": "T_FN_CREATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T6",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_API_TASK_UPDATE",
+      "target_item_id": "T_FN_UPDATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T7",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_API_TASK_DELETE",
+      "target_item_id": "T_FN_DELETE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T11",
+      "link_metadata": {},
+      "link_type": "tests",
+      "source_item_id": "QA_TST_CREATE_TASK",
+      "target_item_id": "T_API_TASK_CREATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T12",
+      "link_metadata": {},
+      "link_type": "tests",
+      "source_item_id": "QA_TST_UPDATE_TASK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T13",
+      "link_metadata": {},
+      "link_type": "tests",
+      "source_item_id": "QA_TST_DELETE_TASK",
+      "target_item_id": "T_API_TASK_DELETE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J1",
+      "link_metadata": {},
+      "link_type": "includes_step",
+      "source_item_id": "J_CREATE_TASK",
+      "target_item_id": "UI_S_TASK_LIST",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J2",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_NEW_TASK_INPUT",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J3",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_ADD_TASK_BUTTON",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J4",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "UI_C_ADD_TASK_BUTTON",
+      "target_item_id": "UI_I_ADD_TASK_CLICK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J5",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "UI_I_ADD_TASK_CLICK",
+      "target_item_id": "T_API_TASK_CREATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J6",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_TASK_ROW",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J7",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_I_EDIT_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J8",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_I_DELETE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J9",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "UI_I_EDIT_TASK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J10",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "UI_I_DELETE_TASK",
+      "target_item_id": "T_API_TASK_DELETE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M1",
+      "link_metadata": {},
+      "link_type": "represented_by",
+      "source_item_id": "U_EXP_CREATE_TASK",
+      "target_item_id": "UI_I_ADD_TASK_CLICK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M2",
+      "link_metadata": {},
+      "link_type": "realized_by",
+      "source_item_id": "U_EXP_CREATE_TASK",
+      "target_item_id": "T_API_TASK_CREATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M3",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_ACC_CREATE_TASK",
+      "target_item_id": "QA_TST_CREATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M4",
+      "link_metadata": {},
+      "link_type": "realized_by",
+      "source_item_id": "U_EXP_UPDATE_TASK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M5",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_ACC_UPDATE_TASK",
+      "target_item_id": "QA_TST_UPDATE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M6",
+      "link_metadata": {},
+      "link_type": "realized_by",
+      "source_item_id": "U_EXP_DELETE_TASK",
+      "target_item_id": "T_API_TASK_DELETE",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:39:17.453003-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M7",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_ACC_DELETE_TASK",
+      "target_item_id": "QA_TST_DELETE_TASK",
+      "updated_at": "2026-01-27T18:39:17.453003-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T7A",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_API_TASK_LIST",
+      "target_item_id": "T_FN_LIST_TASKS",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T7B",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_FN_CREATE_TASK",
+      "target_item_id": "T_FN_VALIDATE_TASK",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T7C",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_FN_UPDATE_TASK",
+      "target_item_id": "T_FN_VALIDATE_TASK",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T7D",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_FN_LIST_TASKS",
+      "target_item_id": "T_FN_BUILD_QUERY",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T7E",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "T_FN_BUILD_QUERY",
+      "target_item_id": "T_FN_APPLY_FILTERS",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T10E",
+      "link_metadata": {},
+      "link_type": "publishes",
+      "source_item_id": "T_FN_CREATE_TASK",
+      "target_item_id": "T_EVENT_TASK_CREATED",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T10F",
+      "link_metadata": {},
+      "link_type": "publishes",
+      "source_item_id": "T_FN_UPDATE_TASK",
+      "target_item_id": "T_EVENT_TASK_UPDATED",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T10G",
+      "link_metadata": {},
+      "link_type": "publishes",
+      "source_item_id": "T_FN_DELETE_TASK",
+      "target_item_id": "T_EVENT_TASK_DELETED",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T10H",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "T_EVENT_TASK_CREATED",
+      "target_item_id": "T_JOB_REINDEX_TASKS",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T14",
+      "link_metadata": {},
+      "link_type": "tests",
+      "source_item_id": "QA_TST_LIST_TASKS",
+      "target_item_id": "T_API_TASK_LIST",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T15",
+      "link_metadata": {},
+      "link_type": "tests",
+      "source_item_id": "QA_TST_FILTER_TASKS",
+      "target_item_id": "T_API_TASK_LIST",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "931a3965-c401-4a75-a13b-fcf0a6722f8d",
+      "id": "L_T16",
+      "link_metadata": {},
+      "link_type": "tests",
+      "source_item_id": "QA_TST_TOGGLE_TASK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J11",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_C_TASK_TITLE_CELL",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J12",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_C_TASK_STATUS_TOGGLE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J13",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_C_TASK_DELETE_BUTTON",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J14",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "UI_C_TASK_STATUS_TOGGLE",
+      "target_item_id": "UI_I_TOGGLE_TASK",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J15",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "UI_I_TOGGLE_TASK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J16",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "UI_C_TASK_TITLE_CELL",
+      "target_item_id": "UI_I_INLINE_EDIT_TITLE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J17",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "UI_I_INLINE_EDIT_TITLE",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J18",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_FILTER_STATUS",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J19",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "UI_C_FILTER_STATUS",
+      "target_item_id": "UI_I_FILTER_CHANGE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "63b92a57-4f05-4599-894e-3073a9ddfdae",
+      "id": "L_J20",
+      "link_metadata": {},
+      "link_type": "calls",
+      "source_item_id": "UI_I_FILTER_CHANGE",
+      "target_item_id": "T_API_TASK_LIST",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M8",
+      "link_metadata": {},
+      "link_type": "realized_by",
+      "source_item_id": "U_EXP_VIEW_TASKS",
+      "target_item_id": "T_API_TASK_LIST",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M9",
+      "link_metadata": {},
+      "link_type": "represented_by",
+      "source_item_id": "U_EXP_VIEW_TASKS",
+      "target_item_id": "UI_S_TASK_LIST",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M10",
+      "link_metadata": {},
+      "link_type": "represented_by",
+      "source_item_id": "U_ACC_CREATE_TASK",
+      "target_item_id": "UI_C_TASK_ROW",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M11",
+      "link_metadata": {},
+      "link_type": "represented_by",
+      "source_item_id": "U_ACC_UPDATE_TASK",
+      "target_item_id": "UI_I_INLINE_EDIT_TITLE",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M12",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_ACC_UPDATE_TASK",
+      "target_item_id": "QA_TST_TOGGLE_TASK",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M13",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_EXP_VIEW_TASKS",
+      "target_item_id": "QA_TST_LIST_TASKS",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:42:34.594880-07:00",
+      "graph_id": "c1dc3782-3aac-4183-949f-fe9475bd57b0",
+      "id": "L_M14",
+      "link_metadata": {},
+      "link_type": "verified_by",
+      "source_item_id": "U_EXP_VIEW_TASKS",
+      "target_item_id": "QA_TST_FILTER_TASKS",
+      "updated_at": "2026-01-27T18:42:34.594880-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI1",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_TASK_LIST_CONTAINER",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI2",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+      "target_item_id": "UI_C_NEW_TASK_INPUT",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI3",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+      "target_item_id": "UI_C_ADD_TASK_BUTTON",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI4",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+      "target_item_id": "UI_C_TASK_ROW",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI5",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_C_TASK_TITLE_CELL",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI6",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_C_TASK_STATUS_TOGGLE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI7",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW",
+      "target_item_id": "UI_C_TASK_ROW_ACTIONS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI8",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_C_TASK_ROW_ACTIONS",
+      "target_item_id": "UI_C_TASK_DELETE_BUTTON",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI9",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_TASK_EMPTY_STATE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI10",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_ERROR_BANNER",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "e37b885e-ac68-4e52-92c9-b449a7932ab3",
+      "id": "L_UI11",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "UI_S_TASK_LIST",
+      "target_item_id": "UI_C_FILTER_STATUS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "id": "L_D1",
+      "link_metadata": {},
+      "link_type": "realized_by",
+      "source_item_id": "D_ENTITY_TASK",
+      "target_item_id": "D_TABLE_TASKS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "id": "L_D2",
+      "link_metadata": {},
+      "link_type": "uses",
+      "source_item_id": "D_TABLE_TASKS",
+      "target_item_id": "D_INDEX_TASKS_STATUS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "id": "L_D3",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "D_TABLE_TASKS",
+      "target_item_id": "T_FIELD_TASK_ID",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "id": "L_D4",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "D_TABLE_TASKS",
+      "target_item_id": "T_FIELD_TASK_TITLE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "id": "L_D5",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "D_TABLE_TASKS",
+      "target_item_id": "T_FIELD_TASK_STATUS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "180ae207-3926-4077-bdeb-681dfb977c5f",
+      "id": "L_D6",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "D_TABLE_TASKS",
+      "target_item_id": "T_FIELD_TASK_CREATED",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q1",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_CREATE_TASK",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q2",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_UPDATE_TASK",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q3",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_DELETE_TASK",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q4",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_LIST_TASKS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q5",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_FILTER_TASKS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q6",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_TOGGLE_TASK",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q7",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_EMPTY_STATE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "15d259f7-af26-4344-a3a9-166364e5481f",
+      "id": "L_Q8",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "QA_SUITE_TASKS",
+      "target_item_id": "QA_TST_ERROR_BANNER",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "id": "L_INF1",
+      "link_metadata": {},
+      "link_type": "instrumented_by",
+      "source_item_id": "T_API_TASK_CREATE",
+      "target_item_id": "INF_METRIC_TASK_CREATE_RATE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "id": "L_INF2",
+      "link_metadata": {},
+      "link_type": "alerts_on",
+      "source_item_id": "INF_METRIC_TASK_CREATE_RATE",
+      "target_item_id": "INF_ALERT_TASK_CREATE_SPIKE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "id": "L_INF3",
+      "link_metadata": {},
+      "link_type": "logs",
+      "source_item_id": "T_API_TASK_UPDATE",
+      "target_item_id": "INF_LOG_TASK_MUTATION",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "id": "L_INF4",
+      "link_metadata": {},
+      "link_type": "monitored_by",
+      "source_item_id": "INF_METRIC_TASK_CREATE_RATE",
+      "target_item_id": "INF_DASH_TASKS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "dc4dc42d-6463-4f76-a13b-93aa119794a0",
+      "id": "L_INF5",
+      "link_metadata": {},
+      "link_type": "conforms_to",
+      "source_item_id": "INF_SLI_TASK_CREATE_LAT",
+      "target_item_id": "INF_SLO_TASK_CREATE_LAT",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "id": "L_SEC1",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "SEC_POLICY_TASK_AUTHZ",
+      "target_item_id": "SEC_ROLE_USER",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "id": "L_SEC2",
+      "link_metadata": {},
+      "link_type": "contains",
+      "source_item_id": "SEC_ROLE_USER",
+      "target_item_id": "SEC_PERMISSION_TASK_WRITE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "id": "L_SEC3",
+      "link_metadata": {},
+      "link_type": "authz_checks",
+      "source_item_id": "T_API_TASK_CREATE",
+      "target_item_id": "SEC_POLICY_TASK_AUTHZ",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "7dcfd911-0d04-4177-8901-ac79e7abb355",
+      "id": "L_SEC4",
+      "link_metadata": {},
+      "link_type": "guarded_by",
+      "source_item_id": "SEC_FEATURE_FLAG_BULK",
+      "target_item_id": "T_API_TASK_UPDATE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+      "id": "L_PERF1",
+      "link_metadata": {},
+      "link_type": "instrumented_by",
+      "source_item_id": "T_API_TASK_LIST",
+      "target_item_id": "PERF_BUDGET_TASK_LIST",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "ad8ef3b5-caed-497a-a601-f97077c2fbaa",
+      "id": "L_PERF2",
+      "link_metadata": {},
+      "link_type": "logs",
+      "source_item_id": "T_API_TASK_LIST",
+      "target_item_id": "PERF_QUERY_PLAN",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "id": "L_AN1",
+      "link_metadata": {},
+      "link_type": "emits",
+      "source_item_id": "T_EVENT_TASK_CREATED",
+      "target_item_id": "AN_EVENT_TASK_CREATED",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "id": "L_AN2",
+      "link_metadata": {},
+      "link_type": "instrumented_by",
+      "source_item_id": "AN_EVENT_TASK_CREATED",
+      "target_item_id": "AN_METRIC_TASK_COMPLETED",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "1c4e5ac5-177c-4cac-b344-6389c03cd83b",
+      "id": "L_AN3",
+      "link_metadata": {},
+      "link_type": "monitored_by",
+      "source_item_id": "AN_METRIC_TASK_COMPLETED",
+      "target_item_id": "AN_DASH_PRODUCTIVITY",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "93df47e6-0b36-4e3c-8a9b-b4e6aecc2e2f",
+      "id": "L_COMP1",
+      "link_metadata": {},
+      "link_type": "conforms_to",
+      "source_item_id": "COMP_POLICY_RETENTION",
+      "target_item_id": "D_TABLE_TASKS",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "id": "L_LOC1",
+      "link_metadata": {},
+      "link_type": "localizes",
+      "source_item_id": "UI_C_TASK_EMPTY_STATE",
+      "target_item_id": "LOC_STRING_EMPTY",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "90ee98ad-dfa8-4a7a-bd17-2a9cdada57e2",
+      "id": "L_LOC2",
+      "link_metadata": {},
+      "link_type": "localizes",
+      "source_item_id": "UI_C_ERROR_BANNER",
+      "target_item_id": "LOC_STRING_ERROR",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "id": "L_A11Y1",
+      "link_metadata": {},
+      "link_type": "a11y_validated_by",
+      "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+      "target_item_id": "A11Y_CHECK_KEYBOARD",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "406af0e1-5378-454c-8037-54c5d7db1289",
+      "id": "L_A11Y2",
+      "link_metadata": {},
+      "link_type": "a11y_validated_by",
+      "source_item_id": "UI_C_TASK_LIST_CONTAINER",
+      "target_item_id": "A11Y_CHECK_CONTRAST",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    },
+    {
+      "created_at": "2026-01-27T18:58:51.664591-07:00",
+      "graph_id": "63a3e456-428f-48ce-a957-a24442267433",
+      "id": "L_OPS1",
+      "link_metadata": {},
+      "link_type": "triggers",
+      "source_item_id": "INF_ALERT_TASK_CREATE_SPIKE",
+      "target_item_id": "OPS_RUNBOOK_TASK_SPIKE",
+      "updated_at": "2026-01-27T18:58:51.664591-07:00"
+    }
+  ],
+  "node_kinds": [
+    {
+      "description": null,
+      "id": "2bf73211-b894-4cfa-9b1e-b8ce72f407b3",
+      "kind_metadata": {},
+      "name": "capability",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "a54d76ba-70fe-4944-8fdc-1addfb877323",
+      "kind_metadata": {},
+      "name": "expectation",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "0978a232-0260-4a96-a401-0d630e2c3f0d",
+      "kind_metadata": {},
+      "name": "acceptance_check",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "f7aacaff-02eb-4066-8d8b-021ca82d5ceb",
+      "kind_metadata": {},
+      "name": "screen",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "404846c7-d800-4cda-9340-47a386d5d972",
+      "kind_metadata": {},
+      "name": "component",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "f831f91f-2e8a-43ba-84db-646fc64ac5ff",
+      "kind_metadata": {},
+      "name": "interaction",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "2b32f272-4ee7-4ae8-8da4-59f26d176586",
+      "kind_metadata": {},
+      "name": "journey",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "8c509f22-7430-474f-9143-d3d412532665",
+      "kind_metadata": {},
+      "name": "service",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "59a1556f-1b4a-412a-9fd5-5d570f0e5190",
+      "kind_metadata": {},
+      "name": "function",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "1830d698-03a3-401c-8e66-2a33dab6d218",
+      "kind_metadata": {},
+      "name": "api_endpoint",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "bc8eec70-23fe-4f85-970e-ea5d5b7719bb",
+      "kind_metadata": {},
+      "name": "data_entity",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "720ffab1-c13d-4399-8e95-fd87f300dc2a",
+      "kind_metadata": {},
+      "name": "table",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "d30c8f5f-c8f6-45ee-8991-cdc9e9b52738",
+      "kind_metadata": {},
+      "name": "index",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "059e5a8e-9e91-4b29-b06f-60579574759b",
+      "kind_metadata": {},
+      "name": "test",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "46308081-b628-4351-b69a-b989b724732e",
+      "kind_metadata": {},
+      "name": "event",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "49abe5d4-ac88-420d-98e8-19566ffade96",
+      "kind_metadata": {},
+      "name": "job",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "6a2bed3a-3efc-419f-a364-e624ea1511d5",
+      "kind_metadata": {},
+      "name": "metric",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "c5cd323a-55d7-4082-9c1d-679d624703ad",
+      "kind_metadata": {},
+      "name": "alert",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "4735b74c-f1e7-44ee-8cc7-aeb69c372afd",
+      "kind_metadata": {},
+      "name": "log",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "37c51058-b5c2-48e0-b424-19e9c3f31b03",
+      "kind_metadata": {},
+      "name": "dashboard",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "7771392e-bcd9-4c92-a9ee-5a92fd84b728",
+      "kind_metadata": {},
+      "name": "policy",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "05c8e682-3c72-472d-bede-c40b23eac399",
+      "kind_metadata": {},
+      "name": "role",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "3ef1e162-d32b-45b3-9ef0-7ca6109d2ec0",
+      "kind_metadata": {},
+      "name": "permission",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "156ffcdd-0352-44c6-85bd-546c222b6a71",
+      "kind_metadata": {},
+      "name": "feature_flag",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "1ff2294a-9039-4261-9d6d-b75cead64d3e",
+      "kind_metadata": {},
+      "name": "sli",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "53ce9b94-7964-4240-a6ac-932f574f4954",
+      "kind_metadata": {},
+      "name": "slo",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "63cf8213-d1d8-4f33-958b-5ed82a696735",
+      "kind_metadata": {},
+      "name": "locale_string",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "cc957d52-a70a-47d9-a8ff-8171ec760c17",
+      "kind_metadata": {},
+      "name": "a11y_check",
+      "project_id": "proj_todo_graph_001"
+    },
+    {
+      "description": null,
+      "id": "ddd54247-a72b-4a54-b4b8-64ecd3fb860a",
+      "kind_metadata": {},
+      "name": "runbook",
+      "project_id": "proj_todo_graph_001"
+    }
+  ],
+  "project": {
+    "description": "Multi-view ToDo CRUD feature graph (user/tech/journey/mapping).",
+    "id": "proj_todo_graph_001",
+    "name": "ToDo CRUD Feature Graph",
+    "project_metadata": {
+      "domain": "Product Feature Graph",
+      "example": true,
+      "schema_version": "2026-01"
+    }
+  },
+  "schema_version": "2026-01"
+}

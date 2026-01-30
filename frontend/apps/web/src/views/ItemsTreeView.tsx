@@ -1,22 +1,35 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import type { Item } from "@tracertm/types";
-import { Alert } from "@tracertm/ui/components/Alert";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Input } from "@tracertm/ui/components/Input";
 import {
+	Badge,
+	Button,
+	Card,
+	Input,
+	Skeleton,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@tracertm/ui/components/Select";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import { Lightbulb } from "lucide-react";
-import { useMemo, useState } from "react";
+} from "@tracertm/ui";
+import {
+	ChevronDown,
+	ChevronRight,
+	FileText,
+	Filter,
+	Layers,
+	List,
+	Maximize2,
+	Minimize2,
+	Plus,
+	Search,
+	Network,
+	Target,
+} from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useItems } from "../hooks/useItems";
 import { useProjects } from "../hooks/useProjects";
+import { cn } from "@/lib/utils";
 
 interface TreeNode {
 	item: Item;
@@ -30,114 +43,153 @@ interface TreeItemProps {
 	onToggleExpand: (id: string) => void;
 }
 
-function TreeItem({ node, expandedIds, onToggleExpand }: TreeItemProps) {
-	const { item, children, level } = node;
-	const hasChildren = children.length > 0;
-	const isExpanded = expandedIds.has(item.id);
+const TreeItem = memo(
+	function TreeItem({ node, expandedIds, onToggleExpand }: TreeItemProps) {
+		const { item, children, level } = node;
+		const hasChildren = children.length > 0;
+		const isExpanded = expandedIds.has(item.id);
 
-	return (
-		<div className="select-none">
-			<div
-				className={`flex items-center gap-2 p-3 rounded-lg hover:bg-muted/50 transition-colors`}
-				style={{ paddingLeft: `${level * 24 + 12}px` }}
-			>
-				{hasChildren && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => onToggleExpand(item.id)}
-						className="flex-shrink-0 h-5 w-5 p-0"
-					>
-						{isExpanded ? "▼" : "▶"}
-					</Button>
-				)}
-				{!hasChildren && <div className="w-5" />}
+		const handleToggle = useCallback(() => {
+			onToggleExpand(item.id);
+		}, [item.id, onToggleExpand]);
 
-				<div className="flex-1 flex items-center gap-3">
-					<Link to={`/items/${item.id}`} className="flex-1 group">
-						<div className="flex items-center gap-2">
-							<span className="font-medium group-hover:text-primary transition-colors">
-								{item.title}
-							</span>
-							<Badge variant="secondary" className="text-xs">
-								{item.type}
-							</Badge>
-							<Badge
-								variant={
-									item.status === "done"
-										? "success"
-										: item.status === "in_progress"
-											? "info"
-											: item.status === "blocked"
-												? "destructive"
-												: "secondary"
-								}
-								className="text-xs"
-							>
-								{item.status.replace("_", " ")}
-							</Badge>
+		return (
+			<div className="select-none">
+				<div
+					className={cn(
+						"group flex items-center gap-3 p-2 rounded-xl transition-all duration-200 border border-transparent",
+						isExpanded
+							? "bg-primary/[0.03] border-primary/5"
+							: "hover:bg-muted/50",
+					)}
+					style={{ marginLeft: `${level * 20}px` }}
+				>
+					{hasChildren ? (
+						<button
+							onClick={handleToggle}
+							className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+						>
+							{isExpanded ? (
+								<ChevronDown className="h-4 w-4" />
+							) : (
+								<ChevronRight className="h-4 w-4" />
+							)}
+						</button>
+					) : (
+						<div className="w-6 h-6 flex items-center justify-center">
+							<div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
 						</div>
-					</Link>
-
-					{item.owner && (
-						<span className="text-sm text-muted-foreground">{item.owner}</span>
 					)}
 
-					{hasChildren && (
-						<span className="text-sm text-muted-foreground">
-							{children.length} {children.length === 1 ? "child" : "children"}
-						</span>
-					)}
+					<div className="flex-1 min-w-0 flex items-center gap-4">
+						<Link
+							to={`/items/${item.id}`}
+							className="flex-1 flex items-center gap-3 min-w-0 group/link"
+						>
+							<div
+								className={cn(
+									"h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+									isExpanded
+										? "bg-primary text-primary-foreground"
+										: "bg-muted text-muted-foreground group-hover/link:bg-primary/10 group-hover/link:text-primary",
+								)}
+							>
+								<FileText className="h-4 w-4" />
+							</div>
+							<div className="flex flex-col min-w-0">
+								<span className="text-sm font-bold truncate group-hover/link:text-primary transition-colors">
+									{item.title}
+								</span>
+								<div className="flex items-center gap-2 mt-0.5">
+									<Badge
+										variant="outline"
+										className="text-[8px] h-3.5 px-1 uppercase font-black tracking-tighter"
+									>
+										{item.type}
+									</Badge>
+									<span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+										{item.status}
+									</span>
+								</div>
+							</div>
+						</Link>
+
+						<div className="hidden md:flex items-center gap-6 shrink-0 mr-4">
+							{item.owner && (
+								<div className="flex items-center gap-1.5">
+									<div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-black uppercase">
+										{item.owner.charAt(0)}
+									</div>
+									<span className="text-[10px] font-bold text-muted-foreground uppercase">
+										{item.owner}
+									</span>
+								</div>
+							)}
+							{hasChildren && (
+								<Badge
+									variant="secondary"
+									className="text-[9px] font-black rounded-full px-1.5 h-4"
+								>
+									{children.length}
+								</Badge>
+							)}
+						</div>
+					</div>
 				</div>
+
+				{hasChildren && isExpanded && (
+					<div className="mt-1 space-y-1 relative before:absolute before:left-[11px] before:top-0 before:bottom-0 before:w-px before:bg-border/50">
+						{children.map((child) => (
+							<TreeItem
+								key={child.item.id}
+								node={child}
+								expandedIds={expandedIds}
+								onToggleExpand={onToggleExpand}
+							/>
+						))}
+					</div>
+				)}
 			</div>
-
-			{hasChildren && isExpanded && (
-				<div>
-					{children.map((child) => (
-						<TreeItem
-							key={child.item.id}
-							node={child}
-							expandedIds={expandedIds}
-							onToggleExpand={onToggleExpand}
-						/>
-					))}
-				</div>
-			)}
-		</div>
-	);
-}
+		);
+	},
+	(prev, next) => {
+		// Custom comparison for memoization
+		// Return true if props are equal (skip re-render), false if different
+		return (
+			prev.node.item.id === next.node.item.id &&
+			prev.node.level === next.node.level &&
+			prev.node.children.length === next.node.children.length &&
+			prev.expandedIds.has(prev.node.item.id) ===
+				next.expandedIds.has(next.node.item.id)
+		);
+	},
+);
 
 function buildTree(items: Item[]): TreeNode[] {
 	const itemMap = new Map<string, TreeNode>();
 	const rootNodes: TreeNode[] = [];
 
-	// Create nodes for all items
 	items.forEach((item) => {
-		itemMap.set(item.id, {
-			item,
-			children: [],
-			level: 0,
-		});
+		itemMap.set(item.id, { item, children: [], level: 0 });
 	});
 
-	// Build parent-child relationships
 	items.forEach((item) => {
 		const node = itemMap.get(item.id)!;
-
-		if (item.parentId) {
-			const parent = itemMap.get(item.parentId);
-			if (parent) {
-				node.level = parent.level + 1;
-				parent.children.push(node);
-			} else {
-				// Parent not found, treat as root
-				rootNodes.push(node);
-			}
+		if (item.parentId && itemMap.has(item.parentId)) {
+			const parent = itemMap.get(item.parentId)!;
+			node.level = parent.level + 1; // Basic level, will be corrected in recursion if needed
+			parent.children.push(node);
 		} else {
-			// No parent, this is a root node
 			rootNodes.push(node);
 		}
 	});
+
+	// Re-calculate levels correctly via DFS
+	const setLevel = (node: TreeNode, level: number) => {
+		node.level = level;
+		node.children.forEach((child) => setLevel(child, level + 1));
+	};
+	rootNodes.forEach((root) => setLevel(root, 0));
 
 	return rootNodes;
 }
@@ -148,24 +200,16 @@ export function ItemsTreeView() {
 	const projectFilter = searchParams?.project || undefined;
 	const typeFilter = searchParams?.type || undefined;
 
-	const {
-		data: itemsData,
-		isLoading,
-		error,
-	} = useItems({ projectId: projectFilter });
+	const { data: itemsData, isLoading } = useItems({ projectId: projectFilter });
 	const { data: projects } = useProjects();
-	// Ensure projects is always an array
 	const projectsArray = Array.isArray(projects) ? projects : [];
 	const items = itemsData?.items ?? [];
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-	const [expandAll, setExpandAll] = useState(false);
 
-	// Filter items
 	const filteredItems = useMemo(() => {
 		if (!items.length) return [];
-
 		return items.filter((item: any) => {
 			if (typeFilter && item.type !== typeFilter) return false;
 			if (searchQuery) {
@@ -179,195 +223,136 @@ export function ItemsTreeView() {
 		});
 	}, [items, typeFilter, searchQuery]);
 
-	// Build tree structure
 	const treeNodes = useMemo(() => buildTree(filteredItems), [filteredItems]);
 
-	// Count stats
-	const stats = useMemo(() => {
-		const totalItems = filteredItems.length;
-		const rootItems = filteredItems.filter((item) => !item.parentId).length;
-		const childItems = totalItems - rootItems;
-		const maxDepth = Math.max(
-			0,
-			...filteredItems.map((item) => {
-				let depth = 0;
-				let current = item;
-				const visited = new Set<string>();
-				while (current.parentId && !visited.has(current.id)) {
-					visited.add(current.id);
-					const parent = filteredItems.find((i) => i.id === current.parentId);
-					if (parent) {
-						depth++;
-						current = parent;
-					} else {
-						break;
-					}
-				}
-				return depth;
-			}),
-		);
-
-		return { totalItems, rootItems, childItems, maxDepth };
-	}, [filteredItems]);
-
 	const handleToggleExpand = (id: string) => {
-		const newExpanded = new Set(expandedIds);
-		if (newExpanded.has(id)) {
-			newExpanded.delete(id);
-		} else {
-			newExpanded.add(id);
-		}
-		setExpandedIds(newExpanded);
+		setExpandedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
 	};
 
-	const handleExpandAll = () => {
-		if (expandAll) {
-			setExpandedIds(new Set());
-		} else {
-			const allIds = new Set(filteredItems.map((item) => item.id));
-			setExpandedIds(allIds);
-		}
-		setExpandAll(!expandAll);
+	const toggleAll = (expand: boolean) => {
+		if (expand) setExpandedIds(new Set(filteredItems.map((i) => i.id)));
+		else setExpandedIds(new Set());
 	};
 
 	if (isLoading) {
 		return (
-			<div className="space-y-6">
-				<Skeleton className="h-12 w-full" />
-				<Skeleton className="h-96" />
+			<div className="p-6 space-y-8 animate-pulse">
+				<Skeleton className="h-10 w-48" />
+				<Skeleton className="h-12 w-full rounded-2xl" />
+				<div className="space-y-4">
+					{[1, 2, 3, 4, 5, 6].map((i) => (
+						<Skeleton key={i} className="h-12 w-full rounded-xl" />
+					))}
+				</div>
 			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<Alert variant="destructive">Failed to load items: {error.message}</Alert>
 		);
 	}
 
 	return (
-		<div className="space-y-6">
+		<div className="p-6 space-y-8 max-w-5xl mx-auto animate-in fade-in duration-500">
 			{/* Header */}
-			<div className="flex items-center justify-between">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Tree View</h1>
-					<p className="mt-2 text-muted-foreground">
-						Hierarchical view of items and their relationships
+					<h1 className="text-2xl font-black tracking-tight uppercase">
+						Logical Hierarchy
+					</h1>
+					<p className="text-sm text-muted-foreground font-medium">
+						Decompose requirements and features into atomic nodes.
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
-					<Link to="/items">
-						<Button variant="outline">Table View</Button>
-					</Link>
-					<Link to="/items/kanban">
-						<Button variant="outline">Kanban View</Button>
-					</Link>
-					<Link to={`/items?action=create`}>
-						<Button>+ New Item</Button>
-					</Link>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							navigate({ to: "/items", search: searchParams } as any)
+						}
+						className="gap-2 rounded-xl"
+					>
+						<List className="h-4 w-4" /> Table
+					</Button>
+					<Button
+						size="sm"
+						onClick={() =>
+							navigate({
+								to: "/items",
+								search: { ...searchParams, action: "create" } as any,
+							})
+						}
+						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
+					>
+						<Plus className="h-4 w-4" /> New Node
+					</Button>
 				</div>
 			</div>
 
-			{/* Filters */}
-			<Card className="p-4">
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+			{/* Filters & Actions Bar */}
+			<Card className="p-2 border-none bg-muted/30 rounded-2xl flex flex-wrap items-center gap-2">
+				<div className="relative flex-1 min-w-[200px]">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<Input
-						type="search"
-						placeholder="Search items..."
+						placeholder="Search hierarchy..."
+						className="pl-10 h-10 border-none bg-transparent focus-visible:ring-0"
 						value={searchQuery}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-							setSearchQuery((e.currentTarget as HTMLInputElement).value)
-						}
+						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
-					{projects && (
-						<Select
-							value={projectFilter || "all"}
-							onValueChange={(value) => {
-								navigate({
-									search: (prev: any) => {
-										const newSearch = {
-											...(prev || {}),
-											project: value === "all" ? undefined : value,
-										};
-										return newSearch as any;
-									},
-								} as any);
-							}}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="All Projects" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All Projects</SelectItem>
-								{projectsArray.map((project) => (
-									<SelectItem key={project.id} value={project.id}>
-										{project.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					)}
-					<Select
-						value={typeFilter || "all"}
-						onValueChange={(value) => {
-							navigate({
-								search: (prev: any) => {
-									const newSearch = {
-										...(prev || {}),
-										type: value === "all" ? undefined : value,
-									};
-									return newSearch as any;
-								},
-							} as any);
-						}}
+				</div>
+				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
+				<Select
+					value={projectFilter || "all"}
+					onValueChange={(v) =>
+						navigate({
+							search: (prev: any) => ({
+								...prev,
+								project: v === "all" ? undefined : v,
+							}),
+						} as any)
+					}
+				>
+					<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
+						<div className="flex items-center gap-2">
+							<Filter className="h-3.5 w-3.5 text-muted-foreground" />
+							<SelectValue placeholder="All Projects" />
+						</div>
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Projects</SelectItem>
+						{projectsArray.map((p) => (
+							<SelectItem key={p.id} value={p.id}>
+								{p.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<div className="flex items-center gap-1 ml-auto pr-2">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => toggleAll(true)}
+						className="h-8 w-8 text-muted-foreground hover:text-primary"
+						title="Expand All"
 					>
-						<SelectTrigger>
-							<SelectValue placeholder="All Types" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All Types</SelectItem>
-							<SelectItem value="requirement">Requirement</SelectItem>
-							<SelectItem value="feature">Feature</SelectItem>
-							<SelectItem value="test">Test</SelectItem>
-							<SelectItem value="bug">Bug</SelectItem>
-						</SelectContent>
-					</Select>
-					<Button onClick={handleExpandAll}>
-						{expandAll ? "Collapse All" : "Expand All"}
+						<Maximize2 className="h-4 w-4" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => toggleAll(false)}
+						className="h-8 w-8 text-muted-foreground hover:text-primary"
+						title="Collapse All"
+					>
+						<Minimize2 className="h-4 w-4" />
 					</Button>
 				</div>
 			</Card>
 
-			{/* Stats */}
-			<div className="grid grid-cols-4 gap-4">
-				<Card className="p-4">
-					<div className="text-sm font-medium text-muted-foreground">
-						Total Items
-					</div>
-					<div className="mt-2 text-2xl font-semibold">{stats.totalItems}</div>
-				</Card>
-				<Card className="p-4">
-					<div className="text-sm font-medium text-muted-foreground">
-						Root Items
-					</div>
-					<div className="mt-2 text-2xl font-semibold">{stats.rootItems}</div>
-				</Card>
-				<Card className="p-4">
-					<div className="text-sm font-medium text-muted-foreground">
-						Child Items
-					</div>
-					<div className="mt-2 text-2xl font-semibold">{stats.childItems}</div>
-				</Card>
-				<Card className="p-4">
-					<div className="text-sm font-medium text-muted-foreground">
-						Max Depth
-					</div>
-					<div className="mt-2 text-2xl font-semibold">{stats.maxDepth}</div>
-				</Card>
-			</div>
-
-			{/* Tree */}
-			<Card className="p-4">
+			{/* Tree Content */}
+			<Card className="p-4 border-none bg-card/50 shadow-sm rounded-2xl min-h-[400px]">
 				{treeNodes.length > 0 ? (
 					<div className="space-y-1">
 						{treeNodes.map((node) => (
@@ -380,25 +365,48 @@ export function ItemsTreeView() {
 						))}
 					</div>
 				) : (
-					<div className="text-center py-12 text-muted-foreground">
-						<p>No items found</p>
+					<div className="flex flex-col items-center justify-center py-20 text-muted-foreground/40">
+						<Network className="h-16 w-16 mb-4 opacity-10" />
+						<p className="text-xs font-black uppercase tracking-[0.2em]">
+							No structure defined
+						</p>
 					</div>
 				)}
 			</Card>
 
-			{/* Help Text */}
-			<Card className="p-4 bg-primary/10 border-primary/20">
-				<div className="flex items-start gap-3">
-					<Lightbulb className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-					<div>
-						<h3 className="font-medium mb-1">How to use</h3>
-						<p className="text-sm text-muted-foreground">
-							Click the arrows to expand/collapse items with children. Items are
-							organized by parent-child relationships.
-						</p>
-					</div>
-				</div>
-			</Card>
+			{/* Executive Summary */}
+			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+				{[
+					{ label: "Total Nodes", value: filteredItems.length, icon: Layers },
+					{ label: "Root Items", value: treeNodes.length, icon: Target },
+					{
+						label: "Leaf Items",
+						value: filteredItems.length - treeNodes.length,
+						icon: FileText,
+					},
+					{
+						label: "Depth",
+						value: Math.max(
+							0,
+							...filteredItems.map((i) => (i.parentId ? 1 : 0)),
+						),
+						icon: Network,
+					},
+				].map((s, i) => (
+					<Card
+						key={i}
+						className="p-4 border-none bg-muted/30 flex items-center justify-between"
+					>
+						<div>
+							<p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+								{s.label}
+							</p>
+							<p className="text-xl font-black">{s.value}</p>
+						</div>
+						<s.icon className="h-5 w-5 text-primary opacity-20" />
+					</Card>
+				))}
+			</div>
 		</div>
 	);
 }

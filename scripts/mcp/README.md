@@ -1,6 +1,6 @@
 # BMM MCP Server & CLI
 
-Modern BMad Method workflow automation using **FastMCP 2.13+** with beautiful Typer + Rich CLI.
+Modern BMad Method workflow automation using **FastMCP 3.0.0b1** with beautiful Typer + Rich CLI.
 
 ## 🌟 Features
 
@@ -12,7 +12,7 @@ Modern BMad Method workflow automation using **FastMCP 2.13+** with beautiful Ty
 - ✅ **Sampling**: Server can invoke LLMs for workflow execution
 - ✅ **Progress Reporting**: Real-time progress updates
 - ✅ **Middleware**: Logging and monitoring
-- ✅ **Icons**: Beautiful tool icons (NEW in 2.13)
+- ✅ **Icons**: Beautiful tool icons (NEW in 2.13, supported in 3.0.0b1)
 - ✅ **Storage Backends**: Pluggable storage (file-based by default)
 
 ### CLI (`bmm_cli.py`)
@@ -25,7 +25,7 @@ Modern BMad Method workflow automation using **FastMCP 2.13+** with beautiful Ty
 
 ```bash
 # Install dependencies
-pip install fastmcp typer rich pyyaml
+pip install fastmcp==3.0.0b1 mcp==1.25.0 typer rich pyyaml
 
 # Make scripts executable
 chmod +x scripts/mcp/bmm_server.py
@@ -243,7 +243,7 @@ result = await ctx.sample(
 )
 ```
 
-### With Authentication (NEW in 2.13)
+### With Authentication (NEW in 2.13, supported in 3.0.0b1)
 
 ```python
 from fastmcp.auth import BearerAuth
@@ -251,7 +251,7 @@ from fastmcp.auth import BearerAuth
 mcp = FastMCP("bmm-workflows", auth=BearerAuth(token="your-token"))
 ```
 
-### With Storage Backend (NEW in 2.13)
+### With Storage Backend (NEW in 2.13, supported in 3.0.0b1)
 
 ```python
 from fastmcp.storage import RedisStorage
@@ -282,4 +282,3 @@ See main project CONTRIBUTING.md
 ## 📄 License
 
 Part of the BMad Method framework. See project LICENSE.
-

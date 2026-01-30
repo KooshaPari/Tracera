@@ -27,6 +27,10 @@ def unique_project_name() -> str:
     return f"Test Project {uuid4().hex[:8]}"
 
 
+# Use link_test_setup fixture to auto-create graphs when projects are created
+pytestmark = pytest.mark.usefixtures("link_test_setup")
+
+
 # ============================================================================
 # CREATE OPERATIONS
 # ============================================================================

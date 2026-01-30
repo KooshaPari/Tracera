@@ -6,7 +6,7 @@ function ItemDetailComponent() {
 }
 
 export const Route = createFileRoute(
-	"/projects/$projectId/views/$viewType/$itemId",
+	"/projects/$projectId/views/$viewType/$itemId" as any,
 )({
 	component: ItemDetailComponent,
 	loader: async () => {

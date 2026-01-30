@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
  * API Route: GET /api/swagger-config
  * Returns Swagger UI configuration
  */
+
 export const Route = createFileRoute("/api/swagger-config")({
 	component: SwaggerConfigComponent,
 	loader: async () => {

@@ -16,3 +16,11 @@ export type {
 export * from "./client";
 export * from "./queries";
 export * from "./schema";
+export * from "./executions";
+export * from "./codex";
+export * from "./github";
+export * from "./equivalence";
+export * from "./canonical";
+export * from "./journeys";
+export * from "./componentLibrary";
+export * from "./auth";

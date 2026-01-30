@@ -13,7 +13,6 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	queryKeys,
-	useAgents,
 	useCreateItem,
 	useCreateLink,
 	useCreateMutation,
@@ -43,7 +42,7 @@ vi.mock("@/api/client", () => ({
 }));
 
 import { handleApiResponse } from "@/api/client";
-import { mockAgents, mockItems, mockLinks, mockProjects } from "../mocks/data";
+import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 
 // Helper to create wrapper with QueryClient
 function createWrapper() {
@@ -101,18 +100,13 @@ describe("React Query Hooks", () => {
 			expect(key).toEqual(["projects", "proj-1", "links"]);
 		});
 
-		it("should define agents query key", () => {
-			const key = queryKeys.agents;
-			expect(key).toEqual(["agents"]);
-		});
-
 		it("should define mutations query key", () => {
 			const key = queryKeys.mutations();
 			expect(key).toEqual(["mutations", undefined]);
 		});
 
 		it("should define mutations query key with filters", () => {
-			const filters = { agentId: "agent-1", synced: true };
+			const filters = { synced: true };
 			const key = queryKeys.mutations(filters);
 			expect(key).toContain("mutations");
 		});
@@ -122,11 +116,10 @@ describe("React Query Hooks", () => {
 				queryKeys.projects,
 				queryKeys.project("proj-1"),
 				queryKeys.item("item-1"),
-				queryKeys.agents,
 			];
 
 			const uniqueKeys = new Set(keys.map((k) => JSON.stringify(k)));
-			expect(uniqueKeys.size).toBe(4);
+			expect(uniqueKeys.size).toBe(3);
 		});
 	});
 
@@ -568,48 +561,11 @@ describe("React Query Hooks", () => {
 		});
 	});
 
-	describe("useAgents hook", () => {
-		it("should fetch all agents", async () => {
-			vi.mocked(handleApiResponse).mockResolvedValue(mockAgents);
-
-			const { result } = renderHook(() => useAgents(), {
-				wrapper: createWrapper(),
-			});
-
-			await waitFor(() => {
-				expect(result.current.isSuccess).toBe(true);
-			});
-
-			expect(result.current.data).toEqual(mockAgents);
-		});
-
-		it("should refetch at regular intervals", () => {
-			vi.mocked(handleApiResponse).mockResolvedValue(mockAgents);
-
-			const { result } = renderHook(() => useAgents(), {
-				wrapper: createWrapper(),
-			});
-
-			expect(result.current).toBeDefined();
-		});
-
-		it("should support custom options", () => {
-			vi.mocked(handleApiResponse).mockResolvedValue(mockAgents);
-
-			const options: UseQueryOptions = { staleTime: 5000 };
-			const { result } = renderHook(() => useAgents(options), {
-				wrapper: createWrapper(),
-			});
-
-			expect(result.current).toBeDefined();
-		});
-	});
-
 	describe("useMutations hook", () => {
 		it("should fetch mutations", async () => {
 			const mockMutations = [
-				{ id: "mut-1", agentId: "agent-1" },
-				{ id: "mut-2", agentId: "agent-1" },
+				{ id: "mut-1", operation: "create" },
+				{ id: "mut-2", operation: "update" },
 			];
 			vi.mocked(handleApiResponse).mockResolvedValue(mockMutations);
 
@@ -625,13 +581,12 @@ describe("React Query Hooks", () => {
 		});
 
 		it("should support filter parameters", async () => {
-			const mockMutations = [{ id: "mut-1", agentId: "agent-1" }];
+			const mockMutations = [{ id: "mut-1", operation: "create" }];
 			vi.mocked(handleApiResponse).mockResolvedValue(mockMutations);
 
 			const { result } = renderHook(
 				() =>
 					useMutations({
-						agentId: "agent-1",
 						synced: false,
 					}),
 				{ wrapper: createWrapper() },
@@ -646,7 +601,6 @@ describe("React Query Hooks", () => {
 	describe("useCreateMutation mutation", () => {
 		it("should create a mutation", async () => {
 			const newMutation = {
-				agentId: "agent-1",
 				itemId: "item-1",
 				operation: "create" as const,
 				data: { field: "value" },
@@ -660,7 +614,7 @@ describe("React Query Hooks", () => {
 				wrapper: createWrapper(),
 			});
 
-			result.current.mutate(newMutation);
+			result.current.mutate(newMutation as any);
 
 			await waitFor(() => {
 				expect(result.current.isSuccess).toBe(true);
@@ -670,7 +624,6 @@ describe("React Query Hooks", () => {
 		it("should invalidate mutations query on success", async () => {
 			vi.mocked(handleApiResponse).mockResolvedValue({
 				id: "mut-1",
-				agentId: "agent-1",
 			});
 
 			const { result } = renderHook(() => useCreateMutation(), {
@@ -678,11 +631,10 @@ describe("React Query Hooks", () => {
 			});
 
 			result.current.mutate({
-				agentId: "agent-1",
 				itemId: "item-1",
 				operation: "create" as const,
 				data: {},
-			});
+			} as any);
 
 			await waitFor(() => {
 				expect(result.current.isSuccess).toBe(true);

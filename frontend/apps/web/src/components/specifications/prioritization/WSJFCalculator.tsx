@@ -1,0 +1,246 @@
+/**
+ * WSJF Calculator Component
+ * Weighted Shortest Job First scoring for SAFe prioritization
+ */
+
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+
+interface WSJFScore {
+	business_value: number;
+	time_criticality: number;
+	risk_reduction: number;
+	job_size: number;
+	wsjf_score: number;
+}
+
+interface WSJFCalculatorProps {
+	initialValues?: Partial<WSJFScore>;
+	onCalculate?: (score: WSJFScore) => void;
+	readOnly?: boolean;
+	className?: string;
+}
+
+const fibonacciScale = [1, 2, 3, 5, 8, 13, 21];
+
+export function WSJFCalculator({
+	initialValues,
+	onCalculate,
+	readOnly = false,
+	className,
+}: WSJFCalculatorProps) {
+	const [businessValue, setBusinessValue] = useState(
+		initialValues?.business_value ?? 5,
+	);
+	const [timeCriticality, setTimeCriticality] = useState(
+		initialValues?.time_criticality ?? 5,
+	);
+	const [riskReduction, setRiskReduction] = useState(
+		initialValues?.risk_reduction ?? 5,
+	);
+	const [jobSize, setJobSize] = useState(initialValues?.job_size ?? 5);
+
+	// Calculate Cost of Delay (CoD) and WSJF
+	const costOfDelay = businessValue + timeCriticality + riskReduction;
+	const wsjfScore = jobSize > 0 ? costOfDelay / jobSize : 0;
+
+	const handleCalculate = () => {
+		if (onCalculate) {
+			onCalculate({
+				business_value: businessValue,
+				time_criticality: timeCriticality,
+				risk_reduction: riskReduction,
+				job_size: jobSize,
+				wsjf_score: wsjfScore,
+			});
+		}
+	};
+
+	const getScoreColor = (score: number): string => {
+		if (score >= 5) return "text-green-600";
+		if (score >= 3) return "text-blue-600";
+		if (score >= 1) return "text-yellow-600";
+		return "text-gray-600";
+	};
+
+	return (
+		<div className={cn("rounded-lg border p-4 space-y-4", className)}>
+			{/* Header */}
+			<div className="flex items-center justify-between">
+				<div>
+					<h3 className="text-lg font-semibold">WSJF Score</h3>
+					<p className="text-sm text-muted-foreground">
+						Weighted Shortest Job First
+					</p>
+				</div>
+				<div className="text-right">
+					<div className={cn("text-3xl font-bold", getScoreColor(wsjfScore))}>
+						{wsjfScore.toFixed(2)}
+					</div>
+					<div className="text-sm text-muted-foreground">WSJF Score</div>
+				</div>
+			</div>
+
+			{/* Formula Display */}
+			<div className="p-3 bg-muted rounded-lg text-sm">
+				<div className="font-mono text-center">
+					WSJF = Cost of Delay / Job Size = {costOfDelay} / {jobSize} ={" "}
+					{wsjfScore.toFixed(2)}
+				</div>
+			</div>
+
+			{/* Input Sliders */}
+			<div className="space-y-4">
+				{/* Cost of Delay Components */}
+				<div className="space-y-3">
+					<h4 className="text-sm font-medium text-muted-foreground">
+						Cost of Delay (CoD = {costOfDelay})
+					</h4>
+
+					<SliderInput
+						label="Business Value"
+						description="Value delivered to customer/business"
+						value={businessValue}
+						onChange={setBusinessValue}
+						readOnly={readOnly}
+						scale={fibonacciScale}
+					/>
+
+					<SliderInput
+						label="Time Criticality"
+						description="How urgently is it needed?"
+						value={timeCriticality}
+						onChange={setTimeCriticality}
+						readOnly={readOnly}
+						scale={fibonacciScale}
+					/>
+
+					<SliderInput
+						label="Risk Reduction / Opportunity Enablement"
+						description="Reduces risk or enables other work"
+						value={riskReduction}
+						onChange={setRiskReduction}
+						readOnly={readOnly}
+						scale={fibonacciScale}
+					/>
+				</div>
+
+				{/* Job Size */}
+				<div className="pt-3 border-t">
+					<SliderInput
+						label="Job Size"
+						description="Estimated effort (lower = smaller)"
+						value={jobSize}
+						onChange={setJobSize}
+						readOnly={readOnly}
+						scale={fibonacciScale}
+					/>
+				</div>
+			</div>
+
+			{/* Calculate Button */}
+			{!readOnly && onCalculate && (
+				<button
+					onClick={handleCalculate}
+					className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+				>
+					Save WSJF Score
+				</button>
+			)}
+		</div>
+	);
+}
+
+interface SliderInputProps {
+	label: string;
+	description: string;
+	value: number;
+	onChange: (value: number) => void;
+	readOnly?: boolean;
+	scale: number[];
+}
+
+function SliderInput({
+	label,
+	description,
+	value,
+	onChange,
+	readOnly,
+	scale,
+}: SliderInputProps) {
+	return (
+		<div className="space-y-1.5">
+			<div className="flex justify-between text-sm">
+				<span className="font-medium">{label}</span>
+				<span className="font-mono">{value}</span>
+			</div>
+			<p className="text-xs text-muted-foreground">{description}</p>
+			{readOnly ? (
+				<div className="h-2 bg-muted rounded-full overflow-hidden">
+					<div
+						className="h-full bg-primary rounded-full"
+						style={{ width: `${(value / Math.max(...scale)) * 100}%` }}
+					/>
+				</div>
+			) : (
+				<div className="flex gap-1">
+					{scale.map((scaleValue) => (
+						<button
+							key={scaleValue}
+							onClick={() => onChange(scaleValue)}
+							className={cn(
+								"flex-1 py-1 text-xs rounded border transition-colors",
+								value === scaleValue
+									? "bg-primary text-primary-foreground border-primary"
+									: "bg-muted hover:bg-muted/80 border-transparent",
+							)}
+						>
+							{scaleValue}
+						</button>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
+
+interface WSJFScoreBadgeProps {
+	score: number;
+	size?: "sm" | "md" | "lg";
+	className?: string;
+}
+
+export function WSJFScoreBadge({
+	score,
+	size = "md",
+	className,
+}: WSJFScoreBadgeProps) {
+	const color =
+		score >= 5
+			? "bg-green-100 text-green-700 border-green-300"
+			: score >= 3
+				? "bg-blue-100 text-blue-700 border-blue-300"
+				: score >= 1
+					? "bg-yellow-100 text-yellow-700 border-yellow-300"
+					: "bg-gray-100 text-gray-700 border-gray-300";
+
+	const sizeClass = {
+		sm: "text-xs px-1.5 py-0.5",
+		md: "text-sm px-2 py-1",
+		lg: "text-base px-3 py-1.5",
+	}[size];
+
+	return (
+		<span
+			className={cn(
+				"inline-flex items-center gap-1 rounded border font-medium",
+				color,
+				sizeClass,
+				className,
+			)}
+		>
+			<span>⚖</span>
+			<span>WSJF: {score.toFixed(2)}</span>
+		</span>
+	);
+}

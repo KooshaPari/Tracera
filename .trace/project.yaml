@@ -2,16 +2,16 @@ name: trace
 description: TraceRTM - Requirements traceability management system
 version: 1.0.0
 counters:
-  epic: 127
+  epic: 129
   story: 76
   test: 15
-  task: 141
+  task: 142
   wireframe: 1
-  feature: 2822
-  file: 437
+  feature: 2834
+  file: 450
   test_suite: 103
   test_case: 39
-  table: 91
+  table: 92
 settings:
   default_priority: medium
   default_status: todo

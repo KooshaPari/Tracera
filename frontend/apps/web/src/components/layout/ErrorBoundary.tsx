@@ -1,4 +1,5 @@
 import { Button } from "@tracertm/ui";
+import { AlertTriangle, RefreshCcw, RotateCw } from "lucide-react";
 import { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -41,51 +42,43 @@ export class ErrorBoundary extends Component<
 			}
 
 			return (
-				<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-					<div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-						<div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900 rounded-full">
-							<svg
-								className="w-6 h-6 text-red-600 dark:text-red-400"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-								/>
-							</svg>
+				<div className="flex items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-300">
+					<div className="max-w-md w-full bg-card border border-destructive/20 rounded-2xl shadow-2xl p-8 space-y-6">
+						<div className="flex flex-col items-center text-center space-y-4">
+							<div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center text-destructive">
+								<AlertTriangle className="w-8 h-8" />
+							</div>
+
+							<div className="space-y-1">
+								<h2 className="text-xl font-bold tracking-tight">
+									Component Failure
+								</h2>
+								<p className="text-sm text-muted-foreground">
+									A sub-system encountered an unrecoverable state.
+								</p>
+							</div>
 						</div>
 
-						<h2 className="mt-4 text-center text-xl font-semibold text-gray-900 dark:text-gray-100">
-							Something went wrong
-						</h2>
+						<div className="bg-muted/30 rounded-xl p-4 font-mono text-xs border border-border/50 max-h-40 overflow-auto">
+							<p className="text-destructive font-bold mb-1">EXCEPTION:</p>
+							<p className="text-muted-foreground break-all">
+								{this.state.error.message || "An unexpected error occurred"}
+							</p>
+						</div>
 
-						<p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-							{this.state.error.message || "An unexpected error occurred"}
-						</p>
-
-						{process.env.NODE_ENV === "development" && (
-							<div className="mt-4 p-3 bg-gray-100 dark:bg-gray-900 rounded text-xs font-mono text-gray-800 dark:text-gray-200 overflow-auto max-h-40">
-								{this.state.error.stack}
-							</div>
-						)}
-
-						<div className="mt-6 flex justify-center space-x-3">
-							<Button onClick={this.reset} variant="default">
-								Try again
+						<div className="flex gap-3">
+							<Button onClick={this.reset} className="flex-1 gap-2" size="sm">
+								<RefreshCcw className="w-3.5 h-3.5" />
+								Try Reset
 							</Button>
 							<Button
-								onClick={() => {
-									if (typeof window !== "undefined") {
-										window.location.reload();
-									}
-								}}
+								onClick={() => window.location.reload()}
 								variant="outline"
+								className="flex-1 gap-2"
+								size="sm"
 							>
-								Reload page
+								<RotateCw className="w-3.5 h-3.5" />
+								Hard Reload
 							</Button>
 						</div>
 					</div>

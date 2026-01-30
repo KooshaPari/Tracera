@@ -1,3 +1,16 @@
+# Project Development Instructions
+
+## Package Manager
+
+**Always use `bun` instead of `npm` for all package management tasks.**
+
+- Install: `bun install` (not `npm install`)
+- Run scripts: `bun run <script>` (not `npm run <script>`)
+- Add dependencies: `bun add <package>` (not `npm install <package>`)
+- Dev dependencies: `bun add -d <package>` (not `npm install --save-dev <package>`)
+
+---
+
 # BMAD Method - Claude Code Instructions
 
 ## Activating Agents

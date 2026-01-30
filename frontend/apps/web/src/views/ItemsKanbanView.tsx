@@ -1,21 +1,35 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import type { Item, ItemStatus } from "@tracertm/types";
-import { Alert } from "@tracertm/ui/components/Alert";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Input } from "@tracertm/ui/components/Input";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
+import {
+	Badge,
+	Button,
+	Card,
+	Input,
+	Skeleton,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@tracertm/ui";
 import {
 	AlertCircle,
 	CheckCircle2,
 	ClipboardList,
 	Clock,
-	Lightbulb,
+	List,
+	MoreVertical,
+	Plus,
+	Search,
+	User,
+	Filter,
+	ArrowRight,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useItems, useUpdateItem } from "../hooks/useItems";
 import { useProjects } from "../hooks/useProjects";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface KanbanColumn {
 	status: ItemStatus;
@@ -27,26 +41,26 @@ interface KanbanColumn {
 const columns: KanbanColumn[] = [
 	{
 		status: "todo",
-		title: "To Do",
-		color: "bg-gray-100 dark:bg-gray-800",
+		title: "BACKLOG",
+		color: "border-t-muted",
 		icon: ClipboardList,
 	},
 	{
 		status: "in_progress",
-		title: "In Progress",
-		color: "bg-blue-100 dark:bg-blue-900",
+		title: "ACTIVE",
+		color: "border-t-blue-500",
 		icon: Clock,
 	},
 	{
 		status: "done",
-		title: "Done",
-		color: "bg-green-100 dark:bg-green-900",
+		title: "RESOLVED",
+		color: "border-t-green-500",
 		icon: CheckCircle2,
 	},
 	{
 		status: "blocked",
-		title: "Blocked",
-		color: "bg-red-100 dark:bg-red-900",
+		title: "BLOCKED",
+		color: "border-t-red-500",
 		icon: AlertCircle,
 	},
 ];
@@ -56,125 +70,86 @@ interface ItemCardProps {
 	onDragStart: (item: Item) => void;
 }
 
-function ItemCard({ item, onDragStart }: ItemCardProps) {
-	return (
-		<div
-			draggable
-			onDragStart={() => onDragStart(item)}
-			className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 cursor-move hover:shadow-md transition-shadow"
-		>
-			<Link to={`/items/${item.id}`}>
-				<div className="space-y-2">
-					<div className="flex items-start justify-between">
-						<h3 className="font-medium text-gray-900 dark:text-white line-clamp-2">
+const ItemCard = memo(
+	function ItemCard({ item, onDragStart }: ItemCardProps) {
+		const handleDragStart = useCallback(() => {
+			onDragStart(item);
+		}, [item, onDragStart]);
+
+		return (
+			<div
+				draggable
+				onDragStart={handleDragStart}
+				className="group bg-card hover:bg-accent/5 transition-all cursor-grab active:cursor-grabbing border border-border/50 rounded-xl p-4 shadow-sm hover:shadow-md"
+			>
+				<Link to={`/items/${item.id}`}>
+					<div className="space-y-3">
+						<div className="flex justify-between items-start gap-2">
+							<Badge
+								variant="outline"
+								className="text-[9px] px-1.5 h-4 font-black uppercase tracking-tighter shrink-0"
+							>
+								{item.type}
+							</Badge>
+							<button className="opacity-0 group-hover:opacity-100 transition-opacity">
+								<MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
+							</button>
+						</div>
+
+						<h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
 							{item.title}
 						</h3>
-					</div>
 
-					{item.description && (
-						<p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-							{item.description}
-						</p>
-					)}
+						<div className="flex items-center justify-between gap-2 pt-1">
+							<div className="flex items-center gap-1.5">
+								{item.owner ? (
+									<div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+										{item.owner.charAt(0).toUpperCase()}
+									</div>
+								) : (
+									<div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+										<User className="h-3 w-3 text-muted-foreground" />
+									</div>
+								)}
+								<span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate max-w-[80px]">
+									{item.owner || "Unassigned"}
+								</span>
+							</div>
 
-					<div className="flex items-center gap-2 flex-wrap">
-						<Badge variant="secondary" className="text-xs">
-							{item.type}
-						</Badge>
-						{item.priority && (
-							<Badge
-								variant={
-									item.priority === "critical" || item.priority === "high"
-										? "destructive"
-										: "secondary"
-								}
-								className="text-xs"
-							>
-								{item.priority}
-							</Badge>
-						)}
-					</div>
-
-					{item.owner && (
-						<div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-							<span>👤</span>
-							<span>{item.owner}</span>
+							{item.priority && (
+								<div
+									className={cn(
+										"h-1.5 w-1.5 rounded-full",
+										item.priority === "critical"
+											? "bg-red-500"
+											: item.priority === "high"
+												? "bg-orange-500"
+												: item.priority === "medium"
+													? "bg-blue-500"
+													: "bg-green-500",
+									)}
+									title={`Priority: ${item.priority}`}
+								/>
+							)}
 						</div>
-					)}
-				</div>
-			</Link>
-		</div>
-	);
-}
-
-interface KanbanColumnProps {
-	column: KanbanColumn;
-	items: Item[];
-	onDrop: (status: ItemStatus) => void;
-	onDragStart: (item: Item) => void;
-}
-
-function KanbanColumnComponent({
-	column,
-	items,
-	onDrop,
-	onDragStart,
-}: KanbanColumnProps) {
-	const [isDraggingOver, setIsDraggingOver] = useState(false);
-
-	const handleDragOver = (e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDraggingOver(true);
-	};
-
-	const handleDragLeave = () => {
-		setIsDraggingOver(false);
-	};
-
-	const handleDrop = (e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDraggingOver(false);
-		onDrop(column.status);
-	};
-
-	return (
-		<div className="flex-1 min-w-80">
-			<div
-				className={`${column.color} rounded-t-lg p-4 border-b border-gray-200 dark:border-gray-700`}
-			>
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						{(() => {
-							const IconComponent = column.icon;
-							return <IconComponent className="h-5 w-5" />;
-						})()}
-						<h2 className="font-semibold">{column.title}</h2>
 					</div>
-					<Badge variant="secondary">{items.length}</Badge>
-				</div>
+				</Link>
 			</div>
-			<div
-				onDragOver={handleDragOver}
-				onDragLeave={handleDragLeave}
-				onDrop={handleDrop}
-				className={`min-h-screen p-4 space-y-3 bg-gray-50 dark:bg-gray-900 border-x border-b border-gray-200 dark:border-gray-700 rounded-b-lg transition-colors ${
-					isDraggingOver
-						? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700"
-						: ""
-				}`}
-			>
-				{items.map((item) => (
-					<ItemCard key={item.id} item={item} onDragStart={onDragStart} />
-				))}
-				{items.length === 0 && (
-					<div className="text-center py-8 text-gray-400 dark:text-gray-600">
-						Drop items here
-					</div>
-				)}
-			</div>
-		</div>
-	);
-}
+		);
+	},
+	(prev, next) => {
+		// Custom comparison for memoization
+		// Return true if props are equal (skip re-render), false if different
+		return (
+			prev.item.id === next.item.id &&
+			prev.item.title === next.item.title &&
+			prev.item.type === next.item.type &&
+			prev.item.status === next.item.status &&
+			prev.item.priority === next.item.priority &&
+			prev.item.owner === next.item.owner
+		);
+	},
+);
 
 export function ItemsKanbanView() {
 	const navigate = useNavigate();
@@ -182,24 +157,18 @@ export function ItemsKanbanView() {
 	const projectFilter = searchParams?.project || undefined;
 	const typeFilter = searchParams?.type || undefined;
 
-	const {
-		data: itemsData,
-		isLoading,
-		error,
-	} = useItems({ projectId: projectFilter });
+	const { data: itemsData, isLoading } = useItems({ projectId: projectFilter });
 	const { data: projects } = useProjects();
-	// Ensure projects is always an array
 	const projectsArray = Array.isArray(projects) ? projects : [];
 	const items = itemsData?.items ?? [];
 	const updateItem = useUpdateItem();
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [draggedItem, setDraggedItem] = useState<Item | null>(null);
+	const [isDraggingOver, setIsDraggingOver] = useState<string | null>(null);
 
-	// Filter items
 	const filteredItems = useMemo(() => {
 		if (!items.length) return [];
-
 		return items.filter((item: any) => {
 			if (typeFilter && item.type !== typeFilter) return false;
 			if (searchQuery) {
@@ -213,191 +182,232 @@ export function ItemsKanbanView() {
 		});
 	}, [items, typeFilter, searchQuery]);
 
-	// Group items by status
 	const itemsByStatus = useMemo(() => {
-		const grouped: Record<ItemStatus, Item[]> = {
+		const grouped: Record<string, Item[]> = {
 			todo: [],
 			in_progress: [],
 			done: [],
 			blocked: [],
-			cancelled: [],
 		};
-
 		filteredItems.forEach((item) => {
-			if (grouped[item.status]) {
-				grouped[item.status]?.push(item);
+			const status = item.status;
+			if (status && grouped[status]) {
+				grouped[status].push(item);
 			}
 		});
-
 		return grouped;
 	}, [filteredItems]);
 
-	const handleDragStart = (item: Item) => {
+	const handleDrop = useCallback(
+		async (newStatus: ItemStatus) => {
+			setIsDraggingOver(null);
+			if (!draggedItem || draggedItem.status === newStatus) {
+				setDraggedItem(null);
+				return;
+			}
+
+			try {
+				// Optimistic UI update could go here
+				await updateItem.mutateAsync({
+					id: draggedItem.id,
+					data: { status: newStatus },
+				});
+				toast.success(`Moved to ${newStatus.replace("_", " ")}`);
+				setDraggedItem(null);
+			} catch (err) {
+				toast.error("Failed to update status");
+			}
+		},
+		[draggedItem, updateItem],
+	);
+
+	const handleDragStart = useCallback((item: Item) => {
 		setDraggedItem(item);
-	};
-
-	const handleDrop = async (newStatus: ItemStatus) => {
-		if (!draggedItem || draggedItem.status === newStatus) {
-			setDraggedItem(null);
-			return;
-		}
-
-		try {
-			await updateItem.mutateAsync({
-				id: draggedItem.id,
-				data: { status: newStatus },
-			});
-			setDraggedItem(null);
-		} catch (err) {
-			console.error("Failed to update item status:", err);
-		}
-	};
+	}, []);
 
 	if (isLoading) {
 		return (
-			<div className="space-y-6">
-				<Skeleton className="h-12 w-full" />
-				<div className="flex gap-4">
-					{[...Array(4)].map((_, i) => (
-						<Skeleton key={i} className="flex-1 h-96" />
+			<div className="p-6 space-y-8 animate-pulse">
+				<div className="flex justify-between items-center">
+					<Skeleton className="h-10 w-48" />
+					<Skeleton className="h-10 w-64" />
+				</div>
+				<div className="flex gap-6 overflow-hidden">
+					{[1, 2, 3, 4].map((i) => (
+						<Skeleton key={i} className="flex-1 h-[600px] rounded-2xl" />
 					))}
 				</div>
 			</div>
 		);
 	}
 
-	if (error) {
-		return (
-			<Alert variant="destructive">Failed to load items: {error.message}</Alert>
-		);
-	}
-
 	return (
-		<div className="space-y-6">
+		<div className="p-6 space-y-8 max-w-[1800px] mx-auto animate-in fade-in duration-500">
 			{/* Header */}
-			<div className="flex items-center justify-between">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-						Kanban Board
+					<h1 className="text-2xl font-black tracking-tight uppercase">
+						Kanban Workflow
 					</h1>
-					<p className="mt-2 text-gray-600 dark:text-gray-400">
-						Drag and drop items to update their status
+					<p className="text-sm text-muted-foreground font-medium">
+						Manage lifecycle and status transitions for project nodes.
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
-					<Link to="/items">
-						<Button variant="outline">Table View</Button>
-					</Link>
-					<Link to="/items/tree">
-						<Button variant="outline">Tree View</Button>
-					</Link>
-					<Link to={`/items?action=create`}>
-						<Button>+ New Item</Button>
-					</Link>
-				</div>
-			</div>
-
-			{/* Filters */}
-			<Card className="p-4">
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<Input
-						type="search"
-						placeholder="Search items..."
-						value={searchQuery}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-							setSearchQuery((e.currentTarget as HTMLInputElement).value)
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							navigate({ to: "/items", search: searchParams } as any)
 						}
-					/>
-					{projects && (
-						<select
-							value={projectFilter || ""}
-							onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-								const value = (e.currentTarget as HTMLSelectElement).value;
-								navigate({
-									search: (prev: any) => {
-										const newSearch = {
-											...(prev || {}),
-											project: value || undefined,
-										};
-										return newSearch as any;
-									},
-								} as any);
-							}}
-							className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-						>
-							<option value="">All Projects</option>
-							{projectsArray.map((project) => (
-								<option key={project.id} value={project.id}>
-									{project.name}
-								</option>
-							))}
-						</select>
-					)}
-					<select
-						value={typeFilter || ""}
-						onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-							const value = (e.currentTarget as HTMLSelectElement).value;
-							navigate({
-								search: (prev: any) => {
-									const newSearch = {
-										...(prev || {}),
-										type: value || undefined,
-									};
-									return newSearch as any;
-								},
-							} as any);
-						}}
-						className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+						className="gap-2 rounded-xl"
 					>
-						<option value="">All Types</option>
-						<option value="requirement">Requirement</option>
-						<option value="feature">Feature</option>
-						<option value="test">Test</option>
-						<option value="bug">Bug</option>
-					</select>
+						<List className="h-4 w-4" /> Table
+					</Button>
+					<Button
+						size="sm"
+						onClick={() =>
+							navigate({
+								to: "/items",
+								search: { ...searchParams, action: "create" } as any,
+							})
+						}
+						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
+					>
+						<Plus className="h-4 w-4" /> New Item
+					</Button>
 				</div>
-			</Card>
-
-			{/* Stats */}
-			<div className="grid grid-cols-4 gap-4">
-				{columns.map((column) => (
-					<Card key={column.status} className="p-4">
-						<div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-							{column.title}
-						</div>
-						<div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">
-							{itemsByStatus[column.status].length}
-						</div>
-					</Card>
-				))}
 			</div>
+
+			{/* Filters Control Bar */}
+			<Card className="p-2 border-none bg-muted/30 rounded-2xl flex flex-wrap items-center gap-2">
+				<div className="relative flex-1 min-w-[200px]">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Filter items..."
+						className="pl-10 h-10 border-none bg-transparent focus-visible:ring-0"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
+				</div>
+				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
+				<Select
+					value={projectFilter || "all"}
+					onValueChange={(v) =>
+						navigate({
+							search: (prev: any) => ({
+								...prev,
+								project: v === "all" ? undefined : v,
+							}),
+						} as any)
+					}
+				>
+					<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
+						<div className="flex items-center gap-2">
+							<Filter className="h-3.5 w-3.5 text-muted-foreground" />
+							<SelectValue placeholder="All Projects" />
+						</div>
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Projects</SelectItem>
+						{projectsArray.map((p) => (
+							<SelectItem key={p.id} value={p.id}>
+								{p.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select
+					value={typeFilter || "all"}
+					onValueChange={(v) =>
+						navigate({
+							search: (prev: any) => ({
+								...prev,
+								type: v === "all" ? undefined : v,
+							}),
+						} as any)
+					}
+				>
+					<SelectTrigger className="w-[150px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
+						<SelectValue placeholder="All Types" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Types</SelectItem>
+						{["requirement", "feature", "test", "bug", "task"].map((t) => (
+							<SelectItem key={t} value={t} className="capitalize">
+								{t}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</Card>
 
 			{/* Kanban Board */}
-			<div className="flex gap-4 overflow-x-auto pb-4">
-				{columns.map((column) => (
-					<KanbanColumnComponent
-						key={column.status}
-						column={column}
-						items={itemsByStatus[column.status]}
-						onDrop={handleDrop}
-						onDragStart={handleDragStart}
-					/>
-				))}
-			</div>
+			<div className="flex gap-6 overflow-x-auto pb-8 min-h-[70vh] -mx-6 px-6 custom-scrollbar">
+				{columns.map((column) => {
+					const colItems = itemsByStatus[column.status] || [];
+					const isOver = isDraggingOver === column.status;
 
-			{/* Help Text */}
-			<Card className="p-4 bg-primary/10 border-primary/20">
-				<div className="flex items-start gap-3">
-					<Lightbulb className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-					<div>
-						<h3 className="font-medium mb-1">How to use</h3>
-						<p className="text-sm text-muted-foreground">
-							Drag items between columns to update their status. Click on an
-							item to view details.
-						</p>
-					</div>
-				</div>
-			</Card>
+					return (
+						<div
+							key={column.status}
+							className="flex-1 min-w-[320px] flex flex-col space-y-4"
+							onDragOver={(e) => {
+								e.preventDefault();
+								setIsDraggingOver(column.status);
+							}}
+							onDragLeave={() => setIsDraggingOver(null)}
+							onDrop={() => handleDrop(column.status)}
+						>
+							<div
+								className={cn(
+									"flex items-center justify-between p-3 rounded-2xl border-t-4 transition-all",
+									column.color,
+									isOver ? "bg-primary/5 scale-[1.02]" : "bg-muted/30",
+								)}
+							>
+								<div className="flex items-center gap-2">
+									<column.icon className="h-4 w-4 text-muted-foreground" />
+									<h2 className="text-[10px] font-black uppercase tracking-[0.2em]">
+										{column.title}
+									</h2>
+								</div>
+								<Badge
+									variant="secondary"
+									className="text-[10px] font-black rounded-full h-5 px-2"
+								>
+									{colItems.length}
+								</Badge>
+							</div>
+
+							<div
+								className={cn(
+									"flex-1 flex flex-col gap-3 p-2 rounded-2xl transition-colors duration-200",
+									isOver
+										? "bg-primary/5 ring-2 ring-primary/20 ring-dashed"
+										: "transparent",
+								)}
+							>
+								{colItems.map((item) => (
+									<ItemCard
+										key={item.id}
+										item={item}
+										onDragStart={handleDragStart}
+									/>
+								))}
+								{colItems.length === 0 && (
+									<div className="flex flex-col items-center justify-center py-12 text-muted-foreground/30 border-2 border-dashed border-border/50 rounded-2xl">
+										<ArrowRight className="h-8 w-8 mb-2 rotate-90" />
+										<p className="text-[10px] font-bold uppercase tracking-widest text-center">
+											Empty Drop Zone
+										</p>
+									</div>
+								)}
+							</div>
+						</div>
+					);
+				})}
+			</div>
 		</div>
 	);
 }

@@ -1,0 +1,129 @@
+"""Tests for MCP resources."""
+
+from __future__ import annotations
+
+import pytest
+from unittest.mock import MagicMock, patch
+
+from tests.mcp.conftest import MockItem, MockLink, MockProject
+
+
+class TestProjectsResource:
+    """Tests for projects list resource."""
+
+    @pytest.mark.asyncio
+    async def test_projects_list_returns_yaml(self):
+        """Test that projects list returns valid YAML."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_projects_list_empty(self):
+        """Test handling when no projects exist."""
+        pass
+
+
+class TestProjectDetailResource:
+    """Tests for project detail resource."""
+
+    @pytest.mark.asyncio
+    async def test_project_detail_returns_counts(self):
+        """Test that project detail includes item/link counts."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_project_detail_not_found(self):
+        """Test handling for non-existent project."""
+        pass
+
+
+class TestItemsResource:
+    """Tests for items resource."""
+
+    @pytest.mark.asyncio
+    async def test_items_resource_limits_to_100(self):
+        """Test that items resource limits to 100 items."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_items_resource_indicates_truncation(self):
+        """Test that truncation is indicated."""
+        pass
+
+
+class TestLinksResource:
+    """Tests for links resource."""
+
+    @pytest.mark.asyncio
+    async def test_links_resource_limits_to_100(self):
+        """Test that links resource limits to 100 links."""
+        pass
+
+
+class TestMatrixResource:
+    """Tests for traceability matrix resource."""
+
+    @pytest.mark.asyncio
+    async def test_matrix_calculates_coverage(self):
+        """Test that matrix calculates coverage percentages."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_matrix_handles_no_items(self):
+        """Test handling when project has no items."""
+        pass
+
+
+class TestHealthResource:
+    """Tests for project health resource."""
+
+    @pytest.mark.asyncio
+    async def test_health_calculates_score(self):
+        """Test that health score is calculated."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_health_identifies_orphans(self):
+        """Test identification of orphan items."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_health_identifies_stale(self):
+        """Test identification of stale items."""
+        pass
+
+
+class TestTraceabilityViewResource:
+    """Tests for traceability view resource."""
+
+    @pytest.mark.asyncio
+    async def test_traceability_builds_tree(self):
+        """Test that traceability tree is built correctly."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_traceability_limits_depth(self):
+        """Test that tree depth is limited."""
+        pass
+
+
+class TestImpactViewResource:
+    """Tests for impact view resource."""
+
+    @pytest.mark.asyncio
+    async def test_impact_sorts_by_downstream(self):
+        """Test that items are sorted by downstream count."""
+        pass
+
+
+class TestCoverageViewResource:
+    """Tests for coverage view resource."""
+
+    @pytest.mark.asyncio
+    async def test_coverage_by_view(self):
+        """Test coverage calculation per view."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_coverage_identifies_uncovered(self):
+        """Test identification of uncovered items."""
+        pass

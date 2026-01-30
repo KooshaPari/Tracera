@@ -1,0 +1,287 @@
+"""MCP Auth Middleware for TraceRTM.
+
+Provides:
+- Token refresh logic
+- Scope-based access control
+- Error handling for expired tokens
+- Logging and tracing
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+from typing import Any, Optional
+
+from fastmcp.server.middleware import Middleware, MiddlewareContext
+
+logger = logging.getLogger(__name__)
+
+
+class AuthMiddleware(Middleware):
+    """Validates token claims and enforces scope-based access control."""
+
+    def __init__(self, required_scopes: list[str] | None = None):
+        """Initialize auth middleware.
+
+        Args:
+            required_scopes: List of scopes required for all tools
+        """
+        self.required_scopes = required_scopes or []
+        self._tool_scopes: dict[str, list[str]] = {}
+
+    def register_tool_scopes(self, tool_name: str, scopes: list[str]) -> None:
+        """Register required scopes for a specific tool.
+
+        Args:
+            tool_name: Name of the tool
+            scopes: List of required scopes
+        """
+        self._tool_scopes[tool_name] = scopes
+
+    async def on_tool_call(
+        self,
+        ctx: MiddlewareContext,
+        tool_name: str,
+        arguments: dict,
+    ) -> None:
+        """Intercept tool calls to enforce auth.
+
+        Args:
+            ctx: Middleware context
+            tool_name: Name of the tool being called
+            arguments: Tool arguments
+
+        Raises:
+            PermissionError: If token expired or scopes insufficient
+        """
+        try:
+            # Check if context has auth info
+            if not hasattr(ctx, "auth"):
+                logger.warning(f"No auth context for tool: {tool_name}")
+                await ctx.next()
+                return
+
+            auth = ctx.auth
+
+            # Validate token freshness
+            await self._validate_token(auth)
+
+            # Check scopes
+            required_scopes = self._get_required_scopes(tool_name)
+            if required_scopes:
+                self._validate_scopes(auth, required_scopes, tool_name)
+
+            logger.debug(f"Auth validated for tool: {tool_name}")
+
+        except PermissionError as e:
+            logger.error(f"Auth error for {tool_name}: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected auth error for {tool_name}: {e}")
+            raise
+
+        # Continue to next middleware
+        await ctx.next()
+
+    async def _validate_token(self, auth: dict[str, Any]) -> None:
+        """Validate token freshness and potentially refresh.
+
+        Args:
+            auth: Auth context with token claims
+
+        Raises:
+            PermissionError: If token expired and cannot refresh
+        """
+        claims = auth.get("claims", {})
+
+        # Check expiration
+        exp = claims.get("exp")
+        if exp is None:
+            logger.debug("Token has no expiration")
+            return
+
+        now = time.time()
+        expires_in = exp - now
+
+        if expires_in < 0:
+            raise PermissionError(f"Token expired {abs(expires_in):.0f}s ago")
+
+        # Warn if expiring soon (within 5 minutes)
+        if expires_in < 300:
+            logger.warning(f"Token expiring soon: {expires_in:.0f}s remaining")
+
+    def _get_required_scopes(self, tool_name: str) -> list[str]:
+        """Get required scopes for tool.
+
+        Args:
+            tool_name: Name of tool
+
+        Returns:
+            List of required scopes
+        """
+        # Tool-specific scopes take precedence
+        if tool_name in self._tool_scopes:
+            return self._tool_scopes[tool_name]
+
+        # Otherwise use global scopes
+        return self.required_scopes
+
+    def _validate_scopes(
+        self, auth: dict[str, Any], required_scopes: list[str], tool_name: str
+    ) -> None:
+        """Validate that token has required scopes.
+
+        Args:
+            auth: Auth context
+            required_scopes: List of required scopes
+            tool_name: Name of tool
+
+        Raises:
+            PermissionError: If scopes insufficient
+        """
+        if not required_scopes:
+            return
+
+        claims = auth.get("claims", {})
+        token_scopes = (claims.get("scope") or "").split()
+
+        missing_scopes = set(required_scopes) - set(token_scopes)
+
+        if missing_scopes:
+            raise PermissionError(
+                f"Tool '{tool_name}' requires scopes {missing_scopes}, "
+                f"but token has {set(token_scopes)}"
+            )
+
+
+class LoggingMiddleware(Middleware):
+    """Log all tool calls for debugging and tracing."""
+
+    def __init__(self, verbose: bool = False):
+        """Initialize logging middleware.
+
+        Args:
+            verbose: Enable verbose logging
+        """
+        self.verbose = verbose
+
+    async def on_tool_call(
+        self,
+        ctx: MiddlewareContext,
+        tool_name: str,
+        arguments: dict,
+    ) -> None:
+        """Log tool calls.
+
+        Args:
+            ctx: Middleware context
+            tool_name: Name of tool
+            arguments: Tool arguments
+        """
+        start_time = time.time()
+
+        log_msg = f"[MCP_TOOL] {tool_name}"
+        if self.verbose:
+            log_msg += f" with args: {arguments}"
+
+        logger.info(log_msg)
+
+        try:
+            await ctx.next()
+            elapsed = time.time() - start_time
+            logger.debug(f"[MCP_TOOL] {tool_name} completed in {elapsed:.2f}s")
+        except Exception as e:
+            elapsed = time.time() - start_time
+            logger.error(f"[MCP_TOOL] {tool_name} failed after {elapsed:.2f}s: {e}")
+            raise
+
+
+class RateLimitMiddleware(Middleware):
+    """Rate limit tool calls per user or globally."""
+
+    def __init__(
+        self,
+        calls_per_minute: int = 60,
+        calls_per_hour: int = 1000,
+        per_user: bool = True,
+    ):
+        """Initialize rate limiter.
+
+        Args:
+            calls_per_minute: Max calls per minute
+            calls_per_hour: Max calls per hour
+            per_user: Rate limit per user (True) or globally (False)
+        """
+        self.calls_per_minute = calls_per_minute
+        self.calls_per_hour = calls_per_hour
+        self.per_user = per_user
+        self._call_times: dict[str, list[float]] = {}
+
+    def _get_key(self, ctx: MiddlewareContext) -> str:
+        """Get rate limit key (user ID or global).
+
+        Args:
+            ctx: Middleware context
+
+        Returns:
+            Rate limit key
+        """
+        if not self.per_user:
+            return "global"
+
+        if hasattr(ctx, "auth") and ctx.auth:
+            claims = ctx.auth.get("claims", {})
+            return claims.get("sub", "anonymous")
+
+        return "anonymous"
+
+    async def on_tool_call(
+        self,
+        ctx: MiddlewareContext,
+        tool_name: str,
+        arguments: dict,
+    ) -> None:
+        """Check rate limits before allowing tool call.
+
+        Args:
+            ctx: Middleware context
+            tool_name: Name of tool
+            arguments: Tool arguments
+
+        Raises:
+            PermissionError: If rate limit exceeded
+        """
+        key = self._get_key(ctx)
+        now = time.time()
+
+        # Initialize call times for key if needed
+        if key not in self._call_times:
+            self._call_times[key] = []
+
+        call_times = self._call_times[key]
+
+        # Remove old entries
+        one_minute_ago = now - 60
+        one_hour_ago = now - 3600
+        call_times[:] = [t for t in call_times if t > one_hour_ago]
+
+        # Check rate limits
+        recent_calls = [t for t in call_times if t > one_minute_ago]
+
+        if len(recent_calls) >= self.calls_per_minute:
+            raise PermissionError(
+                f"Rate limit exceeded: {self.calls_per_minute} calls/minute for {key}"
+            )
+
+        if len(call_times) >= self.calls_per_hour:
+            raise PermissionError(
+                f"Rate limit exceeded: {self.calls_per_hour} calls/hour for {key}"
+            )
+
+        # Record call
+        call_times.append(now)
+
+        logger.debug(f"Rate limit check passed for {key}: {len(recent_calls)} calls/min")
+
+        await ctx.next()

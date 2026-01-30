@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SwaggerUIWrapper } from "@/components/api-docs/swagger-ui-wrapper";
+import { lazy, Suspense } from "react";
+import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
+
+const SwaggerUIWrapper = lazy(() =>
+	import("@/components/api-docs/swagger-ui-wrapper").then((m) => ({
+		default: m.SwaggerUIWrapper,
+	})),
+);
 
 export const Route = createFileRoute("/api-docs/swagger")({
 	component: SwaggerPage,
@@ -20,14 +27,20 @@ export const Route = createFileRoute("/api-docs/swagger")({
 function SwaggerPage() {
 	return (
 		<div className="swagger-page">
-			<SwaggerUIWrapper
-				specUrl="/specs/openapi.json"
-				tryItOutEnabled={true}
-				persistAuthorization={true}
-				displayRequestDuration={true}
-				filter={true}
-				deepLinking={true}
-			/>
+			<Suspense
+				fallback={
+					<ChunkLoadingSkeleton message="Loading API documentation..." />
+				}
+			>
+				<SwaggerUIWrapper
+					specUrl="/specs/openapi.json"
+					tryItOutEnabled={true}
+					persistAuthorization={true}
+					displayRequestDuration={true}
+					filter={true}
+					deepLinking={true}
+				/>
+			</Suspense>
 		</div>
 	);
 }

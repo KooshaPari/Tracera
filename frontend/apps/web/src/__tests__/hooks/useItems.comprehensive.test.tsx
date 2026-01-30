@@ -91,8 +91,6 @@ describe("useItems hooks", () => {
 			expect(fetch).not.toHaveBeenCalled();
 		});
 
-
-
 		it("should fetch items with multiple filters", async () => {
 			(fetch as any).mockResolvedValueOnce({
 				ok: true,
@@ -119,8 +117,6 @@ describe("useItems hooks", () => {
 			expect(call).toContain("view=features");
 			expect(call).toContain("status=todo");
 		});
-
-
 	});
 
 	describe("useItem", () => {
@@ -158,7 +154,6 @@ describe("useItems hooks", () => {
 				expect.objectContaining({ queryKey: ["items"] }),
 			);
 		});
-
 
 		it("should include optional fields in request", async () => {
 			(fetch as any).mockResolvedValueOnce({
@@ -216,8 +211,6 @@ describe("useItems hooks", () => {
 				expect.objectContaining({ queryKey: ["items", "item-1"] }),
 			);
 		});
-
-
 	});
 
 	describe("useDeleteItem", () => {
@@ -257,8 +250,5 @@ describe("useItems hooks", () => {
 				expect.objectContaining({ queryKey: ["items"] }),
 			);
 		});
-
-
 	});
-
 });

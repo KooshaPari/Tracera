@@ -1,6 +1,6 @@
 # TraceRTM MCP Server – Tools Summary
 
-**Server:** `tracertm-mcp` (FastMCP 2.13+)  
+**Server:** `tracertm-mcp` (FastMCP 3.0.0b1)  
 **Location:** `scripts/mcp/tracertm_mcp_server.py`  
 **Status:** Complete tools section (Phase 1)
 

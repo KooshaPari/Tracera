@@ -106,7 +106,7 @@ If you see `ImportError: cannot import name 'FastMCPClient'`:
 If you see `ModuleNotFoundError`:
 ```bash
 # Reinstall dependencies
-python -m pip install fastmcp typer rich pyyaml pydantic
+python -m pip install fastmcp==3.0.0b1 mcp==1.25.0 typer rich pyyaml pydantic
 ```
 
 ### Permission Denied
@@ -166,4 +166,3 @@ The BMM CLI is **working perfectly** with:
 - ✅ Comprehensive documentation
 
 **Start using it now!** 🚀
-

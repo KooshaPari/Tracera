@@ -102,7 +102,7 @@ docker run -d \
 
 # Configure TraceRTM
 rtm config init
-# Creates ~/.config/tracertm/config.yaml with defaults
+# Creates ~/.tracertm/config.yaml with defaults
 
 # Edit config to set database URL
 # config.yaml:
@@ -124,7 +124,7 @@ rtm view feature  # Should show empty feature view
 ### Project Structure
 
 ```
-~/.config/tracertm/
+~/.tracertm/
 ├── config.yaml              # Global configuration
 ├── projects/                # Project-specific configs (optional)
 │   ├── project-a.yaml
@@ -1619,7 +1619,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:tracertm@db/tracertm
     volumes:
-      - ~/.config/tracertm:/root/.config/tracertm
+      - ~/.tracertm:/root/.tracertm
 
 volumes:
   tracertm-data:

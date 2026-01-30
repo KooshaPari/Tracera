@@ -14,7 +14,7 @@ python3 --version  # Should be 3.8 or higher
 
 ```bash
 # Core dependencies (already installed)
-pip install fastmcp==2.13.0.1  # ✅ Already installed
+pip install fastmcp==3.0.0b1 mcp==1.25.0  # ✅ Already installed
 pip install typer rich pyyaml
 
 # Optional: For Redis storage backend
@@ -28,7 +28,7 @@ pip install python-jose[cryptography]
 
 ```bash
 python3 -c "import fastmcp; print(fastmcp.__version__)"
-# Should output: 2.13.0.1 or higher
+# Should output: 3.0.0b1 or higher
 ```
 
 ## Installation
@@ -229,7 +229,7 @@ python3 scripts/mcp/bmm_cli.py run --help
 
 **Solution:**
 ```bash
-pip install fastmcp==2.13.0.1
+pip install fastmcp==3.0.0b1
 ```
 
 ### Issue: "ModuleNotFoundError: No module named 'typer'"
@@ -367,4 +367,3 @@ bmm config
 # Start server (debug)
 bmm server
 ```
-

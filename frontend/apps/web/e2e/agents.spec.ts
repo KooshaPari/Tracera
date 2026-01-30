@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * E2E Tests for Agent Management
@@ -12,8 +12,8 @@ test.describe("Agents Management", () => {
 
 	test.describe("Agents List View", () => {
 		test("should navigate to agents page", async ({ page }) => {
-			// Navigate to agents
-			await page.getByRole("link", { name: /agents/i }).click();
+			// Navigate directly to agents page (no sidebar link exists)
+			await page.goto("/agents");
 			await page.waitForLoadState("networkidle");
 
 			// Verify URL
@@ -21,7 +21,7 @@ test.describe("Agents Management", () => {
 
 			// Verify page heading
 			const heading = page.getByRole("heading", { name: /agents/i });
-			await expect(heading).toBeVisible();
+			await expect(heading).toBeVisible({ timeout: 5000 });
 		});
 
 		test("should display list of agents", async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe("Agents Management", () => {
 					console.log("Sync Agent not found");
 				});
 
-			// Verify at least one agent card is visible
+			// Verify at least one agent card is visible - using mock data names
 			const agents = [/Sync Agent/, /Validation Agent/, /Coverage Agent/];
 			let foundAgent = false;
 			for (const agent of agents) {
@@ -191,9 +191,7 @@ test.describe("Agents Management", () => {
 			const runningAgent = page.getByText(/Coverage Agent/).first();
 			if (await runningAgent.isVisible({ timeout: 2000 })) {
 				// Verify the agent is shown with running status
-				const runningStatus = runningAgent
-					.locator("..")
-					.getByText(/running/i);
+				const runningStatus = runningAgent.locator("..").getByText(/running/i);
 				await expect(runningStatus)
 					.toBeVisible({ timeout: 5000 })
 					.catch(() => {

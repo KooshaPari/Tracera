@@ -2,8 +2,8 @@
 Root pytest configuration - loads pytest-asyncio and shared test utilities
 """
 
-# Load pytest-asyncio plugin BEFORE any other imports
-pytest_plugins = ["pytest_asyncio"]
+# Load pytest-asyncio and pytest-benchmark plugins BEFORE any other imports
+pytest_plugins = ["pytest_asyncio", "pytest_benchmark"]
 
 import asyncio
 import os
@@ -12,6 +12,9 @@ import pytest
 import pytest_asyncio
 import unittest.mock as _um
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# Disable problematic Pydantic plugins during tests
+os.environ.setdefault("PYDANTIC_DISABLE_PLUGINS", "logfire-plugin")
 
 # Ensure Mock supports context manager magic methods in tests that rely on __enter__/__exit__
 _um.Mock = _um.MagicMock

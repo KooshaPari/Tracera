@@ -64,6 +64,22 @@ export const updateSettings = async (
 	} as Settings;
 };
 
+/**
+ * General settings map
+ */
+interface GeneralSettingsMap {
+	theme?: "light" | "dark" | "system";
+}
+
+/**
+ * Notification settings map
+ */
+interface NotificationSettingsMap {
+	email?: boolean;
+	push?: boolean;
+	inApp?: boolean;
+}
+
 // Simplified settings save function for SettingsView
 export const saveSettings = async (settings: {
 	displayName?: string;
@@ -75,20 +91,20 @@ export const saveSettings = async (settings: {
 	weeklySummary?: boolean;
 }): Promise<void> => {
 	try {
-		const generalSettings: Record<string, any> = {};
+		const generalSettings: GeneralSettingsMap = {};
 		if (settings.theme) {
-			generalSettings["theme"] = settings.theme as "light" | "dark" | "system";
+			generalSettings.theme = settings.theme as "light" | "dark" | "system";
 		}
 
-		const notificationSettings: Record<string, any> = {};
+		const notificationSettings: NotificationSettingsMap = {};
 		if (settings.emailNotifications !== undefined) {
-			notificationSettings["email"] = settings.emailNotifications;
+			notificationSettings.email = settings.emailNotifications;
 		}
 		if (settings.desktopNotifications !== undefined) {
-			notificationSettings["push"] = settings.desktopNotifications;
+			notificationSettings.push = settings.desktopNotifications;
 		}
 		if (settings.weeklySummary !== undefined) {
-			notificationSettings["inApp"] = settings.weeklySummary;
+			notificationSettings.inApp = settings.weeklySummary;
 		}
 
 		await updateSettings({

@@ -41,7 +41,7 @@ Complete guide to the BMM MCP server and CLI implementation.
    - Key innovations
    - Feature comparison (old vs new)
    - Usage examples
-   - FastMCP 2.13 features showcase
+   - FastMCP 3.0.0b1 features showcase
    - **Best for:** Project stakeholders and quick overview
 
 ## 🎯 Quick Navigation

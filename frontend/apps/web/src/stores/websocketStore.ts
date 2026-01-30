@@ -32,7 +32,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 	activeChannels: new Set(),
 
 	// Actions
-	connect: () => {
+	connect: async () => {
 		const state = get();
 		// Prevent multiple connection attempts
 		if (state.isConnected) {
@@ -40,7 +40,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 		}
 
 		const wsManager = getWebSocketManager();
-		wsManager.connect();
+		await wsManager.connect();
 
 		// Clear any existing interval first
 		if (

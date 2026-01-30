@@ -257,10 +257,4 @@ def perf_sync_db_engine(sync_engine):
     return sync_engine
 
 
-# ============================================================
-# Register pytest-benchmark plugin
-# ============================================================
-
-import pytest_benchmark
-
-pytest_plugins = ['pytest_benchmark']
+ # pytest-benchmark is registered in the root conftest.py

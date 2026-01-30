@@ -1,0 +1,361 @@
+/**
+ * DefectSpec Card Component
+ *
+ * Displays defect/bug specification with severity, root cause analysis,
+ * reproduction steps, and resolution tracking.
+ */
+
+import { cn } from "@/lib/utils";
+import {
+	Badge,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@tracertm/ui";
+import {
+	AlertCircle,
+	AlertTriangle,
+	ArrowRight,
+	Bug,
+	CheckCircle2,
+	Circle,
+	FileCode,
+	GitBranch,
+	Play,
+	RefreshCw,
+	User,
+} from "lucide-react";
+import type { DefectSpec } from "@/hooks/useItemSpecs";
+
+interface DefectSpecCardProps {
+	spec: DefectSpec;
+	onClick?: () => void;
+	className?: string;
+	compact?: boolean;
+	showReproSteps?: boolean;
+}
+
+const severityStyles = {
+	critical: { bg: "bg-red-500", text: "text-white", icon: AlertCircle },
+	major: { bg: "bg-orange-500", text: "text-white", icon: AlertTriangle },
+	minor: { bg: "bg-yellow-500", text: "text-white", icon: Bug },
+	trivial: { bg: "bg-blue-500", text: "text-white", icon: Circle },
+};
+
+const statusStyles = {
+	new: { bg: "bg-blue-500/10", text: "text-blue-600", icon: Circle },
+	assigned: { bg: "bg-purple-500/10", text: "text-purple-600", icon: User },
+	in_progress: { bg: "bg-yellow-500/10", text: "text-yellow-600", icon: Play },
+	resolved: {
+		bg: "bg-green-500/10",
+		text: "text-green-600",
+		icon: CheckCircle2,
+	},
+	verified: {
+		bg: "bg-green-500/10",
+		text: "text-green-700",
+		icon: CheckCircle2,
+	},
+	closed: { bg: "bg-muted", text: "text-muted-foreground", icon: CheckCircle2 },
+	reopened: { bg: "bg-red-500/10", text: "text-red-600", icon: RefreshCw },
+};
+
+const regressionRiskStyles = {
+	critical: "bg-red-500 text-white",
+	high: "bg-orange-500 text-white",
+	medium: "bg-yellow-500 text-white",
+	low: "bg-green-500 text-white",
+	minimal: "bg-blue-500 text-white",
+};
+
+export function DefectSpecCard({
+	spec,
+	onClick,
+	className,
+	compact = false,
+	showReproSteps = true,
+}: DefectSpecCardProps) {
+	const severityStyle = severityStyles[spec.severity];
+	const statusStyle = statusStyles[spec.status];
+	const SeverityIcon = severityStyle.icon;
+	const StatusIcon = statusStyle.icon;
+
+	if (compact) {
+		return (
+			<Card
+				className={cn(
+					"hover:shadow-md hover:bg-muted/30 hover:border-primary/30 transition-all duration-200 cursor-pointer",
+					className,
+				)}
+				onClick={onClick}
+			>
+				<CardContent className="p-3">
+					<div className="flex items-start justify-between gap-2">
+						<div className="flex-1 min-w-0">
+							<div className="flex items-center gap-2 mb-1 flex-wrap">
+								<Badge
+									className={cn(
+										"text-[10px]",
+										severityStyle.bg,
+										severityStyle.text,
+									)}
+								>
+									<SeverityIcon className="w-2.5 h-2.5 mr-1" />
+									{spec.severity}
+								</Badge>
+								<Badge
+									className={cn(
+										"text-[10px]",
+										statusStyle.bg,
+										statusStyle.text,
+									)}
+								>
+									<StatusIcon className="w-2.5 h-2.5 mr-1" />
+									{spec.status.replace("_", " ")}
+								</Badge>
+							</div>
+							<p className="text-xs font-medium truncate">
+								{spec.defect_title}
+							</p>
+							{spec.affected_versions.length > 0 && (
+								<p className="text-[10px] text-muted-foreground mt-1">
+									v{spec.affected_versions[0]}
+									{spec.affected_versions.length > 1 &&
+										` +${spec.affected_versions.length - 1}`}
+								</p>
+							)}
+						</div>
+						<Button variant="ghost" size="sm" className="h-7 shrink-0">
+							<ArrowRight className="w-3 h-3" />
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
+	return (
+		<Card
+			className={cn(
+				"hover:shadow-md hover:bg-muted/30 hover:border-primary/30 transition-all duration-200",
+				onClick && "cursor-pointer",
+				className,
+			)}
+			onClick={onClick}
+		>
+			<CardHeader className="pb-3">
+				<div className="flex justify-between items-start gap-4">
+					<div className="flex-1">
+						<div className="flex items-center gap-2 mb-2 flex-wrap">
+							<Badge
+								className={cn(
+									"text-[10px]",
+									severityStyle.bg,
+									severityStyle.text,
+								)}
+							>
+								<SeverityIcon className="w-2.5 h-2.5 mr-1" />
+								{spec.severity}
+							</Badge>
+							<Badge
+								className={cn("text-[10px]", statusStyle.bg, statusStyle.text)}
+							>
+								<StatusIcon className="w-2.5 h-2.5 mr-1" />
+								{spec.status.replace("_", " ")}
+							</Badge>
+							<Badge
+								className={cn(
+									"text-[10px]",
+									regressionRiskStyles[spec.regression_risk],
+								)}
+							>
+								{spec.regression_risk} regression risk
+							</Badge>
+							{!spec.reproducible && (
+								<Badge variant="outline" className="text-[10px]">
+									Intermittent
+								</Badge>
+							)}
+						</div>
+						<CardTitle className="text-sm font-semibold">
+							{spec.defect_title}
+						</CardTitle>
+						{spec.description && (
+							<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+								{spec.description}
+							</p>
+						)}
+					</div>
+
+					{/* Assignee */}
+					{spec.assigned_to && (
+						<div className="flex items-center gap-2 text-xs">
+							<div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+								<User className="h-3 w-3 text-primary" />
+							</div>
+							<span className="font-medium">{spec.assigned_to}</span>
+						</div>
+					)}
+				</div>
+			</CardHeader>
+
+			<CardContent className="space-y-4">
+				{/* Version Info */}
+				{spec.affected_versions.length > 0 && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Affected Versions
+						</h4>
+						<div className="flex flex-wrap gap-1">
+							{spec.affected_versions.map((ver, i) => (
+								<Badge key={i} variant="destructive" className="text-[10px]">
+									v{ver}
+								</Badge>
+							))}
+						</div>
+					</div>
+				)}
+
+				{/* Environment */}
+				{spec.environment && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Environment
+						</h4>
+						<div className="p-2 rounded-lg bg-muted/30 text-xs font-mono">
+							{spec.environment}
+						</div>
+					</div>
+				)}
+
+				{/* Reproduction Steps */}
+				{showReproSteps && spec.steps_to_reproduce.length > 0 && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Steps to Reproduce
+						</h4>
+						<ol className="text-xs space-y-1.5 list-decimal list-inside">
+							{spec.steps_to_reproduce.slice(0, 4).map((step, i) => (
+								<li key={i} className="text-muted-foreground">
+									<span className="text-foreground">{step}</span>
+								</li>
+							))}
+							{spec.steps_to_reproduce.length > 4 && (
+								<li className="text-muted-foreground">
+									+{spec.steps_to_reproduce.length - 4} more steps
+								</li>
+							)}
+						</ol>
+					</div>
+				)}
+
+				{/* Expected vs Actual */}
+				{(spec.expected_behavior || spec.actual_behavior) && (
+					<div className="grid grid-cols-2 gap-3">
+						{spec.expected_behavior && (
+							<div className="space-y-1">
+								<h4 className="text-[10px] font-black uppercase tracking-widest text-green-600">
+									Expected
+								</h4>
+								<p className="text-xs line-clamp-3">{spec.expected_behavior}</p>
+							</div>
+						)}
+						{spec.actual_behavior && (
+							<div className="space-y-1">
+								<h4 className="text-[10px] font-black uppercase tracking-widest text-red-600">
+									Actual
+								</h4>
+								<p className="text-xs line-clamp-3">{spec.actual_behavior}</p>
+							</div>
+						)}
+					</div>
+				)}
+
+				{/* Root Cause */}
+				{spec.root_cause && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Root Cause Analysis
+						</h4>
+						<div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+							<p className="text-xs">{spec.root_cause}</p>
+						</div>
+					</div>
+				)}
+
+				{/* Resolution */}
+				{spec.resolution && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-green-600">
+							Resolution
+						</h4>
+						<div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+							<p className="text-xs">{spec.resolution}</p>
+						</div>
+					</div>
+				)}
+
+				{/* Verification Notes */}
+				{spec.verification_notes && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Verification Notes
+						</h4>
+						<div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+							<p className="text-xs italic">{spec.verification_notes}</p>
+						</div>
+					</div>
+				)}
+
+				{/* Attachments */}
+				{spec.attachments.length > 0 && (
+					<div className="space-y-2">
+						<h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							Attachments ({spec.attachments.length})
+						</h4>
+						<div className="flex flex-wrap gap-1">
+							{spec.attachments.slice(0, 3).map((att, i) => (
+								<Badge key={i} variant="outline" className="text-[9px]">
+									{att.type}: {att.description || att.url}
+								</Badge>
+							))}
+							{spec.attachments.length > 3 && (
+								<Badge variant="secondary" className="text-[9px]">
+									+{spec.attachments.length - 3}
+								</Badge>
+							)}
+						</div>
+					</div>
+				)}
+
+				{/* Related Items */}
+				<div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+					<div className="flex items-center gap-4">
+						{spec.related_requirements.length > 0 && (
+							<div className="flex items-center gap-1">
+								<FileCode className="w-3 h-3" />
+								<span>{spec.related_requirements.length} reqs</span>
+							</div>
+						)}
+						{spec.related_defects.length > 0 && (
+							<div className="flex items-center gap-1">
+								<GitBranch className="w-3 h-3" />
+								<span>{spec.related_defects.length} related</span>
+							</div>
+						)}
+						{spec.time_to_fix_estimate && (
+							<div className="flex items-center gap-1">
+								<span>Est: {spec.time_to_fix_estimate}h</span>
+							</div>
+						)}
+					</div>
+					{spec.reported_by && (
+						<span className="text-[10px]">Reported by {spec.reported_by}</span>
+					)}
+				</div>
+			</CardContent>
+		</Card>
+	);
+}

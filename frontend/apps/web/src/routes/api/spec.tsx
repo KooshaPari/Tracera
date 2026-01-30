@@ -5,6 +5,7 @@ import { createFileRoute, useLoaderData } from "@tanstack/react-router";
  * Returns the OpenAPI specification
  * Note: This is a placeholder - actual API routes should be handled by the backend
  */
+
 export const Route = createFileRoute("/api/spec")({
 	component: SpecComponent,
 	loader: async () => {

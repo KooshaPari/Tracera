@@ -1,246 +1,100 @@
-import { Link } from "@tanstack/react-router";
-import type { Project } from "@tracertm/types";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
+	Badge,
+	Button,
+	Card,
+	Input,
+	Progress,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Skeleton,
+	Tabs,
+	TabsList,
+	TabsTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@tracertm/ui";
+import {
+	Bar,
 	BarChart,
-	ClipboardList,
-	Edit,
+	Cell,
+	Pie,
+	PieChart,
+	ResponsiveContainer,
+	Tooltip as RechartsTooltip,
+	XAxis,
+	YAxis,
+	Radar,
+	RadarChart,
+	PolarGrid,
+	PolarAngleAxis,
+	CartesianGrid,
+} from "recharts";
+import {
 	Folder,
-	Link as LinkIcon,
-	Network,
+	LayoutGrid,
+	List,
 	Plus,
-	Target,
-	TrendingUp,
+	Search,
+	Pin,
+	Activity,
+	Layers,
+	BarChart3,
+	MoreVertical,
+	Edit,
+	Trash2,
+	ExternalLink,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useProjects } from "../hooks/useProjects";
+import { useEffect, useMemo, useState } from "react";
+import { useProjects, useDeleteProject } from "../hooks/useProjects";
+import { cn } from "@/lib/utils";
+import { getProjectDisplayName } from "@/lib/project-name-utils";
 
-interface StatCardProps {
-	title: string;
-	value: number;
-	description: string;
-	trend?: { value: number; direction: "up" | "down" };
-	icon: React.ComponentType<{ className?: string }>;
-	color: string;
-}
-
-function StatCard({
-	title,
-	value,
-	description,
-	trend,
-	icon: Icon,
-	color,
-}: StatCardProps) {
-	return (
-		<Card className="p-6 hover:shadow-md transition-shadow duration-200">
-			<div className="flex items-start justify-between">
-				<div className="flex-1">
-					<p className="text-sm font-medium text-muted-foreground">{title}</p>
-					<p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
-					<p className="mt-1 text-sm text-muted-foreground">{description}</p>
-					{trend && (
-						<div
-							className={`mt-3 flex items-center gap-1 text-sm font-medium ${
-								trend.direction === "up"
-									? "text-green-600 dark:text-green-400"
-									: "text-red-600 dark:text-red-400"
-							}`}
-						>
-							{trend.direction === "up" ? (
-								<TrendingUp className="h-4 w-4" />
-							) : (
-								<TrendingUp className="h-4 w-4 rotate-180" />
-							)}
-							<span>{Math.abs(trend.value)}%</span>
-							<span className="ml-1 text-xs text-muted-foreground font-normal">
-								from last week
-							</span>
-						</div>
-					)}
-				</div>
-				<div
-					className={`rounded-lg p-3 ${color} transition-transform hover:scale-110`}
-				>
-					<Icon className="h-6 w-6" />
-				</div>
-			</div>
-		</Card>
-	);
-}
-
-interface RecentActivityItem {
-	id: string;
-	type: "item_created" | "item_updated" | "link_created" | "project_created";
-	title: string;
-	subtitle: string;
-	timestamp: Date | string | null;
-	user: string;
-}
-
-function RecentActivity({ activities }: { activities: RecentActivityItem[] }) {
-	if (activities.length === 0) {
-		return (
-			<div className="text-center py-12 text-muted-foreground">
-				<p>No recent activity</p>
-			</div>
-		);
-	}
-
-	const getActivityIcon = (type: RecentActivityItem["type"]) => {
-		switch (type) {
-			case "item_created":
-				return <Plus className="h-4 w-4" />;
-			case "item_updated":
-				return <Edit className="h-4 w-4" />;
-			case "link_created":
-				return <LinkIcon className="h-4 w-4" />;
-			case "project_created":
-				return <Folder className="h-4 w-4" />;
-			default:
-				return <div className="h-1 w-1 rounded-full bg-current" />;
-		}
+type DashboardViewProps = {
+	systemStatus?: {
+		status?: string;
+		mcp?: { baseUrl?: string | null };
 	};
+};
 
-	return (
-		<div className="space-y-4">
-			{activities.map((activity) => (
-				<div
-					key={activity.id}
-					className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-				>
-					<div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-						{getActivityIcon(activity.type)}
-					</div>
-					<div className="flex-1 min-w-0">
-						<p className="text-sm font-medium truncate">{activity.title}</p>
-						<p className="text-sm text-muted-foreground">
-							{activity.subtitle} by {activity.user}
-						</p>
-					</div>
-					<div className="flex-shrink-0 text-sm text-muted-foreground">
-						{formatTimeAgo(activity.timestamp)}
-					</div>
-				</div>
-			))}
-		</div>
-	);
-}
-
-function formatTimeAgo(date: Date | string | null | undefined): string {
-	if (!date) return "recently";
-
-	let dateObj: Date;
-	if (date instanceof Date) {
-		dateObj = date;
-	} else if (typeof date === "string") {
-		dateObj = new Date(date);
-	} else {
-		return "recently";
-	}
-
-	// Check if date is valid
-	if (Number.isNaN(dateObj.getTime())) {
-		return "recently";
-	}
-
-	const seconds = Math.floor((Date.now() - dateObj.getTime()) / 1000);
-
-	if (seconds < 60) return "just now";
-	if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-	if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-	if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-	return dateObj.toLocaleDateString();
-}
-
-interface QuickAction {
-	id: string;
-	label: string;
-	description: string;
-	icon: React.ComponentType<{ className?: string }>;
-	href: string;
-	color: string;
-}
-
-function QuickActions() {
-	const actions: QuickAction[] = [
-		{
-			id: "new-item",
-			label: "Create Item",
-			description: "Add a new requirement, feature, or test",
-			icon: Plus,
-			href: "/items?action=create",
-			color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
-		},
-		{
-			id: "new-project",
-			label: "New Project",
-			description: "Start a new project",
-			icon: Folder,
-			href: "/projects?action=create",
-			color:
-				"bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400",
-		},
-		{
-			id: "view-graph",
-			label: "View Graph",
-			description: "Visualize relationships",
-			icon: Network,
-			href: "/graph",
-			color:
-				"bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
-		},
-		{
-			id: "run-analysis",
-			label: "Impact Analysis",
-			description: "Analyze change impact",
-			icon: Target,
-			href: "/impact",
-			color:
-				"bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
-		},
-	];
-
-	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-			{actions.map((action) => {
-				const IconComponent = action.icon;
-				return (
-					<Link key={action.id} to={action.href}>
-						<Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer h-full">
-							<div
-								className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-4`}
-							>
-								<IconComponent className="h-6 w-6" />
-							</div>
-							<h3 className="font-semibold mb-1">{action.label}</h3>
-							<p className="text-sm text-muted-foreground">
-								{action.description}
-							</p>
-						</Card>
-					</Link>
-				);
-			})}
-		</div>
-	);
-}
-
-export function DashboardView() {
+export function DashboardView({ systemStatus }: DashboardViewProps) {
+	const navigate = useNavigate();
 	const { data: projects, isLoading: projectsLoading } = useProjects();
+	const deleteProject = useDeleteProject();
 	const [allItems, setAllItems] = useState<any[]>([]);
 	const [itemsLoading, setItemsLoading] = useState(false);
 	const [projectItemCounts, setProjectItemCounts] = useState<
 		Record<string, number>
 	>({});
-	const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>(
-		[],
-	);
+	const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+	const [searchQuery, setSearchQuery] = useState("");
+	const [sortBy, setSortBy] = useState<"name" | "items" | "progress">("name");
+	const [pinnedProjectId, setPinnedProjectId] = useState<string | null>(null);
 
-	// Ensure projects is always an array
-	const projectsArray = Array.isArray(projects) ? projects : [];
+	const [slot1Tab, setSlot1Tab] = useState("distribution");
+	const [slot2Tab, setSlot2Tab] = useState("status");
+
+	// Ensure projects is always an array - memoize to prevent infinite loops
+	const projectsArray = useMemo(() => {
+		return Array.isArray(projects) ? projects : [];
+	}, [projects]);
+
+	// Set default pinned project
+	useEffect(() => {
+		if (projectsArray.length > 0 && !pinnedProjectId) {
+			const firstProject = projectsArray[0];
+			if (firstProject?.id) {
+				setPinnedProjectId(firstProject.id);
+			}
+		}
+	}, [projectsArray, pinnedProjectId]);
 
 	// Fetch items from all projects for dashboard stats
 	useEffect(() => {
@@ -256,10 +110,10 @@ export function DashboardView() {
 			projectsArray.map(async (project) => {
 				try {
 					const res = await fetch(
-						`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/items?project_id=${project.id}&limit=1`,
+						`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/items?project_id=${project.id}&limit=200`,
 						{
 							headers: {
-								"X-Bulk-Operation": "true", // Skip rate limiting for bulk fetches
+								"X-Bulk-Operation": "true",
 							},
 						},
 					);
@@ -267,10 +121,8 @@ export function DashboardView() {
 						return { projectId: project.id, count: 0, items: [] };
 					}
 					const data = await res.json();
-					// API returns { total: number, items: Item[] }
 					const total = data.total || 0;
 					const items = Array.isArray(data) ? data : data.items || [];
-					// Ensure each item has project_id set
 					return {
 						projectId: project.id,
 						count: total,
@@ -285,7 +137,6 @@ export function DashboardView() {
 			}),
 		)
 			.then((results) => {
-				// Build project counts from results
 				const projectCounts: Record<string, number> = {};
 				results.forEach((r: any) => {
 					if (r.projectId) {
@@ -293,16 +144,10 @@ export function DashboardView() {
 					}
 				});
 
-				// results is now array of { projectId, count, items }
 				const allItemsFlat = results.flatMap((r: any) => r.items || []);
 				setAllItems(allItemsFlat);
-				// Store project counts in both window and state for reactivity
-				(window as any).__projectItemCounts = projectCounts;
 				setProjectItemCounts(projectCounts);
 				setItemsLoading(false);
-
-				// Debug logging (remove in production)
-				console.log("Project item counts:", projectCounts);
 			})
 			.catch(() => {
 				setAllItems([]);
@@ -311,85 +156,104 @@ export function DashboardView() {
 			});
 	}, [projectsArray]);
 
-	// Calculate stats - use project counts from API totals instead of fetched items
-	// Use state first, then fallback to window global
-	const countsForStats =
-		projectItemCounts && Object.keys(projectItemCounts).length > 0
-			? projectItemCounts
-			: (window as any).__projectItemCounts || {};
-	const totalItemsFromAPI = Object.values(countsForStats).reduce(
-		(sum: number, count: any) => sum + (Number(count) || 0),
-		0,
-	);
-
-	const stats = {
-		totalProjects: projectsArray.length,
-		totalItems: totalItemsFromAPI || allItems.length,
-		activeItems: allItems.filter(
-			(item) => item.status !== "done" && item.status !== "completed",
-		).length,
-		completionRate: allItems.length
-			? Math.round(
-					(allItems.filter(
-						(item) => item.status === "done" || item.status === "completed",
-					).length /
-						allItems.length) *
-						100,
-				)
-			: 0,
-		avgItemsPerProject:
-			projectsArray.length > 0 && totalItemsFromAPI > 0
-				? Math.round(totalItemsFromAPI / projectsArray.length)
-				: 0,
-	};
-
-	// Mock recent activity (in production, this would come from an API)
-	useEffect(() => {
-		if (allItems && allItems.length > 0) {
-			const activities: RecentActivityItem[] = allItems
-				.slice(0, 5)
-				.map((item) => {
-					// Handle different date field names and formats
-					const dateValue =
-						item.createdAt ||
-						(item as any).created_at ||
-						new Date().toISOString();
-
-					let timestamp: Date;
-					try {
-						timestamp =
-							dateValue instanceof Date ? dateValue : new Date(dateValue);
-						// Validate date
-						if (Number.isNaN(timestamp.getTime())) {
-							timestamp = new Date();
-						}
-					} catch {
-						timestamp = new Date();
-					}
-
-					return {
-						id: item.id,
-						type: "item_created" as const,
-						title: item.title,
-						subtitle: item.type || item.view || "item",
-						timestamp,
-						user: (item as any).owner || (item as any).user || "Unknown",
-					};
-				});
-			setRecentActivity(activities);
+	const statusData = useMemo(() => {
+		const counts: Record<string, number> = {};
+		for (const item of allItems) {
+			const status = item.status || "unknown";
+			counts[status] = (counts[status] || 0) + 1;
 		}
+		return Object.entries(counts).map(([name, value]) => ({ name, value }));
 	}, [allItems]);
+
+	const typeData = useMemo(() => {
+		const counts: Record<string, number> = {};
+		for (const item of allItems) {
+			const type = item.type || "other";
+			counts[type] = (counts[type] || 0) + 1;
+		}
+		return Object.entries(counts).map(([name, value]) => ({ name, value }));
+	}, [allItems]);
+
+	const COLORS = [
+		"#3b82f6",
+		"#10b981",
+		"#f59e0b",
+		"#ef4444",
+		"#8b5cf6",
+		"#ec4899",
+	];
+
+	const projectsWithStats = useMemo(() => {
+		return projectsArray.map((project) => {
+			const pItems = allItems.filter((item) => item.projectId === project.id);
+			const completed = pItems.filter(
+				(item) => item.status === "done" || item.status === "completed",
+			).length;
+			const progress =
+				pItems.length > 0 ? (completed / pItems.length) * 100 : 0;
+			return {
+				...project,
+				displayName: getProjectDisplayName(project),
+				itemCount: projectItemCounts[project.id] || pItems.length,
+				progress,
+			};
+		});
+	}, [projectsArray, allItems, projectItemCounts]);
+
+	const pinnedProject = useMemo(() => {
+		return (
+			projectsWithStats.find((p) => p.id === pinnedProjectId) ||
+			projectsWithStats[0]
+		);
+	}, [projectsWithStats, pinnedProjectId]);
+
+	const pinnedProjectDetails = useMemo(() => {
+		if (!pinnedProject) return [];
+		const pItems = allItems.filter(
+			(item) => item.projectId === pinnedProject.id,
+		);
+		const types = ["requirement", "feature", "test", "task", "bug"];
+		return types.map((type) => ({
+			subject: type.charAt(0).toUpperCase() + type.slice(1),
+			A: pItems.filter((i) => i.type === type).length,
+			fullMark: Math.max(
+				...types.map((t) => pItems.filter((i) => i.type === t).length),
+				10,
+			),
+		}));
+	}, [pinnedProject, allItems]);
+
+	const filteredProjects = useMemo(() => {
+		let result = projectsWithStats.filter((p) =>
+			(p.displayName || p.name)
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase()),
+		);
+
+		result = [...result].sort((a, b) => {
+			if (sortBy === "name") {
+				const aName = a.displayName || a.name;
+				const bName = b.displayName || b.name;
+				return aName.localeCompare(bName);
+			}
+			if (sortBy === "items") return b.itemCount - a.itemCount;
+			if (sortBy === "progress") return b.progress - a.progress;
+			return 0;
+		});
+
+		return result;
+	}, [projectsWithStats, searchQuery, sortBy]);
 
 	if (projectsLoading || itemsLoading) {
 		return (
-			<div className="space-y-6">
-				<div>
-					<Skeleton className="h-8 w-48 mb-2" />
-					<Skeleton className="h-4 w-96" />
+			<div className="p-6 space-y-6">
+				<div className="flex justify-between items-center">
+					<Skeleton className="h-10 w-48" />
+					<Skeleton className="h-10 w-32" />
 				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-					{[...Array(4)].map((_, i) => (
-						<Skeleton key={i} className="h-32" />
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+					{[...Array(3)].map((_, i) => (
+						<Skeleton key={i} className="h-64" />
 					))}
 				</div>
 			</div>
@@ -397,176 +261,675 @@ export function DashboardView() {
 	}
 
 	return (
-		<div className="space-y-8 p-6">
+		<div className="p-6 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-700">
 			{/* Header */}
-			<div>
-				<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-				<p className="mt-2 text-muted-foreground">
-					Welcome back! Here's an overview of your projects and items.
-				</p>
-			</div>
-
-			{/* Stats Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-				<StatCard
-					title="Total Projects"
-					value={stats.totalProjects}
-					description="Active projects"
-					icon={Folder}
-					color="bg-blue-100 dark:bg-blue-900"
-					trend={{ value: 12, direction: "up" }}
-				/>
-				<StatCard
-					title="Total Items"
-					value={stats.totalItems}
-					description={`Avg ${stats.avgItemsPerProject} items/project`}
-					icon={ClipboardList}
-					color="bg-green-100 dark:bg-green-900"
-					trend={{ value: 8, direction: "up" }}
-				/>
-				<StatCard
-					title="Active Items"
-					value={stats.activeItems}
-					description="In progress or pending"
-					icon={Target}
-					color="bg-yellow-100 dark:bg-yellow-900"
-				/>
-				<StatCard
-					title="Completion"
-					value={stats.completionRate}
-					description="Overall completion rate"
-					icon={BarChart}
-					color="bg-purple-100 dark:bg-purple-900"
-					trend={{ value: 5, direction: "up" }}
-				/>
-			</div>
-
-			{/* Quick Actions */}
-			<div>
-				<h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-				<QuickActions />
-			</div>
-
-			{/* Recent Projects & Activity */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Recent Projects */}
-				<Card className="p-6">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-xl font-semibold">Recent Projects</h2>
-						<Link to="/projects">
-							<Button variant="ghost" size="sm">
-								View All
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight">
+						Traceability Dashboard
+					</h1>
+					<p className="text-sm text-muted-foreground">
+						Monitor project health and system-wide traceability status.
+					</p>
+					<div className="flex flex-wrap items-center gap-2 mt-3">
+						<Badge variant="outline" className="text-xs">
+							System: {systemStatus?.status ?? "healthy"}
+						</Badge>
+						<Badge
+							variant={systemStatus?.mcp?.baseUrl ? "default" : "secondary"}
+							className="text-xs"
+						>
+							MCP: {systemStatus?.mcp?.baseUrl ? "connected" : "not configured"}
+						</Badge>
+						{systemStatus?.mcp?.baseUrl ? (
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-7 px-2 text-xs"
+								onClick={() => {
+									window.open(systemStatus.mcp?.baseUrl ?? "#", "_blank");
+								}}
+							>
+								Open MCP
 							</Button>
-						</Link>
+						) : null}
 					</div>
-					{projectsArray && projectsArray.length > 0 ? (
-						<div className="space-y-3">
-							{projectsArray.slice(0, 5).map((project: Project) => (
-								<Link key={project.id} to={`/projects/${project.id}`}>
-									<div className="p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-										<div className="flex items-center justify-between">
-											<div className="flex-1">
-												<h3 className="font-medium">{project.name}</h3>
-												{project.description && (
-													<p className="text-sm text-muted-foreground mt-1">
-														{project.description}
-													</p>
-												)}
+				</div>
+			</div>
+
+			{/* Visual Insights Section */}
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				{/* Slot 1: Large Widget (Distribution / Pinned Project Detail) */}
+				<Card className="p-0 col-span-1 lg:col-span-2 overflow-hidden border-none shadow-sm bg-card/50">
+					<Tabs value={slot1Tab} onValueChange={setSlot1Tab} className="w-full">
+						<div className="px-6 pt-6 flex items-center justify-between">
+							<div className="flex items-center gap-3">
+								<div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+									{slot1Tab === "distribution" ? (
+										<BarChart3 className="h-4 w-4 text-primary" />
+									) : (
+										<Pin className="h-4 w-4 text-primary" />
+									)}
+								</div>
+								<h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80">
+									{slot1Tab === "distribution"
+										? "Global Distribution"
+										: `Project Focus: ${pinnedProject?.displayName || pinnedProject?.name}`}
+								</h3>
+							</div>
+							<TabsList className="bg-muted/50">
+								<TabsTrigger
+									value="distribution"
+									className="text-xs cursor-pointer hover:bg-muted/70 transition-colors"
+								>
+									Network
+								</TabsTrigger>
+								<TabsTrigger
+									value="focus"
+									className="text-xs cursor-pointer hover:bg-muted/70 transition-colors"
+								>
+									Pinned
+								</TabsTrigger>
+							</TabsList>
+						</div>
+
+						<div className="p-6 h-[320px]">
+							{slot1Tab === "distribution" ? (
+								<ResponsiveContainer width="100%" height="100%">
+									<BarChart data={projectsWithStats.slice(0, 12)}>
+										<CartesianGrid
+											strokeDasharray="3 3"
+											vertical={false}
+											stroke="hsl(var(--muted)/0.3)"
+										/>
+										<XAxis
+											dataKey="displayName"
+											fontSize={10}
+											tickLine={false}
+											axisLine={false}
+											tick={{ fill: "hsl(var(--muted-foreground))" }}
+										/>
+										<YAxis
+											fontSize={10}
+											tickLine={false}
+											axisLine={false}
+											tick={{ fill: "hsl(var(--muted-foreground))" }}
+										/>
+										<RechartsTooltip
+											cursor={{ fill: "hsl(var(--muted)/0.2)" }}
+											contentStyle={{
+												backgroundColor: "hsl(var(--card))",
+												borderColor: "hsl(var(--border))",
+												borderRadius: "8px",
+												fontSize: "12px",
+											}}
+										/>
+										<Bar
+											dataKey="itemCount"
+											fill="hsl(var(--primary))"
+											radius={[4, 4, 0, 0]}
+										/>
+									</BarChart>
+								</ResponsiveContainer>
+							) : (
+								<div className="grid grid-cols-1 md:grid-cols-2 h-full gap-4">
+									<div className="h-full">
+										<ResponsiveContainer width="100%" height="100%">
+											<RadarChart
+												cx="50%"
+												cy="50%"
+												outerRadius="80%"
+												data={pinnedProjectDetails}
+											>
+												<PolarGrid stroke="hsl(var(--muted))" />
+												<PolarAngleAxis
+													dataKey="subject"
+													fontSize={10}
+													tick={{ fill: "hsl(var(--muted-foreground))" }}
+												/>
+												<Radar
+													name={
+														pinnedProject?.displayName || pinnedProject?.name
+													}
+													dataKey="A"
+													stroke="hsl(var(--primary))"
+													fill="hsl(var(--primary))"
+													fillOpacity={0.6}
+												/>
+											</RadarChart>
+										</ResponsiveContainer>
+									</div>
+									<div className="flex flex-col justify-center space-y-4 px-4">
+										<div>
+											<div className="flex justify-between text-xs mb-1">
+												<span className="text-muted-foreground">
+													Overall Completion
+												</span>
+												<span className="font-bold">
+													{Math.round(pinnedProject?.progress || 0)}%
+												</span>
 											</div>
-											<Badge variant="secondary">
-												{(() => {
-													const count =
-														projectItemCounts[project.id] ??
-														(window as any).__projectItemCounts?.[project.id] ??
-														allItems.filter(
-															(item) => item.projectId === project.id,
-														).length ??
-														0;
-													return count;
-												})()} items
-											</Badge>
+											<Progress
+												value={pinnedProject?.progress}
+												className="h-2"
+											/>
+										</div>
+										<div className="grid grid-cols-2 gap-4">
+											<div className="bg-muted/30 p-3 rounded-lg border border-border/50">
+												<div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">
+													Total Items
+												</div>
+												<div className="text-xl font-bold">
+													{pinnedProject?.itemCount}
+												</div>
+											</div>
+											<div className="bg-muted/30 p-3 rounded-lg border border-border/50">
+												<div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">
+													Activity
+												</div>
+												<div className="text-xl font-bold text-green-500">
+													High
+												</div>
+											</div>
 										</div>
 									</div>
-								</Link>
-							))}
+								</div>
+							)}
 						</div>
-					) : (
-						<div className="text-center py-8 text-muted-foreground">
-							<p>No projects yet</p>
-							<Link to="/projects?action=create">
-								<Button variant="outline" size="sm" className="mt-4">
-									Create your first project
-								</Button>
-							</Link>
-						</div>
-					)}
+					</Tabs>
 				</Card>
 
-				{/* Recent Activity */}
-				<Card className="p-6">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-xl font-semibold">Recent Activity</h2>
-						<Link to="/events">
-							<Button variant="ghost" size="sm">
-								View All
-							</Button>
-						</Link>
-					</div>
-					<RecentActivity activities={recentActivity} />
+				{/* Slot 2: Smaller Widget (Status / Priority / Type) */}
+				<Card className="p-0 overflow-hidden border-none shadow-sm bg-card/50">
+					<Tabs value={slot2Tab} onValueChange={setSlot2Tab} className="w-full">
+						<div className="px-6 pt-6 flex items-center justify-between">
+							<div className="flex items-center gap-3">
+								<div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+									<Layers className="h-4 w-4 text-primary" />
+								</div>
+								<h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80">
+									Metrics
+								</h3>
+							</div>
+							<TabsList className="bg-muted/50">
+								<TabsTrigger
+									value="status"
+									className="text-xs cursor-pointer hover:bg-muted/70 transition-colors"
+								>
+									Status
+								</TabsTrigger>
+								<TabsTrigger
+									value="type"
+									className="text-xs cursor-pointer hover:bg-muted/70 transition-colors"
+								>
+									Type
+								</TabsTrigger>
+							</TabsList>
+						</div>
+
+						<div className="p-6 h-[320px] flex flex-col">
+							<div className="flex-1">
+								<ResponsiveContainer width="100%" height="100%">
+									<PieChart>
+										<Pie
+											data={slot2Tab === "status" ? statusData : typeData}
+											cx="50%"
+											cy="50%"
+											innerRadius={60}
+											outerRadius={80}
+											paddingAngle={5}
+											dataKey="value"
+										>
+											{(slot2Tab === "status" ? statusData : typeData).map(
+												(_, index) => (
+													<Cell
+														key={`cell-${index}`}
+														fill={COLORS[index % COLORS.length]}
+													/>
+												),
+											)}
+										</Pie>
+										<RechartsTooltip
+											contentStyle={{
+												backgroundColor: "hsl(var(--card))",
+												borderColor: "hsl(var(--border))",
+												borderRadius: "8px",
+												fontSize: "12px",
+											}}
+										/>
+									</PieChart>
+								</ResponsiveContainer>
+							</div>
+							<div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1">
+								{(slot2Tab === "status" ? statusData : typeData)
+									.slice(0, 6)
+									.map((entry, index) => (
+										<div
+											key={entry.name}
+											className="flex items-center gap-2 min-w-0"
+										>
+											<div
+												className="w-1.5 h-1.5 rounded-full shrink-0"
+												style={{
+													backgroundColor: COLORS[index % COLORS.length],
+												}}
+											/>
+											<span className="text-[10px] text-muted-foreground truncate uppercase font-medium">
+												{entry.name}
+											</span>
+											<span className="text-[10px] font-bold ml-auto">
+												{entry.value}
+											</span>
+										</div>
+									))}
+							</div>
+						</div>
+					</Tabs>
 				</Card>
 			</div>
 
-			{/* Coverage Overview */}
-			<Card className="p-6">
-				<div className="flex items-center justify-between mb-4">
-					<h2 className="text-xl font-semibold">Coverage Overview</h2>
-					<Link to="/matrix">
-						<Button variant="ghost" size="sm">
-							View Matrix
+			{/* Projects Section */}
+			<div className="space-y-4">
+				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+					<div className="flex items-center gap-2">
+						<Activity className="h-5 w-5 text-primary" />
+						<h2 className="text-lg font-bold tracking-tight">
+							Active Projects
+						</h2>
+					</div>
+					<div className="flex items-center gap-2 w-full sm:w-auto">
+						<div className="relative flex-1 sm:w-64">
+							<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Search projects..."
+								className="pl-9 h-9 border-none bg-muted/50 focus-visible:ring-1"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+							/>
+						</div>
+						<Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+							<SelectTrigger className="h-9 w-[130px] border-none bg-muted/50">
+								<SelectValue placeholder="Sort by" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem
+									value="name"
+									className="cursor-pointer hover:bg-accent"
+								>
+									Name
+								</SelectItem>
+								<SelectItem
+									value="items"
+									className="cursor-pointer hover:bg-accent"
+								>
+									Item Count
+								</SelectItem>
+								<SelectItem
+									value="progress"
+									className="cursor-pointer hover:bg-accent"
+								>
+									Progress
+								</SelectItem>
+							</SelectContent>
+						</Select>
+						<Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)}>
+							<TabsList className="h-9 p-0.5 bg-muted/50">
+								<TabsTrigger
+									value="grid"
+									className="h-8 px-2 cursor-pointer hover:bg-muted/70 transition-colors"
+								>
+									<LayoutGrid className="h-4 w-4" />
+								</TabsTrigger>
+								<TabsTrigger
+									value="list"
+									className="h-8 px-2 cursor-pointer hover:bg-muted/70 transition-colors"
+								>
+									<List className="h-4 w-4" />
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
+						<Link to="/projects" search={{ action: "create" } as any}>
+							<Button size="sm" className="h-9 shadow-sm">
+								<Plus className="h-4 w-4 mr-2" />
+								New Project
+							</Button>
+						</Link>
+					</div>
+				</div>
+
+				{viewMode === "grid" ? (
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+						{filteredProjects.map((project) => {
+							const handlePin = (e: React.MouseEvent) => {
+								e.preventDefault();
+								e.stopPropagation();
+								const wasPinned = pinnedProjectId === project.id;
+								setPinnedProjectId(wasPinned ? null : project.id);
+								if (!wasPinned) {
+									toast.success(
+										`Pinned ${project.displayName || project.name} to dashboard`,
+									);
+								}
+							};
+
+							const handleDelete = async (e: React.MouseEvent) => {
+								e.preventDefault();
+								e.stopPropagation();
+								const projectDisplayName = project.displayName || project.name;
+								if (
+									!confirm(
+										`Are you sure you want to delete "${projectDisplayName}"? This action cannot be undone.`,
+									)
+								) {
+									return;
+								}
+								try {
+									await deleteProject.mutateAsync(project.id);
+									toast.success(`Project "${projectDisplayName}" deleted`);
+									if (pinnedProjectId === project.id) {
+										setPinnedProjectId(null);
+									}
+								} catch (error) {
+									toast.error("Failed to delete project");
+								}
+							};
+
+							const handleEdit = (e: React.MouseEvent) => {
+								e.preventDefault();
+								e.stopPropagation();
+								toast.info("Edit functionality coming soon");
+							};
+
+							return (
+								<div key={project.id} className="relative group">
+									<Link
+										to={`/projects/${project.id}`}
+										className="cursor-pointer"
+									>
+										<Card className="p-5 hover:shadow-xl transition-all h-full border border-border/50 bg-card hover:bg-card/90 shadow-md hover:border-primary/30">
+											{/* Pin button - top left */}
+											<button
+												onClick={handlePin}
+												className={cn(
+													"absolute top-3 left-3 p-1.5 rounded-lg transition-all z-10 cursor-pointer",
+													pinnedProjectId === project.id
+														? "bg-primary text-primary-foreground opacity-100 hover:bg-primary/90"
+														: "bg-muted/50 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-primary/20 hover:text-primary",
+												)}
+												title={
+													pinnedProjectId === project.id
+														? "Unpin project"
+														: "Pin project"
+												}
+											>
+												<Pin
+													className={cn(
+														"h-3.5 w-3.5",
+														pinnedProjectId === project.id && "fill-current",
+													)}
+												/>
+											</button>
+
+											{/* 3-dot menu - top right */}
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button
+														variant="ghost"
+														size="icon"
+														className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-all z-10"
+														onClick={(e) => e.stopPropagation()}
+													>
+														<MoreVertical className="h-4 w-4" />
+														<span className="sr-only">Project options</span>
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end" className="w-48">
+													<DropdownMenuItem
+														onClick={(e) => {
+															e.stopPropagation();
+															navigate({ to: `/projects/${project.id}` });
+														}}
+														className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+													>
+														<ExternalLink className="h-4 w-4" />
+														Open Project
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={(e) => {
+															e.stopPropagation();
+															handleEdit(e);
+														}}
+														className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+													>
+														<Edit className="h-4 w-4" />
+														Edit
+													</DropdownMenuItem>
+													<DropdownMenuSeparator />
+													<DropdownMenuItem
+														onClick={(e) => {
+															e.stopPropagation();
+															handleDelete(e);
+														}}
+														className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+													>
+														<Trash2 className="h-4 w-4" />
+														Delete
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+
+											<div className="pt-2">
+												<div className="flex justify-between items-start mb-3">
+													<h3 className="font-bold text-sm group-hover:text-primary transition-colors truncate pr-2 flex-1">
+														{project.displayName || project.name}
+													</h3>
+													<Badge
+														variant="secondary"
+														className="text-[9px] px-1.5 h-4 font-bold uppercase tracking-tighter shrink-0 ml-2"
+													>
+														{project.itemCount}
+													</Badge>
+												</div>
+												<p className="text-xs text-muted-foreground line-clamp-2 mb-4 h-8 leading-relaxed">
+													{project.description ||
+														"System generated project for traceability management."}
+												</p>
+												<div className="space-y-2">
+													<div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+														<span>Coverage</span>
+														<span>{Math.round(project.progress)}%</span>
+													</div>
+													<Progress
+														value={project.progress}
+														className="h-1.5 bg-muted"
+													/>
+												</div>
+											</div>
+										</Card>
+									</Link>
+								</div>
+							);
+						})}
+					</div>
+				) : (
+					<Card className="divide-y border border-border/50 bg-card/50 overflow-hidden">
+						{filteredProjects.map((project) => {
+							const handlePin = (e: React.MouseEvent) => {
+								e.preventDefault();
+								e.stopPropagation();
+								const wasPinned = pinnedProjectId === project.id;
+								setPinnedProjectId(wasPinned ? null : project.id);
+								if (!wasPinned) {
+									toast.success(
+										`Pinned ${project.displayName || project.name} to dashboard`,
+									);
+								}
+							};
+
+							const handleDelete = async (e: React.MouseEvent) => {
+								e.preventDefault();
+								e.stopPropagation();
+								const projectDisplayName = project.displayName || project.name;
+								if (
+									!confirm(
+										`Are you sure you want to delete "${projectDisplayName}"? This action cannot be undone.`,
+									)
+								) {
+									return;
+								}
+								try {
+									await deleteProject.mutateAsync(project.id);
+									toast.success(`Project "${projectDisplayName}" deleted`);
+									if (pinnedProjectId === project.id) {
+										setPinnedProjectId(null);
+									}
+								} catch (error) {
+									toast.error("Failed to delete project");
+								}
+							};
+
+							const handleEdit = (e: React.MouseEvent) => {
+								e.preventDefault();
+								e.stopPropagation();
+								toast.info("Edit functionality coming soon");
+							};
+
+							return (
+								<div key={project.id} className="relative group">
+									<Link
+										to={`/projects/${project.id}`}
+										className="block cursor-pointer"
+									>
+										<div className="p-4 hover:bg-muted/50 transition-colors flex items-center gap-6">
+											{/* Pin button - left side */}
+											<button
+												onClick={handlePin}
+												className={cn(
+													"cursor-pointer",
+													"p-1.5 rounded-lg transition-all shrink-0",
+													pinnedProjectId === project.id
+														? "bg-primary text-primary-foreground opacity-100"
+														: "bg-muted/50 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-primary/20",
+												)}
+												title={
+													pinnedProjectId === project.id
+														? "Unpin project"
+														: "Pin project"
+												}
+											>
+												<Pin
+													className={cn(
+														"h-3.5 w-3.5",
+														pinnedProjectId === project.id && "fill-current",
+													)}
+												/>
+											</button>
+
+											<div
+												className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+													pinnedProjectId === project.id
+														? "bg-primary text-primary-foreground"
+														: "bg-primary/10 text-primary"
+												}`}
+											>
+												<Folder className="h-5 w-5" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<div className="flex items-center gap-2">
+													<h3 className="text-sm font-bold truncate">
+														{project.displayName || project.name}
+													</h3>
+												</div>
+												<p className="text-xs text-muted-foreground truncate max-w-md">
+													{project.description}
+												</p>
+											</div>
+											<div className="w-48 hidden lg:block">
+												<div className="flex justify-between text-[9px] font-bold uppercase text-muted-foreground/60 mb-1">
+													<span>Progress</span>
+													<span>{Math.round(project.progress)}%</span>
+												</div>
+												<Progress value={project.progress} className="h-1" />
+											</div>
+											<div className="text-right shrink-0 min-w-[80px]">
+												<div className="text-xs font-black">
+													{project.itemCount}
+												</div>
+												<div className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">
+													Items
+												</div>
+											</div>
+										</div>
+									</Link>
+									{/* 3-dot menu - right side */}
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="absolute right-4 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-all"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<MoreVertical className="h-4 w-4" />
+												<span className="sr-only">Project options</span>
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end" className="w-48">
+											<DropdownMenuItem
+												onClick={(e) => {
+													e.stopPropagation();
+													navigate({ to: `/projects/${project.id}` });
+												}}
+												className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+											>
+												<ExternalLink className="h-4 w-4" />
+												Open Project
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={(e) => {
+													e.stopPropagation();
+													handleEdit(e);
+												}}
+												className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+											>
+												<Edit className="h-4 w-4" />
+												Edit
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem
+												onClick={(e) => {
+													e.stopPropagation();
+													handleDelete(e);
+												}}
+												className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+											>
+												<Trash2 className="h-4 w-4" />
+												Delete
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
+							);
+						})}
+					</Card>
+				)}
+
+				{filteredProjects.length === 0 && (
+					<div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed border-muted">
+						<Folder className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />
+						<p className="text-muted-foreground font-medium">
+							No projects match your current search criteria.
+						</p>
+						<Button
+							variant="link"
+							onClick={() => setSearchQuery("")}
+							className="mt-2 text-primary"
+						>
+							Clear search
 						</Button>
-					</Link>
-				</div>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-					<div className="text-center">
-						<div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-							{allItems.filter((item) => item.type === "requirement").length ||
-								0}
-						</div>
-						<div className="text-sm text-muted-foreground mt-1">
-							Requirements
-						</div>
 					</div>
-					<div className="text-center">
-						<div className="text-2xl font-bold text-green-600 dark:text-green-400">
-							{allItems.filter((item) => item.type === "feature").length || 0}
-						</div>
-						<div className="text-sm text-muted-foreground mt-1">Features</div>
-					</div>
-					<div className="text-center">
-						<div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-							{allItems.filter((item) => item.type === "test").length || 0}
-						</div>
-						<div className="text-sm text-muted-foreground mt-1">Tests</div>
-					</div>
-					<div className="text-center">
-						<div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-							{Math.round(
-								((allItems.filter((item) => item.type === "test").length || 0) /
-									Math.max(
-										allItems.filter((item) => item.type === "requirement")
-											.length || 1,
-										1,
-									)) *
-									100,
-							)}
-							%
-						</div>
-						<div className="text-sm text-muted-foreground mt-1">
-							Test Coverage
-						</div>
-					</div>
-				</div>
-			</Card>
+				)}
+			</div>
 		</div>
 	);
 }

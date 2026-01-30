@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ItemsTableView } from "@/views/ItemsTableView";
+import { lazy, Suspense } from "react";
+
+const ProjectMappingGraphView = lazy(() =>
+	import("@/views/ProjectMappingGraphView").then((m) => ({
+		default: m.ProjectMappingGraphView,
+	})),
+);
 
 export function WireframeView() {
 	return (
@@ -11,7 +17,15 @@ export function WireframeView() {
 				</div>
 			</div>
 
-			<ItemsTableView />
+			<Suspense
+				fallback={
+					<div className="flex items-center justify-center h-64">
+						Loading wireframes...
+					</div>
+				}
+			>
+				<ProjectMappingGraphView />
+			</Suspense>
 		</div>
 	);
 }

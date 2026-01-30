@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * E2E Tests for Traceability Links Management
@@ -63,7 +63,10 @@ test.describe("Traceability Links", () => {
 			await page.waitForLoadState("networkidle");
 
 			// Find first item in the list and click it
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
@@ -82,7 +85,10 @@ test.describe("Traceability Links", () => {
 			await page.waitForLoadState("networkidle");
 
 			// Click first item
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
@@ -94,11 +100,19 @@ test.describe("Traceability Links", () => {
 					await page.waitForTimeout(300);
 
 					// Check for link sections
-					const outgoingHeading = page.getByRole("heading", { name: /outgoing/i });
-					const incomingHeading = page.getByRole("heading", { name: /incoming/i });
+					const outgoingHeading = page.getByRole("heading", {
+						name: /outgoing/i,
+					});
+					const incomingHeading = page.getByRole("heading", {
+						name: /incoming/i,
+					});
 
-					const hasOutgoing = await outgoingHeading.isVisible({ timeout: 2000 }).catch(() => false);
-					const hasIncoming = await incomingHeading.isVisible({ timeout: 2000 }).catch(() => false);
+					const hasOutgoing = await outgoingHeading
+						.isVisible({ timeout: 2000 })
+						.catch(() => false);
+					const hasIncoming = await incomingHeading
+						.isVisible({ timeout: 2000 })
+						.catch(() => false);
 
 					if (hasOutgoing || hasIncoming) {
 						console.log("Links section found on item detail page");
@@ -118,7 +132,10 @@ test.describe("Traceability Links", () => {
 			await page.getByRole("link", { name: /items/i }).click();
 			await page.waitForLoadState("networkidle");
 
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
@@ -129,7 +146,10 @@ test.describe("Traceability Links", () => {
 					await linksTab.click();
 
 					// Check for any link items
-					const linkItems = page.locator("div").filter({ hasText: /badge|secondary/ }).filter({ hasText: /→/ });
+					const linkItems = page
+						.locator("div")
+						.filter({ hasText: /badge|secondary/ })
+						.filter({ hasText: /→/ });
 					const count = await linkItems.count().catch(() => 0);
 					console.log(`Found ${count} link items on detail page`);
 				}
@@ -144,7 +164,10 @@ test.describe("Traceability Links", () => {
 			await page.waitForLoadState("networkidle");
 
 			// Click first item to view details
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
@@ -215,7 +238,9 @@ test.describe("Traceability Links", () => {
 			if (labelCount > 0) {
 				console.log(`Found ${labelCount} edge labels showing link types`);
 			} else {
-				console.log("Edge labels not found - may not be visible at current zoom");
+				console.log(
+					"Edge labels not found - may not be visible at current zoom",
+				);
 			}
 		});
 
@@ -224,7 +249,10 @@ test.describe("Traceability Links", () => {
 			await page.getByRole("link", { name: /items/i }).click();
 			await page.waitForLoadState("networkidle");
 
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
@@ -235,11 +263,15 @@ test.describe("Traceability Links", () => {
 					await linksTab.click();
 
 					// Check for badge elements that display link types
-					const badges = page.locator("[role='img']").filter({ hasText: /implements|tests|depends|related/i });
+					const badges = page
+						.locator("[role='img']")
+						.filter({ hasText: /implements|tests|depends|related/i });
 					const count = await badges.count().catch(() => 0);
 
 					// Also check for badge text
-					const linkTypeText = page.getByText(/implements|tests|depends_on|related_to/i);
+					const linkTypeText = page.getByText(
+						/implements|tests|depends_on|related_to/i,
+					);
 					const textCount = await linkTypeText.count().catch(() => 0);
 
 					console.log(`Found ${textCount} link type labels`);
@@ -255,7 +287,10 @@ test.describe("Traceability Links", () => {
 			await page.waitForLoadState("networkidle");
 
 			// Click first item
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				const firstItemUrl = await firstItemLink.getAttribute("href");
 				await firstItemLink.click();
@@ -268,7 +303,9 @@ test.describe("Traceability Links", () => {
 					await page.waitForTimeout(300);
 
 					// Look for link item IDs that are clickable
-					const linkItems = page.locator("span").filter({ hasText: /item-|[a-f0-9]{8}-/ });
+					const linkItems = page
+						.locator("span")
+						.filter({ hasText: /item-|[a-f0-9]{8}-/ });
 					const count = await linkItems.count().catch(() => 0);
 
 					if (count > 0) {
@@ -284,7 +321,10 @@ test.describe("Traceability Links", () => {
 			await page.waitForLoadState("networkidle");
 
 			// Click first item
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
@@ -303,8 +343,12 @@ test.describe("Traceability Links", () => {
 						name: /incoming/i,
 					});
 
-					const hasOutgoing = await outgoingSection.isVisible({ timeout: 2000 }).catch(() => false);
-					const hasIncoming = await incomingSection.isVisible({ timeout: 2000 }).catch(() => false);
+					const hasOutgoing = await outgoingSection
+						.isVisible({ timeout: 2000 })
+						.catch(() => false);
+					const hasIncoming = await incomingSection
+						.isVisible({ timeout: 2000 })
+						.catch(() => false);
 
 					if (hasOutgoing && hasIncoming) {
 						console.log("Both incoming and outgoing links sections found");
@@ -355,12 +399,16 @@ test.describe("Traceability Links", () => {
 
 					// Edge labels should be visible
 					const edgeLabel = page.locator(".react-flow__edge-label");
-					const isVisible = await edgeLabel.isVisible({ timeout: 2000 }).catch(() => false);
+					const isVisible = await edgeLabel
+						.isVisible({ timeout: 2000 })
+						.catch(() => false);
 
 					if (isVisible) {
 						console.log("Edge label visible on hover");
 					} else {
-						console.log("Edge label not visible - may be always visible or hidden");
+						console.log(
+							"Edge label not visible - may be always visible or hidden",
+						);
 					}
 				} else {
 					console.log("Graph edges not found");
@@ -397,7 +445,10 @@ test.describe("Traceability Links", () => {
 			await page.waitForLoadState("networkidle");
 
 			// Click first item to view details
-			const firstItemLink = page.locator("a").filter({ hasText: /item|requirement|feature/i }).first();
+			const firstItemLink = page
+				.locator("a")
+				.filter({ hasText: /item|requirement|feature/i })
+				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Item, ItemStatus, Priority, ViewType } from "@tracertm/types";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -8,26 +9,23 @@ interface ItemFilters {
 	view?: ViewType | undefined;
 	status?: ItemStatus | undefined;
 	parentId?: string | undefined;
+	limit?: number | undefined;
 }
 
 async function fetchItems(
 	filters: ItemFilters = {},
 ): Promise<{ items: Item[]; total: number }> {
 	const params = new URLSearchParams();
-	// API requires project_id, so if not provided, fetch all projects and aggregate
+
 	if (filters.projectId) {
 		params.set("project_id", filters.projectId);
-	} else {
-		// If no projectId, we need to fetch items from all projects
-		// For now, return empty array - UI should filter by project
-		console.warn(
-			"fetchItems called without projectId - API requires project_id parameter",
-		);
-		return { items: [], total: 0 };
 	}
+	// Note: When projectId is undefined, API will return all items
+
 	if (filters.view) params.set("view", filters.view);
 	if (filters.status) params.set("status", filters.status);
 	if (filters.parentId) params.set("parent_id", filters.parentId);
+	if (filters.limit) params.set("limit", String(filters.limit));
 
 	const res = await fetch(`${API_URL}/api/v1/items?${params}`, {
 		headers: {
@@ -40,7 +38,7 @@ async function fetchItems(
 	}
 	const data = await res.json();
 	// API returns { total: number, items: Item[] }
-	const itemsArray = Array.isArray(data) ? data : (data.items || []);
+	const itemsArray = Array.isArray(data) ? data : data.items || [];
 	// Transform snake_case to camelCase for frontend compatibility
 	const transformedItems = itemsArray.map((item: any) => ({
 		...item,
@@ -50,7 +48,8 @@ async function fetchItems(
 	}));
 	return {
 		items: transformedItems,
-		total: data.total || (Array.isArray(data) ? data.length : itemsArray.length),
+		total:
+			data.total || (Array.isArray(data) ? data.length : itemsArray.length),
 	};
 }
 
@@ -117,19 +116,36 @@ async function deleteItem(id: string): Promise<void> {
 }
 
 export function useItems(filters?: ItemFilters) {
+	const key = filters?.projectId
+		? [
+				...queryKeys.items.list(filters.projectId),
+				filters?.view ?? null,
+				filters?.status ?? null,
+				filters?.parentId ?? null,
+				filters?.limit ?? null,
+			]
+		: [
+				"items",
+				filters?.view ?? null,
+				filters?.status ?? null,
+				filters?.parentId ?? null,
+				filters?.limit ?? null,
+			];
 	return useQuery({
-		queryKey: ["items", filters],
+		queryKey: key,
 		queryFn: () => fetchItems(filters || {}),
-		enabled: !!filters?.projectId, // Only fetch if projectId is provided
+		// Enable query always - fetch all items if no projectId provided
 		select: (data) => data, // Return the full object with items and total
+		...QUERY_CONFIGS.dynamic, // Items change frequently
 	});
 }
 
 export function useItem(id: string) {
 	return useQuery({
-		queryKey: ["items", id],
+		queryKey: queryKeys.items.detail(id),
 		queryFn: () => fetchItem(id),
 		enabled: !!id,
+		...QUERY_CONFIGS.dynamic, // Item details change frequently
 	});
 }
 

@@ -26,15 +26,11 @@ export function Layout() {
 	};
 
 	return (
-		<div
-			className={
-				isItemDetail
-					? "flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary bg-transparent"
-					: "flex h-screen bg-background overflow-hidden selection:bg-primary/20 selection:text-primary"
-			}
-		>
-			{isItemDetail && (
-				<div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_10%_15%,rgba(249,115,22,0.28),transparent_45%),radial-gradient(circle_at_85%_8%,rgba(14,116,144,0.3),transparent_42%),radial-gradient(circle_at_20%_75%,rgba(16,185,129,0.24),transparent_40%)]" />
+		<div className="flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary bg-transparent">
+			<div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_10%_15%,rgba(249,115,22,0.28),transparent_45%),radial-gradient(circle_at_85%_8%,rgba(14,116,144,0.3),transparent_42%),radial-gradient(circle_at_20%_75%,rgba(16,185,129,0.24),transparent_40%)]" />
+			<div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(135deg,rgba(15,23,42,0.08),transparent_55%,rgba(8,47,73,0.12))]" />
+			{!isItemDetail && (
+				<div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_30%_40%,rgba(148,163,184,0.08),transparent_55%)]" />
 			)}
 			{/* Skip to main content link - visually hidden but focusable */}
 			<a
@@ -46,19 +42,8 @@ export function Layout() {
 			</a>
 
 			<Sidebar />
-			<div
-				className={
-					isItemDetail
-						? "flex flex-1 flex-col overflow-hidden relative min-w-0 bg-transparent"
-						: "flex flex-1 flex-col overflow-hidden bg-muted/20 relative min-w-0"
-				}
-			>
-				{!isItemDetail && (
-					<>
-						<div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px] pointer-events-none" />
-						<div className="absolute inset-0 bg-gradient-to-tr from-background via-transparent to-background pointer-events-none" />
-					</>
-				)}
+			<div className="flex flex-1 flex-col overflow-hidden relative min-w-0 bg-transparent">
+				<div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px] pointer-events-none" />
 
 				<Header />
 				<main
@@ -66,7 +51,8 @@ export function Layout() {
 					role="main"
 					className="flex-1 overflow-auto relative z-10 custom-scrollbar"
 				>
-					<div className={isItemDetail ? "p-0" : "p-6"}>
+					<div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.18),transparent_65%),radial-gradient(circle_at_80%_0%,rgba(249,115,22,0.16),transparent_55%)]" />
+					<div className={isItemDetail ? "p-0" : "px-4 py-6 sm:px-6 lg:px-8"}>
 						<Outlet />
 					</div>
 				</main>

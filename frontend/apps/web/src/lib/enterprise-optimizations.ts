@@ -11,6 +11,20 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+/**
+ * Workflow context data structure
+ */
+export interface WorkflowContext {
+	[key: string]: string | number | boolean | object | null | undefined;
+}
+
+/**
+ * Error context for enterprise errors
+ */
+export interface ErrorContext {
+	[key: string]: string | number | boolean | object | null | undefined;
+}
+
 // ============================================================================
 // 1. KEYBOARD SHORTCUTS (Replace custom implementations)
 // ============================================================================
@@ -166,7 +180,7 @@ interface EnterpriseState {
 	workflow: {
 		currentProject: string | null;
 		currentView: string | null;
-		context: Record<string, any>;
+		context: WorkflowContext;
 	};
 
 	// Notifications
@@ -408,7 +422,7 @@ export class EnterpriseError extends Error {
 		message: string,
 		public code: string,
 		public originalError?: Error,
-		public context?: Record<string, any>,
+		public context?: ErrorContext,
 		public severity: "low" | "medium" | "high" | "critical" = "medium",
 		public retryable: boolean = false,
 	) {

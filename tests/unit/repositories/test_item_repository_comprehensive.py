@@ -492,14 +492,17 @@ async def test_soft_delete_nonexistent_item_returns_false(db_session: AsyncSessi
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("link_test_setup")
 async def test_hard_delete_removes_links(db_session: AsyncSession):
     """Test hard delete removes associated links."""
+    from tracertm.repositories.link_repository import LinkRepository
+
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     item1 = await item_repo.create(
         project_id=project.id,
         title="Item 1",
@@ -514,15 +517,14 @@ async def test_hard_delete_removes_links(db_session: AsyncSession):
     )
     await db_session.commit()
 
-    # Create link
-    link = Link(
-        id=str(uuid4()),
+    # Create link using repository (which handles graph_id)
+    link_repo = LinkRepository(db_session)
+    link = await link_repo.create(
         project_id=project.id,
         source_item_id=item1.id,
         target_item_id=item2.id,
         link_type="depends_on"
     )
-    db_session.add(link)
     await db_session.commit()
 
     # Hard delete item1

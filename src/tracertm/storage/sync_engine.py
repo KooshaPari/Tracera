@@ -388,8 +388,21 @@ class SyncStateManager:
         return self.db.engine
 
     def _ensure_tables(self) -> None:
-        """Ensure sync_state table exists."""
+        """Ensure sync tables exist."""
         with self.engine.connect() as conn:
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS sync_queue (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    entity_type TEXT NOT NULL,
+                    entity_id TEXT NOT NULL,
+                    operation TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    retry_count INTEGER DEFAULT 0,
+                    last_error TEXT,
+                    UNIQUE(entity_type, entity_id, operation)
+                )
+            """))
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS sync_state (
                     key TEXT PRIMARY KEY,

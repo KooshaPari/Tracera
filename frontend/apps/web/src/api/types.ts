@@ -1,4 +1,5 @@
 // API Types - Re-exported from @tracertm/types with additional types
+import type { paths } from "./schema";
 import type {
 	Item,
 	ItemStatus,
@@ -8,7 +9,6 @@ import type {
 } from "@tracertm/types";
 
 export type {
-	Agent,
 	Item,
 	ItemStatus,
 	Link,
@@ -17,6 +17,77 @@ export type {
 	Project,
 	ViewType,
 } from "@tracertm/types";
+
+// OpenAPI Schema Type Exports
+export type { paths } from "./schema";
+
+/**
+ * Extract path keys from OpenAPI schema
+ * @example type ItemsPaths = ApiPaths<"/api/v1/items">;
+ */
+export type ApiPaths = keyof paths;
+
+/**
+ * Extract operation keys for a specific path
+ * @example type GetItemsOp = PathOperations<"/api/v1/items">;
+ */
+export type PathOperations<P extends ApiPaths> = keyof paths[P];
+
+/**
+ * Extract request body type for a specific operation
+ * @example type CreateItemBody = ApiRequestBody<"/api/v1/items", "post">;
+ */
+export type ApiRequestBody<
+	P extends ApiPaths,
+	M extends PathOperations<P>,
+> = paths[P][M] extends {
+	requestBody: { content: { "application/json": infer Body } };
+}
+	? Body
+	: never;
+
+/**
+ * Extract response type for a specific operation
+ * @example type ListItemsResponse = ApiResponse<"/api/v1/items", "get", 200>;
+ */
+export type ApiResponse<
+	P extends ApiPaths,
+	M extends PathOperations<P>,
+	Status extends number = 200,
+> = paths[P][M] extends { responses: infer R }
+	? Status extends keyof R
+		? R[Status] extends { content: { "application/json": infer Body } }
+			? Body
+			: never
+		: never
+	: never;
+
+/**
+ * Extract query parameters for a specific operation
+ * @example type ListItemsParams = ApiQueryParams<"/api/v1/items", "get">;
+ */
+export type ApiQueryParams<
+	P extends ApiPaths,
+	M extends PathOperations<P>,
+> = paths[P][M] extends { parameters: { query?: infer Q } } ? Q : never;
+
+/**
+ * Extract path parameters for a specific operation
+ * @example type GetItemParams = ApiPathParams<"/api/v1/items/{item_id}", "get">;
+ */
+export type ApiPathParams<
+	P extends ApiPaths,
+	M extends PathOperations<P>,
+> = paths[P][M] extends { parameters: { path?: infer P } } ? P : never;
+
+/**
+ * Complete parameter set for an operation
+ * @example type ListItemsParams = ApiAllParams<"/api/v1/items", "get">;
+ */
+export type ApiAllParams<P extends ApiPaths, M extends PathOperations<P>> = {
+	query?: ApiQueryParams<P, M>;
+	path?: ApiPathParams<P, M>;
+};
 
 // Additional input types for API mutations
 export interface CreateProjectInput {
@@ -58,38 +129,6 @@ export interface CreateLinkInput {
 export interface UpdateLinkInput {
 	type?: LinkType;
 	description?: string;
-}
-
-export interface CreateAgentInput {
-	name: string;
-	type: string;
-}
-
-export interface UpdateAgentInput {
-	name?: string;
-	type?: string;
-	status?: "active" | "idle" | "offline";
-}
-
-export interface AgentTask {
-	id: string;
-	agentId: string;
-	type: string;
-	payload: Record<string, any>;
-	status: string;
-	createdAt: string;
-	updatedAt: string;
-}
-
-export interface TaskResult {
-	task_id: string;
-	result: Record<string, any>;
-	status?: string;
-}
-
-export interface TaskError {
-	task_id: string;
-	error: string;
 }
 
 export interface SearchQuery {
@@ -170,8 +209,12 @@ export interface PaginatedResponse<T> {
 	hasMore: boolean;
 }
 
+export interface ErrorDetails {
+	[key: string]: string | number | boolean | object | null | undefined;
+}
+
 export interface ApiError {
 	code: string;
 	message: string;
-	details?: Record<string, any>;
+	details?: ErrorDetails;
 }

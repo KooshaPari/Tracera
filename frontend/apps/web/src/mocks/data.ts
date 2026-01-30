@@ -1,6 +1,5 @@
 // Mock data for TraceRTM development
 import type {
-	Agent,
 	Item,
 	ItemStatus,
 	Link,
@@ -177,24 +176,6 @@ export const mockLinks: Link[] = [
 	},
 ];
 
-// Mock Agents
-export const mockAgents: Agent[] = [
-	{
-		id: "agent-1",
-		name: "Analyzer Agent",
-		type: "analyzer",
-		status: "active",
-		lastSeen: now,
-	},
-	{
-		id: "agent-2",
-		name: "Generator Agent",
-		type: "generator",
-		status: "idle",
-		lastSeen: yesterday,
-	},
-];
-
 // Helper functions for filtering and finding mock data
 export const filterItemsByProject = (projectId: string): Item[] => {
 	return mockItems.filter((item) => item.projectId === projectId);
@@ -220,10 +201,6 @@ export const findLinkById = (id: string): Link | undefined => {
 	return mockLinks.find((link) => link.id === id);
 };
 
-export const findAgentById = (id: string): Agent | undefined => {
-	return mockAgents.find((agent) => agent.id === id);
-};
-
 export const generateProjectId = (): string => {
 	return `proj-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
@@ -236,14 +213,9 @@ export const generateLinkId = (): string => {
 	return `link-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-export const generateAgentId = (): string => {
-	return `agent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
 // Export all mock data
 export const mockData = {
 	projects: mockProjects,
 	items: mockItems,
 	links: mockLinks,
-	agents: mockAgents,
 };

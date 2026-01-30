@@ -32,7 +32,8 @@ def get_engine() -> AsyncEngine:
             engine_kwargs.update({
                 "pool_size": config.database.pool_size,
                 "max_overflow": config.database.max_overflow,
-                "pool_recycle": 3600,
+                "pool_timeout": config.database.pool_timeout,
+                "pool_recycle": config.database.pool_recycle,
             })
 
         _engine = create_async_engine(url, **engine_kwargs)

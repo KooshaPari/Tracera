@@ -92,7 +92,6 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
 				status: "healthy",
 				uptime: 99.9,
-				activeAgents: 5,
 				queuedJobs: 12,
 			});
 
@@ -119,7 +118,6 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
 				status: "healthy",
 				uptime: 99.9,
-				activeAgents: 25,
 				queuedJobs: 150,
 			});
 
@@ -772,7 +770,6 @@ describe("Dashboard Page", () => {
 			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
 				status: "healthy",
-				activeAgents: 5,
 			});
 
 			render(<RouterProvider router={router} />);
@@ -784,7 +781,6 @@ describe("Dashboard Page", () => {
 			// Simulate status update
 			vi.mocked(fetchSystemStatus).mockResolvedValue({
 				status: "healthy",
-				activeAgents: 10,
 			});
 
 			queryClient.invalidateQueries({ queryKey: ["system-status"] });

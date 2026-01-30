@@ -630,7 +630,7 @@ for record in history:
 **DO:**
 - Store tokens in configuration files with restricted permissions:
 ```bash
-chmod 600 ~/.config/tracertm/config.yaml
+chmod 600 ~/.tracertm/config.yaml
 ```
 
 - Use environment variables for CI/CD:
@@ -717,10 +717,10 @@ if not result['allowed']:
 
 ```bash
 # Backup current config
-cp ~/.config/tracertm/config.yaml ~/.config/tracertm/config.yaml.backup
+cp ~/.tracertm/config.yaml ~/.tracertm/config.yaml.backup
 
 # Remove config
-rm ~/.config/tracertm/config.yaml
+rm ~/.tracertm/config.yaml
 
 # Reinitialize
 rtm config init

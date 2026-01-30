@@ -8,7 +8,6 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCreateLink, useLinks } from "../../hooks/useLinks";
 
-
 // Mock fetch at module level
 const mockFetch = vi.fn();
 global.fetch = mockFetch as any;

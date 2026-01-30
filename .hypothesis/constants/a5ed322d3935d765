@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/state.py
+# hypothesis_version: 6.148.7
+
+['--view', '-v', 'Count', 'Status', 'View', 'current_project_id', 'cyan', 'green', 'yellow']

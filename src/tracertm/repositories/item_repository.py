@@ -10,6 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.item import Item
 from tracertm.models.link import Link
+from tracertm.models.node_kind import NodeKind
+from tracertm.models.view import View
+from tracertm.models.item_view import ItemView
 
 
 class ItemRepository:
@@ -41,6 +44,39 @@ class ItemRepository:
             if parent_item.project_id != project_id:
                 raise ValueError(f"Parent item {parent_id} not in same project")
 
+        node_kind = await self.session.execute(
+            select(NodeKind).where(
+                NodeKind.project_id == project_id,
+                NodeKind.name == item_type,
+            )
+        )
+        node_kind_obj = node_kind.scalar_one_or_none()
+        if not node_kind_obj:
+            node_kind_obj = NodeKind(
+                id=str(uuid4()),
+                project_id=project_id,
+                name=item_type,
+                description=None,
+                kind_metadata={},
+            )
+            self.session.add(node_kind_obj)
+            await self.session.flush()
+
+        view_result = await self.session.execute(
+            select(View).where(View.project_id == project_id, View.name == view)
+        )
+        view_obj = view_result.scalar_one_or_none()
+        if not view_obj:
+            view_obj = View(
+                id=str(uuid4()),
+                project_id=project_id,
+                name=view,
+                description=None,
+                view_metadata={},
+            )
+            self.session.add(view_obj)
+            await self.session.flush()
+
         item = Item(
             id=str(uuid4()),
             project_id=project_id,
@@ -48,6 +84,7 @@ class ItemRepository:
             description=description,
             view=view,
             item_type=item_type,
+            node_kind_id=node_kind_obj.id,
             status=status,
             parent_id=parent_id,
             item_metadata=metadata or {},
@@ -57,6 +94,14 @@ class ItemRepository:
         )
         self.session.add(item)
         await self.session.flush()
+        self.session.add(
+            ItemView(
+                item_id=item.id,
+                view_id=view_obj.id,
+                project_id=project_id,
+                is_primary=True,
+            )
+        )
         await self.session.refresh(item)
         return item
 

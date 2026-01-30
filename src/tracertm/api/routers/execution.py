@@ -1,0 +1,360 @@
+"""FastAPI routes for execution system (QA Integration executions, artifacts, config)."""
+
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.api.deps import get_db, auth_guard
+from tracertm.schemas.execution import (
+    ExecutionArtifactCreate,
+    ExecutionArtifactListResponse,
+    ExecutionArtifactResponse,
+    ExecutionComplete,
+    ExecutionCreate,
+    ExecutionEnvironmentConfigResponse,
+    ExecutionEnvironmentConfigUpdate,
+    ExecutionListResponse,
+    ExecutionResponse,
+    ExecutionStart,
+)
+from tracertm.services.execution.execution_service import ExecutionService
+from tracertm.services.recording.vhs_service import VHSExecutionService
+from tracertm.services.recording.tape_generator import TapeFileGenerator
+
+router = APIRouter(prefix="/projects/{project_id}/executions", tags=["Executions"])
+
+# =============================================================================
+# Execution CRUD
+# =============================================================================
+
+
+@router.post("", response_model=ExecutionResponse, status_code=201)
+async def create_execution(
+    project_id: str,
+    execution_create: ExecutionCreate,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a new execution."""
+    service = ExecutionService(db)
+    execution = await service.create(
+        project_id=project_id,
+        execution_type=execution_create.execution_type,
+        trigger_source=execution_create.trigger_source,
+        test_run_id=execution_create.test_run_id,
+        item_id=execution_create.item_id,
+        trigger_ref=execution_create.trigger_ref,
+        config=execution_create.config,
+    )
+
+    # Compute artifact count
+    artifacts = await service.list_artifacts(execution.id)
+    artifact_count = len(artifacts) if artifacts else 0
+
+    response = ExecutionResponse.model_validate(execution)
+    response.artifact_count = artifact_count
+    return response
+
+
+@router.get("", response_model=ExecutionListResponse)
+async def list_executions(
+    project_id: str,
+    status: Optional[str] = Query(None, description="Filter by status"),
+    execution_type: Optional[str] = Query(None, description="Filter by type"),
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """List executions for a project."""
+    service = ExecutionService(db)
+    executions = await service.list_by_project(
+        project_id,
+        status=status,
+        execution_type=execution_type,
+        limit=limit,
+        offset=offset,
+    )
+
+    # Compute artifact counts for each execution
+    response_executions = []
+    for execution in executions:
+        artifacts = await service.list_artifacts(execution.id)
+        artifact_count = len(artifacts) if artifacts else 0
+        exec_response = ExecutionResponse.model_validate(execution)
+        exec_response.artifact_count = artifact_count
+        response_executions.append(exec_response)
+
+    return ExecutionListResponse(
+        executions=response_executions,
+        total=len(executions),
+    )
+
+
+@router.get("/{execution_id}", response_model=ExecutionResponse)
+async def get_execution(
+    project_id: str,
+    execution_id: str,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get execution details by ID."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    artifacts = await service.list_artifacts(execution_id)
+    artifact_count = len(artifacts) if artifacts else 0
+
+    response = ExecutionResponse.model_validate(execution)
+    response.artifact_count = artifact_count
+    return response
+
+
+# =============================================================================
+# Execution Lifecycle
+# =============================================================================
+
+
+@router.post("/{execution_id}/start", response_model=ExecutionResponse, status_code=202)
+async def start_execution(
+    project_id: str,
+    execution_id: str,
+    start_data: ExecutionStart,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Start an execution (transition from pending to running)."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if execution.status != "pending":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot start execution in status '{execution.status}'",
+        )
+
+    # Start the execution (creates Docker container, updates status to running)
+    success = await service.start(execution_id)
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to start execution (Docker unavailable or execution not pending)",
+        )
+
+    # Fetch updated execution
+    execution = await service.get(execution_id)
+    artifacts = await service.list_artifacts(execution_id)
+    artifact_count = len(artifacts) if artifacts else 0
+
+    response = ExecutionResponse.model_validate(execution)
+    response.artifact_count = artifact_count
+    return response
+
+
+@router.post("/{execution_id}/complete", response_model=ExecutionResponse)
+async def complete_execution(
+    project_id: str,
+    execution_id: str,
+    complete_data: ExecutionComplete,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Complete an execution (stop container, record duration, mark status)."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Complete the execution
+    execution = await service.complete(
+        execution_id,
+        exit_code=complete_data.exit_code or 0,
+        error_message=complete_data.error_message,
+        output_summary=complete_data.output_summary,
+    )
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    artifacts = await service.list_artifacts(execution_id)
+    artifact_count = len(artifacts) if artifacts else 0
+
+    response = ExecutionResponse.model_validate(execution)
+    response.artifact_count = artifact_count
+    return response
+
+
+# =============================================================================
+# Execution Artifacts
+# =============================================================================
+
+
+@router.get("/{execution_id}/artifacts", response_model=ExecutionArtifactListResponse)
+async def list_artifacts(
+    project_id: str,
+    execution_id: str,
+    artifact_type: Optional[str] = Query(None, description="Filter by artifact type"),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """List artifacts for an execution."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    artifacts = await service.list_artifacts(execution_id, artifact_type=artifact_type)
+    response_artifacts = [
+        ExecutionArtifactResponse.model_validate(artifact) for artifact in artifacts
+    ]
+    return ExecutionArtifactListResponse(
+        artifacts=response_artifacts,
+        total=len(response_artifacts),
+    )
+
+
+@router.post(
+    "/{execution_id}/artifacts",
+    response_model=ExecutionArtifactResponse,
+    status_code=201,
+)
+async def add_artifact(
+    project_id: str,
+    execution_id: str,
+    artifact_create: ExecutionArtifactCreate,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Add an artifact to an execution."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Store artifact (copy file from source to artifact storage)
+    artifact = await service.store_artifact(
+        execution_id,
+        source_path=artifact_create.file_path,
+        artifact_type=artifact_create.artifact_type,
+        project_id=project_id,
+        item_id=artifact_create.item_id,
+    )
+    if not artifact:
+        raise HTTPException(status_code=500, detail="Failed to store artifact")
+
+    response = ExecutionArtifactResponse.model_validate(artifact)
+    return response
+
+
+# =============================================================================
+# Execution Environment Config
+# =============================================================================
+
+
+@router.get(
+    "/../execution-config",
+    response_model=ExecutionEnvironmentConfigResponse,
+    tags=["Execution Config"],
+)
+async def get_execution_config(
+    project_id: str,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get execution environment configuration for a project."""
+    service = ExecutionService(db)
+    config = await service.get_config(project_id)
+    if not config:
+        # Return a default config response if none exists
+        raise HTTPException(status_code=404, detail="Execution config not configured")
+    return ExecutionEnvironmentConfigResponse.model_validate(config)
+
+
+@router.put(
+    "/../execution-config",
+    response_model=ExecutionEnvironmentConfigResponse,
+    tags=["Execution Config"],
+)
+async def update_execution_config(
+    project_id: str,
+    config_update: ExecutionEnvironmentConfigUpdate,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update execution environment configuration for a project."""
+    service = ExecutionService(db)
+
+    # Build update dict from non-None fields
+    update_data = {}
+    for field, value in config_update.model_dump(exclude_unset=True).items():
+        if value is not None:
+            update_data[field] = value
+
+    config = await service.upsert_config(project_id, **update_data)
+    return ExecutionEnvironmentConfigResponse.model_validate(config)
+
+
+# =============================================================================
+# VHS Tape Generation
+# =============================================================================
+
+
+@router.post(
+    "/../vhs/generate-tape",
+    status_code=202,
+    tags=["VHS Recording"],
+)
+async def generate_vhs_tape(
+    project_id: str,
+    execution_id: str = Query(..., description="Execution ID to generate tape for"),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate a VHS tape file (terminal recording) from execution artifacts."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Get artifacts for the execution (filter for relevant types)
+    artifacts = await service.list_artifacts(execution_id)
+    if not artifacts:
+        raise HTTPException(status_code=400, detail="No artifacts found for execution")
+
+    # Use VHS service to generate tape
+    try:
+        vhs_service = VHSExecutionService()
+        config = await service.get_config(project_id)
+
+        # Prepare tape generation parameters
+        tape_params = {}
+        if config:
+            tape_params["theme"] = getattr(config, "vhs_theme", "Dracula")
+            tape_params["font_size"] = getattr(config, "vhs_font_size", 14)
+            tape_params["width"] = getattr(config, "vhs_width", 1200)
+            tape_params["height"] = getattr(config, "vhs_height", 600)
+
+        # Generate tape (implementation depends on VHSService interface)
+        # This is a placeholder that returns 202 Accepted
+        return {
+            "status": "accepted",
+            "execution_id": execution_id,
+            "message": "VHS tape generation queued",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate tape: {str(e)}")

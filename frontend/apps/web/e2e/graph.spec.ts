@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./global-setup";
 
 /**
  * E2E Tests for Graph Visualization
@@ -31,7 +31,9 @@ test.describe("Graph Visualization", () => {
 
 		test("should display nodes for items", async ({ page }) => {
 			// React Flow nodes are rendered as div elements with data-id attribute
-			const nodes = page.locator(".react-flow .react-flow__nodes > div[data-id]");
+			const nodes = page.locator(
+				".react-flow .react-flow__nodes > div[data-id]",
+			);
 			const nodeCount = await nodes.count().catch(() => 0);
 
 			if (nodeCount > 0) {
@@ -44,7 +46,9 @@ test.describe("Graph Visualization", () => {
 
 		test("should display edges for links", async ({ page }) => {
 			// React Flow edges are rendered as SVG paths/elements in the edges container
-			const edges = page.locator(".react-flow__edges > g[data-testid], .react-flow__edges path");
+			const edges = page.locator(
+				".react-flow__edges > g[data-testid], .react-flow__edges path",
+			);
 			const edgeCount = await edges.count().catch(() => 0);
 
 			if (edgeCount > 0) {
@@ -154,12 +158,16 @@ test.describe("Graph Visualization", () => {
 
 		test("should select node on click", async ({ page }) => {
 			// Click first available node
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.click();
 
 				// Look for node details panel on the right side
-				const detailsPanel = page.locator(".w-96").filter({ hasText: /incoming|outgoing/ });
+				const detailsPanel = page
+					.locator(".w-96")
+					.filter({ hasText: /incoming|outgoing/ });
 				await expect(detailsPanel)
 					.toBeVisible({ timeout: 5000 })
 					.catch(() => {
@@ -173,7 +181,9 @@ test.describe("Graph Visualization", () => {
 		});
 
 		test("should show node tooltip on hover", async ({ page }) => {
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.hover();
 				await page.waitForTimeout(300);
@@ -269,7 +279,10 @@ test.describe("Graph Visualization", () => {
 	test.describe("Graph Layouts", () => {
 		test("should switch to hierarchical layout", async ({ page }) => {
 			// Layout selector is a Select component with trigger button
-			const layoutSelectTrigger = page.locator("button").filter({ hasText: /Force-directed|Hierarchical|Radial|Grid/ }).first();
+			const layoutSelectTrigger = page
+				.locator("button")
+				.filter({ hasText: /Force-directed|Hierarchical|Radial|Grid/ })
+				.first();
 			if (await layoutSelectTrigger.isVisible({ timeout: 2000 })) {
 				await layoutSelectTrigger.click();
 				await page.waitForTimeout(300);
@@ -287,7 +300,10 @@ test.describe("Graph Visualization", () => {
 		});
 
 		test("should switch to force-directed layout", async ({ page }) => {
-			const layoutSelectTrigger = page.locator("button").filter({ hasText: /Force-directed|Hierarchical|Radial|Grid/ }).first();
+			const layoutSelectTrigger = page
+				.locator("button")
+				.filter({ hasText: /Force-directed|Hierarchical|Radial|Grid/ })
+				.first();
 			if (await layoutSelectTrigger.isVisible({ timeout: 2000 })) {
 				await layoutSelectTrigger.click();
 				await page.waitForTimeout(300);
@@ -305,7 +321,10 @@ test.describe("Graph Visualization", () => {
 		});
 
 		test("should switch to radial layout", async ({ page }) => {
-			const layoutSelectTrigger = page.locator("button").filter({ hasText: /Force-directed|Hierarchical|Radial|Grid/ }).first();
+			const layoutSelectTrigger = page
+				.locator("button")
+				.filter({ hasText: /Force-directed|Hierarchical|Radial|Grid/ })
+				.first();
 			if (await layoutSelectTrigger.isVisible({ timeout: 2000 })) {
 				await layoutSelectTrigger.click();
 				await page.waitForTimeout(300);
@@ -325,7 +344,9 @@ test.describe("Graph Visualization", () => {
 
 	test.describe("Graph Navigation", () => {
 		test("should navigate to item from node", async ({ page }) => {
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				// Click node to select it
 				await firstNode.click();
@@ -334,7 +355,10 @@ test.describe("Graph Visualization", () => {
 				// Look for a button or link to navigate to item detail
 				// This might be in the detail panel that opens on the right
 				const detailPanel = page.locator(".w-96");
-				const navigateLink = detailPanel.locator("a, button").filter({ hasText: /open|view|navigate|detail/i }).first();
+				const navigateLink = detailPanel
+					.locator("a, button")
+					.filter({ hasText: /open|view|navigate|detail/i })
+					.first();
 
 				if (await navigateLink.isVisible({ timeout: 2000 })) {
 					await navigateLink.click();
@@ -356,20 +380,26 @@ test.describe("Graph Visualization", () => {
 
 		test("should highlight path between nodes", async ({ page }) => {
 			// Select source node
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.click();
 				await page.waitForTimeout(300);
 
 				// Shift-click target node to show path
-				const secondNode = page.locator(".react-flow__nodes > div[data-id]").nth(1);
+				const secondNode = page
+					.locator(".react-flow__nodes > div[data-id]")
+					.nth(1);
 				if (await secondNode.isVisible({ timeout: 2000 })) {
 					await page.keyboard.down("Shift");
 					await secondNode.click();
 					await page.keyboard.up("Shift");
 
 					// Path highlighting is optional feature
-					console.log("Path highlighting test completed (visual verification needed)");
+					console.log(
+						"Path highlighting test completed (visual verification needed)",
+					);
 				}
 			} else {
 				console.log("Not enough nodes for path highlighting test");
@@ -377,7 +407,9 @@ test.describe("Graph Visualization", () => {
 		});
 
 		test("should focus on selected node", async ({ page }) => {
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.click();
 				await page.waitForTimeout(300);
@@ -417,7 +449,9 @@ test.describe("Graph Visualization", () => {
 			const graphContainer = page.locator(".react-flow");
 
 			if (await graphContainer.isVisible({ timeout: 2000 })) {
-				const nodesCount = await page.locator(".react-flow__nodes > div[data-id]").count();
+				const nodesCount = await page
+					.locator(".react-flow__nodes > div[data-id]")
+					.count();
 				console.log(`Graph data access verified: ${nodesCount} nodes found`);
 			} else {
 				console.log("Graph not available for data export test");
@@ -440,7 +474,9 @@ test.describe("Graph Visualization", () => {
 
 		test("should verify graph interactivity", async ({ page }) => {
 			// Basic check that graph nodes are interactive
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.click();
 				await page.waitForTimeout(300);
@@ -468,10 +504,7 @@ test.describe("Graph Visualization", () => {
 				// Get minimap bounds and click in the middle
 				const box = await minimap.boundingBox();
 				if (box) {
-					await page.mouse.click(
-						box.x + box.width / 2,
-						box.y + box.height / 2,
-					);
+					await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 					await page.waitForTimeout(500);
 
 					console.log("Mini-map navigation triggered");
@@ -508,7 +541,9 @@ test.describe("Graph Visualization", () => {
 
 	test.describe("Graph Context Menu", () => {
 		test("should check for node context menu", async ({ page }) => {
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.click({ button: "right" });
 				await page.waitForTimeout(300);
@@ -518,7 +553,9 @@ test.describe("Graph Visualization", () => {
 				await expect(contextMenu)
 					.toBeVisible({ timeout: 2000 })
 					.catch(() => {
-						console.log("Context menu not shown on right-click (may not be implemented)");
+						console.log(
+							"Context menu not shown on right-click (may not be implemented)",
+						);
 					});
 			} else {
 				console.log("Nodes not available for context menu test");
@@ -526,14 +563,18 @@ test.describe("Graph Visualization", () => {
 		});
 
 		test("should check for node interactions", async ({ page }) => {
-			const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
+			const firstNode = page
+				.locator(".react-flow__nodes > div[data-id]")
+				.first();
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				// Single click should select node
 				await firstNode.click();
 				await page.waitForTimeout(300);
 
 				// Detail panel should appear on the right
-				const detailPanel = page.locator(".w-96").filter({ hasText: /incoming|outgoing/ });
+				const detailPanel = page
+					.locator(".w-96")
+					.filter({ hasText: /incoming|outgoing/ });
 				await expect(detailPanel)
 					.toBeVisible({ timeout: 5000 })
 					.catch(() => {
