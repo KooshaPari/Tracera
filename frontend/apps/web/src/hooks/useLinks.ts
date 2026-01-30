@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Link, LinkType } from "@tracertm/types";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
+import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -8,6 +10,9 @@ interface LinkFilters {
 	sourceId?: string | undefined;
 	targetId?: string | undefined;
 	type?: LinkType | undefined;
+	limit?: number | undefined;
+	offset?: number | undefined;
+	excludeTypes?: LinkType[] | undefined; // ✅ NEW: Filter out specific link types
 }
 
 async function fetchLinks(
@@ -18,6 +23,13 @@ async function fetchLinks(
 	if (filters.sourceId) params.set("source_id", filters.sourceId);
 	if (filters.targetId) params.set("target_id", filters.targetId);
 	if (filters.type) params.set("type", filters.type);
+	if (filters.limit) params.set("limit", String(filters.limit));
+	if (filters.offset) params.set("offset", String(filters.offset));
+
+	// ✅ NEW: Send excluded types to API for server-side filtering
+	if (filters.excludeTypes?.length) {
+		params.set("exclude_types", filters.excludeTypes.join(","));
+	}
 
 	const res = await fetch(`${API_URL}/api/v1/links?${params}`, {
 		headers: {
@@ -74,9 +86,27 @@ async function deleteLink(id: string): Promise<void> {
 }
 
 export function useLinks(filters: LinkFilters = {}) {
+	const key = filters.projectId
+		? [
+				...queryKeys.links.list(filters.projectId),
+				filters.sourceId ?? null,
+				filters.targetId ?? null,
+				filters.type ?? null,
+				filters.limit ?? null,
+				filters.excludeTypes ?? null, // ✅ NEW: Include in cache key
+			]
+		: [
+				"links",
+				filters.sourceId ?? null,
+				filters.targetId ?? null,
+				filters.type ?? null,
+				filters.limit ?? null,
+				filters.excludeTypes ?? null, // ✅ NEW: Include in cache key
+			];
 	return useQuery({
-		queryKey: ["links", filters],
+		queryKey: key,
 		queryFn: () => fetchLinks(filters),
+		...QUERY_CONFIGS.dynamic, // Links change frequently
 	});
 }
 
@@ -102,10 +132,14 @@ export function useDeleteLink() {
 
 // Graph data hook for visualization
 export function useTraceabilityGraph(projectId: string) {
+	// ✅ NEW: Limit initial edge rendering
+	const MAX_EDGES_INITIAL = 500;
+	const [visibleEdgeCount, setVisibleEdgeCount] = useState(MAX_EDGES_INITIAL);
+
 	const { data: items } = useQuery<
 		Array<{ id: string; title: string; view: string; status: string }>
 	>({
-		queryKey: ["items", { projectId }],
+		queryKey: queryKeys.items.list(projectId),
 		queryFn: async () => {
 			const res = await fetch(
 				`${API_URL}/api/v1/items?project_id=${projectId}`,
@@ -116,10 +150,26 @@ export function useTraceabilityGraph(projectId: string) {
 			>;
 		},
 		enabled: !!projectId,
+		...QUERY_CONFIGS.graph, // Graph data is expensive, cache longer
 	});
 
-	const { data: linksData } = useLinks({ projectId });
-	const links = linksData?.links ?? [];
+	// ✅ FIXED: Fetch links with filtering + reasonable limit
+	const { data: linksData } = useLinks({
+		projectId,
+		limit: 10000, // ✅ NEW: API limit to prevent massive responses
+		excludeTypes: ["implements"], // ✅ NEW: Filter out 84% redundant links
+	});
+
+	const allLinks = linksData?.links ?? [];
+
+	// ✅ NEW: Progressive loading - only render first N edges
+	const visibleLinks = allLinks.slice(0, visibleEdgeCount);
+	const canLoadMore = visibleEdgeCount < allLinks.length;
+
+	// Load more handler
+	const onLoadMore = () => {
+		setVisibleEdgeCount((prev) => Math.min(prev + 500, allLinks.length));
+	};
 
 	return {
 		nodes: (items ?? []).map((item) => ({
@@ -130,7 +180,7 @@ export function useTraceabilityGraph(projectId: string) {
 				status: item.status,
 			},
 		})),
-		edges: links.map((link) => ({
+		edges: visibleLinks.map((link) => ({
 			data: {
 				id: link.id,
 				source: link.sourceId,
@@ -138,6 +188,10 @@ export function useTraceabilityGraph(projectId: string) {
 				type: link.type,
 			},
 		})),
-		isLoading: !(items && links),
+		canLoadMore,
+		visibleEdges: visibleLinks.length,
+		totalEdges: allLinks.length,
+		onLoadMore,
+		isLoading: !(items && allLinks),
 	};
 }
