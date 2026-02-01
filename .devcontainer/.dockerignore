@@ -1,6 +1,6 @@
 # ============================================================================
-# Root Project - Docker Build Ignore
-# Master .dockerignore for optimized Docker builds across all services
+# Dev Container - Docker Build Ignore
+# Optimized for development environment build caching
 # ============================================================================
 
 # Git and version control
@@ -18,7 +18,7 @@ Dockerfile*
 docker-compose*.yml
 .dockerignore
 
-# Documentation and guides
+# Documentation
 *.md
 README*
 CHANGELOG*
@@ -26,15 +26,6 @@ LICENSE
 CONTRIBUTING*
 docs/
 doc/
-DOCUMENTATION/
-research/
-PLANNING/
-GUIDES/
-AGENTS/
-EPICS/
-PHASES/
-STATUS/
-TESTING/
 
 # IDE and editor configuration
 .vscode/
@@ -65,13 +56,11 @@ TESTING/
 *.a
 /bin/
 /pkg/
-/vendor/
+vendor/
 go.work
 go.work.sum
 go.mod.tidy
 *.prof
-go.sum
-vendor/
 
 # Python
 __pycache__/
@@ -117,9 +106,6 @@ testdata/
 coverage.out
 coverage.html
 coverage.xml
-.coverage
-.coverage.*
-htmlcov/
 test-results/
 junit.xml
 .mocha_output/
@@ -192,12 +178,13 @@ DEMO_PROJECT/
 .demo/
 Thumbs.db
 
-# Lock files (reduce layer size, deps are managed by package managers)
+# Lock files (deps managed by package managers in container)
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lock
 uv.lock
+go.sum
 
 # Configuration files (not needed in containers)
 .pre-commit-config.yaml
@@ -220,10 +207,6 @@ cypress/
 .playwright/
 .vitest/
 
-# Backend specific exclusions
-migrations/
-scripts/
-
 # IDE tools integration
 .bmad/
 .claude/
@@ -236,7 +219,6 @@ scripts/
 .tracertm/
 
 # Platform files
-.devcontainer/
 .vscode/
 
 # Workspace files
@@ -251,6 +233,5 @@ scripts/
 .DS_Store
 
 # Windows
-Thumbs.db
 Desktop.ini
 ehthumbs.db
