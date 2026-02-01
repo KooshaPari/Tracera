@@ -1,0 +1,16 @@
+version: "0.5"
+
+# Global settings
+log_location: .process-compose/logs
+log_level: info
+shell:
+  command: "/bin/bash"
+  args: ["-c"]
+
+environment:
+  - "PYTHONUNBUFFERED=1"
+  - "GO_ENV=development"
+  - "LOG_FORMAT=json"
+
+processes:
+  # Processes will be added in subsequent steps
