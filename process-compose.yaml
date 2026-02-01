@@ -13,4 +13,66 @@ environment:
   - "LOG_FORMAT=json"
 
 processes:
-  # Processes will be added in subsequent steps
+  #############################################################################
+  # Layer 1: Infrastructure Services
+  #############################################################################
+
+  postgres:
+    command: "postgres -D /opt/homebrew/var/postgresql@17"
+    availability:
+      restart: on_failure
+      max_restarts: 5
+      backoff_seconds: 2
+    readiness_probe:
+      exec:
+        command: "pg_isready -h localhost -p 5432 -U tracertm"
+      initial_delay_seconds: 2
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    environment:
+      - "PGDATA=/opt/homebrew/var/postgresql@17"
+      - "PGPORT=5432"
+
+  redis:
+    command: "redis-server /opt/homebrew/etc/redis.conf"
+    availability:
+      restart: on_failure
+      max_restarts: 5
+    readiness_probe:
+      exec:
+        command: "redis-cli -h localhost -p 6379 ping"
+      initial_delay_seconds: 1
+      period_seconds: 5
+      timeout_seconds: 2
+
+  neo4j:
+    command: "neo4j console"
+    availability:
+      restart: on_failure
+      max_restarts: 3
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: 7474
+        path: /
+      initial_delay_seconds: 10
+      period_seconds: 10
+      timeout_seconds: 5
+    environment:
+      - "NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-password}"
+      - "NEO4J_ACCEPT_LICENSE_AGREEMENT=yes"
+
+  nats:
+    command: "nats-server -js -m 8222 -p 4222 -D"
+    availability:
+      restart: on_failure
+      max_restarts: 5
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: 8222
+        path: /healthz
+      initial_delay_seconds: 2
+      period_seconds: 5
