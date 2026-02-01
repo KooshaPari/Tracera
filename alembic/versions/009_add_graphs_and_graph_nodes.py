@@ -10,7 +10,9 @@ from __future__ import annotations
 import uuid
 
 from alembic import op
+from alembic import context
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from tracertm.models.types import JSONType
 
@@ -29,11 +31,11 @@ def upgrade() -> None:
     op.create_table(
         "graphs",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("graph_type", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("root_item_id", sa.String(length=255), sa.ForeignKey("items.id", ondelete="SET NULL"), nullable=True),
+        sa.Column("root_item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="SET NULL"), nullable=True),
         sa.Column("graph_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -44,8 +46,8 @@ def upgrade() -> None:
     op.create_table(
         "graph_nodes",
         sa.Column("graph_id", sa.String(length=255), sa.ForeignKey("graphs.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("item_id", sa.String(length=255), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("is_primary", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -60,7 +62,12 @@ def upgrade() -> None:
     )
     op.create_index("idx_links_project_graph", "links", ["project_id", "graph_id"])
 
+    if context.is_offline_mode():
+        return
+
     conn = op.get_bind()
+    if conn is None:
+        return
 
     graphs_table = sa.table(
         "graphs",

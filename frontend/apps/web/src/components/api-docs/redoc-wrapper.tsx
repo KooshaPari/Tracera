@@ -3,6 +3,7 @@
 import { Copy, Download, ExternalLink, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RedocStandalone } from "redoc";
+import { logger } from "@/lib/logger";
 
 interface RedocWrapperProps {
 	specUrl?: string;
@@ -51,7 +52,7 @@ export function RedocWrapper({
 			fetch(specUrl)
 				.then((res) => res.json())
 				.then((data) => setSpecData(data))
-				.catch((err) => console.error("Failed to load OpenAPI spec:", err));
+				.catch((err) => logger.error("Failed to load OpenAPI spec:", err));
 		} else if (spec) {
 			setSpecData(spec);
 		}

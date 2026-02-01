@@ -1,0 +1,6779 @@
+{
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "\nTraceRTM is a comprehensive requirements traceability management system that helps teams\ntrack relationships between requirements, features, and tasks throughout the development lifecycle.\n\n## Features\n- Project and Item Management\n- Link Management for traceability\n- AI Agent Coordination\n- Graph-based relationship analysis\n- Full-text search with pgvector\n- Real-time updates via WebSocket and NATS\n\n## Authentication\nCurrently supports WorkOS AuthKit. Set Authorization header with Bearer token.",
+    "title": "TraceRTM API",
+    "contact": {
+      "name": "TraceRTM Support",
+      "url": "https://github.com/kooshapari/tracertm-backend",
+      "email": "support@tracertm.example.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/api/v1",
+  "paths": {
+    "/api/v1/ai/analyze": {
+      "post": {
+        "description": "Performs AI analysis on provided text",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "ai"
+        ],
+        "summary": "Analyze text with AI",
+        "parameters": [
+          {
+            "description": "Analyze request",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.AnalyzeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analysis result",
+            "schema": {
+              "$ref": "#/definitions/clients.AnalysisResult"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/stream-chat": {
+      "post": {
+        "description": "Streams AI chat responses using Server-Sent Events (SSE)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "ai"
+        ],
+        "summary": "Stream AI chat responses",
+        "parameters": [
+          {
+            "description": "Stream chat request",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.StreamChatRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream of AI responses",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "Authenticate user with email and password",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "User login",
+        "parameters": [
+          {
+            "description": "Login credentials",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "$ref": "#/definitions/handlers.AuthResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "description": "Logout and revoke session",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "User logout",
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "description": "Get the current authenticated user information",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get current user",
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "schema": {
+              "$ref": "#/definitions/auth.User"
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "description": "Refresh expired or expiring authentication token",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Refresh authentication token",
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully",
+            "schema": {
+              "$ref": "#/definitions/handlers.AuthResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify": {
+      "get": {
+        "description": "Verify if an authentication token is valid",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Verify authentication token",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Token to verify",
+            "name": "token",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token is valid",
+            "schema": {
+              "$ref": "#/definitions/auth.User"
+            }
+          },
+          "401": {
+            "description": "Invalid token",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/csrf-token": {
+      "get": {
+        "description": "Returns a CSRF token for use in state-changing requests",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "security"
+        ],
+        "summary": "Get CSRF token",
+        "responses": {
+          "200": {
+            "description": "CSRF token retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/handlers.CSRFTokenResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to generate CSRF token",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Lists all documentation for a project with pagination",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "documentation"
+        ],
+        "summary": "List documentation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "Limit (default 100)",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Offset (default 0)",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of documentation",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to list documentation",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Parses and indexes documentation in various formats (markdown, rst, etc.)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "documentation"
+        ],
+        "summary": "Index new documentation",
+        "parameters": [
+          {
+            "description": "Documentation to index",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.IndexDocumentationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Documentation indexed successfully",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to index documentation",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs/search": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Performs full-text search on documentation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "documentation"
+        ],
+        "summary": "Search documentation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Search query",
+            "name": "query",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "Limit (default 100)",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Offset (default 0)",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to search documentation",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Retrieves a specific documentation by ID",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "documentation"
+        ],
+        "summary": "Get documentation by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Documentation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentation retrieved",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Documentation not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to get documentation",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Updates an existing documentation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "documentation"
+        ],
+        "summary": "Update documentation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Documentation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Updated documentation",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.IndexDocumentationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentation updated",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Documentation not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to update documentation",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Deletes a documentation record (soft delete)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "documentation"
+        ],
+        "summary": "Delete documentation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Documentation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentation deleted",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Documentation not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Failed to delete documentation",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/cache/invalidate": {
+      "post": {
+        "description": "Clears all cached graph analysis results for a project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Invalidate graph cache",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/centrality": {
+      "get": {
+        "description": "Computes betweenness, closeness, and PageRank centrality for project items",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Calculate centrality metrics",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.CentralityMetrics"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/coverage": {
+      "get": {
+        "description": "Computes coverage statistics (connected vs isolated items)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Analyze graph coverage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.CoverageReport"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/cycles": {
+      "get": {
+        "description": "Finds all cycles in the project's dependency graph using Neo4j",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Detect cycles in project graph",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/graph.Cycle"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/dependencies": {
+      "get": {
+        "description": "Retrieves all items that this item depends on",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Get item dependencies (forward)",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Item ID",
+            "name": "item_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 3,
+            "description": "Maximum traversal depth",
+            "name": "max_depth",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.DependencyTree"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/dependents": {
+      "get": {
+        "description": "Retrieves all items that depend on this item",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Get item dependents (backward)",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Item ID",
+            "name": "item_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 3,
+            "description": "Maximum traversal depth",
+            "name": "max_depth",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.DependencyTree"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/impact": {
+      "post": {
+        "description": "Computes which items would be affected by changes to the specified items",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Analyze impact of changes",
+        "parameters": [
+          {
+            "description": "Items to analyze",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.ImpactAnalysisRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.ImpactReport"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/metrics": {
+      "get": {
+        "description": "Computes overall graph statistics for a project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Get graph metrics",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.GraphMetrics"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/analysis/shortest-path": {
+      "get": {
+        "description": "Computes the shortest path between source and target items using Neo4j",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "graph-analysis"
+        ],
+        "summary": "Find shortest path between two items",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Source item ID",
+            "name": "source",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Target item ID",
+            "name": "target",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/graph.Path"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/versions/compare": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Returns the differences between two project versions",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versions"
+        ],
+        "summary": "Compare two versions",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Source version ID",
+            "name": "from",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Target version ID",
+            "name": "to",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diff result",
+            "schema": {
+              "$ref": "#/definitions/handlers.CompareVersionsResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Version not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/versions/compare/bulk": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Returns differences for multiple version pairs in a single request",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versions"
+        ],
+        "summary": "Compare multiple version pairs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Comparison pairs",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.BulkCompareVersionsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bulk diff results",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/versions/compare/summary": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Returns a high-level summary of changes between two versions",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versions"
+        ],
+        "summary": "Get summary of version differences",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Source version ID",
+            "name": "from",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Target version ID",
+            "name": "to",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diff summary",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Version not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spec-analytics/analyze": {
+      "post": {
+        "description": "Analyzes a specification for ISO 29148 compliance, EARS patterns, and formal verification",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "spec-analytics"
+        ],
+        "summary": "Analyze a specification",
+        "parameters": [
+          {
+            "description": "Analyze spec request",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.AnalyzeSpecRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analysis result",
+            "schema": {
+              "$ref": "#/definitions/clients.SpecAnalysisResult"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spec-analytics/batch-analyze": {
+      "post": {
+        "description": "Analyzes multiple specifications in parallel",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "spec-analytics"
+        ],
+        "summary": "Batch analyze specifications",
+        "parameters": [
+          {
+            "description": "Batch analyze request",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.BatchAnalyzeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch analysis results",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spec-analytics/ears-patterns": {
+      "post": {
+        "description": "Extracts EARS patterns from a specification",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "spec-analytics"
+        ],
+        "summary": "Extract EARS patterns",
+        "parameters": [
+          {
+            "description": "EARS patterns request",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.AnalyzeSpecRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "EARS patterns result",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spec-analytics/validate-iso29148": {
+      "post": {
+        "description": "Checks if a specification complies with ISO 29148 standard",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "spec-analytics"
+        ],
+        "summary": "Validate ISO 29148 compliance",
+        "parameters": [
+          {
+            "description": "Validate request",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.AnalyzeSpecRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Returns information about the currently authenticated user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get current user information",
+        "responses": {
+          "200": {
+            "description": "Current user information",
+            "schema": {
+              "$ref": "#/definitions/auth.User"
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations": {
+      "get": {
+        "description": "Returns a list of distributed operations for a project with optional filtering",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "List distributed operations",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Filter by status (pending, in_progress, completed, failed)",
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of operations",
+            "schema": {
+              "$ref": "#/definitions/handlers.ListDistributedOperationsResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid project ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new distributed operation coordinated across multiple agents",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Create a new distributed operation",
+        "parameters": [
+          {
+            "description": "Operation details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.CreateDistributedOperationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operation created successfully",
+            "schema": {
+              "$ref": "#/definitions/handlers.CreateDistributedOperationResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations/assign": {
+      "post": {
+        "description": "Assigns parts of a distributed operation to multiple participating agents",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Assign operation to agents",
+        "parameters": [
+          {
+            "description": "Agent assignment configuration",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.AssignOperationToAgentsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment successful",
+            "schema": {
+              "$ref": "#/definitions/handlers.AssignOperationResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations/participants/result": {
+      "post": {
+        "description": "Submits work results from a participant agent in a distributed operation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Submit participant result",
+        "parameters": [
+          {
+            "description": "Result submission",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.SubmitParticipantResultRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result submitted successfully",
+            "schema": {
+              "$ref": "#/definitions/handlers.ParticipantResultResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations/{id}/complete": {
+      "post": {
+        "description": "Marks a distributed operation as complete and aggregates results",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Complete a distributed operation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Operation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation completed successfully",
+            "schema": {
+              "$ref": "#/definitions/handlers.OperationStatusResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid operation ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations/{id}/results": {
+      "get": {
+        "description": "Returns aggregated results from all participants in a distributed operation",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Get operation results",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Operation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated operation results",
+            "schema": {
+              "$ref": "#/definitions/handlers.OperationResults"
+            }
+          },
+          "400": {
+            "description": "Invalid operation ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Operation not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations/{id}/status": {
+      "get": {
+        "description": "Returns the current status and details of a distributed operation",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Get distributed operation status",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Operation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation details",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid operation ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Operation not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Updates the status of a distributed operation (e.g., pending, in_progress, completed)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Update operation status",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Operation ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "New status",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.UpdateOperationStatusRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status updated successfully",
+            "schema": {
+              "$ref": "#/definitions/handlers.OperationStatusResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/distributed-operations/{operation_id}/participants/{agent_id}": {
+      "get": {
+        "description": "Returns the current status of a specific agent participant in a distributed operation",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "distributed-operations"
+        ],
+        "summary": "Get participant status in operation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Operation ID",
+            "name": "operation_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Agent ID",
+            "name": "agent_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Participant status details",
+            "schema": {
+              "$ref": "#/definitions/handlers.ParticipantStatus"
+            }
+          },
+          "400": {
+            "description": "Invalid operation or agent ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Participant not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DistributedErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences": {
+      "get": {
+        "description": "Returns a paginated list of equivalence links with optional filtering",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "List equivalence links for a project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID (required)",
+            "name": "project_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Filter by status (suggested, confirmed, rejected, auto)",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "type": "number",
+            "description": "Minimum confidence threshold (0.0-1.0)",
+            "name": "min_confidence",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Filter by link type",
+            "name": "link_type",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Page size (default: 50, max: 500)",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Pagination offset (default: 0)",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Sort field (created_at, confidence, updated_at)",
+            "name": "sort_by",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Sort direction (asc, desc)",
+            "name": "sort_direction",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of equivalence links",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ListEquivalencesResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/bulk-confirm": {
+      "post": {
+        "description": "Confirms multiple equivalence links in a single operation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "Confirm multiple equivalences",
+        "parameters": [
+          {
+            "description": "Equivalence IDs to confirm",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.BulkConfirmRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmation results",
+            "schema": {
+              "$ref": "#/definitions/equivalence.BulkConfirmResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/bulk-reject": {
+      "post": {
+        "description": "Rejects multiple equivalence links in a single operation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "Reject multiple equivalences",
+        "parameters": [
+          {
+            "description": "Equivalence IDs to reject",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.BulkRejectRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rejection results",
+            "schema": {
+              "$ref": "#/definitions/equivalence.BulkRejectResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/concepts": {
+      "post": {
+        "description": "Creates a new abstract canonical concept for the project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Create a new canonical concept",
+        "parameters": [
+          {
+            "description": "Canonical concept details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalConceptRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Concept created successfully",
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalConceptResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "409": {
+            "description": "Duplicate concept",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/concepts/{conceptId}/projections/{projectionId}": {
+      "delete": {
+        "description": "Removes a link between an item and a canonical concept",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Delete a projection of a canonical concept",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Canonical Concept ID",
+            "name": "conceptId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Projection ID",
+            "name": "projectionId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deletion successful"
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Projection or concept not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/concepts/{id}": {
+      "get": {
+        "description": "Returns details of a specific canonical concept",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Get a canonical concept",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Canonical Concept ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Concept details",
+            "schema": {
+              "$ref": "#/definitions/equivalence.CanonicalConcept"
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Concept not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Updates an existing canonical concept",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Update a canonical concept",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Canonical Concept ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Updated concept details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalConceptRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated concept",
+            "schema": {
+              "$ref": "#/definitions/equivalence.CanonicalConcept"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Concept not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes a canonical concept and its projections",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Delete a canonical concept",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Canonical Concept ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deletion successful"
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Concept not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/concepts/{id}/projections": {
+      "get": {
+        "description": "Returns all view manifestations (projections) of a canonical concept",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Get projections of a canonical concept",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Canonical Concept ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Filter by perspective",
+            "name": "perspective",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Filter by status (suggested, confirmed, rejected)",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Page size (default: 50)",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Pagination offset",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projections list",
+            "schema": {
+              "$ref": "#/definitions/equivalence.GetProjectionsResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Concept not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Links an item to a canonical concept in a specific perspective",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Create a projection of a canonical concept",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Canonical Concept ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Projection details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalProjectionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Projection created successfully",
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalProjectionResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Concept not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/{id}": {
+      "get": {
+        "description": "Returns details of a specific equivalence link",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "Get a specific equivalence link",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Equivalence ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Equivalence link details",
+            "schema": {
+              "$ref": "#/definitions/equivalence.EquivalenceLink"
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Equivalence not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/{id}/confirm": {
+      "post": {
+        "description": "Confirms an equivalence link and makes it permanent",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "Confirm an equivalence link",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Equivalence ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Confirmation details",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ConfirmEquivalenceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmation successful",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ConfirmEquivalenceResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Equivalence not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/equivalences/{id}/reject": {
+      "post": {
+        "description": "Rejects and removes an equivalence link",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "Reject an equivalence link",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Equivalence ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Rejection details",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/equivalence.RejectEquivalenceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rejection successful"
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Equivalence not found",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Returns the health status of the service",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "health"
+        ],
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "schema": {
+              "$ref": "#/definitions/handlers.HealthResponse"
+            }
+          }
+        }
+      }
+    },
+    "/items/{id}/pivot": {
+      "post": {
+        "description": "Returns items equivalent to a source item, grouped by perspective",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "items"
+        ],
+        "summary": "Get equivalent items for pivot navigation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Item ID to pivot from",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Pivot navigation options",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.PivotNavigationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Equivalent items grouped by perspective",
+            "schema": {
+              "$ref": "#/definitions/handlers.PivotNavigationResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Item not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/items/{id}/pivot-targets": {
+      "get": {
+        "description": "Returns item information needed for pivot navigation including type and available perspectives",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "items"
+        ],
+        "summary": "Get pivot target information for an item",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Item ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pivot target information",
+            "schema": {
+              "$ref": "#/definitions/handlers.PivotTargetsResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid item ID",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Item not found",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys": {
+      "get": {
+        "description": "Returns a paginated list of journeys",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "List all journeys",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Journey type filter",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "type": "number",
+            "description": "Minimum score threshold",
+            "name": "min_score",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Page size (default: 50)",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Pagination offset",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of journeys",
+            "schema": {
+              "$ref": "#/definitions/journey.ListJourneysResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/call-chains": {
+      "get": {
+        "description": "Returns function call chains for a project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get detected call chains",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Call chains",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/journey.DerivedJourney"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/data-paths": {
+      "get": {
+        "description": "Returns data flow paths for a project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get detected data paths",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data paths",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/journey.DerivedJourney"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/detect": {
+      "post": {
+        "description": "Analyzes the project graph to detect user flows, data paths, and call chains",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Detect journeys in a project",
+        "parameters": [
+          {
+            "description": "Detection parameters",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/journey.DetectJourneysRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detection results",
+            "schema": {
+              "$ref": "#/definitions/journey.DetectJourneysResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/stats": {
+      "get": {
+        "description": "Returns aggregate statistics about detected journeys",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get journey statistics",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journey statistics",
+            "schema": {
+              "$ref": "#/definitions/journey.JourneyStats"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/user-flows": {
+      "get": {
+        "description": "Returns user flows (UI navigation paths) for a project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get detected user flows",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "project_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User flows",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/journey.DerivedJourney"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/{id}": {
+      "get": {
+        "description": "Returns details of a specific journey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get a specific journey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journey details",
+            "schema": {
+              "$ref": "#/definitions/journey.DerivedJourney"
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Updates a specific journey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Update a journey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Update parameters",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/journey.UpdateJourneyRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated journey",
+            "schema": {
+              "$ref": "#/definitions/journey.DerivedJourney"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes a specific journey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Delete a journey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deletion successful"
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/{id}/steps": {
+      "get": {
+        "description": "Returns the ordered steps of a journey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get journey steps",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journey steps",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/journey.JourneyStep"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Adds an item as a step in the journey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Add a step to a journey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Step details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/journey.AddStepRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated journey",
+            "schema": {
+              "$ref": "#/definitions/journey.DerivedJourney"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/{id}/steps/{itemId}": {
+      "delete": {
+        "description": "Removes an item from the journey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Remove a step from a journey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Item ID to remove",
+            "name": "itemId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Step removed successfully"
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey or step not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/journeys/{id}/visualization": {
+      "get": {
+        "description": "Returns formatted data for rendering a journey visualization",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Get journey visualization data",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Journey ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visualization data",
+            "schema": {
+              "$ref": "#/definitions/journey.VisualizationData"
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Journey not found",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/concepts": {
+      "get": {
+        "description": "Returns all canonical concepts for the given project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "List canonical concepts for a project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of concepts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/equivalence.CanonicalConcept"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid project ID",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new canonical concept scoped to the given project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "canonical-concepts"
+        ],
+        "summary": "Create a canonical concept for a project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Concept details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalConceptRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Concept created successfully",
+            "schema": {
+              "$ref": "#/definitions/equivalence.CreateCanonicalConceptResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/equivalences": {
+      "get": {
+        "description": "Returns a paginated list of equivalence links for the given project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "List equivalence links for a specific project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Filter by status (suggested, confirmed, rejected, auto)",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "type": "number",
+            "description": "Minimum confidence threshold (0.0-1.0)",
+            "name": "min_confidence",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Filter by link type",
+            "name": "link_type",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Page size (default: 50, max: 500)",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Pagination offset (default: 0)",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Sort field (created_at, confidence, updated_at)",
+            "name": "sort_by",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Sort direction (asc, desc)",
+            "name": "sort_direction",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of equivalence links",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ListEquivalencesResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid project ID",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/equivalences/detect": {
+      "post": {
+        "description": "Runs equivalence detection for items in the specified project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "equivalences"
+        ],
+        "summary": "Detect equivalences within a project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Detection configuration",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/equivalence.DetectionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detection results with suggestions",
+            "schema": {
+              "$ref": "#/definitions/equivalence.DetectionResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Detection failed",
+            "schema": {
+              "$ref": "#/definitions/equivalence.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/journeys": {
+      "get": {
+        "description": "Returns journeys for a specific project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "List journeys for a project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Journey type filter",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Page size",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Pagination offset",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of journeys",
+            "schema": {
+              "$ref": "#/definitions/journey.ListJourneysResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a manual journey in the project",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Create a new journey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Journey details",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/journey.CreateJourneyRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created journey",
+            "schema": {
+              "$ref": "#/definitions/journey.DerivedJourney"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/journeys/detect": {
+      "post": {
+        "description": "Analyzes the project graph to detect journeys",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "journeys"
+        ],
+        "summary": "Detect journeys in a project",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project ID",
+            "name": "projectId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Detection parameters",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/journey.DetectJourneysRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detection results",
+            "schema": {
+              "$ref": "#/definitions/journey.DetectJourneysResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/journey.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/:key": {
+      "delete": {
+        "description": "Delete a file from S3-compatible storage",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Delete a file from S3 storage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "S3 key of the file to delete",
+            "name": "key",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.DeleteResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.DeleteResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DeleteResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/download": {
+      "get": {
+        "description": "Download a file from S3-compatible storage",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Download a file from S3 storage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "S3 key of the file to download",
+            "name": "key",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.DownloadResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/handlers.DownloadResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.DownloadResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/info": {
+      "get": {
+        "description": "Get metadata about a file in storage",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Get file information",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "S3 key of the file",
+            "name": "key",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.FileInfoResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.FileInfoResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.FileInfoResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/presigned-upload": {
+      "post": {
+        "description": "Generate a presigned URL for uploading a file without authentication",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Generate presigned upload URL",
+        "parameters": [
+          {
+            "description": "Request body",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/presigned/:key": {
+      "get": {
+        "description": "Generate a presigned URL for downloading a file without authentication",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Generate presigned download URL",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "S3 key of the file",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "URL expiry in hours (default: 24)",
+            "name": "expiryHours",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.PresignedURLResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/upload": {
+      "post": {
+        "description": "Upload a file to S3-compatible storage (Cloudflare R2, AWS S3, etc.)",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Upload a file to S3 storage",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "File to upload",
+            "name": "file",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Custom S3 key (auto-generated if not provided)",
+            "name": "key",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "description": "Content-Type header (auto-detected if not provided)",
+            "name": "contentType",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.UploadResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.UploadResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.UploadResponse"
+            }
+          }
+        }
+      }
+    },
+    "/storage/upload-with-thumbnail": {
+      "post": {
+        "description": "Upload an image and automatically generate a thumbnail",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "storage"
+        ],
+        "summary": "Upload an image with thumbnail generation",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "Image file to upload",
+            "name": "file",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Custom S3 key (auto-generated if not provided)",
+            "name": "key",
+            "in": "formData"
+          },
+          {
+            "type": "integer",
+            "description": "Thumbnail width in pixels (default: 200)",
+            "name": "thumbWidth",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.UploadResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/handlers.UploadResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/handlers.UploadResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "auth.User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "clients.AnalysisResult": {
+      "type": "object",
+      "properties": {
+        "analysis": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "clients.EARSPattern": {
+      "type": "object",
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "matched": {
+          "type": "boolean"
+        },
+        "type": {
+          "description": "UBIQUITOUS, EVENT_DRIVEN, UNWANTED_BEHAVIOR, STATE_DRIVEN, OPTIONAL_FEATURE",
+          "type": "string"
+        }
+      }
+    },
+    "clients.FormalVerificationResult": {
+      "type": "object",
+      "properties": {
+        "ambiguities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contradictions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "is_verifiable": {
+          "type": "boolean"
+        },
+        "logical_formula": {
+          "type": "string"
+        }
+      }
+    },
+    "clients.SpecAnalysisResult": {
+      "type": "object",
+      "properties": {
+        "compliant_with_iso": {
+          "type": "boolean"
+        },
+        "ears_patterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/clients.EARSPattern"
+          }
+        },
+        "formal_verification": {
+          "$ref": "#/definitions/clients.FormalVerificationResult"
+        },
+        "odc_classification": {
+          "type": "string"
+        },
+        "recommendations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spec_id": {
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.BulkConfirmRequest": {
+      "type": "object",
+      "required": [
+        "equivalence_ids"
+      ],
+      "properties": {
+        "equivalence_ids": {
+          "description": "EquivalenceIDs are the IDs to confirm",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "description": "Reason is optional context for all confirmations",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.BulkConfirmResponse": {
+      "type": "object",
+      "properties": {
+        "confirmed": {
+          "description": "Confirmed is the number of successfully confirmed links",
+          "type": "integer"
+        },
+        "errors": {
+          "description": "Errors maps failed IDs to error messages",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "failed": {
+          "description": "Failed is the number that failed to confirm",
+          "type": "integer"
+        },
+        "links": {
+          "description": "Links are the confirmed equivalence links",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.EquivalenceLink"
+          }
+        }
+      }
+    },
+    "equivalence.BulkRejectRequest": {
+      "type": "object",
+      "required": [
+        "equivalence_ids"
+      ],
+      "properties": {
+        "equivalence_ids": {
+          "description": "EquivalenceIDs are the IDs to reject",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "description": "Reason explains why equivalences were rejected",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.BulkRejectResponse": {
+      "type": "object",
+      "properties": {
+        "errors": {
+          "description": "Errors maps failed IDs to error messages",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "failed": {
+          "description": "Failed is the number that failed to reject",
+          "type": "integer"
+        },
+        "rejected": {
+          "description": "Rejected is the number of successfully rejected equivalences",
+          "type": "integer"
+        }
+      }
+    },
+    "equivalence.CanonicalConcept": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "child_concept_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "embedding": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "embedding_model": {
+          "type": "string"
+        },
+        "embedding_updated_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent_concept_id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "projection_count": {
+          "type": "integer"
+        },
+        "related_concept_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "slug": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/equivalence.StrategyType"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        }
+      }
+    },
+    "equivalence.CanonicalProjection": {
+      "type": "object",
+      "properties": {
+        "canonical_id": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "confirmed_at": {
+          "type": "string"
+        },
+        "confirmed_by": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "perspective": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/definitions/equivalence.StrategyType"
+        },
+        "role": {
+          "description": "primary, related, derived",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/equivalence.EquivalenceStatus"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.CodeReference": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "description": "FilePath is the source file path",
+          "type": "string"
+        },
+        "line_end": {
+          "description": "LineEnd is the ending line number",
+          "type": "integer"
+        },
+        "line_start": {
+          "description": "LineStart is the starting line number",
+          "type": "integer"
+        },
+        "repository": {
+          "description": "Repository is the code repository",
+          "type": "string"
+        },
+        "symbol_name": {
+          "description": "SymbolName is the symbol name",
+          "type": "string"
+        },
+        "symbol_type": {
+          "description": "SymbolType is the symbol type (function, class, method, etc.)",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.ConfirmEquivalenceRequest": {
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "description": "Metadata is optional additional information",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "reason": {
+          "description": "Reason is optional context for the confirmation",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.ConfirmEquivalenceResponse": {
+      "type": "object",
+      "properties": {
+        "confirmed_at": {
+          "description": "ConfirmedAt is when confirmation occurred",
+          "type": "string"
+        },
+        "link": {
+          "description": "Link is the confirmed equivalence link",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.EquivalenceLink"
+            }
+          ]
+        },
+        "message": {
+          "description": "Message describes the confirmation",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.CreateCanonicalConceptRequest": {
+      "type": "object",
+      "required": [
+        "name",
+        "project_id"
+      ],
+      "properties": {
+        "category": {
+          "description": "Category is optional categorization",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description explains the concept",
+          "type": "string"
+        },
+        "domain": {
+          "description": "Domain is optional domain classification",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "Metadata is optional additional data",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "name": {
+          "description": "Name is the concept name",
+          "type": "string"
+        },
+        "parent_concept_id": {
+          "description": "ParentConceptID links to a parent concept (optional)",
+          "type": "string"
+        },
+        "project_id": {
+          "description": "ProjectID is the owning project",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Tags are optional tags for organization",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "equivalence.CreateCanonicalConceptResponse": {
+      "type": "object",
+      "properties": {
+        "concept": {
+          "description": "Concept is the created canonical concept",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.CanonicalConcept"
+            }
+          ]
+        },
+        "created_at": {
+          "description": "CreatedAt is when the concept was created",
+          "type": "string"
+        },
+        "message": {
+          "description": "Message describes the creation",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.CreateCanonicalProjectionRequest": {
+      "type": "object",
+      "required": [
+        "item_id"
+      ],
+      "properties": {
+        "confidence": {
+          "description": "Confidence is the confidence of this projection (0.0-1.0)",
+          "type": "number"
+        },
+        "item_id": {
+          "description": "ItemID is the item being projected onto the canonical concept",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "Metadata is optional additional information",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "perspective": {
+          "description": "Perspective is the view perspective (e.g., code, requirements, design)",
+          "type": "string"
+        },
+        "role": {
+          "description": "Role is the role of this projection (primary, related, derived)",
+          "type": "string"
+        },
+        "source": {
+          "description": "Source indicates how the projection was detected/confirmed",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.StrategyType"
+            }
+          ]
+        }
+      }
+    },
+    "equivalence.CreateCanonicalProjectionResponse": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "description": "CreatedAt is when the projection was created",
+          "type": "string"
+        },
+        "message": {
+          "description": "Message describes the creation",
+          "type": "string"
+        },
+        "projection": {
+          "description": "Projection is the created projection",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.CanonicalProjection"
+            }
+          ]
+        }
+      }
+    },
+    "equivalence.DetectionRequest": {
+      "type": "object",
+      "required": [
+        "project_id",
+        "source_item_id"
+      ],
+      "properties": {
+        "candidate_pool": {
+          "description": "CandidatePool specifies which items to check (if nil, checks all items in project)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.ItemInfo"
+          }
+        },
+        "max_results": {
+          "description": "MaxResults limits the number of suggestions returned",
+          "type": "integer"
+        },
+        "min_confidence": {
+          "description": "MinConfidence filters suggestions below this threshold (0.0-1.0)",
+          "type": "number"
+        },
+        "project_id": {
+          "description": "ProjectID is the project to search for equivalences within",
+          "type": "string"
+        },
+        "source_item_id": {
+          "description": "SourceItemID is the item to find equivalences for",
+          "type": "string"
+        },
+        "strategies": {
+          "description": "Strategies specifies which detection strategies to use\nIf empty, all strategies are used",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.StrategyType"
+          }
+        }
+      }
+    },
+    "equivalence.DetectionResponse": {
+      "type": "object",
+      "properties": {
+        "detected_at": {
+          "description": "Timestamp when detection was performed",
+          "type": "string"
+        },
+        "stats": {
+          "description": "Stats contains detection statistics",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.DetectionStats"
+            }
+          ]
+        },
+        "suggestions": {
+          "description": "Suggestions are the detected equivalence suggestions",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.EquivalenceSuggestion"
+          }
+        }
+      }
+    },
+    "equivalence.DetectionStats": {
+      "type": "object",
+      "properties": {
+        "average_confidence": {
+          "description": "AverageConfidence is the mean confidence across all findings",
+          "type": "number"
+        },
+        "duration_ms": {
+          "description": "DurationMs is detection time in milliseconds",
+          "type": "integer"
+        },
+        "equivalences_found": {
+          "description": "EquivalencesFound is the number of suggestions created",
+          "type": "integer"
+        },
+        "strategy_breakdown": {
+          "description": "StrategyBreakdown shows count by strategy",
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "total_items_scanned": {
+          "description": "TotalItemsScanned is the number of items checked",
+          "type": "integer"
+        }
+      }
+    },
+    "equivalence.EquivalenceLink": {
+      "type": "object",
+      "properties": {
+        "canonical_id": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "confirmed_at": {
+          "type": "string"
+        },
+        "confirmed_by": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.Evidence"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "link_type": {
+          "description": "same_as, represents, manifests_as, etc.",
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/definitions/equivalence.StrategyType"
+        },
+        "source_item_id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/equivalence.EquivalenceStatus"
+        },
+        "target_item_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.EquivalenceStatus": {
+      "type": "string",
+      "enum": [
+        "suggested",
+        "confirmed",
+        "rejected",
+        "auto"
+      ],
+      "x-enum-comments": {
+        "StatusAuto": "Auto-confirmed (high confidence)",
+        "StatusConfirmed": "User confirmed",
+        "StatusRejected": "User rejected",
+        "StatusSuggested": "AI-detected, awaiting confirmation"
+      },
+      "x-enum-descriptions": [
+        "AI-detected, awaiting confirmation",
+        "User confirmed",
+        "User rejected",
+        "Auto-confirmed (high confidence)"
+      ],
+      "x-enum-varnames": [
+        "StatusSuggested",
+        "StatusConfirmed",
+        "StatusRejected",
+        "StatusAuto"
+      ]
+    },
+    "equivalence.EquivalenceSuggestion": {
+      "type": "object",
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.Evidence"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "source_item_id": {
+          "type": "string"
+        },
+        "source_item_title": {
+          "type": "string"
+        },
+        "source_item_type": {
+          "type": "string"
+        },
+        "strategies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.StrategyType"
+          }
+        },
+        "suggested_type": {
+          "description": "same_as, represents, etc.",
+          "type": "string"
+        },
+        "target_item_id": {
+          "type": "string"
+        },
+        "target_item_title": {
+          "type": "string"
+        },
+        "target_item_type": {
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Code is the error code",
+          "type": "string"
+        },
+        "details": {
+          "description": "Details contains additional error context",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "error": {
+          "description": "Error is the error message",
+          "type": "string"
+        },
+        "timestamp": {
+          "description": "Timestamp when error occurred",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.Evidence": {
+      "type": "object",
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "detected_at": {
+          "type": "string"
+        },
+        "strategy": {
+          "$ref": "#/definitions/equivalence.StrategyType"
+        }
+      }
+    },
+    "equivalence.GetProjectionsResponse": {
+      "type": "object",
+      "properties": {
+        "concept": {
+          "description": "Concept is the canonical concept details",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.CanonicalConcept"
+            }
+          ]
+        },
+        "concept_id": {
+          "description": "ConceptID is the canonical concept",
+          "type": "string"
+        },
+        "perspective_breakdown": {
+          "description": "PerspectiveBreakdown groups projections by perspective",
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/equivalence.CanonicalProjection"
+            }
+          }
+        },
+        "projections": {
+          "description": "Projections are the view manifestations",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.CanonicalProjection"
+          }
+        },
+        "total": {
+          "description": "Total number of projections",
+          "type": "integer"
+        }
+      }
+    },
+    "equivalence.ItemInfo": {
+      "type": "object",
+      "properties": {
+        "code_ref": {
+          "description": "CodeRef links to source code",
+          "allOf": [
+            {
+              "$ref": "#/definitions/equivalence.CodeReference"
+            }
+          ]
+        },
+        "created_at": {
+          "description": "CreatedAt is creation timestamp",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description is the item description",
+          "type": "string"
+        },
+        "id": {
+          "description": "ID is the item unique identifier",
+          "type": "string"
+        },
+        "item_type": {
+          "description": "ItemType is the item classification",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "Metadata contains additional item data",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "priority": {
+          "description": "Priority is the item priority",
+          "type": "string"
+        },
+        "project_id": {
+          "description": "ProjectID is the owning project",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status is the item status",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Tags are item tags",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "description": "Title is the item title",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "UpdatedAt is last modification timestamp",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.ListEquivalencesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Data is the list of equivalence links",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/equivalence.EquivalenceLink"
+          }
+        },
+        "has_more": {
+          "description": "HasMore indicates if there are more results",
+          "type": "boolean"
+        },
+        "limit": {
+          "description": "Limit is the limit used in the request",
+          "type": "integer"
+        },
+        "offset": {
+          "description": "Offset is the offset used in the request",
+          "type": "integer"
+        },
+        "total": {
+          "description": "Total is the total number of records matching the filter",
+          "type": "integer"
+        }
+      }
+    },
+    "equivalence.RejectEquivalenceRequest": {
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "description": "Metadata is optional additional information",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "reason": {
+          "description": "Reason explains why the equivalence was rejected",
+          "type": "string"
+        }
+      }
+    },
+    "equivalence.StrategyType": {
+      "type": "string",
+      "enum": [
+        "explicit_annotation",
+        "manual_link",
+        "api_contract",
+        "shared_canonical",
+        "naming_pattern",
+        "semantic_similarity",
+        "structural"
+      ],
+      "x-enum-comments": {
+        "StrategyAPIContract": "Frontend fetch → backend route - confidence: 0.9",
+        "StrategyExplicitAnnotation": "@trace-implements, @canonical - confidence: 1.0",
+        "StrategyManualLink": "User-created link - confidence: 1.0",
+        "StrategyNamingPattern": "CamelCase/snake_case matching - confidence: 0.7",
+        "StrategySemanticSimilarity": "Embedding cosine similarity - confidence: 0.6",
+        "StrategySharedCanonical": "Same canonical concept - confidence: 0.9",
+        "StrategyStructural": "Code structure analysis - confidence: 0.5"
+      },
+      "x-enum-descriptions": [
+        "@trace-implements, @canonical - confidence: 1.0",
+        "User-created link - confidence: 1.0",
+        "Frontend fetch → backend route - confidence: 0.9",
+        "Same canonical concept - confidence: 0.9",
+        "CamelCase/snake_case matching - confidence: 0.7",
+        "Embedding cosine similarity - confidence: 0.6",
+        "Code structure analysis - confidence: 0.5"
+      ],
+      "x-enum-varnames": [
+        "StrategyExplicitAnnotation",
+        "StrategyManualLink",
+        "StrategyAPIContract",
+        "StrategySharedCanonical",
+        "StrategyNamingPattern",
+        "StrategySemanticSimilarity",
+        "StrategyStructural"
+      ]
+    },
+    "graph.CentralNode": {
+      "type": "object",
+      "properties": {
+        "betweenness_score": {
+          "type": "number"
+        },
+        "closeness_score": {
+          "type": "number"
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "pagerank_score": {
+          "type": "number"
+        }
+      }
+    },
+    "graph.CentralityMetrics": {
+      "type": "object",
+      "properties": {
+        "betweenness": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float64"
+          }
+        },
+        "closeness": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float64"
+          }
+        },
+        "most_central": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/graph.CentralNode"
+          }
+        },
+        "pagerank": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "float64"
+          }
+        },
+        "project_id": {
+          "type": "string"
+        }
+      }
+    },
+    "graph.CoverageReport": {
+      "type": "object",
+      "properties": {
+        "connected_items": {
+          "type": "integer"
+        },
+        "coverage_percent": {
+          "type": "number"
+        },
+        "isolated_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "total_items": {
+          "type": "integer"
+        }
+      }
+    },
+    "graph.Cycle": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "severity": {
+          "description": "\"warning\", \"error\"",
+          "type": "string"
+        }
+      }
+    },
+    "graph.Dependency": {
+      "type": "object",
+      "properties": {
+        "depth": {
+          "type": "integer"
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "link_type": {
+          "type": "string"
+        }
+      }
+    },
+    "graph.DependencyTree": {
+      "type": "object",
+      "properties": {
+        "children": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/graph.Dependency"
+            }
+          }
+        },
+        "depth": {
+          "type": "integer"
+        },
+        "root": {
+          "type": "string"
+        }
+      }
+    },
+    "graph.GraphMetrics": {
+      "type": "object",
+      "properties": {
+        "avg_degree": {
+          "type": "number"
+        },
+        "connected_components": {
+          "type": "integer"
+        },
+        "density": {
+          "type": "number"
+        },
+        "max_depth": {
+          "type": "integer"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "total_edges": {
+          "type": "integer"
+        },
+        "total_nodes": {
+          "type": "integer"
+        }
+      }
+    },
+    "graph.ImpactReport": {
+      "type": "object",
+      "properties": {
+        "direct_impact": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "impact_levels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "indirect_impact": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "total_affected": {
+          "type": "integer"
+        }
+      }
+    },
+    "graph.Path": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer"
+        },
+        "link_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.AnalyzeRequest": {
+      "type": "object",
+      "required": [
+        "project_id",
+        "text"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.AnalyzeSpecRequest": {
+      "type": "object",
+      "required": [
+        "content",
+        "project_id",
+        "spec_id"
+      ],
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "spec_id": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.AssignOperationResponse": {
+      "type": "object",
+      "properties": {
+        "agents_assigned": {
+          "type": "integer"
+        },
+        "assignment_count": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.AssignOperationToAgentsRequest": {
+      "type": "object",
+      "properties": {
+        "agent_assignments": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "operation_id": {
+          "type": "string",
+          "example": "op-123"
+        }
+      }
+    },
+    "handlers.AuthResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/auth.User"
+        }
+      }
+    },
+    "handlers.BatchAnalyzeRequest": {
+      "type": "object",
+      "required": [
+        "requests"
+      ],
+      "properties": {
+        "requests": {
+          "type": "array",
+          "maxItems": 100,
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/handlers.AnalyzeSpecRequest"
+          }
+        }
+      }
+    },
+    "handlers.BulkCompareVersionsRequest": {
+      "type": "object",
+      "required": [
+        "comparisons"
+      ],
+      "properties": {
+        "comparisons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/handlers.VersionComparisonPair"
+          }
+        }
+      }
+    },
+    "handlers.CSRFTokenResponse": {
+      "description": "CSRF token response",
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "example": "base64-encoded-token"
+        },
+        "valid": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "handlers.CanonicalConceptInfo": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "handlers.CompareVersionsResponse": {
+      "type": "object",
+      "properties": {
+        "diff": {
+          "$ref": "#/definitions/temporal.VersionDiff"
+        },
+        "message": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.CreateDistributedOperationRequest": {
+      "type": "object",
+      "properties": {
+        "coordinator_id": {
+          "type": "string",
+          "example": "coordinator-1"
+        },
+        "operation_data": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "participant_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "[\"agent-1\"",
+            "\"agent-2\"]"
+          ]
+        },
+        "project_id": {
+          "type": "string",
+          "example": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "target_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "[\"item-1\"",
+            "\"item-2\"]"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "example": "bulk_analysis"
+        }
+      }
+    },
+    "handlers.CreateDistributedOperationResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.DeleteResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "handlers.DistributedErrorResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.DownloadResponse": {
+      "type": "object",
+      "properties": {
+        "data": {},
+        "error": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.ErrorResponse": {
+      "description": "Error response with error message",
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.FileInfoResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "key": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "handlers.HealthResponse": {
+      "description": "Health check response with service status",
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string",
+          "example": "tracertm-backend"
+        },
+        "status": {
+          "type": "string",
+          "example": "ok"
+        }
+      }
+    },
+    "handlers.ImpactAnalysisRequest": {
+      "type": "object",
+      "required": [
+        "item_ids"
+      ],
+      "properties": {
+        "item_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "handlers.IndexDocumentationRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "format": {
+          "description": "markdown, rst, html, plaintext",
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.ListDistributedOperationsResponse": {
+      "type": "object",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {}
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "handlers.LoginRequest": {
+      "type": "object",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "handlers.OperationResults": {
+      "type": "object",
+      "properties": {
+        "aggregated_result": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "completed_at": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "participant_results": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.OperationStatusResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.ParticipantResultResponse": {
+      "type": "object",
+      "properties": {
+        "agent_id": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.ParticipantStatus": {
+      "type": "object",
+      "properties": {
+        "agent_id": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "progress": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PivotItem": {
+      "type": "object",
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "item": {
+          "$ref": "#/definitions/handlers.PivotItemInfo"
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "item_type": {
+          "type": "string"
+        },
+        "link_type": {
+          "type": "string"
+        },
+        "path_depth": {
+          "type": "integer"
+        },
+        "perspective": {
+          "type": "string"
+        },
+        "related_canonical_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PivotItemInfo": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "item_type": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "priority": {
+          "type": "integer"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PivotNavigationRequest": {
+      "type": "object",
+      "properties": {
+        "group_by_perspective": {
+          "type": "boolean"
+        },
+        "include_metadata": {
+          "type": "boolean"
+        },
+        "max_depth": {
+          "type": "integer"
+        },
+        "perspectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "handlers.PivotNavigationResponse": {
+      "type": "object",
+      "properties": {
+        "all_equivalents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/handlers.PivotItem"
+          }
+        },
+        "canonical_concept": {
+          "$ref": "#/definitions/handlers.CanonicalConceptInfo"
+        },
+        "equivalents_by_perspective": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/handlers.PivotItem"
+            }
+          }
+        },
+        "link_count": {
+          "type": "integer"
+        },
+        "perspective_count": {
+          "type": "integer"
+        },
+        "source_item": {
+          "$ref": "#/definitions/handlers.PivotItemInfo"
+        },
+        "source_item_id": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PivotTarget": {
+      "type": "object",
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "item_type": {
+          "type": "string"
+        },
+        "perspective": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PivotTargetsResponse": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string"
+        },
+        "item_type": {
+          "type": "string"
+        },
+        "perspectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/handlers.PivotTarget"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PresignedURLRequest": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string"
+        },
+        "expiryHours": {
+          "type": "integer"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "description": "\"GET\" or \"PUT\"",
+          "type": "string"
+        }
+      }
+    },
+    "handlers.PresignedURLResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.StreamChatRequest": {
+      "type": "object",
+      "required": [
+        "message",
+        "project_id",
+        "user_id"
+      ],
+      "properties": {
+        "context": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.SubmitParticipantResultRequest": {
+      "type": "object",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "example": "agent-1"
+        },
+        "operation_id": {
+          "type": "string",
+          "example": "op-123"
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "handlers.UpdateOperationStatusRequest": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "in_progress"
+        }
+      }
+    },
+    "handlers.UploadResponse": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "thumbnailKey": {
+          "type": "string"
+        },
+        "uploadedAt": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "handlers.VersionComparisonPair": {
+      "type": "object",
+      "required": [
+        "fromVersionId",
+        "toVersionId"
+      ],
+      "properties": {
+        "fromVersionId": {
+          "type": "string"
+        },
+        "toVersionId": {
+          "type": "string"
+        }
+      }
+    },
+    "journey.AddStepRequest": {
+      "type": "object",
+      "required": [
+        "itemId"
+      ],
+      "properties": {
+        "itemId": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.CreateJourneyRequest": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "itemIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "journey.DerivedJourney": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/journey.JourneyLink"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/journey.Metadata"
+        },
+        "name": {
+          "type": "string"
+        },
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number"
+        },
+        "type": {
+          "$ref": "#/definitions/journey.JourneyType"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "journey.DetectJourneysRequest": {
+      "type": "object",
+      "required": [
+        "project_id"
+      ],
+      "properties": {
+        "end_node_id": {
+          "type": "string"
+        },
+        "max_results": {
+          "type": "integer"
+        },
+        "min_score": {
+          "type": "number"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "start_node_id": {
+          "type": "string"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/journey.JourneyType"
+          }
+        }
+      }
+    },
+    "journey.DetectJourneysResponse": {
+      "type": "object",
+      "properties": {
+        "detected_at": {
+          "type": "string"
+        },
+        "journeys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/journey.DerivedJourney"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/journey.DetectionStats"
+        }
+      }
+    },
+    "journey.DetectionStats": {
+      "type": "object",
+      "properties": {
+        "average_path_length": {
+          "type": "number"
+        },
+        "average_score": {
+          "type": "number"
+        },
+        "by_type": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "detection_time_ms": {
+          "description": "milliseconds",
+          "type": "integer"
+        },
+        "total_paths": {
+          "type": "integer"
+        },
+        "valid_paths": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "journey.JourneyLink": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.JourneyStats": {
+      "type": "object",
+      "properties": {
+        "averagePathLength": {
+          "type": "number",
+          "format": "float64"
+        },
+        "averageScore": {
+          "type": "number",
+          "format": "float64"
+        },
+        "byType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "commonIntermediates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mostCommonEnd": {
+          "type": "string"
+        },
+        "mostCommonStart": {
+          "type": "string"
+        },
+        "timeRange": {
+          "type": "object",
+          "properties": {
+            "end": {
+              "type": "string"
+            },
+            "start": {
+              "type": "string"
+            }
+          }
+        },
+        "totalJourneys": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.JourneyStep": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "itemId": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.JourneyType": {
+      "type": "string",
+      "enum": [
+        "user_flow",
+        "data_path",
+        "call_chain",
+        "test_trace"
+      ],
+      "x-enum-varnames": [
+        "UserFlow",
+        "DataPath",
+        "CallChain",
+        "TestTrace"
+      ]
+    },
+    "journey.ListJourneysResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/journey.DerivedJourney"
+          }
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.Metadata": {
+      "type": "object",
+      "properties": {
+        "average_time": {
+          "description": "in milliseconds",
+          "type": "integer"
+        },
+        "completeness": {
+          "type": "number"
+        },
+        "custom_data": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "description": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "integer"
+        },
+        "importance": {
+          "type": "number"
+        },
+        "last_detected": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "user_count": {
+          "type": "integer"
+        },
+        "variations": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.UpdateJourneyRequest": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "itemIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "journey.VisualizationData": {
+      "type": "object",
+      "properties": {
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/journey.VisualizationEdge"
+          }
+        },
+        "journey": {
+          "$ref": "#/definitions/journey.DerivedJourney"
+        },
+        "nodes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/journey.VisualizationNode"
+          }
+        }
+      }
+    },
+    "journey.VisualizationEdge": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "integer"
+        }
+      }
+    },
+    "journey.VisualizationNode": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "temporal.DiffChangeType": {
+      "type": "string",
+      "enum": [
+        "added",
+        "removed",
+        "modified"
+      ],
+      "x-enum-varnames": [
+        "DiffChangeTypeAdded",
+        "DiffChangeTypeRemoved",
+        "DiffChangeTypeModified"
+      ]
+    },
+    "temporal.DiffItem": {
+      "type": "object",
+      "properties": {
+        "changeType": {
+          "$ref": "#/definitions/temporal.DiffChangeType"
+        },
+        "fieldChanges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/temporal.FieldChange"
+          }
+        },
+        "itemId": {
+          "type": "string"
+        },
+        "significance": {
+          "$ref": "#/definitions/temporal.DiffSignificance"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "temporal.DiffSignificance": {
+      "type": "string",
+      "enum": [
+        "minor",
+        "moderate",
+        "major",
+        "breaking"
+      ],
+      "x-enum-varnames": [
+        "DiffSignificanceMinor",
+        "DiffSignificanceModerate",
+        "DiffSignificanceMajor",
+        "DiffSignificanceBreaking"
+      ]
+    },
+    "temporal.DiffStatistics": {
+      "type": "object",
+      "properties": {
+        "addedCount": {
+          "type": "integer"
+        },
+        "modifiedCount": {
+          "type": "integer"
+        },
+        "removedCount": {
+          "type": "integer"
+        },
+        "totalChanges": {
+          "type": "integer"
+        },
+        "unchangedCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "temporal.FieldChange": {
+      "type": "object",
+      "properties": {
+        "changeType": {
+          "description": "added, removed, modified",
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "newValue": {},
+        "oldValue": {}
+      }
+    },
+    "temporal.VersionDiff": {
+      "type": "object",
+      "properties": {
+        "added": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/temporal.DiffItem"
+          }
+        },
+        "computedAt": {
+          "type": "string"
+        },
+        "modified": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/temporal.DiffItem"
+          }
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/temporal.DiffItem"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/temporal.DiffStatistics"
+        },
+        "unchanged": {
+          "type": "integer"
+        },
+        "versionA": {
+          "type": "string"
+        },
+        "versionANumber": {
+          "type": "integer"
+        },
+        "versionB": {
+          "type": "string"
+        },
+        "versionBNumber": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "description": "Enter your bearer token in the format: Bearer {token}",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "tags": [
+    {
+      "description": "Health check endpoints",
+      "name": "health"
+    },
+    {
+      "description": "Project management endpoints",
+      "name": "projects"
+    },
+    {
+      "description": "Item (requirements/features/tasks) management endpoints",
+      "name": "items"
+    },
+    {
+      "description": "Link (relationship) management endpoints",
+      "name": "links"
+    },
+    {
+      "description": "AI agent management and coordination endpoints",
+      "name": "agents"
+    },
+    {
+      "description": "Graph analysis and traversal endpoints",
+      "name": "graph"
+    },
+    {
+      "description": "Search and indexing endpoints",
+      "name": "search"
+    },
+    {
+      "description": "Authentication and authorization endpoints",
+      "name": "auth"
+    },
+    {
+      "description": "Equivalence detection and link management endpoints",
+      "name": "equivalences"
+    },
+    {
+      "description": "Canonical concept and projection management endpoints",
+      "name": "canonical-concepts"
+    },
+    {
+      "description": "Distributed operations across multiple agents",
+      "name": "distributed-operations"
+    },
+    {
+      "description": "User flow and journey detection endpoints",
+      "name": "journeys"
+    }
+  ]
+}

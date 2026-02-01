@@ -1,8 +1,8 @@
-import { Workflow, Plus, Search, Filter, Play, Archive } from "lucide-react";
+import type { Process, ProcessCategory, ProcessStatus } from "@tracertm/types";
+import { Archive, Filter, Play, Plus, Search, Workflow } from "lucide-react";
 import { useState } from "react";
-import { useProcesses, useProcessStats } from "../../../hooks/useProcesses";
 import { CreateProcessForm } from "../../../components/forms/CreateProcessForm";
-import type { Process, ProcessStatus, ProcessCategory } from "@tracertm/types";
+import { useProcesses, useProcessStats } from "../../../hooks/useProcesses";
 
 const statusColors: Record<ProcessStatus, string> = {
 	draft: "bg-gray-100 text-gray-700",
@@ -104,7 +104,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 							Active
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["active"] || 0}
+							{stats.byStatus?.active || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -113,7 +113,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 							Draft
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["draft"] || 0}
+							{stats.byStatus?.draft || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -122,7 +122,7 @@ export function ProcessView({ projectId }: ProcessViewProps) {
 							Deprecated
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["deprecated"] || 0}
+							{stats.byStatus?.deprecated || 0}
 						</div>
 					</div>
 				</div>

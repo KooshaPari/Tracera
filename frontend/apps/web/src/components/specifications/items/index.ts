@@ -10,13 +10,13 @@
  * - DefectSpec: Bug tracking with severity and root cause analysis
  */
 
-export { RequirementSpecCard } from "./RequirementSpecCard";
-export { TestSpecCard } from "./TestSpecCard";
-export { EpicSpecCard } from "./EpicSpecCard";
-export { UserStorySpecCard } from "./UserStorySpecCard";
-export { TaskSpecCard } from "./TaskSpecCard";
 export { DefectSpecCard } from "./DefectSpecCard";
-export { QualityScoreGauge } from "./QualityScoreGauge";
-export { SpecMetadataPanel } from "./SpecMetadataPanel";
-export { ItemSpecTabs } from "./ItemSpecTabs";
+export { EpicSpecCard } from "./EpicSpecCard";
 export { ItemSpecsOverview } from "./ItemSpecsOverview";
+export { ItemSpecTabs } from "./ItemSpecTabs";
+export { QualityScoreGauge } from "./QualityScoreGauge";
+export { RequirementSpecCard } from "./RequirementSpecCard";
+export { SpecMetadataPanel } from "./SpecMetadataPanel";
+export { TaskSpecCard } from "./TaskSpecCard";
+export { TestSpecCard } from "./TestSpecCard";
+export { UserStorySpecCard } from "./UserStorySpecCard";

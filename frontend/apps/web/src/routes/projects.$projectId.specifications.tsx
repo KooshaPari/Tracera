@@ -1,20 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ItemSpecsOverview } from "@/components/specifications/items";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tracertm/ui";
 import {
-	FileText,
 	BookOpen,
-	Shield,
 	ClipboardList,
+	FileText,
 	LayoutGrid,
+	Shield,
 } from "lucide-react";
-import { SpecificationsDashboardView } from "@/views/SpecificationsDashboardView";
+import { ItemSpecsOverview } from "@/components/specifications/items";
 import { ADRListView } from "@/views/ADRListView";
+import { ComplianceView } from "@/views/ComplianceView";
 import { ContractListView } from "@/views/ContractListView";
 import { FeatureListView } from "@/views/FeatureListView";
-import { ComplianceView } from "@/views/ComplianceView";
+import { SpecificationsDashboardView } from "@/views/SpecificationsDashboardView";
+import { requireAuth } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/projects/$projectId/specifications")({
+	beforeLoad: () => requireAuth(),
 	validateSearch: (search: Record<string, unknown>) => ({
 		tab: typeof search.tab === "string" ? search.tab : "overview",
 	}),

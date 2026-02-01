@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 test("coalesce", () => {
-  expect(true).toBe(true);
+	expect(true).toBe(true);
 });
 
 // test("nonoptional with default", () => {

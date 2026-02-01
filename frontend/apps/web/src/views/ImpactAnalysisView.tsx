@@ -1,26 +1,34 @@
+import { Input, Separator } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import {
-	Target,
 	ArrowRight,
-	Search,
-	Zap,
-	ShieldAlert,
 	ChevronRight,
 	FileText,
 	Info,
+	Search,
+	ShieldAlert,
+	Target,
+	Zap,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import { useItems } from "../hooks/useItems";
 import { useLinks } from "../hooks/useLinks";
-import { Input, Separator } from "@tracertm/ui";
-import { cn } from "@/lib/utils";
 
-export function ImpactAnalysisView() {
-	const { data: itemsData, isLoading: itemsLoading } = useItems();
-	const { data: linksData } = useLinks();
+interface ImpactAnalysisViewProps {
+	projectId: string;
+}
+
+export function ImpactAnalysisView({ projectId }: ImpactAnalysisViewProps) {
+	const { data: itemsData, isLoading: itemsLoading } = useItems({
+		projectId,
+	});
+	const { data: linksData } = useLinks({
+		projectId,
+	});
 	const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 

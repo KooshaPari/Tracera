@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { Item, Link } from "@tracertm/types";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Cross-perspective search result with equivalence information
@@ -112,7 +112,7 @@ function calculateSearchScore(item: Item, query: string): number {
 
 	// Dimension value match
 	if (item.dimensions) {
-		for (const [key, value] of Object.entries(item.dimensions)) {
+		for (const [_key, value] of Object.entries(item.dimensions)) {
 			if (
 				typeof value === "string" &&
 				value.toLowerCase().includes(lowerQuery)
@@ -144,7 +144,7 @@ function getMatchedText(
 			return item.type;
 		case "dimension":
 			if (item.dimensions) {
-				for (const [key, value] of Object.entries(item.dimensions)) {
+				for (const [_key, value] of Object.entries(item.dimensions)) {
 					if (
 						typeof value === "string" &&
 						value.toLowerCase().includes(lowerQuery)
@@ -318,7 +318,7 @@ export function performCrossPerspectiveSearch(
 				perspective,
 				matchType,
 				score,
-				matchedText: getMatchedText(item, query, matchType),
+			...(getMatchedText(item, query, matchType) && { matchedText: getMatchedText(item, query, matchType) }),
 				equivalences,
 			});
 		}
@@ -421,7 +421,6 @@ export function useCrossPerspectiveSearch() {
 			if (cached) {
 				cached.hitCount++;
 				// Convert cached results back to grouped format
-				const allItems = new Map(items.map((item) => [item.id, item]));
 				const grouped = new Map<string, CrossPerspectiveSearchResult[]>();
 
 				for (const result of cached.results) {
@@ -586,8 +585,7 @@ export function useCrossPerspectiveSearch() {
 			// Add matching item titles
 			for (const item of items) {
 				if (
-					item.title &&
-					item.title.toLowerCase().includes(lowerQuery) &&
+					item.title?.toLowerCase().includes(lowerQuery) &&
 					suggestions.size < limit
 				) {
 					suggestions.add(item.title);
@@ -597,8 +595,7 @@ export function useCrossPerspectiveSearch() {
 			// Add matching item types
 			for (const item of items) {
 				if (
-					item.type &&
-					item.type.toLowerCase().includes(lowerQuery) &&
+					item.type?.toLowerCase().includes(lowerQuery) &&
 					suggestions.size < limit
 				) {
 					suggestions.add(item.type);

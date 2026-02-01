@@ -1,22 +1,29 @@
 // EquivalencePanel.tsx - Display and manage equivalence relationships
 // Shows how items in different perspectives relate to the same canonical concept
 
-import { Button } from "@tracertm/ui/components/Button";
+import type {
+	CanonicalConcept,
+	CanonicalProjection,
+	EquivalenceLink,
+	EquivalenceStrategy,
+	Item,
+} from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 import {
 	Card,
 	CardContent,
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import { Separator } from "@tracertm/ui/components/Separator";
 import {
 	ArrowLeftRight,
 	Check,
@@ -28,16 +35,8 @@ import {
 	Link2,
 	Sparkles,
 	X,
-	XCircle,
 } from "lucide-react";
-import { memo, useCallback, useState } from "react";
-import type { Item } from "@tracertm/types";
-import type {
-	EquivalenceLink,
-	EquivalenceStrategy,
-	CanonicalConcept,
-	CanonicalProjection,
-} from "@tracertm/types";
+import { memo, useState } from "react";
 import { PERSPECTIVE_CONFIGS } from "./types";
 
 // =============================================================================
@@ -95,7 +94,8 @@ const STRATEGY_LABELS: Record<EquivalenceStrategy, string> = {
 	co_occurrence: "Co-occurrence",
 };
 
-const STRATEGY_ICONS: Record<EquivalenceStrategy, string> = {
+// Strategy icons mapping (available for future icon support)
+const _STRATEGY_ICONS: Record<EquivalenceStrategy, string> = {
 	explicit_annotation: "annotation",
 	manual_link: "link",
 	api_contract: "api",
@@ -120,7 +120,7 @@ function EquivalencePanelComponent({
 	onViewItem,
 	onConfirmEquivalence,
 	onRejectEquivalence,
-	onCreateEquivalence,
+	onCreateEquivalence: _onCreateEquivalence,
 	isLoading = false,
 }: EquivalencePanelProps) {
 	const [isExpanded, setIsExpanded] = useState(true);

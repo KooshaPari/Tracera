@@ -3,13 +3,13 @@
  * Tests: perspective navigation, equivalent items display, confidence indicators
  */
 
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { Item } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	PivotNavigation,
 	buildPivotTargets,
+	PivotNavigation,
 	type PivotTarget,
 } from "@/components/graph/PivotNavigation";
 

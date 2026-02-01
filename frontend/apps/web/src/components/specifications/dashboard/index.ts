@@ -3,8 +3,8 @@
  * Comprehensive dashboard for monitoring specifications, ADRs, contracts, and coverage
  */
 
-export { SpecificationDashboard } from "./SpecificationDashboard";
-export { HealthScoreRing } from "./HealthScoreRing";
+export { ComplianceGaugeFull } from "./ComplianceGaugeFull";
 export { CoverageHeatmap } from "./CoverageHeatmap";
 export { GapAnalysis } from "./GapAnalysis";
-export { ComplianceGaugeFull } from "./ComplianceGaugeFull";
+export { HealthScoreRing } from "./HealthScoreRing";
+export { SpecificationDashboard } from "./SpecificationDashboard";

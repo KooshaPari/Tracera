@@ -2,6 +2,7 @@
 // Displays thumbnails on hover, lazy loads full screenshots
 // Supports version selector and fallback to component code
 
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -19,7 +20,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { cn } from "@tracertm/ui";
 import { Code, ExternalLink, Image as ImageIcon } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -98,7 +98,7 @@ function ThumbnailPreviewComponent({
 						setDisplayScreenshot(generated);
 					}
 				} catch (error) {
-					console.error("Failed to generate thumbnail:", error);
+					logger.error("Failed to generate thumbnail:", error);
 				} finally {
 					if (!cancelled) {
 						setIsLoading(false);

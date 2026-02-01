@@ -11,6 +11,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -27,9 +28,9 @@ def upgrade() -> None:
     op.create_table(
         'test_coverages',
         sa.Column('id', sa.String(36), primary_key=True),
-        sa.Column('project_id', sa.String(36), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
         sa.Column('test_case_id', sa.String(36), sa.ForeignKey('test_cases.id', ondelete='CASCADE'), nullable=False),
-        sa.Column('requirement_id', sa.String(36), sa.ForeignKey('items.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('requirement_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('items.id', ondelete='CASCADE'), nullable=False),
         sa.Column('coverage_type', sa.Enum('direct', 'partial', 'indirect', 'regression', name='coveragetype'), nullable=False, server_default='direct'),
         sa.Column('status', sa.Enum('active', 'deprecated', 'needs_review', name='coveragestatus'), nullable=False, server_default='active'),
         sa.Column('coverage_percentage', sa.Integer(), nullable=True),

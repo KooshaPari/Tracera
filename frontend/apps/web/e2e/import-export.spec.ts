@@ -1,6 +1,6 @@
+import * as path from "node:path";
+import * as fs from "node:fs";
 import { expect, test } from "./global-setup";
-import * as fs from "fs";
-import * as path from "path";
 
 /**
  * Import/Export E2E Tests

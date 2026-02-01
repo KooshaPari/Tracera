@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { ADR, ADRStatus } from "@tracertm/types";
 import {
 	Button,
 	Card,
@@ -15,22 +16,20 @@ import {
 	TabsTrigger,
 } from "@tracertm/ui";
 import {
+	Calendar,
+	Clock,
+	Filter,
 	Plus,
 	Search,
-	Filter,
-	Clock,
 	TrendingUp,
 	Zap,
-	Calendar,
-	ChevronRight,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ADRCard } from "@/components/specifications/adr/ADRCard";
-import { ADRTimeline } from "@/components/specifications/adr/ADRTimeline";
 import { ADRGraph } from "@/components/specifications/adr/ADRGraph";
+import { ADRTimeline } from "@/components/specifications/adr/ADRTimeline";
 import { useADRs, useCreateADR } from "@/hooks/useSpecifications";
-import type { ADR, ADRStatus } from "@tracertm/types";
 
 interface ADRListViewProps {
 	projectId: string;
@@ -344,14 +343,23 @@ export function ADRListView({ projectId }: ADRListViewProps) {
 						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 						onClick={() => setShowCreateModal(false)}
 					/>
-					<div className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl">
+					<div
+						className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="create-adr-title"
+					>
 						<div className="flex items-center justify-between mb-6">
-							<h2 className="text-lg font-semibold">Create New ADR</h2>
+							<h2 id="create-adr-title" className="text-lg font-semibold">
+								Create New ADR
+							</h2>
 							<button
+								type="button"
 								onClick={() => setShowCreateModal(false)}
+								aria-label="Close dialog"
 								className="rounded-lg p-1 hover:bg-accent"
 							>
-								<ChevronRight className="h-5 w-5" />
+								✕
 							</button>
 						</div>
 

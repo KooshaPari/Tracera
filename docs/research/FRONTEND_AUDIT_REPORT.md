@@ -119,13 +119,13 @@ Found 868 infos
 
 **Current Behavior:**
 ```typescript
-const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:4000'
 ```
 
 **Environment Variables Expected:**
 ```bash
-VITE_API_URL=http://localhost:8000
-VITE_WS_URL=ws://localhost:8000
+VITE_API_URL=http://localhost:4000
+VITE_WS_URL=ws://localhost:4000
 VITE_APP_NAME=TracerTM
 VITE_APP_VERSION=0.1.0
 ```
@@ -241,8 +241,8 @@ The frontend is **architecturally sound** but **requires backend integration**:
 1. **Create .env.development file:**
 ```bash
 cat > /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/.env.development << 'EOF'
-VITE_API_URL=http://localhost:8000
-VITE_WS_URL=ws://localhost:8000
+VITE_API_URL=http://localhost:4000
+VITE_WS_URL=ws://localhost:4000
 VITE_APP_NAME=TracerTM
 VITE_APP_VERSION=0.1.0
 EOF

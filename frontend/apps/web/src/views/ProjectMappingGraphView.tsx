@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { UnifiedGraphView } from "../components/graph";
 import { useGraphProjection, useGraphs } from "../hooks/useGraphs";
 
@@ -51,7 +51,16 @@ export function ProjectMappingGraphView() {
 	};
 
 	const handleNavigateToItem = (itemId: string) => {
-		navigate({ to: "/items/$itemId", params: { itemId } });
+		const item = items.find((node: any) => node.id === itemId);
+		const viewType = String(item?.view || "feature").toLowerCase();
+		if (!projectId) {
+			navigate({ to: "/projects" });
+			return;
+		}
+		navigate({
+			to: "/projects/$projectId/views/$viewType/$itemId",
+			params: { projectId, viewType, itemId },
+		});
 	};
 
 	return (
@@ -59,7 +68,7 @@ export function ProjectMappingGraphView() {
 			items={items}
 			links={visibleLinks}
 			isLoading={isLoading}
-			projectId={projectId}
+			projectId={projectId ?? ""}
 			onNavigateToItem={handleNavigateToItem}
 			defaultView="components"
 			canLoadMore={canLoadMore}

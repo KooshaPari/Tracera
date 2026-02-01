@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * OpenAPI Utilities
  * Helper functions for working with OpenAPI specifications
@@ -77,7 +78,7 @@ export function validateOpenAPISpec(spec: any): spec is OpenAPISpec {
 
 	// Check OpenAPI version
 	if (!spec.openapi.startsWith("3.")) {
-		console.warn("Only OpenAPI 3.x is fully supported");
+		logger.warn("Only OpenAPI 3.x is fully supported");
 	}
 
 	return true;
@@ -165,7 +166,7 @@ export function getSupportedAuthTypes(
  */
 export function getServerUrls(spec: OpenAPISpec): string[] {
 	if (!spec.servers || spec.servers.length === 0) {
-		return ["http://localhost:8000"];
+		return ["http://localhost:4000"];
 	}
 	return spec.servers.map((server) => server.url);
 }
@@ -209,13 +210,16 @@ function generateCurlExample(
 	let example = `curl -X ${method.toUpperCase()} "${url}"`;
 
 	if (authToken) {
-		example += ` \\\n  -H "Authorization: Bearer ${authToken}"`;
+		example += ` \
+  -H "Authorization: Bearer ${authToken}"`;
 	}
 
-	example += ` \\\n  -H "Content-Type: application/json"`;
+	example += ` \
+  -H "Content-Type: application/json"`;
 
 	if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
-		example += ` \\\n  -d '{}'`;
+		example += ` \
+  -d '{}'`;
 	}
 
 	return example;
@@ -234,13 +238,20 @@ function generateJavaScriptExample(
 		headers.Authorization = `Bearer ${authToken}`;
 	}
 
-	let example = `fetch('${url}', {\n  method: '${method.toUpperCase()}',\n  headers: ${JSON.stringify(headers, null, 2)}`;
+	let example = `fetch('${url}', {
+  method: '${method.toUpperCase()}',
+  headers: ${JSON.stringify(headers, null, 2)}`;
 
 	if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
-		example += `,\n  body: JSON.stringify({})`;
+		example += `,
+  body: JSON.stringify({})`;
 	}
 
-	example += `\n})\n  .then(response => response.json())\n  .then(data => console.log(data))\n  .catch(error => console.error('Error:', error));`;
+	example += `
+})
+  .then(response => response.json())
+  .then(data => logger.info(data))
+  .catch(error => logger.error('Error:', error));`;
 
 	return example;
 }
@@ -250,27 +261,38 @@ function generatePythonExample(
 	url: string,
 	authToken?: string,
 ): string {
-	let example = `import requests\n\n`;
+	let example = `import requests
 
-	example += `url = "${url}"\n`;
-	example += `headers = {\n    "Content-Type": "application/json"`;
+`;
+
+	example += `url = "${url}"
+`;
+	example += `headers = {
+    "Content-Type": "application/json"`;
 
 	if (authToken) {
-		example += `,\n    "Authorization": "Bearer ${authToken}"`;
+		example += `,
+    "Authorization": "Bearer ${authToken}"`;
 	}
 
-	example += `\n}\n\n`;
+	example += `
+}
+
+`;
 
 	const methodLower = method.toLowerCase();
 
 	if (["post", "put", "patch"].includes(methodLower)) {
-		example += `data = {}\n\n`;
+		example += `data = {}
+
+`;
 		example += `response = requests.${methodLower}(url, headers=headers, json=data)`;
 	} else {
 		example += `response = requests.${methodLower}(url, headers=headers)`;
 	}
 
-	example += `\nprint(response.json())`;
+	example += `
+print(response.json())`;
 
 	return example;
 }
@@ -288,16 +310,27 @@ function generateTypeScriptExample(
 		headers.Authorization = `Bearer ${authToken}`;
 	}
 
-	let example = `interface ApiResponse {\n  // Define your response type here\n}\n\n`;
+	let example = `interface ApiResponse {
+  // Define your response type here
+}
 
-	example += `const response = await fetch('${url}', {\n  method: '${method.toUpperCase()}',\n  headers: ${JSON.stringify(headers, null, 2)}`;
+`;
+
+	example += `const response = await fetch('${url}', {
+  method: '${method.toUpperCase()}',
+  headers: ${JSON.stringify(headers, null, 2)}`;
 
 	if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
-		example += `,\n  body: JSON.stringify({})`;
+		example += `,
+  body: JSON.stringify({})`;
 	}
 
-	example += `\n});\n\n`;
-	example += `const data: ApiResponse = await response.json();\nconsole.log(data);`;
+	example += `
+});
+
+`;
+	example += `const data: ApiResponse = await response.json();
+logger.info(data);`;
 
 	return example;
 }

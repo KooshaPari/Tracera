@@ -1,0 +1,4 @@
+ ⨯ Failed to load next.config.mjs, see more info here https://nextjs.org/docs/messages/next-config-error
+
+> Build error occurred
+[SyntaxError: Missing initializer in const declaration]

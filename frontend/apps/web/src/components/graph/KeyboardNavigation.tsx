@@ -2,9 +2,9 @@
 // Provides keyboard shortcuts for graph navigation
 // Arrow keys, Enter, Escape support
 
-import { Card } from "@tracertm/ui/components/Card";
-import { Badge } from "@tracertm/ui/components/Badge";
 import { cn } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Card } from "@tracertm/ui/components/Card";
 import {
 	ArrowDown,
 	ArrowLeft,

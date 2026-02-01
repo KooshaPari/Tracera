@@ -2,8 +2,8 @@
  * ModelSelector - Combobox for selecting AI provider and model
  */
 
-import { cn } from "@tracertm/ui";
 import {
+	cn,
 	Select,
 	SelectContent,
 	SelectGroup,
@@ -12,8 +12,8 @@ import {
 	SelectValue,
 } from "@tracertm/ui";
 import { Sparkles } from "lucide-react";
-import type { AIModel } from "@/lib/ai/types";
 import { getEnabledProviders, getModel } from "@/lib/ai/modelRegistry";
+import type { AIModel } from "@/lib/ai/types";
 
 interface ModelSelectorProps {
 	value: AIModel;
@@ -43,12 +43,13 @@ export function ModelSelector({
 			onValueChange={handleValueChange}
 			disabled={disabled ?? false}
 		>
-			<SelectTrigger
-				className={cn(
-					"h-8 text-xs gap-1.5 bg-background/50 border-muted",
-					className,
-				)}
-			>
+		<SelectTrigger
+			role="button"
+			className={cn(
+				"h-8 text-xs gap-1.5 bg-background/50 border-muted",
+				className,
+			)}
+		>
 				<Sparkles className="w-3 h-3 text-primary" />
 				<SelectValue placeholder="Select model" />
 			</SelectTrigger>

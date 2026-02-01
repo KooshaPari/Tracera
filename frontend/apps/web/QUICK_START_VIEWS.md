@@ -266,7 +266,7 @@ import { useAuthStore } from '../stores'
 const { user, isAuthenticated } = useAuthStore()
 
 if (!isAuthenticated) {
-  return <Navigate to="/login" />
+  return <Navigate to="/auth/login" />
 }
 ```
 

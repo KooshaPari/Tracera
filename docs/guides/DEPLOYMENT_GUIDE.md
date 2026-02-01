@@ -1,598 +1,510 @@
-# TraceRTM Deployment Guide
-
-Complete guide for deploying TraceRTM to production.
-
----
-
-## Table of Contents
-
-1. [Prerequisites](#prerequisites)
-2. [Configuration](#configuration)
-3. [Docker Compose Deployment](#docker-compose-deployment)
-4. [Kubernetes Deployment](#kubernetes-deployment)
-5. [Monitoring Setup](#monitoring-setup)
-6. [SSL/TLS Configuration](#ssltls-configuration)
-7. [Backup and Recovery](#backup-and-recovery)
-8. [Troubleshooting](#troubleshooting)
-
----
-
-## Prerequisites
-
-### Required Software
-
-- **Docker**: 24.0+
-- **Docker Compose**: 2.20+
-- **Kubernetes**: 1.28+ (for K8s deployment)
-- **kubectl**: 1.28+
-- **Helm**: 3.12+ (optional, recommended)
-
-### Required Resources
-
-**Minimum** (Development/Testing):
-- CPU: 4 cores
-- RAM: 8 GB
-- Disk: 50 GB SSD
-
-**Recommended** (Production):
-- CPU: 8+ cores
-- RAM: 16+ GB
-- Disk: 200+ GB SSD
-- Network: 1 Gbps+
-
-### Cloud Provider Setup
-
-**AWS**:
-- EKS cluster (1.28+)
-- RDS PostgreSQL (15+) with pgvector
-- ElastiCache Redis (7.0+)
-- Application Load Balancer
-- Route 53 for DNS
-- ACM for SSL certificates
-
-**GCP**:
-- GKE cluster (1.28+)
-- Cloud SQL for PostgreSQL
-- Memorystore for Redis
-- Cloud Load Balancing
-- Cloud DNS
-- Managed SSL certificates
-
-**Azure**:
-- AKS cluster (1.28+)
-- Azure Database for PostgreSQL
-- Azure Cache for Redis
-- Application Gateway
-- Azure DNS
-- SSL certificates
-
----
-
-## Configuration
-
-### 1. Environment Variables
-
-Create environment files for each environment:
-
-**Staging** (`.env.staging`):
-```bash
-# Database
-DB_HOST=postgres
-DB_PORT=5432
-DB_USER=tracertm
-DB_PASSWORD=<generate-secure-password>
-DB_NAME=tracertm_staging
-DB_SSL_MODE=require
-
-# Redis
-REDIS_URL=redis://redis:6379
-REDIS_PASSWORD=<generate-secure-password>
-
-# NATS
-NATS_URL=nats://nats:4222
-NATS_CLUSTER_ID=tracertm-staging
-
-# Backend
-PORT=8080
-ENV=staging
-LOG_LEVEL=info
-JWT_SECRET=<generate-secure-secret>
-WORKOS_API_KEY=<your-workos-key>
-WORKOS_CLIENT_ID=<your-workos-client-id>
-
-# Frontend
-NEXT_PUBLIC_API_URL=https://api-staging.tracertm.com
-NEXT_PUBLIC_WS_URL=wss://api-staging.tracertm.com/ws
-```
-
-**Production** (`.env.production`):
-```bash
-# Same as staging but with production values
-DB_HOST=prod-postgres.tracertm.com
-# ... etc
-```
-
-### 2. Secrets Management
-
-**Using Kubernetes Secrets**:
-```bash
-# Create secrets from file
-kubectl create secret generic tracertm-secrets \
-  --from-env-file=.env.production \
-  --namespace=tracertm-production
-
-# Or create individual secrets
-kubectl create secret generic db-credentials \
-  --from-literal=username=tracertm \
-  --from-literal=password=$(openssl rand -base64 32) \
-  --namespace=tracertm-production
-```
-
-**Using HashiCorp Vault** (Recommended for Production):
-```bash
-# Store secrets in Vault
-vault kv put secret/tracertm/production \
-  db_password="$(openssl rand -base64 32)" \
-  jwt_secret="$(openssl rand -base64 64)" \
-  workos_api_key="your-key"
-
-# Use Vault agent injector in K8s
-```
-
-### 3. Database Configuration
-
-**Initialize pgvector extension**:
-```sql
--- Connect to database
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE EXTENSION IF NOT EXISTS pg_trgm;  -- For full-text search
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;  -- For query analysis
-```
-
-**Configure PostgreSQL** (`postgresql.conf`):
-```conf
-# Performance tuning
-shared_buffers = 4GB
-effective_cache_size = 12GB
-maintenance_work_mem = 1GB
-checkpoint_completion_target = 0.9
-wal_buffers = 16MB
-default_statistics_target = 100
-random_page_cost = 1.1
-effective_io_concurrency = 200
-work_mem = 16MB
-min_wal_size = 1GB
-max_wal_size = 4GB
-
-# Connection settings
-max_connections = 200
-max_worker_processes = 8
-max_parallel_workers_per_gather = 4
-max_parallel_workers = 8
-
-# Logging
-logging_collector = on
-log_directory = 'log'
-log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
-log_min_duration_statement = 1000
-log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
-log_lock_waits = on
-log_temp_files = 0
-```
-
----
-
-## Docker Compose Deployment
-
-### Quick Start
-
-1. **Clone repository**:
-```bash
-git clone https://github.com/kooshapari/tracertm.git
-cd tracertm
-```
-
-2. **Configure environment**:
-```bash
-cp .env.example .env.production
-# Edit .env.production with your values
-```
-
-3. **Start services**:
-```bash
-docker-compose up -d
-```
-
-4. **Verify deployment**:
-```bash
-docker-compose ps
-curl http://localhost:8080/health
-```
-
-### Custom Configuration
-
-**docker-compose.override.yml**:
-```yaml
-version: '3.8'
-
-services:
-  backend:
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-        reservations:
-          cpus: '1.0'
-          memory: 1G
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-```
-
-### SSL with Docker Compose
-
-**Using Let's Encrypt**:
-```yaml
-services:
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt:/etc/letsencrypt
-    depends_on:
-      - backend
-```
-
----
-
-## Kubernetes Deployment
-
-### 1. Cluster Setup
-
-**Create EKS cluster** (AWS):
-```bash
-eksctl create cluster \
-  --name tracertm-production \
-  --version 1.28 \
-  --region us-west-2 \
-  --nodegroup-name standard-workers \
-  --node-type t3.xlarge \
-  --nodes 3 \
-  --nodes-min 3 \
-  --nodes-max 10 \
-  --managed
-```
-
-**Create GKE cluster** (GCP):
-```bash
-gcloud container clusters create tracertm-production \
-  --zone us-central1-a \
-  --num-nodes 3 \
-  --machine-type n2-standard-4 \
-  --enable-autoscaling \
-  --min-nodes 3 \
-  --max-nodes 10 \
-  --enable-autorepair \
-  --enable-autoupgrade
-```
-
-### 2. Deploy Using Script
-
-```bash
-./scripts/deploy.sh production v1.0.0
-```
-
-### 3. Manual Deployment
-
-**Step-by-step**:
-
-```bash
-# 1. Create namespace
-kubectl apply -f k8s/namespace.yaml
-
-# 2. Create secrets
-kubectl apply -f k8s/secret.yaml
-
-# 3. Create ConfigMaps
-kubectl apply -f k8s/configmap.yaml
-
-# 4. Deploy databases
-kubectl apply -f k8s/postgres-deployment.yaml
-kubectl apply -f k8s/redis-deployment.yaml
-kubectl apply -f k8s/nats-deployment.yaml
-
-# 5. Wait for databases
-kubectl wait --for=condition=ready pod -l app=postgres -n tracertm --timeout=300s
-
-# 6. Run migrations
-kubectl exec -n tracertm deployment/tracertm-backend -- ./migrate up
-
-# 7. Deploy applications
-kubectl apply -f k8s/backend-deployment.yaml
-kubectl apply -f k8s/api-deployment.yaml
-
-# 8. Deploy ingress
-kubectl apply -f k8s/ingress.yaml
-
-# 9. Deploy monitoring
-kubectl apply -f k8s/monitoring.yaml
-
-# 10. Deploy autoscaling
-kubectl apply -f k8s/hpa.yaml
-```
-
-### 4. Verify Deployment
-
-```bash
-# Check pods
-kubectl get pods -n tracertm
-
-# Check services
-kubectl get svc -n tracertm
-
-# Check ingress
-kubectl get ingress -n tracertm
-
-# Check logs
-kubectl logs -f deployment/tracertm-backend -n tracertm
-
-# Check health
-curl https://api.tracertm.com/health
-```
-
----
-
-## Monitoring Setup
-
-### 1. Prometheus
-
-**Install Prometheus Operator**:
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-helm install prometheus prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --create-namespace \
-  --values monitoring/prometheus-values.yaml
-```
-
-**Apply custom configuration**:
-```bash
-kubectl apply -f monitoring/prometheus.yml
-kubectl apply -f monitoring/alerts/backend.yml
-```
-
-### 2. Grafana
-
-**Access Grafana**:
-```bash
-kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
-```
-
-**Import dashboards**:
-```bash
-kubectl apply -f monitoring/grafana/dashboards/
-```
-
-Default credentials:
-- Username: `admin`
-- Password: (retrieve with) `kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode`
-
-### 3. Alerting
-
-**Configure AlertManager**:
-```yaml
-# alertmanager-config.yaml
-global:
-  resolve_timeout: 5m
-  slack_api_url: '<your-slack-webhook>'
-
-route:
-  group_by: ['alertname', 'cluster', 'service']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 12h
-  receiver: 'slack-notifications'
-
-receivers:
-- name: 'slack-notifications'
-  slack_configs:
-  - channel: '#alerts'
-    title: 'TraceRTM Alert'
-    text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-```
-
----
-
-## SSL/TLS Configuration
-
-### Using cert-manager (Recommended)
-
-**Install cert-manager**:
-```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
-```
-
-**Create ClusterIssuer**:
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@tracertm.com
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-```
-
-**Update Ingress**:
-```yaml
-metadata:
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-spec:
-  tls:
-  - hosts:
-    - api.tracertm.com
-    secretName: tracertm-tls
-```
-
----
-
-## Backup and Recovery
-
-### Database Backups
-
-**Automated backups with CronJob**:
-```yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: postgres-backup
-  namespace: tracertm
-spec:
-  schedule: "0 2 * * *"  # Daily at 2 AM
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: backup
-            image: postgres:15
-            command:
-            - /bin/bash
-            - -c
-            - |
-              pg_dump -h postgres -U tracertm tracertm | \
-              gzip > /backups/backup-$(date +%Y%m%d-%H%M%S).sql.gz
-
-              # Upload to S3
-              aws s3 cp /backups/backup-*.sql.gz s3://tracertm-backups/
-          restartPolicy: OnFailure
-```
-
-**Manual backup**:
-```bash
-kubectl exec -n tracertm postgres-0 -- \
-  pg_dump -U tracertm tracertm | \
-  gzip > backup-$(date +%Y%m%d).sql.gz
-```
-
-**Restore from backup**:
-```bash
-gunzip -c backup-20231129.sql.gz | \
-  kubectl exec -i -n tracertm postgres-0 -- \
-  psql -U tracertm tracertm
-```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-**1. Pod Not Starting**
-```bash
-# Check pod status
-kubectl describe pod <pod-name> -n tracertm
-
-# Check logs
-kubectl logs <pod-name> -n tracertm
-
-# Check events
-kubectl get events -n tracertm --sort-by='.lastTimestamp'
-```
-
-**2. Database Connection Issues**
-```bash
-# Test connection from pod
-kubectl exec -it deployment/tracertm-backend -n tracertm -- \
-  psql -h postgres -U tracertm -d tracertm
-
-# Check database logs
-kubectl logs -n tracertm postgres-0
-```
-
-**3. High Memory Usage**
-```bash
-# Check resource usage
-kubectl top pods -n tracertm
-
-# Increase memory limits
-kubectl set resources deployment tracertm-backend \
-  --limits=memory=2Gi \
-  --requests=memory=1Gi \
-  -n tracertm
-```
-
-**4. Slow Queries**
-```bash
-# Check slow queries
-kubectl exec -n tracertm postgres-0 -- \
-  psql -U tracertm -d tracertm -c \
-  "SELECT query, mean_exec_time FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10;"
-```
-
-### Debug Mode
-
-**Enable debug logging**:
-```bash
-kubectl set env deployment/tracertm-backend LOG_LEVEL=debug -n tracertm
-```
-
-### Performance Tuning
-
-**Adjust HPA**:
-```bash
-kubectl autoscale deployment tracertm-backend \
-  --cpu-percent=70 \
-  --min=3 \
-  --max=15 \
-  -n tracertm
-```
-
----
-
-## Production Checklist
-
-Before going live:
-
-- [ ] SSL certificates configured
-- [ ] Database backups scheduled
-- [ ] Monitoring and alerting active
-- [ ] Resource limits configured
+# Deployment Guide
+
+**Version:** 1.0.0
+**Date:** January 30, 2026
+**Target Environment:** Production
+
+## Pre-Deployment Checklist
+
+### Security & Compliance
+- [ ] All secrets moved to environment variables
+- [ ] No sensitive data in git history
+- [ ] No hardcoded API keys or credentials
+- [ ] HTTPS enforced
+- [ ] CORS properly configured
+- [ ] Rate limiting enabled
+- [ ] WAF rules configured
+- [ ] DDoS protection enabled
+
+### Code Quality
+- [ ] TypeScript compilation passes
+- [ ] ESLint with zero warnings
+- [ ] Prettier formatting applied
+- [ ] Test coverage >90%
+- [ ] All tests passing
+- [ ] No console.log in production code
+- [ ] No TODO/FIXME in critical paths
+
+### Performance
+- [ ] Bundle size optimized
+- [ ] Images optimized
+- [ ] CSS/JS minified
+- [ ] Code splitting enabled
+- [ ] Lazy loading configured
+- [ ] CDN configured
+- [ ] Caching headers set
+- [ ] Database indexes created
+
+### Database
+- [ ] Migrations tested locally
+- [ ] Database backup created
+- [ ] RLS policies enabled
+- [ ] Encryption enabled
+- [ ] Connection pooling configured
+- [ ] Monitoring enabled
+
+### Infrastructure
+- [ ] Load balancer configured
 - [ ] Auto-scaling enabled
-- [ ] Health checks passing
-- [ ] Load testing completed
-- [ ] Security audit passed
-- [ ] Documentation updated
-- [ ] Runbooks prepared
-- [ ] On-call rotation established
-- [ ] Rollback procedure tested
+- [ ] Monitoring dashboards set up
+- [ ] Alerting configured
+- [ ] Logging aggregation enabled
+- [ ] Error tracking enabled
+- [ ] Backup strategy implemented
 
 ---
 
-## Support
+## Staging Deployment
 
-For deployment assistance:
-- Documentation: https://docs.tracertm.com
-- GitHub Issues: https://github.com/kooshapari/tracertm/issues
-- Email: support@tracertm.com
+### Pre-Staging Checklist
+1. [ ] All code changes merged to develop
+2. [ ] Latest code pulled locally
+3. [ ] All tests passing
+4. [ ] Documentation updated
+5. [ ] Rollback plan documented
+
+### Deploy to Staging
+
+```bash
+# 1. Set up staging environment
+export ENVIRONMENT=staging
+export NODE_ENV=production
+
+# 2. Build application
+bun run build
+
+# 3. Run migrations (if any)
+bun run migrate
+
+# 4. Deploy to staging server
+./scripts/deploy-staging.sh
+
+# 5. Run smoke tests
+bun run test:e2e critical-path.spec.ts
+```
+
+### Post-Staging Validation
+1. [ ] Application starts successfully
+2. [ ] Health checks pass
+3. [ ] Database connectivity verified
+4. [ ] API endpoints responding
+5. [ ] UI loads correctly
+6. [ ] Critical features working
+7. [ ] Error logging active
+8. [ ] Monitoring dashboards show data
+
+### Staging Sign-off
+- [ ] QA approval
+- [ ] Product owner approval
+- [ ] Tech lead approval
+- [ ] DevOps approval
 
 ---
 
-**Last Updated**: 2025-11-29
-**Version**: 1.0.0
+## Production Deployment
+
+### Day Before Deployment
+1. [ ] Create production database backup
+2. [ ] Document rollback procedures
+3. [ ] Notify support team
+4. [ ] Schedule maintenance window
+5. [ ] Prepare post-deployment verification checklist
+
+### Pre-Production Deployment (2 hours before)
+1. [ ] Code freeze confirmed
+2. [ ] Release notes finalized
+3. [ ] Deployment plan reviewed
+4. [ ] Team on standby
+5. [ ] Monitoring dashboards ready
+
+### Production Deployment Procedure
+
+#### Phase 1: Database Migration (15 minutes)
+```bash
+# 1. Create backup
+pg_dump production > backup-2026-01-30.sql
+
+# 2. Run migrations
+bun run migrate:prod
+
+# 3. Verify data integrity
+./scripts/verify-db.sh
+
+# 4. Test database connectivity
+curl -X GET https://api.prod.example.com/health/db
+```
+
+#### Phase 2: Code Deployment (15 minutes)
+```bash
+# 1. Build optimized bundle
+bun run build
+
+# 2. Deploy to production servers (blue-green deployment)
+./scripts/deploy-blue-green.sh
+
+# 3. Health checks
+curl -X GET https://api.prod.example.com/health
+```
+
+#### Phase 3: Validation (10 minutes)
+```bash
+# 1. Check error rates
+curl -X GET https://api.prod.example.com/metrics/errors
+
+# 2. Verify critical endpoints
+./scripts/smoke-tests.sh
+
+# 3. User testing
+# - Login
+# - Create project
+# - Create item
+# - Search functionality
+```
+
+#### Phase 4: Monitoring (Ongoing)
+```bash
+# 1. Watch error logs
+tail -f /var/log/prod/error.log
+
+# 2. Monitor performance metrics
+./scripts/monitor-metrics.sh
+
+# 3. User feedback collection
+```
+
+### Post-Deployment (30 minutes)
+1. [ ] Monitor error rates (target: <0.1%)
+2. [ ] Monitor response times (target: <500ms)
+3. [ ] Check database performance
+4. [ ] Verify all features working
+5. [ ] Monitor user activity
+6. [ ] Address any critical issues
+7. [ ] Send deployment confirmation
+
+### Success Criteria
+- [ ] Application accessible
+- [ ] Error rate <0.1%
+- [ ] Response time <500ms
+- [ ] All critical features working
+- [ ] Database healthy
+- [ ] Monitoring showing normal metrics
+- [ ] No user complaints
+
+---
+
+## Rollback Procedure
+
+### When to Rollback
+- Critical feature broken
+- Error rate >1%
+- API response time >2s
+- Database unavailable
+- Data corruption detected
+- Security vulnerability found
+
+### Rollback Steps
+
+#### Immediate Actions (0-5 minutes)
+1. [ ] Alert incident commander
+2. [ ] Page on-call team
+3. [ ] Start rollback procedure
+4. [ ] Update status page
+5. [ ] Notify stakeholders
+
+#### Rollback Execution (5-15 minutes)
+```bash
+# 1. Switch to previous version
+./scripts/rollback-blue-green.sh
+
+# 2. Verify rollback
+curl -X GET https://api.prod.example.com/health
+
+# 3. Run smoke tests
+./scripts/smoke-tests.sh
+
+# 4. Monitor metrics
+watch -n 1 'curl -s https://api.prod.example.com/metrics | jq .'
+```
+
+#### Post-Rollback (15-30 minutes)
+1. [ ] Verify system stability
+2. [ ] Confirm user access
+3. [ ] Monitor for issues
+4. [ ] Notify users of status
+5. [ ] Document incident
+6. [ ] Schedule incident review
+
+### Post-Rollback Actions
+1. [ ] Investigate root cause
+2. [ ] Fix identified issues
+3. [ ] Add test coverage for issue
+4. [ ] Schedule re-deployment
+5. [ ] Update deployment checklist
+
+---
+
+## Deployment Scripts
+
+### Health Check Script
+```bash
+#!/bin/bash
+# scripts/health-check.sh
+
+API_URL="https://api.prod.example.com"
+
+echo "Checking application health..."
+
+# API Health
+if curl -f -s "${API_URL}/health" > /dev/null; then
+    echo "✓ API health check passed"
+else
+    echo "✗ API health check failed"
+    exit 1
+fi
+
+# Database Health
+if curl -f -s "${API_URL}/health/db" > /dev/null; then
+    echo "✓ Database health check passed"
+else
+    echo "✗ Database health check failed"
+    exit 1
+fi
+
+# Cache Health
+if curl -f -s "${API_URL}/health/cache" > /dev/null; then
+    echo "✓ Cache health check passed"
+else
+    echo "✗ Cache health check failed"
+    exit 1
+fi
+
+echo "All health checks passed!"
+```
+
+### Smoke Test Script
+```bash
+#!/bin/bash
+# scripts/smoke-tests.sh
+
+BASE_URL="https://api.prod.example.com"
+
+echo "Running smoke tests..."
+
+# Test critical endpoints
+endpoints=(
+    "GET /api/health"
+    "GET /api/projects"
+    "POST /api/projects"
+    "GET /api/items"
+    "POST /api/items"
+)
+
+for endpoint in "${endpoints[@]}"; do
+    IFS=' ' read -r method path <<< "$endpoint"
+    echo "Testing ${method} ${path}..."
+
+    if curl -f -s -X "${method}" "${BASE_URL}${path}" > /dev/null; then
+        echo "✓ ${method} ${path} passed"
+    else
+        echo "✗ ${method} ${path} failed"
+        exit 1
+    fi
+done
+
+echo "All smoke tests passed!"
+```
+
+---
+
+## Monitoring & Alerting
+
+### Key Metrics to Monitor
+
+| Metric | Target | Alert Threshold |
+|--------|--------|-----------------|
+| Error Rate | <0.1% | >1% |
+| Response Time (p95) | <500ms | >1000ms |
+| Database Connections | <80% | >90% |
+| Memory Usage | <70% | >85% |
+| CPU Usage | <60% | >80% |
+| Uptime | 99.9% | <99.5% |
+
+### Alert Configuration
+```yaml
+# Example alert rules
+alerts:
+  - name: HighErrorRate
+    condition: error_rate > 0.01
+    duration: 5m
+    severity: critical
+    action: page_oncall
+
+  - name: HighResponseTime
+    condition: response_time_p95 > 1000
+    duration: 10m
+    severity: high
+    action: notify_team
+
+  - name: DatabaseConnectionPoolExhausted
+    condition: db_connections > 0.9
+    duration: 1m
+    severity: critical
+    action: page_oncall
+
+  - name: MemoryUsageHigh
+    condition: memory_usage > 0.85
+    duration: 5m
+    severity: high
+    action: notify_team
+```
+
+### Log Aggregation
+- All logs sent to centralized logging system
+- Error logs separated for quick analysis
+- Request logs for audit trail
+- Access logs for performance analysis
+
+---
+
+## Documentation Requirements
+
+### User Documentation
+- [ ] Installation guide updated
+- [ ] Feature documentation current
+- [ ] API documentation updated
+- [ ] Troubleshooting guide updated
+- [ ] FAQ updated
+
+### Developer Documentation
+- [ ] Architecture documentation updated
+- [ ] Setup guide updated
+- [ ] Contributing guide updated
+- [ ] Code standards documented
+- [ ] Deployment guide current
+
+### Release Notes
+- [ ] Version information
+- [ ] New features described
+- [ ] Bug fixes listed
+- [ ] Breaking changes noted
+- [ ] Migration guide included
+
+---
+
+## Maintenance Windows
+
+### Planned Maintenance
+- Schedule: Tuesday-Thursday, 2-4 AM UTC
+- Duration: Max 30 minutes
+- Status page updated
+- Users notified 48 hours in advance
+
+### Emergency Maintenance
+- As needed for critical issues
+- Minimum 15-minute notification if possible
+- Incident tracked and documented
+
+---
+
+## Post-Deployment Support
+
+### Support Team Responsibilities
+- [ ] Monitor error reports
+- [ ] Track user complaints
+- [ ] Respond to support tickets
+- [ ] Escalate critical issues
+- [ ] Document issues found
+
+### First Week Monitoring
+- [ ] Daily performance review
+- [ ] Error log analysis
+- [ ] User feedback review
+- [ ] Database health check
+- [ ] Resource utilization review
+
+### Two-Week Review
+- [ ] Stabilization complete
+- [ ] All critical issues resolved
+- [ ] User adoption metrics
+- [ ] Performance baseline established
+- [ ] Documentation completed
+
+---
+
+## Deployment Troubleshooting
+
+### Common Issues & Solutions
+
+#### Issue: Build Fails
+**Solution:**
+1. Check TypeScript compilation
+2. Verify all dependencies installed
+3. Check environment variables
+4. Review build logs
+
+#### Issue: Database Migration Fails
+**Solution:**
+1. Verify migration syntax
+2. Check database connectivity
+3. Review existing data
+4. Test rollback procedure
+
+#### Issue: High Error Rate After Deployment
+**Solution:**
+1. Check error logs immediately
+2. Monitor for specific error patterns
+3. Check recent code changes
+4. Prepare rollback if needed
+
+#### Issue: Performance Degradation
+**Solution:**
+1. Check resource utilization
+2. Analyze slow queries
+3. Review cache hit rates
+4. Check for memory leaks
+
+#### Issue: Database Connection Issues
+**Solution:**
+1. Check connection pool configuration
+2. Verify database credentials
+3. Review connection timeout settings
+4. Monitor active connections
+
+---
+
+## Deployment Calendar
+
+### Release Schedule
+- **Release Day:** [TBD]
+- **Deployment Window:** [TBD]
+- **Maintenance Window:** [TBD]
+- **Go-Live:** [TBD]
+
+### Key Dates
+- Code Freeze: 48 hours before deployment
+- Testing Complete: 24 hours before deployment
+- Staging Sign-off: 12 hours before deployment
+- Production Deployment: [Scheduled Date]
+
+---
+
+## Sign-off
+
+- [ ] Product Owner: _________________ Date: _______
+- [ ] Tech Lead: _________________ Date: _______
+- [ ] DevOps Lead: _________________ Date: _______
+- [ ] QA Lead: _________________ Date: _______
+
+---
+
+## References
+
+- Monitoring Dashboard: [Link]
+- Incident Response Plan: `/docs/incident-response.md`
+- Architecture: `/docs/architecture.md`
+- API Reference: `/docs/api/reference.md`
+
+---
+
+**Status:** Ready for deployment
+**Next Steps:** Schedule deployment date and notify team

@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
 	TestSuite,
-	TestSuiteStatus,
 	TestSuiteActivity,
-	TestSuiteTestCase,
 	TestSuiteStats,
+	TestSuiteStatus,
+	TestSuiteTestCase,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestSuite(data: any): TestSuite {
@@ -84,6 +85,7 @@ async function fetchTestSuites(
 	const res = await fetch(`${API_URL}/api/v1/test-suites?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -98,7 +100,9 @@ async function fetchTestSuites(
 }
 
 async function fetchTestSuite(id: string): Promise<TestSuite> {
-	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch test suite");
 	const data = await res.json();
 	return transformTestSuite(data);
@@ -131,7 +135,7 @@ async function createTestSuite(
 		`${API_URL}/api/v1/test-suites?project_id=${data.projectId}`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				name: data.name,
 				description: data.description,
@@ -163,7 +167,7 @@ async function updateTestSuite(
 ): Promise<{ id: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			name: data.name,
 			description: data.description,
@@ -194,7 +198,7 @@ async function transitionTestSuiteStatus(
 ): Promise<{ id: string; status: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}/status`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			new_status: newStatus,
 			reason,
@@ -210,6 +214,7 @@ async function transitionTestSuiteStatus(
 async function deleteTestSuite(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete test suite");
 }
@@ -227,7 +232,7 @@ async function addTestCaseToSuite(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				test_case_id: testCaseId,
 				order_index: orderIndex || 0,
@@ -250,6 +255,7 @@ async function removeTestCaseFromSuite(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases/${testCaseId}`,
 		{
 			method: "DELETE",
+			headers: getAuthHeaders(),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to remove test case from suite");
@@ -260,6 +266,7 @@ async function fetchSuiteTestCases(
 ): Promise<TestSuiteTestCase[]> {
 	const res = await fetch(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch suite test cases");
 	const data = await res.json();
@@ -274,7 +281,7 @@ async function reorderSuiteTestCases(
 		`${API_URL}/api/v1/test-suites/${suiteId}/test-cases/reorder`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				ordered_test_case_ids: testCaseIds,
 			}),
@@ -289,6 +296,7 @@ async function fetchTestSuiteActivities(
 ): Promise<{ suiteId: string; activities: TestSuiteActivity[] }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/test-suites/${suiteId}/activities?limit=${limit}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();
@@ -311,6 +319,7 @@ async function fetchTestSuiteActivities(
 async function fetchTestSuiteStats(projectId: string): Promise<TestSuiteStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/test-suites/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch test suite stats");
 	const data = await res.json();

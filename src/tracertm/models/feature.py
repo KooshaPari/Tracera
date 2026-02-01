@@ -2,9 +2,10 @@
 BDD Feature model.
 """
 
+from sqlalchemy import ForeignKey, JSON, String, Text
 from typing import Any, List, Optional
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -21,7 +22,7 @@ class Feature(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
     feature_number: Mapped[str] = mapped_column(String(50), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)

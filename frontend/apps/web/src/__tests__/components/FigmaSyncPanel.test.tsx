@@ -1,8 +1,8 @@
 // FigmaSyncPanel.test.tsx - Tests for Figma sync panel component
 
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { FigmaSyncState, LibraryComponent } from "@tracertm/types";
+import { describe, expect, it, vi } from "vitest";
 import { FigmaSyncPanel } from "../../components/graph/FigmaSyncPanel";
 
 // =============================================================================

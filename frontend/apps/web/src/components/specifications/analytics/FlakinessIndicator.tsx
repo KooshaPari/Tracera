@@ -3,8 +3,8 @@
  * Displays test flakiness probability and patterns based on Meta's model
  */
 
-import { cn } from "@/lib/utils";
 import type { FlakinessPattern } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface FlakinessIndicatorProps {
 	probability: number;

@@ -4,8 +4,8 @@
  * for a requirement specification.
  */
 
-import { cn } from "@/lib/utils";
 import type { EARSPatternType } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface EARSPatternBadgeProps {
 	patternType: EARSPatternType;

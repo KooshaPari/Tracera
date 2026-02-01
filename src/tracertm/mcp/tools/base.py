@@ -10,7 +10,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 from sqlalchemy.orm import Session
 
@@ -80,27 +79,68 @@ def set_current_project(project_id: str) -> None:
 
 # Response envelope utilities
 
-def wrap_success(data: Any, action: str, ctx: Context | None = None) -> dict[str, Any]:
-    """Wrap a successful response in the standard envelope."""
-    return {
-        "ok": True,
-        "action": action,
-        "data": data,
-        "actor": extract_actor(ctx),
-    }
+def wrap_success(
+    data: Any,
+    action: str,
+    ctx: Any | None = None,
+    lean: bool = True,
+) -> dict[str, Any] | Any:
+    """Wrap a successful response in the standard envelope.
+
+    Args:
+        data: Response data
+        action: Action name
+        ctx: MCP context
+        lean: If True, return lean response (just data); if False, include metadata
+
+    Returns:
+        Formatted response (lean mode returns just data, standard includes metadata)
+    """
+    if lean:
+        # Lean mode: return just the data
+        return data
+    else:
+        # Standard mode: include basic metadata
+        return {
+            "ok": True,
+            "action": action,
+            "data": data,
+            "actor": extract_actor(ctx),
+        }
 
 
-def wrap_error(error: str, action: str, ctx: Context | None = None) -> dict[str, Any]:
-    """Wrap an error response in the standard envelope."""
-    return {
-        "ok": False,
-        "action": action,
-        "error": error,
-        "actor": extract_actor(ctx),
-    }
+def wrap_error(
+    error: str,
+    action: str,
+    ctx: Any | None = None,
+    lean: bool = True,
+) -> dict[str, Any]:
+    """Wrap an error response in the standard envelope.
+
+    Args:
+        error: Error message
+        action: Action name
+        ctx: MCP context
+        lean: If True, return lean error; if False, include full metadata
+
+    Returns:
+        Formatted error response
+    """
+    if lean:
+        return {
+            "ok": False,
+            "error": error,
+        }
+    else:
+        return {
+            "ok": False,
+            "action": action,
+            "error": error,
+            "actor": extract_actor(ctx),
+        }
 
 
-def extract_actor(ctx: Context | None) -> dict[str, Any] | None:
+def extract_actor(ctx: Any | None) -> dict[str, Any] | None:
     """Extract actor information from the MCP context."""
     if ctx is None:
         return None
@@ -128,7 +168,7 @@ def extract_actor(ctx: Context | None) -> dict[str, Any] | None:
 
 def resolve_project_from_token(
     payload: dict[str, Any],
-    ctx: Context | None,
+    ctx: Any | None,
 ) -> str | None:
     """Resolve project_id from token claims with access control.
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.core import mcp
@@ -24,7 +23,7 @@ from tracertm.services.shortest_path_service import ShortestPathService
 
 @mcp.tool(description="Detect cycles in the traceability graph")
 async def detect_cycles(
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Find dependency cycles in the current project's link graph.
 
@@ -54,7 +53,7 @@ async def detect_cycles(
 async def shortest_path(
     source_id: str,
     target_id: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Find the shortest path between two items in the link graph.
 

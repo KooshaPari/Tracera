@@ -2,10 +2,11 @@
 Contract (Design by Contract) model.
 """
 
+from sqlalchemy import ForeignKey, JSON, String, Text
 from datetime import datetime
 from typing import Any, List, Optional
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -22,10 +23,10 @@ class Contract(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
     item_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
     )
     contract_number: Mapped[str] = mapped_column(String(50), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)

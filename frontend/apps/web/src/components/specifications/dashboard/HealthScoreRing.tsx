@@ -3,9 +3,9 @@
  * Displays breakdown by category with color-coded segments
  */
 
-import { useEffect, useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 
 interface HealthScoreRingProps {

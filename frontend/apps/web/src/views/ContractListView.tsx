@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { Contract, ContractStatus } from "@tracertm/types";
 import {
 	Button,
 	Card,
@@ -11,20 +12,19 @@ import {
 	Skeleton,
 } from "@tracertm/ui";
 import {
+	AlertCircle,
+	CheckCircle2,
+	Filter,
 	Plus,
 	Search,
-	Filter,
 	Shield,
-	ShieldCheck,
 	ShieldAlert,
-	CheckCircle2,
-	AlertCircle,
+	ShieldCheck,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ContractCard } from "@/components/specifications/contracts/ContractCard";
 import { useContracts } from "@/hooks/useSpecifications";
-import type { Contract, ContractStatus } from "@tracertm/types";
 
 interface ContractListViewProps {
 	projectId: string;
@@ -268,18 +268,16 @@ export function ContractListView({ projectId }: ContractListViewProps) {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Types ({contracts.length})</SelectItem>
-						<SelectItem value="api">API ({typeCounts["api"] || 0})</SelectItem>
+						<SelectItem value="api">API ({typeCounts.api || 0})</SelectItem>
 						<SelectItem value="function">
-							Function ({typeCounts["function"] || 0})
+							Function ({typeCounts.function || 0})
 						</SelectItem>
 						<SelectItem value="invariant">
-							Invariant ({typeCounts["invariant"] || 0})
+							Invariant ({typeCounts.invariant || 0})
 						</SelectItem>
-						<SelectItem value="data">
-							Data ({typeCounts["data"] || 0})
-						</SelectItem>
+						<SelectItem value="data">Data ({typeCounts.data || 0})</SelectItem>
 						<SelectItem value="integration">
-							Integration ({typeCounts["integration"] || 0})
+							Integration ({typeCounts.integration || 0})
 						</SelectItem>
 					</SelectContent>
 				</Select>
@@ -324,11 +322,20 @@ export function ContractListView({ projectId }: ContractListViewProps) {
 						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 						onClick={() => setShowCreateModal(false)}
 					/>
-					<div className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl">
+					<div
+						className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="create-contract-title"
+					>
 						<div className="flex items-center justify-between mb-6">
-							<h2 className="text-lg font-semibold">Create New Contract</h2>
+							<h2 id="create-contract-title" className="text-lg font-semibold">
+								Create New Contract
+							</h2>
 							<button
+								type="button"
 								onClick={() => setShowCreateModal(false)}
+								aria-label="Close dialog"
 								className="rounded-lg p-1 hover:bg-accent"
 							>
 								✕

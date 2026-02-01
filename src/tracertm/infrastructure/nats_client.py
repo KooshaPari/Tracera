@@ -1,0 +1,280 @@
+"""NATS client for bidirectional Go-Python communication."""
+
+import asyncio
+import json
+import logging
+import os
+from typing import Any, Callable, Optional
+
+import nats
+from nats.aio.client import Client as NATS
+from nats.js import JetStreamContext
+
+logger = logging.getLogger(__name__)
+
+
+class NATSClient:
+    """
+    NATS client for event-driven communication between Go and Python backends.
+
+    Implements JetStream-based messaging with durable subscriptions for reliable
+    event delivery across the TraceRTM system.
+    """
+
+    # Subject pattern: tracertm.bridge.{source}.{project_id}.{event_type}
+    SUBJECT_PREFIX = "tracertm.bridge"
+    STREAM_NAME = "TRACERTM_BRIDGE"
+
+    def __init__(self, url: Optional[str] = None, creds_path: Optional[str] = None) -> None:
+        """
+        Initialize NATS client.
+
+        Args:
+            url: NATS server URL (defaults to NATS_URL env var or nats://localhost:4222)
+            creds_path: Path to NATS credentials file (defaults to NATS_CREDS_PATH env var)
+        """
+        self.url = url or os.getenv("NATS_URL", "nats://localhost:4222")
+        self.creds_path = creds_path or os.getenv("NATS_CREDS_PATH")
+
+        self._nc: Optional[NATS] = None
+        self._js: Optional[JetStreamContext] = None
+        self._subscriptions: dict[str, Any] = {}
+        self._message_tasks: list[asyncio.Task[None]] = []
+
+    async def connect(self) -> None:
+        """
+        Connect to NATS server and initialize JetStream.
+
+        Uses file-based credentials if NATS_CREDS_PATH is provided, otherwise
+        connects without authentication (for local development).
+        """
+        try:
+            # Build connection options
+            options: dict[str, Any] = {
+                "servers": [self.url],
+                "name": "TraceRTM-Python",
+            }
+
+            # Add credentials if provided
+            if self.creds_path and os.path.exists(self.creds_path):
+                options["user_credentials"] = self.creds_path
+                logger.info(f"Connecting to NATS with credentials: {self.creds_path}")
+            else:
+                logger.info(f"Connecting to NATS without credentials: {self.url}")
+
+            # Connect to NATS
+            self._nc = await nats.connect(**options)
+            logger.info(f"Connected to NATS at {self.url}")
+
+            # Initialize JetStream
+            self._js = self._nc.jetstream()
+
+            # Ensure the stream exists
+            await self._ensure_stream()
+
+        except Exception as e:
+            logger.error(f"Failed to connect to NATS: {e}")
+            raise
+
+    async def _ensure_stream(self) -> None:
+        """Create or update the JetStream stream for bridge events."""
+        if not self._js:
+            raise RuntimeError("JetStream not initialized")
+
+        try:
+            stream_config = {
+                "name": self.STREAM_NAME,
+                "subjects": [f"{self.SUBJECT_PREFIX}.>"],
+                "retention": "interest",  # Delete when no subscribers
+                "storage": "file",
+                # nats-py expects seconds and converts to nanoseconds internally
+                "max_age": 7 * 24 * 60 * 60,  # 7 days in seconds
+            }
+
+            try:
+                await self._js.add_stream(**stream_config)
+                logger.info(f"Created JetStream stream: {self.STREAM_NAME}")
+            except nats.errors.Error as e:
+                # Stream might already exist, try to update it
+                if "already in use" in str(e) or "stream name already in use" in str(e):
+                    await self._js.update_stream(**stream_config)
+                    logger.info(f"Updated JetStream stream: {self.STREAM_NAME}")
+                else:
+                    raise
+
+        except Exception as e:
+            logger.error(f"Failed to ensure stream: {e}")
+            raise
+
+    async def publish(
+        self,
+        event_type: str,
+        project_id: str,
+        entity_id: str,
+        entity_type: str,
+        data: dict[str, Any],
+        source: str = "python",
+    ) -> None:
+        """
+        Publish an event to NATS with standard format.
+
+        Args:
+            event_type: Type of event (e.g., "spec.created", "ai.analysis.complete")
+            project_id: Project UUID
+            entity_id: Entity UUID
+            entity_type: Entity type (e.g., "specification", "test_result")
+            data: Event payload
+            source: Event source ("python" or "go")
+        """
+        if not self._js:
+            raise RuntimeError("Not connected to NATS")
+
+        # Build subject: tracertm.bridge.{source}.{project_id}.{event_type}
+        subject = f"{self.SUBJECT_PREFIX}.{source}.{project_id}.{event_type}"
+
+        # Build event payload matching Go Event struct
+        event = {
+            "type": event_type,
+            "project_id": project_id,
+            "entity_id": entity_id,
+            "entity_type": entity_type,
+            "data": data,
+            "source": source,
+        }
+
+        try:
+            # Publish to JetStream
+            payload = json.dumps(event).encode("utf-8")
+            ack = await self._js.publish(subject, payload)
+            logger.debug(
+                f"Published event {event_type} to {subject} "
+                f"(stream={ack.stream}, seq={ack.seq})"
+            )
+        except Exception as e:
+            logger.error(f"Failed to publish event to {subject}: {e}")
+            raise
+
+    async def subscribe(
+        self,
+        subject_pattern: str,
+        durable_name: str,
+        callback: Callable[[dict[str, Any]], None],
+    ) -> None:
+        """
+        Subscribe to events with a durable JetStream consumer.
+
+        Args:
+            subject_pattern: Subject pattern to subscribe to (e.g., "tracertm.bridge.go.*.item.created")
+            durable_name: Durable consumer name (must be unique per subscriber)
+            callback: Async callback function to handle events
+        """
+        if not self._js:
+            raise RuntimeError("Not connected to NATS")
+
+        try:
+            # Create durable consumer
+            psub = await self._js.subscribe(
+                subject_pattern,
+                durable=durable_name,
+                stream=self.STREAM_NAME,
+            )
+
+            # Store subscription
+            self._subscriptions[durable_name] = psub
+
+            logger.info(f"Subscribed to {subject_pattern} with durable consumer {durable_name}")
+
+            # Run message loop in background so subscribe() returns and startup can complete
+            async def message_loop() -> None:
+                try:
+                    async for msg in psub.messages:
+                        try:
+                            event = json.loads(msg.data.decode("utf-8"))
+                            await callback(event)
+                            await msg.ack()
+                        except json.JSONDecodeError as e:
+                            logger.error(f"Failed to decode event: {e}")
+                            await msg.nak()
+                        except Exception as e:
+                            logger.error(f"Error processing event: {e}")
+                            await msg.nak()
+                except asyncio.CancelledError:
+                    pass
+                except Exception as e:
+                    logger.error(f"Message loop error for {subject_pattern}: {e}")
+
+            task = asyncio.create_task(message_loop())
+            self._message_tasks.append(task)
+
+        except Exception as e:
+            logger.error(f"Failed to subscribe to {subject_pattern}: {e}")
+            raise
+
+    async def unsubscribe(self, durable_name: str) -> None:
+        """
+        Unsubscribe from a durable consumer.
+
+        Args:
+            durable_name: Name of the durable consumer to unsubscribe from
+        """
+        if durable_name in self._subscriptions:
+            try:
+                await self._subscriptions[durable_name].unsubscribe()
+                del self._subscriptions[durable_name]
+                logger.info(f"Unsubscribed from {durable_name}")
+            except Exception as e:
+                logger.error(f"Failed to unsubscribe from {durable_name}: {e}")
+                raise
+
+    async def close(self) -> None:
+        """Close all subscriptions and disconnect from NATS."""
+        # Cancel message loop tasks first
+        for task in self._message_tasks:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+        self._message_tasks.clear()
+
+        # Unsubscribe from all
+        for durable_name in list(self._subscriptions.keys()):
+            try:
+                await self.unsubscribe(durable_name)
+            except Exception as e:
+                logger.error(f"Error unsubscribing from {durable_name}: {e}")
+
+        # Close connection
+        if self._nc:
+            await self._nc.close()
+            logger.info("Closed NATS connection")
+
+    @property
+    def is_connected(self) -> bool:
+        """Check if connected to NATS."""
+        return self._nc is not None and self._nc.is_connected
+
+    async def health_check(self) -> dict[str, Any]:
+        """
+        Perform health check on NATS connection.
+
+        Returns:
+            dict with connection status and statistics
+        """
+        if not self._nc or not self._nc.is_connected:
+            return {
+                "connected": False,
+                "error": "Not connected to NATS",
+            }
+
+        stats = self._nc.stats
+        return {
+            "connected": True,
+            "url": self.url,
+            "subscriptions": len(self._subscriptions),
+            "in_msgs": stats["in_msgs"],
+            "out_msgs": stats["out_msgs"],
+            "in_bytes": stats["in_bytes"],
+            "out_bytes": stats["out_bytes"],
+            "reconnects": stats["reconnects"],
+        }

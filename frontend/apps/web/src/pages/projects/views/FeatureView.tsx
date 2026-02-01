@@ -1,136 +1,332 @@
-import { ChevronDown, ChevronRight, Plus } from "lucide-react";
-import { useState } from "react";
-
-const items = [
-	{
-		id: "1",
-		type: "epic",
-		title: "Foundation & Monorepo Setup",
-		status: "in_progress",
-		children: [
-			{
-				id: "1.1",
-				type: "feature",
-				title: "Bun Workspace Setup",
-				status: "done",
-			},
-			{
-				id: "1.2",
-				type: "feature",
-				title: "Turborepo Configuration",
-				status: "in_progress",
-			},
-			{
-				id: "1.3",
-				type: "feature",
-				title: "Shared Packages Structure",
-				status: "todo",
-			},
-		],
-	},
-	{
-		id: "2",
-		type: "epic",
-		title: "Web Application",
-		status: "todo",
-		children: [
-			{
-				id: "2.1",
-				type: "feature",
-				title: "Vite + React 19 Setup",
-				status: "todo",
-			},
-			{
-				id: "2.2",
-				type: "feature",
-				title: "Legend State Integration",
-				status: "todo",
-			},
-		],
-	},
-	{
-		id: "3",
-		type: "epic",
-		title: "Desktop Application",
-		status: "todo",
-		children: [],
-	},
-];
+import type { TypedItem } from "@tracertm/types";
+import { Link } from "@tanstack/react-router";
+import {
+	ChevronDown,
+	ChevronRight,
+	Layers,
+	Plus,
+	Sparkles,
+	Target,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Badge, Button, Card } from "@tracertm/ui";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
+import { cn } from "@/lib/utils";
+import { useItems } from "@/hooks/useItems";
+import { CreateItemForm } from "@/components/forms/CreateItemForm";
+import { useCreateItem } from "@/hooks/useItems";
 
 const statusColors: Record<string, string> = {
-	todo: "bg-gray-100 text-gray-600",
-	in_progress: "bg-blue-100 text-blue-600",
-	done: "bg-green-100 text-green-600",
+	todo: "bg-slate-500/10 text-slate-600 border-slate-500/20",
+	in_progress: "bg-sky-500/15 text-sky-700 border-sky-500/30",
+	done: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+	blocked: "bg-rose-500/15 text-rose-700 border-rose-500/30",
+	cancelled: "bg-slate-500/15 text-slate-600 border-slate-500/20",
 };
 
-export function FeatureView() {
-	const [expanded, setExpanded] = useState<Set<string>>(new Set(["1", "2"]));
+interface FeatureViewProps {
+	projectId: string;
+}
+
+/** Build epic/feature hierarchy: epics as roots, features (or items with parentId) as children */
+function buildHierarchy(items: TypedItem[]) {
+	const roots: TypedItem[] = [];
+	const childrenByParent = new Map<string, TypedItem[]>();
+
+	for (const item of items) {
+		const isEpic = item.type === "epic";
+		const parentId = item.parentId ?? null;
+		if (isEpic || !parentId) {
+			roots.push(item);
+		} else {
+			const list = childrenByParent.get(parentId) ?? [];
+			list.push(item);
+			childrenByParent.set(parentId, list);
+		}
+	}
+
+	roots.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""));
+	childrenByParent.forEach((list) =>
+		list.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? "")),
+	);
+	return { roots, childrenByParent };
+}
+
+export function FeatureView({ projectId }: FeatureViewProps) {
+	const [expanded, setExpanded] = useState<Set<string>>(new Set());
+	const [showCreate, setShowCreate] = useState(false);
+	const [createType, setCreateType] = useState<"epic" | "feature">("epic");
+	const [parentIdForFeature, setParentIdForFeature] = useState<string | null>(null);
+
+	const { data, isLoading, error } = useItems({
+		projectId,
+		view: "feature",
+	});
+	const createItem = useCreateItem();
+
+	const { roots, childrenByParent } = useMemo(() => {
+		const list = data?.items ?? [];
+		return buildHierarchy(list);
+	}, [data?.items]);
 
 	const toggle = (id: string) => {
-		const next = new Set(expanded);
-		if (next.has(id)) {
-			next.delete(id);
-		} else {
-			next.add(id);
-		}
-		setExpanded(next);
+		setExpanded((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
 	};
 
-	return (
-		<div className="space-y-4">
-			<div className="flex items-center justify-between">
-				<h3 className="text-lg font-semibold">Feature View</h3>
-				<button className="flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">
-					<Plus className="h-4 w-4" /> Add Epic
-				</button>
-			</div>
+	const handleAddEpic = () => {
+		setCreateType("epic");
+		setParentIdForFeature(null);
+		setShowCreate(true);
+	};
 
-			<div className="rounded-lg border">
-				{items.map((epic) => (
-					<div key={epic.id} className="border-b last:border-b-0">
-						<div
-							className="flex cursor-pointer items-center gap-3 p-4 hover:bg-accent/50"
-							onClick={() => toggle(epic.id)}
-						>
-							{epic.children.length > 0 ? (
-								expanded.has(epic.id) ? (
-									<ChevronDown className="h-4 w-4" />
-								) : (
-									<ChevronRight className="h-4 w-4" />
-								)
-							) : (
-								<div className="w-4" />
-							)}
-							<span className="rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
-								epic
-							</span>
-							<span className="flex-1 font-medium">{epic.title}</span>
-							<span
-								className={`rounded-full px-2 py-0.5 text-xs ${statusColors[epic.status]}`}
-							>
-								{epic.status}
-							</span>
+	const handleAddFeature = (parentId?: string) => {
+		setCreateType("feature");
+		setParentIdForFeature(parentId ?? null);
+		setShowCreate(true);
+	};
+
+	const handleCreateSubmit = async (formData: {
+		title: string;
+		description?: string;
+		view: string;
+		type: string;
+		status: string;
+		priority: string;
+		parentId?: string;
+	}) => {
+		try {
+			await createItem.mutateAsync({
+				projectId,
+				title: formData.title,
+				description: formData.description,
+				view: "feature",
+				type: createType,
+				status: formData.status as "todo" | "in_progress" | "done" | "blocked" | "cancelled",
+				priority: formData.priority as "low" | "medium" | "high" | "critical",
+				parentId:
+					createType === "feature" ? parentIdForFeature ?? undefined : undefined,
+			});
+			toast.success(createType === "epic" ? "Epic created" : "Feature created");
+			setShowCreate(false);
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to create");
+		}
+	};
+
+	if (isLoading) {
+		return (
+			<div className="flex flex-1 flex-col min-h-0 w-full max-w-[1600px] mx-auto px-6 py-6">
+				<header className="shrink-0 pb-6 border-b border-border/50">
+					<div className="flex items-center justify-between gap-4">
+						<div className="space-y-2">
+							<Skeleton className="h-8 w-48" />
+							<Skeleton className="h-4 w-64" />
 						</div>
-						{expanded.has(epic.id) &&
-							epic.children.map((child) => (
-								<div
-									key={child.id}
-									className="flex items-center gap-3 border-t bg-muted/30 p-4 pl-12"
-								>
-									<span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">
-										feature
-									</span>
-									<span className="flex-1">{child.title}</span>
-									<span
-										className={`rounded-full px-2 py-0.5 text-xs ${statusColors[child.status]}`}
-									>
-										{child.status}
-									</span>
-								</div>
-							))}
+						<div className="flex gap-2">
+							<Skeleton className="h-9 w-24" />
+							<Skeleton className="h-9 w-28" />
+						</div>
 					</div>
-				))}
+				</header>
+				<main className="min-h-0 flex-1 overflow-auto pt-6">
+					<div className="space-y-3">
+						{[1, 2, 3].map((i) => (
+							<Skeleton key={i} className="h-20 w-full rounded-xl" />
+						))}
+					</div>
+				</main>
 			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+				<p className="font-medium">Error loading features</p>
+				<p className="mt-1 text-sm">{error.message}</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className="flex flex-1 flex-col min-h-0 w-full max-w-[1600px] mx-auto px-6 py-6">
+			<header className="shrink-0 border-b border-border/60 bg-background/95 backdrop-blur-sm pb-6 mb-0">
+				<div className="flex flex-wrap items-center justify-between gap-4">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight">Features</h1>
+						<p className="mt-1 text-muted-foreground">
+							Epics and features for this project
+						</p>
+					</div>
+					<div className="flex gap-2">
+						<Button variant="outline" size="sm" onClick={handleAddEpic}>
+							<Plus className="h-4 w-4 mr-1" /> Add Epic
+						</Button>
+						<Button size="sm" onClick={() => handleAddFeature()}>
+							<Plus className="h-4 w-4 mr-1" /> Add Feature
+						</Button>
+					</div>
+				</div>
+			</header>
+
+			<main className="min-h-0 flex-1 overflow-auto pt-8 mt-0">
+			{roots.length === 0 ? (
+				<Card className="border-2 border-dashed border-border/60 bg-card/95 backdrop-blur-md ring-1 ring-white/10 shadow-lg p-12 text-center">
+					<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+						<Sparkles className="h-7 w-7 text-primary" />
+					</div>
+					<p className="mt-4 text-lg font-semibold text-foreground">No features yet</p>
+					<p className="mt-1 text-sm text-muted-foreground">
+						Create an epic or feature to get started.
+					</p>
+					<div className="mt-6 flex justify-center gap-3">
+						<Button variant="outline" size="sm" onClick={handleAddEpic} className="gap-2 rounded-full">
+							<Layers className="h-4 w-4" /> Add Epic
+						</Button>
+						<Button size="sm" onClick={() => handleAddFeature()} className="gap-2 rounded-full">
+							<Target className="h-4 w-4" /> Add Feature
+						</Button>
+					</div>
+				</Card>
+			) : (
+				<div className="space-y-3">
+					{roots.map((item) => {
+						const children = childrenByParent.get(item.id) ?? [];
+						const isExpanded = expanded.has(item.id);
+						const isEpic = item.type === "epic";
+						const TypeIcon = isEpic ? Layers : Target;
+						const hasChildren = children.length > 0;
+						return (
+							<Card
+								key={item.id}
+								className={cn(
+									"overflow-hidden border border-border/60 shadow-lg transition-all hover:shadow-xl",
+									"bg-card/95 backdrop-blur-md",
+									"ring-1 ring-white/15",
+								)}
+							>
+								<div className="flex items-center gap-4 p-4 md:p-5">
+									{hasChildren ? (
+										<button
+											type="button"
+											onClick={() => toggle(item.id)}
+											className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+											aria-label={isExpanded ? "Collapse" : "Expand"}
+										>
+											{isExpanded ? (
+												<ChevronDown className="h-5 w-5 text-primary" />
+											) : (
+												<ChevronRight className="h-5 w-5 text-primary" />
+											)}
+										</button>
+									) : (
+										<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+											<TypeIcon className="h-5 w-5 text-primary" />
+										</div>
+									)}
+									<Link
+										to="/projects/$projectId/views/$viewType/$itemId"
+										params={{
+											projectId,
+											viewType: "feature",
+											itemId: item.id,
+										}}
+										className="min-w-0 flex-1 space-y-1 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:rounded-lg"
+									>
+										<p className="font-semibold text-foreground hover:text-primary hover:underline truncate">
+											{item.title}
+										</p>
+										<div className="flex flex-wrap items-center gap-2">
+											<Badge
+												variant="outline"
+												className={cn(
+													"text-[10px] font-semibold uppercase tracking-wider",
+													isEpic ? "border-violet-500/40 bg-violet-500/10 text-violet-700" : "border-sky-500/40 bg-sky-500/10 text-sky-700",
+												)}
+											>
+												{item.type}
+											</Badge>
+											<Badge
+												className={cn(
+													"text-[10px] font-semibold uppercase tracking-wider border",
+													statusColors[item.status] ?? "bg-slate-500/10 text-slate-600 border-slate-500/20",
+												)}
+											>
+												{item.status.replace("_", " ")}
+											</Badge>
+										</div>
+									</Link>
+									{isEpic && (
+										<Button
+											variant="outline"
+											size="sm"
+											className="shrink-0 gap-1.5 rounded-full"
+											onClick={(e) => {
+												e.preventDefault();
+												e.stopPropagation();
+												handleAddFeature(item.id);
+											}}
+										>
+											<Plus className="h-4 w-4" /> Add feature
+										</Button>
+									)}
+								</div>
+								{isExpanded && children.length > 0 && (
+									<div className="border-t border-border/60 bg-muted/50 backdrop-blur-sm">
+										{children.map((child) => (
+											<Link
+												key={child.id}
+												to="/projects/$projectId/views/$viewType/$itemId"
+												params={{
+													projectId,
+													viewType: "feature",
+													itemId: child.id,
+												}}
+												className="flex items-center gap-4 border-t border-border/40 p-4 pl-[4.5rem] transition-colors hover:bg-muted/60 first:border-t-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+											>
+												<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10">
+													<Target className="h-4 w-4 text-sky-600" />
+												</div>
+												<span className="min-w-0 flex-1 font-medium text-foreground truncate">
+													{child.title}
+												</span>
+												<Badge
+													className={cn(
+														"shrink-0 text-[10px] font-semibold uppercase tracking-wider border",
+														statusColors[child.status] ?? "bg-slate-500/10 text-slate-600 border-slate-500/20",
+													)}
+												>
+													{child.status.replace("_", " ")}
+												</Badge>
+												<ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+											</Link>
+										))}
+									</div>
+								)}
+							</Card>
+						);
+					})}
+				</div>
+			)}
+			</main>
+
+			{showCreate && (
+				<CreateItemForm
+					title="Create Feature"
+					submitLabel="Create Feature"
+					submitBusyLabel="Creating..."
+					defaultView="FEATURE"
+					onSubmit={handleCreateSubmit}
+					onCancel={() => setShowCreate(false)}
+					isLoading={createItem.isPending}
+				/>
+			)}
 		</div>
 	);
 }

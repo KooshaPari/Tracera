@@ -16,6 +16,7 @@ export const SelectTrigger = React.forwardRef<
 		className={cn(
 			"flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
 			"placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+			"transition-all duration-200 ease-out hover:border-input/80 active:scale-[0.99]",
 			"disabled:cursor-not-allowed disabled:opacity-50",
 			className,
 		)}
@@ -38,6 +39,7 @@ export const SelectContent = React.forwardRef<
 			ref={ref}
 			className={cn(
 				"relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
+				"transition-all duration-200 ease-out",
 				"data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
 				position === "popper" &&
 					"data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
@@ -68,7 +70,8 @@ export const SelectItem = React.forwardRef<
 		ref={ref}
 		className={cn(
 			"relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
-			"focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+			"transition-all duration-150 ease-out focus:bg-accent focus:text-accent-foreground hover:bg-accent/80 active:scale-[0.98]",
+			"data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 			className,
 		)}
 		{...props}

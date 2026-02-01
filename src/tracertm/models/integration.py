@@ -14,6 +14,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin
@@ -194,7 +195,7 @@ class IntegrationMapping(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     project_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
     integration_credential_id: Mapped[str] = mapped_column(
         String(36),
@@ -204,7 +205,7 @@ class IntegrationMapping(Base, TimestampMixin):
 
     # TraceRTM side
     tracertm_item_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
     )
     tracertm_item_type: Mapped[str] = mapped_column(String(50), nullable=False)
 

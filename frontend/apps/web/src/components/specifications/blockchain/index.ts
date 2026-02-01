@@ -3,28 +3,25 @@
  * Components for blockchain/NFT-like visualization
  */
 
-// Version Chain
+// Content Addressing
 export {
-	VersionChainTimeline,
-	VersionChainBadge,
-} from "./VersionChainTimeline";
-
+	ContentAddressBadge,
+	ContentAddressCard,
+	ContentHashComparison,
+} from "./ContentAddressCard";
+// Digital Signatures
+export {
+	DigitalSignatureBadge,
+	SignatureHistory,
+	SignatureVerificationStatus,
+} from "./DigitalSignatureBadge";
 // Merkle Proof
 export {
 	MerkleProofViewer,
 	MerkleVerificationBadge,
 } from "./MerkleProofViewer";
-
-// Content Addressing
+// Version Chain
 export {
-	ContentAddressCard,
-	ContentAddressBadge,
-	ContentHashComparison,
-} from "./ContentAddressCard";
-
-// Digital Signatures
-export {
-	DigitalSignatureBadge,
-	SignatureVerificationStatus,
-	SignatureHistory,
-} from "./DigitalSignatureBadge";
+	VersionChainBadge,
+	VersionChainTimeline,
+} from "./VersionChainTimeline";

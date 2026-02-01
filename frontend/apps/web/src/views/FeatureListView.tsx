@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { Feature, FeatureStatus } from "@tracertm/types";
 import {
 	Button,
 	Card,
@@ -11,20 +12,19 @@ import {
 	Skeleton,
 } from "@tracertm/ui";
 import {
-	Plus,
-	Search,
-	Filter,
 	BookOpen,
 	CheckCircle2,
-	XCircle,
+	Filter,
 	ListTodo,
+	Plus,
+	Search,
 	TrendingUp,
+	XCircle,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FeatureCard } from "@/components/specifications/bdd/FeatureCard";
 import { useFeatures } from "@/hooks/useSpecifications";
-import type { Feature, FeatureStatus } from "@tracertm/types";
 
 interface FeatureListViewProps {
 	projectId: string;
@@ -32,7 +32,7 @@ interface FeatureListViewProps {
 
 export function FeatureListView({ projectId }: FeatureListViewProps) {
 	const navigate = useNavigate();
-	const searchParams = useSearch({ strict: false }) as any;
+	const searchParams = useSearch({ strict: false }) as { status?: string } | undefined;
 
 	const { data: featuresData, isLoading } = useFeatures({ projectId });
 	const features = featuresData?.features ?? [];
@@ -306,11 +306,20 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 						onClick={() => setShowCreateModal(false)}
 					/>
-					<div className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl">
+					<div
+						className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="create-feature-title"
+					>
 						<div className="flex items-center justify-between mb-6">
-							<h2 className="text-lg font-semibold">Create New Feature</h2>
+							<h2 id="create-feature-title" className="text-lg font-semibold">
+								Create New Feature
+							</h2>
 							<button
+								type="button"
 								onClick={() => setShowCreateModal(false)}
+								aria-label="Close dialog"
 								className="rounded-lg p-1 hover:bg-accent"
 							>
 								✕

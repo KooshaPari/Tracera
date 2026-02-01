@@ -1,15 +1,9 @@
 // ComponentUsageMatrix.test.tsx - Tests for component usage matrix visualization
 
-import { describe, it, expect, vi } from "vitest";
-import {
-	render,
-	screen,
-	within,
-	fireEvent,
-	waitFor,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { LibraryComponent, ComponentUsage } from "@tracertm/types";
+import type { ComponentUsage, LibraryComponent } from "@tracertm/types";
+import { describe, expect, it, vi } from "vitest";
 import { ComponentUsageMatrix } from "../../components/graph/ComponentUsageMatrix";
 
 // =============================================================================

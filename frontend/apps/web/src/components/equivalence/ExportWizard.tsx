@@ -1,18 +1,20 @@
-import React, { useState, useCallback } from "react";
+import { AlertCircle, Download, Loader2 } from "lucide-react";
+import { logger } from '@/lib/logger';
+import React, { useCallback, useState } from "react";
+import { getAuthHeaders } from "@/api/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Download, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ExportWizardProps {
 	projectId: string;
@@ -60,26 +62,27 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 	const [error, setError] = useState<string | null>(null);
 	const [stats, setStats] = useState<ExportStats | null>(null);
 
-	// Fetch statistics when dialog opens
-	React.useEffect(() => {
-		if (isOpen && !stats) {
-			fetchStats();
-		}
-	}, [isOpen, stats]);
-
-	const fetchStats = async () => {
+	const fetchStats = useCallback(async () => {
 		try {
 			const response = await fetch(
 				`/api/v1/projects/${projectId}/equivalence/export-statistics`,
+				{ headers: getAuthHeaders() },
 			);
 			if (!response.ok) throw new Error("Failed to fetch statistics");
 			const data = await response.json();
 			setStats(data);
 		} catch (err) {
-			console.error("Failed to fetch export statistics:", err);
+			logger.error("Failed to fetch export statistics:", err);
 			setError("Failed to load export statistics");
 		}
-	};
+	}, [projectId]);
+
+	// Fetch statistics when dialog opens
+	React.useEffect(() => {
+		if (isOpen && !stats) {
+			fetchStats();
+		}
+	}, [isOpen, stats, fetchStats]);
 
 	const handleNext = () => {
 		setStep("review");
@@ -110,6 +113,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 					`/api/v1/projects/${projectId}/equivalence/export?format=${format}` +
 						`&include_embeddings=${includeEmbeddings}` +
 						`&include_metadata=${includeMetadata}`,
+					{ headers: getAuthHeaders() },
 				);
 
 				if (!response.ok) throw new Error("Export failed");

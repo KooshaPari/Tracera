@@ -1,8 +1,8 @@
 // TemporalNavigator Storybook stories
 import type { Meta, StoryObj } from "@storybook/react";
 import {
-	TemporalNavigator,
 	type Branch,
+	TemporalNavigator,
 	type Version,
 } from "../TemporalNavigator";
 
@@ -89,18 +89,18 @@ export const Default: Story = {
 		currentVersionId: "v1.1.0",
 		branches: mockBranches,
 		versions: mockVersions,
-		onBranchChange: (branchId) => console.log("Branch changed to:", branchId),
+		onBranchChange: (branchId) => logger.info("Branch changed to:", branchId),
 		onVersionChange: (versionId) =>
-			console.log("Version changed to:", versionId),
+			logger.info("Version changed to:", versionId),
 	},
 };
 
 export const WithCreateActions: Story = {
 	args: {
 		...Default.args,
-		onBranchCreate: () => console.log("Create branch requested"),
+		onBranchCreate: () => logger.info("Create branch requested"),
 		onMergeRequest: (source, target) =>
-			console.log(`Merge ${source} into ${target}`),
+			logger.info(`Merge ${source} into ${target}`),
 	},
 };
 

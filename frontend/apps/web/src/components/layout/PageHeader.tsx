@@ -16,10 +16,10 @@ export function PageHeader({
 	breadcrumbs,
 }: PageHeaderProps) {
 	return (
-		<div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+		<div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 transition-colors duration-200 ease-out">
 			<div className="px-6 py-4">
 				{breadcrumbs && breadcrumbs.length > 0 && (
-					<nav className="flex mb-2" aria-label="Breadcrumb">
+					<nav className="flex mb-2" aria-label="Breadcrumb" role="navigation">
 						<ol className="flex items-center space-x-2 text-sm">
 							{breadcrumbs.map((crumb, index) => (
 								<li key={index} className="flex items-center">
@@ -39,7 +39,7 @@ export function PageHeader({
 									{crumb.href ? (
 										<a
 											href={crumb.href}
-											className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+											className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors duration-200 ease-out"
 										>
 											{crumb.label}
 										</a>

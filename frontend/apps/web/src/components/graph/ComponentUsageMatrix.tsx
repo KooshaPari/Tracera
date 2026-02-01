@@ -1,6 +1,11 @@
 // ComponentUsageMatrix.tsx - Matrix view of component usage across pages/views
 // Shows which components are used where, usage counts, variants, and deprecation status
 
+import type {
+	ComponentCategory,
+	ComponentUsage,
+	LibraryComponent,
+} from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -9,6 +14,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@tracertm/ui/components/Collapsible";
 import { Input } from "@tracertm/ui/components/Input";
 import {
 	Select,
@@ -19,21 +29,11 @@ import {
 } from "@tracertm/ui/components/Select";
 import { Separator } from "@tracertm/ui/components/Separator";
 import {
-	TooltipProvider,
 	Tooltip,
-	TooltipTrigger,
 	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@tracertm/ui/components/Collapsible";
-import type {
-	LibraryComponent,
-	ComponentUsage,
-	ComponentCategory,
-} from "@tracertm/types";
 import {
 	AlertCircle,
 	BarChart3,

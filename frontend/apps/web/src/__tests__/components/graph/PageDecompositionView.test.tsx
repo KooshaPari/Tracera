@@ -3,10 +3,10 @@
  * Tests: hierarchical decomposition, search, expand/collapse, view modes
  */
 
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { Item, Link } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PageDecompositionView } from "@/components/graph/PageDecompositionView";
 
 // =============================================================================

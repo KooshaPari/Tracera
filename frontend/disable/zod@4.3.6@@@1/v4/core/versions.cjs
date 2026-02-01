@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = void 0;
 exports.version = {
-    major: 4,
-    minor: 3,
-    patch: 6,
+	major: 4,
+	minor: 3,
+	patch: 6,
 };

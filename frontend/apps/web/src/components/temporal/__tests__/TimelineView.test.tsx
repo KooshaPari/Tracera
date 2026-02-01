@@ -1,9 +1,10 @@
 // TimelineView component tests
-import { describe, it, expect, vi, afterEach } from "vitest";
+
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TimelineView } from "../TimelineView";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Version } from "../TemporalNavigator";
+import { TimelineView } from "../TimelineView";
 
 describe("TimelineView", () => {
 	const mockVersions: Version[] = [

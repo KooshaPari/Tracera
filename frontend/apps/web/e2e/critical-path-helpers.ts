@@ -1,4 +1,4 @@
-import { type Page, expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 /**
  * Critical Path Test Helpers
@@ -30,6 +30,40 @@ export interface TestLink {
 /**
  * Navigation Helpers
  */
+
+export async function authenticateAndNavigate(
+	page: Page,
+	route: string,
+): Promise<void> {
+	const authState = {
+		user: {
+			id: "test-user",
+			email: "test@example.com",
+			name: "Test User",
+			role: "admin",
+		},
+		token: "test-token",
+		account: {
+			id: "test-account",
+			name: "Test Account",
+			slug: "test-account",
+			account_type: "personal",
+		},
+		isAuthenticated: true,
+	};
+
+	await page.addInitScript((state) => {
+		const serialized = JSON.stringify({ state, version: 0 });
+		localStorage.setItem("tracertm-auth-store", serialized);
+		if (state.token) {
+			localStorage.setItem("auth_token", state.token);
+			localStorage.setItem("authToken", state.token);
+		}
+	}, authState);
+
+	await page.goto(route);
+	await page.waitForLoadState("networkidle");
+}
 
 export async function navigateToDashboard(page: Page): Promise<void> {
 	await page.goto("/");

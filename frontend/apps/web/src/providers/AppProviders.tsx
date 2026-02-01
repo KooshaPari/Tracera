@@ -1,14 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { logger } from '@/lib/logger';
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useEffect } from "react";
 import { AuthKitProvider, useAuth } from "@workos-inc/authkit-react";
+import { useEffect } from "react";
 // import { BrowserRouter } from 'react-router-dom' // Not used - app uses @tanstack/react-router
 import { Toaster } from "sonner";
+import { getWebSocketManager } from "../api/websocket";
 import { AuthKitSync } from "../components/auth/AuthKitSync";
+import { initializeCSRF } from "../lib/csrf";
 import { useAuthStore } from "../stores/authStore";
 import { useWebSocketStore } from "../stores/websocketStore";
-import { getWebSocketManager } from "../api/websocket";
-import { initializeCSRF } from "../lib/csrf";
 
 // Create a client with optimized caching for performance
 const queryClient = new QueryClient({
@@ -44,7 +45,7 @@ function WebSocketInitializer() {
 	// Initialize CSRF protection on app startup
 	useEffect(() => {
 		initializeCSRF().catch((error) => {
-			console.warn("[AppProviders] CSRF initialization warning:", error);
+			logger.warn("[AppProviders] CSRF initialization warning:", error);
 			// Don't throw - CSRF is optional in development
 		});
 	}, []);
@@ -60,7 +61,7 @@ function WebSocketInitializer() {
 				const token = await getAccessToken();
 				return token || null;
 			} catch (error) {
-				console.error("[WebSocket] Failed to get access token:", error);
+				logger.error("[WebSocket] Failed to get access token:", error);
 				return null;
 			}
 		};
@@ -76,7 +77,7 @@ function WebSocketInitializer() {
 				try {
 					await connect();
 				} catch (error) {
-					console.error("[WebSocketInitializer] Failed to connect:", error);
+					logger.error("[WebSocketInitializer] Failed to connect:", error);
 				}
 			};
 			connectAsync();
@@ -88,22 +89,41 @@ function WebSocketInitializer() {
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
 	// Read environment variables using bracket notation for index signatures
-	const workosClientId = import.meta.env["VITE_WORKOS_CLIENT_ID"] as
+	const workosClientId = import.meta.env['VITE_WORKOS_CLIENT_ID'] as
 		| string
 		| undefined;
-	// NOTE: apiHostname removed - SDK will use default api.workos.com
-	// Only set apiHostname if you have a custom Authentication API domain
-	// The VITE_WORKOS_API_HOSTNAME env var is for custom API domains, not AuthKit hosted UI
+	const workosAuthDomain = import.meta.env['VITE_WORKOS_AUTH_DOMAIN'] as
+		| string
+		| undefined;
+
+	/**
+	 * Production Setup Required for HttpOnly Cookies:
+	 *
+	 * 1. Set up custom authentication domain (e.g., auth.tracertm.com)
+	 * 2. Configure VITE_WORKOS_AUTH_DOMAIN in environment
+	 * 3. Ensure HTTPS is enabled (required for secure cookies)
+	 *
+	 * Development:
+	 * - devMode={true} allows localStorage (no custom domain needed)
+	 * - Works with http://localhost
+	 * - Automatically enabled when import.meta.env.DEV is true
+	 */
 
 	// Debug: Log if client ID is found (only in dev)
 	if (import.meta.env.DEV) {
-		console.log(
+		logger.info(
 			"[AppProviders] WorkOS Client ID:",
 			workosClientId ? "Found" : "Missing",
 		);
-		console.log(
-			"[AppProviders] Using default WorkOS API endpoints (api.workos.com)",
+		logger.info(
+			"[AppProviders] Token Storage:",
+			import.meta.env.DEV ? "localStorage (devMode)" : "HttpOnly Cookies",
 		);
+		if (!import.meta.env.DEV && !workosAuthDomain) {
+			logger.warn(
+				"[AppProviders] Production mode requires VITE_WORKOS_AUTH_DOMAIN for HttpOnly cookies",
+			);
+		}
 	}
 
 	const content = (
@@ -118,22 +138,39 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 	// CRITICAL: Always wrap with AuthKitProvider if client ID exists
 	// This ensures useAuth hook is available in all components
 	if (workosClientId && workosClientId.trim() !== "") {
-		// WorkOS React SDK configuration
+		// WorkOS React SDK configuration with HttpOnly cookie support
 		// redirectUri should be set on AuthKitProvider, not passed to signIn()
-		const providerProps: { clientId: string; redirectUri?: string } = {
+		const providerProps: {
+			clientId: string;
+			redirectUri?: string;
+			devMode?: boolean;
+			apiHostname?: string;
+		} = {
 			clientId: workosClientId,
+			// Development: Use localStorage via devMode (no custom domain needed)
+			// Production: Use HttpOnly cookies via custom auth domain
+			devMode: import.meta.env.DEV,
 		};
+
+		// Production: Set custom auth domain for HttpOnly cookie storage
+		// Only set if we're in production and have a custom domain configured
+		if (!import.meta.env.DEV && workosAuthDomain) {
+			providerProps.apiHostname = workosAuthDomain;
+		}
 
 		// Set redirectUri on provider - this is used when constructing sign-in/sign-up URLs
 		// Must match EXACTLY an entry in WorkOS Dashboard Redirect URIs list
+		// Points to /auth/callback route which handles OAuth callback
 		if (typeof window !== "undefined") {
 			providerProps.redirectUri = `${window.location.origin}/auth/callback`;
 		}
 
 		if (import.meta.env.DEV) {
-			console.log("[AppProviders] AuthKitProvider props:", {
-				clientId: providerProps.clientId?.substring(0, 20) + "...",
+			logger.info("[AppProviders] AuthKitProvider props:", {
+				clientId: `${providerProps.clientId?.substring(0, 20)}...`,
 				redirectUri: providerProps.redirectUri,
+				devMode: providerProps.devMode,
+				apiHostname: providerProps.apiHostname || "(default: api.workos.com)",
 			});
 		}
 
@@ -147,7 +184,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
 	// If WorkOS is not configured, show error in dev, return content in prod
 	if (import.meta.env.DEV) {
-		console.warn(
+		logger.warn(
 			"[AppProviders] VITE_WORKOS_CLIENT_ID is not set. AuthKit features will not work.",
 		);
 	}

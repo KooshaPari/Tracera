@@ -1,5 +1,4 @@
 import type React from "react";
-import { useMemo } from "react";
 
 export interface ProgressRingProps {
 	percentage: number;
@@ -69,7 +68,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 						stroke={ringColor}
 						fill="none"
 						strokeWidth={config.strokeWidth}
-						strokeDasharray={circumference + " " + circumference}
+						strokeDasharray={`${circumference} ${circumference}`}
 						strokeDashoffset={offset}
 						strokeLinecap="round"
 						r={normalizedRadius}

@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { memo, useCallback, useState } from "react";
+import { render } from "@testing-library/react";
+import { memo, useCallback } from "react";
+import { describe, expect, it, vi } from "vitest";
 
 describe("React Memoization Optimizations", () => {
 	describe("ItemCard Memoization", () => {
@@ -86,7 +85,7 @@ describe("React Memoization Optimizations", () => {
 
 		it("should use useCallback for drag handlers to maintain reference equality", async () => {
 			const handleDragStartSpy = vi.fn();
-			let callbackReference: Function | null = null;
+			let callbackReference: ((item: unknown) => void) | null = null;
 
 			function TestComponent() {
 				const handleDragStart = useCallback((item: any) => {

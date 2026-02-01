@@ -2,9 +2,10 @@
 GitHub Project model for linking TraceRTM projects to GitHub Projects v2.
 """
 
+from sqlalchemy import Boolean, ForeignKey, Index, String
 from typing import Any, Optional
 
-from sqlalchemy import Boolean, ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin, generate_uuid
@@ -29,7 +30,7 @@ class GitHubProject(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
     
     # GitHub repository info
@@ -38,7 +39,7 @@ class GitHubProject(Base, TimestampMixin):
     github_repo_name: Mapped[str] = mapped_column(String(255), nullable=False)
     
     # GitHub Project v2 info
-    github_project_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    github_project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
     github_project_number: Mapped[int] = mapped_column(nullable=False)
     
     # Sync configuration

@@ -3,8 +3,8 @@
  * Displays IBM Orthogonal Defect Classification for defects
  */
 
-import { cn } from "@/lib/utils";
 import type { ODCDefectType, ODCTrigger } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface ODCClassificationCardProps {
 	defectType: ODCDefectType;

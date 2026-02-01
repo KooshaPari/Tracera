@@ -29,6 +29,16 @@ repos:
     hooks:
       - id: basedpyright
 
+  # Tach - Architecture / dependency boundaries (https://github.com/tach-org/tach)
+  - repo: local
+    hooks:
+      - id: tach-check
+        name: tach check (Python module boundaries)
+        entry: tach check
+        language: system
+        pass_filenames: false
+        files: ^(src/|tach\.toml)
+
   # Bandit - Security checks
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
@@ -37,12 +47,15 @@ repos:
         args: [-c, .bandit]
         exclude: ^tests/
 
-  # Semgrep - Advanced security scanning
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.45.0
+  # Semgrep - use system binary (brew install semgrep); do not use the Python module
+  # Community preset p/security-audit + project rules from .semgrep.yml
+  - repo: local
     hooks:
       - id: semgrep
-        args: [--config=p/security-audit]
+        name: semgrep
+        entry: semgrep --config=p/security-audit --config=.semgrep.yml
+        language: system
+        pass_filenames: false
 
   # Trailing whitespace
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -76,6 +89,33 @@ repos:
     hooks:
       - id: prettier
         types_or: [yaml, json, markdown]
+
+  # Go - format and lint (requires: go, golangci-lint)
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt (backend)
+        entry: gofmt -s -w
+        language: system
+        types: [go]
+        files: ^backend/
+
+      - id: golangci-lint
+        name: golangci-lint (backend)
+        entry: bash -c 'cd backend && golangci-lint run --fix'
+        language: system
+        pass_filenames: false
+        files: ^backend/.*\.go$
+
+  # Frontend - Biome (lint + format)
+  - repo: local
+    hooks:
+      - id: biome-frontend
+        name: biome (frontend)
+        entry: bash -c 'cd frontend && bun run check:fix'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(js|ts|tsx|jsx|json|mjs|cjs)$
 
 # Global settings
 default_language_version:

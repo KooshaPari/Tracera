@@ -2,6 +2,7 @@
  * Authentication utility functions and helpers
  */
 
+import { AUTH_ROUTES } from "@/config/constants";
 import { useAuthStore } from "@/stores/authStore";
 
 /**
@@ -9,10 +10,10 @@ import { useAuthStore } from "@/stores/authStore";
  */
 export function isPublicRoute(pathname: string): boolean {
 	const publicRoutes = [
-		"/auth/login",
-		"/auth/register",
-		"/auth/reset-password",
-		"/auth/callback",
+		AUTH_ROUTES.LOGIN,
+		AUTH_ROUTES.REGISTER,
+		AUTH_ROUTES.RESET_PASSWORD,
+		AUTH_ROUTES.CALLBACK,
 	];
 	return publicRoutes.some((route) => pathname.startsWith(route));
 }
@@ -35,11 +36,14 @@ function isAuthRoute(url: string): boolean {
  * Get the redirect URL after login
  * Filters out auth routes and invalid URLs to prevent redirect loops
  */
+/** Default destination after login (dashboard). */
+export const DEFAULT_RETURN_TO = "/home";
+
 export function getReturnTo(
 	searchParams: URLSearchParams | Record<string, string> | string | undefined,
 ): string {
 	if (!searchParams) {
-		return "/";
+		return DEFAULT_RETURN_TO;
 	}
 
 	let returnTo: string | null = null;
@@ -52,10 +56,10 @@ export function getReturnTo(
 			const params = new URLSearchParams(searchParams);
 			returnTo = params.get("returnTo");
 		} catch {
-			return "/";
+			return DEFAULT_RETURN_TO;
 		}
 	} else if (typeof searchParams === "object" && searchParams !== null) {
-		const returnToValue = (searchParams as Record<string, unknown>)["returnTo"];
+		const returnToValue = (searchParams as Record<string, unknown>).returnTo;
 		if (typeof returnToValue === "string") {
 			returnTo = returnToValue;
 		}
@@ -63,17 +67,17 @@ export function getReturnTo(
 
 	// Validate returnTo
 	if (!returnTo || typeof returnTo !== "string") {
-		return "/";
+		return DEFAULT_RETURN_TO;
 	}
 
 	// Filter out invalid values
 	if (returnTo.includes("[object Object]")) {
-		return "/";
+		return DEFAULT_RETURN_TO;
 	}
 
 	// Filter out auth routes to prevent redirect loops
 	if (isAuthRoute(returnTo)) {
-		return "/";
+		return DEFAULT_RETURN_TO;
 	}
 
 	// Extract pathname if it's a full URL (remove query params that might include auth codes)
@@ -83,7 +87,7 @@ export function getReturnTo(
 
 		// If pathname is an auth route, ignore it
 		if (isAuthRoute(pathname)) {
-			return "/";
+			return DEFAULT_RETURN_TO;
 		}
 
 		// Return just the pathname (ignore query params to avoid including auth codes)
@@ -91,10 +95,10 @@ export function getReturnTo(
 	} catch {
 		// If URL parsing fails, check if it's an auth route
 		if (isAuthRoute(returnTo)) {
-			return "/";
+			return DEFAULT_RETURN_TO;
 		}
 		// Return as-is if it's a valid path
-		return returnTo.startsWith("/") ? returnTo : "/";
+		return returnTo.startsWith("/") ? returnTo : DEFAULT_RETURN_TO;
 	}
 }
 

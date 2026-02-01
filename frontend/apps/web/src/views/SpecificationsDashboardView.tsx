@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { SpecificationSummary } from "@tracertm/types";
 import {
 	Button,
 	Card,
@@ -7,12 +8,11 @@ import {
 	CardTitle,
 	Skeleton,
 } from "@tracertm/ui";
-import { FileText, Shield, BookOpen, ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, FileText, Shield } from "lucide-react";
 import { useMemo } from "react";
 import { SpecificationDashboard } from "@/components/specifications/dashboard/SpecificationDashboard";
-import { useADRs, useContracts, useFeatures } from "@/hooks/useSpecifications";
 import { useItems } from "@/hooks/useItems";
-import type { SpecificationSummary } from "@tracertm/types";
+import { useADRs, useContracts, useFeatures } from "@/hooks/useSpecifications";
 
 interface SpecificationsDashboardViewProps {
 	projectId: string;
@@ -189,7 +189,7 @@ export function SpecificationsDashboardView({
 		};
 
 		return result;
-	}, [adrs, contracts, features]);
+	}, [adrs, contracts, features, projectId]);
 
 	// Generate coverage data
 	const coverageData = useMemo(() => {
@@ -321,6 +321,18 @@ export function SpecificationsDashboardView({
 						className="gap-2"
 					>
 						<BookOpen className="h-4 w-4" /> Features
+					</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() =>
+							navigate({
+								to: "/projects/$projectId/scenario-activity",
+								params: { projectId },
+							})
+						}
+					>
+						Scenario Activity
 					</Button>
 				</div>
 			</div>

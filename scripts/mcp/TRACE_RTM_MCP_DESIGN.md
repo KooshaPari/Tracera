@@ -169,7 +169,7 @@ Future remote/multi-tenant:
 ## 8. Implementation Phases
 
 1. **Phase 1: Core MCP Server Skeleton**
-   - Create `tracertm_mcp_server.py` with FastMCP 3.0.0b1
+   - Use unified server in `src/tracertm/mcp/server.py` (FastMCP 3.x)
    - Implement minimal tools: `list_projects`, `select_project`, `create_item`, `create_link`
 
 2. **Phase 2: Traceability & Health**
@@ -183,4 +183,3 @@ Future remote/multi-tenant:
 4. **Phase 4: Production Features**
    - Enable caching, storage-backed state, and optional OAuth
    - Add observability (logging, metrics middleware)
-

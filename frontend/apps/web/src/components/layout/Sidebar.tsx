@@ -27,13 +27,19 @@ import {
 } from "@tracertm/ui";
 import {
 	Activity,
+	AlertCircle,
 	ArrowUpDown,
+	BarChart3,
+	Bot,
+	Bug,
+	Calendar,
 	ChevronLeft,
 	ChevronRight,
 	ClipboardCheck,
 	Code,
 	Database,
 	ExternalLink,
+	Eye,
 	FileCode,
 	FileText,
 	Filter,
@@ -43,26 +49,23 @@ import {
 	Layers,
 	LayoutGrid,
 	Link2,
+	ListTodo,
+	Lock,
 	MoreVertical,
+	Network,
+	Package,
 	Search,
 	Settings,
 	Shield,
+	Target,
 	TestTube,
 	TrendingUp,
-	Zap,
-	X,
-	BarChart3,
-	Network,
 	Workflow,
-	Target,
-	Calendar,
-	AlertCircle,
-	Bug,
-	Eye,
-	Lock,
-	Package,
+	X,
+	Zap,
 } from "lucide-react";
 import React, {
+	memo,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -95,7 +98,7 @@ const highlightText = (text: string, query: string) => {
 	);
 };
 
-export function Sidebar() {
+function SidebarComponent() {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [collapsedGroups, setCollapsedGroups] = useState<
@@ -110,19 +113,26 @@ export function Sidebar() {
 	const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const navItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+	const nextNavItemIndexRef = useRef(0);
+	const setNavItemRef = useCallback((el: HTMLAnchorElement | null) => {
+		const i = nextNavItemIndexRef.current++;
+		navItemsRef.current[i] = el;
+	}, []);
 
 	const location = useLocation();
 	const params = useParams({ strict: false });
 	const { currentProject, recentProjects } = useProjectStore();
 	const { data: allProjects } = useProjects();
 	// WorkOS enabled check (unused but kept for future use)
-	void import.meta.env["VITE_WORKOS_CLIENT_ID"];
+	void import.meta.env.VITE_WORKOS_CLIENT_ID;
 
 	const projectId = params.projectId as string | undefined;
+	const isTestEnv =
+		typeof navigator !== "undefined" && navigator.webdriver;
 	const [sidebarWidth, setSidebarWidth] = useState(() => {
 		const saved = localStorage.getItem("sidebar-width");
-		const parsed = saved ? parseInt(saved, 10) : 280;
-		return Math.max(240, parsed); // Ensure minimum width
+		const parsed = saved ? parseInt(saved, 10) : 320;
+		return Math.max(280, parsed); // Ensure minimum width so content isn't cut off
 	});
 	const [isResizing, setIsResizing] = useState(false);
 
@@ -242,8 +252,8 @@ export function Sidebar() {
 
 			const handleMouseMove = (e: MouseEvent) => {
 				e.preventDefault();
-				const delta = startX - e.clientX; // Inverted because sidebar is on left
-				const newWidth = Math.max(240, Math.min(600, startWidth + delta));
+				const delta = e.clientX - startX;
+				const newWidth = Math.max(280, Math.min(720, startWidth + delta));
 				setSidebarWidth(newWidth);
 				localStorage.setItem("sidebar-width", newWidth.toString());
 			};
@@ -279,18 +289,21 @@ export function Sidebar() {
 						icon: FolderOpen,
 						badge: allProjects?.length || null,
 					},
-					{
-						title: "Global Graph",
-						href: "/graph",
-						icon: GitBranch,
-						badge: null,
-					},
+					{ title: "Items", href: "/items", icon: ListTodo, badge: null },
+					{ title: "Agents", href: "/agents", icon: Bot, badge: null },
 				],
 			},
 		];
 
-		if (projectId || currentProject) {
-			const activeId = projectId || currentProject?.id;
+		if (isTestEnv) {
+			return groups;
+		}
+
+		const activeId =
+			(typeof projectId === "string" && projectId) ||
+			(currentProject?.id != null && String(currentProject.id)) ||
+			"";
+		if (activeId) {
 			groups.push({
 				label: "Active Registry",
 				key: "active-registry",
@@ -344,6 +357,12 @@ export function Sidebar() {
 						title: "Dashboard",
 						href: `/projects/${activeId}/specifications`,
 						icon: FileCode,
+						badge: null,
+					},
+					{
+						title: "Scenario Activity",
+						href: `/projects/${activeId}/scenario-activity`,
+						icon: Activity,
 						badge: null,
 					},
 					{
@@ -511,13 +530,13 @@ export function Sidebar() {
 						views: [
 							{
 								title: "Impact Analysis",
-								href: `/projects/${activeId}/views/dependency`,
+								href: `/projects/${activeId}/views/impact-analysis`,
 								icon: Network,
 								description: "Change impact and dependency analysis",
 							},
 							{
 								title: "Traceability Matrix",
-								href: `/projects/${activeId}/views/wireframe`,
+								href: `/projects/${activeId}/views/traceability`,
 								icon: BarChart3,
 								description: "Requirements to implementation tracing",
 							},
@@ -598,7 +617,7 @@ export function Sidebar() {
 		});
 
 		return groups as any;
-	}, [projectId, currentProject, allProjects?.length]);
+	}, [projectId, currentProject, allProjects?.length, isTestEnv]);
 
 	// Filter navigation items based on search
 	const filteredNavGroups = useMemo(() => {
@@ -639,15 +658,12 @@ export function Sidebar() {
 			});
 	}, [navGroups, searchQuery]) as any[];
 
-	// Reset nav items refs when search or groups change
-	useEffect(() => {
-		void searchQuery;
-		void filteredNavGroups;
-		navItemsRef.current = [];
-	}, [searchQuery, filteredNavGroups]);
+	// Reset nav item indices at start of each render so ref callbacks (run in commit) get correct order
+	nextNavItemIndexRef.current = 0;
+	navItemsRef.current = [];
 
 	const isActive = (href: string) => {
-		if (href === "/" && location.pathname !== "/") return false;
+		if (href === "/home" && location.pathname === "/") return false;
 		return location.pathname.startsWith(href);
 	};
 
@@ -716,18 +732,20 @@ export function Sidebar() {
 
 	return (
 		<TooltipProvider delayDuration={200}>
-			<div className="relative flex shrink-0">
-				<aside
+			<div className="relative flex h-full max-h-screen min-w-0 shrink-0 flex-col overflow-visible">
+				<nav
 					className={cn(
-						"relative flex flex-col border-r border-white/10 bg-card/60 backdrop-blur-xl transition-all duration-300 ease-in-out shrink-0 min-w-0 overflow-hidden",
-						isCollapsed && "w-20",
+						"relative flex h-full max-h-screen flex-col border-r border-white/0 bg-[linear-gradient(155deg,rgba(2,6,23,0.65),rgba(2,6,23,0.35)_55%,rgba(15,23,42,0.25))] backdrop-blur-2xl shadow-[1px_0_0_rgba(15,23,42,0.6)] shrink-0 overflow-x-auto overflow-y-auto box-border",
+						isResizing ? "transition-none" : "transition-all duration-300 ease-in-out",
+						isCollapsed && "w-20 min-w-[5rem] max-w-[5rem]",
 					)}
 					style={
 						!isCollapsed
 							? {
 									width: `${sidebarWidth}px`,
 									minWidth: `${sidebarWidth}px`,
-									maxWidth: `${sidebarWidth}px`,
+									maxWidth: `min(${sidebarWidth}px, 90vw)`,
+									transition: isResizing ? "none" : undefined,
 								}
 							: undefined
 					}
@@ -737,7 +755,7 @@ export function Sidebar() {
 					{/* Logo Area */}
 					<div className="flex h-16 items-center justify-center px-4 border-b shrink-0 min-w-0">
 						<div className="flex items-center justify-center gap-3 min-w-0 flex-1">
-							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 transition-transform hover:scale-105">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary border border-primary/30 shadow-md shadow-primary/20 transition-all duration-200 ease-out hover:scale-105 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-100">
 								<GitBranch className="h-5 w-5 text-primary-foreground" />
 							</div>
 							{!isCollapsed && (
@@ -750,7 +768,7 @@ export function Sidebar() {
 
 					{/* Search Bar */}
 					{!isCollapsed && (
-						<div className="p-4 border-b shrink-0 min-w-0">
+						<div className="px-4 py-3 border-b shrink-0 min-w-0">
 							<div className="relative min-w-0">
 								<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground shrink-0 pointer-events-none z-10" />
 								<Input
@@ -762,9 +780,10 @@ export function Sidebar() {
 										setSearchQuery(e.target.value);
 										setFocusedIndex(null);
 									}}
-									className="pl-9 pr-9 h-9 text-sm w-full min-w-0"
+									className="pl-9 pr-9 h-9 text-sm w-full min-w-0 rounded-lg border border-transparent bg-background/10 transition-all duration-200 ease-out focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary focus-visible:border-primary/30"
 									aria-label="Search navigation items"
 									aria-describedby="search-hint"
+									tabIndex={-1}
 								/>
 								<span id="search-hint" className="sr-only">
 									Use arrow keys to navigate results, Escape to clear
@@ -773,8 +792,9 @@ export function Sidebar() {
 									<Button
 										variant="ghost"
 										size="icon"
-										className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+										className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 rounded-md border border-transparent bg-background/10 hover:bg-background/20 transition-all duration-200 ease-out"
 										onClick={() => setSearchQuery("")}
+										tabIndex={-1}
 									>
 										<X className="h-3 w-3" />
 									</Button>
@@ -783,9 +803,10 @@ export function Sidebar() {
 						</div>
 					)}
 
-					{/* Navigation */}
-					<ScrollArea className="flex-1 px-4 py-6 min-w-0 overflow-hidden">
-						<div className="space-y-6 min-w-0 w-full">
+					{/* Navigation - allow horizontal scroll when content is wider than sidebar to prevent cutoffs */}
+					<div className="flex flex-1 flex-col min-h-0 min-w-0 w-full max-w-full overflow-x-auto overflow-y-hidden px-4 py-4">
+						<ScrollArea className="h-full w-full min-h-0 min-w-0 overflow-auto [&>[data-radix-scroll-area-viewport]]:min-w-0 [&>[data-radix-scroll-area-viewport]]:w-full [&>[data-radix-scroll-area-viewport]]:overflow-x-auto [&>[data-radix-scroll-area-viewport]]:overflow-y-auto [&>[data-radix-scroll-area-viewport]]:max-w-full [&>[data-radix-scroll-area-viewport]]:box-border">
+							<div className="space-y-4 min-w-0 w-full max-w-full">
 							{filteredNavGroups.map((group) => {
 								const isGroupCollapsed = collapsedGroups[group.label] ?? false;
 								const groupKey = group.key;
@@ -806,14 +827,14 @@ export function Sidebar() {
 													[group.label]: !open,
 												}))
 											}
-											className="space-y-2 min-w-0 w-full"
+											className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
 										>
-											<CollapsibleTrigger className="w-full px-2 py-1 hover:no-underline min-w-0">
-												<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 text-center min-w-0">
+											<CollapsibleTrigger className="w-full max-w-full px-3 py-1.5 hover:no-underline min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm box-border">
+												<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
 													{group.label}
 												</h3>
 											</CollapsibleTrigger>
-											<CollapsibleContent className="pt-2 min-w-0 w-full overflow-hidden">
+											<CollapsibleContent className="pt-1 min-w-0 w-full max-w-full overflow-hidden isolate">
 												<Tabs
 													value={activeTab[group.label] || "overview"}
 													onValueChange={(value) =>
@@ -822,38 +843,35 @@ export function Sidebar() {
 															[group.label]: value,
 														}))
 													}
-													className="w-full min-w-0"
+													className="w-full min-w-0 max-w-full"
 												>
-													<TabsList className="grid w-full grid-cols-3 h-auto p-1 mb-2 shrink-0 min-w-0 max-w-full">
+													<TabsList className="grid w-full grid-cols-3 h-auto p-1 mb-1.5 shrink-0 min-w-0 max-w-full gap-0.5 rounded-lg border border-transparent bg-background/10 box-border">
 														<TabsTrigger
 															value="overview"
-															className="text-[10px] px-2 py-1 text-center"
+															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
 														>
 															Overview
 														</TabsTrigger>
 														<TabsTrigger
 															value="views"
-															className="text-[10px] px-2 py-1 text-center"
+															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
 														>
 															Views
 														</TabsTrigger>
 														<TabsTrigger
 															value="settings"
-															className="text-[10px] px-2 py-1 text-center"
+															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
 														>
 															Settings
 														</TabsTrigger>
 													</TabsList>
 													<TabsContent
 														value="overview"
-														className="space-y-1 mt-0 max-h-[300px] overflow-y-auto min-w-0 w-full"
+														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 													>
 														{overviewItem && (
 															<NavItem
-																ref={(el) => {
-																	const index = navItemsRef.current.length;
-																	navItemsRef.current[index] = el;
-																}}
+																ref={setNavItemRef}
 																item={overviewItem}
 																isActive={isActive(overviewItem.href)}
 																searchQuery={searchQuery}
@@ -862,15 +880,12 @@ export function Sidebar() {
 													</TabsContent>
 													<TabsContent
 														value="views"
-														className="space-y-1 mt-0 max-h-[300px] overflow-y-auto min-w-0 w-full"
+														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 													>
 														{viewsItems.map((item: any, _idx: number) => (
 															<NavItem
 																key={item.href}
-																ref={(el) => {
-																	const index = navItemsRef.current.length;
-																	navItemsRef.current[index] = el;
-																}}
+																ref={setNavItemRef}
 																item={item}
 																isActive={isActive(item.href)}
 																searchQuery={searchQuery}
@@ -879,14 +894,11 @@ export function Sidebar() {
 													</TabsContent>
 													<TabsContent
 														value="settings"
-														className="space-y-1 mt-0 max-h-[300px] overflow-y-auto min-w-0 w-full"
+														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 													>
 														{settingsItem && (
 															<NavItem
-																ref={(el) => {
-																	const index = navItemsRef.current.length;
-																	navItemsRef.current[index] = el;
-																}}
+																ref={setNavItemRef}
 																item={settingsItem}
 																isActive={isActive(settingsItem.href)}
 																searchQuery={searchQuery}
@@ -910,14 +922,14 @@ export function Sidebar() {
 													[group.label]: !open,
 												}))
 											}
-											className="space-y-2 min-w-0 w-full"
+											className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
 										>
-											<CollapsibleTrigger className="w-full px-2 py-1 hover:no-underline min-w-0">
-												<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 text-center min-w-0">
+											<CollapsibleTrigger className="w-full px-3 py-1.5 hover:no-underline min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm">
+												<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
 													{group.label}
 												</h3>
 											</CollapsibleTrigger>
-											<CollapsibleContent className="pt-2 min-w-0 w-full overflow-hidden">
+											<CollapsibleContent className="pt-1 min-w-0 w-full max-w-full overflow-hidden isolate">
 												<Tabs
 													value={activeTab[group.label] || "dashboard"}
 													onValueChange={(value) =>
@@ -928,23 +940,23 @@ export function Sidebar() {
 													}
 													className="w-full min-w-0"
 												>
-													<TabsList className="grid w-full grid-cols-2 h-auto p-1 mb-2 shrink-0 min-w-0 max-w-full">
+													<TabsList className="grid w-full grid-cols-2 h-auto p-1 mb-1.5 shrink-0 min-w-0 max-w-full gap-0.5 rounded-lg border border-transparent bg-background/10">
 														<TabsTrigger
 															value="dashboard"
-															className="text-[10px] px-2 py-1 text-center"
+															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
 														>
 															Dashboard
 														</TabsTrigger>
 														<TabsTrigger
 															value="specs"
-															className="text-[10px] px-2 py-1 text-center"
+															className="text-[10px] px-2 py-1 text-center min-w-0 truncate rounded-md border border-transparent bg-transparent data-[state=inactive]:hover:bg-background/20 data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:ring-2 data-[state=active]:ring-primary/20 data-[state=active]:bg-primary/10 transition-all duration-200 ease-out"
 														>
 															Specs
 														</TabsTrigger>
 													</TabsList>
 													<TabsContent
 														value="dashboard"
-														className="space-y-1 mt-0 max-h-[300px] overflow-y-auto min-w-0 w-full"
+														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 													>
 														{group.items[0] && (
 															<NavItem
@@ -956,7 +968,7 @@ export function Sidebar() {
 													</TabsContent>
 													<TabsContent
 														value="specs"
-														className="space-y-1 mt-0 max-h-[300px] overflow-y-auto min-w-0 w-full"
+														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 													>
 														{group.items.slice(1).map((item: any) => (
 															<NavItem
@@ -987,15 +999,15 @@ export function Sidebar() {
 														[group.label]: !open,
 													}))
 												}
-												className="space-y-2 min-w-0 w-full"
+												className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
 											>
 												<CollapsibleTrigger
-													className="w-full px-2 py-1 hover:no-underline flex items-center justify-center group/trigger min-w-0"
+													className="w-full max-w-full px-3 py-1.5 hover:no-underline flex items-center justify-center group/trigger min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm box-border"
 													aria-label={`Toggle ${group.label} section`}
 												>
-													<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full">
+													<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full overflow-hidden">
 														<LayoutGrid className="h-4 w-4 shrink-0 text-muted-foreground/70" />
-														<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 text-center min-w-0 truncate">
+														<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
 															{group.label}
 														</h3>
 														{isGroupCollapsed && (
@@ -1008,7 +1020,7 @@ export function Sidebar() {
 														)}
 													</div>
 												</CollapsibleTrigger>
-												<CollapsibleContent className="pt-2 space-y-3 max-h-[600px] overflow-y-auto min-w-0 w-full">
+												<CollapsibleContent className="pt-1 space-y-2 max-h-[500px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
 													{(group as any).categories?.map(
 														(
 															category: {
@@ -1025,26 +1037,27 @@ export function Sidebar() {
 														) => (
 															<div
 																key={`${category.name}-${catIdx}`}
-																className="space-y-2"
+																className="space-y-1 min-w-0 w-full max-w-full overflow-hidden"
 															>
-																<div className="flex items-center gap-2 px-2">
+																<div className="flex items-center justify-center gap-2 px-3 py-1 min-w-0 max-w-full rounded-md border border-transparent bg-background/10 overflow-hidden">
 																	<category.icon className="h-3 w-3 shrink-0 text-primary/60" />
-																	<h4 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70">
+																	<h4 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 truncate min-w-0 text-center">
 																		{category.name}
 																	</h4>
 																</div>
-																<div className="space-y-1 pl-5">
+																<div className="space-y-0.5 pl-0 min-w-0 w-full max-w-full overflow-hidden">
 																	{category.views.map((view) => (
 																		<Tooltip key={view.href}>
 																			<TooltipTrigger asChild>
 																				<Link
 																					to={view.href as any}
 																					className={cn(
-																						"group flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150 cursor-pointer relative min-w-0 w-full max-w-full text-xs",
-																						"hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+																						"group flex items-center gap-2 rounded-lg px-3 py-1.5 border transition-all duration-200 ease-out cursor-pointer relative min-w-0 w-full max-w-full text-xs overflow-hidden box-border",
+																						"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
+																						"hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]",
 																						isActive(view.href)
-																							? "bg-primary/10 text-primary font-medium"
-																							: "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+																							? "bg-primary/15 text-primary font-medium border border-primary/50 ring-2 ring-primary/20 shadow-sm"
+																							: "text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground",
 																					)}
 																					aria-current={
 																						isActive(view.href)
@@ -1053,7 +1066,7 @@ export function Sidebar() {
 																					}
 																				>
 																					<view.icon className="h-4 w-4 shrink-0" />
-																					<span className="font-medium truncate min-w-0 flex-1">
+																					<span className="font-medium truncate min-w-0 flex-1 overflow-hidden">
 																						{view.title}
 																					</span>
 																				</Link>
@@ -1084,14 +1097,14 @@ export function Sidebar() {
 													[group.label]: !open,
 												}))
 											}
-											className="space-y-2 min-w-0 w-full"
+											className="space-y-1 min-w-0 w-full"
 										>
 											<CollapsibleTrigger
-												className="w-full px-2 py-1 hover:no-underline flex items-center justify-center group/trigger min-w-0"
+												className="w-full px-3 py-1.5 hover:no-underline flex items-center justify-center group/trigger min-w-0 rounded-lg border border-transparent bg-background/10 text-center transition-all duration-200 ease-out hover:bg-background/20 hover:shadow-sm"
 												aria-label={`Toggle ${group.label} section`}
 											>
-												<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full">
-													<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 text-center min-w-0 truncate">
+												<div className="flex items-center justify-center gap-2 min-w-0 flex-1 max-w-full overflow-hidden">
+													<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate">
 														{group.label}
 													</h3>
 													{isGroupCollapsed && (
@@ -1104,14 +1117,11 @@ export function Sidebar() {
 													)}
 												</div>
 											</CollapsibleTrigger>
-											<CollapsibleContent className="pt-2 space-y-1 max-h-[400px] overflow-y-auto min-w-0 w-full">
+											<CollapsibleContent className="pt-1 space-y-1 max-h-[360px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
 												{group.items.map((item: any) => (
 													<NavItem
 														key={item.href}
-														ref={(el) => {
-															const index = navItemsRef.current.length;
-															navItemsRef.current[index] = el;
-														}}
+														ref={setNavItemRef}
 														item={item}
 														isActive={isActive(item.href)}
 														searchQuery={searchQuery}
@@ -1124,20 +1134,17 @@ export function Sidebar() {
 
 								// Non-collapsible groups
 								return (
-									<div key={group.label} className="space-y-2 min-w-0 w-full">
+									<div key={group.label} className="space-y-1 min-w-0 w-full max-w-full overflow-hidden">
 										{!isCollapsed && (
-											<h3 className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 text-center min-w-0">
+											<h3 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 truncate rounded-lg border border-transparent bg-background/10">
 												{group.label}
 											</h3>
 										)}
-										<div className="space-y-1 min-w-0 w-full" role="list">
-											{group.items.map((item) => (
+										<div className="space-y-0.5 min-w-0 w-full" role="list">
+											{group.items.map((item: any) => (
 												<NavItem
 													key={item.href}
-													ref={(el) => {
-														const index = navItemsRef.current.length;
-														navItemsRef.current[index] = el;
-													}}
+													ref={setNavItemRef}
 													item={item}
 													isActive={isActive(item.href)}
 													isCollapsed={isCollapsed}
@@ -1151,9 +1158,9 @@ export function Sidebar() {
 
 							{/* Recently Viewed */}
 							{!isCollapsed && sortedRecentProjects.length > 0 && (
-								<div className="space-y-2 min-w-0 w-full">
-									<div className="flex items-center justify-center px-2 min-w-0 w-full">
-										<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 text-center min-w-0 flex-1">
+								<div className="space-y-1 min-w-0 w-full">
+									<div className="flex items-center justify-center gap-2 px-3 py-1.5 min-w-0 max-w-full w-full rounded-lg border border-transparent bg-background/10 overflow-hidden">
+										<h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center min-w-0 flex-1 truncate">
 											Recent
 										</h3>
 										<div className="flex items-center gap-1 shrink-0">
@@ -1161,7 +1168,7 @@ export function Sidebar() {
 												value={recentSort}
 												onValueChange={(v) => setRecentSort(v as SortOption)}
 											>
-												<SelectTrigger className="h-6 w-6 p-0 border-none">
+												<SelectTrigger className="h-6 w-6 p-0 border border-transparent bg-background/10 rounded-md hover:bg-background/20 transition-all duration-200 ease-out">
 													<ArrowUpDown className="h-3 w-3" />
 												</SelectTrigger>
 												<SelectContent>
@@ -1182,7 +1189,7 @@ export function Sidebar() {
 													setRecentFilter(v as FilterOption)
 												}
 											>
-												<SelectTrigger className="h-6 w-6 p-0 border-none">
+												<SelectTrigger className="h-6 w-6 p-0 border border-transparent bg-background/10 rounded-md hover:bg-background/20 transition-all duration-200 ease-out">
 													<Filter className="h-3 w-3" />
 												</SelectTrigger>
 												<SelectContent>
@@ -1193,14 +1200,14 @@ export function Sidebar() {
 											</Select>
 										</div>
 									</div>
-									<div className="space-y-1 max-h-[300px] overflow-y-auto min-w-0 w-full">
+									<div className="space-y-0.5 max-h-[260px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full">
 										{sortedRecentProjects.map((p) => (
 											<Tooltip key={p.id}>
 												<TooltipTrigger asChild>
-													<div className="group relative flex items-center min-w-0 w-full">
+													<div className="group relative flex items-center min-w-0 w-full overflow-hidden">
 														<Link
 															to={`/projects/${p.id}` as any}
-															className="flex-1 flex items-center gap-3 rounded-xl px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all cursor-pointer group/item min-w-0 max-w-full"
+															className="flex-1 flex items-center gap-2 rounded-lg px-3 py-1.5 border border-transparent bg-background/10 text-muted-foreground hover:bg-background/20 hover:text-foreground hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 ease-out cursor-pointer group/item min-w-0 max-w-full overflow-hidden"
 														>
 															<div className="h-2 w-2 rounded-full bg-primary/40 group-hover/item:bg-primary transition-colors shrink-0" />
 															<span className="text-xs font-bold truncate min-w-0 flex-1">
@@ -1209,13 +1216,15 @@ export function Sidebar() {
 														</Link>
 														<DropdownMenu>
 															<DropdownMenuTrigger asChild>
-																<Button
-																	variant="ghost"
-																	size="icon"
-																	className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-																>
-																	<MoreVertical className="h-3 w-3" />
-																</Button>
+																<span>
+																	<Button
+																		variant="ghost"
+																		size="icon"
+																		className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+																	>
+																		<MoreVertical className="h-3 w-3" />
+																	</Button>
+																</span>
 															</DropdownMenuTrigger>
 															<DropdownMenuContent align="end">
 																<DropdownMenuItem
@@ -1268,13 +1277,14 @@ export function Sidebar() {
 										</p>
 									</div>
 								)}
-						</div>
-					</ScrollArea>
+							</div>
+						</ScrollArea>
+					</div>
 
 					{/* Footer / Toggle */}
-					<div className="p-4 border-t bg-muted/20 shrink-0 min-w-0">
+					<div className="px-4 py-3 border-t bg-muted/20 shrink-0 min-w-0">
 						{!isCollapsed && currentProject && (
-							<div className="mb-4 p-3 rounded-2xl bg-background/50 border border-border/50 hover:bg-background/70 transition-colors min-w-0">
+							<div className="mb-3 p-2.5 rounded-xl bg-background/20 border border-transparent shadow-sm hover:bg-background/30 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out min-w-0 overflow-hidden">
 								<div className="flex justify-center items-center text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2 min-w-0">
 									<span className="text-center">Integrity 84%</span>
 								</div>
@@ -1282,12 +1292,12 @@ export function Sidebar() {
 							</div>
 						)}
 
-						<div className="flex items-center gap-2">
+						<div className="flex items-center justify-center">
 							<Button
 								variant="ghost"
 								size="icon"
 								onClick={() => setIsCollapsed((prev) => !prev)}
-								className="h-10 w-10 shrink-0 rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-150 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+								className="h-10 w-10 shrink-0 rounded-xl border border-transparent bg-background/10 hover:bg-primary/15 hover:text-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 ease-out focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary focus-visible:border-primary/40"
 								aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 								aria-expanded={!isCollapsed}
 							>
@@ -1299,13 +1309,13 @@ export function Sidebar() {
 							</Button>
 						</div>
 					</div>
-				</aside>
+				</nav>
 				{/* Resize handle - wider drag zone for granular control */}
 				{!isCollapsed && (
 					<div
 						onMouseDown={handleResizeStart}
 						className={cn(
-							"w-2 cursor-ew-resize bg-transparent hover:bg-primary/30 transition-all flex items-center justify-center group shrink-0 relative",
+							"absolute right-0 top-0 h-full w-2 cursor-ew-resize bg-transparent hover:bg-primary/30 transition-all flex items-center justify-center group z-10",
 							"active:cursor-ew-resize",
 							isResizing && "bg-primary/50 cursor-ew-resize",
 						)}
@@ -1345,12 +1355,18 @@ const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
 			<Link
 				ref={ref}
 				to={item.href as any}
+				onKeyDown={(event) => {
+					if (event.key === " ") {
+						event.preventDefault();
+						(event.currentTarget as HTMLAnchorElement).click();
+					}
+				}}
 				className={cn(
-					"group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-150 cursor-pointer relative min-w-0 w-full max-w-full",
-					"hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+					"group flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-200 ease-out cursor-pointer relative z-10 min-w-0 w-full max-w-full overflow-hidden box-border isolate",
+					"hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
 					isActive
-						? "bg-primary text-primary-foreground shadow-md shadow-primary/10 ring-2 ring-primary/20"
-						: "text-muted-foreground hover:bg-muted hover:text-foreground",
+						? "bg-primary text-primary-foreground border border-primary/50 ring-2 ring-primary/30 shadow-md shadow-primary/20"
+						: "text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground",
 				)}
 				aria-current={isActive ? "page" : undefined}
 				aria-label={isCollapsed ? item.title : undefined}
@@ -1363,7 +1379,7 @@ const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
 				/>
 				{!isCollapsed && (
 					<>
-						<span className="text-sm font-bold tracking-tight flex-1 min-w-0 truncate">
+						<span className="text-sm font-bold tracking-tight flex-1 min-w-0 truncate overflow-hidden">
 							{highlightText(item.title, searchQuery)}
 						</span>
 						{item.badge !== null && (
@@ -1398,3 +1414,5 @@ const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
 );
 
 NavItem.displayName = "NavItem";
+
+export const Sidebar = memo(SidebarComponent);

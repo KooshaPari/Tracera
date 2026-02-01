@@ -1,5 +1,27 @@
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import {
+	Badge,
+	Button,
+	Card,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+	Input,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Separator,
+	Skeleton,
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+	Textarea,
+} from "@tracertm/ui";
+import {
 	ArrowLeft,
 	BookText,
 	CalendarClock,
@@ -22,34 +44,21 @@ import {
 	X,
 	XCircle,
 } from "lucide-react";
-import {
-	Badge,
-	Button,
-	Card,
-	Input,
-	Separator,
-	Skeleton,
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-	Textarea,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@tracertm/ui";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ItemSpecTabs } from "@/components/specifications/items/ItemSpecTabs";
+import { cn } from "@/lib/utils";
+import { logger } from '@/lib/logger';
+import {
+	useCreateDefectSpec,
+	useCreateEpicSpec,
+	useCreateRequirementSpec,
+	useCreateTaskSpec,
+	useCreateTestSpec,
+	useCreateUserStorySpec,
+} from "../hooks/useItemSpecs";
 import { useDeleteItem, useItem, useUpdateItem } from "../hooks/useItems";
 import { useLinks } from "../hooks/useLinks";
-import { cn } from "@/lib/utils";
-import { ItemSpecTabs } from "@/components/specifications/items/ItemSpecTabs";
 
 const statusColors: Record<string, string> = {
 	done: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
@@ -93,10 +102,18 @@ function formatValue(value: unknown) {
 export function ItemDetailView() {
 	const params = useParams({ strict: false });
 	const itemId = params.itemId as string | undefined;
+	const projectId = params.projectId as string | undefined;
+	const viewTypeParam = params.viewType as string | undefined;
 	const navigate = useNavigate();
 	const { data: item, isLoading, error } = useItem(itemId!);
 	const deleteItem = useDeleteItem();
 	const updateItem = useUpdateItem();
+	const createRequirementSpec = useCreateRequirementSpec(item?.projectId || "");
+	const createTestSpec = useCreateTestSpec(item?.projectId || "");
+	const createEpicSpec = useCreateEpicSpec(item?.projectId || "");
+	const createUserStorySpec = useCreateUserStorySpec(item?.projectId || "");
+	const createTaskSpec = useCreateTaskSpec(item?.projectId || "");
+	const createDefectSpec = useCreateDefectSpec(item?.projectId || "");
 	const [isEditing, setIsEditing] = useState(false);
 	const [metadataSearch, setMetadataSearch] = useState("");
 	const [draft, setDraft] = useState({
@@ -117,6 +134,28 @@ export function ItemDetailView() {
 			owner: item.owner ?? "",
 		});
 	}, [item]);
+
+	const defaultViewType = (
+		viewTypeParam ||
+		(item?.view ? String(item.view) : undefined) ||
+		"feature"
+	).toLowerCase();
+
+	const buildItemLink = (id: string) =>
+		projectId
+			? `/projects/${projectId}/views/${defaultViewType}/${id}`
+			: "/projects";
+
+	const handleBack = () => {
+		if (projectId) {
+			navigate({
+				to: "/projects/$projectId/views/$viewType",
+				params: { projectId, viewType: defaultViewType },
+			});
+			return;
+		}
+		navigate({ to: "/projects" });
+	};
 
 	const { data: sourceLinksData } = useLinks({
 		sourceId: itemId,
@@ -218,8 +257,12 @@ export function ItemDetailView() {
 	const upstreamCount = targetLinks.length;
 	const downstreamCount = sourceLinks.length;
 	const metadataCount = metadataEntries.length;
-	const displayStatus = isEditing ? draft.status : item.status;
-	const displayPriority = isEditing ? draft.priority : item.priority;
+	const displayStatus = isEditing
+		? (draft?.status ?? "todo")
+		: (item?.status ?? "todo");
+	const displayPriority = isEditing
+		? (draft?.priority ?? "medium")
+		: (item?.priority ?? "medium");
 	const updatedAtLabel = item?.updatedAt
 		? new Date(item.updatedAt).toLocaleString()
 		: "Unknown";
@@ -232,7 +275,7 @@ export function ItemDetailView() {
 		try {
 			await deleteItem.mutateAsync(itemId);
 			toast.success("Item deleted successfully");
-			navigate({ to: "/items" });
+			handleBack();
 		} catch (err) {
 			toast.error("Failed to delete item");
 		}
@@ -271,6 +314,65 @@ export function ItemDetailView() {
 		}
 	};
 
+	const handleCreateSpec = async (specType: string, itemId: string, _projectId?: string) => {
+		try {
+			switch (specType) {
+				case "requirement":
+					await createRequirementSpec.mutateAsync({
+						item_id: itemId,
+						requirement_type: "ubiquitous",
+						constraint_type: "soft",
+					});
+					toast.success("Requirement spec created");
+					break;
+				case "test":
+					await createTestSpec.mutateAsync({
+						item_id: itemId,
+						test_type: "unit",
+					});
+					toast.success("Test spec created");
+					break;
+				case "epic":
+					await createEpicSpec.mutateAsync({
+						item_id: itemId,
+						epic_name: "New Epic",
+						business_value: 0,
+					});
+					toast.success("Epic spec created");
+					break;
+				case "user_story":
+					await createUserStorySpec.mutateAsync({
+						item_id: itemId,
+						as_a: "User",
+						i_want: "To complete task",
+						so_that: "Work is done",
+					});
+					toast.success("User story spec created");
+					break;
+				case "task":
+					await createTaskSpec.mutateAsync({
+						item_id: itemId,
+						task_title: "New Task",
+					});
+					toast.success("Task spec created");
+					break;
+				case "defect":
+					await createDefectSpec.mutateAsync({
+						item_id: itemId,
+						defect_title: "New Defect",
+						severity: "minor",
+					});
+					toast.success("Defect spec created");
+					break;
+				default:
+					toast.error("Unknown spec type");
+			}
+		} catch (err) {
+			toast.error(`Failed to create ${specType} spec`);
+			logger.error(err);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className="px-0 py-10 space-y-8 animate-pulse w-full">
@@ -292,7 +394,7 @@ export function ItemDetailView() {
 			<div className="p-20 flex flex-col items-center justify-center space-y-4">
 				<XCircle className="h-12 w-12 text-destructive opacity-20" />
 				<h2 className="text-xl font-bold">Item Not Found</h2>
-				<Button variant="outline" onClick={() => navigate({ to: "/items" })}>
+				<Button variant="outline" onClick={handleBack}>
 					Return to Items
 				</Button>
 			</div>
@@ -300,10 +402,11 @@ export function ItemDetailView() {
 	}
 
 	return (
-		<div className="relative min-h-screen">
+		<div className="relative min-h-screen flex flex-col">
 			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(249,115,22,0.18),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(14,116,144,0.2),transparent_45%),radial-gradient(circle_at_20%_80%,rgba(16,185,129,0.18),transparent_40%)]" />
 			<div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(15,23,42,0.08),transparent_55%,rgba(2,132,199,0.08))]" />
-			<div className="relative w-full px-0 py-10 space-y-8">
+			<div className="relative flex min-h-0 w-full max-w-[1600px] flex-1 flex-col px-6 py-6 mx-auto animate-in-fade-up md:py-10">
+				<header className="shrink-0 pb-6 border-b border-border/50">
 				<div className="flex items-center justify-between">
 					<Button
 						variant="ghost"
@@ -319,7 +422,11 @@ export function ItemDetailView() {
 							variant="outline"
 							size="sm"
 							className="gap-2 rounded-full"
-							onClick={() => toast.info("Link sharing coming soon")}
+							onClick={() => {
+								const shareUrl = `${window.location.origin}${window.location.pathname}`;
+								navigator.clipboard.writeText(shareUrl);
+								toast.success("Share link copied to clipboard");
+							}}
 						>
 							<ExternalLink className="h-3.5 w-3.5" />
 							Share
@@ -357,9 +464,11 @@ export function ItemDetailView() {
 						)}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="icon" className="rounded-full">
-									<MoreVertical className="h-4 w-4" />
-								</Button>
+								<span>
+									<Button variant="ghost" size="icon" className="rounded-full">
+										<MoreVertical className="h-4 w-4" />
+									</Button>
+								</span>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-48">
 								<DropdownMenuItem className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
@@ -376,7 +485,9 @@ export function ItemDetailView() {
 						</DropdownMenu>
 					</div>
 				</div>
+				</header>
 
+				<main className="min-h-0 flex-1 overflow-auto pt-6 md:pt-8">
 				<Card className="border-0 bg-card/60 backdrop-blur-sm shadow-xl shadow-primary/10 overflow-hidden">
 					<div className="p-8 space-y-6">
 						<div className="flex flex-wrap items-center gap-2">
@@ -446,6 +557,11 @@ export function ItemDetailView() {
 									</div>
 								) : (
 									<>
+										<p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+											{item.view
+												? `${String(item.view).charAt(0).toUpperCase()}${String(item.view).slice(1).toLowerCase()} · ${item.type}`
+												: item.type}
+										</p>
 										<h1
 											className="text-4xl md:text-5xl font-black leading-tight tracking-tight"
 											style={{
@@ -610,7 +726,17 @@ export function ItemDetailView() {
 									<Button
 										size="sm"
 										className="gap-2 rounded-full"
-										onClick={() => toast.info("Trace analysis coming soon")}
+										onClick={() => {
+											if (
+												sourceLinks.length === 0 &&
+												targetLinks.length === 0
+											) {
+												toast.info("No relationships to analyze");
+											} else {
+												const total = sourceLinks.length + targetLinks.length;
+												toast.success(`Analyzed ${total} relationships`);
+											}
+										}}
 									>
 										<Sparkles className="h-4 w-4" />
 										Run analysis
@@ -668,78 +794,92 @@ export function ItemDetailView() {
 												projectId={item.projectId}
 												itemId={itemId}
 												itemType={item.type}
-												onCreateSpec={(specType) =>
-													toast.info(`Create ${specType} spec coming soon`)
-												}
+												onCreateSpec={(specType) => {
+													handleCreateSpec(specType, itemId, item.projectId);
+												}}
 											/>
 										)}
 									</TabsContent>
 
 									<TabsContent value="links" className="pt-6 space-y-6">
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<Card className="border-0 bg-muted/40 p-4 space-y-3">
-												<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-													Upstream
-												</h3>
-												<div className="space-y-2">
+											<Card className="border-0 bg-muted/40 p-5 space-y-4">
+												<div className="flex items-center gap-2">
+													<div className="h-9 w-9 rounded-xl bg-orange-500/15 flex items-center justify-center">
+														<ArrowLeft className="h-4 w-4 text-orange-600" />
+													</div>
+													<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+														Upstream
+													</h3>
+												</div>
+												<div className="space-y-3">
 													{targetLinks.length > 0 ? (
 														targetLinks.map((link) => (
 															<Link
 																key={link.id}
-																to={`/items/${link.sourceId}`}
-																className="flex items-center gap-3 rounded-xl border bg-card/50 px-3 py-2 hover:bg-muted/60 transition-colors"
+																to={buildItemLink(link.sourceId)}
+																className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm transition-all hover:border-orange-500/30 hover:bg-muted/50 hover:shadow-md"
 															>
-																<div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-																	<ArrowLeft className="h-4 w-4 text-orange-500" />
+																<div className="h-10 w-10 shrink-0 rounded-xl bg-orange-500/10 flex items-center justify-center">
+																	<ArrowLeft className="h-5 w-5 text-orange-500" />
 																</div>
-																<div className="flex-1 min-w-0">
-																	<p className="text-[10px] font-black text-muted-foreground uppercase">
+																<div className="min-w-0 flex-1 space-y-1">
+																	<Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider">
 																		{link.type}
-																	</p>
-																	<p className="text-xs font-bold truncate">
-																		{link.sourceId}
+																	</Badge>
+																	<p className="font-mono text-xs font-medium text-foreground truncate" title={link.sourceId}>
+																		{link.sourceId.slice(0, 8)}…
 																	</p>
 																</div>
-																<ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+																<span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">View</span>
+																<ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
 															</Link>
 														))
 													) : (
-														<p className="text-xs text-muted-foreground italic text-center py-4">
-															No upstream dependencies
-														</p>
+														<div className="rounded-xl border-2 border-dashed border-border/50 bg-background/50 py-8 text-center">
+															<p className="text-sm font-medium text-muted-foreground">No upstream dependencies</p>
+															<p className="mt-1 text-xs text-muted-foreground/80">Links from other items will appear here</p>
+														</div>
 													)}
 												</div>
 											</Card>
-											<Card className="border-0 bg-muted/40 p-4 space-y-3">
-												<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-													Downstream
-												</h3>
-												<div className="space-y-2">
+											<Card className="border-0 bg-muted/40 p-5 space-y-4">
+												<div className="flex items-center gap-2">
+													<div className="h-9 w-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
+														<ArrowLeft className="h-4 w-4 text-sky-600 rotate-180" />
+													</div>
+													<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+														Downstream
+													</h3>
+												</div>
+												<div className="space-y-3">
 													{sourceLinks.length > 0 ? (
 														sourceLinks.map((link) => (
 															<Link
 																key={link.id}
-																to={`/items/${link.targetId}`}
-																className="flex items-center gap-3 rounded-xl border bg-card/50 px-3 py-2 hover:bg-muted/60 transition-colors"
+																to={buildItemLink(link.targetId)}
+																className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm transition-all hover:border-sky-500/30 hover:bg-muted/50 hover:shadow-md"
 															>
-																<div className="h-8 w-8 rounded-lg bg-sky-500/10 flex items-center justify-center">
-																	<ArrowLeft className="h-4 w-4 text-sky-500 rotate-180" />
+																<div className="h-10 w-10 shrink-0 rounded-xl bg-sky-500/10 flex items-center justify-center">
+																	<ArrowLeft className="h-5 w-5 text-sky-500 rotate-180" />
 																</div>
-																<div className="flex-1 min-w-0">
-																	<p className="text-[10px] font-black text-muted-foreground uppercase">
+																<div className="min-w-0 flex-1 space-y-1">
+																	<Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider">
 																		{link.type}
-																	</p>
-																	<p className="text-xs font-bold truncate">
-																		{link.targetId}
+																	</Badge>
+																	<p className="font-mono text-xs font-medium text-foreground truncate" title={link.targetId}>
+																		{link.targetId.slice(0, 8)}…
 																	</p>
 																</div>
-																<ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+																<span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">View</span>
+																<ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
 															</Link>
 														))
 													) : (
-														<p className="text-xs text-muted-foreground italic text-center py-4">
-															No downstream impact
-														</p>
+														<div className="rounded-xl border-2 border-dashed border-border/50 bg-background/50 py-8 text-center">
+															<p className="text-sm font-medium text-muted-foreground">No downstream impact</p>
+															<p className="mt-1 text-xs text-muted-foreground/80">Items that depend on this will appear here</p>
+														</div>
 													)}
 												</div>
 											</Card>
@@ -747,66 +887,76 @@ export function ItemDetailView() {
 									</TabsContent>
 
 									<TabsContent value="metadata" className="pt-6 space-y-6">
-										<div className="flex items-center gap-3">
+										<div className="flex flex-wrap items-center gap-3">
 											<Input
 												value={metadataSearch}
 												onChange={(event) =>
 													setMetadataSearch(event.target.value)
 												}
 												placeholder="Search metadata keys or values..."
-												className="h-9"
+												className="h-10 max-w-sm rounded-xl"
 											/>
 											<Badge
 												variant="secondary"
-												className="text-[10px] uppercase tracking-widest"
+												className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1"
 											>
 												{filteredMetadata.length} entries
 											</Badge>
 										</div>
 										{integrationEntries.length > 0 && (
-											<div className="space-y-3">
-												<div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground">
-													<Orbit className="h-4 w-4 text-amber-500" />
-													Integration context
+											<div className="space-y-4">
+												<div className="flex items-center gap-2">
+													<div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+														<Orbit className="h-4 w-4 text-amber-600" />
+													</div>
+													<span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+														Integration context
+													</span>
 												</div>
 												<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
 													{integrationEntries.map(([key, value]) => (
-														<div
+														<Card
 															key={key}
-															className="p-3 rounded-xl border bg-card/50"
+															className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
 														>
-															<p className="text-[10px] font-black text-muted-foreground uppercase mb-1">
+															<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
 																{key.replace(/_/g, " ")}
 															</p>
-															<p className="text-xs font-bold truncate">
+															<p className="text-sm font-semibold text-foreground truncate" title={formatValue(value)}>
 																{formatValue(value)}
 															</p>
-														</div>
+														</Card>
 													))}
 												</div>
 											</div>
 										)}
 
 										{generalMetadata.length > 0 ? (
-											<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-												{generalMetadata.map(([key, value]) => (
-													<div
-														key={key}
-														className="p-3 rounded-xl border bg-card/50"
-													>
-														<p className="text-[10px] font-black text-muted-foreground uppercase mb-1">
-															{key.replace(/_/g, " ")}
-														</p>
-														<p className="text-xs font-bold truncate">
-															{formatValue(value)}
-														</p>
-													</div>
-												))}
+											<div className="space-y-4">
+												<span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+													Custom metadata
+												</span>
+												<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+													{generalMetadata.map(([key, value]) => (
+														<Card
+															key={key}
+															className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
+														>
+															<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
+																{key.replace(/_/g, " ")}
+															</p>
+															<p className="text-sm font-semibold text-foreground truncate" title={formatValue(value)}>
+																{formatValue(value)}
+															</p>
+														</Card>
+													))}
+												</div>
 											</div>
 										) : (
-											<div className="p-8 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-muted-foreground italic">
-												<p className="text-sm">No custom metadata defined</p>
-											</div>
+											<Card className="border-2 border-dashed border-border/50 bg-muted/20 p-10 text-center">
+												<p className="text-sm font-medium text-muted-foreground">No custom metadata defined</p>
+												<p className="mt-1 text-xs text-muted-foreground/80">Add metadata to attach context to this item</p>
+											</Card>
 										)}
 									</TabsContent>
 								</Tabs>
@@ -839,38 +989,49 @@ export function ItemDetailView() {
 								variant="outline"
 								size="sm"
 								className="w-full gap-2"
-								onClick={() => toast.info("Impact analysis coming soon")}
+								onClick={() => {
+									const impactCount = upstreamCount + downstreamCount;
+									if (impactCount === 0) {
+										toast.info("No impact relationships detected");
+									} else {
+										toast.success(
+											`Impact analysis: ${impactCount} affected items`,
+										);
+									}
+								}}
 							>
 								<Target className="h-4 w-4" />
 								Open impact analysis
 							</Button>
 						</Card>
 
-						<Card className="border-0 bg-muted/40 p-6 space-y-4">
-							<div className="flex items-center justify-between">
+						<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
+							<div className="flex items-center gap-2">
+								<div className="h-9 w-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
+									<GitBranch className="h-4 w-4 text-sky-600" />
+								</div>
 								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
 									Dimensions
 								</h3>
-								<GitBranch className="h-4 w-4 text-sky-500" />
 							</div>
 							{dimensionEntries.length > 0 ? (
-								<div className="space-y-2">
+								<div className="space-y-3">
 									{dimensionEntries.map(([label, value]) => (
 										<div
 											key={label}
-											className="flex items-center justify-between text-xs font-bold"
+											className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm"
 										>
-											<span className="text-muted-foreground uppercase tracking-widest text-[10px]">
+											<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
 												{label}
 											</span>
-											<span className="text-right max-w-[60%] truncate">
+											<span className="text-sm font-semibold text-foreground truncate max-w-[60%]" title={formatValue(value)}>
 												{formatValue(value)}
 											</span>
 										</div>
 									))}
 								</div>
 							) : (
-								<p className="text-xs text-muted-foreground italic">
+								<p className="rounded-xl border border-dashed border-border/50 bg-background/50 py-4 text-center text-xs text-muted-foreground italic">
 									No dimensions configured.
 								</p>
 							)}
@@ -909,55 +1070,64 @@ export function ItemDetailView() {
 							</div>
 						</Card>
 
-						<Card className="border-0 bg-muted/40 p-6 space-y-3">
+						<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
 							<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
 								Change log
 							</h3>
-							<div className="space-y-3 text-xs">
-								{timelineEvents.length > 0 ? (
-									timelineEvents.map((event) => (
+							{timelineEvents.length > 0 ? (
+								<div className="relative space-y-0">
+									{/* vertical line */}
+									<div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+									{timelineEvents.map((event, i) => (
 										<div
 											key={`${event.label}-${event.timestamp}`}
-											className="flex items-start justify-between gap-3"
+											className="relative flex items-start gap-4 pb-6 last:pb-0"
 										>
-											<div>
-												<p className="font-bold">{event.label}</p>
-												{event.detail && (
-													<p className="text-muted-foreground">
-														{event.detail}
-													</p>
-												)}
+											<div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10">
+												<div className="h-1.5 w-1.5 rounded-full bg-primary" />
 											</div>
-											<span className="text-muted-foreground">
-												{new Date(event.timestamp).toLocaleDateString()}
-											</span>
+											<div className="min-w-0 flex-1 rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+												<p className="text-sm font-semibold text-foreground">{event.label}</p>
+												{event.detail && (
+													<p className="mt-1 text-xs text-muted-foreground">{event.detail}</p>
+												)}
+												<p className="mt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+													{new Date(event.timestamp).toLocaleDateString(undefined, {
+														month: "short",
+														day: "numeric",
+														year: "numeric",
+														hour: "2-digit",
+														minute: "2-digit",
+													})}
+												</p>
+											</div>
 										</div>
-									))
-								) : (
-									<p className="text-xs text-muted-foreground italic">
-										No change events recorded.
-									</p>
-								)}
-							</div>
+									))}
+								</div>
+							) : (
+								<p className="rounded-xl border border-dashed border-border/50 bg-background/50 py-6 text-center text-xs text-muted-foreground italic">
+									No change events recorded.
+								</p>
+							)}
 						</Card>
 
-						<Card className="border-0 bg-muted/40 p-6 space-y-3">
+						<Card className="border-0 bg-muted/40 p-6 space-y-4 shadow-sm">
 							<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
 								Activity timeline
 							</h3>
-							<div className="space-y-2 text-xs font-bold">
-								<div className="flex items-center justify-between">
-									<span className="text-muted-foreground">Created</span>
-									<span>{createdAtLabel}</span>
+							<div className="space-y-3">
+								<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+									<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Created</span>
+									<span className="text-sm font-semibold text-foreground">{createdAtLabel}</span>
 								</div>
-								<div className="flex items-center justify-between">
-									<span className="text-muted-foreground">Updated</span>
-									<span>{updatedAtLabel}</span>
+								<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+									<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Updated</span>
+									<span className="text-sm font-semibold text-foreground">{updatedAtLabel}</span>
 								</div>
-								<div className="flex items-center justify-between">
-									<span className="text-muted-foreground">System lag</span>
-									<span className="inline-flex items-center gap-1">
-										<Timer className="h-3 w-3" />
+								<div className="flex items-center justify-between rounded-xl border border-border/40 bg-card/60 px-4 py-3 shadow-sm">
+									<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System lag</span>
+									<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+										<Timer className="h-3.5 w-3.5 text-primary" />
 										recent
 									</span>
 								</div>
@@ -977,6 +1147,7 @@ export function ItemDetailView() {
 						</Card>
 					</div>
 				</div>
+				</main>
 			</div>
 		</div>
 	);

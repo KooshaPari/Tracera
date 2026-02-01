@@ -1,16 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+	AutomationStatus,
 	TestCase,
+	TestCaseActivity,
+	TestCasePriority,
+	TestCaseStats,
 	TestCaseStatus,
 	TestCaseType,
-	TestCasePriority,
-	AutomationStatus,
-	TestCaseActivity,
 	TestStep,
-	TestCaseStats,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestCase(data: any): TestCase {
@@ -89,6 +90,7 @@ async function fetchTestCases(
 	const res = await fetch(`${API_URL}/api/v1/test-cases?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -103,7 +105,9 @@ async function fetchTestCases(
 }
 
 async function fetchTestCase(id: string): Promise<TestCase> {
-	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch test case");
 	const data = await res.json();
 	return transformTestCase(data);
@@ -139,7 +143,7 @@ async function createTestCase(
 		`${API_URL}/api/v1/test-cases?project_id=${data.projectId}`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				title: data.title,
 				description: data.description,
@@ -179,17 +183,16 @@ async function updateTestCase(
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
 
-	if (data.title !== undefined) body["title"] = data.title;
-	if (data.description !== undefined) body["description"] = data.description;
-	if (data.objective !== undefined) body["objective"] = data.objective;
-	if (data.testType !== undefined) body["test_type"] = data.testType;
-	if (data.priority !== undefined) body["priority"] = data.priority;
-	if (data.category !== undefined) body["category"] = data.category;
-	if (data.tags !== undefined) body["tags"] = data.tags;
-	if (data.preconditions !== undefined)
-		body["preconditions"] = data.preconditions;
+	if (data.title !== undefined) body.title = data.title;
+	if (data.description !== undefined) body.description = data.description;
+	if (data.objective !== undefined) body.objective = data.objective;
+	if (data.testType !== undefined) body.test_type = data.testType;
+	if (data.priority !== undefined) body.priority = data.priority;
+	if (data.category !== undefined) body.category = data.category;
+	if (data.tags !== undefined) body.tags = data.tags;
+	if (data.preconditions !== undefined) body.preconditions = data.preconditions;
 	if (data.testSteps !== undefined) {
-		body["test_steps"] = data.testSteps.map((step) => ({
+		body.test_steps = data.testSteps.map((step) => ({
 			step_number: step.stepNumber,
 			action: step.action,
 			expected_result: step.expectedResult,
@@ -197,26 +200,26 @@ async function updateTestCase(
 		}));
 	}
 	if (data.expectedResult !== undefined)
-		body["expected_result"] = data.expectedResult;
+		body.expected_result = data.expectedResult;
 	if (data.postconditions !== undefined)
-		body["postconditions"] = data.postconditions;
-	if (data.testData !== undefined) body["test_data"] = data.testData;
+		body.postconditions = data.postconditions;
+	if (data.testData !== undefined) body.test_data = data.testData;
 	if (data.automationStatus !== undefined)
-		body["automation_status"] = data.automationStatus;
+		body.automation_status = data.automationStatus;
 	if (data.automationScriptPath !== undefined)
-		body["automation_script_path"] = data.automationScriptPath;
+		body.automation_script_path = data.automationScriptPath;
 	if (data.automationFramework !== undefined)
-		body["automation_framework"] = data.automationFramework;
+		body.automation_framework = data.automationFramework;
 	if (data.automationNotes !== undefined)
-		body["automation_notes"] = data.automationNotes;
+		body.automation_notes = data.automationNotes;
 	if (data.estimatedDurationMinutes !== undefined)
-		body["estimated_duration_minutes"] = data.estimatedDurationMinutes;
-	if (data.assignedTo !== undefined) body["assigned_to"] = data.assignedTo;
-	if (data.metadata !== undefined) body["metadata"] = data.metadata;
+		body.estimated_duration_minutes = data.estimatedDurationMinutes;
+	if (data.assignedTo !== undefined) body.assigned_to = data.assignedTo;
+	if (data.metadata !== undefined) body.metadata = data.metadata;
 
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
 	});
 	if (!res.ok) throw new Error("Failed to update test case");
@@ -230,7 +233,7 @@ async function transitionTestCaseStatus(
 ): Promise<{ id: string; status: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/status`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			new_status: newStatus,
 			reason,
@@ -250,7 +253,7 @@ async function submitTestCaseForReview(
 ): Promise<{ id: string; status: string; reviewedBy: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/submit-review`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			reviewer,
 			notes,
@@ -271,7 +274,7 @@ async function approveTestCase(
 ): Promise<{ id: string; status: string; approvedBy: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/approve`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			reviewer: "", // Will be filled by backend from claims
 			notes,
@@ -294,7 +297,7 @@ async function deprecateTestCase(
 ): Promise<{ id: string; status: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}/deprecate`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			reason,
 			replacement_test_case_id: replacementTestCaseId,
@@ -307,6 +310,7 @@ async function deprecateTestCase(
 async function deleteTestCase(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete test case");
 }
@@ -317,6 +321,7 @@ async function fetchTestCaseActivities(
 ): Promise<{ testCaseId: string; activities: TestCaseActivity[] }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/test-cases/${testCaseId}/activities?limit=${limit}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();
@@ -339,6 +344,7 @@ async function fetchTestCaseActivities(
 async function fetchTestCaseStats(projectId: string): Promise<TestCaseStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/test-cases/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch test case stats");
 	const data = await res.json();

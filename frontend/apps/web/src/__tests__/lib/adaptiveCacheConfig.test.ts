@@ -1,17 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { logger } from '@/lib/logger';
 import {
+	AccessFrequencyCategory,
+	ADAPTIVE_CONFIGS,
+	type CacheConfig,
+	type CacheMetrics,
 	calculateAdaptiveTTL,
+	DataSizeCategory,
+	getAccessFrequencyCategory,
 	getDataSizeCategory,
 	getUpdateFrequencyCategory,
-	getAccessFrequencyCategory,
-	DataSizeCategory,
-	UpdateFrequencyCategory,
-	AccessFrequencyCategory,
-	TTL_BOUNDS,
-	ADAPTIVE_CONFIGS,
-	type CacheMetrics,
-	type CacheConfig,
 	logAdaptiveCacheDecision,
+	TTL_BOUNDS,
+	UpdateFrequencyCategory,
 } from "@/lib/adaptiveCacheConfig";
 
 describe("Adaptive Cache Configuration", () => {

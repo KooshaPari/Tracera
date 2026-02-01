@@ -5,15 +5,16 @@ Link model for TraceRTM.
 import uuid
 
 from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
 
 
-def generate_link_uuid() -> str:
-    """Generate a UUID string for link ID."""
-    return str(uuid.uuid4())
+def generate_link_uuid() -> uuid.UUID:
+    """Generate a UUID for link ID."""
+    return uuid.uuid4()
 
 
 class Link(Base, TimestampMixin):
@@ -31,11 +32,11 @@ class Link(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_link_uuid
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=generate_link_uuid
     )
-    project_id: Mapped[str] = mapped_column(
-        String(255),
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -48,15 +49,15 @@ class Link(Base, TimestampMixin):
         index=True,
     )
 
-    source_item_id: Mapped[str] = mapped_column(
-        String(255),
+    source_item_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    target_item_id: Mapped[str] = mapped_column(
-        String(255),
+    target_item_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

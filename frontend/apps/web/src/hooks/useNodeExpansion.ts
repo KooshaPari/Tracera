@@ -221,7 +221,7 @@ export function useNodeExpansion(
 			}
 		}
 		return expanded;
-	}, [expansionStateRef.current]);
+	}, []);
 
 	// Handle keyboard navigation
 	const handleKeyboardNavigation = useCallback(

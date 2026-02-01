@@ -574,7 +574,7 @@ class TestProjectStorageIntegration:
     """Test integration with ProjectStorage."""
 
     def test_get_project_storage(self, storage_manager):
-        """Test getting project storage (legacy mode)."""
+        """Test getting project storage (global projects dir)."""
         project_storage = storage_manager.get_project_storage("TestProject")
         assert isinstance(project_storage, ProjectStorage)
         assert project_storage.project_name == "TestProject"

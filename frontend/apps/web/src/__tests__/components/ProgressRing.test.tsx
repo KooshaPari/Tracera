@@ -1,10 +1,9 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import {
-	ProgressRing,
-	ProgressBar,
 	LinearProgress,
+	ProgressBar,
+	ProgressRing,
 } from "../../components/temporal/ProgressRing";
 
 describe("ProgressRing", () => {

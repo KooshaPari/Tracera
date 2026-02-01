@@ -4,6 +4,7 @@ import type {
 	IntegrationProvider,
 	SyncConflict,
 } from "@tracertm/types";
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import {
 	useConflicts,
@@ -97,7 +98,7 @@ export default function IntegrationsView({
 
 			{/* Tabs */}
 			<div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-				<nav className="flex space-x-8">
+				<nav className="flex space-x-8" role="navigation">
 					{tabs.map((tab) => (
 						<button
 							type="button"
@@ -189,7 +190,7 @@ function OverviewTab({
 			// Redirect to OAuth provider
 			window.location.href = result.auth_url;
 		} catch (error) {
-			console.error("Failed to start OAuth:", error);
+			logger.error("Failed to start OAuth:", error);
 		}
 	};
 

@@ -324,7 +324,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 
 			set((draft) => {
 				const regex = new RegExp(
-					"^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
+					`^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
 				);
 
 				// Invalidate layouts

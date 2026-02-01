@@ -376,7 +376,7 @@ describe("openapi-utils", () => {
 				paths: {},
 			};
 
-			expect(getServerUrls(spec)).toEqual(["http://localhost:8000"]);
+			expect(getServerUrls(spec)).toEqual(["http://localhost:4000"]);
 		});
 	});
 

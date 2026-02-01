@@ -4,7 +4,7 @@ BDD Scenario model.
 
 from typing import Any, List, Optional
 
-from sqlalchemy import Boolean, Float, ForeignKey, String, Text
+from sqlalchemy import Boolean, Float, ForeignKey, JSON, String, Text
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

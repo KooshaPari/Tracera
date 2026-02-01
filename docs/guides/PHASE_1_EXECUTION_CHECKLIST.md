@@ -182,7 +182,7 @@ vercel --prod
 ```bash
 cd docs-site/out
 python3 -m http.server 8000
-# Visit http://localhost:8000
+# Visit http://localhost:4000
 ```
 
 **Checklist:**

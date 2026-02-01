@@ -9,7 +9,7 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
 // Mock API_URL
-const API_URL = "http://localhost:8000";
+const API_URL = "http://localhost:4000";
 
 describe("API utilities", () => {
 	beforeEach(() => {

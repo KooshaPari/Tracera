@@ -12,6 +12,10 @@ This section contains practical guides and step-by-step instructions for common 
 
 ## Practical Guides
 
+### For MCP/CLI/API
+- **[MCP/CLI/API Matrix](mcp-cli-api-matrix.md)** - Capability matrix + offline/online behavior
+- **[Config Precedence](config-precedence.md)** - Where config lives and how it resolves
+
 ### For Operations
 - **[Deployment Guide](deployment-guide.md)** - Production deployment procedures
 - **[Troubleshooting](../08-reference/troubleshooting.md)** - Common issues and fixes

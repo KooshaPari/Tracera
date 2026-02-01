@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { logger } from '@/lib/logger';
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import {
@@ -43,7 +44,7 @@ export function ExportView() {
 			window.URL.revokeObjectURL(url);
 			document.body.removeChild(a);
 		} catch (error) {
-			console.error("Export failed:", error);
+			logger.error("Export failed:", error);
 			alert("Export failed. Please try again.");
 		} finally {
 			setIsExporting(false);

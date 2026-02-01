@@ -2,9 +2,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { TestCaseView } from "@/pages/projects/views/TestCaseView";
 
 export function TestCaseViewRoute() {
-	const { projectId } = useParams({
-		from: "/projects/$projectId/views/test-cases",
-	});
+	const { projectId } = useParams({ from: "/projects/$projectId" });
 	return <TestCaseView projectId={projectId} />;
 }
 

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
+import { logger } from '@/lib/logger';
 import type { Item, Link } from "@tracertm/types";
+import { useState } from "react";
 import { CrossPerspectiveSearch } from "../CrossPerspectiveSearch";
 
 const meta = {
@@ -260,11 +261,11 @@ export const Default: Story = {
 					links={createSampleLinks()}
 					onSelect={(itemId) => {
 						setSelectedId(itemId);
-						console.log("Selected item:", itemId);
+						logger.info("Selected item:", itemId);
 					}}
 					onHighlight={(itemId) => {
 						setHighlightedId(itemId);
-						console.log("Highlighted item:", itemId);
+						logger.info("Highlighted item:", itemId);
 					}}
 				/>
 				{selectedId && (
@@ -372,7 +373,7 @@ export const CrossPerspectiveExample: Story = {
 					links={createSampleLinks()}
 					onSelect={(itemId) => {
 						setSelectedId(itemId);
-						console.log("Selected:", itemId);
+						logger.info("Selected:", itemId);
 					}}
 					onHighlight={() => {}}
 					maxResultsPerPerspective={3}
@@ -423,7 +424,7 @@ export const CustomMaxResults: Story = {
 				<CrossPerspectiveSearch
 					items={createSampleItems()}
 					links={createSampleLinks()}
-					onSelect={(id) => console.log("Selected:", id)}
+					onSelect={(id) => logger.info("Selected:", id)}
 					onHighlight={() => {}}
 					maxResultsPerPerspective={2}
 				/>

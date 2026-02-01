@@ -3,8 +3,8 @@
  * Circular gauge with color gradient and animated fill
  */
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface ComplianceGaugeFullProps {

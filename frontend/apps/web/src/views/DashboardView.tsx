@@ -1,9 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
 import {
 	Badge,
 	Button,
 	Card,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 	Input,
 	Progress,
 	Select,
@@ -15,47 +19,44 @@ import {
 	Tabs,
 	TabsList,
 	TabsTrigger,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
 } from "@tracertm/ui";
+import {
+	Activity,
+	BarChart3,
+	Edit,
+	ExternalLink,
+	Folder,
+	Layers,
+	LayoutGrid,
+	List,
+	MoreVertical,
+	Pin,
+	Plus,
+	Search,
+	Trash2,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	Bar,
 	BarChart,
+	CartesianGrid,
 	Cell,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
-	Tooltip as RechartsTooltip,
-	XAxis,
-	YAxis,
+	PolarAngleAxis,
+	PolarGrid,
 	Radar,
 	RadarChart,
-	PolarGrid,
-	PolarAngleAxis,
-	CartesianGrid,
+	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
+	XAxis,
+	YAxis,
 } from "recharts";
-import {
-	Folder,
-	LayoutGrid,
-	List,
-	Plus,
-	Search,
-	Pin,
-	Activity,
-	Layers,
-	BarChart3,
-	MoreVertical,
-	Edit,
-	Trash2,
-	ExternalLink,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useProjects, useDeleteProject } from "../hooks/useProjects";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { getAuthHeaders } from "@/api/client";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
+import { cn } from "@/lib/utils";
+import { useDeleteProject, useProjects } from "../hooks/useProjects";
 
 type DashboardViewProps = {
 	systemStatus?: {
@@ -110,10 +111,11 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 			projectsArray.map(async (project) => {
 				try {
 					const res = await fetch(
-						`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/items?project_id=${project.id}&limit=200`,
+						`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/items?project_id=${project.id}&limit=200`,
 						{
 							headers: {
 								"X-Bulk-Operation": "true",
+								...getAuthHeaders(),
 							},
 						},
 					);
@@ -261,7 +263,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 	}
 
 	return (
-		<div className="p-6 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+		<div className="p-6 space-y-8 max-w-[1600px] mx-auto animate-in-fade-up">
 			{/* Header */}
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
@@ -598,7 +600,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 				</div>
 
 				{viewMode === "grid" ? (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger-children">
 						{filteredProjects.map((project) => {
 							const handlePin = (e: React.MouseEvent) => {
 								e.preventDefault();
@@ -637,7 +639,8 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 							const handleEdit = (e: React.MouseEvent) => {
 								e.preventDefault();
 								e.stopPropagation();
-								toast.info("Edit functionality coming soon");
+								navigate({ to: `/projects/${project.id}` });
+								toast.info("Edit project in project details");
 							};
 
 							return (
@@ -673,15 +676,17 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 											{/* 3-dot menu - top right */}
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
-													<Button
-														variant="ghost"
-														size="icon"
-														className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-all z-10"
-														onClick={(e) => e.stopPropagation()}
-													>
-														<MoreVertical className="h-4 w-4" />
-														<span className="sr-only">Project options</span>
-													</Button>
+													<span>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-all z-10"
+															onClick={(e) => e.stopPropagation()}
+														>
+															<MoreVertical className="h-4 w-4" />
+															<span className="sr-only">Project options</span>
+														</Button>
+													</span>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end" className="w-48">
 													<DropdownMenuItem
@@ -791,7 +796,8 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 							const handleEdit = (e: React.MouseEvent) => {
 								e.preventDefault();
 								e.stopPropagation();
-								toast.info("Edit functionality coming soon");
+								navigate({ to: `/projects/${project.id}` });
+								toast.info("Edit project in project details");
 							};
 
 							return (
@@ -864,15 +870,17 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 									{/* 3-dot menu - right side */}
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="absolute right-4 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-all"
-												onClick={(e) => e.stopPropagation()}
-											>
-												<MoreVertical className="h-4 w-4" />
-												<span className="sr-only">Project options</span>
-											</Button>
+											<span>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="absolute right-4 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-all"
+													onClick={(e) => e.stopPropagation()}
+												>
+													<MoreVertical className="h-4 w-4" />
+													<span className="sr-only">Project options</span>
+												</Button>
+											</span>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end" className="w-48">
 											<DropdownMenuItem

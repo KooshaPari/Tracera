@@ -1,19 +1,20 @@
 // Tests for drill-down navigation utilities
-import { describe, it, expect, beforeEach } from "vitest";
+
 import type { Item, Link } from "@tracertm/types";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
-	inferDrillDownLevel,
-	getNextLevel,
-	getPreviousLevel,
 	createBreadcrumbs,
-	getChildrenByDrillDownLevel,
 	createDrillDownContext,
 	createDrillDownNodeGroups,
-	toggleDrillDownGroup,
-	navigateUp,
-	navigateToChild,
+	getChildrenByDrillDownLevel,
 	getDrillDownPath,
 	getDrillDownStats,
+	getNextLevel,
+	getPreviousLevel,
+	inferDrillDownLevel,
+	navigateToChild,
+	navigateUp,
+	toggleDrillDownGroup,
 } from "../../../../components/graph/utils/drilldown";
 import { buildHierarchy } from "../../../../components/graph/utils/hierarchy";
 

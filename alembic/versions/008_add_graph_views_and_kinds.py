@@ -11,7 +11,9 @@ from datetime import datetime
 import uuid
 
 from alembic import op
+from alembic import context
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from tracertm.models.types import JSONType
 
@@ -30,7 +32,7 @@ def upgrade() -> None:
     op.create_table(
         "views",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("view_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -42,7 +44,7 @@ def upgrade() -> None:
     op.create_table(
         "node_kinds",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("kind_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -53,9 +55,9 @@ def upgrade() -> None:
 
     op.create_table(
         "item_views",
-        sa.Column("item_id", sa.String(length=255), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
         sa.Column("view_id", sa.String(length=255), sa.ForeignKey("views.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("is_primary", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -67,7 +69,7 @@ def upgrade() -> None:
     op.create_table(
         "link_types",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("link_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -79,8 +81,8 @@ def upgrade() -> None:
     op.create_table(
         "external_links",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("item_id", sa.String(length=255), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("provider", sa.String(length=50), nullable=False),
         sa.Column("target", sa.Text(), nullable=False),
         sa.Column("label", sa.String(length=200), nullable=True),
@@ -97,7 +99,12 @@ def upgrade() -> None:
     )
     op.create_index("idx_items_project_node_kind", "items", ["project_id", "node_kind_id"])
 
+    if context.is_offline_mode():
+        return
+
     conn = op.get_bind()
+    if conn is None:
+        return
 
     items_table = sa.table(
         "items",

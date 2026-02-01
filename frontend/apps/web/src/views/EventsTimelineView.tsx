@@ -1,20 +1,3 @@
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Card } from "@tracertm/ui/components/Card";
-import { Input } from "@tracertm/ui/components/Input";
-import {
-	History,
-	Search,
-	Plus,
-	Edit,
-	Link2,
-	Folder,
-	User,
-	Clock,
-	Calendar,
-	ArrowRight,
-	Zap,
-} from "lucide-react";
-import { useState, useMemo } from "react";
 import {
 	Button,
 	Select,
@@ -23,6 +6,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Card } from "@tracertm/ui/components/Card";
+import { Input } from "@tracertm/ui/components/Input";
+import {
+	ArrowRight,
+	Calendar,
+	Clock,
+	Edit,
+	Folder,
+	History,
+	Link2,
+	Plus,
+	Search,
+	User,
+	Zap,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface Event {
@@ -50,36 +50,39 @@ export function EventsTimelineView() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [typeFilter, setTypeFilter] = useState("all");
 
-	// Mock events - replace with actual API call
-	const events: Event[] = [
-		{
-			id: "1",
-			type: "item_created",
-			title: "User Authentication",
-			description: "New security requirement initialized in Project Alpha.",
-			timestamp: new Date(),
-			user: "Admin",
-			projectId: "alpha-1",
-		},
-		{
-			id: "2",
-			type: "link_created",
-			title: "Traceability Link",
-			description: "Connected 'Auth Logic' to 'Security Spec v1'.",
-			timestamp: new Date(Date.now() - 3600000),
-			user: "Jane Doe",
-			projectId: "alpha-1",
-		},
-		{
-			id: "3",
-			type: "item_updated",
-			title: "Database Schema",
-			description: "Field 'user_id' updated to UUID for higher integrity.",
-			timestamp: new Date(Date.now() - 86400000),
-			user: "System",
-			projectId: "beta-2",
-		},
-	];
+	// Mock events - replace with actual API call (stable reference for hook deps)
+	const events = useMemo<Event[]>(
+		() => [
+			{
+				id: "1",
+				type: "item_created",
+				title: "User Authentication",
+				description: "New security requirement initialized in Project Alpha.",
+				timestamp: new Date(),
+				user: "Admin",
+				projectId: "alpha-1",
+			},
+			{
+				id: "2",
+				type: "link_created",
+				title: "Traceability Link",
+				description: "Connected 'Auth Logic' to 'Security Spec v1'.",
+				timestamp: new Date(Date.now() - 3600000),
+				user: "Jane Doe",
+				projectId: "alpha-1",
+			},
+			{
+				id: "3",
+				type: "item_updated",
+				title: "Database Schema",
+				description: "Field 'user_id' updated to UUID for higher integrity.",
+				timestamp: new Date(Date.now() - 86400000),
+				user: "System",
+				projectId: "beta-2",
+			},
+		],
+		[],
+	);
 
 	const filteredEvents = useMemo(() => {
 		return events.filter((e) => {

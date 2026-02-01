@@ -2,11 +2,12 @@
 ADR (Architecture Decision Record) model.
 """
 
+from sqlalchemy import DateTime, Float, ForeignKey, JSON, String, Text
 from datetime import date as date_type
 from datetime import datetime
 from typing import Any, List, Optional
 
-from sqlalchemy import Float, ForeignKey, String, Text, Date
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,7 +24,7 @@ class ADR(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
     adr_number: Mapped[str] = mapped_column(String(50), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)

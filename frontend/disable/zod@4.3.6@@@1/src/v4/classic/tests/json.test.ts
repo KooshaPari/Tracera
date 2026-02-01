@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 test("placeholder test", () => {
-  expect(2).toBe(2);
+	expect(2).toBe(2);
 });
 // test("overload types", () => {
 //   const schema = z.string().json();

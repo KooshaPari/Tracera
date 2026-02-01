@@ -1,4 +1,5 @@
 // WebSocket Real-time Connection Manager
+import { logger } from "@/lib/logger";
 import { API_BASE_URL } from "./client";
 
 /**
@@ -51,7 +52,8 @@ export class WebSocketManager {
 		const wsProtocol =
 			globalThis.window.location.protocol === "https:" ? "wss:" : "ws:";
 		const apiUrl = API_BASE_URL.replace(/^https?:/, wsProtocol);
-		this.baseUrl = `${apiUrl}/ws`;
+		// Align with lib/websocket and gateway: single WebSocket path /api/v1/ws
+		this.baseUrl = `${apiUrl.replace(/\/$/, "")}/api/v1/ws`;
 		this.getToken = getToken || null;
 	}
 
@@ -73,7 +75,7 @@ export class WebSocketManager {
 		}
 
 		if (!token) {
-			console.error(
+			logger.error(
 				"[WebSocket] Authentication token required. Please authenticate first.",
 			);
 			this.isConnecting = false;
@@ -90,7 +92,7 @@ export class WebSocketManager {
 			this.ws = new WebSocket(url);
 
 			this.ws.onopen = () => {
-				console.log(
+				logger.info(
 					"[WebSocket] Connection established, waiting for authentication",
 				);
 				this.isConnecting = false;
@@ -101,7 +103,7 @@ export class WebSocketManager {
 
 				// Set auth timeout (5 seconds)
 				this.authTimeout = window.setTimeout(() => {
-					console.error("[WebSocket] Authentication timeout");
+					logger.error("[WebSocket] Authentication timeout");
 					if (this.ws?.readyState === WebSocket.OPEN) {
 						this.ws.close(1008, "Authentication timeout");
 					}
@@ -114,7 +116,7 @@ export class WebSocketManager {
 
 					// Handle authentication response
 					if (message.type === "auth_success") {
-						console.log("[WebSocket] Authentication successful");
+						logger.info("[WebSocket] Authentication successful");
 						this.isAuthenticated = true;
 						this.isConnected = true;
 						if (this.authTimeout) {
@@ -126,7 +128,7 @@ export class WebSocketManager {
 					}
 
 					if (message.type === "auth_failed") {
-						console.error(
+						logger.error(
 							"[WebSocket] Authentication failed:",
 							message.message,
 						);
@@ -148,18 +150,18 @@ export class WebSocketManager {
 						this.handleMessage(realtimeEvent);
 					}
 				} catch (error) {
-					console.error("[WebSocket] Failed to parse message:", error);
+					logger.error("[WebSocket] Failed to parse message:", error);
 				}
 			};
 
 			this.ws.onerror = (error) => {
-				console.error("[WebSocket] Error:", error);
+				logger.error("[WebSocket] Error:", error);
 				this.isConnected = false;
 				this.isAuthenticated = false;
 			};
 
 			this.ws.onclose = (event) => {
-				console.log("[WebSocket] Disconnected", {
+				logger.info("[WebSocket] Disconnected", {
 					code: event.code,
 					reason: event.reason,
 				});
@@ -175,7 +177,7 @@ export class WebSocketManager {
 
 				// Don't reconnect if closed due to authentication failure
 				if (event.code === 1008 && event.reason?.includes("Authentication")) {
-					console.error(
+					logger.error(
 						"[WebSocket] Authentication failed. Please re-authenticate.",
 					);
 					return;
@@ -184,7 +186,7 @@ export class WebSocketManager {
 				this.attemptReconnect();
 			};
 		} catch (error) {
-			console.error("[WebSocket] Connection failed:", error);
+			logger.error("[WebSocket] Connection failed:", error);
 			this.isConnecting = false;
 			this.attemptReconnect();
 		}
@@ -192,7 +194,7 @@ export class WebSocketManager {
 
 	private sendAuthMessage(): void {
 		if (!this.ws || this.ws.readyState !== WebSocket.OPEN || !this.token) {
-			console.error(
+			logger.error(
 				"[WebSocket] Cannot send auth message: connection not ready",
 			);
 			return;
@@ -205,9 +207,9 @@ export class WebSocketManager {
 
 		try {
 			this.ws.send(JSON.stringify(authMessage));
-			console.log("[WebSocket] Auth message sent");
+			logger.info("[WebSocket] Auth message sent");
 		} catch (error) {
-			console.error("[WebSocket] Failed to send auth message:", error);
+			logger.error("[WebSocket] Failed to send auth message:", error);
 		}
 	}
 
@@ -267,7 +269,7 @@ export class WebSocketManager {
 					try {
 						callback(event);
 					} catch (error) {
-						console.error(`[WebSocket] Error in callback for ${ch}:`, error);
+						logger.error(`[WebSocket] Error in callback for ${ch}:`, error);
 					}
 				});
 			}
@@ -298,14 +300,14 @@ export class WebSocketManager {
 
 	private async attemptReconnect(): Promise<void> {
 		if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-			console.error("[WebSocket] Max reconnection attempts reached");
+			logger.error("[WebSocket] Max reconnection attempts reached");
 			return;
 		}
 
 		this.reconnectAttempts++;
 		const delay = this.reconnectDelay * 2 ** (this.reconnectAttempts - 1);
 
-		console.log(
+		logger.info(
 			`[WebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`,
 		);
 

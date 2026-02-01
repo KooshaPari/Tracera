@@ -3,15 +3,15 @@
  * Tests: equivalence display, confirmation, rejection, empty states
  */
 
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import type {
-	Item,
-	EquivalenceLink,
 	CanonicalConcept,
 	CanonicalProjection,
+	EquivalenceLink,
+	Item,
 } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EquivalencePanel } from "@/components/graph/EquivalencePanel";
 
 // =============================================================================

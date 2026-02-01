@@ -5,12 +5,13 @@ Represents high-level processes that define workflows, procedures,
 and operational patterns. Supports versioning and BPMN visualization.
 """
 
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, Boolean
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -73,7 +74,7 @@ class Process(Base, TimestampMixin):
         String(50), unique=True, nullable=False, index=True
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -266,7 +267,7 @@ class ProcessExecution(Base, TimestampMixin):
     completed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Context
-    trigger_item_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    trigger_item_id: Mapped[str | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     """ID of the item that triggered this execution."""
 
     context_data: Mapped[dict[str, object]] = mapped_column(

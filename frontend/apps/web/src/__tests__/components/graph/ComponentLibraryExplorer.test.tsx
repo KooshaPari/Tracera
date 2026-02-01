@@ -3,16 +3,16 @@
  * Tests: library browsing, component search, variants, design tokens
  */
 
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import type {
 	ComponentLibrary,
-	LibraryComponent,
 	ComponentProp,
 	ComponentVariant,
 	DesignToken,
+	LibraryComponent,
 } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ComponentLibraryExplorer } from "@/components/graph/ComponentLibraryExplorer";
 
 // =============================================================================

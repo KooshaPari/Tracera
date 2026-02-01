@@ -1,6 +1,7 @@
 // Rich Node Pill - Block pill with embedded UI preview and interactive widget
 // Uses React Flow for custom node rendering with rich content
 
+import type { Item, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -10,14 +11,13 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import type { Item, LinkType } from "@tracertm/types";
 import {
 	Handle,
-	Position,
+	type Node,
 	type NodeProps,
 	NodeResizer,
 	NodeToolbar,
-	type Node,
+	Position,
 } from "@xyflow/react";
 import {
 	AlertCircle,
@@ -27,20 +27,23 @@ import {
 	Code,
 	Database,
 	ExternalLink,
+	Eye,
 	FileText,
 	GitBranch,
 	Image,
 	Layout,
 	Link2,
+	Maximize2,
 	Monitor,
 	Shield,
 	TestTube2,
 	XCircle,
 	Zap,
-	Maximize2,
-	Eye,
 } from "lucide-react";
-import { memo, useState, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
+import { NodeActions } from "./NodeActions";
+import { NodeContextMenu } from "./NodeContextMenu";
+import { NodeQuickActions } from "./NodeQuickActions";
 import { ENHANCED_TYPE_COLORS, STATUS_OPACITY } from "./types";
 
 // Node data structure for React Flow
@@ -73,6 +76,9 @@ export interface RichNodeData {
 	// Visual state
 	isExpanded?: boolean | undefined;
 	showPreview?: boolean | undefined;
+
+	/** 1.3: LOD level (from determineLODLevel) for loading/error skeleton selection */
+	lodLevel?: number | undefined;
 
 	// Callbacks
 	onSelect?: ((id: string) => void) | undefined;
@@ -126,12 +132,75 @@ const STATUS_ICONS: Record<
 	cancelled: XCircle,
 };
 
+/** A3 perf: memoized heavy content (preview image + widget iframe) so it does not re-render on pan/zoom. */
+const RichNodePillPreviewBlock = memo(function RichNodePillPreviewBlock({
+	previewUrl,
+	widgetUrl,
+	label,
+	hasWidget,
+	showWidget,
+	onToggleWidget,
+}: {
+	previewUrl: string | undefined;
+	widgetUrl: string | undefined;
+	label: string;
+	hasWidget: boolean;
+	showWidget: boolean;
+	onToggleWidget: (e: React.MouseEvent) => void;
+}) {
+	if (!previewUrl && !hasWidget) return null;
+	return (
+		<>
+			{previewUrl && (
+				<div className="relative bg-muted/50 border-b">
+					<img
+						src={previewUrl}
+						alt={`Preview of ${label}`}
+						className="w-full h-24 object-cover object-top"
+						loading="lazy"
+					/>
+					{hasWidget && (
+						<Button
+							variant="secondary"
+							size="sm"
+							className="absolute bottom-2 right-2 h-6 px-2 text-[10px] bg-background/80 backdrop-blur-sm"
+							onClick={onToggleWidget}
+						>
+							<Eye className="h-3 w-3 mr-1" />
+							Interactive
+						</Button>
+					)}
+				</div>
+			)}
+			{showWidget && widgetUrl && (
+				<div className="relative bg-white border-b">
+					<iframe
+						src={widgetUrl}
+						title={`Widget: ${label}`}
+						className="w-full h-40 border-0"
+						sandbox="allow-scripts allow-same-origin"
+					/>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="absolute top-1 right-1 h-5 w-5 p-0"
+						onClick={onToggleWidget}
+					>
+						<XCircle className="h-4 w-4" />
+					</Button>
+				</div>
+			)}
+		</>
+	);
+});
+
 function RichNodePillComponent({
 	data,
 	selected,
 }: NodeProps<Node<RichNodeData, "richPill">>) {
 	const [isHovered, setIsHovered] = useState(false);
 	const [showWidget, setShowWidget] = useState(false);
+	const [showActions, setShowActions] = useState(false);
 
 	const bgColor = ENHANCED_TYPE_COLORS[data.type] || "#64748b";
 	const opacity = STATUS_OPACITY[data.status] || 1;
@@ -172,15 +241,23 @@ function RichNodePillComponent({
 	);
 
 	return (
-		<TooltipProvider>
-			{/* Node Resizer for expandable preview */}
-			<NodeResizer
-				minWidth={180}
-				minHeight={hasPreview ? 160 : 80}
-				maxWidth={400}
-				maxHeight={500}
-				isVisible={selected}
-			/>
+		<NodeContextMenu
+			nodeId={data.id}
+			nodeType={data.type}
+			onCopyId={(id) => navigator.clipboard.writeText(id)}
+			onDuplicate={(id) => logger.info("Duplicate:", id)}
+			onDelete={(id) => logger.info("Delete:", id)}
+			onViewDetails={(id) => data.onNavigate?.(id)}
+		>
+			<TooltipProvider>
+				{/* Node Resizer for expandable preview */}
+				<NodeResizer
+					minWidth={180}
+					minHeight={hasPreview ? 160 : 80}
+					maxWidth={400}
+					maxHeight={500}
+					isVisible={selected}
+				/>
 
 			{/* Toolbar on selection */}
 			<NodeToolbar isVisible={selected} position={Position.Top}>
@@ -230,7 +307,7 @@ function RichNodePillComponent({
 			{/* Main pill container */}
 			<Card
 				className={`
-          relative overflow-hidden transition-all duration-200 cursor-pointer
+          relative overflow-hidden transition-all duration-200 cursor-pointer group
           ${selected ? "ring-2 ring-white ring-offset-2 ring-offset-background" : ""}
           ${isHovered ? "shadow-lg scale-[1.02]" : "shadow-md"}
         `}
@@ -239,8 +316,14 @@ function RichNodePillComponent({
 					minWidth: 180,
 					maxWidth: isExpanded ? 350 : 220,
 				}}
-				onMouseEnter={() => setIsHovered(true)}
-				onMouseLeave={() => setIsHovered(false)}
+				onMouseEnter={() => {
+					setIsHovered(true);
+					setShowActions(true);
+				}}
+				onMouseLeave={() => {
+					setIsHovered(false);
+					setShowActions(false);
+				}}
 				onClick={handleClick}
 			>
 				{/* Color accent bar */}
@@ -249,50 +332,34 @@ function RichNodePillComponent({
 					style={{ backgroundColor: bgColor }}
 				/>
 
-				{/* UI Preview Section (inner block) */}
-				{hasPreview && (isExpanded || data.showPreview) && (
-					<div className="relative bg-muted/50 border-b">
-						<img
-							src={
-								data.uiPreview?.thumbnailUrl || data.uiPreview?.screenshotUrl
-							}
-							alt={`Preview of ${data.label}`}
-							className="w-full h-24 object-cover object-top"
-							loading="lazy"
+				{/* Action buttons on hover */}
+				{showActions && (
+					<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-background/80 backdrop-blur-sm rounded-md p-1">
+						<NodeActions
+							nodeId={data.id}
+							isExpanded={data.isExpanded || false}
+							onExpand={(id) => data.onExpand?.(id)}
+							onNavigate={(id) => data.onNavigate?.(id)}
+							onShowMenu={() => {}}
 						/>
-						{hasWidget && (
-							<Button
-								variant="secondary"
-								size="sm"
-								className="absolute bottom-2 right-2 h-6 px-2 text-[10px] bg-background/80 backdrop-blur-sm"
-								onClick={toggleWidget}
-							>
-								<Eye className="h-3 w-3 mr-1" />
-								Interactive
-							</Button>
-						)}
 					</div>
 				)}
 
-				{/* Interactive Widget Iframe */}
-				{showWidget && hasWidget && (
-					<div className="relative bg-white border-b">
-						<iframe
-							src={data.uiPreview?.interactiveWidgetUrl}
-							title={`Widget: ${data.label}`}
-							className="w-full h-40 border-0"
-							sandbox="allow-scripts allow-same-origin"
-						/>
-						<Button
-							variant="ghost"
-							size="sm"
-							className="absolute top-1 right-1 h-5 w-5 p-0"
-							onClick={toggleWidget}
-						>
-							<XCircle className="h-4 w-4" />
-						</Button>
-					</div>
-				)}
+				{/* UI Preview + Widget (A3: memoized so heavy content does not re-render on pan/zoom) */}
+				{(hasPreview && (isExpanded || data.showPreview)) || (showWidget && hasWidget) ? (
+					<RichNodePillPreviewBlock
+						previewUrl={
+							hasPreview && (isExpanded || data.showPreview)
+								? (data.uiPreview?.thumbnailUrl || data.uiPreview?.screenshotUrl)
+								: undefined
+						}
+						widgetUrl={data.uiPreview?.interactiveWidgetUrl}
+						label={data.label}
+						hasWidget={hasWidget}
+						showWidget={showWidget}
+						onToggleWidget={toggleWidget}
+					/>
+				) : null}
 
 				{/* Content section */}
 				<div className="p-3 pt-3.5">
@@ -384,6 +451,18 @@ function RichNodePillComponent({
 							</span>
 						)}
 					</div>
+
+					{/* Quick actions bar at bottom (shown on hover) */}
+					{showActions && (
+						<div className="mt-2 pt-2 border-t opacity-0 group-hover:opacity-100 transition-opacity">
+							<NodeQuickActions
+								nodeId={data.id}
+								onAddLink={(id, target) => logger.info("Link:", id, target)}
+								onAddTag={(id, tag) => logger.info("Tag:", id, tag)}
+								onEditNote={(id, note) => logger.info("Note:", id, note)}
+							/>
+						</div>
+					)}
 				</div>
 			</Card>
 
@@ -394,7 +473,8 @@ function RichNodePillComponent({
 				className="!w-3 !h-3 !bg-background !border-2"
 				style={{ borderColor: bgColor }}
 			/>
-		</TooltipProvider>
+			</TooltipProvider>
+		</NodeContextMenu>
 	);
 }
 

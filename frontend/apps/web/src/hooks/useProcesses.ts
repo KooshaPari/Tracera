@@ -1,18 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+	ExecutionStatus,
 	Process,
-	ProcessStatus,
 	ProcessCategory,
 	ProcessExecution,
-	ExecutionStatus,
-	ProcessStage,
-	ProcessSwimlane,
 	ProcessInput,
 	ProcessOutput,
+	ProcessStage,
+	ProcessStatus,
+	ProcessSwimlane,
 	ProcessTrigger,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformProcess(data: any): Process {
@@ -97,6 +98,7 @@ async function fetchProcesses(
 	const res = await fetch(`${API_URL}/api/v1/processes?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -111,7 +113,9 @@ async function fetchProcesses(
 }
 
 async function fetchProcess(id: string): Promise<Process> {
-	const res = await fetch(`${API_URL}/api/v1/processes/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/processes/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch process");
 	const data = await res.json();
 	return transformProcess(data);
@@ -146,7 +150,7 @@ async function createProcess(
 		`${API_URL}/api/v1/processes?project_id=${data.projectId}`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				name: data.name,
 				description: data.description,
@@ -180,7 +184,7 @@ async function updateProcess(
 ): Promise<{ id: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			name: data.name,
 			description: data.description,
@@ -217,7 +221,7 @@ async function createProcessVersion(
 }> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${processId}/versions`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({ version_notes: versionNotes }),
 	});
 	if (!res.ok) throw new Error("Failed to create process version");
@@ -235,7 +239,7 @@ async function activateProcess(
 ): Promise<{ id: string; status: string; isActiveVersion: boolean }> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${processId}/activate`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({}),
 	});
 	if (!res.ok) throw new Error("Failed to activate process");
@@ -255,7 +259,7 @@ async function deprecateProcess(
 		`${API_URL}/api/v1/processes/${processId}/deprecate`,
 		{
 			method: "PUT",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({ deprecation_reason: deprecationReason }),
 		},
 	);
@@ -266,6 +270,7 @@ async function deprecateProcess(
 async function deleteProcess(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/processes/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete process");
 }
@@ -278,6 +283,7 @@ async function fetchProcessStats(projectId: string): Promise<{
 }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/processes/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch process stats");
 	const data = await res.json();
@@ -300,7 +306,7 @@ async function createExecution(
 		`${API_URL}/api/v1/processes/${processId}/executions`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				process_id: processId,
 				trigger_item_id: triggerItemId,
@@ -324,6 +330,7 @@ async function fetchExecutions(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/processes/${processId}/executions?${params}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch executions");
 	const data = await res.json();
@@ -334,7 +341,9 @@ async function fetchExecutions(
 }
 
 async function fetchExecution(executionId: string): Promise<ProcessExecution> {
-	const res = await fetch(`${API_URL}/api/v1/executions/${executionId}`);
+	const res = await fetch(`${API_URL}/api/v1/executions/${executionId}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch execution");
 	const data = await res.json();
 	return transformExecution(data);
@@ -345,6 +354,7 @@ async function startExecution(
 ): Promise<{ id: string; status: string }> {
 	const res = await fetch(`${API_URL}/api/v1/executions/${executionId}/start`, {
 		method: "POST",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to start execution");
 	return res.json();
@@ -362,6 +372,7 @@ async function advanceExecution(
 		`${API_URL}/api/v1/executions/${executionId}/advance?stage_id=${stageId}`,
 		{
 			method: "POST",
+			headers: getAuthHeaders(),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to advance execution");
@@ -382,7 +393,7 @@ async function completeExecution(
 		`${API_URL}/api/v1/executions/${executionId}/complete`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				result_summary: resultSummary,
 				output_item_ids: outputItemIds,

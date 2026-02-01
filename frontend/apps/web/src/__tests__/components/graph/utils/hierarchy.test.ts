@@ -1,20 +1,21 @@
 // Tests for hierarchy utilities
-import { describe, it, expect, beforeEach } from "vitest";
+
 import type { Item, Link } from "@tracertm/types";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
 	buildHierarchy,
-	getDepth,
-	getParent,
-	getChildren,
-	getAncestorChain,
-	getDescendantNodes,
-	getBreadcrumbPath,
 	findCommonAncestor,
+	getAncestorChain,
+	getBreadcrumbPath,
+	getChildren,
+	getDepth,
+	getDescendantNodes,
+	getHierarchyStats,
+	getItemsAtDepth,
+	getParent,
 	getSiblings,
 	isAncestor,
 	isDescendant,
-	getItemsAtDepth,
-	getHierarchyStats,
 } from "../../../../components/graph/utils/hierarchy";
 
 describe("Hierarchy Utilities", () => {

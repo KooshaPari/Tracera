@@ -1,5 +1,6 @@
 // Settings API stub
 import { apiClient, safeApiCall } from "./client";
+import { logger } from "@/lib/logger";
 
 export interface Settings {
 	general: {
@@ -113,6 +114,6 @@ export const saveSettings = async (settings: {
 		});
 	} catch (_error) {
 		// Settings endpoint may not exist yet, that's okay
-		console.log("Settings saved locally:", settings);
+		logger.info("Settings saved locally:", settings);
 	}
 };

@@ -2,12 +2,12 @@
 // Renders aggregated items as a single expandable node
 // Supports expanding/collapsing with animated transitions
 
+import type { Item } from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
-import { cn } from "@tracertm/ui";
-import type { Item } from "@tracertm/types";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, type NodeProps, Position } from "@xyflow/react";
 import {
 	ChevronDown,
 	ChevronRight,
@@ -16,8 +16,8 @@ import {
 	Minimize2,
 } from "lucide-react";
 import { memo, useCallback } from "react";
-import { getTypeColor } from "./utils/typeStyles";
 import type { AggregateGroup } from "../../utils/aggregation";
+import { getTypeColor } from "./utils/typeStyles";
 
 /**
  * Data structure for aggregate group node
@@ -42,25 +42,25 @@ function isAggregateNodeData(data: unknown): data is AggregateNodeData {
 
 	// Validate group property
 	if (
-		typeof obj.group !== "object" ||
-		obj.group === null ||
-		typeof (obj.group as Record<string, unknown>).id !== "string"
+		typeof obj['group'] !== "object" ||
+		obj['group'] === null ||
+		typeof (obj['group'] as Record<string, unknown>)['id'] !== "string"
 	) {
 		return false;
 	}
 
 	// Validate items array
-	if (!Array.isArray(obj.items)) {
+	if (!Array.isArray(obj['items'])) {
 		return false;
 	}
 
 	// Validate isExpanded boolean
-	if (typeof obj.isExpanded !== "boolean") {
+	if (typeof obj['isExpanded'] !== "boolean") {
 		return false;
 	}
 
 	// Validate onToggle function
-	if (typeof obj.onToggle !== "function") {
+	if (typeof obj['onToggle'] !== "function") {
 		return false;
 	}
 
@@ -248,16 +248,16 @@ function ExpandedGroupView({
  * Aggregate group node component
  */
 function AggregateGroupNodeComponent({ data: nodeData, selected }: NodeProps) {
+	const handleToggle = useCallback(() => {
+		if (isAggregateNodeData(nodeData)) nodeData.onToggle(nodeData.group.id);
+	}, [nodeData]);
+
 	if (!isAggregateNodeData(nodeData)) {
-		console.error("Invalid AggregateNodeData structure:", nodeData);
+		logger.error("Invalid AggregateNodeData structure:", nodeData);
 		return null;
 	}
 
 	const data = nodeData;
-
-	const handleToggle = useCallback(() => {
-		data.onToggle(data.group.id);
-	}, [data]);
 
 	return (
 		<div

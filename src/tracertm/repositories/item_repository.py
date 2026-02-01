@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import ConcurrencyError
@@ -44,66 +44,92 @@ class ItemRepository:
             if parent_item.project_id != project_id:
                 raise ValueError(f"Parent item {parent_id} not in same project")
 
-        node_kind = await self.session.execute(
-            select(NodeKind).where(
-                NodeKind.project_id == project_id,
-                NodeKind.name == item_type,
-            )
-        )
-        node_kind_obj = node_kind.scalar_one_or_none()
-        if not node_kind_obj:
-            node_kind_obj = NodeKind(
-                id=str(uuid4()),
-                project_id=project_id,
-                name=item_type,
-                description=None,
-                kind_metadata={},
-            )
-            self.session.add(node_kind_obj)
-            await self.session.flush()
+        supports_node_kinds = await self._table_exists("node_kinds")
+        supports_views = await self._table_exists("views")
+        supports_item_views = await self._table_exists("item_views")
 
-        view_result = await self.session.execute(
-            select(View).where(View.project_id == project_id, View.name == view)
-        )
-        view_obj = view_result.scalar_one_or_none()
-        if not view_obj:
-            view_obj = View(
-                id=str(uuid4()),
-                project_id=project_id,
-                name=view,
-                description=None,
-                view_metadata={},
+        node_kind_obj = None
+        if supports_node_kinds:
+            node_kind = await self.session.execute(
+                select(NodeKind).where(
+                    NodeKind.project_id == project_id,
+                    NodeKind.name == item_type,
+                )
             )
-            self.session.add(view_obj)
-            await self.session.flush()
+            node_kind_obj = node_kind.scalar_one_or_none()
+            if not node_kind_obj:
+                node_kind_obj = NodeKind(
+                    id=str(uuid4()),
+                    project_id=project_id,
+                    name=item_type,
+                    description=None,
+                    kind_metadata={},
+                )
+                self.session.add(node_kind_obj)
+                await self.session.flush()
+
+        view_obj = None
+        if supports_views:
+            view_result = await self.session.execute(
+                select(View).where(View.project_id == project_id, View.name == view)
+            )
+            view_obj = view_result.scalar_one_or_none()
+            if not view_obj:
+                view_obj = View(
+                    id=str(uuid4()),
+                    project_id=project_id,
+                    name=view,
+                    description=None,
+                    view_metadata={},
+                )
+                self.session.add(view_obj)
+                await self.session.flush()
+
+        priority_value: int | None
+        if isinstance(priority, int) or priority is None:
+            priority_value = priority
+        else:
+            priority_map = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+            priority_value = priority_map.get(str(priority).lower(), 0)
 
         item = Item(
-            id=str(uuid4()),
+            id=uuid4(),
             project_id=project_id,
             title=title,
             description=description,
-            view=view,
-            item_type=item_type,
-            node_kind_id=node_kind_obj.id,
+            view=view or item_type,
             status=status,
             parent_id=parent_id,
             item_metadata=metadata or {},
-            owner=owner,
-            priority=priority,
+            priority=priority_value,
             version=1,
         )
         self.session.add(item)
         await self.session.flush()
-        self.session.add(
-            ItemView(
-                item_id=item.id,
-                view_id=view_obj.id,
-                project_id=project_id,
-                is_primary=True,
+        if supports_item_views and view_obj is not None:
+            self.session.add(
+                ItemView(
+                    item_id=item.id,
+                    view_id=view_obj.id,
+                    project_id=project_id,
+                    is_primary=True,
+                )
             )
-        )
         await self.session.refresh(item)
         return item
+
+    async def _table_exists(self, table_name: str) -> bool:
+        result = await self.session.execute(
+            text(
+                """
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = :table
+                """
+            ),
+            {"table": table_name},
+        )
+        return result.scalar() is not None
 
     async def get_by_id(self, item_id: str, project_id: str | None = None) -> Item | None:
         """Get item by ID, optionally scoped to project."""

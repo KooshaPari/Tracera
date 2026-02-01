@@ -8,6 +8,7 @@ Create Date: 2026-01-30 00:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.sqlite import JSON
 
 # revision identifiers, used by Alembic.
@@ -22,7 +23,7 @@ def upgrade() -> None:
     op.create_table(
         "adrs",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("project_id", sa.String(255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
         sa.Column("adr_number", sa.String(50), nullable=False),
         sa.Column("title", sa.String(255), nullable=False),
         sa.Column("status", sa.String(50), nullable=False),
@@ -53,8 +54,8 @@ def upgrade() -> None:
     op.create_table(
         "contracts",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("project_id", sa.String(255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("item_id", sa.String(255), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False),
         sa.Column("contract_number", sa.String(50), nullable=False),
         sa.Column("title", sa.String(255), nullable=False),
         sa.Column("contract_type", sa.String(50), nullable=False),
@@ -81,7 +82,7 @@ def upgrade() -> None:
     op.create_table(
         "features",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("project_id", sa.String(255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
         sa.Column("feature_number", sa.String(50), nullable=False),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
@@ -132,7 +133,7 @@ def upgrade() -> None:
     op.create_table(
         "requirement_quality",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("item_id", sa.String(255), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False, unique=True),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False, unique=True),
         sa.Column("smells", JSON(), nullable=True),
         sa.Column("ambiguity_score", sa.Float(), server_default="0.0", nullable=False),
         sa.Column("completeness_score", sa.Float(), server_default="0.0", nullable=False),

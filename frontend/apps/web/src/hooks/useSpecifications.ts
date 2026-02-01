@@ -1,26 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { logger } from '@/lib/logger';
 import type {
 	ADR,
-	ADRStatus,
 	ADRActivity,
 	ADRStats,
+	ADRStatus,
 	Contract,
+	ContractActivity,
+	ContractStats,
 	ContractStatus,
 	ContractType,
-	ContractStats,
-	ContractActivity,
 	Feature,
-	FeatureStatus,
-	FeatureStats,
 	FeatureActivity,
+	FeatureStats,
+	FeatureStatus,
 	Scenario,
+	ScenarioActivity,
 	ScenarioStatus,
 	ScenarioStep,
-	ScenarioActivity,
 	SpecificationSummary,
 } from "@tracertm/types";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Helper to get auth token for fetch requests
 function getAuthHeaders(): HeadersInit {
@@ -30,7 +31,7 @@ function getAuthHeaders(): HeadersInit {
 			: null;
 	const headers: HeadersInit = {};
 	if (token) {
-		headers["Authorization"] = `Bearer ${token}`;
+		headers.Authorization = `Bearer ${token}`;
 	}
 	return headers;
 }
@@ -174,7 +175,7 @@ async function fetchADRs(
 	if (filters.tags?.length) params.set("tags", filters.tags.join(","));
 
 	const res = await fetch(`${API_URL}/api/v1/adrs?${params}`, {
-		headers: { "X-Bulk-Operation": "true" },
+		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -188,7 +189,9 @@ async function fetchADRs(
 }
 
 async function fetchADR(id: string): Promise<ADR> {
-	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch ADR");
 	const data = await res.json();
 	return transformADR(data);
@@ -212,7 +215,7 @@ async function createADR(
 ): Promise<{ id: string; adrNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/adrs`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			project_id: data.projectId,
 			title: data.title,
@@ -249,21 +252,21 @@ async function updateADR(
 	data: UpdateADRData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data.title !== undefined) body["title"] = data.title;
-	if (data.context !== undefined) body["context"] = data.context;
-	if (data.decision !== undefined) body["decision"] = data.decision;
-	if (data.consequences !== undefined) body["consequences"] = data.consequences;
-	if (data.status !== undefined) body["status"] = data.status;
+	if (data.title !== undefined) body.title = data.title;
+	if (data.context !== undefined) body.context = data.context;
+	if (data.decision !== undefined) body.decision = data.decision;
+	if (data.consequences !== undefined) body.consequences = data.consequences;
+	if (data.status !== undefined) body.status = data.status;
 	if (data.decisionDrivers !== undefined)
-		body["decision_drivers"] = data.decisionDrivers;
-	if (data.deciders !== undefined) body["deciders"] = data.deciders;
-	if (data.stakeholders !== undefined) body["stakeholders"] = data.stakeholders;
-	if (data.tags !== undefined) body["tags"] = data.tags;
-	if (data.metadata !== undefined) body["metadata"] = data.metadata;
+		body.decision_drivers = data.decisionDrivers;
+	if (data.deciders !== undefined) body.deciders = data.deciders;
+	if (data.stakeholders !== undefined) body.stakeholders = data.stakeholders;
+	if (data.tags !== undefined) body.tags = data.tags;
+	if (data.metadata !== undefined) body.metadata = data.metadata;
 
 	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
 	});
 	if (!res.ok) throw new Error("Failed to update ADR");
@@ -271,7 +274,10 @@ async function updateADR(
 }
 
 async function deleteADR(id: string): Promise<void> {
-	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, { method: "DELETE" });
+	const res = await fetch(`${API_URL}/api/v1/adrs/${id}`, {
+		method: "DELETE",
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to delete ADR");
 }
 
@@ -281,7 +287,7 @@ async function verifyADR(
 ): Promise<{ id: string; complianceScore: number; lastVerifiedAt: string }> {
 	const res = await fetch(`${API_URL}/api/v1/adrs/${id}/verify`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({ verification_notes: notes }),
 	});
 	if (!res.ok) throw new Error("Failed to verify ADR");
@@ -294,7 +300,9 @@ async function verifyADR(
 }
 
 async function fetchADRActivities(adrId: string): Promise<ADRActivity[]> {
-	const res = await fetch(`${API_URL}/api/v1/adrs/${adrId}/activities`);
+	const res = await fetch(`${API_URL}/api/v1/adrs/${adrId}/activities`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch ADR activities");
 	const data = await res.json();
 	return (data.activities || []).map((a: any) => ({
@@ -314,6 +322,7 @@ async function fetchContractActivities(
 ): Promise<ContractActivity[]> {
 	const res = await fetch(
 		`${API_URL}/api/v1/contracts/${contractId}/activities`,
+		{ headers: getAuthHeaders() as Record<string, string> },
 	);
 	if (!res.ok) throw new Error("Failed to fetch contract activities");
 	const data = await res.json();
@@ -332,7 +341,9 @@ async function fetchContractActivities(
 async function fetchFeatureActivities(
 	featureId: string,
 ): Promise<FeatureActivity[]> {
-	const res = await fetch(`${API_URL}/api/v1/features/${featureId}/activities`);
+	const res = await fetch(`${API_URL}/api/v1/features/${featureId}/activities`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch feature activities");
 	const data = await res.json();
 	return (data.activities || []).map((a: any) => ({
@@ -349,9 +360,74 @@ async function fetchFeatureActivities(
 
 async function fetchScenarioActivities(
 	scenarioId: string,
-): Promise<ScenarioActivity[]> {
+	options: { limit?: number; offset?: number } = {},
+): Promise<{ activities: ScenarioActivity[]; total: number }> {
+	const params = new URLSearchParams();
+	if (options.limit !== undefined) params.set("limit", String(options.limit));
+	if (options.offset !== undefined)
+		params.set("offset", String(options.offset));
 	const res = await fetch(
-		`${API_URL}/api/v1/features/scenarios/${scenarioId}/activities`,
+		`${API_URL}/api/v1/specifications/scenarios/${scenarioId}/activities?${params}`,
+		{ headers: getAuthHeaders() as Record<string, string> },
+	);
+	if (!res.ok) throw new Error("Failed to fetch scenario activities");
+	const data = await res.json();
+	return {
+		activities: (data.activities || []).map((a: any) => ({
+			id: a.id,
+			scenarioId: a.scenario_id,
+			activityType: a.activity_type,
+			fromValue: a.from_value,
+			toValue: a.to_value,
+			description: a.description,
+			performedBy: a.performed_by,
+			createdAt: a.created_at,
+		})),
+		total: data.total || 0,
+	};
+}
+
+async function fetchProjectScenarios(
+	projectId: string,
+	status?: string,
+): Promise<{ scenarios: Scenario[]; total: number }> {
+	const params = new URLSearchParams();
+	if (status) params.set("status", status);
+	const res = await fetch(
+		`${API_URL}/api/v1/specifications/projects/${projectId}/scenarios?${params}`,
+		{ headers: getAuthHeaders() as Record<string, string> },
+	);
+	if (!res.ok) {
+		const errorText = await res.text();
+		throw new Error(`Failed to fetch scenarios: ${res.status} ${errorText}`);
+	}
+	const data = await res.json();
+	return {
+		scenarios: (data.scenarios || []).map(transformScenario),
+		total: data.total || 0,
+	};
+}
+
+async function fetchProjectScenarioActivities(
+	projectId: string,
+	options: {
+		limit?: number;
+		offset?: number;
+		eventType?: string;
+		since?: string;
+		until?: string;
+	} = {},
+): Promise<ScenarioActivity[]> {
+	const params = new URLSearchParams();
+	if (options.limit !== undefined) params.set("limit", String(options.limit));
+	if (options.offset !== undefined)
+		params.set("offset", String(options.offset));
+	if (options.eventType) params.set("event_type", options.eventType);
+	if (options.since) params.set("since", options.since);
+	if (options.until) params.set("until", options.until);
+	const res = await fetch(
+		`${API_URL}/api/v1/specifications/projects/${projectId}/scenarios/activities?${params}`,
+		{ headers: getAuthHeaders() as Record<string, string> },
 	);
 	if (!res.ok) throw new Error("Failed to fetch scenario activities");
 	const data = await res.json();
@@ -368,7 +444,9 @@ async function fetchScenarioActivities(
 }
 
 async function fetchADRStats(projectId: string): Promise<ADRStats> {
-	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/adrs/stats`);
+	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/adrs/stats`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch ADR stats");
 	const data = await res.json();
 	return {
@@ -402,7 +480,7 @@ async function fetchContracts(
 	if (filters.search) params.set("search", filters.search);
 
 	const res = await fetch(`${API_URL}/api/v1/contracts?${params}`, {
-		headers: { "X-Bulk-Operation": "true" },
+		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -416,7 +494,9 @@ async function fetchContracts(
 }
 
 async function fetchContract(id: string): Promise<Contract> {
-	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch contract");
 	const data = await res.json();
 	return transformContract(data);
@@ -440,7 +520,7 @@ async function createContract(
 ): Promise<{ id: string; contractNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/contracts`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			project_id: data.projectId,
 			item_id: data.itemId,
@@ -475,20 +555,19 @@ async function updateContract(
 	data: UpdateContractData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data.title !== undefined) body["title"] = data.title;
-	if (data.description !== undefined) body["description"] = data.description;
-	if (data.status !== undefined) body["status"] = data.status;
-	if (data.preconditions !== undefined)
-		body["preconditions"] = data.preconditions;
+	if (data.title !== undefined) body.title = data.title;
+	if (data.description !== undefined) body.description = data.description;
+	if (data.status !== undefined) body.status = data.status;
+	if (data.preconditions !== undefined) body.preconditions = data.preconditions;
 	if (data.postconditions !== undefined)
-		body["postconditions"] = data.postconditions;
-	if (data.invariants !== undefined) body["invariants"] = data.invariants;
-	if (data.tags !== undefined) body["tags"] = data.tags;
-	if (data.metadata !== undefined) body["metadata"] = data.metadata;
+		body.postconditions = data.postconditions;
+	if (data.invariants !== undefined) body.invariants = data.invariants;
+	if (data.tags !== undefined) body.tags = data.tags;
+	if (data.metadata !== undefined) body.metadata = data.metadata;
 
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
 	});
 	if (!res.ok) throw new Error("Failed to update contract");
@@ -498,6 +577,7 @@ async function updateContract(
 async function deleteContract(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders() as Record<string, string>,
 	});
 	if (!res.ok) throw new Error("Failed to delete contract");
 }
@@ -513,7 +593,7 @@ async function verifyContract(id: string): Promise<{
 }> {
 	const res = await fetch(`${API_URL}/api/v1/contracts/${id}/verify`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({}),
 	});
 	if (!res.ok) throw new Error("Failed to verify contract");
@@ -523,6 +603,7 @@ async function verifyContract(id: string): Promise<{
 async function fetchContractStats(projectId: string): Promise<ContractStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/contracts/stats`,
+		{ headers: getAuthHeaders() as Record<string, string> },
 	);
 	if (!res.ok) throw new Error("Failed to fetch contract stats");
 	const data = await res.json();
@@ -555,7 +636,7 @@ async function fetchFeatures(
 	if (filters.search) params.set("search", filters.search);
 
 	const res = await fetch(`${API_URL}/api/v1/features?${params}`, {
-		headers: { "X-Bulk-Operation": "true" },
+		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -569,7 +650,9 @@ async function fetchFeatures(
 }
 
 async function fetchFeature(id: string): Promise<Feature> {
-	const res = await fetch(`${API_URL}/api/v1/features/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/features/${id}`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch feature");
 	const data = await res.json();
 	return transformFeature(data);
@@ -592,7 +675,7 @@ async function createFeature(
 ): Promise<{ id: string; featureNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/features`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			project_id: data.projectId,
 			name: data.name,
@@ -627,19 +710,19 @@ async function updateFeature(
 	data: UpdateFeatureData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data.name !== undefined) body["name"] = data.name;
-	if (data.description !== undefined) body["description"] = data.description;
-	if (data.asA !== undefined) body["as_a"] = data.asA;
-	if (data.iWant !== undefined) body["i_want"] = data.iWant;
-	if (data.soThat !== undefined) body["so_that"] = data.soThat;
-	if (data.status !== undefined) body["status"] = data.status;
-	if (data.filePath !== undefined) body["file_path"] = data.filePath;
-	if (data.tags !== undefined) body["tags"] = data.tags;
-	if (data.metadata !== undefined) body["metadata"] = data.metadata;
+	if (data.name !== undefined) body.name = data.name;
+	if (data.description !== undefined) body.description = data.description;
+	if (data.asA !== undefined) body.as_a = data.asA;
+	if (data.iWant !== undefined) body.i_want = data.iWant;
+	if (data.soThat !== undefined) body.so_that = data.soThat;
+	if (data.status !== undefined) body.status = data.status;
+	if (data.filePath !== undefined) body.file_path = data.filePath;
+	if (data.tags !== undefined) body.tags = data.tags;
+	if (data.metadata !== undefined) body.metadata = data.metadata;
 
 	const res = await fetch(`${API_URL}/api/v1/features/${id}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
 	});
 	if (!res.ok) throw new Error("Failed to update feature");
@@ -649,6 +732,7 @@ async function updateFeature(
 async function deleteFeature(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/features/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders() as Record<string, string>,
 	});
 	if (!res.ok) throw new Error("Failed to delete feature");
 }
@@ -656,6 +740,7 @@ async function deleteFeature(id: string): Promise<void> {
 async function fetchFeatureStats(projectId: string): Promise<FeatureStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/features/stats`,
+		{ headers: getAuthHeaders() as Record<string, string> },
 	);
 	if (!res.ok) throw new Error("Failed to fetch feature stats");
 	const data = await res.json();
@@ -684,7 +769,7 @@ async function fetchScenarios(
 	params.set("feature_id", featureId);
 
 	const res = await fetch(`${API_URL}/api/v1/scenarios?${params}`, {
-		headers: { "X-Bulk-Operation": "true" },
+		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -698,7 +783,9 @@ async function fetchScenarios(
 }
 
 async function fetchScenario(id: string): Promise<Scenario> {
-	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`, {
+		headers: getAuthHeaders() as Record<string, string>,
+	});
 	if (!res.ok) throw new Error("Failed to fetch scenario");
 	const data = await res.json();
 	return transformScenario(data);
@@ -722,7 +809,7 @@ async function createScenario(
 ): Promise<{ id: string; scenarioNumber: string }> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			feature_id: data.featureId,
 			title: data.title,
@@ -758,20 +845,20 @@ async function updateScenario(
 	data: UpdateScenarioData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data.title !== undefined) body["title"] = data.title;
-	if (data.description !== undefined) body["description"] = data.description;
-	if (data.gherkinText !== undefined) body["gherkin_text"] = data.gherkinText;
-	if (data.givenSteps !== undefined) body["given_steps"] = data.givenSteps;
-	if (data.whenSteps !== undefined) body["when_steps"] = data.whenSteps;
-	if (data.thenSteps !== undefined) body["then_steps"] = data.thenSteps;
-	if (data.tags !== undefined) body["tags"] = data.tags;
+	if (data.title !== undefined) body.title = data.title;
+	if (data.description !== undefined) body.description = data.description;
+	if (data.gherkinText !== undefined) body.gherkin_text = data.gherkinText;
+	if (data.givenSteps !== undefined) body.given_steps = data.givenSteps;
+	if (data.whenSteps !== undefined) body.when_steps = data.whenSteps;
+	if (data.thenSteps !== undefined) body.then_steps = data.thenSteps;
+	if (data.tags !== undefined) body.tags = data.tags;
 	if (data.requirementIds !== undefined)
-		body["requirement_ids"] = data.requirementIds;
-	if (data.metadata !== undefined) body["metadata"] = data.metadata;
+		body.requirement_ids = data.requirementIds;
+	if (data.metadata !== undefined) body.metadata = data.metadata;
 
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(body),
 	});
 	if (!res.ok) throw new Error("Failed to update scenario");
@@ -781,6 +868,7 @@ async function updateScenario(
 async function deleteScenario(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders() as Record<string, string>,
 	});
 	if (!res.ok) throw new Error("Failed to delete scenario");
 }
@@ -794,7 +882,7 @@ async function runScenario(id: string): Promise<{
 }> {
 	const res = await fetch(`${API_URL}/api/v1/scenarios/${id}/run`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({}),
 	});
 	if (!res.ok) throw new Error("Failed to run scenario");
@@ -813,6 +901,7 @@ async function fetchSpecificationSummary(
 ): Promise<SpecificationSummary> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/specifications/summary`,
+		{ headers: getAuthHeaders() as Record<string, string> },
 	);
 	if (!res.ok) throw new Error("Failed to fetch specification summary");
 	return res.json();
@@ -918,11 +1007,39 @@ export function useFeatureActivities(featureId: string) {
 	});
 }
 
-export function useScenarioActivities(scenarioId: string) {
+export function useScenarioActivities(
+	scenarioId: string,
+	options?: { limit?: number; offset?: number },
+) {
 	return useQuery({
-		queryKey: ["scenarioActivities", scenarioId],
-		queryFn: () => fetchScenarioActivities(scenarioId),
+		queryKey: ["scenarioActivities", scenarioId, options],
+		queryFn: () => fetchScenarioActivities(scenarioId, options),
 		enabled: !!scenarioId,
+	});
+}
+
+export function useProjectScenarios(projectId: string, status?: string) {
+	return useQuery({
+		queryKey: ["projectScenarios", projectId, status],
+		queryFn: () => fetchProjectScenarios(projectId, status),
+		enabled: !!projectId,
+	});
+}
+
+export function useProjectScenarioActivities(
+	projectId: string,
+	options?: {
+		limit?: number;
+		offset?: number;
+		eventType?: string;
+		since?: string;
+		until?: string;
+	},
+) {
+	return useQuery({
+		queryKey: ["projectScenarioActivities", projectId, options],
+		queryFn: () => fetchProjectScenarioActivities(projectId, options),
+		enabled: !!projectId,
 	});
 }
 
@@ -1233,7 +1350,7 @@ async function fetchQualityReports(
 			// If quality doesn't exist for this item, skip it (404 is expected)
 			return null;
 		} catch (error) {
-			console.warn(`Failed to fetch quality for item ${item.id}:`, error);
+			logger.warn(`Failed to fetch quality for item ${item.id}:`, error);
 			return null;
 		}
 	});

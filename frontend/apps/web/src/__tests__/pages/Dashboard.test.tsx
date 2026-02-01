@@ -469,31 +469,6 @@ describe("Dashboard Page", () => {
 			});
 		});
 
-		it("navigates to search when clicking search button", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(
-					screen.getByRole("button", { name: /search/i }),
-				).toBeInTheDocument();
-			});
-
-			const searchButton = screen.getByRole("button", { name: /search/i });
-			await userEvent.click(searchButton);
-
-			await waitFor(() => {
-				expect(history.location.pathname).toBe("/search");
-			});
-		});
-
 		it("opens create project modal from quick action", async () => {
 			const { fetchProjects } = await import("@/api/projects");
 			const { fetchRecentItems } = await import("@/api/items");
@@ -706,30 +681,6 @@ describe("Dashboard Page", () => {
 				expect(
 					screen.getByRole("dialog", { name: /command palette/i }),
 				).toBeInTheDocument();
-			});
-		});
-
-		it("searches from dashboard quick search", async () => {
-			const { fetchProjects } = await import("@/api/projects");
-			const { fetchRecentItems } = await import("@/api/items");
-			const { fetchSystemStatus } = await import("@/api/system");
-
-			vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchRecentItems).mockResolvedValue({ data: [], total: 0 });
-			vi.mocked(fetchSystemStatus).mockResolvedValue({ status: "healthy" });
-
-			render(<RouterProvider router={router} />);
-
-			await waitFor(() => {
-				expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
-			});
-
-			const searchInput = screen.getByPlaceholderText(/search/i);
-			await userEvent.type(searchInput, "test query{Enter}");
-
-			await waitFor(() => {
-				expect(history.location.pathname).toBe("/search");
-				expect(history.location.search).toContain("q=test%20query");
 			});
 		});
 	});

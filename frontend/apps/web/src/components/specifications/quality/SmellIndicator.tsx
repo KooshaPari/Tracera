@@ -1,6 +1,6 @@
+import type { SmellType } from "@tracertm/types";
 import { Badge, Tooltip, TooltipContent, TooltipTrigger } from "@tracertm/ui";
 import { ShieldAlert } from "lucide-react";
-import type { SmellType } from "@tracertm/types";
 
 interface SmellIndicatorProps {
 	smells: SmellType[];

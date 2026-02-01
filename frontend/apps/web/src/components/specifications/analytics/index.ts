@@ -3,44 +3,39 @@
  * Components for visualizing blockchain/NFT-like analytics and quality metrics
  */
 
-// EARS Pattern Analysis
-export { EARSPatternBadge, EARSPatternDetail } from "./EARSPatternBadge";
-
-// ISO 29148 Quality Dimensions
-export {
-	QualityDimensionRadar,
-	QualityDimensionBars,
-} from "./QualityDimensionRadar";
-
-// Quality Issues
-export {
-	QualityIssueList,
-	QualityIssueItem,
-	QualityIssueSummary,
-} from "./QualityIssueList";
-
-// Flakiness Detection
-export {
-	FlakinessIndicator,
-	FlakinessDetailCard,
-} from "./FlakinessIndicator";
-
-// IBM ODC Classification
-export {
-	ODCClassificationCard,
-	ODCBadge,
-	ODCTriggerBadge,
-} from "./ODCClassificationCard";
-
 // CVSS Security Scoring
 export {
+	CVSSDetailCard,
 	CVSSScoreBadge,
 	CVSSScoreGauge,
-	CVSSDetailCard,
 } from "./CVSSScoreBadge";
-
+// EARS Pattern Analysis
+export { EARSPatternBadge, EARSPatternDetail } from "./EARSPatternBadge";
+// Flakiness Detection
+export {
+	FlakinessDetailCard,
+	FlakinessIndicator,
+} from "./FlakinessIndicator";
 // Impact Analysis
 export {
 	ImpactAnalysisGraph,
 	ImpactSummaryBadge,
 } from "./ImpactAnalysisGraph";
+
+// IBM ODC Classification
+export {
+	ODCBadge,
+	ODCClassificationCard,
+	ODCTriggerBadge,
+} from "./ODCClassificationCard";
+// ISO 29148 Quality Dimensions
+export {
+	QualityDimensionBars,
+	QualityDimensionRadar,
+} from "./QualityDimensionRadar";
+// Quality Issues
+export {
+	QualityIssueItem,
+	QualityIssueList,
+	QualityIssueSummary,
+} from "./QualityIssueList";

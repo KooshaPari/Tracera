@@ -26,7 +26,7 @@ import {
 	TestTube,
 	Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -43,6 +43,12 @@ import {
 import { toast } from "sonner";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
+
+function formatProjectDate(value: string | null | undefined): string {
+	if (value == null || value === "") return "—";
+	const d = new Date(value);
+	return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+}
 import { useItems } from "../hooks/useItems";
 import { useLinks } from "../hooks/useLinks";
 import { useProject } from "../hooks/useProjects";
@@ -90,14 +96,23 @@ export function ProjectDetailView() {
 	const items = itemsData?.items || [];
 	const itemsTotal = itemsData?.total || 0;
 	const linksTotal = linksData?.total || 0;
-	const { setCurrentProject } = useProjectStore();
+	// Subscribe only to the setter so store updates (currentProject/recentProjects) don't re-render this component and cause an update loop
+	const setCurrentProject = useProjectStore((s) => s.setCurrentProject);
+	const lastSyncedProjectIdRef = useRef<string | null>(null);
 
-	// Use useEffect instead of useMemo for side effects (setting state)
+	// Sync project to store only when project id changes to avoid infinite update loops
 	useEffect(() => {
-		if (project) {
-			setCurrentProject(project);
+		if (!project) {
+			if (lastSyncedProjectIdRef.current !== null) {
+				lastSyncedProjectIdRef.current = null;
+				setCurrentProject(null);
+			}
+			return;
 		}
-	}, [project, setCurrentProject]);
+		if (lastSyncedProjectIdRef.current === project.id) return;
+		lastSyncedProjectIdRef.current = project.id;
+		setCurrentProject(project);
+	}, [project?.id, project, setCurrentProject]);
 
 	const stats = useMemo(() => {
 		const byStatus = items.reduce(
@@ -174,25 +189,27 @@ export function ProjectDetailView() {
 						</div>
 						<div>
 							<h1 className="text-3xl font-black tracking-tight">
-								{getProjectDisplayName(project)}
+								{getProjectDisplayName(project) || "Unnamed Project"}
 							</h1>
 							<div className="flex items-center gap-2 mt-1">
 								<Badge
 									variant="outline"
 									className="font-bold uppercase tracking-tighter text-[10px]"
 								>
-									{projectId?.slice(0, 8)}
+									{projectId?.slice(0, 8) ?? "—"}
 								</Badge>
 								<span className="text-xs text-muted-foreground flex items-center gap-1">
 									<Calendar className="h-3 w-3" />
-									{new Date(project.createdAt || "").toLocaleDateString()}
+									{formatProjectDate(project.createdAt)}
 								</span>
 							</div>
 						</div>
 					</div>
-					<p className="text-muted-foreground leading-relaxed">
-						{project.description || "No project description provided."}
-					</p>
+					{(project.description ?? "").trim() ? (
+						<p className="text-muted-foreground leading-relaxed">
+							{project.description}
+						</p>
+					) : null}
 				</div>
 				<div className="flex gap-2 shrink-0">
 					<Button
@@ -209,13 +226,15 @@ export function ProjectDetailView() {
 						className="gap-2 rounded-full px-4"
 						onClick={() =>
 							navigate({
-								to: "/items",
-								search: { project: project.id, action: "create" } as any,
+								to: "/projects/$projectId/views/$viewType",
+								params: { projectId: project.id, viewType: "feature" },
+								search: { action: "create" } as any,
 							})
 						}
+						aria-label="New Feature"
 					>
 						<Plus className="h-4 w-4" />
-						New Item
+						New Feature
 					</Button>
 				</div>
 			</div>
@@ -231,15 +250,15 @@ export function ProjectDetailView() {
 						progress: stats.completionRate,
 					},
 					{
-						label: "Traceability",
-						value: linksTotal,
+						label: "Active Links",
+						value: typeof linksTotal === "number" ? linksTotal.toLocaleString() : String(linksTotal),
 						icon: Network,
 						color: "text-purple-500",
-						sub: "Active Links",
+						sub: "Traceability links",
 					},
 					{
 						label: "Total Items",
-						value: itemsTotal,
+						value: typeof itemsTotal === "number" ? itemsTotal.toLocaleString() : String(itemsTotal),
 						icon: Layers,
 						color: "text-green-500",
 						sub: "Across all types",
@@ -248,9 +267,7 @@ export function ProjectDetailView() {
 						label: "Risk Level",
 						value: stats.byStatus["blocked"] ? "High" : "Low",
 						icon: AlertCircle,
-						color: stats.byStatus["blocked"]
-							? "text-red-500"
-							: "text-emerald-500",
+						color: stats.byStatus["blocked"] ? "text-red-500" : "text-emerald-500",
 						sub: `${stats.byStatus["blocked"] || 0} Blockers`,
 					},
 				].map((card, i) => (
@@ -359,7 +376,7 @@ export function ProjectDetailView() {
 									tick={{ fill: "hsl(var(--muted-foreground))" }}
 								/>
 								<Radar
-									name="Project"
+									name="Coverage"
 									dataKey="A"
 									stroke="hsl(var(--primary))"
 									fill="hsl(var(--primary))"
@@ -504,8 +521,8 @@ export function ProjectDetailView() {
 							className="text-[10px] font-black uppercase tracking-widest"
 							onClick={() =>
 								navigate({
-									to: "/items",
-									search: { project: project.id } as any,
+									to: "/projects/$projectId/views/$viewType",
+									params: { projectId: project.id, viewType: "feature" },
 								})
 							}
 						>
@@ -516,7 +533,7 @@ export function ProjectDetailView() {
 						{items.slice(0, 5).map((item) => (
 							<Link
 								key={item.id}
-								to={`/items/${item.id}`}
+								to={`/projects/${project.id}/views/${String(item.view || "feature").toLowerCase()}/${item.id}`}
 								className="cursor-pointer"
 							>
 								<div className="flex items-center gap-4 p-3 rounded-xl hover:bg-muted/50 transition-colors group border border-transparent hover:border-border/50">
@@ -541,7 +558,7 @@ export function ProjectDetailView() {
 									</div>
 									<div className="text-right shrink-0">
 										<div className="text-[10px] text-muted-foreground font-bold">
-											{new Date(item.createdAt || "").toLocaleDateString()}
+											{formatProjectDate(item.createdAt)}
 										</div>
 									</div>
 								</div>

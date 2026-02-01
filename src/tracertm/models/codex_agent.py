@@ -4,11 +4,12 @@ Codex Agent Interaction model for QA Integration system.
 Tracks AI agent tasks for code review, image/video analysis, and test generation.
 """
 
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base
@@ -47,7 +48,7 @@ class CodexAgentInteraction(Base):
         nullable=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )

@@ -60,7 +60,7 @@ describe("TraceabilityMatrixView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<TraceabilityMatrixView />
+				<TraceabilityMatrixView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 
@@ -87,7 +87,7 @@ describe("TraceabilityMatrixView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<TraceabilityMatrixView />
+				<TraceabilityMatrixView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 
@@ -126,7 +126,7 @@ describe("TraceabilityMatrixView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<TraceabilityMatrixView />
+				<TraceabilityMatrixView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 
@@ -151,7 +151,7 @@ describe("TraceabilityMatrixView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<TraceabilityMatrixView />
+				<TraceabilityMatrixView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 
@@ -175,7 +175,7 @@ describe("TraceabilityMatrixView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<TraceabilityMatrixView />
+				<TraceabilityMatrixView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 

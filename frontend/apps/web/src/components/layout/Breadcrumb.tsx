@@ -1,16 +1,16 @@
 import { Link, useMatches, useParams } from "@tanstack/react-router";
-import { Fragment, useMemo } from "react";
 import {
-	Breadcrumb as ShadcnBreadcrumb,
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
 	BreadcrumbPage,
 	BreadcrumbSeparator,
+	Breadcrumb as ShadcnBreadcrumb,
+	Skeleton,
 } from "@tracertm/ui";
-import { useProject } from "@/hooks/useProjects";
+import { Fragment, useMemo } from "react";
 import { useItem } from "@/hooks/useItems";
-import { Skeleton } from "@tracertm/ui";
+import { useProject } from "@/hooks/useProjects";
 
 interface BreadcrumbSegment {
 	label: string;
@@ -38,14 +38,16 @@ export function Breadcrumbs() {
 		const segments: BreadcrumbSegment[] = [];
 
 		matches.forEach((match) => {
-			if (match.pathname === "/" || match.pathname === "") {
+			const pathname = match?.pathname ?? "";
+			if (pathname === "/" || pathname === "") {
 				return;
 			}
 
-			const pathSegments = match.pathname.split("/").filter(Boolean);
+			const pathSegments = pathname.split("/").filter(Boolean);
 
 			pathSegments.forEach((segment, index) => {
-				const href = "/" + pathSegments.slice(0, index + 1).join("/");
+				if (segment == null || typeof segment !== "string") return;
+				const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
 
 				// Skip IDs and query parameters
 				if (segment.match(/^[a-f0-9-]{36}$/i) || segment.startsWith("?")) {
@@ -57,10 +59,24 @@ export function Breadcrumbs() {
 					return;
 				}
 
+				// Skip literal "null" segment (bad URL) — show fallback instead of "Null"
+				if (segment.toLowerCase() === "null") {
+					if (segment === projectId) {
+						segments.push({
+							label: project?.name?.trim() || "Project",
+							href,
+							isLoading: projectLoading,
+						});
+					} else {
+						segments.push({ label: "—", href });
+					}
+					return;
+				}
+
 				// Fetch project name if this is a project ID
 				if (segment === projectId && project) {
 					segments.push({
-						label: project.name || "Project",
+						label: (project.name ?? "Project").trim() || "Project",
 						href,
 						isLoading: projectLoading,
 					});
@@ -70,7 +86,7 @@ export function Breadcrumbs() {
 				// Fetch item name if this is an item ID
 				if (segment === itemId && currentItem) {
 					segments.push({
-						label: currentItem.title || "Item",
+						label: (currentItem.title ?? "Item").trim() || "Item",
 						href,
 						isLoading: itemLoading,
 					});
@@ -81,16 +97,18 @@ export function Breadcrumbs() {
 				const label = segment
 					.split(/[-_]/)
 					.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-					.join(" ");
+					.join(" ")
+					.trim();
 
 				// Add view type with special handling
 				if (segment === viewType && viewType) {
 					const viewLabel = viewType
 						.split("-")
 						.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-						.join(" ");
+						.join(" ")
+						.trim();
 					segments.push({
-						label: viewLabel,
+						label: viewLabel || "View",
 						href,
 					});
 				} else if (!segments.some((s) => s.label === label)) {
@@ -126,35 +144,36 @@ export function Breadcrumbs() {
 	return (
 		<ShadcnBreadcrumb
 			separator="/"
-			className="hidden lg:block"
+			className="hidden md:block max-w-full min-w-0"
 			aria-label="breadcrumb"
+			role="navigation"
 		>
 			<BreadcrumbList>
-				<BreadcrumbItem>
+				<BreadcrumbItem className="min-w-0">
 					<BreadcrumbLink
 						asChild
-						className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+						className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-widest text-muted-foreground hover:text-primary transition-colors truncate max-w-[110px] sm:max-w-[140px] md:max-w-[180px]"
 					>
-						<Link to="/">Dashboard</Link>
+						<Link to="/home">Dashboard</Link>
 					</BreadcrumbLink>
 				</BreadcrumbItem>
 
 				{uniqueBreadcrumbs.map((item, index) => (
 					<Fragment key={item.href}>
 						<BreadcrumbSeparator className="text-muted-foreground/50" />
-						<BreadcrumbItem>
+						<BreadcrumbItem className="min-w-0">
 							{item.isLoading ? (
 								<div className="flex items-center gap-2">
 									<Skeleton className="h-4 w-16" />
 								</div>
 							) : index === uniqueBreadcrumbs.length - 1 ? (
-								<BreadcrumbPage className="text-xs font-semibold uppercase tracking-widest text-primary">
+								<BreadcrumbPage className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-widest text-primary truncate max-w-[110px] sm:max-w-[160px] md:max-w-[220px] lg:max-w-[280px]">
 									{item.label}
 								</BreadcrumbPage>
 							) : (
 								<BreadcrumbLink
 									asChild
-									className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+									className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] sm:tracking-widest text-muted-foreground hover:text-primary transition-colors truncate max-w-[110px] sm:max-w-[140px] md:max-w-[180px]"
 								>
 									<Link to={item.href}>{item.label}</Link>
 								</BreadcrumbLink>

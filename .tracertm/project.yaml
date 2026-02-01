@@ -1,0 +1,14 @@
+# TraceRTM per-project configuration
+# This file can be committed to git.
+
+project:
+  id: null
+  name: null
+  description: null
+  remote:
+    api_url: null
+    workspace_id: null
+
+sync:
+  enabled: true
+  conflict_strategy: last_write_wins

@@ -1,18 +1,15 @@
+import type { BurndownDataPoint, Sprint } from "@atoms/types";
 import type React from "react";
 import { useMemo } from "react";
-import type { Sprint, BurndownDataPoint } from "@atoms/types";
 import {
-	LineChart,
+	CartesianGrid,
+	Legend,
 	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
-	ComposedChart,
-	Area,
-	AreaChart,
 } from "recharts";
 
 export interface BurndownChartProps {
@@ -182,8 +179,7 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 									(sprint.completedPoints /
 										Math.max(
 											Math.ceil(
-												(new Date().getTime() -
-													new Date(sprint.startDate).getTime()) /
+												(Date.now() - new Date(sprint.startDate).getTime()) /
 													(1000 * 60 * 60 * 24),
 											),
 											1,

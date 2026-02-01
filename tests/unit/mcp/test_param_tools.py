@@ -73,8 +73,8 @@ async def test_project_scope_enforced(monkeypatch):
     async def noop_query_items(**_kwargs):
         return {"items": []}
 
-    monkeypatch.setattr(param_tools.legacy, "select_project", noop_select_project)
-    monkeypatch.setattr(param_tools.legacy, "query_items", noop_query_items)
+    monkeypatch.setattr(param_tools.core, "select_project", noop_select_project)
+    monkeypatch.setattr(param_tools.core, "query_items", noop_query_items)
 
     with pytest.raises(Exception):
         await param_tools._item_manage_impl(action="query", payload={}, ctx=SimpleNamespace())

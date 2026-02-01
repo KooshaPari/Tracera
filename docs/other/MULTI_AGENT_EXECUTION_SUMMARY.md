@@ -13,6 +13,8 @@
 
 > "Achieve 100% code coverage across the Python codebase (unit, integration, API, E2E tests) using many task agents to audit current coverage and pass states, then plan needed tests and organization of test files/test cases"
 
+**Governance (planner vs executor):** Planner agents must never write code in documentation or plans; they equip engineer/executor agents or humans to create code or act on docs. Avoid stuffing docs/plans with code where not relevant.
+
 ---
 
 ## 📊 EXECUTION RESULTS

@@ -15,7 +15,7 @@ export const DialogOverlay = React.forwardRef<
 	<DialogPrimitive.Overlay
 		ref={ref}
 		className={cn(
-			"fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out",
+			"fixed inset-0 z-50 bg-black/80 transition-opacity duration-200 ease-out data-[state=open]:animate-in data-[state=closed]:animate-out",
 			className,
 		)}
 		{...props}
@@ -31,14 +31,15 @@ export const DialogContent = React.forwardRef<
 		<DialogOverlay />
 		<DialogPrimitive.Content
 			ref={ref}
-			className={cn(
-				"fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-lg border bg-background p-6 shadow-lg",
-				className,
-			)}
+		className={cn(
+			"fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-lg border bg-background p-6 shadow-lg",
+			"transition-all duration-200 ease-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+			className,
+		)}
 			{...props}
 		>
 			{children}
-			<DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
+			<DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-all duration-200 ease-out hover:opacity-100 hover:scale-105 active:scale-95">
 				<X className="h-4 w-4" />
 			</DialogPrimitive.Close>
 		</DialogPrimitive.Content>

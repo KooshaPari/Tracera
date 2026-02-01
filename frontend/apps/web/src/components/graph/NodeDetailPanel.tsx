@@ -1,5 +1,6 @@
 // Node Detail Panel - Rich information display for selected nodes
 
+import type { Item, Link } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -11,7 +12,6 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
-import type { Item, Link } from "@tracertm/types";
 import {
 	ArrowDownRight,
 	ArrowUpRight,
@@ -76,17 +76,17 @@ function NodeDetailPanelComponent({
 
 	return (
 		<Card
-			className="w-96 h-full flex flex-col overflow-hidden border-l-4"
+			className="w-full min-w-0 max-w-[22rem] sm:max-w-[24rem] h-full flex flex-col overflow-hidden border-l-4 shrink-0"
 			style={{ borderLeftColor: bgColor }}
 		>
 			{/* Header */}
-			<div className="p-4 border-b bg-muted/30">
-				<div className="flex items-start justify-between gap-2">
+			<div className="p-2 sm:p-4 border-b bg-muted/30 min-w-0">
+				<div className="flex items-start justify-between gap-2 min-w-0">
 					<div className="flex-1 min-w-0">
-						<div className="flex items-center gap-2 mb-2">
+						<div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
 							<Badge
 								variant="outline"
-								className="text-xs px-2"
+								className="text-[10px] sm:text-xs px-1.5 sm:px-2 shrink-0"
 								style={{
 									backgroundColor: `${bgColor}20`,
 									color: bgColor,
@@ -95,26 +95,26 @@ function NodeDetailPanelComponent({
 							>
 								{node.type.replace(/_/g, " ")}
 							</Badge>
-							<Badge variant="secondary" className="text-xs">
+							<Badge variant="secondary" className="text-[10px] sm:text-xs shrink-0">
 								{node.status}
 							</Badge>
 						</div>
-						<h3 className="font-semibold text-lg leading-tight">
+						<h3 className="font-semibold text-sm sm:text-base md:text-lg leading-tight truncate">
 							{node.label}
 						</h3>
 					</div>
 					<Button
 						variant="ghost"
 						size="sm"
-						className="h-8 w-8 p-0"
+						className="h-7 w-7 sm:h-8 sm:w-8 p-0 shrink-0"
 						onClick={onClose}
 					>
-						<X className="h-4 w-4" />
+						<X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 					</Button>
 				</div>
 
 				{/* Quick stats */}
-				<div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+				<div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
 					<div className="flex items-center gap-1">
 						<ArrowDownRight className="h-4 w-4 text-green-500" />
 						<span>{incomingLinks.length} incoming</span>
@@ -134,33 +134,33 @@ function NodeDetailPanelComponent({
 				<TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
 					<TabsTrigger
 						value="details"
-						className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+						className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs sm:text-sm"
 					>
-						<FileText className="h-4 w-4 mr-1" />
-						Details
+						<FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+						<span className="truncate">Details</span>
 					</TabsTrigger>
 					<TabsTrigger
 						value="links"
-						className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+						className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs sm:text-sm"
 					>
-						<Link2 className="h-4 w-4 mr-1" />
-						Links
+						<Link2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+						<span className="truncate">Links</span>
 					</TabsTrigger>
 					{node.uiPreview && (
 						<TabsTrigger
 							value="preview"
-							className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+							className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs sm:text-sm"
 						>
-							<Image className="h-4 w-4 mr-1" />
-							Preview
+							<Image className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+							<span className="truncate">Preview</span>
 						</TabsTrigger>
 					)}
 					<TabsTrigger
 						value="code"
-						className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+						className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs sm:text-sm"
 					>
-						<Code className="h-4 w-4 mr-1" />
-						Code
+						<Code className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+						<span className="truncate">Code</span>
 					</TabsTrigger>
 				</TabsList>
 
@@ -168,11 +168,11 @@ function NodeDetailPanelComponent({
 					{/* Details Tab */}
 					<TabsContent value="details" className="p-4 m-0 space-y-4">
 						{/* Description */}
-						<div>
-							<h4 className="text-sm font-medium text-muted-foreground mb-1">
+						<div className="min-w-0">
+							<h4 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">
 								Description
 							</h4>
-							<p className="text-sm">
+							<p className="text-xs sm:text-sm line-clamp-4 md:line-clamp-none">
 								{node.item.description || "No description provided"}
 							</p>
 						</div>
@@ -180,7 +180,7 @@ function NodeDetailPanelComponent({
 						<Separator />
 
 						{/* Metadata */}
-						<div className="grid grid-cols-2 gap-3 text-sm">
+						<div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
 							{node.item.owner && (
 								<div>
 									<span className="text-muted-foreground flex items-center gap-1">

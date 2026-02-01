@@ -1,66 +1,27 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { useIsAuthenticated } from "@/hooks/useAuth";
+import { LandingPage } from "@/views";
 
-const DashboardView = lazy(() =>
-	import("@/views/DashboardView").then((m) => ({ default: m.DashboardView })),
-);
+function IndexComponent() {
+	const isAuthenticated = useIsAuthenticated();
+	const hasStoredToken =
+		typeof window !== "undefined" &&
+		(typeof localStorage !== "undefined" &&
+			(localStorage.getItem("auth_token") ||
+				localStorage.getItem("authToken") ||
+				localStorage.getItem("tracertm-auth-store")));
+	const isE2E =
+		typeof window !== "undefined" &&
+		(Boolean((window as any).__E2E__) ||
+			(typeof navigator !== "undefined" && navigator.webdriver));
 
-function DashboardComponent() {
-	const { systemStatus } = Route.useLoaderData();
-	return (
-		<Suspense
-			fallback={
-				<div className="flex items-center justify-center h-64">
-					Loading dashboard...
-				</div>
-			}
-		>
-			<DashboardView systemStatus={systemStatus} />
-		</Suspense>
-	);
+	if (isAuthenticated || hasStoredToken || isE2E) {
+		return <Navigate to="/home" />;
+	}
+
+	return <LandingPage />;
 }
 
 export const Route = createFileRoute("/")({
-	component: DashboardComponent,
-	beforeLoad: () => {
-		const { isAuthenticated } = useAuthStore.getState();
-		if (!isAuthenticated) {
-			throw redirect({ to: "/auth/login" });
-		}
-	},
-	loader: async () => {
-		// Preload dashboard data for enterprise feel
-		try {
-			const [{ fetchProjects }, { fetchRecentItems }, { fetchSystemStatus }] =
-				await Promise.all([
-					import("@/api/projects"),
-					import("@/api/items"),
-					import("@/api/system"),
-				]);
-
-			const [projects, recentItems, systemStatus] = await Promise.all([
-				fetchProjects().catch(() => []),
-				fetchRecentItems().catch(() => []),
-				fetchSystemStatus().catch(() => ({
-					status: "healthy" as const,
-					uptime: 99.9,
-					queuedJobs: 0,
-				})),
-			]);
-
-			return { projects, recentItems, systemStatus };
-		} catch (_error) {
-			// Return empty data on error to prevent page crash
-			return {
-				projects: [],
-				recentItems: [],
-				systemStatus: {
-					status: "healthy" as const,
-					uptime: 99.9,
-					queuedJobs: 0,
-				},
-			};
-		}
-	},
+	component: IndexComponent,
 });

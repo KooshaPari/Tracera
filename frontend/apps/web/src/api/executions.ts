@@ -281,7 +281,7 @@ export const executionsApi = {
 		executionId: string,
 		artifactId: string,
 	): string => {
-		return `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
+		return `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 	},
 
 	getConfig: async (projectId: string): Promise<ExecutionEnvironmentConfig> => {

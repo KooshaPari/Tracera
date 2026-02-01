@@ -3,7 +3,7 @@
  * Tests complete screenshot lifecycle from capture to storage and retrieval
  */
 
-import { test, expect, Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Screenshot Storage", () => {
 	test.beforeEach(async ({ page }) => {

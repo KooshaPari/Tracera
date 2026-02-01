@@ -2,12 +2,12 @@
  * Repository search and select combobox component.
  */
 
-import { useState, useEffect, useMemo } from "react";
-import { Search, Github, Plus, Loader2 } from "lucide-react";
 import { Input } from "@tracertm/ui";
+import { Github, Loader2, Plus, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type { GitHubRepo } from "@/api/github";
 import { Button } from "@/components/ui/enterprise-button";
 import { useGitHubRepos } from "@/hooks/useGitHub";
-import type { GitHubRepo } from "@/api/github";
 import { cn } from "@/lib/utils";
 
 export interface RepoSearchComboboxProps {

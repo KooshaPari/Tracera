@@ -1,22 +1,21 @@
 /**
  * GitHub API client functions.
- *
- * Authentication: Uses HttpOnly cookies (credentials: 'include')
- * No Authorization headers needed - backend validates via cookies
+ * Sends Bearer token via getAuthHeaders() for backend auth.
  */
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { getAuthHeaders } from "@/api/client";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 /**
  * Default fetch config for authenticated requests
- * Uses HttpOnly cookies for authentication
  */
-const defaultFetchConfig: RequestInit = {
-	credentials: "include", // Send HttpOnly cookies automatically
-	headers: {
+function authHeaders(): RequestInit["headers"] {
+	return {
 		"Content-Type": "application/json",
-	},
-};
+		...getAuthHeaders(),
+	};
+}
 
 export interface GitHubRepo {
 	id: number;
@@ -70,11 +69,12 @@ export interface CreateRepoRequest {
 export async function getGitHubAppInstallUrl(
 	accountId: string,
 ): Promise<{ install_url: string; state: string }> {
+	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/install-url?account_id=${accountId}`,
 		{
 			method: "GET",
-			...defaultFetchConfig,
+			...(headers && { headers }),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to get installation URL");
@@ -87,11 +87,12 @@ export async function getGitHubAppInstallUrl(
 export async function listGitHubAppInstallations(
 	accountId: string,
 ): Promise<GitHubAppInstallationListResponse> {
+	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/installations?account_id=${accountId}`,
 		{
 			method: "GET",
-			...defaultFetchConfig,
+			...(headers && { headers }),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to list installations");
@@ -105,11 +106,12 @@ export async function linkGitHubAppInstallation(
 	installationId: string,
 	accountId: string,
 ): Promise<{ status: string; installation_id: string; account_id: string }> {
+	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/installations/${installationId}/link`,
 		{
 			method: "POST",
-			...defaultFetchConfig,
+			...(headers && { headers }),
 			body: JSON.stringify({ account_id: accountId }),
 		},
 	);
@@ -123,11 +125,12 @@ export async function linkGitHubAppInstallation(
 export async function deleteGitHubAppInstallation(
 	installationId: string,
 ): Promise<{ status: string }> {
+	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/app/installations/${installationId}`,
 		{
 			method: "DELETE",
-			...defaultFetchConfig,
+			...(headers && { headers }),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to delete installation");
@@ -155,11 +158,12 @@ export async function listGitHubRepos(params: {
 	if (params.perPage) searchParams.set("per_page", String(params.perPage));
 	if (params.page) searchParams.set("page", String(params.page));
 
+	const headers = authHeaders();
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/github/repos?${searchParams.toString()}`,
 		{
 			method: "GET",
-			...defaultFetchConfig,
+			...(headers && { headers }),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to list repos");
@@ -172,9 +176,10 @@ export async function listGitHubRepos(params: {
 export async function createGitHubRepo(
 	data: CreateRepoRequest,
 ): Promise<GitHubRepo> {
+	const headers = authHeaders();
 	const res = await fetch(`${API_URL}/api/v1/integrations/github/repos`, {
 		method: "POST",
-		...defaultFetchConfig,
+		...(headers && { headers }),
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) {

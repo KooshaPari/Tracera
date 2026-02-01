@@ -330,7 +330,7 @@ export function logAdaptiveCacheDecision(
 		const updateCategory = getUpdateFrequencyCategory(metrics.updateFrequency);
 		const accessCategory = getAccessFrequencyCategory(metrics.accessFrequency);
 
-		console.debug("[AdaptiveCache]", {
+		logger.debug("[AdaptiveCache]", {
 			reason,
 			sizeCategory,
 			updateCategory,

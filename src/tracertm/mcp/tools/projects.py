@@ -12,13 +12,14 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
+from sqlalchemy import select
+
 from tracertm.mcp.core import mcp
-from tracertm.mcp.tools.base import (
+from tracertm.mcp.tools.base_async import (
     get_config_manager,
-    get_session,
+    get_mcp_session,
     set_current_project,
     wrap_success,
 )
@@ -29,7 +30,7 @@ from tracertm.models.project import Project
 async def create_project(
     name: str,
     description: str | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a new project and set it as current.
 
@@ -43,7 +44,7 @@ async def create_project(
     if not name:
         raise ToolError("Project name is required.")
 
-    with get_session() as session:
+    async with get_mcp_session() as session:
         project = Project(
             id=str(uuid.uuid4()),
             name=name,
@@ -52,10 +53,10 @@ async def create_project(
             updated_at=datetime.utcnow(),
         )
         session.add(project)
-        session.commit()
+        await session.commit()
 
         # Set as current project
-        set_current_project(project.id)
+        await set_current_project(project.id)
 
         return wrap_success(
             {
@@ -71,15 +72,16 @@ async def create_project(
 
 @mcp.tool(description="List all projects")
 async def list_projects(
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """List all available projects.
 
     Returns:
         List of projects with id, name, description, created_at
     """
-    with get_session() as session:
-        projects = session.query(Project).all()
+    async with get_mcp_session() as session:
+        result_set = await session.execute(select(Project))
+        projects = result_set.scalars().all()
         result = [
             {
                 "id": p.id,
@@ -95,7 +97,7 @@ async def list_projects(
 @mcp.tool(description="Select a project as current")
 async def select_project(
     project_id: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Set a project as the current working project.
 
@@ -108,22 +110,24 @@ async def select_project(
     if not project_id:
         raise ToolError("project_id is required.")
 
-    with get_session() as session:
+    async with get_mcp_session() as session:
         # Try exact match first
-        project = session.query(Project).filter(Project.id == project_id).first()
+        result = await session.execute(
+            select(Project).filter(Project.id == project_id)
+        )
+        project = result.scalar_one_or_none()
 
         # Try prefix match if no exact match
         if not project:
-            project = (
-                session.query(Project)
-                .filter(Project.id.like(f"{project_id}%"))
-                .first()
+            result = await session.execute(
+                select(Project).filter(Project.id.like(f"{project_id}%"))
             )
+            project = result.scalar_one_or_none()
 
         if not project:
             raise ToolError(f"Project not found: {project_id}")
 
-        set_current_project(project.id)
+        await set_current_project(project.id)
 
         return wrap_success(
             {
@@ -141,7 +145,7 @@ async def select_project(
 async def snapshot_project(
     project_id: str,
     label: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a lightweight snapshot record for a project.
 
@@ -157,8 +161,11 @@ async def snapshot_project(
     if not project_id or not label:
         raise ToolError("project_id and label are required.")
 
-    with get_session() as session:
-        project = session.query(Project).filter(Project.id == project_id).first()
+    async with get_mcp_session() as session:
+        result = await session.execute(
+            select(Project).filter(Project.id == project_id)
+        )
+        project = result.scalar_one_or_none()
         if not project:
             raise ToolError(f"Project not found: {project_id}")
 

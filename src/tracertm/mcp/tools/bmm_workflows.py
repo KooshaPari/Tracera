@@ -9,6 +9,8 @@ from typing import Any, Dict, List
 
 from fastmcp import Context
 from fastmcp.exceptions import ToolError
+from fastmcp.server.dependencies import Progress
+from fastmcp.server.tasks import TaskConfig
 
 from tracertm.mcp.core import mcp
 from tracertm.mcp.bmm_utils import (
@@ -22,8 +24,8 @@ from tracertm.mcp.bmm_utils import (
 from tracertm.mcp.workflow_executor import run_workflow_with_sub_agent
 
 
-@mcp.tool()
-async def init_project(ctx: Context) -> str:
+@mcp.tool(task=TaskConfig(mode="forbidden"))
+async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
     """
     Initialize a new BMM project by determining level, type, and creating workflow path.
     Uses elicitation for interactive user input.
@@ -32,39 +34,58 @@ async def init_project(ctx: Context) -> str:
     if status and 'project' in status:
         return "OK: Project already initialized"
 
-    await ctx.report_progress(0, 100, "Starting initialization...")
+    current_progress = 0
+    await progress.set_total(100)
+    await progress.set_message("Starting initialization...")
 
     project_name = await ctx.elicit(
         prompt="What's your project called?",
         default="MyProject",
     )
 
-    await ctx.report_progress(25, 100, "Project name set")
+    increment = 25 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 25
+    await progress.set_message("Project name set")
 
     track = await ctx.elicit(
         prompt="Select track:",
         options=["quick-flow", "method", "enterprise"],
     )
 
-    await ctx.report_progress(50, 100, "Track selected")
+    increment = 50 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 50
+    await progress.set_message("Track selected")
 
     field_type = await ctx.elicit(
         prompt="Project type:",
         options=["greenfield", "brownfield"],
     )
 
-    await ctx.report_progress(75, 100, "Configuring workflows...")
+    increment = 75 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 75
+    await progress.set_message("Configuring workflows...")
 
-    await ctx.report_progress(100, 100, "Initialization complete")
+    increment = 100 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 100
+    await progress.set_message("Initialization complete")
 
     return f"OK: Initialized {project_name} ({track}, {field_type})"
 
 
-@mcp.tool()
+@mcp.tool(task=TaskConfig(mode="forbidden"))
 async def run_workflow(
     ctx: Context,
     workflow_id: str,
     auto: bool = False,
+    progress: Progress = Progress(),
 ) -> str:
     """
     Execute a BMM workflow by ID.
@@ -102,8 +123,14 @@ async def run_workflow(
             save_workflow_status(status)
             return f"SKIPPED: {workflow_id}"
 
-    await ctx.report_progress(0, 100, f"Starting {workflow_id}...")
-    await ctx.report_progress(25, 100, "Preparing sub-agent execution...")
+    current_progress = 0
+    await progress.set_total(100)
+    await progress.set_message(f"Starting {workflow_id}...")
+    increment = 25 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 25
+    await progress.set_message("Preparing sub-agent execution...")
 
     try:
         project_root = get_project_root()
@@ -115,7 +142,11 @@ async def run_workflow(
             auto=auto,
         )
 
-        await ctx.report_progress(75, 100, "Updating workflow status...")
+        increment = 75 - current_progress
+        if increment > 0:
+            await progress.increment(increment)
+            current_progress = 75
+        await progress.set_message("Updating workflow status...")
 
         status = load_workflow_status()
         output_path = workflow.get('output', f"docs/{workflow_id}.md")
@@ -125,7 +156,11 @@ async def run_workflow(
                 break
         save_workflow_status(status)
 
-        await ctx.report_progress(100, 100, "Complete")
+        increment = 100 - current_progress
+        if increment > 0:
+            await progress.increment(increment)
+            current_progress = 100
+        await progress.set_message("Complete")
 
         result_content = result.get('content', '')
         if isinstance(result_content, str):
@@ -133,7 +168,11 @@ async def run_workflow(
         return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {str(result_content)}"
 
     except Exception:
-        await ctx.report_progress(25, 100, "Preparing workflow execution...")
+        increment = 25 - current_progress
+        if increment > 0:
+            await progress.increment(increment)
+            current_progress = 25
+        await progress.set_message("Preparing workflow execution...")
 
         result = await ctx.sample(
             messages=[{
@@ -149,7 +188,11 @@ async def run_workflow(
             },
         )
 
-        await ctx.report_progress(75, 100, "Updating workflow status...")
+        increment = 75 - current_progress
+        if increment > 0:
+            await progress.increment(increment)
+            current_progress = 75
+        await progress.set_message("Updating workflow status...")
 
         status = load_workflow_status()
         output_path = workflow.get('output', f"docs/{workflow_id}.md")
@@ -159,17 +202,22 @@ async def run_workflow(
                 break
         save_workflow_status(status)
 
-        await ctx.report_progress(100, 100, "Complete")
+        increment = 100 - current_progress
+        if increment > 0:
+            await progress.increment(increment)
+            current_progress = 100
+        await progress.set_message("Complete")
 
         return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {result.content}"
 
 
-@mcp.tool()
+@mcp.tool(task=TaskConfig(mode="forbidden"))
 async def run_phase(
     ctx: Context,
     phase: int,
     parallel: bool = False,
     auto: bool = False,
+    progress: Progress = Progress(),
 ) -> str:
     """
     Execute all workflows in a phase.
@@ -190,7 +238,9 @@ async def run_phase(
         return f"No workflows found for phase {phase}"
 
     phase_names = ["Discovery", "Planning", "Solutioning", "Implementation"]
-    await ctx.report_progress(0, len(workflows), f"Starting Phase {phase}: {phase_names[phase]}")
+    current_progress = 0
+    await progress.set_total(len(workflows))
+    await progress.set_message(f"Starting Phase {phase}: {phase_names[phase]}")
 
     results: List[str] = []
 
@@ -205,7 +255,7 @@ async def run_phase(
         async def run_agent_workflows(agent: str, agent_workflows: List[Dict[str, Any]]):
             agent_results = []
             for wf in agent_workflows:
-                result = await run_workflow(ctx, wf['id'], auto=auto)
+                result = await run_workflow(ctx, wf['id'], auto=auto, progress=progress)
                 agent_results.append(result)
             return agent_results
 
@@ -219,11 +269,19 @@ async def run_phase(
     else:
         for i, wf in enumerate(workflows):
             wf_name = wf['id'].replace('-', ' ').title()
-            await ctx.report_progress(i, len(workflows), f"Running {wf_name}...")
-            result = await run_workflow(ctx, wf['id'], auto=auto)
+            increment = i - current_progress
+            if increment > 0:
+                await progress.increment(increment)
+                current_progress = i
+            await progress.set_message(f"Running {wf_name}...")
+            result = await run_workflow(ctx, wf['id'], auto=auto, progress=progress)
             results.append(result)
 
-    await ctx.report_progress(len(workflows), len(workflows), "Phase complete")
+    increment = len(workflows) - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = len(workflows)
+    await progress.set_message("Phase complete")
 
     return f"OK: Phase {phase} ({phase_names[phase]}) complete\n\n" + "\n".join(results)
 

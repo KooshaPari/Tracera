@@ -115,7 +115,7 @@ class CLITokenAdapter:
             logger.warning(f"Failed to sync MCP tokens to CLI: {e}")
             return False
 
-    def get_mcp_token(self, fallback_to_cli: bool = True) -> Optional[str]:
+    def get_mcp_token(self, fallback_to_cli: bool = False) -> Optional[str]:
         """Get valid MCP token, optionally falling back to CLI tokens.
 
         Args:
@@ -142,7 +142,7 @@ class CLITokenAdapter:
 
         return None
 
-    def ensure_authenticated(self, fallback_to_cli: bool = True) -> bool:
+    def ensure_authenticated(self, fallback_to_cli: bool = False) -> bool:
         """Ensure MCP has valid authentication.
 
         Args:
@@ -191,9 +191,9 @@ _CLI_ADAPTER: Optional[CLITokenAdapter] = None
 
 
 def ensure_cli_mcp_sync() -> None:
-    """Ensure CLI and MCP tokens are synced.
+    """Optionally sync CLI tokens into MCP storage.
 
-    Should be called at MCP startup.
+    This is an explicit opt-in helper and is not required for MCP operation.
     """
     adapter = get_cli_adapter()
     if adapter:

@@ -14,16 +14,16 @@ from typing import Any
 
 import typer
 import yaml
-from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.tree import Tree
 
+from tracertm.cli.ui.components import console, error_panel, success_panel, warning_panel, info_panel
+from tracertm.cli.ui.progress import spinner
 from tracertm.config.manager import ConfigManager
 
 app = typer.Typer(help="Design integration commands (Storybook + Figma)")
-console = Console()
 
 
 # YAML structure for designs.yaml
@@ -69,8 +69,10 @@ def _get_trace_dir(path: str | None = None) -> Path:
     trace_dir = base_path / ".trace"
 
     if not trace_dir.exists():
-        console.print(f"[red]Error: No .trace/ directory found in {base_path}[/red]")
-        console.print("[dim]Run 'rtm init' to create a .trace/ directory first[/dim]")
+        console.print(error_panel(
+            f"No .trace/ directory found in {base_path}",
+            "Run 'rtm init' to create a .trace/ directory first"
+        ))
         raise typer.Exit(code=1)
 
     return trace_dir
@@ -108,8 +110,10 @@ def _load_designs_config(trace_dir: Path) -> dict[Any, Any]:
     designs_path = meta_dir / "designs.yaml"
 
     if not designs_path.exists():
-        console.print("[red]Error: Design integration not initialized[/red]")
-        console.print("[dim]Run 'rtm design init' to initialize design integration[/dim]")
+        console.print(error_panel(
+            "Design integration not initialized",
+            "Run 'rtm design init' to initialize design integration"
+        ))
         raise typer.Exit(code=1)
 
     loaded = yaml.safe_load(designs_path.read_text(encoding="utf-8"))
@@ -239,7 +243,10 @@ def init_design_integration(
     # Check if already initialized
     designs_path = meta_dir / "designs.yaml"
     if designs_path.exists():
-        console.print("[yellow]Warning: Design integration already initialized[/yellow]")
+        console.print(warning_panel(
+            "Design integration already initialized",
+            "Existing configuration will be overwritten if you continue"
+        ))
         overwrite = typer.confirm("Do you want to overwrite existing configuration?")
         if not overwrite:
             console.print("[dim]Cancelled[/dim]")
@@ -263,18 +270,22 @@ def init_design_integration(
         figma_config["file_key"] = figma_file_key
         figma_config["access_token"] = figma_token
 
-    _save_designs_config(trace_dir, designs_config)
-    console.print(f"[green]✓[/green] Created {designs_path}")
+    with spinner("Creating design configuration files..."):
+        _save_designs_config(trace_dir, designs_config)
 
-    # Create components.yaml
-    components_config = dict(COMPONENTS_YAML_TEMPLATE)
-    metadata = components_config.get("metadata")
-    if isinstance(metadata, dict):
-        metadata["created_at"] = datetime.now().isoformat()
+        # Create components.yaml
+        components_config = dict(COMPONENTS_YAML_TEMPLATE)
+        metadata = components_config.get("metadata")
+        if isinstance(metadata, dict):
+            metadata["created_at"] = datetime.now().isoformat()
 
-    _save_components_config(trace_dir, components_config)
+        _save_components_config(trace_dir, components_config)
+
     components_path = meta_dir / "components.yaml"
-    console.print(f"[green]✓[/green] Created {components_path}")
+    console.print(success_panel(
+        "Design configuration files created",
+        f"designs.yaml: {designs_path}\ncomponents.yaml: {components_path}"
+    ))
 
     # Display tree
     tree = Tree("[bold cyan].trace/.meta/[/bold cyan]")
@@ -284,17 +295,14 @@ def init_design_integration(
     console.print(tree)
 
     # Display summary
-    summary = Panel(
-        "[green]✓[/green] Design integration initialized!\n\n"
+    console.print("\n")
+    console.print(success_panel(
+        "Design integration initialized",
         "[bold]Next steps:[/bold]\n"
         "  • Link components: [cyan]rtm design link MyButton <figma-url>[/cyan]\n"
         "  • Generate stories: [cyan]rtm design generate --all[/cyan]\n"
-        "  • Sync designs: [cyan]rtm design sync[/cyan]",
-        title="[bold green]Success[/bold green]",
-        border_style="green",
-    )
-    console.print("\n")
-    console.print(summary)
+        "  • Sync designs: [cyan]rtm design sync[/cyan]"
+    ))
 
 
 @app.command("link")
@@ -324,8 +332,9 @@ def link_component(
     file_key, node_id = _validate_figma_url(figma_url)
 
     # Load configurations
-    designs_config = _load_designs_config(trace_dir)
-    components_config = _load_components_config(trace_dir)
+    with spinner("Loading design configurations..."):
+        designs_config = _load_designs_config(trace_dir)
+        components_config = _load_components_config(trace_dir)
 
     # Update designs.yaml
     if "components" not in designs_config:
@@ -371,12 +380,12 @@ def link_component(
     _save_components_config(trace_dir, components_config)
 
     # Display result
-    console.print(f"\n[green]✓[/green] {action} component: [cyan]{component}[/cyan]")
-    console.print(f"  Figma URL: [dim]{figma_url}[/dim]")
+    details = f"Figma URL: {figma_url}"
     if node_id:
-        console.print(f"  Node ID: [dim]{node_id}[/dim]")
+        details += f"\nNode ID: {node_id}"
+    details += "\n\n[dim]Run 'rtm design sync' to sync design metadata[/dim]"
 
-    console.print(f"\n[dim]Run 'rtm design sync' to sync design metadata[/dim]")
+    console.print(success_panel(f"{action} component: {component}", details))
 
 
 @app.command("sync")
@@ -411,11 +420,12 @@ def sync_designs(
     trace_dir = _get_trace_dir(path)
 
     # Load configurations
-    designs_config = _load_designs_config(trace_dir)
-    components_config = _load_components_config(trace_dir)
+    with spinner("Loading design configurations"):
+        designs_config = _load_designs_config(trace_dir)
+        components_config = _load_components_config(trace_dir)
 
     if dry_run:
-        console.print("[yellow]Dry run mode - no changes will be made[/yellow]\n")
+        console.print(info_panel("Dry run mode", "No changes will be made"))
 
     # Check for TypeScript sync tools
     # This would call tools in frontend/ or scripts/
@@ -476,11 +486,13 @@ def sync_designs(
     _save_components_config(trace_dir, components_config)
 
     if dry_run:
-        console.print("\n[dim]Dry run complete - no changes made[/dim]")
+        console.print(info_panel("Dry run complete", "No changes were made"))
     else:
-        console.print(f"\n[green]✓[/green] Design sync complete ({direction})")
-        console.print(f"  Components: {len(components_config.get('components', []))}")
-        console.print(f"  Last sync: [dim]{datetime.now().isoformat()}[/dim]")
+        console.print(success_panel(
+            f"Design sync complete ({direction})",
+            f"Components: {len(components_config.get('components', []))}\n"
+            f"Last sync: {datetime.now().isoformat()}"
+        ))
 
 
 @app.command("generate")
@@ -513,12 +525,16 @@ def generate_stories(
     trace_dir = _get_trace_dir(path)
 
     if not all_components and not component:
-        console.print("[red]Error: Specify --component or --all[/red]")
+        console.print(error_panel(
+            "Missing required parameter",
+            "Specify --component or --all"
+        ))
         raise typer.Exit(code=1)
 
     # Load configurations
-    designs_config = _load_designs_config(trace_dir)
-    components_config = _load_components_config(trace_dir)
+    with spinner("Loading component configurations"):
+        designs_config = _load_designs_config(trace_dir)
+        components_config = _load_components_config(trace_dir)
 
     components_list = components_config.get("components", [])
 
@@ -529,14 +545,23 @@ def generate_stories(
     elif component:  # pragma: no branch
         target_components = [c for c in components_list if c.get("name") == component]
         if not target_components:
-            console.print(f"[red]Error: Component '{component}' not found[/red]")
+            console.print(error_panel(
+                f"Component '{component}' not found",
+                "Run 'rtm design list' to see available components"
+            ))
             raise typer.Exit(code=1)
 
     if not target_components:  # pragma: no cover
-        console.print("[yellow]No components to generate stories for[/yellow]")
+        console.print(warning_panel(
+            "No components to generate stories for",
+            "Link components first with 'rtm design link'"
+        ))
         raise typer.Exit(code=0)
 
-    console.print(f"[bold]Generating stories for {len(target_components)} component(s)...[/bold]\n")
+    console.print(info_panel(
+        "Generating stories",
+        f"{len(target_components)} component(s) will be processed with template: {template}"
+    ))
 
     generated = []
     with Progress(
@@ -574,14 +599,15 @@ def generate_stories(
             progress.update(task, completed=True)
 
     # Save updated config
-    _save_components_config(trace_dir, components_config)
+    with spinner("Saving component configurations"):
+        _save_components_config(trace_dir, components_config)
 
     # Display results
-    console.print(f"\n[green]✓[/green] Generated stories for {len(generated)} component(s):")
-    for comp_name in generated:
-        console.print(f"  • {comp_name}.stories.tsx")
-
-    console.print(f"\n[dim]Run 'bun run storybook' to view stories[/dim]")
+    story_list = "\n".join([f"  • {name}.stories.tsx" for name in generated])
+    console.print(success_panel(
+        f"Generated stories for {len(generated)} component(s)",
+        f"{story_list}\n\n[dim]Run 'bun run storybook' to view stories[/dim]"
+    ))
 
 
 @app.command("status")
@@ -774,20 +800,26 @@ def export_to_figma(  # pragma: no cover
     trace_dir = _get_trace_dir(path)
 
     if not all_components and not component:
-        console.print("[red]Error: Specify --component or --all[/red]")
+        console.print(error_panel(
+            "Missing required parameter",
+            "Specify --component or --all"
+        ))
         raise typer.Exit(code=1)
 
     # Load configurations
-    designs_config = _load_designs_config(trace_dir)
-    components_config = _load_components_config(trace_dir)
+    with spinner("Loading design configurations"):
+        designs_config = _load_designs_config(trace_dir)
+        components_config = _load_components_config(trace_dir)
 
     figma_config = designs_config.get("figma", {})
     figma_file_key = figma_config.get("file_key")
     figma_token = figma_config.get("access_token")
 
     if not figma_file_key or not figma_token:
-        console.print("[red]Error: Figma credentials not configured[/red]")
-        console.print("[dim]Run 'rtm design init' to configure Figma integration[/dim]")
+        console.print(error_panel(
+            "Figma credentials not configured",
+            "Run 'rtm design init' to configure Figma integration"
+        ))
         raise typer.Exit(code=1)
 
     components_list = components_config.get("components", [])
@@ -806,11 +838,16 @@ def export_to_figma(  # pragma: no cover
     target_components = [c for c in target_components if c.get("has_story")]  # pragma: no branch
 
     if not target_components:  # pragma: no cover
-        console.print("[yellow]No components with stories to export[/yellow]")
-        console.print("[dim]Run 'rtm design generate --all' to create stories first[/dim]")
+        console.print(warning_panel(
+            "No components with stories to export",
+            "Run 'rtm design generate --all' to create stories first"
+        ))
         raise typer.Exit(code=0)
 
-    console.print(f"[bold]Exporting {len(target_components)} component(s) to Figma...[/bold]\n")
+    console.print(info_panel(
+        "Exporting to Figma",
+        f"{len(target_components)} component(s) will be exported to file: {figma_file_key}"
+    ))
 
     exported = []
     with Progress(
@@ -853,10 +890,8 @@ def export_to_figma(  # pragma: no cover
                 console.print("[yellow]⚠[/yellow] bun not found - cannot export to Figma")
 
     # Display results
-    console.print(f"\n[green]✓[/green] Exported {len(exported)} component(s) to Figma:")
-    for comp_name in exported:
-        console.print(f"  • {comp_name}")
-
-    console.print(
-        f"\n[dim]View in Figma: https://www.figma.com/file/{figma_file_key}/[/dim]"
-    )
+    export_list = "\n".join([f"  • {name}" for name in exported])
+    console.print(success_panel(
+        f"Exported {len(exported)} component(s) to Figma",
+        f"{export_list}\n\n[dim]View in Figma: https://www.figma.com/file/{figma_file_key}/[/dim]"
+    ))

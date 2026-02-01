@@ -57,12 +57,30 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    # Override database URL from environment if available
     import os
+
+    # Load .env from project root so migrations work when run without sourcing .env
+    # (e.g. from setup-native-dev.sh or make db-migrate)
+    try:
+        from dotenv import load_dotenv
+        # alembic/ is under project root; go up one level to find .env
+        env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+        load_dotenv(env_path)
+    except ImportError:
+        pass
+
     database_url = os.getenv("TRACERTM_DATABASE_URL") or os.getenv("DATABASE_URL")
+    if not database_url:
+        # Fallback when no env: use current OS user so it works on macOS/Homebrew
+        # where the default Postgres superuser is the OS user, not "postgres"
+        import getpass
+        user = getpass.getuser()
+        database_url = f"postgresql+psycopg2://{user}@localhost:5432/tracertm"
     if database_url:
-        # Convert postgresql:// to postgresql+psycopg2:// for Alembic
-        if database_url.startswith("postgresql://"):
+        # Alembic uses sync driver; convert async or generic URL to psycopg2
+        if database_url.startswith("postgresql+asyncpg://"):
+            database_url = database_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+        elif database_url.startswith("postgresql://"):
             database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
         config.set_main_option("sqlalchemy.url", database_url)
     

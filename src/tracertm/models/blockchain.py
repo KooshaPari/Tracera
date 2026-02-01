@@ -62,7 +62,7 @@ class VersionBlock(Base, TimestampMixin):
     # Spec reference
     spec_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     spec_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    project_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
 
     # Block content
     version_number: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -118,7 +118,7 @@ class VersionChainIndex(Base, TimestampMixin):
 
     spec_id: Mapped[str] = mapped_column(String(255), nullable=False)
     spec_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    project_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
 
     # Chain state
     chain_head_id: Mapped[str] = mapped_column(
@@ -172,7 +172,7 @@ class Baseline(Base, TimestampMixin):
     )  # Human-readable or generated ID
 
     # Scope
-    project_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
     spec_type: Mapped[str | None] = mapped_column(
         String(50), nullable=True
     )  # null = all types
@@ -230,7 +230,7 @@ class BaselineItem(Base):
     )
 
     # Item reference
-    item_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    item_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False)
     item_type: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Merkle data
@@ -275,7 +275,7 @@ class MerkleProofCache(Base):
         ForeignKey("baselines.id", ondelete="CASCADE"),
         nullable=False,
     )
-    item_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    item_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False)
 
     # Proof data
     leaf_hash: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -324,7 +324,7 @@ class SpecEmbedding(Base, TimestampMixin):
 
     spec_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     spec_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    project_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
 
     # Embedding data
     embedding: Mapped[bytes] = mapped_column(

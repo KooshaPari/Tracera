@@ -33,7 +33,7 @@ export function WorkflowRunsView({ projectId }: WorkflowRunsViewProps) {
 						Workflow Runs
 					</h1>
 					<p className="text-gray-600 dark:text-gray-400">
-						History for Hatchet tasks and automated schedules.
+						History for Temporal workflows and schedules.
 					</p>
 				</div>
 				<div className="flex items-center gap-3">

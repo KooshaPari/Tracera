@@ -1,27 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { ItemsTableView } from "@/views/ItemsTableView";
+import { useProjects } from "@/hooks/useProjects";
+
+function ItemsListView() {
+	const { data: projects } = useProjects();
+	const projectId = useMemo(() => {
+		if (!projects || !Array.isArray(projects)) return undefined;
+		return projects[0]?.id;
+	}, [projects]);
+
+	return <ItemsTableView projectId={projectId} />;
+}
 
 export const Route = createFileRoute("/items/")({
-	component: ItemsComponent,
-	loader: async () => {
-		// ItemsTableView fetches its own data
-		return {};
-	},
+	component: ItemsListView,
 });
-
-function ItemsComponent() {
-	return (
-		<div className="flex-1 p-6 space-y-6">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">All Items</h1>
-					<p className="text-muted-foreground">
-						Browse and manage all project items across all views
-					</p>
-				</div>
-			</div>
-
-			<ItemsTableView />
-		</div>
-	);
-}

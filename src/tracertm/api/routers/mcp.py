@@ -1,0 +1,484 @@
+"""MCP HTTP router for TraceRTM.
+
+Provides HTTP endpoints for MCP (Model Context Protocol) communication:
+- POST /api/v1/mcp/messages - JSON-RPC 2.0 endpoint for MCP messages
+- GET /api/v1/mcp/sse - Server-Sent Events endpoint for streaming responses
+- GET /api/v1/mcp/tools - Tool discovery endpoint
+- OPTIONS /api/v1/mcp/messages - CORS preflight support
+
+All endpoints use FastAPI's auth_guard for authentication, so MCP auth is disabled
+when using HTTP transport (auth is handled at the FastAPI layer).
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
+from sse_starlette.sse import EventSourceResponse
+
+from tracertm.api.deps import auth_guard
+from tracertm.core.context import current_user_id, current_account_id
+from tracertm.mcp.core import get_mcp
+
+logger = logging.getLogger(__name__)
+
+
+def _mcp() -> Any:
+    """Lazy MCP server for HTTP (no env required for API startup)."""
+    return get_mcp("http")
+
+# =============================================================================
+# Router Setup
+# =============================================================================
+
+router = APIRouter(prefix="/mcp", tags=["MCP"])
+
+
+# =============================================================================
+# Request/Response Models
+# =============================================================================
+
+
+class JSONRPCRequest(BaseModel):
+    """JSON-RPC 2.0 request."""
+
+    jsonrpc: str = Field("2.0", description="JSON-RPC version")
+    method: str = Field(..., description="Method name")
+    params: Optional[Dict[str, Any]] = Field(None, description="Method parameters")
+    id: Optional[str | int] = Field(None, description="Request ID")
+
+
+class JSONRPCResponse(BaseModel):
+    """JSON-RPC 2.0 response."""
+
+    jsonrpc: str = Field("2.0", description="JSON-RPC version")
+    result: Optional[Any] = Field(None, description="Result data")
+    error: Optional[Dict[str, Any]] = Field(None, description="Error information")
+    id: Optional[str | int] = Field(None, description="Request ID")
+
+
+class ToolInfo(BaseModel):
+    """Information about an available MCP tool."""
+
+    name: str
+    description: Optional[str] = None
+    inputSchema: Optional[Dict[str, Any]] = None
+
+
+class ToolsListResponse(BaseModel):
+    """Response for tools list endpoint."""
+
+    tools: list[ToolInfo]
+
+
+# =============================================================================
+# Helper Functions
+# =============================================================================
+
+
+def _set_user_context(claims: dict) -> None:
+    """Set user context variables from auth claims.
+
+    Args:
+        claims: Auth claims dict from auth_guard
+    """
+    # Extract user ID from claims (sub is the standard claim)
+    user_id = claims.get("sub")
+    if user_id:
+        current_user_id.set(user_id)
+        logger.debug(f"Set user context: {user_id}")
+
+    # Extract account ID if present (WorkOS specific)
+    account_id = claims.get("org_id") or claims.get("account_id")
+    if account_id:
+        current_account_id.set(account_id)
+        logger.debug(f"Set account context: {account_id}")
+
+
+async def _handle_mcp_call(method: str, params: Optional[Dict[str, Any]], claims: dict) -> Any:
+    """Handle an MCP method call.
+
+    Args:
+        method: MCP method name (e.g., "tools/list", "tools/call")
+        params: Method parameters
+        claims: Auth claims from auth_guard
+
+    Returns:
+        Method result
+
+    Raises:
+        HTTPException: If method is invalid or execution fails
+    """
+    # Set user context for this request
+    _set_user_context(claims)
+
+    try:
+        # Route to appropriate MCP handler
+        if method == "tools/list":
+            return await _list_tools()
+        elif method == "tools/call":
+            return await _call_tool(params or {})
+        elif method == "resources/list":
+            return await _list_resources()
+        elif method == "resources/read":
+            return await _read_resource(params or {})
+        elif method == "prompts/list":
+            return await _list_prompts()
+        elif method == "prompts/get":
+            return await _get_prompt(params or {})
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown method: {method}"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error handling MCP call {method}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal error: {str(e)}"
+        )
+
+
+async def _list_tools() -> Dict[str, Any]:
+    """List available MCP tools.
+
+    Returns:
+        Dict with tools list
+    """
+    # Get tools from MCP server
+    tools_list = _mcp().list_tools()
+
+    return {
+        "tools": [
+            {
+                "name": tool.name,
+                "description": tool.description,
+                "inputSchema": tool.parameters.model_json_schema() if hasattr(tool.parameters, 'model_json_schema') else {},
+            }
+            for tool in tools_list
+        ]
+    }
+
+
+async def _call_tool(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Call an MCP tool.
+
+    Args:
+        params: Tool call parameters (name, arguments)
+
+    Returns:
+        Tool execution result
+
+    Raises:
+        HTTPException: If tool not found or execution fails
+    """
+    tool_name = params.get("name")
+    if not tool_name:
+        raise HTTPException(status_code=400, detail="Tool name required")
+
+    arguments = params.get("arguments", {})
+
+    # Execute tool through MCP server
+    try:
+        result = await _mcp().call_tool(tool_name, arguments)
+        return {"content": result}
+    except Exception as e:
+        logger.exception(f"Error calling tool {tool_name}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Tool execution failed: {str(e)}"
+        )
+
+
+async def _list_resources() -> Dict[str, Any]:
+    """List available MCP resources.
+
+    Returns:
+        Dict with resources list
+    """
+    resources_list = _mcp().list_resources()
+
+    return {
+        "resources": [
+            {
+                "uri": resource.uri,
+                "name": resource.name,
+                "description": resource.description,
+                "mimeType": resource.mimeType,
+            }
+            for resource in resources_list
+        ]
+    }
+
+
+async def _read_resource(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Read an MCP resource.
+
+    Args:
+        params: Resource read parameters (uri)
+
+    Returns:
+        Resource content
+
+    Raises:
+        HTTPException: If resource not found
+    """
+    uri = params.get("uri")
+    if not uri:
+        raise HTTPException(status_code=400, detail="Resource URI required")
+
+    try:
+        result = await _mcp().read_resource(uri)
+        return {"contents": result}
+    except Exception as e:
+        logger.exception(f"Error reading resource {uri}: {e}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Resource not found: {str(e)}"
+        )
+
+
+async def _list_prompts() -> Dict[str, Any]:
+    """List available MCP prompts.
+
+    Returns:
+        Dict with prompts list
+    """
+    prompts_list = _mcp().list_prompts()
+
+    return {
+        "prompts": [
+            {
+                "name": prompt.name,
+                "description": prompt.description,
+                "arguments": prompt.arguments,
+            }
+            for prompt in prompts_list
+        ]
+    }
+
+
+async def _get_prompt(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Get an MCP prompt.
+
+    Args:
+        params: Prompt get parameters (name, arguments)
+
+    Returns:
+        Prompt content
+
+    Raises:
+        HTTPException: If prompt not found
+    """
+    name = params.get("name")
+    if not name:
+        raise HTTPException(status_code=400, detail="Prompt name required")
+
+    arguments = params.get("arguments", {})
+
+    try:
+        result = await _mcp().get_prompt(name, arguments)
+        return {"messages": result}
+    except Exception as e:
+        logger.exception(f"Error getting prompt {name}: {e}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Prompt not found: {str(e)}"
+        )
+
+
+# =============================================================================
+# Endpoints
+# =============================================================================
+
+
+@router.options("/messages")
+async def mcp_messages_options() -> Response:
+    """Handle CORS preflight for MCP messages endpoint.
+
+    Returns:
+        Response with CORS headers
+    """
+    return Response(
+        status_code=204,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Max-Age": "86400",
+        }
+    )
+
+
+@router.post("/messages", response_model=JSONRPCResponse)
+async def mcp_messages(
+    request: JSONRPCRequest,
+    claims: dict = Depends(auth_guard),
+) -> JSONRPCResponse:
+    """Handle JSON-RPC 2.0 MCP messages.
+
+    This endpoint processes MCP protocol messages using JSON-RPC 2.0 format.
+    Authentication is handled by FastAPI's auth_guard, and user context is
+    automatically set for all tool executions.
+
+    Args:
+        request: JSON-RPC request
+        claims: Auth claims from auth_guard
+
+    Returns:
+        JSON-RPC response
+    """
+    logger.debug(f"MCP message: {request.method}")
+
+    try:
+        result = await _handle_mcp_call(request.method, request.params, claims)
+
+        return JSONRPCResponse(
+            jsonrpc="2.0",
+            result=result,
+            id=request.id,
+        )
+    except HTTPException as e:
+        return JSONRPCResponse(
+            jsonrpc="2.0",
+            error={
+                "code": e.status_code,
+                "message": e.detail,
+            },
+            id=request.id,
+        )
+    except Exception as e:
+        logger.exception(f"Unexpected error in MCP message handler: {e}")
+        return JSONRPCResponse(
+            jsonrpc="2.0",
+            error={
+                "code": 500,
+                "message": f"Internal server error: {str(e)}",
+            },
+            id=request.id,
+        )
+
+
+@router.get("/sse")
+async def mcp_sse(
+    request: Request,
+    claims: dict = Depends(auth_guard),
+) -> EventSourceResponse:
+    """Server-Sent Events endpoint for streaming MCP responses.
+
+    This endpoint provides real-time streaming of MCP events using SSE.
+    Useful for long-running operations or real-time updates.
+
+    Supports both generic SSE connections and task-specific progress streaming
+    via the ?task_id= query parameter.
+
+    Args:
+        request: FastAPI request object (for query params)
+        claims: Auth claims from auth_guard
+
+    Returns:
+        SSE stream
+    """
+    _set_user_context(claims)
+
+    # Get optional task_id for task-specific streaming
+    task_id = request.query_params.get("task_id")
+
+    async def event_generator():
+        """Generate SSE events."""
+        try:
+            # Send initial connection event
+            yield {
+                "event": "connected",
+                "data": json.dumps({
+                    "status": "connected",
+                    "user_id": current_user_id.get(),
+                    "task_id": task_id,
+                })
+            }
+
+            if task_id:
+                # Task-specific streaming
+                # In a production system, you'd look up the task and stream its progress
+                # For now, send a placeholder message
+                yield {
+                    "event": "info",
+                    "data": json.dumps({
+                        "message": f"Streaming progress for task: {task_id}",
+                    })
+                }
+
+            # Keep connection alive with heartbeat
+            while True:
+                await asyncio.sleep(30)
+                yield {
+                    "event": "heartbeat",
+                    "data": json.dumps({
+                        "status": "alive",
+                        "timestamp": asyncio.get_event_loop().time(),
+                    })
+                }
+        except asyncio.CancelledError:
+            logger.debug(f"SSE connection cancelled (task_id: {task_id})")
+        except Exception as e:
+            logger.exception(f"Error in SSE generator (task_id: {task_id}): {e}")
+            yield {
+                "event": "error",
+                "data": json.dumps({"error": str(e)})
+            }
+
+    return EventSourceResponse(event_generator())
+
+
+@router.get("/tools", response_model=ToolsListResponse)
+async def mcp_tools(
+    claims: dict = Depends(auth_guard),
+) -> ToolsListResponse:
+    """List available MCP tools.
+
+    This endpoint provides a simple way to discover available MCP tools
+    without using JSON-RPC protocol.
+
+    Args:
+        claims: Auth claims from auth_guard
+
+    Returns:
+        List of available tools
+    """
+    _set_user_context(claims)
+
+    tools_data = await _list_tools()
+
+    return ToolsListResponse(
+        tools=[
+            ToolInfo(**tool)
+            for tool in tools_data["tools"]
+        ]
+    )
+
+
+# =============================================================================
+# Health Check
+# =============================================================================
+
+
+@router.get("/health")
+async def mcp_health() -> Dict[str, Any]:
+    """MCP router health check.
+
+    Returns:
+        Health status
+    """
+    return {
+        "status": "healthy",
+        "service": "mcp",
+        "transport": "http",
+    }

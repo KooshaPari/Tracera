@@ -81,7 +81,7 @@ global.WebSocket = MockWebSocket as any;
 
 // Mock API_BASE_URL
 vi.mock("@/api/client", () => ({
-	API_BASE_URL: "http://localhost:8000",
+	API_BASE_URL: "http://localhost:4000",
 }));
 
 describe("WebSocket API", () => {

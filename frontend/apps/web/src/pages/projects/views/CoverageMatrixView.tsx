@@ -1,18 +1,18 @@
+import type { TraceabilityMatrixItem } from "@tracertm/types";
 import {
-	Grid,
-	CheckCircle,
-	XCircle,
 	AlertTriangle,
+	CheckCircle,
 	Filter,
-	Search,
+	Grid,
 	Percent,
+	Search,
+	XCircle,
 } from "lucide-react";
 import { useState } from "react";
 import {
-	useTraceabilityMatrix,
 	useCoverageGaps,
+	useTraceabilityMatrix,
 } from "../../../hooks/useCoverage";
-import type { TraceabilityMatrixItem } from "@tracertm/types";
 
 const statusColors: Record<string, string> = {
 	passed: "bg-green-100 text-green-700",
@@ -313,7 +313,7 @@ function MatrixRow({ item }: { item: TraceabilityMatrixItem }) {
 			<td className="px-4 py-3">
 				<span
 					className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-						statusColors[item.overallStatus] || statusColors["not_tested"]
+						statusColors[item.overallStatus] || statusColors.not_tested
 					}`}
 				>
 					{statusLabels[item.overallStatus] || "Unknown"}

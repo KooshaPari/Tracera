@@ -1,16 +1,15 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { ProgressDashboard } from "../../components/temporal/ProgressDashboard";
 import type {
+	HealthStatus,
 	Milestone,
-	Sprint,
+	MilestoneStatus,
 	ProgressSnapshot,
 	ProjectMetrics,
-	MilestoneStatus,
-	HealthStatus,
+	Sprint,
 	SprintStatus,
 } from "@atoms/types";
+import { ProgressDashboard } from "../../components/temporal/ProgressDashboard";
 
 // Mock data
 const mockMilestone: Milestone = {

@@ -15,6 +15,7 @@ Create Date: 2026-01-29 15:00:00.000000
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
@@ -33,7 +34,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(255), primary_key=True),
         sa.Column(
             "item_id",
-            sa.String(255),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("items.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,
@@ -108,7 +109,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(255), primary_key=True),
         sa.Column(
             "item_id",
-            sa.String(255),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("items.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,
@@ -178,7 +179,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(255), primary_key=True),
         sa.Column(
             "item_id",
-            sa.String(255),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("items.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,
@@ -239,7 +240,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(255), primary_key=True),
         sa.Column(
             "item_id",
-            sa.String(255),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("items.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,
@@ -305,7 +306,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(255), primary_key=True),
         sa.Column(
             "item_id",
-            sa.String(255),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("items.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,
@@ -376,7 +377,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(255), primary_key=True),
         sa.Column(
             "item_id",
-            sa.String(255),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("items.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,

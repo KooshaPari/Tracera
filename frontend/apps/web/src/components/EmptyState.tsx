@@ -22,7 +22,7 @@ export function EmptyState({
 }: EmptyStateProps) {
 	return (
 		<div
-			className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 px-8 py-16 text-center"
+			className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 px-8 py-16 text-center animate-in-fade-up transition-all duration-200 ease-out"
 			data-testid={testId}
 		>
 			{Icon && <Icon className="mb-4 h-16 w-16 text-muted-foreground/50" />}

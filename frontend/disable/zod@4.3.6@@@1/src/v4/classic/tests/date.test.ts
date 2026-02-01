@@ -10,18 +10,18 @@ const minCheck = z.date().min(benchmarkDate);
 const maxCheck = z.date().max(benchmarkDate);
 
 test("passing validations", () => {
-  minCheck.parse(benchmarkDate);
-  minCheck.parse(afterBenchmarkDate);
+	minCheck.parse(benchmarkDate);
+	minCheck.parse(afterBenchmarkDate);
 
-  maxCheck.parse(benchmarkDate);
-  maxCheck.parse(beforeBenchmarkDate);
+	maxCheck.parse(benchmarkDate);
+	maxCheck.parse(beforeBenchmarkDate);
 });
 
 test("date min", () => {
-  const result = minCheck.safeParse(beforeBenchmarkDate);
+	const result = minCheck.safeParse(beforeBenchmarkDate);
 
-  expect(result.success).toEqual(false);
-  expect(result.error!.issues).toMatchInlineSnapshot(`
+	expect(result.success).toEqual(false);
+	expect(result.error!.issues).toMatchInlineSnapshot(`
     [
       {
         "code": "too_small",
@@ -36,10 +36,10 @@ test("date min", () => {
 });
 
 test("date max", () => {
-  const result = maxCheck.safeParse(afterBenchmarkDate);
+	const result = maxCheck.safeParse(afterBenchmarkDate);
 
-  expect(result.success).toEqual(false);
-  expect(result.error!.issues).toMatchInlineSnapshot(`
+	expect(result.success).toEqual(false);
+	expect(result.error!.issues).toMatchInlineSnapshot(`
     [
       {
         "code": "too_big",
@@ -54,9 +54,11 @@ test("date max", () => {
 });
 
 test("min max getters", () => {
-  expect(minCheck.minDate).toEqual(benchmarkDate);
-  expect(minCheck.min(afterBenchmarkDate).minDate).toEqual(afterBenchmarkDate);
+	expect(minCheck.minDate).toEqual(benchmarkDate);
+	expect(minCheck.min(afterBenchmarkDate).minDate).toEqual(afterBenchmarkDate);
 
-  expect(maxCheck.maxDate).toEqual(benchmarkDate);
-  expect(maxCheck.max(beforeBenchmarkDate).maxDate).toEqual(beforeBenchmarkDate);
+	expect(maxCheck.maxDate).toEqual(benchmarkDate);
+	expect(maxCheck.max(beforeBenchmarkDate).maxDate).toEqual(
+		beforeBenchmarkDate,
+	);
 });

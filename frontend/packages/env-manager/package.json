@@ -24,8 +24,8 @@
 		"dev": "tsc --watch",
 		"test": "vitest",
 		"test:coverage": "vitest --coverage",
-		"lint": "biome check src",
-		"lint:fix": "biome check --write src",
+		"lint": "oxlint .",
+		"lint:fix": "oxlint --fix .",
 		"format": "biome format --write src",
 		"typecheck": "tsc --noEmit"
 	},

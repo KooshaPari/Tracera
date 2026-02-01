@@ -2,7 +2,21 @@
 // Dimensions are cross-cutting concerns (maturity, complexity, coverage, risk)
 // that apply to items regardless of their perspective
 
+import type {
+	ComplexityLevel,
+	DimensionDisplayMode,
+	DimensionFilter,
+	MaturityLevel,
+	RiskLevel,
+} from "@tracertm/types";
+import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@tracertm/ui/components/Popover";
+import { Slider } from "@tracertm/ui/components/Slider";
 import {
 	Tooltip,
 	TooltipContent,
@@ -10,26 +24,9 @@ import {
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@tracertm/ui/components/Popover";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Slider } from "@tracertm/ui/components/Slider";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@tracertm/ui/components/Select";
-import {
 	Activity,
 	AlertTriangle,
 	Boxes,
-	CheckCircle2,
-	Eye,
-	EyeOff,
 	Filter,
 	Highlighter,
 	Layers,
@@ -39,13 +36,6 @@ import {
 	X,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
-import type {
-	DimensionFilter,
-	DimensionDisplayMode,
-	MaturityLevel,
-	ComplexityLevel,
-	RiskLevel,
-} from "@tracertm/types";
 
 // =============================================================================
 // TYPES
@@ -181,7 +171,8 @@ function DimensionFiltersComponent({
 	isExpanded = false,
 	compact = false,
 }: DimensionFiltersProps) {
-	const [isOpen, setIsOpen] = useState(isExpanded);
+	// Track expansion state internally (currently unused but available for future use)
+	const [_isOpen, _setIsOpen] = useState(isExpanded);
 
 	const handleAddFilter = useCallback(
 		(dimension: keyof DimensionValues, value: string | number | string[]) => {

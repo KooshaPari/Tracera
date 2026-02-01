@@ -133,7 +133,7 @@ class BaseSpecRepository:
             raise ValueError(f"{self.model_class.__name__} {spec_id} not found")
 
         for key, value in updates.items():
-            if hasattr(spec, key) and value is not None:
+            if hasattr(spec, key):
                 setattr(spec, key, value)
 
         spec.updated_at = datetime.now(UTC)
@@ -538,9 +538,8 @@ class TestSpecRepository(BaseSpecRepository):
             "error_message": error_message,
             "environment": environment,
         }
-        history = spec.run_history or []
-        history.insert(0, run_entry)
-        spec.run_history = history[:50]
+        # Create new list instead of mutating to trigger SQLAlchemy change detection
+        spec.run_history = [run_entry] + (spec.run_history or [])[:49]
 
         # Recalculate flakiness
         await self._recalculate_flakiness(spec)

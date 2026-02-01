@@ -204,6 +204,90 @@ class AIService:
 
         yield format_sse(SSEEvent.DONE, {})
 
+    async def run_chat_turn_with_tools(
+        self,
+        messages: list[dict],
+        model: str = "claude-sonnet-4-20250514",
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 4096,
+        working_directory: Optional[str] = None,
+        db_session: Any = None,
+        max_tool_iterations: int = 10,
+    ) -> str:
+        """Run one agentic turn with tool use (no streaming). Returns final assistant text.
+
+        Same loop as stream_chat_with_tools but accumulates and returns the last text reply.
+        Used by Temporal run_agent_turn for checkpointed agent runs.
+        """
+        anthropic_messages = []
+        for msg in messages:
+            if msg["role"] in ("user", "assistant"):
+                anthropic_messages.append({
+                    "role": msg["role"],
+                    "content": msg["content"],
+                })
+
+        iteration = 0
+        final_text = ""
+
+        while iteration < max_tool_iterations:
+            iteration += 1
+            try:
+                response = await self.anthropic_client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    system=system_prompt or "",
+                    messages=anthropic_messages,
+                    tools=TOOLS,
+                )
+                assistant_content = []
+                has_tool_use = False
+                text_parts = []
+
+                for block in response.content:
+                    if block.type == "text":
+                        text_parts.append(block.text)
+                        assistant_content.append(block)
+                    elif block.type == "tool_use":
+                        has_tool_use = True
+                        assistant_content.append(block)
+
+                anthropic_messages.append({
+                    "role": "assistant",
+                    "content": [
+                        {"type": b.type, "text": b.text} if b.type == "text"
+                        else {"type": "tool_use", "id": b.id, "name": b.name, "input": b.input}
+                        for b in assistant_content
+                    ],
+                })
+
+                if has_tool_use:
+                    tool_results = []
+                    for block in response.content:
+                        if block.type == "tool_use":
+                            r = await execute_tool(
+                                tool_name=block.name,
+                                tool_input=block.input,
+                                working_directory=working_directory,
+                                db_session=db_session,
+                            )
+                            tool_results.append({
+                                "type": "tool_result",
+                                "tool_use_id": block.id,
+                                "content": json.dumps(r),
+                            })
+                    anthropic_messages.append({"role": "user", "content": tool_results})
+                    continue
+
+                final_text = "".join(text_parts)
+                break
+            except Exception as e:
+                logger.error("run_chat_turn_with_tools error: %s", e, exc_info=True)
+                final_text = f"[Error: {e}]"
+                break
+
+        return final_text or ""
+
     async def stream_chat_with_tools_streaming(
         self,
         messages: list[dict],

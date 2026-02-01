@@ -1,7 +1,4 @@
-// Global Graph View - Unified view with sidebar navigation and separated views
-import { useSearch } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
 import {
 	Select,
 	SelectContent,
@@ -9,23 +6,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { UnifiedGraphView } from "../components/graph";
 import { useGraphProjection, useGraphs } from "../hooks/useGraphs";
 
-export function GraphView() {
-	const searchParams = useSearch({ strict: false }) as Record<
-		string,
-		string | undefined
-	>;
-	const projectFilter = searchParams?.["project"] || undefined;
+interface GraphViewProps {
+	projectId: string;
+}
+
+export function GraphView({ projectId }: GraphViewProps) {
 	const navigate = useNavigate();
 
 	// ✅ NEW: Progressive edge loading state
 	const MAX_EDGES_INITIAL = 500;
 	const [visibleEdgeCount, setVisibleEdgeCount] = useState(MAX_EDGES_INITIAL);
 
-	const { data: graphsData } = useGraphs(projectFilter);
+	const { data: graphsData } = useGraphs(projectId);
 	const [selectedGraphId, setSelectedGraphId] = useState<string | undefined>(
 		undefined,
 	);
@@ -39,7 +36,7 @@ export function GraphView() {
 	}, [graphsData, selectedGraphId]);
 
 	const { data: graphData, isLoading: graphLoading } = useGraphProjection(
-		projectFilter,
+		projectId,
 		selectedGraph?.id,
 		undefined,
 	);
@@ -50,7 +47,7 @@ export function GraphView() {
 	);
 
 	const { data: mappingData } = useGraphProjection(
-		projectFilter,
+		projectId,
 		overlayMapping ? mappingGraph?.id : undefined,
 		undefined,
 	);
@@ -101,12 +98,16 @@ export function GraphView() {
 	};
 
 	const handleNavigateToItem = (itemId: string) => {
-		// Navigate to item detail page
-		navigate({ to: "/items/$itemId", params: { itemId } });
+		const item = items.find((node: any) => node.id === itemId);
+		const viewType = String(item?.view || "feature").toLowerCase();
+		navigate({
+			to: "/projects/$projectId/views/$viewType/$itemId",
+			params: { projectId, viewType, itemId },
+		});
 	};
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 animate-in-fade-up">
 			<div className="flex flex-wrap items-center gap-4">
 				<div className="min-w-[220px]">
 					<Select
@@ -153,7 +154,7 @@ export function GraphView() {
 				items={items}
 				links={visibleLinks}
 				isLoading={graphLoading}
-				projectId={projectFilter}
+				projectId={projectId}
 				onNavigateToItem={handleNavigateToItem}
 				canLoadMore={canLoadMore}
 				visibleEdges={visibleLinks.length}

@@ -1,13 +1,14 @@
 // Tests for grouping algorithms
-import { describe, it, expect, beforeEach } from "vitest";
+
 import type { Item, Link } from "@tracertm/types";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
-	groupByLinkTargets,
-	groupByDependencies,
-	groupByPaths,
-	groupBySemantic,
 	calculateGroupCohesion,
 	calculateGroupSeparation,
+	groupByDependencies,
+	groupByLinkTargets,
+	groupByPaths,
+	groupBySemantic,
 } from "../../../../components/graph/utils/grouping";
 
 describe("Grouping Algorithms", () => {

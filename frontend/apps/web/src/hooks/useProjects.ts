@@ -1,10 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Project } from "@tracertm/types";
+import { useAuthStore } from "@/stores/authStore";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-async function fetchProjects(): Promise<Project[]> {
-	const res = await fetch(`${API_URL}/api/v1/projects`);
+function authHeaders(token: string | null): Record<string, string> {
+	const headers: Record<string, string> = {};
+	if (token?.trim()) {
+		headers.Authorization = `Bearer ${token.trim()}`;
+	}
+	return headers;
+}
+
+async function fetchProjects(token: string | null): Promise<Project[]> {
+	const res = await fetch(`${API_URL}/api/v1/projects`, {
+		headers: { ...authHeaders(token) },
+		credentials: "include",
+	});
 	if (!res.ok) throw new Error("Failed to fetch projects");
 	const data = await res.json();
 	// API returns { total: number, projects: Project[] }, extract projects array
@@ -17,18 +29,19 @@ async function fetchProjects(): Promise<Project[]> {
 	}));
 }
 
-async function fetchProject(id: string): Promise<Project> {
+async function fetchProject(id: string, token: string | null): Promise<Project> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${id}`, {
 		headers: {
-			"X-Bulk-Operation": "true", // Skip rate limiting for project fetches
+			"X-Bulk-Operation": "true",
+			...authHeaders(token),
 		},
+		credentials: "include",
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
 		throw new Error(`Failed to fetch project: ${res.status} ${errorText}`);
 	}
 	const data = await res.json();
-	// Transform snake_case to camelCase for frontend compatibility
 	return {
 		...data,
 		createdAt: data.created_at || data.createdAt,
@@ -36,14 +49,15 @@ async function fetchProject(id: string): Promise<Project> {
 	} as Project;
 }
 
-async function createProject(data: {
-	name: string;
-	description?: string | undefined;
-}): Promise<Project> {
+async function createProject(
+	data: { name: string; description?: string | undefined },
+	token: string | null,
+): Promise<Project> {
 	const res = await fetch(`${API_URL}/api/v1/projects`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...authHeaders(token) },
 		body: JSON.stringify(data),
+		credentials: "include",
 	});
 	if (!res.ok) throw new Error("Failed to create project");
 	return res.json() as Promise<Project>;
@@ -52,45 +66,52 @@ async function createProject(data: {
 async function updateProject(
 	id: string,
 	data: Partial<Project>,
+	token: string | null,
 ): Promise<Project> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${id}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...authHeaders(token) },
 		body: JSON.stringify(data),
+		credentials: "include",
 	});
 	if (!res.ok) throw new Error("Failed to update project");
 	return res.json() as Promise<Project>;
 }
 
-async function deleteProject(id: string): Promise<void> {
+async function deleteProject(id: string, token: string | null): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/projects/${id}`, {
 		method: "DELETE",
+		headers: authHeaders(token),
+		credentials: "include",
 	});
 	if (!res.ok) throw new Error("Failed to delete project");
 }
 
 export function useProjects() {
+	const token = useAuthStore((s) => s.token);
 	return useQuery({
-		queryKey: ["projects"],
-		queryFn: fetchProjects,
+		queryKey: ["projects", token ?? ""],
+		queryFn: () => fetchProjects(token),
+		enabled: !!token,
 	});
 }
 
 export function useProject(id: string) {
+	const token = useAuthStore((s) => s.token);
 	return useQuery({
-		queryKey: ["projects", id],
-		queryFn: () => fetchProject(id),
-		enabled: !!id,
-		retry: 1, // Only retry once on failure
-		// Don't use throwOnError - React Query v5 handles errors differently
-		// Errors will be available in the error property
+		queryKey: ["projects", id, token ?? ""],
+		queryFn: () => fetchProject(id, token),
+		enabled: !!id && !!token,
+		retry: 1,
 	});
 }
 
 export function useCreateProject() {
 	const queryClient = useQueryClient();
+	const token = useAuthStore((s) => s.token);
 	return useMutation({
-		mutationFn: createProject,
+		mutationFn: (data: { name: string; description?: string }) =>
+			createProject(data, token),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
@@ -99,9 +120,10 @@ export function useCreateProject() {
 
 export function useUpdateProject() {
 	const queryClient = useQueryClient();
+	const token = useAuthStore((s) => s.token);
 	return useMutation({
 		mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) =>
-			updateProject(id, data),
+			updateProject(id, data, token),
 		onSuccess: (_, { id }) => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 			queryClient.invalidateQueries({ queryKey: ["projects", id] });
@@ -111,8 +133,9 @@ export function useUpdateProject() {
 
 export function useDeleteProject() {
 	const queryClient = useQueryClient();
+	const token = useAuthStore((s) => s.token);
 	return useMutation({
-		mutationFn: deleteProject,
+		mutationFn: (id: string) => deleteProject(id, token),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},

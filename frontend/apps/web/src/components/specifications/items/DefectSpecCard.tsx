@@ -5,7 +5,6 @@
  * reproduction steps, and resolution tracking.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -28,6 +27,7 @@ import {
 	User,
 } from "lucide-react";
 import type { DefectSpec } from "@/hooks/useItemSpecs";
+import { cn } from "@/lib/utils";
 
 interface DefectSpecCardProps {
 	spec: DefectSpec;

@@ -29,9 +29,11 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    JSON,
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -254,13 +256,13 @@ class RequirementSpec(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_spec_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -455,13 +457,13 @@ class TestSpec(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_spec_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -645,13 +647,13 @@ class EpicSpec(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_spec_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -810,13 +812,13 @@ class UserStorySpec(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_spec_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -850,7 +852,7 @@ class UserStorySpec(Base, TimestampMixin):
 
     # Epic Relationship
     epic_item_id: Mapped[str | None] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
@@ -972,13 +974,13 @@ class TaskSpec(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_spec_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -992,7 +994,7 @@ class TaskSpec(Base, TimestampMixin):
 
     # Parent Story
     parent_story_item_id: Mapped[str | None] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
@@ -1137,13 +1139,13 @@ class DefectSpec(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_spec_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

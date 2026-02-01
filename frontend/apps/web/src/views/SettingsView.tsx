@@ -17,25 +17,25 @@ import {
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
 import {
-	User,
-	Monitor,
-	Key,
 	Bell,
-	Shield,
 	Globe,
-	Save,
+	Key,
 	Link2,
-	Settings as SettingsIcon,
+	Monitor,
 	RefreshCcw,
+	Save,
+	Settings as SettingsIcon,
+	Shield,
+	User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { saveSettings } from "../api/settings";
-import { cn } from "@/lib/utils";
 import { useProjects } from "@/hooks/useProjects";
-import IntegrationsView from "@/pages/projects/views/IntegrationsView";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
+import { cn } from "@/lib/utils";
+import IntegrationsView from "@/pages/projects/views/IntegrationsView";
+import { saveSettings } from "../api/settings";
 
 export function SettingsView() {
 	const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
@@ -82,7 +82,7 @@ export function SettingsView() {
 	};
 
 	return (
-		<div className="p-6 space-y-8 max-w-5xl mx-auto animate-in fade-in duration-500 pb-24">
+		<div className="p-6 space-y-8 max-w-5xl mx-auto animate-in-fade-up pb-24">
 			{/* Header */}
 			<div className="flex items-center gap-4 mb-12">
 				<div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">

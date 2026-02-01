@@ -6,7 +6,6 @@
  * Implements FlakeFlagger-inspired quality indicators.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -16,6 +15,7 @@ import {
 	CardTitle,
 	Progress,
 } from "@tracertm/ui";
+import { format } from "date-fns";
 import {
 	Activity,
 	AlertTriangle,
@@ -35,7 +35,7 @@ import {
 	Zap,
 } from "lucide-react";
 import type { TestSpec } from "@/hooks/useItemSpecs";
-import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface TestSpecCardProps {
 	spec: TestSpec;

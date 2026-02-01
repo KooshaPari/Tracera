@@ -1,6 +1,28 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    cluster: 'tracertm'
+    environment: 'production'
+    monitoring: 'prometheus'
+
+# Alertmanager configuration for sending alerts
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: localhost:9093
+
+# Load alerting and recording rules
+rule_files:
+  - 'alerts.yml'
 
 scrape_configs:
   # PostgreSQL

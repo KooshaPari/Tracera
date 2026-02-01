@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Link, LinkType } from "@tracertm/types";
-import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 import { useState } from "react";
+import { getAuthHeaders } from "@/api/client";
+import { useAuthStore } from "@/stores/authStore";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 interface LinkFilters {
 	projectId?: string | undefined;
@@ -33,7 +35,8 @@ async function fetchLinks(
 
 	const res = await fetch(`${API_URL}/api/v1/links?${params}`, {
 		headers: {
-			"X-Bulk-Operation": "true", // Skip rate limiting for link fetches
+			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) throw new Error("Failed to fetch links");
@@ -65,7 +68,7 @@ interface CreateLinkData {
 async function createLink(data: CreateLinkData): Promise<Link> {
 	const res = await fetch(`${API_URL}/api/v1/links`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			project_id: data.projectId,
 			source_id: data.sourceId,
@@ -81,11 +84,13 @@ async function createLink(data: CreateLinkData): Promise<Link> {
 async function deleteLink(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/links/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete link");
 }
 
 export function useLinks(filters: LinkFilters = {}) {
+	const token = useAuthStore((s) => s.token);
 	const key = filters.projectId
 		? [
 				...queryKeys.links.list(filters.projectId),
@@ -106,6 +111,7 @@ export function useLinks(filters: LinkFilters = {}) {
 	return useQuery({
 		queryKey: key,
 		queryFn: () => fetchLinks(filters),
+		enabled: !!token,
 		...QUERY_CONFIGS.dynamic, // Links change frequently
 	});
 }
@@ -143,6 +149,7 @@ export function useTraceabilityGraph(projectId: string) {
 		queryFn: async () => {
 			const res = await fetch(
 				`${API_URL}/api/v1/items?project_id=${projectId}`,
+				{ headers: getAuthHeaders() },
 			);
 			if (!res.ok) throw new Error("Failed to fetch items");
 			return res.json() as Promise<

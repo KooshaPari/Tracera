@@ -3,9 +3,9 @@
  * Demonstrates usage patterns for the Design Token Browser component
  */
 
+import type { DesignToken } from "@tracertm/types";
 import { useState } from "react";
 import { DesignTokenBrowser } from "./DesignTokenBrowser";
-import type { DesignToken } from "@tracertm/types";
 
 /**
  * Example 1: Basic Usage
@@ -148,7 +148,7 @@ export function ComponentUsageExample() {
  */
 export function FigmaIntegrationExample() {
 	const handleLinkToFigma = async (tokenId: string) => {
-		console.log(`Linking token ${tokenId} to Figma...`);
+		logger.info(`Linking token ${tokenId} to Figma...`);
 		// In a real app, this would call your API
 	};
 
@@ -256,7 +256,7 @@ export function FullFeaturedExample() {
 	]);
 
 	const handleLinkToFigma = async (tokenId: string) => {
-		console.log(`Linking token ${tokenId} to Figma...`);
+		logger.info(`Linking token ${tokenId} to Figma...`);
 		// Call your API
 	};
 

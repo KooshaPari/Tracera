@@ -3,28 +3,28 @@
  * Shows items without test coverage, ADR links, or contracts
  */
 
-import { useState, useMemo } from "react";
 import {
+	Button,
 	Card,
 	CardContent,
-	Button,
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import {
 	AlertCircle,
 	AlertTriangle,
+	BookOpen,
 	CheckCircle2,
-	Zap,
+	ChevronRight,
 	FileText,
 	Shield,
-	BookOpen,
-	ChevronRight,
+	Zap,
 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface GapItem {
 	id: string;

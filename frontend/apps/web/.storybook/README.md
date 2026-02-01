@@ -19,9 +19,9 @@ This Storybook setup provides:
 ### Configuration
 
 - **`main.ts`** - Storybook project configuration
-- **`preview.ts`** - Global decorators, viewport definitions, and theme settings
+- **`preview.tsx`** - Global decorators, viewport definitions, and theme settings
 - **`visual-test.config.ts`** - Viewport sizes, theme definitions, and component configs
-- **`visual-regression-automation.ts`** - Helper functions for writing visual tests
+- **`visual-regression-automation.tsxx`** - Helper functions for writing visual tests
 
 ### Documentation
 
@@ -383,9 +383,9 @@ export NODE_ENV=production  # For optimized builds
 ```
 .storybook/
 ├── main.ts                           # Storybook config
-├── preview.ts                        # Global settings
+├── preview.tsx                       # Global settings
 ├── visual-test.config.ts             # Viewport/theme config
-├── visual-regression-automation.ts   # Helper utilities
+├── visual-regression-automation.tsx   # Helper utilities
 ├── README.md                         # This file
 
 src/

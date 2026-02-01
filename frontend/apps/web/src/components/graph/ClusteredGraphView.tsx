@@ -1,0 +1,497 @@
+/**
+ * Clustered Graph View
+ *
+ * Large-scale graph visualization using hierarchical clustering.
+ * Automatically clusters 100k+ nodes into manageable super-nodes.
+ */
+
+import type { Item, Link } from "@tracertm/types";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Separator } from "@tracertm/ui/components/Separator";
+import {
+	Background,
+	BackgroundVariant,
+	Controls,
+	type Edge,
+	MarkerType,
+	type Node,
+	type NodeTypes,
+	Panel,
+	ReactFlow,
+	useEdgesState,
+	useNodesState,
+	useReactFlow,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import {
+	Activity,
+	Layers,
+	Maximize2,
+	Minimize2,
+	PanelRight,
+	PanelRightClose,
+	RotateCcw,
+	ZoomIn,
+	ZoomOut,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ClusterNode as ClusterNodeType } from "../../lib/graphClustering";
+import {
+	type ClusteringAlgorithm,
+	useClusterEdges,
+	useClustering,
+} from "../../hooks/useClustering";
+import { ClusterNode, type ClusterNodeData } from "./ClusterNode";
+import { LayoutSelector } from "./layouts/LayoutSelector";
+import { type LayoutType, useDAGLayout } from "./layouts/useDAGLayout";
+import { NodeDetailPanel } from "./NodeDetailPanel";
+import { type RichNodeData, RichNodePill } from "./RichNodePill";
+import type { EnhancedNodeData } from "./types";
+import { ENHANCED_TYPE_COLORS } from "./types";
+
+const customNodeTypes = {
+	richPill: RichNodePill,
+	clusterNode: ClusterNode,
+} as const satisfies NodeTypes;
+
+interface ClusteredGraphViewProps {
+	items: Item[];
+	links: Link[];
+	onNavigateToItem?: ((itemId: string) => void) | undefined;
+	showControls?: boolean | undefined;
+	autoFit?: boolean | undefined;
+	clusteringAlgorithm?: ClusteringAlgorithm;
+	targetClusters?: number;
+}
+
+/**
+ * Clustered graph view for 100k+ nodes
+ */
+export function ClusteredGraphView({
+	items,
+	links,
+	onNavigateToItem,
+	showControls = true,
+	autoFit = true,
+	clusteringAlgorithm = "adaptive",
+	targetClusters = 500,
+}: ClusteredGraphViewProps) {
+	const [layout, setLayout] = useState<LayoutType>("flow-chart");
+	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+	const [showDetailPanel, setShowDetailPanel] = useState(true);
+
+	const { fitView, zoomIn, zoomOut } = useReactFlow();
+
+	// Use clustering hook
+	const {
+		clustering,
+		visibleClusters,
+		visibleItems,
+		toggleCluster,
+		expandAll,
+		collapseAll,
+		drillDownToCluster,
+		compressionRatio,
+		clusterCount,
+		quality,
+		isProcessing,
+	} = useClustering(items, links, {
+		algorithm: clusteringAlgorithm,
+		targetClusters,
+	});
+
+	// Get cluster edges
+	const clusterEdges = useClusterEdges(clustering, links, 0);
+
+	// Combine visible items and clusters for layout
+	const nodesForLayout = useMemo((): Node[] => {
+		const nodes: Node[] = [];
+
+		// Add cluster nodes
+		for (const cluster of visibleClusters) {
+			const clusterItems = items.filter((item) => cluster.itemIds.has(item.id));
+
+			nodes.push({
+				id: cluster.id,
+				type: "clusterNode",
+				position: { x: 0, y: 0 },
+				data: {
+					cluster,
+					items: clusterItems,
+					links: links.filter(
+						(link) =>
+							cluster.itemIds.has(link.sourceId) || cluster.itemIds.has(link.targetId),
+					),
+					isExpanded: false,
+					level: cluster.level,
+					onToggle: toggleCluster,
+					onDrillDown: drillDownToCluster,
+					onItemSelect: setSelectedNodeId,
+				} as ClusterNodeData,
+			});
+		}
+
+		// Add individual item nodes
+		for (const item of visibleItems) {
+			nodes.push({
+				id: item.id,
+				type: "richPill",
+				position: { x: 0, y: 0 },
+				data: {
+					id: item.id,
+					item,
+					type: item.type || "item",
+					status: item.status,
+					label: item.title || "Untitled",
+					onSelect: setSelectedNodeId,
+				} as RichNodeData,
+			});
+		}
+
+		return nodes;
+	}, [visibleClusters, visibleItems, items, links, toggleCluster, drillDownToCluster]);
+
+	// Create edges
+	const edgesForLayout = useMemo((): { id: string; source: string; target: string }[] => {
+		const edges: { id: string; source: string; target: string }[] = [];
+
+		// Add cluster edges
+		for (const clusterEdge of clusterEdges) {
+			edges.push({
+				id: `cluster-edge-${clusterEdge.source}-${clusterEdge.target}`,
+				source: clusterEdge.source,
+				target: clusterEdge.target,
+			});
+		}
+
+		// Add item edges (only for visible items)
+		const visibleItemIds = new Set(visibleItems.map((i) => i.id));
+		for (const link of links) {
+			if (visibleItemIds.has(link.sourceId) && visibleItemIds.has(link.targetId)) {
+				edges.push({
+					id: link.id,
+					source: link.sourceId,
+					target: link.targetId,
+				});
+			}
+		}
+
+		return edges;
+	}, [clusterEdges, visibleItems, links]);
+
+	// Apply layout
+	const { nodes: laidoutNodes } = useDAGLayout(
+		nodesForLayout,
+		edgesForLayout,
+		layout,
+		{
+			nodeWidth: 200,
+			nodeHeight: 120,
+			rankSep: 120,
+			nodeSep: 80,
+			marginX: 50,
+			marginY: 50,
+		},
+	);
+
+	// Create final edges with styling
+	const initialEdges = useMemo((): Edge[] => {
+		return edgesForLayout.map((edge) => {
+			// Find if this is a cluster edge
+			const clusterEdge = clusterEdges.find(
+				(ce) =>
+					(ce.source === edge.source && ce.target === edge.target) ||
+					(ce.source === edge.target && ce.target === edge.source),
+			);
+
+			if (clusterEdge) {
+				// Style cluster edges differently
+				return {
+					id: edge.id,
+					source: edge.source,
+					target: edge.target,
+					type: "smoothstep",
+					animated: false,
+					style: {
+						stroke: "#8b5cf6",
+						strokeWidth: Math.min(clusterEdge.weight / 10, 5),
+					},
+					label: `${clusterEdge.weight}`,
+					labelStyle: { fontSize: 10, fill: "#8b5cf6", fontWeight: "bold" },
+					labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
+					labelBgPadding: [4, 2] as [number, number],
+					markerEnd: {
+						type: MarkerType.ArrowClosed,
+						color: "#8b5cf6",
+					},
+				} as Edge;
+			}
+
+			// Regular item edge
+			return {
+				id: edge.id,
+				source: edge.source,
+				target: edge.target,
+				type: "smoothstep",
+				animated: false,
+				style: {
+					stroke: "#64748b",
+					strokeWidth: 1,
+				},
+				markerEnd: {
+					type: MarkerType.ArrowClosed,
+					color: "#64748b",
+				},
+			} as Edge;
+		});
+	}, [edgesForLayout, clusterEdges]);
+
+	const [nodes, setNodes, onNodesChange] = useNodesState(laidoutNodes);
+	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+	// Update nodes when layout changes
+	useEffect(() => {
+		setNodes(laidoutNodes);
+	}, [laidoutNodes, setNodes]);
+
+	useEffect(() => {
+		setEdges(initialEdges);
+	}, [initialEdges, setEdges]);
+
+	// Auto-fit on initial load
+	useEffect(() => {
+		if (autoFit && nodes.length > 0) {
+			const timer = setTimeout(() => {
+				fitView({ padding: 0.2, duration: 300 });
+			}, 100);
+			return () => clearTimeout(timer);
+		}
+		return undefined;
+	}, [autoFit, fitView, nodes.length]);
+
+	// Selected node data
+	const selectedNode = useMemo(() => {
+		if (!selectedNodeId) return null;
+		return items.find((i) => i.id === selectedNodeId) || null;
+	}, [items, selectedNodeId]);
+
+	// Links for selected node
+	const { incomingLinks, outgoingLinks, relatedItems } = useMemo(() => {
+		if (!selectedNodeId) {
+			return { incomingLinks: [], outgoingLinks: [], relatedItems: [] };
+		}
+
+		const incoming = links.filter((l) => l.targetId === selectedNodeId);
+		const outgoing = links.filter((l) => l.sourceId === selectedNodeId);
+		const relatedIds = new Set([
+			...incoming.map((l) => l.sourceId),
+			...outgoing.map((l) => l.targetId),
+		]);
+
+		return {
+			incomingLinks: incoming,
+			outgoingLinks: outgoing,
+			relatedItems: items.filter((i) => relatedIds.has(i.id)),
+		};
+	}, [selectedNodeId, links, items]);
+
+	// Handlers
+	const handleFit = () => fitView({ padding: 0.2, duration: 300 });
+	const handleReset = () => {
+		setLayout("flow-chart");
+		setSelectedNodeId(null);
+		collapseAll();
+	};
+
+	const handleFocusNode = (nodeId: string) => {
+		setSelectedNodeId(nodeId);
+		const node = nodes.find((n) => n.id === nodeId);
+		if (node) {
+			fitView({ nodes: [node], padding: 0.5, duration: 300 });
+		}
+	};
+
+	return (
+		<div className="h-full flex flex-col">
+			{/* Controls */}
+			{showControls && (
+				<Card className="mb-3 p-2">
+					<div className="flex items-center justify-between gap-3">
+						<div className="flex items-center gap-2">
+							<LayoutSelector
+								value={layout}
+								onChange={setLayout}
+								variant="select"
+								className="w-[200px] h-8"
+							/>
+
+							<Separator orientation="vertical" className="h-6" />
+
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={expandAll}
+								className="h-8 text-xs"
+							>
+								<Maximize2 className="h-3 w-3 mr-1" />
+								Expand All
+							</Button>
+
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={collapseAll}
+								className="h-8 text-xs"
+							>
+								<Minimize2 className="h-3 w-3 mr-1" />
+								Collapse All
+							</Button>
+
+							<Separator orientation="vertical" className="h-6" />
+
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => setShowDetailPanel(!showDetailPanel)}
+								className="h-8"
+							>
+								{showDetailPanel ? (
+									<PanelRightClose className="h-4 w-4" />
+								) : (
+									<PanelRight className="h-4 w-4" />
+								)}
+							</Button>
+						</div>
+
+						<div className="flex items-center gap-2">
+							{/* Clustering metrics */}
+							{clustering && (
+								<div className="flex items-center gap-3 text-xs text-muted-foreground">
+									<div className="flex items-center gap-1">
+										<Layers className="h-3 w-3" />
+										<span>
+											{clusterCount} clusters ({compressionRatio.toFixed(1)}x
+											compression)
+										</span>
+									</div>
+									{quality && (
+										<Badge variant="outline" className="text-[10px]">
+											Q: {quality.modularity.toFixed(3)}
+										</Badge>
+									)}
+								</div>
+							)}
+
+							{isProcessing && (
+								<div className="flex items-center gap-2 text-xs text-muted-foreground">
+									<Activity className="h-3 w-3 animate-spin" />
+									<span>Clustering...</span>
+								</div>
+							)}
+
+							<Separator orientation="vertical" className="h-6" />
+
+							<div className="flex items-center gap-1 rounded-md border p-0.5">
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => zoomIn()}
+									className="h-7 w-7 p-0"
+								>
+									<ZoomIn className="h-4 w-4" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => zoomOut()}
+									className="h-7 w-7 p-0"
+								>
+									<ZoomOut className="h-4 w-4" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={handleFit}
+									className="h-7 w-7 p-0"
+								>
+									<Maximize2 className="h-4 w-4" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={handleReset}
+									className="h-7 w-7 p-0"
+								>
+									<RotateCcw className="h-4 w-4" />
+								</Button>
+							</div>
+						</div>
+					</div>
+				</Card>
+			)}
+
+			{/* Graph area */}
+			<div className="flex-1 flex gap-3">
+				<Card className="flex-1 p-0 overflow-hidden">
+					<ReactFlow
+						nodes={nodes}
+						edges={edges}
+						onNodesChange={onNodesChange}
+						onEdgesChange={onEdgesChange}
+						nodeTypes={customNodeTypes}
+						fitView={autoFit}
+						minZoom={0.1}
+						maxZoom={2}
+						proOptions={{ hideAttribution: true }}
+						className="bg-background"
+					>
+						<Background
+							variant={BackgroundVariant.Dots}
+							gap={20}
+							size={1}
+							color="#374151"
+						/>
+						<Controls showInteractive={false} />
+						<Panel position="top-right" className="!m-2">
+							<Badge variant="secondary" className="text-xs">
+								{items.length} total · {nodes.length} visible
+							</Badge>
+						</Panel>
+					</ReactFlow>
+				</Card>
+
+				{/* Node Detail Panel */}
+				{showDetailPanel && selectedNode && (
+					<NodeDetailPanel
+						node={
+							{
+								id: selectedNode.id,
+								item: selectedNode,
+								type: selectedNode.type || "item",
+								status: selectedNode.status,
+								label: selectedNode.title || "Untitled",
+								perspective: [],
+								connections: {
+									incoming: incomingLinks.length,
+									outgoing: outgoingLinks.length,
+									total: incomingLinks.length + outgoingLinks.length,
+									byType: {},
+								},
+								depth: 0,
+								hasChildren: false,
+							} as EnhancedNodeData
+						}
+						relatedItems={relatedItems}
+						incomingLinks={incomingLinks}
+						outgoingLinks={outgoingLinks}
+						onClose={() => setSelectedNodeId(null)}
+						onNavigateToItem={onNavigateToItem || (() => {})}
+						onFocusNode={handleFocusNode}
+					/>
+				)}
+			</div>
+		</div>
+	);
+}

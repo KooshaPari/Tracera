@@ -1,11 +1,11 @@
 """Workflow run tracking model."""
-
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -21,7 +21,7 @@ class WorkflowRun(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_workflow_run_uuid)
     project_id: Mapped[str | None] = mapped_column(
-        String(255), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True
     )
     graph_id: Mapped[str | None] = mapped_column(
         String(255), ForeignKey("graphs.id", ondelete="SET NULL"), nullable=True, index=True

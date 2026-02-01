@@ -2,43 +2,43 @@ import { expect, test } from "vitest";
 import * as z from "zod/v4";
 
 test("nested refinements", () => {
-  const zodSchema = z
-    .object({
-      password: z.string().min(1),
-      nested: z
-        .object({
-          confirm: z
-            .string()
-            .min(1)
-            .refine((value) => value.length > 2, {
-              message: "Confirm length should be > 2",
-            }),
-        })
-        .refine(
-          (data) => {
-            return data.confirm === "bar";
-          },
-          {
-            path: ["confirm"],
-            error: 'Value must be "bar"',
-          }
-        ),
-    })
-    .refine(
-      (data) => {
-        return data.nested.confirm === data.password;
-      },
-      {
-        path: ["nested", "confirm"],
-        error: "Password and confirm must match",
-      }
-    );
+	const zodSchema = z
+		.object({
+			password: z.string().min(1),
+			nested: z
+				.object({
+					confirm: z
+						.string()
+						.min(1)
+						.refine((value) => value.length > 2, {
+							message: "Confirm length should be > 2",
+						}),
+				})
+				.refine(
+					(data) => {
+						return data.confirm === "bar";
+					},
+					{
+						path: ["confirm"],
+						error: 'Value must be "bar"',
+					},
+				),
+		})
+		.refine(
+			(data) => {
+				return data.nested.confirm === data.password;
+			},
+			{
+				path: ["nested", "confirm"],
+				error: "Password and confirm must match",
+			},
+		);
 
-  const DATA = {
-    password: "bar",
-    nested: { confirm: "" },
-  };
-  expect(zodSchema.safeParse(DATA)).toMatchInlineSnapshot(`
+	const DATA = {
+		password: "bar",
+		nested: { confirm: "" },
+	};
+	expect(zodSchema.safeParse(DATA)).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -81,7 +81,7 @@ test("nested refinements", () => {
     }
   `);
 
-  expect(zodSchema.safeParse(DATA, { jitless: true })).toMatchInlineSnapshot(`
+	expect(zodSchema.safeParse(DATA, { jitless: true })).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -124,7 +124,7 @@ test("nested refinements", () => {
     }
   `);
 
-  expect(zodSchema["~standard"].validate(DATA)).toMatchInlineSnapshot(`
+	expect(zodSchema["~standard"].validate(DATA)).toMatchInlineSnapshot(`
     {
       "issues": [
         {

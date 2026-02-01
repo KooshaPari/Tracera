@@ -1,7 +1,7 @@
 // TimelineView Storybook stories
 import type { Meta, StoryObj } from "@storybook/react";
-import { TimelineView } from "../TimelineView";
 import type { Version } from "../TemporalNavigator";
+import { TimelineView } from "../TimelineView";
 
 const meta = {
 	title: "Temporal/TimelineView",
@@ -63,7 +63,7 @@ export const Default: Story = {
 		versions: mockVersions,
 		currentVersionId: "v1.1.0",
 		onVersionChange: (versionId) =>
-			console.log("Version changed to:", versionId),
+			logger.info("Version changed to:", versionId),
 	},
 };
 
@@ -72,7 +72,7 @@ export const SingleVersion: Story = {
 		versions: [mockVersions[0]],
 		currentVersionId: "v1.0.0",
 		onVersionChange: (versionId) =>
-			console.log("Version changed to:", versionId),
+			logger.info("Version changed to:", versionId),
 	},
 };
 
@@ -86,7 +86,7 @@ export const ManyVersions: Story = {
 		})),
 		currentVersionId: "v10",
 		onVersionChange: (versionId) =>
-			console.log("Version changed to:", versionId),
+			logger.info("Version changed to:", versionId),
 	},
 };
 
@@ -95,7 +95,7 @@ export const EmptyTimeline: Story = {
 		versions: [],
 		currentVersionId: "",
 		onVersionChange: (versionId) =>
-			console.log("Version changed to:", versionId),
+			logger.info("Version changed to:", versionId),
 	},
 };
 
@@ -107,6 +107,6 @@ export const DraftVersions: Story = {
 		})),
 		currentVersionId: mockVersions[0].id,
 		onVersionChange: (versionId) =>
-			console.log("Version changed to:", versionId),
+			logger.info("Version changed to:", versionId),
 	},
 };

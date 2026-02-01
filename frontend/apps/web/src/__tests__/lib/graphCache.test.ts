@@ -1,13 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-	createGraphCache,
-	layoutCache,
-	groupingCache,
-	searchCache,
-	clearAllCaches,
-	prewarmCache,
-	useGraphCache,
 	cacheKeys,
+	clearAllCaches,
+	createGraphCache,
+	groupingCache,
+	layoutCache,
+	searchCache,
+	useGraphCache,
 } from "@/lib/graphCache";
 
 describe("Graph Cache - LRU Implementation", () => {

@@ -1,21 +1,12 @@
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Badge } from "@tracertm/ui/components/Badge";
 import { cn } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Bookmark, Download, Trash2 } from "lucide-react";
+import { memo, useCallback, useState } from "react";
 import type {
 	GroupedSearchResults,
 	SavedSearch,
 } from "./hooks/useCrossPerspectiveSearch";
-import {
-	Download,
-	Save,
-	Trash2,
-	Clock,
-	Bookmark,
-	Share2,
-	Copy,
-} from "lucide-react";
-import { memo, useCallback, useState } from "react";
 
 /**
  * Props for SavedSearchesPanel
@@ -163,7 +154,7 @@ export const SearchResultsExport = memo(function SearchResultsExportComponent({
 				variant="outline"
 				size="sm"
 				className="h-7 text-xs gap-1"
-				onClick={() => onExportJSON?.(filename + ".json")}
+				onClick={() => onExportJSON?.(`${filename}.json`)}
 			>
 				<Download className="w-3 h-3" />
 				JSON
@@ -172,7 +163,7 @@ export const SearchResultsExport = memo(function SearchResultsExportComponent({
 				variant="outline"
 				size="sm"
 				className="h-7 text-xs gap-1"
-				onClick={() => onExportCSV?.(filename + ".csv")}
+				onClick={() => onExportCSV?.(`${filename}.csv`)}
 			>
 				<Download className="w-3 h-3" />
 				CSV

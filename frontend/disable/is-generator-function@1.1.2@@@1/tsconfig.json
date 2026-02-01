@@ -1,9 +1,7 @@
 {
-  "extends": "@ljharb/tsconfig",
-  "compilerOptions": {
-    "maxNodeModuleJsDepth": 0
-  },
-  "exclude": [
-    "coverage"
-  ]
+	"extends": "@ljharb/tsconfig",
+	"compilerOptions": {
+		"maxNodeModuleJsDepth": 0
+	},
+	"exclude": ["coverage"]
 }

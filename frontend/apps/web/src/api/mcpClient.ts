@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./client";
+import { logger } from '@/lib/logger';
 
 type McpConfig = {
 	mcp_base_url?: string | null;
@@ -6,7 +7,7 @@ type McpConfig = {
 	requires_auth?: boolean;
 };
 
-const ENV_MCP_BASE_URL = import.meta.env?.["VITE_MCP_BASE_URL"] as
+const ENV_MCP_BASE_URL = import.meta.env?.VITE_MCP_BASE_URL as
 	| string
 	| undefined;
 const MCP_CONFIG_ENDPOINT = `${API_BASE_URL}/api/v1/mcp/config`;
@@ -46,7 +47,7 @@ export async function getMcpConfig(): Promise<McpConfig> {
 		cachedConfig = data;
 		return data;
 	} catch (error) {
-		console.warn("Failed to load MCP config", error);
+		logger.warn("Failed to load MCP config", error);
 		cachedConfig = {
 			mcp_base_url: null,
 			auth_mode: "none",

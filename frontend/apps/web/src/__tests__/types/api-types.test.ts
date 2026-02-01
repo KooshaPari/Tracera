@@ -4,8 +4,8 @@
  * Verifies all endpoints have proper TypeScript types
  */
 
-import { describe, it, expect } from "vitest";
-import type { paths, components } from "../../api/schema";
+import { describe, expect, it } from "vitest";
+import type { components, paths } from "../../api/schema";
 
 describe("API Type Safety", () => {
 	describe("Path Definitions", () => {
@@ -564,7 +564,7 @@ describe("API Type Safety", () => {
 
 			// Then: Verify callback typing works
 			const onProgress: ProgressCallback = (percent) => {
-				console.log(`Progress: ${percent}%`);
+				logger.info(`Progress: ${percent}%`);
 			};
 
 			expect(onProgress).toBeDefined();

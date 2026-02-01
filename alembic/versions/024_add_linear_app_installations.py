@@ -5,6 +5,7 @@ Revises: 023_github_projects
 Create Date: 2026-01-28 13:30:00.000000
 """
 from alembic import op
+from alembic import context
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
@@ -18,7 +19,13 @@ depends_on = None
 
 def upgrade() -> None:
     # Determine JSON type based on database
-    json_type = JSON if op.get_bind().dialect.name == "postgresql" else SQLiteJSON
+    bind = op.get_bind()
+    dialect_name = (
+        bind.dialect.name
+        if bind is not None
+        else context.get_context().dialect.name
+    )
+    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
 
     # Create linear_app_installations table
     op.create_table(

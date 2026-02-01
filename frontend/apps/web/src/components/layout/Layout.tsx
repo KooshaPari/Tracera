@@ -1,16 +1,64 @@
-import { Outlet, useLocation } from "@tanstack/react-router";
+import { Outlet, useLocation, useMatches } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
+import { ChatBubble } from "@/components/chat";
+import { cn } from "@/lib/utils";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
-import { ChatBubble } from "@/components/chat";
 
 export function Layout() {
 	const location = useLocation();
+	const matches = useMatches();
 	const path = location.pathname;
 	const isItemDetail =
 		/\/items\/[^/]+$/.test(path) ||
 		/\/projects\/[^/]+\/views\/[^/]+\/[^/]+$/.test(path);
-	const handleSkipToMain = (e: React.MouseEvent) => {
+	const isE2E =
+		typeof navigator !== "undefined" && navigator.webdriver;
+
+	// Check if any active route is an auth route
+	const isAuthRoute = matches.some((match) =>
+		match.routeId.startsWith("/auth"),
+	);
+
+	const shelllessRouteIds = new Set<string>([]);
+
+	const isShelllessRoute = matches.some((match) =>
+		shelllessRouteIds.has(String(match.routeId)),
+	);
+
+	const isErrorState = matches.some((match) =>
+		["error", "notFound", "redirected"].includes(match.status),
+	);
+	const hasHandledFirstTabRef = useRef(false);
+
+	// Landing page, auth, redirects, and error states should not render the shell
+	if (
+		(path === "/" && !isE2E) ||
+		path.startsWith("/auth/") ||
+		isAuthRoute ||
+		isShelllessRoute ||
+		isErrorState
+	) {
+		return <Outlet />;
+	}
+
+	// 404 check - If only the root route matches, it's a global 404
+	// (Root route is always matches[0])
+	const isGlobal404 = matches.length === 1 && matches[0].routeId === "__root__";
+
+	if (isGlobal404) {
+		return (
+			<div className="flex h-screen overflow-hidden bg-background">
+				<main className="flex-1 overflow-auto relative z-10">
+					<Outlet />
+				</main>
+			</div>
+		);
+	}
+
+	const handleSkipToMain = (e: React.SyntheticEvent) => {
 		e.preventDefault();
+		hasHandledFirstTabRef.current = true;
 		const mainContent = document.querySelector("main");
 		if (mainContent) {
 			mainContent.setAttribute("tabindex", "-1");
@@ -25,6 +73,38 @@ export function Layout() {
 		}
 	};
 
+	useEffect(() => {
+		const handleFirstTab = (event: KeyboardEvent) => {
+			if (event.key !== "Tab" || event.shiftKey) return;
+			if (hasHandledFirstTabRef.current) return;
+			if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+				return;
+			}
+			const skipLink = document.getElementById("skip-to-main");
+			if (skipLink) {
+				event.preventDefault();
+				hasHandledFirstTabRef.current = true;
+				(skipLink as HTMLElement).focus();
+			}
+		};
+		const handleFirstFocus = (event: FocusEvent) => {
+			if (hasHandledFirstTabRef.current) return;
+			if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+				return;
+			}
+			const skipLink = document.getElementById("skip-to-main");
+			if (!skipLink || event.target === skipLink) return;
+			hasHandledFirstTabRef.current = true;
+			(skipLink as HTMLElement).focus();
+		};
+		document.addEventListener("keydown", handleFirstTab, true);
+		document.addEventListener("focusin", handleFirstFocus, true);
+		return () => {
+			document.removeEventListener("keydown", handleFirstTab, true);
+			document.removeEventListener("focusin", handleFirstFocus, true);
+		};
+	}, []);
+
 	return (
 		<div className="flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary bg-transparent">
 			<div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_10%_15%,rgba(249,115,22,0.28),transparent_45%),radial-gradient(circle_at_85%_8%,rgba(14,116,144,0.3),transparent_42%),radial-gradient(circle_at_20%_75%,rgba(16,185,129,0.24),transparent_40%)]" />
@@ -32,33 +112,51 @@ export function Layout() {
 			{!isItemDetail && (
 				<div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_30%_40%,rgba(148,163,184,0.08),transparent_55%)]" />
 			)}
-			{/* Skip to main content link - visually hidden but focusable */}
+			{/* Skip to main content - visually hidden but focusable */}
 			<a
+				id="skip-to-main"
 				href="#main-content"
 				onClick={handleSkipToMain}
+				onKeyDown={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						handleSkipToMain(event);
+					}
+				}}
+				tabIndex={0}
 				className="absolute left-[-9999px] top-0 z-[10000] bg-primary px-4 py-2 text-primary-foreground focus:left-4 focus:top-4 focus:rounded-lg"
 			>
 				Skip to main content
 			</a>
 
 			<Sidebar />
-			<div className="flex flex-1 flex-col overflow-hidden relative min-w-0 bg-transparent">
+			<div className="flex min-w-0 flex-1 flex-col overflow-hidden relative bg-transparent">
 				<div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px] pointer-events-none" />
 
 				<Header />
 				<main
 					id="main-content"
 					role="main"
-					className="flex-1 overflow-auto relative z-10 custom-scrollbar"
+					tabIndex={-1}
+					className="min-h-0 min-w-0 flex-1 overflow-auto relative z-10 custom-scrollbar"
 				>
 					<div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.18),transparent_65%),radial-gradient(circle_at_80%_0%,rgba(249,115,22,0.16),transparent_55%)]" />
-					<div className={isItemDetail ? "p-0" : "px-4 py-6 sm:px-6 lg:px-8"}>
+					<div
+						key={path}
+						className={cn(
+							isItemDetail ? "p-0" : "py-6 pr-4 sm:pr-6 lg:pr-8",
+							"min-w-0 w-full max-w-full animate-in-fade-up",
+						)}
+					>
 						<Outlet />
 					</div>
 				</main>
 			</div>
-			{/* Chat Sidebar - Always visible on the right */}
-			<ChatBubble />
+			{/* Chat Sidebar - hidden on small screens to avoid horizontal overflow */}
+			<div className="hidden xl:flex">
+				<ChatBubble />
+			</div>
 		</div>
 	);
 }
+
+export default Layout;

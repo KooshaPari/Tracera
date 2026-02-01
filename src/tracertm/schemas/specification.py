@@ -39,6 +39,7 @@ class ADROption(BaseModel):
 class ADRCreate(BaseModel):
     """Schema for creating an ADR."""
 
+    project_id: str = Field(..., min_length=1)
     title: str = Field(..., min_length=1, max_length=500)
     status: ADRStatus = ADRStatus.PROPOSED
 
@@ -216,6 +217,8 @@ class StateTransition(BaseModel):
 class ContractCreate(BaseModel):
     """Schema for creating a contract."""
 
+    project_id: str = Field(..., min_length=1)
+    item_id: str = Field(..., min_length=1)
     title: str = Field(..., min_length=1, max_length=500)
     contract_type: ContractType = ContractType.FUNCTION
     status: ContractStatus = ContractStatus.DRAFT
@@ -388,6 +391,7 @@ class ScenarioExample(BaseModel):
 class FeatureCreate(BaseModel):
     """Schema for creating a feature."""
 
+    project_id: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
     status: FeatureStatus = FeatureStatus.DRAFT
@@ -627,6 +631,7 @@ class ScenarioActivityResponse(BaseModel):
 class ScenarioActivityListResponse(BaseModel):
     """Schema for scenario activity list response."""
 
+    total: int
     activities: list[ScenarioActivityResponse]
 
 

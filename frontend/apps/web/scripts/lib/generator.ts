@@ -2,7 +2,7 @@
  * Item and link generation logic
  */
 
-import { createItemWithRetry, createLinkWithRetry, sleep } from "./api";
+import { createItemWithRetry, createLinkWithRetry } from "./api";
 import { codeSnippets, descriptions } from "./data";
 import type {
 	ItemPriority,

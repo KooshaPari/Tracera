@@ -2,6 +2,7 @@
 // Shows edit capability indicators with visual feedback
 // Supports instant, agent-assisted, and manual edit types
 
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -10,8 +11,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { cn } from "@tracertm/ui";
-import { Zap, Bot, Edit3, Check } from "lucide-react";
+import { Bot, Check, Edit3, Zap } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
 export type EditType = "instant" | "agent_required" | "manual";

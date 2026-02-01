@@ -1,4 +1,4 @@
-"""Workflow task implementations for Hatchet or local execution."""
+"""Workflow task implementations for Temporal or local execution."""
 
 from __future__ import annotations
 

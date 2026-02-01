@@ -18,10 +18,10 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 
 	// Retry on CI only
-	retries: process.env.CI ? 2 : 1,
+	retries: process.env.CI ? 2 : 0,
 
 	// Limit workers to prevent API mock interference between tests
-	// Use 2 workers locally for faster execution while maintaining stability
+	// Use 1 worker on CI for stability, 2 locally for speed
 	workers: process.env.CI ? 1 : 2,
 
 	// Reporter to use
@@ -45,8 +45,14 @@ export default defineConfig({
 		// Screenshot on failure
 		screenshot: "only-on-failure",
 
-		// Video on failure
+		// Video on retry (saves space, only captures when tests are retried)
 		video: "retain-on-failure",
+
+		// Action timeout
+		actionTimeout: 10_000,
+
+		// Navigation timeout
+		navigationTimeout: 30_000,
 	},
 
 	// Configure projects for major browsers

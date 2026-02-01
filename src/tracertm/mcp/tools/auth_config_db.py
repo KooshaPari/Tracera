@@ -13,7 +13,6 @@ from __future__ import annotations
 import time
 from typing import Any, Dict
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.core import mcp
@@ -21,7 +20,7 @@ from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
 
 
-def _actor_from_context(ctx: Context | None) -> dict[str, Any] | None:
+def _actor_from_context(ctx: Any | None) -> dict[str, Any] | None:
     """Extract actor info from MCP context."""
     if ctx is None:
         return None
@@ -43,7 +42,7 @@ def _actor_from_context(ctx: Context | None) -> dict[str, Any] | None:
     }
 
 
-def _wrap(result: Any, ctx: Context | None, action: str) -> dict[str, Any]:
+def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     """Wrap result in standard MCP response format."""
     return {
         "ok": True,
@@ -70,7 +69,7 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 @mcp.tool()
 async def auth_login(
-    ctx: Context,
+    ctx: Any,
     authkit_domain: str,
     client_id: str,
     scopes: str | None = None,
@@ -206,7 +205,7 @@ async def auth_login(
 
 
 @mcp.tool()
-async def auth_status(ctx: Context) -> Dict[str, Any]:
+async def auth_status(ctx: Any) -> Dict[str, Any]:
     """Check authentication token status.
 
     Returns:
@@ -230,7 +229,7 @@ async def auth_status(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def auth_logout(ctx: Context) -> Dict[str, Any]:
+async def auth_logout(ctx: Any) -> Dict[str, Any]:
     """Clear stored authentication token.
 
     Returns:
@@ -258,7 +257,7 @@ async def auth_logout(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def config_init(ctx: Context, database_url: str) -> Dict[str, Any]:
+async def config_init(ctx: Any, database_url: str) -> Dict[str, Any]:
     """Initialize TraceRTM configuration.
 
     Args:
@@ -286,7 +285,7 @@ async def config_init(ctx: Context, database_url: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def config_show(ctx: Context) -> Dict[str, Any]:
+async def config_show(ctx: Any) -> Dict[str, Any]:
     """Show current configuration.
 
     Returns:
@@ -320,7 +319,7 @@ async def config_show(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def config_set(ctx: Context, key: str, value: str | None) -> Dict[str, Any]:
+async def config_set(ctx: Any, key: str, value: str | None) -> Dict[str, Any]:
     """Set a configuration value.
 
     Args:
@@ -349,7 +348,7 @@ async def config_set(ctx: Context, key: str, value: str | None) -> Dict[str, Any
 
 
 @mcp.tool()
-async def config_get(ctx: Context, key: str) -> Dict[str, Any]:
+async def config_get(ctx: Any, key: str) -> Dict[str, Any]:
     """Get a configuration value.
 
     Args:
@@ -376,7 +375,7 @@ async def config_get(ctx: Context, key: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def config_unset(ctx: Context, key: str) -> Dict[str, Any]:
+async def config_unset(ctx: Any, key: str) -> Dict[str, Any]:
     """Unset a configuration value.
 
     Args:
@@ -403,7 +402,7 @@ async def config_unset(ctx: Context, key: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def config_list(ctx: Context) -> Dict[str, Any]:
+async def config_list(ctx: Any) -> Dict[str, Any]:
     """List all configuration values.
 
     Returns:
@@ -446,7 +445,7 @@ async def config_list(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def db_init(ctx: Context, database_url: str | None = None) -> Dict[str, Any]:
+async def db_init(ctx: Any, database_url: str | None = None) -> Dict[str, Any]:
     """Initialize database configuration and prepare schema.
 
     Args:
@@ -476,7 +475,7 @@ async def db_init(ctx: Context, database_url: str | None = None) -> Dict[str, An
 
 
 @mcp.tool()
-async def db_status(ctx: Context) -> Dict[str, Any]:
+async def db_status(ctx: Any) -> Dict[str, Any]:
     """Check database health status.
 
     Returns:
@@ -524,7 +523,7 @@ async def db_status(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def db_migrate(ctx: Context) -> Dict[str, Any]:
+async def db_migrate(ctx: Any) -> Dict[str, Any]:
     """Run database migrations (create tables).
 
     Returns:
@@ -562,7 +561,7 @@ async def db_migrate(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def db_rollback(ctx: Context, confirm: bool = False) -> Dict[str, Any]:
+async def db_rollback(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
     """Rollback database (drop all tables).
 
     WARNING: This will delete all data!
@@ -609,7 +608,7 @@ async def db_rollback(ctx: Context, confirm: bool = False) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def db_reset(ctx: Context, confirm: bool = False) -> Dict[str, Any]:
+async def db_reset(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
     """Reset database by dropping and recreating tables.
 
     WARNING: This will delete all data!

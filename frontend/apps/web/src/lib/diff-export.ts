@@ -9,10 +9,10 @@
  */
 
 import type {
-	VersionDiff,
-	DiffItem,
 	DiffExportOptions,
 	DiffExportResult,
+	DiffItem,
+	VersionDiff,
 } from "@repo/types";
 
 /**

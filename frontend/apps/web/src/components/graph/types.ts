@@ -1,16 +1,14 @@
 // Enhanced Graph View Types
 
-import type { Item, ItemStatus, LinkType } from "@tracertm/types";
+import type {
+	Item,
+	ItemStatus,
+	LinkType,
+	PerspectiveType,
+} from "@tracertm/types";
 
-// Perspective views for the graph
-export type GraphPerspective =
-	| "product" // User-facing features, journeys, wireframes
-	| "business" // Requirements, epics, user stories
-	| "technical" // Architecture, APIs, databases, code
-	| "ui" // UI components, wireframes, interactions
-	| "security" // Security requirements, audits, vulnerabilities
-	| "performance" // Performance requirements, metrics, optimizations
-	| "all"; // Show everything
+// Re-export PerspectiveType from canonical types for backward compatibility
+export type GraphPerspective = PerspectiveType;
 
 // Mapping of item types to perspectives
 export const TYPE_TO_PERSPECTIVE: Record<string, GraphPerspective[]> = {
@@ -109,7 +107,8 @@ export interface NodeStyle {
 	shape: "pill" | "rectangle" | "circle";
 }
 
-// Perspective configurations
+// Compatibility interface for graph components
+// Maps the canonical PerspectiveConfig to the simpler graph representation
 export interface PerspectiveConfig {
 	id: GraphPerspective;
 	label: string;
@@ -121,104 +120,21 @@ export interface PerspectiveConfig {
 	layoutPreference: "cose" | "breadthfirst" | "circle" | "elk";
 }
 
-export const PERSPECTIVE_CONFIGS: PerspectiveConfig[] = [
-	{
-		id: "all",
-		label: "All Items",
-		description:
-			"Complete traceability graph showing all items and relationships",
-		icon: "Network",
-		color: "#64748b",
-		includeTypes: [],
-		excludeTypes: [],
-		layoutPreference: "cose",
-	},
-	{
-		id: "product",
-		label: "Product View",
-		description: "User-facing features, journeys, and experiences",
-		icon: "Users",
-		color: "#9333ea",
-		includeTypes: [
-			"requirement",
-			"feature",
-			"user_story",
-			"story",
-			"journey",
-			"wireframe",
-			"page",
-		],
-		excludeTypes: [],
-		layoutPreference: "breadthfirst",
-	},
-	{
-		id: "business",
-		label: "Business View",
-		description: "Requirements, epics, stories, and project deliverables",
-		icon: "Briefcase",
-		color: "#3b82f6",
-		includeTypes: [
-			"requirement",
-			"feature",
-			"epic",
-			"user_story",
-			"story",
-			"task",
-			"bug",
-		],
-		excludeTypes: [],
-		layoutPreference: "breadthfirst",
-	},
-	{
-		id: "technical",
-		label: "Technical View",
-		description: "Architecture, APIs, databases, and code structure",
-		icon: "Code",
-		color: "#22c55e",
-		includeTypes: [
-			"api",
-			"database",
-			"code",
-			"architecture",
-			"infrastructure",
-			"configuration",
-			"dependency",
-			"test",
-		],
-		excludeTypes: [],
-		layoutPreference: "elk",
-	},
-	{
-		id: "ui",
-		label: "UI View",
-		description: "Components, wireframes, and UI interactions",
-		icon: "Layout",
-		color: "#ec4899",
-		includeTypes: ["wireframe", "ui_component", "page", "component"],
-		excludeTypes: [],
-		layoutPreference: "breadthfirst",
-	},
-	{
-		id: "security",
-		label: "Security View",
-		description: "Security requirements, audits, and vulnerabilities",
-		icon: "Shield",
-		color: "#ef4444",
-		includeTypes: ["security", "vulnerability", "audit"],
-		excludeTypes: [],
-		layoutPreference: "cose",
-	},
-	{
-		id: "performance",
-		label: "Performance View",
-		description: "Performance metrics, monitoring, and optimizations",
-		icon: "Gauge",
-		color: "#f59e0b",
-		includeTypes: ["performance", "monitoring", "metric"],
-		excludeTypes: [],
-		layoutPreference: "cose",
-	},
-];
+// Build PERSPECTIVE_CONFIGS from canonical DEFAULT_PERSPECTIVES
+// Maps perspectiveType -> id for backward compatibility
+import { DEFAULT_PERSPECTIVES } from "@tracertm/types";
+
+export const PERSPECTIVE_CONFIGS: PerspectiveConfig[] =
+	DEFAULT_PERSPECTIVES.map((config) => ({
+		id: config.perspectiveType as GraphPerspective,
+		label: config.name,
+		description: config.description || "",
+		icon: config.icon,
+		color: config.color,
+		includeTypes: config.includeTypes,
+		excludeTypes: config.excludeTypes,
+		layoutPreference: config.layoutPreference,
+	}));
 
 // Type colors for the enhanced view
 export const ENHANCED_TYPE_COLORS: Record<string, string> = {

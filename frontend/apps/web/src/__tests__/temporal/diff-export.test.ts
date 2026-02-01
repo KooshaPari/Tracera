@@ -2,9 +2,9 @@
  * Tests for diff export utilities
  */
 
-import { describe, it, expect } from "vitest";
+import type { VersionDiff } from "@repo/types";
+import { describe, expect, it } from "vitest";
 import { exportDiff } from "@/lib/diff-export";
-import type { VersionDiff, DiffExportOptions } from "@repo/types";
 
 const mockDiff: VersionDiff = {
 	versionA: "v1",

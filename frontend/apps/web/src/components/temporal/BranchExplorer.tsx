@@ -1,18 +1,18 @@
 // Branch Explorer - Tree visualization of branch structure
 // Shows branch hierarchy, status indicators, and merge operations
 
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
-import { cn } from "@tracertm/ui";
 import {
+	AlertCircle,
 	ChevronRight,
 	GitBranch,
 	GitMerge,
 	Plus,
 	Trash2,
-	AlertCircle,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Branch } from "./TemporalNavigator";
 
 export interface BranchExplorerProps {

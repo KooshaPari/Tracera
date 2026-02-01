@@ -11,6 +11,16 @@ links:
   type: implemented_by
 - target: SCREEN-001
   type: designs
+- target: ENDPOINT-004
+  type: implemented_by
+- target: ENDPOINT-005
+  type: implemented_by
+- target: SCREEN-003
+  type: designs
+- target: TEST_CASE-004
+  type: tested_by
+- target: TEST_CASE-005
+  type: tested_by
 owner: null
 parent: null
 priority: high

@@ -1,6 +1,7 @@
 // Layout Selector with intuitive names and descriptions
 // Replaces technical layout names with user-friendly options
 
+import { cn } from "@tracertm/ui";
 import { Button } from "@tracertm/ui/components/Button";
 import {
 	Select,
@@ -15,7 +16,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { cn } from "@tracertm/ui";
 import {
 	ArrowDown,
 	ArrowRight,
@@ -129,25 +129,22 @@ export function LayoutSelector({
 		);
 	}
 
-	// Default: select dropdown
+	// Default: select dropdown (single icon via SelectValue only)
 	return (
 		<Select value={value} onValueChange={(v) => onChange(v as LayoutType)}>
-			<SelectTrigger className={cn("w-[180px] h-9", className)}>
-				<div className="flex items-center gap-2">
-					<CurrentIcon className="h-4 w-4 text-primary" />
-					<SelectValue />
-				</div>
+			<SelectTrigger className={cn("min-w-0 w-full max-w-[180px] sm:max-w-[200px] h-7 sm:h-9 text-xs sm:text-sm [&>span]:truncate [&>span]:min-w-0", className)}>
+				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
 				{LAYOUT_CONFIGS.map((config) => {
 					const Icon = ICON_MAP[config.icon] || Network;
 					return (
 						<SelectItem key={config.id} value={config.id}>
-							<div className="flex items-center gap-2">
-								<Icon className="h-4 w-4" />
-								<div className="flex flex-col">
-									<span>{config.label}</span>
-									<span className="text-[10px] text-muted-foreground">
+							<div className="flex items-center gap-2 min-w-0">
+								<Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+								<div className="min-w-0 flex-1">
+									<span className="block truncate text-xs sm:text-sm">{config.label}</span>
+									<span className="block text-[9px] sm:text-[10px] text-muted-foreground truncate">
 										{config.description}
 									</span>
 								</div>

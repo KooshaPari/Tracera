@@ -49,9 +49,9 @@ class Account(Base, TimestampMixin):
     account_users: Mapped[list["AccountUser"]] = relationship(
         "AccountUser", back_populates="account", cascade="all, delete-orphan"
     )
-    projects: Mapped[list["Project"]] = relationship(
-        "Project", back_populates="account", cascade="all, delete-orphan"
-    )
+    # projects: Mapped[list["Project"]] = relationship(
+    #     "Project", back_populates="account", cascade="all, delete-orphan"
+    # )
 
     def __getattribute__(self, name: str) -> object:
         if name == "metadata":

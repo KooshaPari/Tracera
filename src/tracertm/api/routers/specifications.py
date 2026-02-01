@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
-from tracertm.api.deps import get_db, auth_guard
+from tracertm.api.deps import get_db, auth_guard, get_event_bus
 from tracertm.schemas.specification import (
     ADRCreate,
     ADRUpdate,
@@ -29,14 +29,18 @@ from tracertm.schemas.specification import (
     ScenarioUpdate,
     ScenarioResponse,
     ScenarioListResponse,
+    ScenarioActivityListResponse,
 )
 from tracertm.services.adr_service import ADRService
 from tracertm.services.contract_service import ContractService
 from tracertm.services.feature_service import FeatureService
 from tracertm.services.scenario_service import ScenarioService
 from tracertm.repositories.event_repository import EventRepository
-from tracertm.models.specification import Feature
+from tracertm.models.specification import Feature, Scenario
+from tracertm.infrastructure.event_bus import EventBus
+from tracertm.infrastructure.event_publisher_utils import safe_publish
 from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
 
 # =============================================================================
 # Response Models
@@ -93,6 +97,7 @@ async def create_adr_spec(
     adr: ADRCreate,
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Create a new Architecture Decision Record.
 
@@ -100,6 +105,7 @@ async def create_adr_spec(
         adr: ADR creation payload with title, context, decision, consequences
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Returns:
         ADRResponse: Created ADR with all fields populated
@@ -110,7 +116,7 @@ async def create_adr_spec(
     service = ADRService(db)
 
     try:
-        return await service.create_adr(
+        created_adr = await service.create_adr(
             project_id=adr.project_id,
             title=adr.title,
             context=adr.context,
@@ -126,6 +132,25 @@ async def create_adr_spec(
             date=adr.date,
             metadata=adr.metadata,
         )
+
+        # Publish NATS event
+        if event_bus:
+            await safe_publish(
+                event_bus,
+                EventBus.EVENT_SPEC_CREATED,
+                adr.project_id,
+                str(created_adr.id),
+                "adr",
+                {
+                    "id": str(created_adr.id),
+                    "title": created_adr.title,
+                    "type": "adr",
+                    "status": created_adr.status,
+                    "project_id": adr.project_id,
+                },
+            )
+
+        return created_adr
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"Failed to create ADR: {str(e)}"
@@ -164,6 +189,7 @@ async def update_adr_spec(
     updates: ADRUpdate = None,
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Update an ADR.
 
@@ -172,6 +198,7 @@ async def update_adr_spec(
         updates: Fields to update (all optional)
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Returns:
         ADRResponse: Updated ADR
@@ -190,6 +217,18 @@ async def update_adr_spec(
         updated_adr = await service.update_adr(adr_id, **update_data)
         if not updated_adr:
             raise HTTPException(status_code=404, detail="ADR not found")
+
+        # Publish NATS event
+        if event_bus:
+            await safe_publish(
+                event_bus,
+                EventBus.EVENT_SPEC_UPDATED,
+                updated_adr.project_id,
+                adr_id,
+                "adr",
+                jsonable_encoder(updated_adr),
+            )
+
         return updated_adr
     except Exception as e:
         raise HTTPException(
@@ -202,6 +241,7 @@ async def delete_adr_spec(
     adr_id: str = Path(..., description="ADR ID"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Delete an ADR.
 
@@ -209,14 +249,30 @@ async def delete_adr_spec(
         adr_id: The ADR identifier
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Raises:
         HTTPException: If ADR not found (404)
     """
     service = ADRService(db)
-    success = await service.delete_adr(adr_id)
-    if not success:
+
+    # Get ADR before deletion to access project_id
+    adr = await service.get_adr(adr_id)
+    if not adr:
         raise HTTPException(status_code=404, detail="ADR not found")
+
+    project_id = adr.project_id
+    success = await service.delete_adr(adr_id)
+
+    if success and event_bus:
+        await safe_publish(
+            event_bus,
+            EventBus.EVENT_SPEC_DELETED,
+            project_id,
+            adr_id,
+            "adr",
+            {"id": adr_id},
+        )
 
 
 @router.get("/projects/{project_id}/adrs", response_model=ADRListResponse)
@@ -346,6 +402,7 @@ async def create_contract_spec(
     contract: ContractCreate,
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Create a new contract specification.
 
@@ -363,7 +420,7 @@ async def create_contract_spec(
     service = ContractService(db)
 
     try:
-        return await service.create_contract(
+        created_contract = await service.create_contract(
             project_id=contract.project_id,
             item_id=contract.item_id,
             title=contract.title,
@@ -379,6 +436,25 @@ async def create_contract_spec(
             executable_spec=contract.executable_spec,
             spec_language=contract.spec_language,
         )
+
+        # Publish NATS event
+        if event_bus:
+            await safe_publish(
+                event_bus,
+                EventBus.EVENT_SPEC_CREATED,
+                contract.project_id,
+                str(created_contract.id),
+                "contract",
+                {
+                    "id": str(created_contract.id),
+                    "title": created_contract.title,
+                    "type": "contract",
+                    "contract_type": created_contract.contract_type,
+                    "project_id": contract.project_id,
+                },
+            )
+
+        return created_contract
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"Failed to create contract: {str(e)}"
@@ -597,6 +673,7 @@ async def create_feature_spec(
     feature: FeatureCreate,
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Create a new BDD feature.
 
@@ -604,6 +681,7 @@ async def create_feature_spec(
         feature: Feature creation payload
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Returns:
         FeatureResponse: Created feature
@@ -614,7 +692,7 @@ async def create_feature_spec(
     service = FeatureService(db)
 
     try:
-        return await service.create_feature(
+        created_feature = await service.create_feature(
             project_id=feature.project_id,
             name=feature.name,
             description=feature.description,
@@ -627,6 +705,25 @@ async def create_feature_spec(
             related_adrs=feature.related_adrs,
             metadata=feature.metadata,
         )
+
+        # Publish NATS event
+        if event_bus:
+            await safe_publish(
+                event_bus,
+                EventBus.EVENT_SPEC_CREATED,
+                feature.project_id,
+                str(created_feature.id),
+                "feature",
+                {
+                    "id": str(created_feature.id),
+                    "name": created_feature.name,
+                    "type": "feature",
+                    "status": created_feature.status,
+                    "project_id": feature.project_id,
+                },
+            )
+
+        return created_feature
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"Failed to create feature: {str(e)}"
@@ -777,6 +874,7 @@ async def create_scenario_spec(
     scenario: ScenarioCreate = None,
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Create a new scenario for a feature.
 
@@ -785,6 +883,7 @@ async def create_scenario_spec(
         scenario: Scenario creation payload
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Returns:
         ScenarioResponse: Created scenario
@@ -795,11 +894,12 @@ async def create_scenario_spec(
     service = ScenarioService(db)
     feature_service = FeatureService(db)
 
-    if not await feature_service.get_feature(feature_id):
+    feature = await feature_service.get_feature(feature_id)
+    if not feature:
         raise HTTPException(status_code=404, detail="Feature not found")
 
     try:
-        return await service.create_scenario(
+        created_scenario = await service.create_scenario(
             feature_id=feature_id,
             title=scenario.title,
             description=scenario.description,
@@ -813,6 +913,25 @@ async def create_scenario_spec(
             examples=scenario.examples,
             metadata=scenario.metadata,
         )
+
+        # Publish NATS event
+        if event_bus:
+            await safe_publish(
+                event_bus,
+                EventBus.EVENT_SPEC_CREATED,
+                feature.project_id,
+                str(created_scenario.id),
+                "scenario",
+                {
+                    "id": str(created_scenario.id),
+                    "title": created_scenario.title,
+                    "type": "scenario",
+                    "feature_id": feature_id,
+                    "project_id": feature.project_id,
+                },
+            )
+
+        return created_scenario
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"Failed to create scenario: {str(e)}"
@@ -855,6 +974,75 @@ async def list_scenarios_for_feature(
         ) from e
 
 
+@router.get("/projects/{project_id}/scenarios", response_model=ScenarioListResponse)
+async def list_scenarios_for_project(
+    project_id: str = Path(..., description="Project ID"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all scenarios for a project.
+
+    Args:
+        project_id: The project identifier
+        status: Optional status filter
+        claims: Authentication claims from JWT
+        db: Database session
+
+    Returns:
+        ScenarioListResponse: List of scenarios with total count
+    """
+    result = await db.execute(
+        select(Scenario).join(Feature).where(Feature.project_id == project_id)
+    )
+    scenarios = list(result.scalars().all())
+    if status:
+        scenarios = [s for s in scenarios if getattr(s, "status", None) == status]
+    return ScenarioListResponse(total=len(scenarios), scenarios=scenarios)
+
+
+@router.get("/projects/{project_id}/scenarios/activities", response_model=ScenarioActivityListResponse)
+async def list_scenario_activities_for_project(
+    project_id: str = Path(..., description="Project ID"),
+    limit: int = Query(200, description="Max activities to return"),
+    offset: int = Query(0, description="Offset for pagination"),
+    event_type: Optional[str] = Query(None, description="Filter by event type"),
+    since: Optional[datetime] = Query(None, description="Return events since this time"),
+    until: Optional[datetime] = Query(None, description="Return events until this time"),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    repo = EventRepository(db)
+    events = await repo.get_by_project(project_id, limit=limit + offset)
+    activities = [
+        {
+            "id": str(event.id),
+            "scenario_id": event.entity_id,
+            "activity_type": event.event_type,
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "metadata": event.data if isinstance(event.data, dict) else {},
+            "created_at": event.created_at,
+        }
+        for event in events
+        if event.entity_type == "scenario"
+    ]
+    total = len(activities)
+    if event_type:
+        activities = [a for a in activities if a["activity_type"] == event_type]
+    if since:
+        activities = [a for a in activities if a["created_at"] and a["created_at"] >= since]
+    if until:
+        activities = [a for a in activities if a["created_at"] and a["created_at"] <= until]
+    total = len(activities)
+    if offset:
+        activities = activities[offset:]
+    activities = activities[:limit]
+    return {"total": total, "activities": activities}
+
+
 @router.get("/scenarios/{scenario_id}", response_model=ScenarioResponse)
 async def get_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
@@ -881,12 +1069,45 @@ async def get_scenario_spec(
     return scenario
 
 
+@router.get("/scenarios/{scenario_id}/activities", response_model=ScenarioActivityListResponse)
+async def get_scenario_activities(
+    scenario_id: str = Path(..., description="Scenario ID"),
+    limit: int = Query(100, description="Max activities to return"),
+    offset: int = Query(0, description="Offset for pagination"),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    repo = EventRepository(db)
+    events = await repo.get_by_entity(scenario_id, limit=limit + offset)
+    activities = [
+        {
+            "id": str(event.id),
+            "scenario_id": scenario_id,
+            "activity_type": event.event_type,
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "metadata": event.data if isinstance(event.data, dict) else {},
+            "created_at": event.created_at,
+        }
+        for event in events
+        if event.entity_type == "scenario"
+    ]
+    total = len(activities)
+    if offset:
+        activities = activities[offset:]
+    activities = activities[:limit]
+    return {"total": total, "activities": activities}
+
+
 @router.put("/scenarios/{scenario_id}", response_model=ScenarioResponse)
 async def update_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
     updates: ScenarioUpdate = None,
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Update a scenario.
 
@@ -895,6 +1116,7 @@ async def update_scenario_spec(
         updates: Fields to update (all optional)
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Returns:
         ScenarioResponse: Updated scenario
@@ -913,6 +1135,23 @@ async def update_scenario_spec(
         updated_scenario = await service.update_scenario(scenario_id, **update_data)
         if not updated_scenario:
             raise HTTPException(status_code=404, detail="Scenario not found")
+
+        # Get feature to obtain project_id
+        if updated_scenario.feature_id:
+            feature_result = await db.execute(
+                select(Feature).where(Feature.id == updated_scenario.feature_id)
+            )
+            feature = feature_result.scalar_one_or_none()
+            if feature and event_bus:
+                await safe_publish(
+                    event_bus,
+                    EventBus.EVENT_SPEC_UPDATED,
+                    feature.project_id,
+                    scenario_id,
+                    "scenario",
+                    jsonable_encoder(updated_scenario),
+                )
+
         return updated_scenario
     except Exception as e:
         raise HTTPException(
@@ -925,6 +1164,7 @@ async def delete_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
+    event_bus: EventBus = Depends(get_event_bus),
 ):
     """Delete a scenario.
 
@@ -932,14 +1172,39 @@ async def delete_scenario_spec(
         scenario_id: The scenario identifier
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: EventBus for cross-backend communication
 
     Raises:
         HTTPException: If scenario not found (404)
     """
     service = ScenarioService(db)
-    success = await service.delete_scenario(scenario_id)
-    if not success:
+
+    # Get scenario before deletion to access project_id
+    scenario = await service.get_scenario(scenario_id)
+    if not scenario:
         raise HTTPException(status_code=404, detail="Scenario not found")
+
+    # Get feature to obtain project_id
+    project_id = None
+    if scenario.feature_id:
+        feature_result = await db.execute(
+            select(Feature).where(Feature.id == scenario.feature_id)
+        )
+        feature = feature_result.scalar_one_or_none()
+        if feature:
+            project_id = feature.project_id
+
+    success = await service.delete_scenario(scenario_id)
+
+    if success and event_bus and project_id:
+        await safe_publish(
+            event_bus,
+            EventBus.EVENT_SPEC_DELETED,
+            project_id,
+            scenario_id,
+            "scenario",
+            {"id": scenario_id},
+        )
 
 
 @router.post("/scenarios/{scenario_id}/run", response_model=ScenarioRunResult)

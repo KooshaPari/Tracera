@@ -3,11 +3,11 @@
  * Displays ISO 29148 quality dimensions as a radar/spider chart
  */
 
-import { cn } from "@/lib/utils";
 import type {
 	QualityDimension,
 	QualityGrade,
 } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface QualityDimensionRadarProps {
 	dimensions: Record<string, number>;
@@ -63,10 +63,9 @@ export function QualityDimensionRadar({
 		};
 	});
 
-	const polygonPath =
-		scorePoints
-			.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-			.join(" ") + " Z";
+	const polygonPath = `${scorePoints
+		.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+		.join(" ")} Z`;
 
 	// Generate grid circles
 	const gridLevels = [0.25, 0.5, 0.75, 1];

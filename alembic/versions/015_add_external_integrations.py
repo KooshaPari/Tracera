@@ -7,6 +7,7 @@ Create Date: 2026-01-27 12:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "015"
@@ -22,7 +23,7 @@ def upgrade() -> None:
     op.create_table(
         "integration_credentials",
         sa.Column("id", sa.String(36), nullable=False),
-        sa.Column("project_id", sa.String(36), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("provider", sa.String(50), nullable=False),
         sa.Column("credential_type", sa.String(50), nullable=False),
         sa.Column("encrypted_token", sa.String(1024), nullable=False),
@@ -72,9 +73,9 @@ def upgrade() -> None:
     op.create_table(
         "integration_mappings",
         sa.Column("id", sa.String(36), nullable=False),
-        sa.Column("project_id", sa.String(36), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("integration_credential_id", sa.String(36), nullable=False),
-        sa.Column("tracertm_item_id", sa.String(255), nullable=False),
+        sa.Column("tracertm_item_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("tracertm_item_type", sa.String(50), nullable=False),
         sa.Column("external_system", sa.String(100), nullable=False),
         sa.Column("external_id", sa.String(500), nullable=False),

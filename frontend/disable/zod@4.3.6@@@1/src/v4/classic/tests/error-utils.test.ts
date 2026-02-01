@@ -4,17 +4,17 @@ import * as z from "zod/v4";
 declare const iss: z.core.$ZodIssueCode;
 
 const Test = z.object({
-  f1: z.number(),
-  f2: z.string().optional(),
-  f3: z.string().nullable(),
-  f4: z.array(z.object({ t: z.union([z.string(), z.boolean()]) })),
+	f1: z.number(),
+	f2: z.string().optional(),
+	f3: z.string().nullable(),
+	f4: z.array(z.object({ t: z.union([z.string(), z.boolean()]) })),
 });
 // type TestFlattenedErrors = core.inferFlattenedErrors<typeof Test, { message: string; code: number }>;
 // type TestFormErrors = core.inferFlattenedErrors<typeof Test>;
 const parsed = Test.safeParse({});
 
 test("regular error", () => {
-  expect(parsed).toMatchInlineSnapshot(`
+	expect(parsed).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -48,19 +48,19 @@ test("regular error", () => {
 });
 
 test(".flatten()", () => {
-  const flattened = parsed.error!.flatten();
-  // flattened.
-  expectTypeOf(flattened).toMatchTypeOf<{
-    formErrors: string[];
-    fieldErrors: {
-      f2?: string[];
-      f1?: string[];
-      f3?: string[];
-      f4?: string[];
-    };
-  }>();
+	const flattened = parsed.error!.flatten();
+	// flattened.
+	expectTypeOf(flattened).toMatchTypeOf<{
+		formErrors: string[];
+		fieldErrors: {
+			f2?: string[];
+			f1?: string[];
+			f3?: string[];
+			f4?: string[];
+		};
+	}>();
 
-  expect(flattened).toMatchInlineSnapshot(`
+	expect(flattened).toMatchInlineSnapshot(`
     {
       "fieldErrors": {
         "f1": [
@@ -79,19 +79,22 @@ test(".flatten()", () => {
 });
 
 test("custom .flatten()", () => {
-  type ErrorType = { message: string; code: number };
-  const flattened = parsed.error!.flatten((iss) => ({ message: iss.message, code: 1234 }));
-  expectTypeOf(flattened).toMatchTypeOf<{
-    formErrors: ErrorType[];
-    fieldErrors: {
-      f2?: ErrorType[];
-      f1?: ErrorType[];
-      f3?: ErrorType[];
-      f4?: ErrorType[];
-    };
-  }>();
+	type ErrorType = { message: string; code: number };
+	const flattened = parsed.error!.flatten((iss) => ({
+		message: iss.message,
+		code: 1234,
+	}));
+	expectTypeOf(flattened).toMatchTypeOf<{
+		formErrors: ErrorType[];
+		fieldErrors: {
+			f2?: ErrorType[];
+			f1?: ErrorType[];
+			f3?: ErrorType[];
+			f4?: ErrorType[];
+		};
+	}>();
 
-  expect(flattened).toMatchInlineSnapshot(`
+	expect(flattened).toMatchInlineSnapshot(`
     {
       "fieldErrors": {
         "f1": [
@@ -119,24 +122,24 @@ test("custom .flatten()", () => {
 });
 
 test(".format()", () => {
-  const formatted = parsed.error!.format();
-  expectTypeOf(formatted).toMatchTypeOf<{
-    _errors: string[];
-    f2?: { _errors: string[] };
-    f1?: { _errors: string[] };
-    f3?: { _errors: string[] };
-    f4?: {
-      [x: number]: {
-        _errors: string[];
-        t?: {
-          _errors: string[];
-        };
-      };
-      _errors: string[];
-    };
-  }>();
+	const formatted = parsed.error!.format();
+	expectTypeOf(formatted).toMatchTypeOf<{
+		_errors: string[];
+		f2?: { _errors: string[] };
+		f1?: { _errors: string[] };
+		f3?: { _errors: string[] };
+		f4?: {
+			[x: number]: {
+				_errors: string[];
+				t?: {
+					_errors: string[];
+				};
+			};
+			_errors: string[];
+		};
+	}>();
 
-  expect(formatted).toMatchInlineSnapshot(`
+	expect(formatted).toMatchInlineSnapshot(`
     {
       "_errors": [],
       "f1": {
@@ -159,25 +162,28 @@ test(".format()", () => {
 });
 
 test("custom .format()", () => {
-  type ErrorType = { message: string; code: number };
-  const formatted = parsed.error!.format((iss) => ({ message: iss.message, code: 1234 }));
-  expectTypeOf(formatted).toMatchTypeOf<{
-    _errors: ErrorType[];
-    f2?: { _errors: ErrorType[] };
-    f1?: { _errors: ErrorType[] };
-    f3?: { _errors: ErrorType[] };
-    f4?: {
-      [x: number]: {
-        _errors: ErrorType[];
-        t?: {
-          _errors: ErrorType[];
-        };
-      };
-      _errors: ErrorType[];
-    };
-  }>();
+	type ErrorType = { message: string; code: number };
+	const formatted = parsed.error!.format((iss) => ({
+		message: iss.message,
+		code: 1234,
+	}));
+	expectTypeOf(formatted).toMatchTypeOf<{
+		_errors: ErrorType[];
+		f2?: { _errors: ErrorType[] };
+		f1?: { _errors: ErrorType[] };
+		f3?: { _errors: ErrorType[] };
+		f4?: {
+			[x: number]: {
+				_errors: ErrorType[];
+				t?: {
+					_errors: ErrorType[];
+				};
+			};
+			_errors: ErrorType[];
+		};
+	}>();
 
-  expect(formatted).toMatchInlineSnapshot(`
+	expect(formatted).toMatchInlineSnapshot(`
     {
       "_errors": [],
       "f1": {
@@ -209,36 +215,36 @@ test("custom .format()", () => {
 });
 
 test("all errors", () => {
-  const propertySchema = z.string();
-  const schema = z
-    .object({
-      a: propertySchema,
-      b: propertySchema,
-    })
-    .refine(
-      (val) => {
-        return val.a === val.b;
-      },
-      { message: "Must be equal" }
-    );
+	const propertySchema = z.string();
+	const schema = z
+		.object({
+			a: propertySchema,
+			b: propertySchema,
+		})
+		.refine(
+			(val) => {
+				return val.a === val.b;
+			},
+			{ message: "Must be equal" },
+		);
 
-  const r1 = schema.safeParse({
-    a: "asdf",
-    b: "qwer",
-  });
+	const r1 = schema.safeParse({
+		a: "asdf",
+		b: "qwer",
+	});
 
-  expect(z.core.flattenError(r1.error!)).toEqual({
-    formErrors: ["Must be equal"],
-    fieldErrors: {},
-  });
+	expect(z.core.flattenError(r1.error!)).toEqual({
+		formErrors: ["Must be equal"],
+		fieldErrors: {},
+	});
 
-  const r2 = schema.safeParse({
-    a: null,
-    b: null,
-  });
+	const r2 = schema.safeParse({
+		a: null,
+		b: null,
+	});
 
-  // const error = _error as z.ZodError;
-  expect(z.core.flattenError(r2.error!)).toMatchInlineSnapshot(`
+	// const error = _error as z.ZodError;
+	expect(z.core.flattenError(r2.error!)).toMatchInlineSnapshot(`
     {
       "fieldErrors": {
         "a": [
@@ -252,7 +258,9 @@ test("all errors", () => {
     }
   `);
 
-  expect(z.core.flattenError(r2.error!, (iss) => iss.message.toUpperCase())).toMatchInlineSnapshot(`
+	expect(
+		z.core.flattenError(r2.error!, (iss) => iss.message.toUpperCase()),
+	).toMatchInlineSnapshot(`
     {
       "fieldErrors": {
         "a": [
@@ -265,9 +273,11 @@ test("all errors", () => {
       "formErrors": [],
     }
   `);
-  // Test identity
+	// Test identity
 
-  expect(z.core.flattenError(r2.error!, (i: z.ZodIssue) => i)).toMatchInlineSnapshot(`
+	expect(
+		z.core.flattenError(r2.error!, (i: z.ZodIssue) => i),
+	).toMatchInlineSnapshot(`
     {
       "fieldErrors": {
         "a": [
@@ -295,9 +305,12 @@ test("all errors", () => {
     }
   `);
 
-  // Test mapping
-  const f1 = z.core.flattenError(r2.error!, (i: z.ZodIssue) => i.message.length);
-  expect(f1).toMatchInlineSnapshot(`
+	// Test mapping
+	const f1 = z.core.flattenError(
+		r2.error!,
+		(i: z.ZodIssue) => i.message.length,
+	);
+	expect(f1).toMatchInlineSnapshot(`
     {
       "fieldErrors": {
         "a": [
@@ -310,59 +323,59 @@ test("all errors", () => {
       "formErrors": [],
     }
   `);
-  // expect(f1.fieldErrors.a![0]).toEqual("Invalid input: expected string".length);
-  // expect(f1).toMatchObject({
-  //   formErrors: [],
-  //   fieldErrors: {
-  //     a: ["Invalid input: expected string".length],
-  //     b: ["Invalid input: expected string".length],
-  //   },
-  // });
+	// expect(f1.fieldErrors.a![0]).toEqual("Invalid input: expected string".length);
+	// expect(f1).toMatchObject({
+	//   formErrors: [],
+	//   fieldErrors: {
+	//     a: ["Invalid input: expected string".length],
+	//     b: ["Invalid input: expected string".length],
+	//   },
+	// });
 });
 
 const schema = z.strictObject({
-  username: z.string().brand<"username">(),
-  favoriteNumbers: z.array(z.number()),
-  nesting: z.object({
-    a: z.string(),
-  }),
+	username: z.string().brand<"username">(),
+	favoriteNumbers: z.array(z.number()),
+	nesting: z.object({
+		a: z.string(),
+	}),
 });
 const result = schema.safeParse({
-  username: 1234,
-  favoriteNumbers: [1234, "4567"],
-  nesting: {
-    a: 123,
-  },
-  extra: 1234,
+	username: 1234,
+	favoriteNumbers: [1234, "4567"],
+	nesting: {
+		a: 123,
+	},
+	extra: 1234,
 });
 
 const tree = z.treeifyError(result.error!);
 
 expectTypeOf(tree).toEqualTypeOf<{
-  errors: string[];
-  properties?: {
-    username?: {
-      errors: string[];
-    };
-    favoriteNumbers?: {
-      errors: string[];
-      items?: {
-        errors: string[];
-      }[];
-    };
-    nesting?: {
-      errors: string[];
-      properties?: {
-        a?: {
-          errors: string[];
-        };
-      };
-    };
-  };
+	errors: string[];
+	properties?: {
+		username?: {
+			errors: string[];
+		};
+		favoriteNumbers?: {
+			errors: string[];
+			items?: {
+				errors: string[];
+			}[];
+		};
+		nesting?: {
+			errors: string[];
+			properties?: {
+				a?: {
+					errors: string[];
+				};
+			};
+		};
+	};
 }>();
 
 test("z.treeifyError", () => {
-  expect(tree).toMatchInlineSnapshot(`
+	expect(tree).toMatchInlineSnapshot(`
     {
       "errors": [
         "Unrecognized key: "extra"",
@@ -400,21 +413,21 @@ test("z.treeifyError", () => {
 });
 
 test("z.treeifyError 2", () => {
-  const schema = z.strictObject({
-    name: z.string(),
-    logLevel: z.union([z.string(), z.number()]),
-    env: z.literal(["production", "development"]),
-  });
+	const schema = z.strictObject({
+		name: z.string(),
+		logLevel: z.union([z.string(), z.number()]),
+		env: z.literal(["production", "development"]),
+	});
 
-  const data = {
-    name: 1000,
-    logLevel: false,
-    extra: 1000,
-  };
+	const data = {
+		name: 1000,
+		logLevel: false,
+		extra: 1000,
+	};
 
-  const result = schema.safeParse(data);
-  const err = z.treeifyError(result.error!);
-  expect(err).toMatchInlineSnapshot(`
+	const result = schema.safeParse(data);
+	const err = z.treeifyError(result.error!);
+	expect(err).toMatchInlineSnapshot(`
     {
       "errors": [
         "Unrecognized key: "extra"",
@@ -442,7 +455,7 @@ test("z.treeifyError 2", () => {
 });
 
 test("z.prettifyError", () => {
-  expect(z.prettifyError(result.error!)).toMatchInlineSnapshot(`
+	expect(z.prettifyError(result.error!)).toMatchInlineSnapshot(`
     "✖ Unrecognized key: "extra"
     ✖ Invalid input: expected string, received number
       → at username
@@ -454,76 +467,88 @@ test("z.prettifyError", () => {
 });
 
 test("z.toDotPath", () => {
-  expect(z.core.toDotPath(["a", "b", 0, "c"])).toMatchInlineSnapshot(`"a.b[0].c"`);
+	expect(z.core.toDotPath(["a", "b", 0, "c"])).toMatchInlineSnapshot(
+		`"a.b[0].c"`,
+	);
 
-  expect(z.core.toDotPath(["a", Symbol("b"), 0, "c"])).toMatchInlineSnapshot(`"a["Symbol(b)"][0].c"`);
+	expect(z.core.toDotPath(["a", Symbol("b"), 0, "c"])).toMatchInlineSnapshot(
+		`"a["Symbol(b)"][0].c"`,
+	);
 
-  // Test with periods in keys
-  expect(z.core.toDotPath(["user.name", "first.last"])).toMatchInlineSnapshot(`"["user.name"]["first.last"]"`);
+	// Test with periods in keys
+	expect(z.core.toDotPath(["user.name", "first.last"])).toMatchInlineSnapshot(
+		`"["user.name"]["first.last"]"`,
+	);
 
-  // Test with special characters
-  expect(z.core.toDotPath(["user", "$special", Symbol("#symbol")])).toMatchInlineSnapshot(
-    `"user.$special["Symbol(#symbol)"]"`
-  );
+	// Test with special characters
+	expect(
+		z.core.toDotPath(["user", "$special", Symbol("#symbol")]),
+	).toMatchInlineSnapshot(`"user.$special["Symbol(#symbol)"]"`);
 
-  // Test with dots and quotes
-  expect(z.core.toDotPath(["search", `query("foo.bar"="abc")`])).toMatchInlineSnapshot(
-    `"search["query(\\"foo.bar\\"=\\"abc\\")"]"`
-  );
+	// Test with dots and quotes
+	expect(
+		z.core.toDotPath(["search", `query("foo.bar"="abc")`]),
+	).toMatchInlineSnapshot(`"search["query(\\"foo.bar\\"=\\"abc\\")"]"`);
 
-  // Test with newlines
-  expect(z.core.toDotPath(["search", `foo\nbar`])).toMatchInlineSnapshot(`"search["foo\\nbar"]"`);
+	// Test with newlines
+	expect(z.core.toDotPath(["search", `foo\nbar`])).toMatchInlineSnapshot(
+		`"search["foo\\nbar"]"`,
+	);
 
-  // Test with empty strings
-  expect(z.core.toDotPath(["", "empty"])).toMatchInlineSnapshot(`".empty"`);
+	// Test with empty strings
+	expect(z.core.toDotPath(["", "empty"])).toMatchInlineSnapshot(`".empty"`);
 
-  // Test with array indices
-  expect(z.core.toDotPath(["items", 0, 1, 2])).toMatchInlineSnapshot(`"items[0][1][2]"`);
+	// Test with array indices
+	expect(z.core.toDotPath(["items", 0, 1, 2])).toMatchInlineSnapshot(
+		`"items[0][1][2]"`,
+	);
 
-  // Test with mixed path elements
-  expect(z.core.toDotPath(["users", "user.config", 0, "settings.theme"])).toMatchInlineSnapshot(
-    `"users["user.config"][0]["settings.theme"]"`
-  );
+	// Test with mixed path elements
+	expect(
+		z.core.toDotPath(["users", "user.config", 0, "settings.theme"]),
+	).toMatchInlineSnapshot(`"users["user.config"][0]["settings.theme"]"`);
 
-  // Test with square brackets in keys
-  expect(z.core.toDotPath(["data[0]", "value"])).toMatchInlineSnapshot(`"["data[0]"].value"`);
+	// Test with square brackets in keys
+	expect(z.core.toDotPath(["data[0]", "value"])).toMatchInlineSnapshot(
+		`"["data[0]"].value"`,
+	);
 
-  // Test with empty path
-  expect(z.core.toDotPath([])).toMatchInlineSnapshot(`""`);
+	// Test with empty path
+	expect(z.core.toDotPath([])).toMatchInlineSnapshot(`""`);
 });
 
 test("inheritance", () => {
-  const e1 = new z.ZodError([]);
-  expect(e1).toBeInstanceOf(z.core.$ZodError);
-  expect(e1).toBeInstanceOf(z.ZodError);
-  // expect(e1).not.toBeInstanceOf(Error);
+	const e1 = new z.ZodError([]);
+	expect(e1).toBeInstanceOf(z.core.$ZodError);
+	expect(e1).toBeInstanceOf(z.ZodError);
+	// expect(e1).not.toBeInstanceOf(Error);
 
-  const e2 = new z.ZodRealError([]);
-  expect(e2).toBeInstanceOf(z.ZodError);
-  expect(e2).toBeInstanceOf(z.ZodRealError);
-  expect(e2).toBeInstanceOf(Error);
+	const e2 = new z.ZodRealError([]);
+	expect(e2).toBeInstanceOf(z.ZodError);
+	expect(e2).toBeInstanceOf(z.ZodRealError);
+	expect(e2).toBeInstanceOf(Error);
 });
 
 test("disc union treeify/format", () => {
-  const schema = z.discriminatedUnion(
-    "foo",
-    [
-      z.object({
-        foo: z.literal("x"),
-        x: z.string(),
-      }),
-      z.object({
-        foo: z.literal("y"),
-        y: z.string(),
-      }),
-    ],
-    {
-      error: "Invalid discriminator",
-    }
-  );
+	const schema = z.discriminatedUnion(
+		"foo",
+		[
+			z.object({
+				foo: z.literal("x"),
+				x: z.string(),
+			}),
+			z.object({
+				foo: z.literal("y"),
+				y: z.string(),
+			}),
+		],
+		{
+			error: "Invalid discriminator",
+		},
+	);
 
-  const error = schema.safeParse({ foo: "invalid" }).error;
-  expect(z.treeifyError(error!)).toMatchInlineSnapshot(`
+	const error = schema.safeParse({ foo: "invalid" }).error;
+	expect(z.treeifyError(error!)).toMatchInlineSnapshot(`
     {
       "errors": [],
       "properties": {
@@ -535,11 +560,11 @@ test("disc union treeify/format", () => {
       },
     }
   `);
-  expect(z.prettifyError(error!)).toMatchInlineSnapshot(`
+	expect(z.prettifyError(error!)).toMatchInlineSnapshot(`
     "✖ Invalid discriminator
       → at foo"
   `);
-  expect(z.formatError(error!)).toMatchInlineSnapshot(`
+	expect(z.formatError(error!)).toMatchInlineSnapshot(`
     {
       "_errors": [],
       "foo": {
@@ -552,14 +577,14 @@ test("disc union treeify/format", () => {
 });
 
 test("update message after adding issues", () => {
-  const e = new z.ZodError([]);
-  e.addIssue({
-    code: "custom",
-    message: "message",
-    input: "asdf",
-    path: [],
-  });
-  expect(e.message).toMatchInlineSnapshot(`
+	const e = new z.ZodError([]);
+	e.addIssue({
+		code: "custom",
+		message: "message",
+		input: "asdf",
+		path: [],
+	});
+	expect(e.message).toMatchInlineSnapshot(`
     "[
       {
         "code": "custom",
@@ -570,13 +595,13 @@ test("update message after adding issues", () => {
     ]"
   `);
 
-  e.addIssue({
-    code: "custom",
-    message: "message",
-    input: "asdf",
-    path: [],
-  });
-  expect(e.message).toMatchInlineSnapshot(`
+	e.addIssue({
+		code: "custom",
+		message: "message",
+		input: "asdf",
+		path: [],
+	});
+	expect(e.message).toMatchInlineSnapshot(`
     "[
       {
         "code": "custom",

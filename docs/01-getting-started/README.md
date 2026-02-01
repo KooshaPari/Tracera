@@ -23,6 +23,8 @@ Welcome to the Trace RTM documentation! This section provides everything you nee
 | [Quick Start](quick-start.md) | Rapid project overview |
 | [Onboarding](onboarding.md) | Detailed team setup guide |
 | [Contributing](contributing.md) | Contribution guidelines |
+| [MCP/CLI/API Matrix](../04-guides/mcp-cli-api-matrix.md) | Client capabilities and offline/online behavior |
+| [Config Precedence](../04-guides/config-precedence.md) | Config locations and precedence |
 | [FAQ](../08-reference/faq.md) | Frequently asked questions |
 | [Troubleshooting](../08-reference/troubleshooting.md) | Common issues and solutions |
 

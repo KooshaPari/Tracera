@@ -513,7 +513,7 @@ Expected: Both backends start, automatically start all dependencies in order
 Check health:
 ```bash
 curl http://localhost:8080/health  # Go backend
-curl http://localhost:8000/health  # Python backend
+curl http://localhost:4000/health  # Python backend
 ```
 Expected: Both return 200 OK with health status
 
@@ -1283,7 +1283,7 @@ dev: ## Start all services (detached)
 	@echo '$(GREEN)Services available at:$(NC)'
 	@echo '  Gateway:    http://localhost:4000'
 	@echo '  Go API:     http://localhost:8080'
-	@echo '  Python API: http://localhost:8000'
+	@echo '  Python API: http://localhost:4000'
 	@echo '  Grafana:    http://localhost:3000'
 	@echo '  Prometheus: http://localhost:9090'
 	@echo '  Neo4j:      http://localhost:7474'
@@ -1594,7 +1594,7 @@ make dev
 # Access the application
 # Gateway:    http://localhost:4000
 # Go API:     http://localhost:8080
-# Python API: http://localhost:8000
+# Python API: http://localhost:4000
 # Grafana:    http://localhost:3000
 # Prometheus: http://localhost:9090
 ```
@@ -1695,7 +1695,7 @@ Replace "Port Configuration" table (lines 141-152) with:
 |---------|------|--------|
 | Caddy (Gateway) | 4000 | http://localhost:4000 |
 | Go API | 8080 | http://localhost:8080 or via /api/v1/* |
-| Python API | 8000 | http://localhost:8000 or via /api/py/* |
+| Python API | 8000 | http://localhost:4000 or via /api/py/* |
 | PostgreSQL | 5432 | localhost:5432 |
 | Redis | 6379 | localhost:6379 |
 | Neo4j (Bolt) | 7687 | bolt://localhost:7687 |
@@ -2019,7 +2019,7 @@ curl http://localhost:8222/healthz
 
 # Test backends
 curl http://localhost:8080/health  # Go
-curl http://localhost:8000/health  # Python
+curl http://localhost:4000/health  # Python
 
 # Test gateway
 curl http://localhost:4000/health  # Caddy
@@ -2233,7 +2233,7 @@ curl http://localhost:8222/healthz
 
 # Test backends
 curl http://localhost:8080/health
-curl http://localhost:8000/health
+curl http://localhost:4000/health
 
 # Test gateway
 curl http://localhost:4000/health

@@ -3,8 +3,8 @@
  * Weighted Shortest Job First scoring for SAFe prioritization
  */
 
-import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface WSJFScore {
 	business_value: number;

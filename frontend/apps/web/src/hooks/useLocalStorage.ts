@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { logger } from '@/lib/logger';
 
 export function useLocalStorage<T>(
 	key: string,
@@ -14,7 +15,7 @@ export function useLocalStorage<T>(
 			const item = window.localStorage.getItem(key);
 			return item ? JSON.parse(item) : initialValue;
 		} catch (error) {
-			console.warn(`Error reading localStorage key "${key}":`, error);
+			logger.warn(`Error reading localStorage key "${key}":`, error);
 			return initialValue;
 		}
 	};
@@ -36,7 +37,7 @@ export function useLocalStorage<T>(
 				window.localStorage.setItem(key, JSON.stringify(valueToStore));
 			}
 		} catch (error) {
-			console.warn(`Error setting localStorage key "${key}":`, error);
+			logger.warn(`Error setting localStorage key "${key}":`, error);
 		}
 	};
 
@@ -47,7 +48,7 @@ export function useLocalStorage<T>(
 				try {
 					setStoredValue(JSON.parse(e.newValue));
 				} catch (error) {
-					console.warn(`Error parsing storage event for key "${key}":`, error);
+					logger.warn(`Error parsing storage event for key "${key}":`, error);
 				}
 			}
 		};

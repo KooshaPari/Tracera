@@ -2,7 +2,8 @@ import type { Item, Link, Project } from "@tracertm/types";
 import createClient from "openapi-fetch";
 
 // API client configuration
-const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL =
+	import.meta.env?.["VITE_API_URL"] || "http://localhost:4000";
 
 // Create typed API client (will use generated types when available)
 export const api = createClient<{

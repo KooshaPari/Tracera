@@ -5,19 +5,19 @@
 
 import type { ADR, ADRStatus } from "@tracertm/types";
 import { Badge, Button, Card } from "@tracertm/ui";
-import { cn } from "@/lib/utils";
 import {
-	CheckCircle2,
-	Clock,
-	XCircle,
 	AlertTriangle,
-	GitBranch,
+	Calendar,
+	CheckCircle2,
 	ChevronDown,
 	ChevronUp,
+	Clock,
 	Filter,
-	Calendar,
+	GitBranch,
+	XCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ADRTimelineProps {
 	adrs: ADR[];

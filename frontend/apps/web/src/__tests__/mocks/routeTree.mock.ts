@@ -52,11 +52,6 @@ const projectDetailRoute = createMockRoute(
 	"/projects/$projectId",
 );
 const settingsRoute = createMockRoute("/settings/", "/settings/");
-const searchRoute = createMockRoute("/search/", "/search/");
-const reportsRoute = createMockRoute("/reports/", "/reports/");
-const linksRoute = createMockRoute("/links/", "/links/");
-const itemsRoute = createMockRoute("/items/", "/items/");
-const graphRoute = createMockRoute("/graph/", "/graph/");
 
 // Build the route tree
 export const routeTree = rootRoute.addChildren([
@@ -64,12 +59,6 @@ export const routeTree = rootRoute.addChildren([
 	projectsRoute,
 	projectDetailRoute,
 	settingsRoute,
-	searchRoute,
-	reportsRoute,
-	linksRoute,
-	itemsRoute,
-	graphRoute,
-	eventsRoute,
 ]);
 
 // Make routeTree have the same structure as a real route tree

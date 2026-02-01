@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
+import type { SmellType } from "@tracertm/types";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
 import { SmellIndicator } from "@/components/specifications/quality/SmellIndicator";
 import { useQualityReport } from "@/hooks/useSpecifications";
-import type { SmellType } from "@tracertm/types";
 
 export function ComplianceView() {
 	const { projectId } = useParams({ strict: false });
@@ -31,10 +31,12 @@ export function ComplianceView() {
 								variant="outline"
 								className="mt-4"
 								onClick={() =>
-									navigate({
-										to: "/items",
-										search: { project: projectId } as any,
-									})
+									projectId
+										? navigate({
+												to: "/projects/$projectId/views/$viewType",
+												params: { projectId, viewType: "feature" },
+											})
+										: navigate({ to: "/projects" })
 								}
 							>
 								View Items

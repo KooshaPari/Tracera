@@ -3,9 +3,9 @@
  * Demonstrates how to integrate the UICodeTracePanel component with your application
  */
 
-import { useCallback, useState } from "react";
 import type { CodeReference } from "@tracertm/types";
-import { UICodeTracePanel, type UICodeTraceChain } from "./UICodeTracePanel";
+import { useCallback, useState } from "react";
+import { type UICodeTraceChain, UICodeTracePanel } from "./UICodeTracePanel";
 
 // =============================================================================
 // EXAMPLE 1: Basic Integration with State Management
@@ -105,7 +105,7 @@ export function TRPCIntegrationExample() {
 
 	const handleOpenCode = useCallback((codeRef: CodeReference) => {
 		// Open code in editor
-		console.log("Open code:", codeRef);
+		logger.info("Open code:", codeRef);
 	}, []);
 
 	const handleRefresh = useCallback(async () => {
@@ -167,7 +167,7 @@ export function AtomStateIntegrationExample() {
 		} finally {
 			setIsRefreshing(false);
 		}
-	}, [selectedTrace]);
+	}, []);
 
 	return (
 		<UICodeTracePanel
@@ -232,7 +232,7 @@ export function SidePanelLayoutExample() {
 					traceChain={traceChain}
 					isLoading={isLoading}
 					onOpenCode={(codeRef) => {
-						console.log("Open code:", codeRef);
+						logger.info("Open code:", codeRef);
 					}}
 					onRefreshTrace={async () => {
 						if (traceChain) {
@@ -338,8 +338,11 @@ export function ErrorHandlingExample() {
 		setIsLoading(true);
 		setError(null);
 		try {
+			// TODO: wire up when API is available
 			// const trace = await api.traces.getUICodeTrace({ componentId });
 			// setTraceChain(trace);
+			void componentId;
+			setTraceChain(null);
 		} catch (err) {
 			const message =
 				err instanceof Error ? err.message : "Failed to fetch trace chain";
@@ -456,7 +459,7 @@ export function BreadcrumbNavigationExample() {
 			<UICodeTracePanel
 				traceChain={traceChain}
 				onOpenCode={(codeRef) => {
-					console.log("Open code:", codeRef);
+					logger.info("Open code:", codeRef);
 				}}
 			/>
 
@@ -485,7 +488,7 @@ export function AnalyticsIntegrationExample() {
 
 	const trackEvent = (eventName: string, data: Record<string, unknown>) => {
 		// Send to analytics service
-		console.log("Analytics:", eventName, data);
+		logger.info("Analytics:", eventName, data);
 		// In real app: analytics.track(eventName, data);
 	};
 

@@ -1,191 +1,185 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { getReturnTo } from "@/lib/auth-utils";
-import { XCircle } from "lucide-react";
 import { Button } from "@tracertm/ui";
-
-export const Route = createFileRoute("/auth/callback" as any)({
-	component: AuthCallbackPage,
-	// Don't validate search params - accept all query parameters as-is
-	// This ensures the code parameter from WorkOS is preserved
-	validateSearch: () => ({}),
-	// Don't throw on invalid search - just render the component
-	errorComponent: ({ error }) => {
-		console.error("[AuthCallback Route] Error:", error);
-		return <AuthCallbackPage />;
-	},
-});
+import { useAuth } from "@workos-inc/authkit-react";
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AUTH_ROUTES } from "@/config/constants";
+import { getReturnTo } from "@/lib/auth-utils";
+import { useAuthStore } from "@/stores/authStore";
 
 /**
- * Auth callback page - handles WorkOS AuthKit redirects after authentication
+ * OAuth Callback Route for WorkOS Authentication
  *
- * WorkOS redirects users here after successful authentication with a code parameter.
- * This page processes the callback via the backend (B2B flow) to avoid CORS issues
- * and then redirects to the appropriate page.
+ * This route handles the redirect from WorkOS after authentication.
+ * It processes the OAuth callback, exchanges the authorization code for tokens,
+ * updates the auth store, and redirects the user to their intended destination.
+ *
+ * Flow:
+ * 1. WorkOS redirects here with auth code/state in URL
+ * 2. WorkOS AuthKit SDK automatically handles token exchange
+ * 3. AuthKitSync component syncs user/token to our auth store
+ * 4. This component shows loading state and handles final redirect
+ * 5. Redirects to returnTo URL or dashboard
  */
-function AuthCallbackPage() {
-	const navigate = useNavigate();
-	const [error, setError] = useState<string | null>(null);
-	const [status, setStatus] = useState<string>("Initializing...");
 
-	// Parse search params
-	const [searchParams] = useState(() => {
-		if (typeof window === "undefined")
-			return { code: undefined, returnTo: undefined };
-		const urlParams = new URLSearchParams(window.location.search);
-		return {
-			code: urlParams.get("code") || undefined,
-			returnTo: urlParams.get("returnTo") || undefined,
-		};
+interface CallbackState {
+	status: "loading" | "success" | "error";
+	message: string;
+}
+
+function AuthCallback() {
+	const navigate = useNavigate();
+	const { user, isLoading } = useAuth();
+	const setAuthFromWorkOS = useAuthStore((state) => state.setAuthFromWorkOS);
+	const [state, setState] = useState<CallbackState>({
+		status: "loading",
+		message: "Processing authentication...",
 	});
 
-	const setAuthFromWorkOS = useAuthStore((state) => state.setAuthFromWorkOS);
-	const logout = useAuthStore((state) => state.logout);
-
 	useEffect(() => {
-		const code = searchParams.code;
+		// Get the URL search params for returnTo
+		const searchParams = new URLSearchParams(window.location.search);
+		const error = searchParams.get("error");
+		const errorDescription = searchParams.get("error_description");
 
-		if (!code) {
-			console.error("[AuthCallback] No code found in URL");
-			setError("No authorization code found. Please try signing in again.");
+		// Handle OAuth errors from WorkOS
+		if (error) {
+			setState({
+				status: "error",
+				message: errorDescription || "Authentication failed. Please try again.",
+			});
 			return;
 		}
 
-		const processCallback = async () => {
-			try {
-				setStatus("Exchanging code for session...");
-				console.log("[AuthCallback] Sending code to backend for exchange...");
+		// WorkOS SDK handles the OAuth callback automatically
+		// Wait for the SDK to complete authentication
+		if (isLoading) {
+			setState({
+				status: "loading",
+				message: "Verifying credentials...",
+			});
+			return;
+		}
 
-				const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-				const response = await fetch(`${API_URL}/api/v1/auth/callback`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ code }),
-				});
+		// Check if authentication was successful
+		if (!user) {
+			// If no user after loading completes, something went wrong
+			setState({
+				status: "error",
+				message: "Authentication failed. No user information received.",
+			});
+			return;
+		}
 
-				if (!response.ok) {
-					const errorData = await response
-						.json()
-						.catch(() => ({ detail: "Unknown error" }));
-					throw new Error(
-						errorData.detail || `Backend error: ${response.status}`,
-					);
-				}
+		// Success! User is authenticated
+		setState({
+			status: "success",
+			message: "Authentication successful! Redirecting...",
+		});
 
-				const authData = await response.json();
-				console.log("[AuthCallback] Code exchange successful");
+		// Redirect to intended destination
+		// AuthKitSync will handle the actual token sync
+		const returnTo = getReturnTo(searchParams);
 
-				setStatus("Syncing user session...");
+		// Use a small delay to show success state
+		const redirectTimeout = setTimeout(() => {
+			// Use navigate for proper router integration
+			navigate({ to: returnTo });
+		}, 500);
 
-				// Map backend response to our store format
-				// The WorkOS SDK returns user info and tokens
-				const { user, access_token } = authData;
+		return () => clearTimeout(redirectTimeout);
+	}, [user, isLoading, navigate]);
 
-				if (!user || !access_token) {
-					throw new Error("Invalid response from auth backend");
-				}
+	// Handle manual retry for error state
+	const handleRetry = () => {
+		setState({
+			status: "loading",
+			message: "Retrying authentication...",
+		});
 
-				const nameParts = [user.firstName, user.lastName].filter(Boolean);
-				const mappedUser = {
-					id: user.id,
-					email: user.email,
-					name: nameParts.length ? nameParts.join(" ") : user.email,
-					avatar: user.profilePictureUrl,
-					role: user.role,
-					metadata: user.metadata,
-				};
+		// Clear any stale state and redirect to login
+		setTimeout(() => {
+			window.location.href = AUTH_ROUTES.LOGIN;
+		}, 500);
+	};
 
-				// Set auth in store (includes auto-refresh initialization)
-				const { setAuthFromWorkOS } = useAuthStore.getState();
-				setAuthFromWorkOS(mappedUser, access_token);
+	// Handle cancel - redirect to dashboard
+	const handleCancel = () => {
+		window.location.href = "/home";
+	};
 
-				// Verify persistence
-				setStatus("Finalizing...");
-				let attempts = 0;
-				while (attempts < 20) {
-					const state = useAuthStore.getState();
-					if (state.isAuthenticated && state.user) {
-						break;
-					}
-					await new Promise((resolve) => setTimeout(resolve, 50));
-					attempts++;
-				}
-
-				// Redirect
-				const returnTo = getReturnTo(
-					new URLSearchParams(window.location.search),
-				);
-				const targetPath =
-					returnTo &&
-					!returnTo.startsWith("/auth/") &&
-					returnTo !== "/auth/callback"
-						? returnTo
-						: "/";
-
-				console.log("[AuthCallback] Success! Navigating to:", targetPath);
-				navigate({ to: targetPath, replace: true });
-			} catch (err) {
-				console.error("[AuthCallback] Processing failed:", err);
-				setError(err instanceof Error ? err.message : "Authentication failed");
-				logout();
-			}
-		};
-
-		processCallback();
-	}, [searchParams.code, navigate, logout, setAuthFromWorkOS]);
-
-	// Show loading or error state
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-background to-background/50 flex items-center justify-center p-4">
-			<div className="w-full max-w-md text-center space-y-6">
-				{error ? (
-					<div className="space-y-4 animate-in fade-in zoom-in duration-300">
-						<div className="bg-destructive/10 text-destructive p-4 rounded-xl border border-destructive/20 flex flex-col items-center gap-3">
-							<XCircle className="h-10 w-10" />
-							<div className="space-y-1">
-								<p className="font-bold uppercase tracking-wider text-xs">
-									Authentication Failed
-								</p>
-								<p className="text-sm opacity-90">{error}</p>
-							</div>
+		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+			<div className="max-w-md w-full bg-card border rounded-2xl p-8 shadow-xl space-y-6 animate-in fade-in zoom-in-95 duration-300">
+				{/* Status Icon */}
+				<div className="flex items-center justify-center">
+					{state.status === "loading" && (
+						<div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+							<Loader2 className="w-8 h-8 text-primary animate-spin" />
 						</div>
-						<Button
-							variant="outline"
-							className="w-full rounded-xl"
-							onClick={() => (window.location.href = "/auth/login")}
-						>
-							Return to Login
+					)}
+					{state.status === "success" && (
+						<div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+							<CheckCircle className="w-8 h-8 text-green-500" />
+						</div>
+					)}
+					{state.status === "error" && (
+						<div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+							<AlertCircle className="w-8 h-8 text-destructive" />
+						</div>
+					)}
+				</div>
+
+				{/* Status Message */}
+				<div className="text-center space-y-2">
+					<h1 className="text-2xl font-bold">
+						{state.status === "loading" && "Authenticating"}
+						{state.status === "success" && "Welcome Back"}
+						{state.status === "error" && "Authentication Error"}
+					</h1>
+					<p className="text-muted-foreground">{state.message}</p>
+				</div>
+
+				{/* Error State Actions */}
+				{state.status === "error" && (
+					<div className="flex flex-col gap-3">
+						<Button onClick={handleRetry} className="w-full">
+							Try Again
+						</Button>
+						<Button variant="outline" onClick={handleCancel} className="w-full">
+							Cancel
 						</Button>
 					</div>
-				) : (
-					<div className="space-y-4">
-						<div className="relative">
-							<div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto" />
-							<div className="absolute inset-0 flex items-center justify-center">
-								<div className="h-2 w-2 rounded-full bg-primary/40 animate-ping" />
-							</div>
+				)}
+
+				{/* Loading Indicator */}
+				{state.status === "loading" && (
+					<div className="space-y-2">
+						<div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+							<div className="h-full bg-primary rounded-full animate-pulse-slow" />
 						</div>
-						<div className="space-y-2">
-							<p className="text-lg font-bold tracking-tight">Authenticating</p>
-							<p className="text-sm text-muted-foreground animate-pulse">
-								{status}
-							</p>
-						</div>
-						<div className="pt-4 flex justify-center gap-1.5">
-							{[0, 1, 2].map((i) => (
-								<div
-									key={i}
-									className="h-1.5 w-1.5 rounded-full bg-primary/20 animate-bounce"
-									style={{ animationDelay: `${i * 0.15}s` }}
-								/>
-							))}
-						</div>
+						<p className="text-xs text-center text-muted-foreground">
+							This may take a few moments...
+						</p>
+					</div>
+				)}
+
+				{/* Success State - auto-redirecting */}
+				{state.status === "success" && (
+					<div className="text-center text-sm text-muted-foreground">
+						Redirecting you now...
 					</div>
 				)}
 			</div>
 		</div>
 	);
 }
+
+// TanStack Router file-based route export
+export const Route = createFileRoute("/auth/callback")({
+	component: AuthCallback,
+	// This is a public route - no auth required
+	beforeLoad: () => {
+		// No-op - allow access without authentication
+	},
+});

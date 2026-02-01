@@ -1,14 +1,14 @@
-import { motion, AnimatePresence } from "framer-motion";
+import type { ContractCondition } from "@tracertm/types";
 import { Card } from "@tracertm/ui";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	AlertCircle,
-	CheckCircle,
 	AlertTriangle,
+	CheckCircle,
 	Circle,
 	Code,
 	Shield,
 } from "lucide-react";
-import type { ContractCondition } from "@tracertm/types";
 
 interface ConditionListProps {
 	preconditions?: ContractCondition[];

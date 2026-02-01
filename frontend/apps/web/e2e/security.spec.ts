@@ -479,7 +479,7 @@ test.describe("Security - Information Disclosure", () => {
 		const headers = response?.headers();
 
 		// Should not expose server version
-		expect(headers?.["server"]).not.toMatch(/\d+\.\d+/);
+		expect(headers?.server).not.toMatch(/\d+\.\d+/);
 		expect(headers?.["x-powered-by"]).toBeUndefined();
 	});
 
@@ -587,7 +587,7 @@ test.describe("Security - API Security", () => {
 		page.on("request", (request) => {
 			if (request.url().includes("/api/")) {
 				const headers = request.headers();
-				if (headers["authorization"] || headers["x-auth-token"]) {
+				if (headers.authorization || headers["x-auth-token"]) {
 					hasAuthHeader = true;
 				}
 			}

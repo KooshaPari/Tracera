@@ -2,9 +2,10 @@
 Notification model for user alerts.
 """
 
+from sqlalchemy import DateTime, ForeignKey, String, Text
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin, generate_uuid
@@ -25,7 +26,7 @@ class Notification(Base, TimestampMixin):
     )
     # Optional: Link to a specific project if relevant
     project_id: Mapped[str | None] = mapped_column(
-        String(255), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True
     )
     
     type: Mapped[str] = mapped_column(String(50), nullable=False, default="info")  # info, success, warning, error

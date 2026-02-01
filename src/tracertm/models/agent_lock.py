@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -32,10 +33,10 @@ class AgentLock(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_lock_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("projects.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
     )
     item_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("items.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("items.id"), nullable=False, index=True
     )
     agent_id: Mapped[str] = mapped_column(
         String(255), ForeignKey("agents.id"), nullable=False, index=True

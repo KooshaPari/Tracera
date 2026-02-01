@@ -3,1229 +3,4002 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-	"/health": {
-		/**
-		 * Health Check
-		 * @description Check the health status of the API service
-		 */
-		get: operations["healthCheck"];
-	};
-	"/api/v1/items": {
-		/**
-		 * List Items
-		 * @description Retrieve a paginated list of items in a project
-		 */
-		get: operations["listItems"];
-	};
-	"/api/v1/items/{item_id}": {
-		/**
-		 * Get Item
-		 * @description Retrieve detailed information about a specific item
-		 */
-		get: operations["getItem"];
-	};
-	"/api/v1/links": {
-		/**
-		 * List Links
-		 * @description Retrieve a paginated list of links between items in a project
-		 */
-		get: operations["listLinks"];
-	};
-	"/api/v1/analysis/impact/{item_id}": {
-		/**
-		 * Impact Analysis
-		 * @description Analyze the impact of changes to a specific item, including all downstream dependencies
-		 */
-		get: operations["getImpactAnalysis"];
-	};
-	"/api/v1/analysis/cycles/{project_id}": {
-		/**
-		 * Detect Cycles
-		 * @description Detect circular dependencies in the project's dependency graph
-		 */
-		get: operations["detectCycles"];
-	};
-	"/api/v1/analysis/shortest-path": {
-		/**
-		 * Find Shortest Path
-		 * @description Find the shortest dependency path between two items
-		 */
-		get: operations["findShortestPath"];
-	};
-	"/api/v1/projects/{projectId}/equivalences": {
-		/**
-		 * List Equivalences
-		 * @description Retrieve all equivalence relationships in a project
-		 */
-		get: operations["listEquivalences"];
-	};
-	"/api/v1/projects/{projectId}/equivalences/detect": {
-		/**
-		 * Detect Equivalences
-		 * @description Automatically detect potential equivalent items across different views and dimensions
-		 */
-		post: operations["detectEquivalences"];
-	};
-	"/api/v1/equivalences/{id}/confirm": {
-		/**
-		 * Confirm Equivalence
-		 * @description Confirm a suggested equivalence relationship between items
-		 */
-		post: operations["confirmEquivalence"];
-	};
-	"/api/v1/equivalences/{id}/reject": {
-		/**
-		 * Reject Equivalence
-		 * @description Reject a suggested equivalence relationship between items
-		 */
-		post: operations["rejectEquivalence"];
-	};
-	"/api/v1/projects/{projectId}/canonical-concepts": {
-		/**
-		 * List Canonical Concepts
-		 * @description Retrieve all canonical concepts in a project
-		 */
-		get: operations["listCanonicalConcepts"];
-		/**
-		 * Create Canonical Concept
-		 * @description Create a new canonical concept from equivalent items
-		 */
-		post: operations["createCanonicalConcept"];
-	};
-	"/api/v1/canonical-concepts/{id}": {
-		/**
-		 * Get Canonical Concept
-		 * @description Retrieve detailed information about a specific canonical concept
-		 */
-		get: operations["getCanonicalConcept"];
-	};
-	"/api/v1/canonical-concepts/{id}/projections": {
-		/**
-		 * Get Concept Projections
-		 * @description Retrieve all projections of a canonical concept across different dimensions
-		 */
-		get: operations["getConceptProjections"];
-	};
-	"/api/v1/items/{id}/pivot": {
-		/**
-		 * Pivot Item to Canonical Concept
-		 * @description Convert an item to a canonical concept projection, updating cross-dimensional references
-		 */
-		post: operations["pivotItemToCanonical"];
-	};
-	"/api/v1/projects/{projectId}/journeys": {
-		/**
-		 * List Journeys
-		 * @description Retrieve all journeys in a project
-		 */
-		get: operations["listJourneys"];
-		/**
-		 * Create Journey
-		 * @description Create a new journey mapping requirements through a process
-		 */
-		post: operations["createJourney"];
-	};
-	"/api/v1/projects/{projectId}/journeys/detect": {
-		/**
-		 * Detect Journeys
-		 * @description Automatically detect potential journeys from requirement traces
-		 */
-		post: operations["detectJourneys"];
-	};
-	"/api/v1/journeys/{id}": {
-		/**
-		 * Get Journey
-		 * @description Retrieve detailed information about a specific journey
-		 */
-		get: operations["getJourney"];
-	};
-	"/api/v1/projects/{projectId}/component-libraries": {
-		/**
-		 * List Component Libraries
-		 * @description Retrieve all component libraries in a project
-		 */
-		get: operations["listComponentLibraries"];
-	};
-	"/api/v1/component-libraries/{id}/components": {
-		/**
-		 * List Components in Library
-		 * @description Retrieve all components in a specific library
-		 */
-		get: operations["listLibraryComponents"];
-	};
-	"/api/v1/components/{id}/usage": {
-		/**
-		 * Get Component Usage
-		 * @description Retrieve usage information for a specific component
-		 */
-		get: operations["getComponentUsage"];
-	};
-	"/api/v1/component-libraries/{id}/tokens": {
-		/**
-		 * Get Design Tokens
-		 * @description Retrieve design tokens for a component library
-		 */
-		get: operations["getDesignTokens"];
-	};
+  "/api/v1/ai/analyze": {
+    /**
+     * Analyze text with AI
+     * @description Performs AI analysis on provided text
+     */
+    post: {
+      /** @description Analyze request */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.AnalyzeRequest"];
+        };
+      };
+      responses: {
+        /** @description Analysis result */
+        200: {
+          content: {
+            "application/json": components["schemas"]["clients.AnalysisResult"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/ai/stream-chat": {
+    /**
+     * Stream AI chat responses
+     * @description Streams AI chat responses using Server-Sent Events (SSE)
+     */
+    post: {
+      /** @description Stream chat request */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.StreamChatRequest"];
+        };
+      };
+      responses: {
+        /** @description SSE stream of AI responses */
+        200: {
+          content: {
+            "text/event-stream": string;
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "text/event-stream": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "text/event-stream": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/auth/login": {
+    /**
+     * User login
+     * @description Authenticate user with email and password
+     */
+    post: {
+      /** @description Login credentials */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.LoginRequest"];
+        };
+      };
+      responses: {
+        /** @description Login successful */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.AuthResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Invalid credentials */
+        401: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/auth/logout": {
+    /**
+     * User logout
+     * @description Logout and revoke session
+     */
+    post: {
+      responses: {
+        /** @description Logout successful */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: boolean;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/auth/me": {
+    /**
+     * Get current user
+     * @description Get the current authenticated user information
+     */
+    get: {
+      responses: {
+        /** @description Current user */
+        200: {
+          content: {
+            "application/json": components["schemas"]["auth.User"];
+          };
+        };
+        /** @description Unauthenticated */
+        401: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/auth/refresh": {
+    /**
+     * Refresh authentication token
+     * @description Refresh expired or expiring authentication token
+     */
+    post: {
+      responses: {
+        /** @description Token refreshed successfully */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.AuthResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/auth/verify": {
+    /**
+     * Verify authentication token
+     * @description Verify if an authentication token is valid
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Token to verify */
+          token: string;
+        };
+      };
+      responses: {
+        /** @description Token is valid */
+        200: {
+          content: {
+            "application/json": components["schemas"]["auth.User"];
+          };
+        };
+        /** @description Invalid token */
+        401: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/csrf-token": {
+    /**
+     * Get CSRF token
+     * @description Returns a CSRF token for use in state-changing requests
+     */
+    get: {
+      responses: {
+        /** @description CSRF token retrieved successfully */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.CSRFTokenResponse"];
+          };
+        };
+        /** @description Failed to generate CSRF token */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/docs": {
+    /**
+     * List documentation
+     * @description Lists all documentation for a project with pagination
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+          /** @description Limit (default 100) */
+          limit?: number;
+          /** @description Offset (default 0) */
+          offset?: number;
+        };
+      };
+      responses: {
+        /** @description List of documentation */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Failed to list documentation */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Index new documentation
+     * @description Parses and indexes documentation in various formats (markdown, rst, etc.)
+     */
+    post: {
+      /** @description Documentation to index */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.IndexDocumentationRequest"];
+        };
+      };
+      responses: {
+        /** @description Documentation indexed successfully */
+        201: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Failed to index documentation */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/docs/search": {
+    /**
+     * Search documentation
+     * @description Performs full-text search on documentation
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+          /** @description Search query */
+          query: string;
+          /** @description Limit (default 100) */
+          limit?: number;
+          /** @description Offset (default 0) */
+          offset?: number;
+        };
+      };
+      responses: {
+        /** @description Search results */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Failed to search documentation */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/docs/{id}": {
+    /**
+     * Get documentation by ID
+     * @description Retrieves a specific documentation by ID
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Documentation ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Documentation retrieved */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Documentation not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Failed to get documentation */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Update documentation
+     * @description Updates an existing documentation
+     */
+    put: {
+      parameters: {
+        path: {
+          /** @description Documentation ID */
+          id: string;
+        };
+      };
+      /** @description Updated documentation */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.IndexDocumentationRequest"];
+        };
+      };
+      responses: {
+        /** @description Documentation updated */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Documentation not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Failed to update documentation */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Delete documentation
+     * @description Deletes a documentation record (soft delete)
+     */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Documentation ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Documentation deleted */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Invalid ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Documentation not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Failed to delete documentation */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/cache/invalidate": {
+    /**
+     * Invalidate graph cache
+     * @description Clears all cached graph analysis results for a project
+     */
+    post: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/centrality": {
+    /**
+     * Calculate centrality metrics
+     * @description Computes betweenness, closeness, and PageRank centrality for project items
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.CentralityMetrics"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/coverage": {
+    /**
+     * Analyze graph coverage
+     * @description Computes coverage statistics (connected vs isolated items)
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.CoverageReport"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/cycles": {
+    /**
+     * Detect cycles in project graph
+     * @description Finds all cycles in the project's dependency graph using Neo4j
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.Cycle"][];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/dependencies": {
+    /**
+     * Get item dependencies (forward)
+     * @description Retrieves all items that this item depends on
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Item ID */
+          item_id: string;
+          /** @description Maximum traversal depth */
+          max_depth?: number;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.DependencyTree"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/dependents": {
+    /**
+     * Get item dependents (backward)
+     * @description Retrieves all items that depend on this item
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Item ID */
+          item_id: string;
+          /** @description Maximum traversal depth */
+          max_depth?: number;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.DependencyTree"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/impact": {
+    /**
+     * Analyze impact of changes
+     * @description Computes which items would be affected by changes to the specified items
+     */
+    post: {
+      /** @description Items to analyze */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.ImpactAnalysisRequest"];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.ImpactReport"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/metrics": {
+    /**
+     * Get graph metrics
+     * @description Computes overall graph statistics for a project
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.GraphMetrics"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/graph/analysis/shortest-path": {
+    /**
+     * Find shortest path between two items
+     * @description Computes the shortest path between source and target items using Neo4j
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Source item ID */
+          source: string;
+          /** @description Target item ID */
+          target: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["graph.Path"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/projects/{projectId}/versions/compare": {
+    /**
+     * Compare two versions
+     * @description Returns the differences between two project versions
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Source version ID */
+          from: string;
+          /** @description Target version ID */
+          to: string;
+        };
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      responses: {
+        /** @description Diff result */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.CompareVersionsResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Version not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/projects/{projectId}/versions/compare/bulk": {
+    /**
+     * Compare multiple version pairs
+     * @description Returns differences for multiple version pairs in a single request
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      /** @description Comparison pairs */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.BulkCompareVersionsRequest"];
+        };
+      };
+      responses: {
+        /** @description Bulk diff results */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/projects/{projectId}/versions/compare/summary": {
+    /**
+     * Get summary of version differences
+     * @description Returns a high-level summary of changes between two versions
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Source version ID */
+          from: string;
+          /** @description Target version ID */
+          to: string;
+        };
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      responses: {
+        /** @description Diff summary */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Version not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/spec-analytics/analyze": {
+    /**
+     * Analyze a specification
+     * @description Analyzes a specification for ISO 29148 compliance, EARS patterns, and formal verification
+     */
+    post: {
+      /** @description Analyze spec request */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.AnalyzeSpecRequest"];
+        };
+      };
+      responses: {
+        /** @description Analysis result */
+        200: {
+          content: {
+            "application/json": components["schemas"]["clients.SpecAnalysisResult"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/spec-analytics/batch-analyze": {
+    /**
+     * Batch analyze specifications
+     * @description Analyzes multiple specifications in parallel
+     */
+    post: {
+      /** @description Batch analyze request */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.BatchAnalyzeRequest"];
+        };
+      };
+      responses: {
+        /** @description Batch analysis results */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/spec-analytics/ears-patterns": {
+    /**
+     * Extract EARS patterns
+     * @description Extracts EARS patterns from a specification
+     */
+    post: {
+      /** @description EARS patterns request */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.AnalyzeSpecRequest"];
+        };
+      };
+      responses: {
+        /** @description EARS patterns result */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/spec-analytics/validate-iso29148": {
+    /**
+     * Validate ISO 29148 compliance
+     * @description Checks if a specification complies with ISO 29148 standard
+     */
+    post: {
+      /** @description Validate request */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.AnalyzeSpecRequest"];
+        };
+      };
+      responses: {
+        /** @description Validation result */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/auth/me": {
+    /**
+     * Get current user information
+     * @description Returns information about the currently authenticated user
+     */
+    get: {
+      responses: {
+        /** @description Current user information */
+        200: {
+          content: {
+            "application/json": components["schemas"]["auth.User"];
+          };
+        };
+        /** @description Unauthenticated */
+        401: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations": {
+    /**
+     * List distributed operations
+     * @description Returns a list of distributed operations for a project with optional filtering
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+          /** @description Filter by status (pending, in_progress, completed, failed) */
+          status?: string;
+        };
+      };
+      responses: {
+        /** @description List of operations */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.ListDistributedOperationsResponse"];
+          };
+        };
+        /** @description Invalid project ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Create a new distributed operation
+     * @description Creates a new distributed operation coordinated across multiple agents
+     */
+    post: {
+      /** @description Operation details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.CreateDistributedOperationRequest"];
+        };
+      };
+      responses: {
+        /** @description Operation created successfully */
+        201: {
+          content: {
+            "application/json": components["schemas"]["handlers.CreateDistributedOperationResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations/assign": {
+    /**
+     * Assign operation to agents
+     * @description Assigns parts of a distributed operation to multiple participating agents
+     */
+    post: {
+      /** @description Agent assignment configuration */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.AssignOperationToAgentsRequest"];
+        };
+      };
+      responses: {
+        /** @description Assignment successful */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.AssignOperationResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations/participants/result": {
+    /**
+     * Submit participant result
+     * @description Submits work results from a participant agent in a distributed operation
+     */
+    post: {
+      /** @description Result submission */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.SubmitParticipantResultRequest"];
+        };
+      };
+      responses: {
+        /** @description Result submitted successfully */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.ParticipantResultResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations/{id}/complete": {
+    /**
+     * Complete a distributed operation
+     * @description Marks a distributed operation as complete and aggregates results
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Operation ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Operation completed successfully */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.OperationStatusResponse"];
+          };
+        };
+        /** @description Invalid operation ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations/{id}/results": {
+    /**
+     * Get operation results
+     * @description Returns aggregated results from all participants in a distributed operation
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Operation ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Aggregated operation results */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.OperationResults"];
+          };
+        };
+        /** @description Invalid operation ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Operation not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations/{id}/status": {
+    /**
+     * Get distributed operation status
+     * @description Returns the current status and details of a distributed operation
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Operation ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Operation details */
+        200: {
+          content: {
+            "application/json": {
+              [key: string]: unknown;
+            };
+          };
+        };
+        /** @description Invalid operation ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Operation not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Update operation status
+     * @description Updates the status of a distributed operation (e.g., pending, in_progress, completed)
+     */
+    put: {
+      parameters: {
+        path: {
+          /** @description Operation ID */
+          id: string;
+        };
+      };
+      /** @description New status */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.UpdateOperationStatusRequest"];
+        };
+      };
+      responses: {
+        /** @description Status updated successfully */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.OperationStatusResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/distributed-operations/{operation_id}/participants/{agent_id}": {
+    /**
+     * Get participant status in operation
+     * @description Returns the current status of a specific agent participant in a distributed operation
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Operation ID */
+          operation_id: string;
+          /** @description Agent ID */
+          agent_id: string;
+        };
+      };
+      responses: {
+        /** @description Participant status details */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.ParticipantStatus"];
+          };
+        };
+        /** @description Invalid operation or agent ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Participant not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences": {
+    /**
+     * List equivalence links for a project
+     * @description Returns a paginated list of equivalence links with optional filtering
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Project ID (required) */
+          project_id?: string;
+          /** @description Filter by status (suggested, confirmed, rejected, auto) */
+          status?: string;
+          /** @description Minimum confidence threshold (0.0-1.0) */
+          min_confidence?: number;
+          /** @description Filter by link type */
+          link_type?: string;
+          /** @description Page size (default: 50, max: 500) */
+          limit?: number;
+          /** @description Pagination offset (default: 0) */
+          offset?: number;
+          /** @description Sort field (created_at, confidence, updated_at) */
+          sort_by?: string;
+          /** @description Sort direction (asc, desc) */
+          sort_direction?: string;
+        };
+      };
+      responses: {
+        /** @description List of equivalence links */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ListEquivalencesResponse"];
+          };
+        };
+        /** @description Invalid request parameters */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/bulk-confirm": {
+    /**
+     * Confirm multiple equivalences
+     * @description Confirms multiple equivalence links in a single operation
+     */
+    post: {
+      /** @description Equivalence IDs to confirm */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.BulkConfirmRequest"];
+        };
+      };
+      responses: {
+        /** @description Confirmation results */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.BulkConfirmResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/bulk-reject": {
+    /**
+     * Reject multiple equivalences
+     * @description Rejects multiple equivalence links in a single operation
+     */
+    post: {
+      /** @description Equivalence IDs to reject */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.BulkRejectRequest"];
+        };
+      };
+      responses: {
+        /** @description Rejection results */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.BulkRejectResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/concepts": {
+    /**
+     * Create a new canonical concept
+     * @description Creates a new abstract canonical concept for the project
+     */
+    post: {
+      /** @description Canonical concept details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.CreateCanonicalConceptRequest"];
+        };
+      };
+      responses: {
+        /** @description Concept created successfully */
+        201: {
+          content: {
+            "application/json": components["schemas"]["equivalence.CreateCanonicalConceptResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Duplicate concept */
+        409: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/concepts/{conceptId}/projections/{projectionId}": {
+    /**
+     * Delete a projection of a canonical concept
+     * @description Removes a link between an item and a canonical concept
+     */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Canonical Concept ID */
+          conceptId: string;
+          /** @description Projection ID */
+          projectionId: string;
+        };
+      };
+      responses: {
+        /** @description Deletion successful */
+        204: {
+          content: never;
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Projection or concept not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/concepts/{id}": {
+    /**
+     * Get a canonical concept
+     * @description Returns details of a specific canonical concept
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Canonical Concept ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Concept details */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.CanonicalConcept"];
+          };
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Concept not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Update a canonical concept
+     * @description Updates an existing canonical concept
+     */
+    put: {
+      parameters: {
+        path: {
+          /** @description Canonical Concept ID */
+          id: string;
+        };
+      };
+      /** @description Updated concept details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.CreateCanonicalConceptRequest"];
+        };
+      };
+      responses: {
+        /** @description Updated concept */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.CanonicalConcept"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Concept not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Delete a canonical concept
+     * @description Deletes a canonical concept and its projections
+     */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Canonical Concept ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Deletion successful */
+        204: {
+          content: never;
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Concept not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/concepts/{id}/projections": {
+    /**
+     * Get projections of a canonical concept
+     * @description Returns all view manifestations (projections) of a canonical concept
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Filter by perspective */
+          perspective?: string;
+          /** @description Filter by status (suggested, confirmed, rejected) */
+          status?: string;
+          /** @description Page size (default: 50) */
+          limit?: number;
+          /** @description Pagination offset */
+          offset?: number;
+        };
+        path: {
+          /** @description Canonical Concept ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Projections list */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.GetProjectionsResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Concept not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Create a projection of a canonical concept
+     * @description Links an item to a canonical concept in a specific perspective
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Canonical Concept ID */
+          id: string;
+        };
+      };
+      /** @description Projection details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.CreateCanonicalProjectionRequest"];
+        };
+      };
+      responses: {
+        /** @description Projection created successfully */
+        201: {
+          content: {
+            "application/json": components["schemas"]["equivalence.CreateCanonicalProjectionResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Concept not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/{id}": {
+    /**
+     * Get a specific equivalence link
+     * @description Returns details of a specific equivalence link
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Equivalence ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Equivalence link details */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.EquivalenceLink"];
+          };
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Equivalence not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/{id}/confirm": {
+    /**
+     * Confirm an equivalence link
+     * @description Confirms an equivalence link and makes it permanent
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Equivalence ID */
+          id: string;
+        };
+      };
+      /** @description Confirmation details */
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["equivalence.ConfirmEquivalenceRequest"];
+        };
+      };
+      responses: {
+        /** @description Confirmation successful */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ConfirmEquivalenceResponse"];
+          };
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Equivalence not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/equivalences/{id}/reject": {
+    /**
+     * Reject an equivalence link
+     * @description Rejects and removes an equivalence link
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Equivalence ID */
+          id: string;
+        };
+      };
+      /** @description Rejection details */
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["equivalence.RejectEquivalenceRequest"];
+        };
+      };
+      responses: {
+        /** @description Rejection successful */
+        204: {
+          content: never;
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Equivalence not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/health": {
+    /**
+     * Health check endpoint
+     * @description Returns the health status of the service
+     */
+    get: {
+      responses: {
+        /** @description Service is healthy */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.HealthResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/items/{id}/pivot": {
+    /**
+     * Get equivalent items for pivot navigation
+     * @description Returns items equivalent to a source item, grouped by perspective
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Item ID to pivot from */
+          id: string;
+        };
+      };
+      /** @description Pivot navigation options */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.PivotNavigationRequest"];
+        };
+      };
+      responses: {
+        /** @description Equivalent items grouped by perspective */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.PivotNavigationResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Item not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/items/{id}/pivot-targets": {
+    /**
+     * Get pivot target information for an item
+     * @description Returns item information needed for pivot navigation including type and available perspectives
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Item ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Pivot target information */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.PivotTargetsResponse"];
+          };
+        };
+        /** @description Invalid item ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Item not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys": {
+    /**
+     * List all journeys
+     * @description Returns a paginated list of journeys
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+          /** @description Journey type filter */
+          type?: string;
+          /** @description Minimum score threshold */
+          min_score?: number;
+          /** @description Page size (default: 50) */
+          limit?: number;
+          /** @description Pagination offset */
+          offset?: number;
+        };
+      };
+      responses: {
+        /** @description List of journeys */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.ListJourneysResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/call-chains": {
+    /**
+     * Get detected call chains
+     * @description Returns function call chains for a project
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description Call chains */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"][];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/data-paths": {
+    /**
+     * Get detected data paths
+     * @description Returns data flow paths for a project
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description Data paths */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"][];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/detect": {
+    /**
+     * Detect journeys in a project
+     * @description Analyzes the project graph to detect user flows, data paths, and call chains
+     */
+    post: {
+      /** @description Detection parameters */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["journey.DetectJourneysRequest"];
+        };
+      };
+      responses: {
+        /** @description Detection results */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DetectJourneysResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/stats": {
+    /**
+     * Get journey statistics
+     * @description Returns aggregate statistics about detected journeys
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description Journey statistics */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.JourneyStats"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/user-flows": {
+    /**
+     * Get detected user flows
+     * @description Returns user flows (UI navigation paths) for a project
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Project ID */
+          project_id: string;
+        };
+      };
+      responses: {
+        /** @description User flows */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"][];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/{id}": {
+    /**
+     * Get a specific journey
+     * @description Returns details of a specific journey
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Journey details */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"];
+          };
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Update a journey
+     * @description Updates a specific journey
+     */
+    put: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+        };
+      };
+      /** @description Update parameters */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["journey.UpdateJourneyRequest"];
+        };
+      };
+      responses: {
+        /** @description Updated journey */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Delete a journey
+     * @description Deletes a specific journey
+     */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Deletion successful */
+        204: {
+          content: never;
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/{id}/steps": {
+    /**
+     * Get journey steps
+     * @description Returns the ordered steps of a journey
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Journey steps */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.JourneyStep"][];
+          };
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Add a step to a journey
+     * @description Adds an item as a step in the journey
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+        };
+      };
+      /** @description Step details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["journey.AddStepRequest"];
+        };
+      };
+      responses: {
+        /** @description Updated journey */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/{id}/steps/{itemId}": {
+    /**
+     * Remove a step from a journey
+     * @description Removes an item from the journey
+     */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+          /** @description Item ID to remove */
+          itemId: string;
+        };
+      };
+      responses: {
+        /** @description Step removed successfully */
+        204: {
+          content: never;
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey or step not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/journeys/{id}/visualization": {
+    /**
+     * Get journey visualization data
+     * @description Returns formatted data for rendering a journey visualization
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Journey ID */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Visualization data */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.VisualizationData"];
+          };
+        };
+        /** @description Invalid ID format */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Journey not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/projects/{projectId}/concepts": {
+    /**
+     * List canonical concepts for a project
+     * @description Returns all canonical concepts for the given project
+     */
+    get: {
+      parameters: {
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      responses: {
+        /** @description List of concepts */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.CanonicalConcept"][];
+          };
+        };
+        /** @description Invalid project ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Create a canonical concept for a project
+     * @description Creates a new canonical concept scoped to the given project
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      /** @description Concept details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.CreateCanonicalConceptRequest"];
+        };
+      };
+      responses: {
+        /** @description Concept created successfully */
+        201: {
+          content: {
+            "application/json": components["schemas"]["equivalence.CreateCanonicalConceptResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/projects/{projectId}/equivalences": {
+    /**
+     * List equivalence links for a specific project
+     * @description Returns a paginated list of equivalence links for the given project
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Filter by status (suggested, confirmed, rejected, auto) */
+          status?: string;
+          /** @description Minimum confidence threshold (0.0-1.0) */
+          min_confidence?: number;
+          /** @description Filter by link type */
+          link_type?: string;
+          /** @description Page size (default: 50, max: 500) */
+          limit?: number;
+          /** @description Pagination offset (default: 0) */
+          offset?: number;
+          /** @description Sort field (created_at, confidence, updated_at) */
+          sort_by?: string;
+          /** @description Sort direction (asc, desc) */
+          sort_direction?: string;
+        };
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      responses: {
+        /** @description List of equivalence links */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ListEquivalencesResponse"];
+          };
+        };
+        /** @description Invalid project ID */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/projects/{projectId}/equivalences/detect": {
+    /**
+     * Detect equivalences within a project
+     * @description Runs equivalence detection for items in the specified project
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      /** @description Detection configuration */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["equivalence.DetectionRequest"];
+        };
+      };
+      responses: {
+        /** @description Detection results with suggestions */
+        200: {
+          content: {
+            "application/json": components["schemas"]["equivalence.DetectionResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+        /** @description Detection failed */
+        500: {
+          content: {
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/projects/{projectId}/journeys": {
+    /**
+     * List journeys for a project
+     * @description Returns journeys for a specific project
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Journey type filter */
+          type?: string;
+          /** @description Page size */
+          limit?: number;
+          /** @description Pagination offset */
+          offset?: number;
+        };
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      responses: {
+        /** @description List of journeys */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.ListJourneysResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+    /**
+     * Create a new journey
+     * @description Creates a manual journey in the project
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      /** @description Journey details */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["journey.CreateJourneyRequest"];
+        };
+      };
+      responses: {
+        /** @description Created journey */
+        201: {
+          content: {
+            "application/json": components["schemas"]["journey.DerivedJourney"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/projects/{projectId}/journeys/detect": {
+    /**
+     * Detect journeys in a project
+     * @description Analyzes the project graph to detect journeys
+     */
+    post: {
+      parameters: {
+        path: {
+          /** @description Project ID */
+          projectId: string;
+        };
+      };
+      /** @description Detection parameters */
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["journey.DetectJourneysRequest"];
+        };
+      };
+      responses: {
+        /** @description Detection results */
+        200: {
+          content: {
+            "application/json": components["schemas"]["journey.DetectJourneysResponse"];
+          };
+        };
+        /** @description Invalid request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["journey.ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/:key": {
+    /**
+     * Delete a file from S3 storage
+     * @description Delete a file from S3-compatible storage
+     */
+    delete: {
+      parameters: {
+        path: {
+          /** @description S3 key of the file to delete */
+          key: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.DeleteResponse"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.DeleteResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.DeleteResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/download": {
+    /**
+     * Download a file from S3 storage
+     * @description Download a file from S3-compatible storage
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description S3 key of the file to download */
+          key: string;
+        };
+      };
+      responses: {
+        /** @description File content */
+        200: {
+          content: never;
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/octet-stream": components["schemas"]["handlers.DownloadResponse"];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          content: {
+            "application/octet-stream": components["schemas"]["handlers.DownloadResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/octet-stream": components["schemas"]["handlers.DownloadResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/info": {
+    /**
+     * Get file information
+     * @description Get metadata about a file in storage
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description S3 key of the file */
+          key: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.FileInfoResponse"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.FileInfoResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.FileInfoResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/presigned-upload": {
+    /**
+     * Generate presigned upload URL
+     * @description Generate a presigned URL for uploading a file without authentication
+     */
+    post: {
+      /** @description Request body */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["handlers.PresignedURLRequest"];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/presigned/:key": {
+    /**
+     * Generate presigned download URL
+     * @description Generate a presigned URL for downloading a file without authentication
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description URL expiry in hours (default: 24) */
+          expiryHours?: number;
+        };
+        path: {
+          /** @description S3 key of the file */
+          key: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/upload": {
+    /**
+     * Upload a file to S3 storage
+     * @description Upload a file to S3-compatible storage (Cloudflare R2, AWS S3, etc.)
+     */
+    post: {
+      requestBody: {
+        content: {
+          "multipart/form-data": {
+            /**
+             * Format: binary
+             * @description File to upload
+             */
+            file: string;
+            /** @description Custom S3 key (auto-generated if not provided) */
+            key?: string;
+            /** @description Content-Type header (auto-detected if not provided) */
+            contentType?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.UploadResponse"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.UploadResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.UploadResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/storage/upload-with-thumbnail": {
+    /**
+     * Upload an image with thumbnail generation
+     * @description Upload an image and automatically generate a thumbnail
+     */
+    post: {
+      requestBody: {
+        content: {
+          "multipart/form-data": {
+            /**
+             * Format: binary
+             * @description Image file to upload
+             */
+            file: string;
+            /** @description Custom S3 key (auto-generated if not provided) */
+            key?: string;
+            /** @description Thumbnail width in pixels (default: 200) */
+            thumbWidth?: number;
+          };
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["handlers.UploadResponse"];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["handlers.UploadResponse"];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["handlers.UploadResponse"];
+          };
+        };
+      };
+    };
+  };
 }
 
 export type webhooks = Record<string, never>;
 
 export interface components {
-	schemas: {
-		HealthResponse: {
-			/**
-			 * @description Current health status of the service
-			 * @enum {string}
-			 */
-			status: "healthy" | "degraded" | "unhealthy";
-			/** @description API version */
-			version: string;
-			/** @description Service name */
-			service: string;
-		};
-		ItemSummary: {
-			/**
-			 * Format: uuid
-			 * @description Unique identifier for the item
-			 */
-			id: string;
-			/** @description Item title */
-			title: string;
-			/** @description View type of the item */
-			view: string;
-			/**
-			 * @description Current status of the item
-			 * @enum {string}
-			 */
-			status: "draft" | "in_progress" | "completed" | "approved" | "rejected";
-		};
-		ItemListResponse: {
-			/** @description Total number of items */
-			total: number;
-			items: components["schemas"]["ItemSummary"][];
-		};
-		ItemDetailResponse: {
-			/** Format: uuid */
-			id: string;
-			title: string;
-			description?: string | null;
-			view: string;
-			status: string;
-			/** Format: date-time */
-			created_at: string;
-			/** Format: date-time */
-			updated_at: string;
-		};
-		LinkSummary: {
-			/** Format: uuid */
-			id: string;
-			/**
-			 * Format: uuid
-			 * @description Source item ID
-			 */
-			source_id: string;
-			/**
-			 * Format: uuid
-			 * @description Target item ID
-			 */
-			target_id: string;
-			/**
-			 * @description Type of relationship
-			 * @enum {string}
-			 */
-			type: "depends_on" | "implements" | "tests" | "derives_from";
-		};
-		LinkListResponse: {
-			total: number;
-			links: components["schemas"]["LinkSummary"][];
-		};
-		ImpactAnalysisResponse: {
-			/**
-			 * Format: uuid
-			 * @description ID of the item being analyzed
-			 */
-			root_item_id: string;
-			/** @description Total number of items affected by changes */
-			total_affected: number;
-			/** @description Maximum depth of dependency chain */
-			max_depth: number;
-			/** @description List of affected item IDs */
-			affected_items: string[];
-		};
-		CycleDetectionResponse: {
-			/** @description Whether cycles were detected */
-			has_cycles: boolean;
-			/** @description Number of cycles found */
-			total_cycles: number;
-			/**
-			 * @description Severity level of detected cycles
-			 * @enum {string}
-			 */
-			severity: "none" | "low" | "medium" | "high" | "critical";
-			/** @description Items involved in cycles */
-			affected_items: string[];
-		};
-		ShortestPathResponse: {
-			/** @description Whether a path exists between the items */
-			exists: boolean;
-			/** @description Number of hops in the shortest path */
-			distance: number | null;
-			/** @description Ordered list of item IDs in the path */
-			path: string[];
-			/** @description Types of links in the path */
-			link_types: string[];
-		};
-		EquivalenceResponse: {
-			/**
-			 * Format: uuid
-			 * @description Unique identifier for the equivalence
-			 */
-			id: string;
-			/** @description IDs of equivalent items */
-			item_ids: string[];
-			/**
-			 * @description Current status of the equivalence
-			 * @enum {string}
-			 */
-			status: "suggested" | "confirmed" | "rejected";
-			/** @description Confidence score for the equivalence (0-1) */
-			confidence: number;
-			/** Format: date-time */
-			created_at: string;
-			/** Format: date-time */
-			updated_at?: string;
-			/** @description Optional notes about the equivalence */
-			notes?: string | null;
-		};
-		EquivalenceListResponse: {
-			total: number;
-			equivalences: components["schemas"]["EquivalenceResponse"][];
-		};
-		DetectEquivalencesRequest: {
-			/** @description List of dimensions to check for equivalences */
-			dimensions: string[];
-			/**
-			 * @description Similarity threshold for automatic detection
-			 * @default 0.8
-			 */
-			threshold?: number;
-			/** @description Item IDs to exclude from detection */
-			exclude_ids?: string[];
-		};
-		EquivalenceDetectionResponse: {
-			/** @description Number of equivalences detected */
-			detected_count: number;
-			/** @description List of suggested equivalences */
-			suggestions: components["schemas"]["EquivalenceResponse"][];
-		};
-		ConfirmEquivalenceRequest: {
-			/** @description Optional notes when confirming */
-			notes?: string;
-		};
-		RejectEquivalenceRequest: {
-			/** @description Reason for rejecting the equivalence */
-			reason?: string;
-		};
-		CanonicalConceptResponse: {
-			/**
-			 * Format: uuid
-			 * @description Unique identifier for the canonical concept
-			 */
-			id: string;
-			/** @description Name of the canonical concept */
-			name: string;
-			/** @description Detailed description */
-			description: string | null;
-			/** @description IDs of items that project this concept */
-			item_ids: string[];
-			/** @description Dimensions covered by this concept */
-			dimensions?: string[];
-			/** Format: date-time */
-			created_at: string;
-			/** Format: date-time */
-			updated_at?: string;
-		};
-		CanonicalConceptListResponse: {
-			total: number;
-			concepts: components["schemas"]["CanonicalConceptResponse"][];
-		};
-		CreateCanonicalConceptRequest: {
-			/** @description Name of the canonical concept */
-			name: string;
-			/** @description Optional description */
-			description?: string;
-			/** @description IDs of items to include in this concept */
-			item_ids: string[];
-		};
-		ProjectionResponse: {
-			/** Format: uuid */
-			id: string;
-			/**
-			 * Format: uuid
-			 * @description ID of the projected item
-			 */
-			item_id: string;
-			/** @description Dimension of this projection */
-			dimension: string;
-			/**
-			 * Format: uuid
-			 * @description ID of the canonical concept
-			 */
-			canonical_id: string;
-			mapping_confidence?: number;
-		};
-		ProjectionListResponse: {
-			total: number;
-			projections: components["schemas"]["ProjectionResponse"][];
-		};
-		PivotItemRequest: {
-			/**
-			 * Format: uuid
-			 * @description ID of the canonical concept to pivot to
-			 */
-			canonical_concept_id: string;
-			/**
-			 * @description Whether to update all references to this item
-			 * @default true
-			 */
-			update_references?: boolean;
-		};
-		PivotItemResponse: {
-			/** Format: uuid */
-			item_id: string;
-			/** Format: uuid */
-			canonical_concept_id: string;
-			/** @description Number of references updated */
-			updated_references: number;
-		};
-		JourneyResponse: {
-			/**
-			 * Format: uuid
-			 * @description Unique identifier for the journey
-			 */
-			id: string;
-			/** @description Name of the journey */
-			name: string;
-			/** @description Detailed description */
-			description?: string | null;
-			/**
-			 * @description Type of journey
-			 * @enum {string}
-			 */
-			type: "user" | "system" | "data" | "integration";
-			/** @description Ordered steps in the journey */
-			steps: components["schemas"]["JourneyStep"][];
-			/** Format: date-time */
-			created_at: string;
-			/** Format: date-time */
-			updated_at?: string;
-		};
-		JourneyStep: {
-			/** Format: uuid */
-			id: string;
-			/** @description Position in the journey sequence */
-			order: number;
-			/** @description Name of this step */
-			name: string;
-			/**
-			 * Format: uuid
-			 * @description Associated requirement item ID
-			 */
-			item_id: string;
-			description?: string | null;
-			/** @description Additional step metadata */
-			metadata?: Record<string, never>;
-		};
-		JourneyListResponse: {
-			total: number;
-			journeys: components["schemas"]["JourneyResponse"][];
-		};
-		CreateJourneyRequest: {
-			/** @description Name of the journey */
-			name: string;
-			/** @description Optional description */
-			description?: string;
-			/**
-			 * @description Type of journey
-			 * @enum {string}
-			 */
-			type: "user" | "system" | "data" | "integration";
-			steps: {
-				order: number;
-				name: string;
-				/** Format: uuid */
-				item_id: string;
-				description?: string;
-			}[];
-		};
-		DetectJourneysRequest: {
-			/**
-			 * @description Type of journey to detect
-			 * @enum {string}
-			 */
-			journey_type: "user" | "system" | "data" | "integration";
-			/**
-			 * @description Minimum number of steps for a valid journey
-			 * @default 3
-			 */
-			min_path_length?: number;
-			/** @default 100 */
-			max_results?: number;
-		};
-		JourneyDetectionResponse: {
-			/** @description Number of journeys detected */
-			detected_count: number;
-			/** @description List of detected journeys */
-			journeys: components["schemas"]["JourneyResponse"][];
-		};
-		ComponentLibraryResponse: {
-			/**
-			 * Format: uuid
-			 * @description Unique identifier for the library
-			 */
-			id: string;
-			/** @description Name of the component library */
-			name: string;
-			description?: string | null;
-			/** @description Semantic version of the library */
-			version: string;
-			/** @description Number of components in the library */
-			component_count?: number;
-			/** Format: date-time */
-			created_at: string;
-			/** Format: date-time */
-			updated_at?: string;
-		};
-		ComponentLibraryListResponse: {
-			total: number;
-			libraries: components["schemas"]["ComponentLibraryResponse"][];
-		};
-		ComponentResponse: {
-			/** Format: uuid */
-			id: string;
-			/** @description Component name */
-			name: string;
-			description?: string | null;
-			/** @description Component category */
-			category: string;
-			/** Format: uuid */
-			library_id: string;
-			/**
-			 * @description Component status
-			 * @enum {string}
-			 */
-			status?: "draft" | "published" | "deprecated";
-			/** @description Component-specific properties */
-			properties?: Record<string, never>;
-		};
-		ComponentListResponse: {
-			total: number;
-			components: components["schemas"]["ComponentResponse"][];
-		};
-		ComponentUsageResponse: {
-			/** Format: uuid */
-			component_id: string;
-			/** @description Total number of usages */
-			usage_count: number;
-			/** @description IDs of items using this component */
-			used_in_items: string[];
-			/**
-			 * Format: date-time
-			 * @description When the component was last used
-			 */
-			last_used?: string | null;
-		};
-		DesignToken: {
-			/** Format: uuid */
-			id: string;
-			/** @description Token name */
-			name: string;
-			/** @description Token value */
-			value: string;
-			/**
-			 * @description Token category
-			 * @enum {string}
-			 */
-			category:
-				| "colors"
-				| "typography"
-				| "spacing"
-				| "shadows"
-				| "borders"
-				| "other";
-			description?: string | null;
-		};
-		DesignTokenResponse: {
-			/** Format: uuid */
-			library_id: string;
-			tokens: components["schemas"]["DesignToken"][];
-			total?: number;
-		};
-		Error: {
-			/** @description Error message */
-			detail: string;
-			/** @description Error code for programmatic handling */
-			code?: string;
-		};
-	};
-	responses: {
-		/** @description Bad Request - Invalid input parameters */
-		BadRequest: {
-			content: {
-				"application/json": components["schemas"]["Error"];
-			};
-		};
-		/** @description Unauthorized - Missing or invalid authentication */
-		Unauthorized: {
-			content: {
-				"application/json": components["schemas"]["Error"];
-			};
-		};
-		/** @description Not Found - Resource does not exist */
-		NotFound: {
-			content: {
-				"application/json": components["schemas"]["Error"];
-			};
-		};
-		/** @description Internal Server Error */
-		InternalServerError: {
-			content: {
-				"application/json": components["schemas"]["Error"];
-			};
-		};
-	};
-	parameters: never;
-	requestBodies: never;
-	headers: never;
-	pathItems: never;
+  schemas: {
+    "auth.User": {
+      email?: string;
+      id?: string;
+      metadata?: {
+        [key: string]: unknown;
+      };
+      name?: string;
+      projectID?: string;
+      role?: string;
+    };
+    "clients.AnalysisResult": {
+      analysis?: string;
+      confidence?: number;
+      metadata?: {
+        [key: string]: unknown;
+      };
+      suggestions?: string[];
+    };
+    "clients.EARSPattern": {
+      confidence?: number;
+      matched?: boolean;
+      /** @description UBIQUITOUS, EVENT_DRIVEN, UNWANTED_BEHAVIOR, STATE_DRIVEN, OPTIONAL_FEATURE */
+      type?: string;
+    };
+    "clients.FormalVerificationResult": {
+      ambiguities?: string[];
+      contradictions?: string[];
+      is_verifiable?: boolean;
+      logical_formula?: string;
+    };
+    "clients.SpecAnalysisResult": {
+      compliant_with_iso?: boolean;
+      ears_patterns?: components["schemas"]["clients.EARSPattern"][];
+      formal_verification?: components["schemas"]["clients.FormalVerificationResult"];
+      odc_classification?: string;
+      recommendations?: string[];
+      spec_id?: string;
+    };
+    "equivalence.BulkConfirmRequest": {
+      /** @description EquivalenceIDs are the IDs to confirm */
+      equivalence_ids: string[];
+      /** @description Reason is optional context for all confirmations */
+      reason?: string;
+    };
+    "equivalence.BulkConfirmResponse": {
+      /** @description Confirmed is the number of successfully confirmed links */
+      confirmed?: number;
+      /** @description Errors maps failed IDs to error messages */
+      errors?: {
+        [key: string]: string;
+      };
+      /** @description Failed is the number that failed to confirm */
+      failed?: number;
+      /** @description Links are the confirmed equivalence links */
+      links?: components["schemas"]["equivalence.EquivalenceLink"][];
+    };
+    "equivalence.BulkRejectRequest": {
+      /** @description EquivalenceIDs are the IDs to reject */
+      equivalence_ids: string[];
+      /** @description Reason explains why equivalences were rejected */
+      reason?: string;
+    };
+    "equivalence.BulkRejectResponse": {
+      /** @description Errors maps failed IDs to error messages */
+      errors?: {
+        [key: string]: string;
+      };
+      /** @description Failed is the number that failed to reject */
+      failed?: number;
+      /** @description Rejected is the number of successfully rejected equivalences */
+      rejected?: number;
+    };
+    "equivalence.CanonicalConcept": {
+      category?: string;
+      child_concept_ids?: string[];
+      confidence?: number;
+      created_at?: string;
+      created_by?: string;
+      description?: string;
+      domain?: string;
+      embedding?: number[];
+      embedding_model?: string;
+      embedding_updated_at?: string;
+      id?: string;
+      name?: string;
+      parent_concept_id?: string;
+      project_id?: string;
+      projection_count?: number;
+      related_concept_ids?: string[];
+      slug?: string;
+      source?: components["schemas"]["equivalence.StrategyType"];
+      tags?: string[];
+      updated_at?: string;
+      version?: number;
+    };
+    "equivalence.CanonicalProjection": {
+      canonical_id?: string;
+      confidence?: number;
+      confirmed_at?: string;
+      confirmed_by?: string;
+      created_at?: string;
+      id?: string;
+      item_id?: string;
+      metadata?: {
+        [key: string]: unknown;
+      };
+      perspective?: string;
+      project_id?: string;
+      provenance?: components["schemas"]["equivalence.StrategyType"];
+      /** @description primary, related, derived */
+      role?: string;
+      status?: components["schemas"]["equivalence.EquivalenceStatus"];
+      updated_at?: string;
+    };
+    "equivalence.CodeReference": {
+      /** @description FilePath is the source file path */
+      file_path?: string;
+      /** @description LineEnd is the ending line number */
+      line_end?: number;
+      /** @description LineStart is the starting line number */
+      line_start?: number;
+      /** @description Repository is the code repository */
+      repository?: string;
+      /** @description SymbolName is the symbol name */
+      symbol_name?: string;
+      /** @description SymbolType is the symbol type (function, class, method, etc.) */
+      symbol_type?: string;
+    };
+    "equivalence.ConfirmEquivalenceRequest": {
+      /** @description Metadata is optional additional information */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** @description Reason is optional context for the confirmation */
+      reason?: string;
+    };
+    "equivalence.ConfirmEquivalenceResponse": {
+      /** @description ConfirmedAt is when confirmation occurred */
+      confirmed_at?: string;
+      /** @description Link is the confirmed equivalence link */
+      link?: components["schemas"]["equivalence.EquivalenceLink"];
+      /** @description Message describes the confirmation */
+      message?: string;
+    };
+    "equivalence.CreateCanonicalConceptRequest": {
+      /** @description Category is optional categorization */
+      category?: string;
+      /** @description Description explains the concept */
+      description?: string;
+      /** @description Domain is optional domain classification */
+      domain?: string;
+      /** @description Metadata is optional additional data */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** @description Name is the concept name */
+      name: string;
+      /** @description ParentConceptID links to a parent concept (optional) */
+      parent_concept_id?: string;
+      /** @description ProjectID is the owning project */
+      project_id: string;
+      /** @description Tags are optional tags for organization */
+      tags?: string[];
+    };
+    "equivalence.CreateCanonicalConceptResponse": {
+      /** @description Concept is the created canonical concept */
+      concept?: components["schemas"]["equivalence.CanonicalConcept"];
+      /** @description CreatedAt is when the concept was created */
+      created_at?: string;
+      /** @description Message describes the creation */
+      message?: string;
+    };
+    "equivalence.CreateCanonicalProjectionRequest": {
+      /** @description Confidence is the confidence of this projection (0.0-1.0) */
+      confidence?: number;
+      /** @description ItemID is the item being projected onto the canonical concept */
+      item_id: string;
+      /** @description Metadata is optional additional information */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** @description Perspective is the view perspective (e.g., code, requirements, design) */
+      perspective?: string;
+      /** @description Role is the role of this projection (primary, related, derived) */
+      role?: string;
+      /** @description Source indicates how the projection was detected/confirmed */
+      source?: components["schemas"]["equivalence.StrategyType"];
+    };
+    "equivalence.CreateCanonicalProjectionResponse": {
+      /** @description CreatedAt is when the projection was created */
+      created_at?: string;
+      /** @description Message describes the creation */
+      message?: string;
+      /** @description Projection is the created projection */
+      projection?: components["schemas"]["equivalence.CanonicalProjection"];
+    };
+    "equivalence.DetectionRequest": {
+      /** @description CandidatePool specifies which items to check (if nil, checks all items in project) */
+      candidate_pool?: components["schemas"]["equivalence.ItemInfo"][];
+      /** @description MaxResults limits the number of suggestions returned */
+      max_results?: number;
+      /** @description MinConfidence filters suggestions below this threshold (0.0-1.0) */
+      min_confidence?: number;
+      /** @description ProjectID is the project to search for equivalences within */
+      project_id: string;
+      /** @description SourceItemID is the item to find equivalences for */
+      source_item_id: string;
+      /**
+       * @description Strategies specifies which detection strategies to use
+       * If empty, all strategies are used
+       */
+      strategies?: components["schemas"]["equivalence.StrategyType"][];
+    };
+    "equivalence.DetectionResponse": {
+      /** @description Timestamp when detection was performed */
+      detected_at?: string;
+      /** @description Stats contains detection statistics */
+      stats?: components["schemas"]["equivalence.DetectionStats"];
+      /** @description Suggestions are the detected equivalence suggestions */
+      suggestions?: components["schemas"]["equivalence.EquivalenceSuggestion"][];
+    };
+    "equivalence.DetectionStats": {
+      /** @description AverageConfidence is the mean confidence across all findings */
+      average_confidence?: number;
+      /** @description DurationMs is detection time in milliseconds */
+      duration_ms?: number;
+      /** @description EquivalencesFound is the number of suggestions created */
+      equivalences_found?: number;
+      /** @description StrategyBreakdown shows count by strategy */
+      strategy_breakdown?: {
+        [key: string]: number;
+      };
+      /** @description TotalItemsScanned is the number of items checked */
+      total_items_scanned?: number;
+    };
+    "equivalence.EquivalenceLink": {
+      canonical_id?: string;
+      confidence?: number;
+      confirmed_at?: string;
+      confirmed_by?: string;
+      created_at?: string;
+      evidence?: components["schemas"]["equivalence.Evidence"][];
+      id?: string;
+      /** @description same_as, represents, manifests_as, etc. */
+      link_type?: string;
+      project_id?: string;
+      provenance?: components["schemas"]["equivalence.StrategyType"];
+      source_item_id?: string;
+      status?: components["schemas"]["equivalence.EquivalenceStatus"];
+      target_item_id?: string;
+      updated_at?: string;
+    };
+    /** @enum {string} */
+    "equivalence.EquivalenceStatus": "suggested" | "confirmed" | "rejected" | "auto";
+    "equivalence.EquivalenceSuggestion": {
+      confidence?: number;
+      created_at?: string;
+      evidence?: components["schemas"]["equivalence.Evidence"][];
+      id?: string;
+      project_id?: string;
+      source_item_id?: string;
+      source_item_title?: string;
+      source_item_type?: string;
+      strategies?: components["schemas"]["equivalence.StrategyType"][];
+      /** @description same_as, represents, etc. */
+      suggested_type?: string;
+      target_item_id?: string;
+      target_item_title?: string;
+      target_item_type?: string;
+    };
+    "equivalence.ErrorResponse": {
+      /** @description Code is the error code */
+      code?: string;
+      /** @description Details contains additional error context */
+      details?: {
+        [key: string]: unknown;
+      };
+      /** @description Error is the error message */
+      error?: string;
+      /** @description Timestamp when error occurred */
+      timestamp?: string;
+    };
+    "equivalence.Evidence": {
+      confidence?: number;
+      description?: string;
+      details?: {
+        [key: string]: unknown;
+      };
+      detected_at?: string;
+      strategy?: components["schemas"]["equivalence.StrategyType"];
+    };
+    "equivalence.GetProjectionsResponse": {
+      /** @description Concept is the canonical concept details */
+      concept?: components["schemas"]["equivalence.CanonicalConcept"];
+      /** @description ConceptID is the canonical concept */
+      concept_id?: string;
+      /** @description PerspectiveBreakdown groups projections by perspective */
+      perspective_breakdown?: {
+        [key: string]: components["schemas"]["equivalence.CanonicalProjection"][];
+      };
+      /** @description Projections are the view manifestations */
+      projections?: components["schemas"]["equivalence.CanonicalProjection"][];
+      /** @description Total number of projections */
+      total?: number;
+    };
+    "equivalence.ItemInfo": {
+      /** @description CodeRef links to source code */
+      code_ref?: components["schemas"]["equivalence.CodeReference"];
+      /** @description CreatedAt is creation timestamp */
+      created_at?: string;
+      /** @description Description is the item description */
+      description?: string;
+      /** @description ID is the item unique identifier */
+      id?: string;
+      /** @description ItemType is the item classification */
+      item_type?: string;
+      /** @description Metadata contains additional item data */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** @description Priority is the item priority */
+      priority?: string;
+      /** @description ProjectID is the owning project */
+      project_id?: string;
+      /** @description Status is the item status */
+      status?: string;
+      /** @description Tags are item tags */
+      tags?: string[];
+      /** @description Title is the item title */
+      title?: string;
+      /** @description UpdatedAt is last modification timestamp */
+      updated_at?: string;
+    };
+    "equivalence.ListEquivalencesResponse": {
+      /** @description Data is the list of equivalence links */
+      data?: components["schemas"]["equivalence.EquivalenceLink"][];
+      /** @description HasMore indicates if there are more results */
+      has_more?: boolean;
+      /** @description Limit is the limit used in the request */
+      limit?: number;
+      /** @description Offset is the offset used in the request */
+      offset?: number;
+      /** @description Total is the total number of records matching the filter */
+      total?: number;
+    };
+    "equivalence.RejectEquivalenceRequest": {
+      /** @description Metadata is optional additional information */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** @description Reason explains why the equivalence was rejected */
+      reason?: string;
+    };
+    /** @enum {string} */
+    "equivalence.StrategyType": "explicit_annotation" | "manual_link" | "api_contract" | "shared_canonical" | "naming_pattern" | "semantic_similarity" | "structural";
+    "graph.CentralNode": {
+      betweenness_score?: number;
+      closeness_score?: number;
+      item_id?: string;
+      pagerank_score?: number;
+    };
+    "graph.CentralityMetrics": {
+      betweenness?: {
+        [key: string]: number;
+      };
+      closeness?: {
+        [key: string]: number;
+      };
+      most_central?: components["schemas"]["graph.CentralNode"][];
+      pagerank?: {
+        [key: string]: number;
+      };
+      project_id?: string;
+    };
+    "graph.CoverageReport": {
+      connected_items?: number;
+      coverage_percent?: number;
+      isolated_items?: string[];
+      project_id?: string;
+      total_items?: number;
+    };
+    "graph.Cycle": {
+      length?: number;
+      nodes?: string[];
+      /** @description "warning", "error" */
+      severity?: string;
+    };
+    "graph.Dependency": {
+      depth?: number;
+      item_id?: string;
+      link_type?: string;
+    };
+    "graph.DependencyTree": {
+      children?: {
+        [key: string]: components["schemas"]["graph.Dependency"][];
+      };
+      depth?: number;
+      root?: string;
+    };
+    "graph.GraphMetrics": {
+      avg_degree?: number;
+      connected_components?: number;
+      density?: number;
+      max_depth?: number;
+      project_id?: string;
+      total_edges?: number;
+      total_nodes?: number;
+    };
+    "graph.ImpactReport": {
+      direct_impact?: string[];
+      impact_levels?: {
+        [key: string]: number;
+      };
+      indirect_impact?: string[];
+      source_items?: string[];
+      total_affected?: number;
+    };
+    "graph.Path": {
+      length?: number;
+      link_types?: string[];
+      nodes?: string[];
+      source?: string;
+      target?: string;
+    };
+    "handlers.AnalyzeRequest": {
+      project_id: string;
+      text: string;
+    };
+    "handlers.AnalyzeSpecRequest": {
+      content: string;
+      project_id: string;
+      spec_id: string;
+    };
+    "handlers.AssignOperationResponse": {
+      agents_assigned?: number;
+      assignment_count?: {
+        [key: string]: unknown;
+      };
+      message?: string;
+      operation_id?: string;
+      status?: string;
+      timestamp?: string;
+    };
+    "handlers.AssignOperationToAgentsRequest": {
+      agent_assignments?: {
+        [key: string]: unknown;
+      };
+      /** @example op-123 */
+      operation_id?: string;
+    };
+    "handlers.AuthResponse": {
+      token?: string;
+      user?: components["schemas"]["auth.User"];
+    };
+    "handlers.BatchAnalyzeRequest": {
+      requests: components["schemas"]["handlers.AnalyzeSpecRequest"][];
+    };
+    "handlers.BulkCompareVersionsRequest": {
+      comparisons: components["schemas"]["handlers.VersionComparisonPair"][];
+    };
+    /** @description CSRF token response */
+    "handlers.CSRFTokenResponse": {
+      /** @example base64-encoded-token */
+      token?: string;
+      /** @example true */
+      valid?: boolean;
+    };
+    "handlers.CanonicalConceptInfo": {
+      category?: string;
+      description?: string;
+      domain?: string;
+      id?: string;
+      name?: string;
+      tags?: string[];
+    };
+    "handlers.CompareVersionsResponse": {
+      diff?: components["schemas"]["temporal.VersionDiff"];
+      message?: string;
+      status?: string;
+    };
+    "handlers.CreateDistributedOperationRequest": {
+      /** @example coordinator-1 */
+      coordinator_id?: string;
+      operation_data?: {
+        [key: string]: unknown;
+      };
+      /**
+       * @example [
+       *   "[\"agent-1\"",
+       *   "\"agent-2\"]"
+       * ]
+       */
+      participant_ids?: string[];
+      /** @example 550e8400-e29b-41d4-a716-446655440000 */
+      project_id?: string;
+      /**
+       * @example [
+       *   "[\"item-1\"",
+       *   "\"item-2\"]"
+       * ]
+       */
+      target_items?: string[];
+      /** @example bulk_analysis */
+      type?: string;
+    };
+    "handlers.CreateDistributedOperationResponse": {
+      message?: string;
+      operation_id?: string;
+      status?: string;
+      time?: string;
+    };
+    "handlers.DeleteResponse": {
+      error?: string;
+      key?: string;
+      success?: boolean;
+    };
+    "handlers.DistributedErrorResponse": {
+      code?: string;
+      error?: string;
+      timestamp?: string;
+    };
+    "handlers.DownloadResponse": {
+      data?: unknown;
+      error?: string;
+      size?: number;
+      success?: boolean;
+      url?: string;
+    };
+    /** @description Error response with error message */
+    "handlers.ErrorResponse": {
+      error?: string;
+    };
+    "handlers.FileInfoResponse": {
+      error?: string;
+      exists?: boolean;
+      key?: string;
+      size?: number;
+      success?: boolean;
+    };
+    /** @description Health check response with service status */
+    "handlers.HealthResponse": {
+      /** @example tracertm-backend */
+      service?: string;
+      /** @example ok */
+      status?: string;
+    };
+    "handlers.ImpactAnalysisRequest": {
+      item_ids: string[];
+    };
+    "handlers.IndexDocumentationRequest": {
+      content?: string;
+      file_path?: string;
+      /** @description markdown, rst, html, plaintext */
+      format?: string;
+      metadata?: {
+        [key: string]: unknown;
+      };
+      project_id?: string;
+      source_url?: string;
+      title?: string;
+    };
+    "handlers.ListDistributedOperationsResponse": {
+      operations?: unknown[];
+      project_id?: string;
+      status?: string;
+      total?: number;
+    };
+    "handlers.LoginRequest": {
+      email: string;
+      password: string;
+    };
+    "handlers.OperationResults": {
+      aggregated_result?: {
+        [key: string]: unknown;
+      };
+      completed_at?: string;
+      operation_id?: string;
+      participant_results?: {
+        [key: string]: {
+          [key: string]: unknown;
+        };
+      };
+      status?: string;
+    };
+    "handlers.OperationStatusResponse": {
+      message?: string;
+      operation_id?: string;
+      status?: string;
+      time?: string;
+    };
+    "handlers.ParticipantResultResponse": {
+      agent_id?: string;
+      message?: string;
+      operation_id?: string;
+      status?: string;
+      time?: string;
+    };
+    "handlers.ParticipantStatus": {
+      agent_id?: string;
+      operation_id?: string;
+      progress?: number;
+      status?: string;
+      updated_at?: string;
+    };
+    "handlers.PivotItem": {
+      confidence?: number;
+      item?: components["schemas"]["handlers.PivotItemInfo"];
+      item_id?: string;
+      item_type?: string;
+      link_type?: string;
+      path_depth?: number;
+      perspective?: string;
+      related_canonical_id?: string;
+      status?: string;
+      title?: string;
+    };
+    "handlers.PivotItemInfo": {
+      created_at?: string;
+      description?: string;
+      id?: string;
+      item_type?: string;
+      metadata?: {
+        [key: string]: unknown;
+      };
+      priority?: number;
+      project_id?: string;
+      status?: string;
+      title?: string;
+      updated_at?: string;
+    };
+    "handlers.PivotNavigationRequest": {
+      group_by_perspective?: boolean;
+      include_metadata?: boolean;
+      max_depth?: number;
+      perspectives?: string[];
+    };
+    "handlers.PivotNavigationResponse": {
+      all_equivalents?: components["schemas"]["handlers.PivotItem"][];
+      canonical_concept?: components["schemas"]["handlers.CanonicalConceptInfo"];
+      equivalents_by_perspective?: {
+        [key: string]: components["schemas"]["handlers.PivotItem"][];
+      };
+      link_count?: number;
+      perspective_count?: number;
+      source_item?: components["schemas"]["handlers.PivotItemInfo"];
+      source_item_id?: string;
+    };
+    "handlers.PivotTarget": {
+      confidence?: number;
+      item_id?: string;
+      item_type?: string;
+      perspective?: string;
+      title?: string;
+    };
+    "handlers.PivotTargetsResponse": {
+      item_id?: string;
+      item_type?: string;
+      perspectives?: string[];
+      status?: string;
+      targets?: components["schemas"]["handlers.PivotTarget"][];
+      title?: string;
+    };
+    "handlers.PresignedURLRequest": {
+      contentType?: string;
+      expiryHours?: number;
+      key?: string;
+      /** @description "GET" or "PUT" */
+      method?: string;
+    };
+    "handlers.PresignedURLResponse": {
+      error?: string;
+      expiresAt?: string;
+      method?: string;
+      success?: boolean;
+      url?: string;
+    };
+    "handlers.StreamChatRequest": {
+      context?: {
+        [key: string]: unknown;
+      };
+      message: string;
+      project_id: string;
+      user_id: string;
+    };
+    "handlers.SubmitParticipantResultRequest": {
+      /** @example agent-1 */
+      agent_id?: string;
+      /** @example op-123 */
+      operation_id?: string;
+      result?: {
+        [key: string]: unknown;
+      };
+    };
+    "handlers.UpdateOperationStatusRequest": {
+      /** @example in_progress */
+      status?: string;
+    };
+    "handlers.UploadResponse": {
+      contentType?: string;
+      error?: string;
+      key?: string;
+      size?: number;
+      success?: boolean;
+      thumbnailKey?: string;
+      uploadedAt?: string;
+      url?: string;
+    };
+    "handlers.VersionComparisonPair": {
+      fromVersionId: string;
+      toVersionId: string;
+    };
+    "journey.AddStepRequest": {
+      itemId: string;
+      order?: number;
+    };
+    "journey.CreateJourneyRequest": {
+      description?: string;
+      itemIds?: string[];
+      metadata?: {
+        [key: string]: unknown;
+      };
+      name: string;
+      type: string;
+    };
+    "journey.DerivedJourney": {
+      color?: string;
+      created_at?: string;
+      id?: string;
+      links?: components["schemas"]["journey.JourneyLink"][];
+      metadata?: components["schemas"]["journey.Metadata"];
+      name?: string;
+      node_ids?: string[];
+      project_id?: string;
+      score?: number;
+      type?: components["schemas"]["journey.JourneyType"];
+      updated_at?: string;
+    };
+    "journey.DetectJourneysRequest": {
+      end_node_id?: string;
+      max_results?: number;
+      min_score?: number;
+      project_id: string;
+      start_node_id?: string;
+      types?: components["schemas"]["journey.JourneyType"][];
+    };
+    "journey.DetectJourneysResponse": {
+      detected_at?: string;
+      journeys?: components["schemas"]["journey.DerivedJourney"][];
+      stats?: components["schemas"]["journey.DetectionStats"];
+    };
+    "journey.DetectionStats": {
+      average_path_length?: number;
+      average_score?: number;
+      by_type?: {
+        [key: string]: number;
+      };
+      /** @description milliseconds */
+      detection_time_ms?: number;
+      total_paths?: number;
+      valid_paths?: number;
+    };
+    "journey.ErrorResponse": {
+      error?: string;
+    };
+    "journey.JourneyLink": {
+      source_id?: string;
+      target_id?: string;
+      type?: string;
+      weight?: number;
+    };
+    "journey.JourneyStats": {
+      /** Format: float64 */
+      averagePathLength?: number;
+      /** Format: float64 */
+      averageScore?: number;
+      byType?: {
+        [key: string]: number;
+      };
+      commonIntermediates?: string[];
+      mostCommonEnd?: string;
+      mostCommonStart?: string;
+      timeRange?: {
+        end?: string;
+        start?: string;
+      };
+      totalJourneys?: number;
+    };
+    "journey.JourneyStep": {
+      description?: string;
+      duration?: number;
+      itemId?: string;
+      order?: number;
+    };
+    /** @enum {string} */
+    "journey.JourneyType": "user_flow" | "data_path" | "call_chain" | "test_trace";
+    "journey.ListJourneysResponse": {
+      data?: components["schemas"]["journey.DerivedJourney"][];
+      has_more?: boolean;
+      limit?: number;
+      offset?: number;
+      total?: number;
+    };
+    "journey.Metadata": {
+      /** @description in milliseconds */
+      average_time?: number;
+      completeness?: number;
+      custom_data?: {
+        [key: string]: unknown;
+      };
+      description?: string;
+      frequency?: number;
+      importance?: number;
+      last_detected?: string;
+      tags?: string[];
+      user_count?: number;
+      variations?: number;
+    };
+    "journey.UpdateJourneyRequest": {
+      description?: string;
+      itemIds?: string[];
+      metadata?: {
+        [key: string]: unknown;
+      };
+      name?: string;
+      type?: string;
+    };
+    "journey.VisualizationData": {
+      edges?: components["schemas"]["journey.VisualizationEdge"][];
+      journey?: components["schemas"]["journey.DerivedJourney"];
+      nodes?: {
+        [key: string]: components["schemas"]["journey.VisualizationNode"];
+      };
+    };
+    "journey.VisualizationEdge": {
+      source?: string;
+      target?: string;
+      type?: string;
+      weight?: number;
+    };
+    "journey.VisualizationNode": {
+      color?: string;
+      id?: string;
+      label?: string;
+      size?: number;
+      type?: string;
+    };
+    /** @enum {string} */
+    "temporal.DiffChangeType": "added" | "removed" | "modified";
+    "temporal.DiffItem": {
+      changeType?: components["schemas"]["temporal.DiffChangeType"];
+      fieldChanges?: components["schemas"]["temporal.FieldChange"][];
+      itemId?: string;
+      significance?: components["schemas"]["temporal.DiffSignificance"];
+      title?: string;
+      type?: string;
+    };
+    /** @enum {string} */
+    "temporal.DiffSignificance": "minor" | "moderate" | "major" | "breaking";
+    "temporal.DiffStatistics": {
+      addedCount?: number;
+      modifiedCount?: number;
+      removedCount?: number;
+      totalChanges?: number;
+      unchangedCount?: number;
+    };
+    "temporal.FieldChange": {
+      /** @description added, removed, modified */
+      changeType?: string;
+      field?: string;
+      newValue?: unknown;
+      oldValue?: unknown;
+    };
+    "temporal.VersionDiff": {
+      added?: components["schemas"]["temporal.DiffItem"][];
+      computedAt?: string;
+      modified?: components["schemas"]["temporal.DiffItem"][];
+      removed?: components["schemas"]["temporal.DiffItem"][];
+      stats?: components["schemas"]["temporal.DiffStatistics"];
+      unchanged?: number;
+      versionA?: string;
+      versionANumber?: number;
+      versionB?: string;
+      versionBNumber?: number;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 
 export type $defs = Record<string, never>;
 
 export type external = Record<string, never>;
 
-export interface operations {
-	/**
-	 * Health Check
-	 * @description Check the health status of the API service
-	 */
-	healthCheck: {
-		responses: {
-			/** @description Service is healthy */
-			200: {
-				content: {
-					"application/json": components["schemas"]["HealthResponse"];
-				};
-			};
-		};
-	};
-	/**
-	 * List Items
-	 * @description Retrieve a paginated list of items in a project
-	 */
-	listItems: {
-		parameters: {
-			query: {
-				/** @description Unique identifier for the project */
-				project_id: string;
-				/** @description Number of items to skip (for pagination) */
-				skip?: number;
-				/** @description Maximum number of items to return */
-				limit?: number;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved items */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ItemListResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			500: components["responses"]["InternalServerError"];
-		};
-	};
-	/**
-	 * Get Item
-	 * @description Retrieve detailed information about a specific item
-	 */
-	getItem: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the item */
-				item_id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved item */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ItemDetailResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * List Links
-	 * @description Retrieve a paginated list of links between items in a project
-	 */
-	listLinks: {
-		parameters: {
-			query: {
-				/** @description Unique identifier for the project */
-				project_id: string;
-				skip?: number;
-				limit?: number;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved links */
-			200: {
-				content: {
-					"application/json": components["schemas"]["LinkListResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-		};
-	};
-	/**
-	 * Impact Analysis
-	 * @description Analyze the impact of changes to a specific item, including all downstream dependencies
-	 */
-	getImpactAnalysis: {
-		parameters: {
-			query: {
-				/** @description Unique identifier for the project */
-				project_id: string;
-			};
-			path: {
-				/** @description Unique identifier for the item to analyze */
-				item_id: string;
-			};
-		};
-		responses: {
-			/** @description Impact analysis completed successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ImpactAnalysisResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Detect Cycles
-	 * @description Detect circular dependencies in the project's dependency graph
-	 */
-	detectCycles: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the project */
-				project_id: string;
-			};
-		};
-		responses: {
-			/** @description Cycle detection completed successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["CycleDetectionResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Find Shortest Path
-	 * @description Find the shortest dependency path between two items
-	 */
-	findShortestPath: {
-		parameters: {
-			query: {
-				/** @description Unique identifier for the project */
-				project_id: string;
-				/** @description Starting item ID */
-				source_id: string;
-				/** @description Target item ID */
-				target_id: string;
-			};
-		};
-		responses: {
-			/** @description Path search completed successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ShortestPathResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * List Equivalences
-	 * @description Retrieve all equivalence relationships in a project
-	 */
-	listEquivalences: {
-		parameters: {
-			query?: {
-				/** @description Filter by equivalence status */
-				status?: "suggested" | "confirmed" | "rejected";
-				/** @description Number of items to skip */
-				skip?: number;
-				/** @description Maximum number of items to return */
-				limit?: number;
-			};
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved equivalences */
-			200: {
-				content: {
-					"application/json": components["schemas"]["EquivalenceListResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Detect Equivalences
-	 * @description Automatically detect potential equivalent items across different views and dimensions
-	 */
-	detectEquivalences: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		requestBody: {
-			content: {
-				"application/json": components["schemas"]["DetectEquivalencesRequest"];
-			};
-		};
-		responses: {
-			/** @description Equivalence detection completed successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["EquivalenceDetectionResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Confirm Equivalence
-	 * @description Confirm a suggested equivalence relationship between items
-	 */
-	confirmEquivalence: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the equivalence */
-				id: string;
-			};
-		};
-		requestBody?: {
-			content: {
-				"application/json": components["schemas"]["ConfirmEquivalenceRequest"];
-			};
-		};
-		responses: {
-			/** @description Equivalence confirmed successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["EquivalenceResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Reject Equivalence
-	 * @description Reject a suggested equivalence relationship between items
-	 */
-	rejectEquivalence: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the equivalence */
-				id: string;
-			};
-		};
-		requestBody?: {
-			content: {
-				"application/json": components["schemas"]["RejectEquivalenceRequest"];
-			};
-		};
-		responses: {
-			/** @description Equivalence rejected successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["EquivalenceResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * List Canonical Concepts
-	 * @description Retrieve all canonical concepts in a project
-	 */
-	listCanonicalConcepts: {
-		parameters: {
-			query?: {
-				/** @description Number of items to skip */
-				skip?: number;
-				/** @description Maximum number of items to return */
-				limit?: number;
-			};
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved canonical concepts */
-			200: {
-				content: {
-					"application/json": components["schemas"]["CanonicalConceptListResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Create Canonical Concept
-	 * @description Create a new canonical concept from equivalent items
-	 */
-	createCanonicalConcept: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		requestBody: {
-			content: {
-				"application/json": components["schemas"]["CreateCanonicalConceptRequest"];
-			};
-		};
-		responses: {
-			/** @description Canonical concept created successfully */
-			201: {
-				content: {
-					"application/json": components["schemas"]["CanonicalConceptResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Get Canonical Concept
-	 * @description Retrieve detailed information about a specific canonical concept
-	 */
-	getCanonicalConcept: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the canonical concept */
-				id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved canonical concept */
-			200: {
-				content: {
-					"application/json": components["schemas"]["CanonicalConceptResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Get Concept Projections
-	 * @description Retrieve all projections of a canonical concept across different dimensions
-	 */
-	getConceptProjections: {
-		parameters: {
-			query?: {
-				/** @description Filter projections by specific dimension */
-				dimension?: string;
-			};
-			path: {
-				/** @description Unique identifier for the canonical concept */
-				id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved projections */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ProjectionListResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Pivot Item to Canonical Concept
-	 * @description Convert an item to a canonical concept projection, updating cross-dimensional references
-	 */
-	pivotItemToCanonical: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the item to pivot */
-				id: string;
-			};
-		};
-		requestBody: {
-			content: {
-				"application/json": components["schemas"]["PivotItemRequest"];
-			};
-		};
-		responses: {
-			/** @description Item pivoted successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["PivotItemResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * List Journeys
-	 * @description Retrieve all journeys in a project
-	 */
-	listJourneys: {
-		parameters: {
-			query?: {
-				/** @description Filter by journey type */
-				type?: "user" | "system" | "data" | "integration";
-				/** @description Number of items to skip */
-				skip?: number;
-				/** @description Maximum number of items to return */
-				limit?: number;
-			};
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved journeys */
-			200: {
-				content: {
-					"application/json": components["schemas"]["JourneyListResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Create Journey
-	 * @description Create a new journey mapping requirements through a process
-	 */
-	createJourney: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		requestBody: {
-			content: {
-				"application/json": components["schemas"]["CreateJourneyRequest"];
-			};
-		};
-		responses: {
-			/** @description Journey created successfully */
-			201: {
-				content: {
-					"application/json": components["schemas"]["JourneyResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Detect Journeys
-	 * @description Automatically detect potential journeys from requirement traces
-	 */
-	detectJourneys: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		requestBody: {
-			content: {
-				"application/json": components["schemas"]["DetectJourneysRequest"];
-			};
-		};
-		responses: {
-			/** @description Journey detection completed successfully */
-			200: {
-				content: {
-					"application/json": components["schemas"]["JourneyDetectionResponse"];
-				};
-			};
-			400: components["responses"]["BadRequest"];
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Get Journey
-	 * @description Retrieve detailed information about a specific journey
-	 */
-	getJourney: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the journey */
-				id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved journey */
-			200: {
-				content: {
-					"application/json": components["schemas"]["JourneyResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * List Component Libraries
-	 * @description Retrieve all component libraries in a project
-	 */
-	listComponentLibraries: {
-		parameters: {
-			query?: {
-				/** @description Number of items to skip */
-				skip?: number;
-				/** @description Maximum number of items to return */
-				limit?: number;
-			};
-			path: {
-				/** @description Unique identifier for the project */
-				projectId: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved component libraries */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ComponentLibraryListResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * List Components in Library
-	 * @description Retrieve all components in a specific library
-	 */
-	listLibraryComponents: {
-		parameters: {
-			query?: {
-				/** @description Filter by component category */
-				category?: string;
-				/** @description Number of items to skip */
-				skip?: number;
-				/** @description Maximum number of items to return */
-				limit?: number;
-			};
-			path: {
-				/** @description Unique identifier for the component library */
-				id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved components */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ComponentListResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Get Component Usage
-	 * @description Retrieve usage information for a specific component
-	 */
-	getComponentUsage: {
-		parameters: {
-			path: {
-				/** @description Unique identifier for the component */
-				id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved component usage */
-			200: {
-				content: {
-					"application/json": components["schemas"]["ComponentUsageResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-	/**
-	 * Get Design Tokens
-	 * @description Retrieve design tokens for a component library
-	 */
-	getDesignTokens: {
-		parameters: {
-			query?: {
-				/** @description Filter tokens by category (colors, typography, spacing, etc.) */
-				category?: string;
-			};
-			path: {
-				/** @description Unique identifier for the component library */
-				id: string;
-			};
-		};
-		responses: {
-			/** @description Successfully retrieved design tokens */
-			200: {
-				content: {
-					"application/json": components["schemas"]["DesignTokenResponse"];
-				};
-			};
-			401: components["responses"]["Unauthorized"];
-			404: components["responses"]["NotFound"];
-		};
-	};
-}
+export type operations = Record<string, never>;

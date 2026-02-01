@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
-	TestCoverage,
-	CoverageType,
-	CoverageStatus,
 	CoverageActivity,
-	TraceabilityMatrix,
 	CoverageGapsResponse,
 	CoverageStats,
+	CoverageStatus,
+	CoverageType,
+	TestCoverage,
+	TraceabilityMatrix,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformCoverage(data: any): TestCoverage {
@@ -61,6 +62,7 @@ async function fetchCoverages(
 	const res = await fetch(`${API_URL}/api/v1/coverage?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -75,7 +77,9 @@ async function fetchCoverages(
 }
 
 async function fetchCoverage(id: string): Promise<TestCoverage> {
-	const res = await fetch(`${API_URL}/api/v1/coverage/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/coverage/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch coverage");
 	const data = await res.json();
 	return transformCoverage(data);
@@ -108,7 +112,7 @@ async function createCoverage(
 
 	const res = await fetch(`${API_URL}/api/v1/coverage?${params}`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 	});
 	if (!res.ok) throw new Error("Failed to create coverage");
 	const result = await res.json();
@@ -140,7 +144,7 @@ async function updateCoverage(
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}?${params}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 	});
 	if (!res.ok) throw new Error("Failed to update coverage");
 	return res.json();
@@ -149,6 +153,7 @@ async function updateCoverage(
 async function deleteCoverage(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete coverage");
 }
@@ -162,6 +167,7 @@ async function verifyCoverage(
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}/verify?${params}`, {
 		method: "POST",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to verify coverage");
 	const result = await res.json();
@@ -180,7 +186,9 @@ async function fetchTraceabilityMatrix(
 	params.set("project_id", projectId);
 	if (requirementView) params.set("requirement_view", requirementView);
 
-	const res = await fetch(`${API_URL}/api/v1/coverage/matrix?${params}`);
+	const res = await fetch(`${API_URL}/api/v1/coverage/matrix?${params}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch traceability matrix");
 	const data = await res.json();
 
@@ -217,7 +225,9 @@ async function fetchCoverageGaps(
 	params.set("project_id", projectId);
 	if (requirementView) params.set("requirement_view", requirementView);
 
-	const res = await fetch(`${API_URL}/api/v1/coverage/gaps?${params}`);
+	const res = await fetch(`${API_URL}/api/v1/coverage/gaps?${params}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch coverage gaps");
 	const data = await res.json();
 
@@ -239,6 +249,7 @@ async function fetchCoverageGaps(
 async function fetchCoverageStats(projectId: string): Promise<CoverageStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/coverage/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch coverage stats");
 	const data = await res.json();
@@ -259,6 +270,7 @@ async function fetchCoverageActivities(
 ): Promise<{ coverageId: string; activities: CoverageActivity[] }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/coverage/${coverageId}/activities?limit=${limit}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();

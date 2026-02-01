@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import type { Item, Link } from "@tracertm/types";
+import { describe, expect, it } from "vitest";
 import { performCrossPerspectiveSearch } from "../../components/graph/hooks/useCrossPerspectiveSearch";
 
 describe("useCrossPerspectiveSearch", () => {

@@ -29,12 +29,12 @@ The TraceRTM MCP server (`tracertm-mcp`) is a FastMCP 3.0.0b1 implementation tha
 
 ### Direct Execution
 ```bash
-python scripts/mcp/tracertm_mcp_server.py
+python -m tracertm.mcp
 ```
 
 ### Via FastMCP CLI
 ```bash
-fastmcp run scripts/mcp/tracertm_mcp_server.py
+fastmcp run src/tracertm/mcp/server.py
 ```
 
 ### Configuration
@@ -105,4 +105,3 @@ MCP-specific tests (Phase 2) will cover tool invocation with temp SQLite DB.
 - **Tools Summary:** `scripts/mcp/TRACERTM_MCP_TOOLS_SUMMARY.md`
 - **TraceRTM PRD:** `docs/PRD.md`
 - **Architecture:** `docs/architecture.md`
-

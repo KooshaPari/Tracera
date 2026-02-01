@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
 	WebhookIntegration,
-	WebhookProvider,
-	WebhookStatus,
 	WebhookLog,
+	WebhookProvider,
 	WebhookStats,
+	WebhookStatus,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformWebhook(data: any): WebhookIntegration {
@@ -86,6 +87,7 @@ async function fetchWebhooks(
 	const res = await fetch(`${API_URL}/api/v1/webhooks?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -100,7 +102,9 @@ async function fetchWebhooks(
 }
 
 async function fetchWebhook(id: string): Promise<WebhookIntegration> {
-	const res = await fetch(`${API_URL}/api/v1/webhooks/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/webhooks/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch webhook");
 	const data = await res.json();
 	return transformWebhook(data);
@@ -128,7 +132,7 @@ async function createWebhook(
 ): Promise<WebhookIntegration> {
 	const res = await fetch(`${API_URL}/api/v1/webhooks`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			project_id: data.projectId,
 			name: data.name,
@@ -174,31 +178,30 @@ async function updateWebhook(
 	data: UpdateWebhookData,
 ): Promise<WebhookIntegration> {
 	const payload: Record<string, unknown> = {};
-	if (data.name !== undefined) payload["name"] = data.name;
-	if (data.description !== undefined) payload["description"] = data.description;
+	if (data.name !== undefined) payload.name = data.name;
+	if (data.description !== undefined) payload.description = data.description;
 	if (data.enabledEvents !== undefined)
-		payload["enabled_events"] = data.enabledEvents;
+		payload.enabled_events = data.enabledEvents;
 	if (data.eventFilters !== undefined)
-		payload["event_filters"] = data.eventFilters;
-	if (data.callbackUrl !== undefined)
-		payload["callback_url"] = data.callbackUrl;
+		payload.event_filters = data.eventFilters;
+	if (data.callbackUrl !== undefined) payload.callback_url = data.callbackUrl;
 	if (data.callbackHeaders !== undefined)
-		payload["callback_headers"] = data.callbackHeaders;
+		payload.callback_headers = data.callbackHeaders;
 	if (data.defaultSuiteId !== undefined)
-		payload["default_suite_id"] = data.defaultSuiteId;
+		payload.default_suite_id = data.defaultSuiteId;
 	if (data.rateLimitPerMinute !== undefined)
-		payload["rate_limit_per_minute"] = data.rateLimitPerMinute;
+		payload.rate_limit_per_minute = data.rateLimitPerMinute;
 	if (data.autoCreateRun !== undefined)
-		payload["auto_create_run"] = data.autoCreateRun;
+		payload.auto_create_run = data.autoCreateRun;
 	if (data.autoCompleteRun !== undefined)
-		payload["auto_complete_run"] = data.autoCompleteRun;
+		payload.auto_complete_run = data.autoCompleteRun;
 	if (data.verifySignatures !== undefined)
-		payload["verify_signatures"] = data.verifySignatures;
-	if (data.metadata !== undefined) payload["metadata"] = data.metadata;
+		payload.verify_signatures = data.verifySignatures;
+	if (data.metadata !== undefined) payload.metadata = data.metadata;
 
 	const res = await fetch(`${API_URL}/api/v1/webhooks/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify(payload),
 	});
 	if (!res.ok) {
@@ -215,7 +218,7 @@ async function setWebhookStatus(
 ): Promise<{ id: string; status: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/webhooks/${id}/status`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({ status }),
 	});
 	if (!res.ok) {
@@ -232,6 +235,7 @@ async function regenerateSecret(
 		`${API_URL}/api/v1/webhooks/${id}/regenerate-secret`,
 		{
 			method: "POST",
+			headers: getAuthHeaders(),
 		},
 	);
 	if (!res.ok) {
@@ -249,6 +253,7 @@ async function regenerateSecret(
 async function deleteWebhook(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/webhooks/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -276,6 +281,7 @@ async function fetchWebhookLogs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/webhooks/${filters.webhookId}/logs?${params}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch webhook logs");
 	const data = await res.json();
@@ -288,6 +294,7 @@ async function fetchWebhookLogs(
 async function fetchWebhookStats(projectId: string): Promise<WebhookStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/webhooks/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch webhook stats");
 	const data = await res.json();

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 from sqlalchemy import func
 
@@ -31,7 +30,7 @@ from tracertm.services.impact_analysis_service import ImpactAnalysisService
 async def find_gaps(
     from_view: str,
     to_view: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Find items in from_view that have no links to items in to_view.
 
@@ -81,7 +80,7 @@ async def find_gaps(
 async def get_trace_matrix(
     source_view: str | None = None,
     target_view: str | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Generate a traceability matrix showing links between views.
 
@@ -118,7 +117,7 @@ async def analyze_impact(
     item_id: str,
     max_depth: int = 5,
     link_types: list[str] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Analyze downstream impact of changes to an item.
 
@@ -162,7 +161,7 @@ async def analyze_impact(
 async def analyze_reverse_impact(
     item_id: str,
     max_depth: int = 5,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Analyze upstream dependencies of an item.
 
@@ -201,7 +200,7 @@ async def analyze_reverse_impact(
 
 @mcp.tool(description="Get project health metrics")
 async def project_health(
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get high-level health metrics for the current project.
 

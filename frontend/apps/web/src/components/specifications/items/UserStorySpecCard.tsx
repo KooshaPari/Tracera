@@ -5,7 +5,6 @@
  * story points, and definition of done tracking.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -28,6 +27,7 @@ import {
 	Target,
 } from "lucide-react";
 import type { UserStorySpec } from "@/hooks/useItemSpecs";
+import { cn } from "@/lib/utils";
 
 interface UserStorySpecCardProps {
 	spec: UserStorySpec;

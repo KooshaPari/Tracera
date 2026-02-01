@@ -78,16 +78,16 @@ export const Default: Story = {
 		projectId: "proj-123",
 		branches: mockBranches,
 		currentBranchId: "main",
-		onBranchChange: (branchId) => console.log("Branch changed to:", branchId),
+		onBranchChange: (branchId) => logger.info("Branch changed to:", branchId),
 	},
 };
 
 export const WithActions: Story = {
 	args: {
 		...Default.args,
-		onBranchCreate: () => console.log("Create branch requested"),
+		onBranchCreate: () => logger.info("Create branch requested"),
 		onMergeRequest: (source, target) =>
-			console.log(`Merge ${source} into ${target}`),
+			logger.info(`Merge ${source} into ${target}`),
 	},
 };
 

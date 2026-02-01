@@ -1,0 +1,28 @@
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { EquivalenceManager } from "@/components/EquivalenceManager";
+import { requireAuth } from "@/lib/route-guards";
+
+/**
+ * Equivalence Management View
+ * Allows users to view, export, and import equivalence mappings
+ */
+export function EquivalenceView() {
+	const { projectId } = useParams({ from: "/projects/$projectId/equivalence" });
+
+	return (
+		<div className="flex-1 p-6 space-y-6">
+			<EquivalenceManager projectId={projectId} />
+		</div>
+	);
+}
+
+export const EQUIVALENCE_VIEW = EquivalenceView;
+
+export const Route = createFileRoute("/projects/$projectId/equivalence")({
+	beforeLoad: () => requireAuth(),
+	component: EquivalenceView,
+	loader: async () => {
+		// Equivalence data is loaded in component
+		return {};
+	},
+});

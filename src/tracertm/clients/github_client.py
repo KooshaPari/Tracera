@@ -1,4 +1,4 @@
-"""GitHub API client with rate limiting and error handling."""
+"""GitHub API client with rate limiting, error handling, and wait+retry."""
 
 import asyncio
 from datetime import datetime
@@ -8,6 +8,12 @@ import httpx
 import jwt
 import time
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from tenacity import (
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 
 class GitHubClientError(Exception):
@@ -143,6 +149,32 @@ class GitHubClient:
             await self._client.aclose()
             self._client = None
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception(
+            lambda e: isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
+            or (
+                isinstance(e, httpx.HTTPStatusError)
+                and e.response.status_code >= 500
+            )
+        ),
+        reraise=True,
+    )
+    async def _request_once(
+        self,
+        method: str,
+        path: str,
+        params: dict | None = None,
+        json: dict | None = None,
+    ) -> httpx.Response:
+        """Perform one request; raises on 5xx so tenacity can retry."""
+        client = await self._get_client()
+        response = await client.request(method, path, params=params, json=json)
+        if response.status_code >= 500:
+            response.raise_for_status()
+        return response
+
     async def _request(
         self,
         method: str,
@@ -150,10 +182,8 @@ class GitHubClient:
         params: dict | None = None,
         json: dict | None = None,
     ) -> Any:
-        """Make an authenticated request to GitHub API."""
-        client = await self._get_client()
-
-        response = await client.request(method, path, params=params, json=json)
+        """Make an authenticated request to GitHub API (with wait+retry on 5xx/network)."""
+        response = await self._request_once(method, path, params=params, json=json)
 
         # Handle rate limiting
         if response.status_code == 403:

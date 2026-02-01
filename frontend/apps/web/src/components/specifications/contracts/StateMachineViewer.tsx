@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Card } from "@tracertm/ui";
-import { Circle, Play } from "lucide-react";
 import type { ContractTransition } from "@tracertm/types";
+import { Card } from "@tracertm/ui";
+import { motion } from "framer-motion";
+import { Circle, Play } from "lucide-react";
+import { useState } from "react";
 
 interface StateMachineViewerProps {
 	states?: string[];

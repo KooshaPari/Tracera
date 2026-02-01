@@ -26,11 +26,13 @@ def upgrade() -> None:
 
     # Enable pg_trgm for full-text search
     op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+    # Enable pgcrypto for gen_random_uuid()
+    op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
     # Create projects table
     op.create_table(
         'projects',
-        sa.Column('id', sa.String(255), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, server_default=sa.text("gen_random_uuid()")),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('project_metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default='{}'),
@@ -44,8 +46,8 @@ def upgrade() -> None:
     # Create items table
     op.create_table(
         'items',
-        sa.Column('id', sa.String(255), nullable=False),
-        sa.Column('project_id', sa.String(255), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, server_default=sa.text("gen_random_uuid()")),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('title', sa.String(500), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('view', sa.String(50), nullable=False),
@@ -53,7 +55,7 @@ def upgrade() -> None:
         sa.Column('status', sa.String(50), nullable=False, server_default='todo'),
         sa.Column('priority', sa.String(50), nullable=False, server_default='medium'),
         sa.Column('owner', sa.String(255), nullable=True),
-        sa.Column('parent_id', sa.String(255), nullable=True),
+        sa.Column('parent_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('item_metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default='{}'),
         sa.Column('version', sa.Integer(), nullable=False, server_default='1'),
         sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
@@ -88,10 +90,10 @@ def upgrade() -> None:
     # Create links table
     op.create_table(
         'links',
-        sa.Column('id', sa.String(255), nullable=False),
-        sa.Column('project_id', sa.String(255), nullable=False),
-        sa.Column('source_item_id', sa.String(255), nullable=False),
-        sa.Column('target_item_id', sa.String(255), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, server_default=sa.text("gen_random_uuid()")),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('source_item_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('target_item_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('link_type', sa.String(50), nullable=False),
         sa.Column('link_metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default='{}'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
@@ -113,8 +115,8 @@ def upgrade() -> None:
     # Create agents table
     op.create_table(
         'agents',
-        sa.Column('id', sa.String(255), nullable=False),
-        sa.Column('project_id', sa.String(255), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, server_default=sa.text("gen_random_uuid()")),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('agent_type', sa.String(50), nullable=False),
         sa.Column('status', sa.String(50), nullable=False, server_default='active'),
@@ -133,11 +135,11 @@ def upgrade() -> None:
     # Create agent_events table
     op.create_table(
         'agent_events',
-        sa.Column('id', sa.String(255), nullable=False),
-        sa.Column('project_id', sa.String(255), nullable=False),
-        sa.Column('agent_id', sa.String(255), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, server_default=sa.text("gen_random_uuid()")),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agent_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('event_type', sa.String(50), nullable=False),
-        sa.Column('item_id', sa.String(255), nullable=True),
+        sa.Column('item_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('event_data', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),

@@ -1,3 +1,5 @@
+import type { TypedItem } from "@tracertm/types";
+import { Link } from "@tanstack/react-router";
 import {
 	Check,
 	ChevronDown,
@@ -7,8 +9,14 @@ import {
 	Play,
 } from "lucide-react";
 import { useState } from "react";
+import { useItems } from "@/hooks/useItems";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+interface ApiViewProps {
+	projectId: string;
+}
 
 interface Endpoint {
 	id: string;
@@ -165,9 +173,15 @@ const statusBadge: Record<string, string> = {
 	deprecated: "bg-red-500",
 };
 
-export function ApiView() {
+export function ApiView({ projectId }: ApiViewProps) {
 	const [expanded, setExpanded] = useState<Set<string>>(new Set(["1"]));
 	const [copied, setCopied] = useState<string | null>(null);
+
+	const { data: projectData, isLoading: projectLoading } = useItems({
+		projectId,
+		view: "api",
+	});
+	const projectItems = projectData?.items ?? [];
 
 	const toggle = (id: string) => {
 		const next = new Set(expanded);
@@ -188,26 +202,58 @@ export function ApiView() {
 	};
 
 	return (
-		<div className="space-y-4">
-			<div className="flex items-center justify-between">
-				<h3 className="text-lg font-semibold">API View</h3>
-				<div className="flex gap-2 text-xs">
-					<span className="flex items-center gap-1">
-						<span
-							className={`h-2 w-2 rounded-full ${statusBadge["implemented"] ?? ""}`}
-						/>{" "}
-						Implemented
-					</span>
-					<span className="flex items-center gap-1">
-						<span
-							className={`h-2 w-2 rounded-full ${statusBadge["planned"] ?? ""}`}
-						/>{" "}
-						Planned
-					</span>
-				</div>
+		<div className="flex-1 space-y-6 p-6">
+			<div>
+				<h1 className="text-3xl font-bold tracking-tight">API Endpoints</h1>
+				<p className="text-muted-foreground">
+					REST API contracts and specifications for this project
+				</p>
 			</div>
 
-			<div className="rounded-lg border">
+			{projectLoading ? (
+				<div className="space-y-2">
+					<Skeleton className="h-10 w-full rounded-lg" />
+					<Skeleton className="h-10 w-full rounded-lg" />
+					<Skeleton className="h-10 w-full rounded-lg" />
+				</div>
+			) : projectItems.length > 0 ? (
+				<div className="space-y-2">
+					<h2 className="text-lg font-semibold">Project API items</h2>
+					<div className="rounded-lg border">
+						{projectItems.map((item: TypedItem) => {
+							const method =
+								(item.metadata as { method?: string })?.method ?? "GET";
+							const path = item.title ?? item.id;
+							return (
+								<Link
+									key={item.id}
+									to="/projects/$projectId/views/$viewType/$itemId"
+									params={{
+										projectId,
+										viewType: "api",
+										itemId: item.id,
+									}}
+									className="flex items-center gap-3 border-b last:border-b-0 p-3 hover:bg-muted/50"
+								>
+									<span
+										className={`rounded px-2 py-0.5 text-xs font-mono font-bold ${methodColors[method as HttpMethod] ?? methodColors.GET}`}
+									>
+										{method}
+									</span>
+									<code className="text-sm">{path}</code>
+									<span className="flex-1 truncate text-sm text-muted-foreground">
+										{item.description ?? item.type}
+									</span>
+								</Link>
+							);
+						})}
+					</div>
+				</div>
+			) : null}
+
+			<div className="space-y-2">
+				<h2 className="text-lg font-semibold">Reference</h2>
+				<div className="rounded-lg border">
 				{apiGroups.map((group) => (
 					<div key={group.id} className="border-b last:border-b-0">
 						<div
@@ -270,6 +316,7 @@ export function ApiView() {
 						)}
 					</div>
 				))}
+			</div>
 			</div>
 		</div>
 	);

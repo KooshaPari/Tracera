@@ -1,7 +1,6 @@
-import { Badge, Button, Card } from "@tracertm/ui";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Badge, Button, Card, cn } from "@tracertm/ui";
+import { Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@tracertm/ui";
 
 export interface TableExample {
 	[key: string]: string;
@@ -190,7 +189,6 @@ export function ExamplesTable({
 											{editingCell?.rowIndex === rowIndex &&
 											editingCell?.colName === col ? (
 												<input
-													autoFocus
 													type="text"
 													value={editValue}
 													onChange={(e) => setEditValue(e.target.value)}

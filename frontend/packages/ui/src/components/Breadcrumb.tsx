@@ -1,6 +1,6 @@
-import * as React from "react";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
+import { ChevronRight, MoreHorizontal } from "lucide-react";
+import * as React from "react";
 import { cn } from "../lib/utils";
 
 const Breadcrumb = React.forwardRef<
@@ -49,7 +49,7 @@ const BreadcrumbLink = React.forwardRef<
 	return (
 		<Comp
 			ref={ref}
-			className={cn("transition-colors hover:text-foreground", className)}
+			className={cn("transition-all duration-200 ease-out hover:text-foreground hover:underline underline-offset-2 active:scale-[0.98]", className)}
 			{...props}
 		/>
 	);

@@ -2,9 +2,10 @@
 NodeKindRule model for TraceRTM.
 """
 
+from sqlalchemy import ForeignKey, Index, String, Text
 import uuid
 
-from sqlalchemy import ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -31,7 +32,7 @@ class NodeKindRule(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_node_kind_rule_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

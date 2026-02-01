@@ -13,8 +13,9 @@
  * - Token refresh logic
  */
 
-import { apiClient, handleApiResponse, safeApiCall, ApiError } from "./client";
-import { getCSRFToken, fetchCSRFToken } from "../lib/csrf";
+import { fetchCSRFToken, getCSRFToken } from "../lib/csrf";
+import { useAuthStore } from "../stores/authStore";
+import { ApiError, apiClient, handleApiResponse, safeApiCall } from "./client";
 import type { ErrorDetails } from "./types";
 
 // ============================================================================
@@ -164,10 +165,10 @@ async function handleAuthResponse<T>(
 			// Convert ApiError to AuthError
 			const data = error.data as ErrorDetails | undefined;
 			throw new AuthError(
-				(data?.["message"] as string) || error.message,
+				(data?.['message'] as string) || error.message,
 				error.status,
-				data?.["code"] as string | undefined,
-				data?.["details"] as AuthErrorDetails | undefined,
+				data?.['code'] as string | undefined,
+				data?.['details'] as AuthErrorDetails | undefined,
 			);
 		}
 		throw error;
@@ -318,6 +319,14 @@ export const authApi = {
 	 * ```
 	 */
 	getCurrentUser: async (): Promise<User | null> => {
+		const token =
+			typeof globalThis.window !== "undefined"
+				? (globalThis.window.localStorage?.getItem("auth_token") ??
+						useAuthStore.getState().token)?.trim()
+				: useAuthStore.getState().token?.trim();
+		if (!token) {
+			return null;
+		}
 		try {
 			return await handleAuthResponse(
 				safeApiCall(
@@ -646,6 +655,95 @@ export function getAuthErrorMessage(error: AuthError): string {
 		return "Server error, please try again later";
 	}
 	return error.message || "Authentication failed";
+}
+
+/**
+ * User-initiated login with loud error handling: calls authApi.login and shows
+ * a toast on failure using getAuthErrorMessage. Use this from login forms so
+ * users always see feedback (invalid credentials, rate limit, etc.).
+ *
+ * @param credentials User email and password
+ * @returns Authentication response with user and token
+ * @throws Same error as authApi.login after showing toast
+ *
+ * @example
+ * ```tsx
+ * const handleSubmit = async () => {
+ *   try {
+ *     const res = await loginWithToast({ email, password });
+ *     authStore.getState().setUser(res.user);
+ *     authStore.getState().setToken(res.token);
+ *     navigate({ to: "/home" });
+ *   } catch {
+ *     // Toast already shown; optionally focus form
+ *   }
+ * };
+ * ```
+ */
+export async function loginWithToast(
+	credentials: LoginRequest,
+): Promise<AuthResponse> {
+	try {
+		return await authApi.login(credentials);
+	} catch (error) {
+		const message = isAuthError(error)
+			? getAuthErrorMessage(error)
+			: error instanceof ApiError
+				? getAuthErrorMessage(
+						new AuthError(
+							((error.data as ErrorDetails)?.['message'] as string) ?? error.statusText,
+							error.status,
+							(error.data as ErrorDetails)?.['code'] as string | undefined,
+							error.data as AuthErrorDetails,
+						),
+					)
+				: error instanceof Error
+					? error.message
+					: "Login failed";
+		if (typeof globalThis.window !== "undefined") {
+			const { toast } = await import("sonner");
+			toast.error("Login failed", { description: message });
+		}
+		throw error;
+	}
+}
+
+/**
+ * User-initiated login via authStore with loud error handling: calls
+ * authStore.login(email, password) and shows a toast on failure. Use this
+ * when the app uses authStore for login (e.g. custom email/password form).
+ *
+ * @param email User email
+ * @param password User password
+ * @throws Same error as authStore.login after showing toast
+ *
+ * @example
+ * ```tsx
+ * const handleSubmit = async () => {
+ *   try {
+ *     await loginWithToastStore(email, password);
+ *     navigate({ to: "/home" });
+ *   } catch {
+ *     // Toast already shown
+ *   }
+ * };
+ * ```
+ */
+export async function loginWithToastStore(
+	email: string,
+	password: string,
+): Promise<void> {
+	try {
+		await useAuthStore.getState().login(email, password);
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "Login failed";
+		if (typeof globalThis.window !== "undefined") {
+			const { toast } = await import("sonner");
+			toast.error("Login failed", { description: message });
+		}
+		throw error;
+	}
 }
 
 /**

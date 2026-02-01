@@ -206,11 +206,13 @@ export function DataTable<TData, TValue>({
 					{table.getColumn("status") && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline" className="h-8">
-									<Grid className="mr-2 h-4 w-4" />
-									Status
-									<ChevronDown className="ml-2 h-4 w-4" />
-								</Button>
+								<span>
+									<Button variant="outline" className="h-8">
+										<Grid className="mr-2 h-4 w-4" />
+										Status
+										<ChevronDown className="ml-2 h-4 w-4" />
+									</Button>
+								</span>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent className="w-[150px]">
 								<DropdownMenuItem
@@ -269,9 +271,11 @@ export function DataTable<TData, TValue>({
 
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="sm">
-									<MoreHorizontal className="h-4 w-4" />
-								</Button>
+								<span>
+									<Button variant="outline" size="sm">
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</span>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
 								{enableColumnReordering && (

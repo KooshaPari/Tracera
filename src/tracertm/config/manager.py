@@ -23,7 +23,8 @@ class ConfigManager:
 
     Configuration locations:
     - Global: ~/.tracertm/config.yaml
-    - Project: ~/.tracertm/projects/<project_id>/config.yaml
+    - Repo project: <repo>/.tracertm/project.yaml
+    - User project: ~/.tracertm/projects/<project_id>/config.yaml
     """
 
     def __init__(self, config_dir: Path | None = None):
@@ -55,12 +56,12 @@ class ConfigManager:
             return Path(env_dir)
 
         preferred = Path.home() / ".tracertm"
-        legacy = Path.home() / ".config" / "tracertm"
+        fallback = Path.home() / ".config" / "tracertm"
 
         if preferred.exists():
             return preferred
-        if legacy.exists() and not preferred.exists():
-            return legacy
+        if fallback.exists() and not preferred.exists():
+            return fallback
 
         return preferred
 
@@ -124,7 +125,12 @@ class ConfigManager:
                 f"Expected location: {self.config_path}"
             )
 
-        # Load project config (if specified)
+        # Load repo-level project config (if present)
+        repo_project = self._load_repo_project_config()
+        if repo_project:
+            config_data.update(repo_project)
+
+        # Load user project config (if specified)
         if project_id:
             project_config_path = self.projects_dir / project_id / "config.yaml"
             if project_config_path.exists():
@@ -168,13 +174,19 @@ class ConfigManager:
         # Update value
         config_data[key] = value
 
-        # Validate by creating Config instance
-        Config(**config_data)
+        # Validate only known Config fields (allow extra fields in file)
+        # Get field names from Config model
+        config_fields = set(Config.model_fields.keys())
+        known_fields = {k: v for k, v in config_data.items() if k in config_fields}
+        
+        # Only validate known fields
+        if known_fields:
+            Config(**known_fields)
 
         # Convert Path objects to strings before saving
         config_data = self._convert_paths_to_strings(config_data)
 
-        # Save
+        # Save (including extra fields)
         with open(config_path, "w") as f:
             yaml.safe_dump(config_data, f, default_flow_style=False)
 
@@ -196,14 +208,25 @@ class ConfigManager:
             if db_url:
                 return db_url
         
-        # Determine config file
-        config_path = self.projects_dir / project_id / "config.yaml" if project_id else self.config_path
+        # User project config (highest file-based precedence)
+        if project_id:
+            project_config_path = self.projects_dir / project_id / "config.yaml"
+            if project_config_path.exists():
+                with open(project_config_path) as f:
+                    config_data = yaml.safe_load(f) or {}
+                if key in config_data:
+                    return config_data.get(key)
 
-        # Load config
-        if not config_path.exists():
+        # Repo project config (shared)
+        repo_project = self._load_repo_project_config()
+        if repo_project and key in repo_project:
+            return repo_project.get(key)
+
+        # Global config (lowest precedence)
+        if not self.config_path.exists():
             return None
 
-        with open(config_path) as f:
+        with open(self.config_path) as f:
             config_data = yaml.safe_load(f) or {}
 
         return config_data.get(key)
@@ -286,3 +309,57 @@ class ConfigManager:
                     break
 
         return env_config
+
+    def _find_repo_project_path(self) -> Path | None:
+        """Find the nearest repo-level .tracertm/project.yaml from CWD."""
+        try:
+            current = Path.cwd().resolve()
+        except Exception:
+            return None
+
+        for base in [current, *current.parents]:
+            candidate = base / ".tracertm" / "project.yaml"
+            if candidate.exists():
+                return candidate
+        return None
+
+    def _load_repo_project_config(self) -> dict[str, Any]:
+        """Load repo-level project config if available."""
+        path = self._find_repo_project_path()
+        if not path:
+            return {}
+        try:
+            with open(path) as f:
+                data = yaml.safe_load(f) or {}
+            return data if isinstance(data, dict) else {}
+        except Exception:
+            return {}
+
+    def set_repo_project_value(self, key: str, value: Any) -> Path:
+        """Set a value in the repo-level .tracertm/project.yaml.
+
+        Returns:
+            The path written to.
+        """
+        base = self._find_repo_project_path()
+        if base is None:
+            base = Path.cwd() / ".tracertm" / "project.yaml"
+            base.parent.mkdir(parents=True, exist_ok=True)
+
+        if base.exists():
+            with open(base) as f:
+                data = yaml.safe_load(f) or {}
+        else:
+            data = {}
+
+        if value is None:
+            data.pop(key, None)
+        else:
+            data[key] = value
+
+        data = self._convert_paths_to_strings(data)
+
+        with open(base, "w") as f:
+            yaml.safe_dump(data, f, default_flow_style=False)
+
+        return base

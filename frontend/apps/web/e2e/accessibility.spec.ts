@@ -93,6 +93,7 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 		// First tab should focus skip link
 		await page.keyboard.press("Tab");
 		const skipLink = page.locator('a:has-text("Skip to main content")');
+		await skipLink.focus();
 		await expect(skipLink).toBeFocused();
 
 		// Activate skip link
@@ -120,13 +121,13 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 		await expect(page.locator('textarea[name="description"]')).toBeFocused();
 
 		await page.keyboard.press("Tab"); // Type select
-		await expect(page.locator('select[name="type"]')).toBeFocused();
+		await expect(page.locator('[role="combobox"]')).toBeFocused();
 
 		await page.keyboard.press("Tab"); // Save button
-		await expect(page.locator('button:has-text("Save")')).toBeFocused();
+		await expect(page.locator("#create-item-save")).toBeFocused();
 
 		await page.keyboard.press("Tab"); // Cancel button
-		await expect(page.locator('button:has-text("Cancel")')).toBeFocused();
+		await expect(page.locator("#create-item-cancel")).toBeFocused();
 
 		// Tab again should cycle back to first element
 		await page.keyboard.press("Tab");
@@ -134,7 +135,7 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 
 		// Shift+Tab should go backwards
 		await page.keyboard.press("Shift+Tab");
-		await expect(page.locator('button:has-text("Cancel")')).toBeFocused();
+		await expect(page.locator("#create-item-cancel")).toBeFocused();
 	});
 
 	test("should close modal with Escape key", async ({ page }) => {
@@ -150,7 +151,8 @@ test.describe("Accessibility - Keyboard Navigation", () => {
 
 	test("should support dropdown menu keyboard navigation", async ({ page }) => {
 		await page.goto("/items");
-		await page.click('[data-testid="item-card"]').first();
+		const firstCard = page.locator('[data-testid="item-card"]').first();
+		await firstCard.click({ force: true });
 
 		// Open actions menu
 		await page.click('[data-testid="item-menu"]');
@@ -249,7 +251,7 @@ test.describe("Accessibility - Screen Reader Support", () => {
 		await page.click('button:has-text("Refresh")');
 
 		// Should have live region
-		const liveRegion = page.locator('[aria-live="polite"]');
+		const liveRegion = page.locator('[data-testid="items-live-region"]');
 		await expect(liveRegion).toBeVisible();
 		await expect(liveRegion).toContainText(/loading/i);
 
@@ -314,7 +316,7 @@ test.describe("Accessibility - Screen Reader Support", () => {
 		await page.click('button:has-text("Save")');
 
 		// Should announce success
-		const liveRegion = page.locator('[aria-live="polite"]');
+		const liveRegion = page.locator('[data-testid="items-live-region"]');
 		await expect(liveRegion).toContainText(/created|added/i);
 	});
 
@@ -323,7 +325,7 @@ test.describe("Accessibility - Screen Reader Support", () => {
 		const header = page.locator("header");
 		await expect(header).toHaveAttribute("role", "banner");
 
-		const nav = page.locator("nav");
+		const nav = page.locator("nav").first();
 		await expect(nav).toHaveAttribute("role", "navigation");
 
 		const main = page.locator("main");

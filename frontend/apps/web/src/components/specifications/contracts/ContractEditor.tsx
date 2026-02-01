@@ -1,4 +1,9 @@
-import { useState } from "react";
+import type {
+	Contract,
+	ContractCondition,
+	ContractTransition,
+	ContractType,
+} from "@tracertm/types";
 import {
 	Button,
 	Card,
@@ -20,14 +25,9 @@ import {
 	TabsTrigger,
 	Textarea,
 } from "@tracertm/ui";
-import { Plus, Save, X, Trash2, AlertCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import type {
-	Contract,
-	ContractCondition,
-	ContractTransition,
-	ContractType,
-} from "@tracertm/types";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, Plus, Save, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
 interface ContractEditorProps {
 	initialData?: Partial<Contract>;

@@ -1,8 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useRef, useCallback } from "react";
+import {
+	announceToScreenReader,
+	createFocusTrap,
+	focusFirst,
+	restoreFocus,
+	saveFocus,
+} from "@/lib/focus-management";
 
 const viewTypes = [
 	"FEATURE",
@@ -41,6 +48,12 @@ interface CreateItemFormProps {
 	onCancel: () => void;
 	isLoading?: boolean;
 	defaultView?: (typeof viewTypes)[number];
+	/** Modal title (e.g. "Create Feature"). Default: "Create Item" */
+	title?: string;
+	/** Submit button label (e.g. "Create Feature"). Default: "Create Item" */
+	submitLabel?: string;
+	/** Submit button label when loading (e.g. "Creating..."). Default: "Creating..." */
+	submitBusyLabel?: string;
 }
 
 export function CreateItemForm({
@@ -48,19 +61,24 @@ export function CreateItemForm({
 	onCancel,
 	isLoading,
 	defaultView = "FEATURE",
+	title: titleProp = "Create Item",
+	submitLabel = "Create Item",
+	submitBusyLabel = "Creating...",
 }: CreateItemFormProps) {
 	const dialogRef = useRef<HTMLDivElement>(null);
-	const firstFocusableRef = useRef<HTMLInputElement>(null);
-	const lastFocusableRef = useRef<HTMLButtonElement>(null);
+	const formRef = useRef<HTMLFormElement>(null);
+	const savedFocusRef = useRef<HTMLElement | null>(null);
+	const cleanupFocusTrapRef = useRef<(() => void) | null>(null);
 
 	const {
 		register,
 		handleSubmit,
 		watch,
-		formState: { errors },
+		formState: { errors, isSubmitting },
 	} = useForm<ItemFormData>({
 		resolver: zodResolver(itemSchema),
 		defaultValues: { view: defaultView, status: "todo", priority: "medium" },
+		mode: "onBlur",
 	});
 
 	const selectedView = watch("view");
@@ -75,65 +93,68 @@ export function CreateItemForm({
 		DEPLOYMENT: ["environment", "release", "config"],
 	};
 
+	// Handle form submission with error announcements
+	const onSubmitWithAnnouncement = useCallback(
+		async (data: ItemFormData) => {
+			try {
+				await onSubmit(data);
+				announceToScreenReader("Item created successfully", "polite");
+			} catch (error) {
+				announceToScreenReader(
+					"Error creating item. Please check the form and try again.",
+					"assertive",
+				);
+			}
+		},
+		[onSubmit],
+	);
+
 	// Handle Escape key to close dialog
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent) => {
 			if (e.key === "Escape") {
+				e.preventDefault();
 				onCancel();
 			}
 		},
 		[onCancel],
 	);
 
-	// Focus trap: keep focus within the dialog
-	const handleDialogKeyDown = useCallback((e: KeyboardEvent) => {
-		if (e.key !== "Tab" || !dialogRef.current) {
-			return;
-		}
-
-		const focusableElements = dialogRef.current.querySelectorAll(
-			"button, [href], input, select, textarea",
-		);
-		const focusableArray = Array.from(focusableElements);
-
-		if (focusableArray.length === 0) return;
-
-		const firstElement = focusableArray[0] as HTMLElement;
-		const lastElement = focusableArray[
-			focusableArray.length - 1
-		] as HTMLElement;
-
-		if (e.shiftKey) {
-			// Shift+Tab
-			if (document.activeElement === firstElement) {
-				e.preventDefault();
-				lastElement.focus();
-			}
-		} else {
-			// Tab
-			if (document.activeElement === lastElement) {
-				e.preventDefault();
-				firstElement.focus();
-			}
-		}
-	}, []);
-
 	useEffect(() => {
+		// Save current focus
+		savedFocusRef.current = saveFocus();
+
+		// Setup event listeners
 		document.addEventListener("keydown", handleKeyDown);
 
-		// Focus first input on mount
-		if (firstFocusableRef.current) {
-			firstFocusableRef.current.focus();
-		}
+		// Create focus trap
+		if (dialogRef.current) {
+			cleanupFocusTrapRef.current = createFocusTrap(
+				dialogRef.current,
+				onCancel,
+			);
 
-		// Trap focus within dialog
-		dialogRef.current?.addEventListener("keydown", handleDialogKeyDown);
+			// Focus first input on mount
+			focusFirst(dialogRef.current);
+
+			// Announce dialog opened
+			announceToScreenReader(
+				`${titleProp} dialog opened. Fill in the required fields marked with an asterisk.`,
+				"polite",
+			);
+		}
 
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
-			dialogRef.current?.removeEventListener("keydown", handleDialogKeyDown);
+			if (cleanupFocusTrapRef.current) {
+				cleanupFocusTrapRef.current();
+			}
+			// Restore focus when closing
+			if (savedFocusRef.current) {
+				restoreFocus(savedFocusRef.current);
+			}
 		};
-	}, [handleKeyDown, handleDialogKeyDown]);
+	}, [handleKeyDown, onCancel]);
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -150,34 +171,46 @@ export function CreateItemForm({
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby="dialog-title"
-				className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl focus:outline-none"
+				aria-describedby="dialog-description"
+				className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
 				tabIndex={-1}
 			>
 				<div className="flex items-center justify-between">
 					<h2 id="dialog-title" className="text-lg font-semibold">
-						Create Item
+						{titleProp}
 					</h2>
+					<p id="dialog-description" className="sr-only">
+						Fill in the required fields marked with an asterisk and click{" "}
+						{submitLabel} to submit.
+					</p>
 					<button
 						onClick={onCancel}
 						aria-label="Close dialog"
-						className="rounded-lg p-1 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
+						className="rounded-lg p-1 hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 					>
-						<X className="h-5 w-5" />
+						<X className="h-5 w-5" aria-hidden="true" />
 					</button>
 				</div>
 
-				<form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+				<form
+					ref={formRef}
+					onSubmit={handleSubmit(onSubmitWithAnnouncement)}
+					className="mt-6 space-y-4"
+				>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<div>
 							<label htmlFor="view" className="block text-sm font-medium">
-								View <span className="text-red-500">*</span>
+								View{" "}
+								<span className="text-red-500" aria-label="required">
+									*
+								</span>
 							</label>
 							<select
 								id="view"
-								role="combobox"
-								aria-expanded="false"
+								aria-describedby="view-help"
+								aria-required="true"
 								{...register("view")}
-								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
 								{viewTypes.map((v) => (
 									<option key={v} value={v}>
@@ -185,17 +218,27 @@ export function CreateItemForm({
 									</option>
 								))}
 							</select>
+							<span
+								id="view-help"
+								className="text-xs text-muted-foreground mt-1 block"
+							>
+								Select the view type for this item
+							</span>
 						</div>
 						<div>
 							<label htmlFor="type" className="block text-sm font-medium">
-								Type <span className="text-red-500">*</span>
+								Type{" "}
+								<span className="text-red-500" aria-label="required">
+									*
+								</span>
 							</label>
 							<select
 								id="type"
-								role="combobox"
-								aria-expanded="false"
+								aria-describedby={errors.type ? "type-error" : "type-help"}
+								aria-required="true"
+								aria-invalid={!!errors.type}
 								{...register("type")}
-								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
 								{typeOptions[selectedView]?.map((t) => (
 									<option key={t} value={t}>
@@ -203,42 +246,60 @@ export function CreateItemForm({
 									</option>
 								))}
 							</select>
-							{errors.type && (
+							{errors.type ? (
 								<p
+									id="type-error"
 									role="alert"
 									className="mt-1 text-sm text-red-500"
 									aria-live="polite"
+									aria-atomic="true"
 								>
 									{errors.type.message}
 								</p>
+							) : (
+								<span
+									id="type-help"
+									className="text-xs text-muted-foreground mt-1 block"
+								>
+									Select from options based on your chosen view
+								</span>
 							)}
 						</div>
 					</div>
 
 					<div>
 						<label htmlFor="title" className="block text-sm font-medium">
-							Title <span className="text-red-500">*</span>
+							Title{" "}
+							<span className="text-red-500" aria-label="required">
+								*
+							</span>
 						</label>
 						<input
 							id="title"
 							{...register("title")}
 							placeholder="Enter item title"
-							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-							ref={(el) => {
-								register("title").ref(el);
-								if (el && !firstFocusableRef.current) {
-									firstFocusableRef.current = el;
-								}
-							}}
+							aria-describedby={errors.title ? "title-error" : "title-help"}
+							aria-required="true"
+							aria-invalid={!!errors.title}
+							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						/>
-						{errors.title && (
+						{errors.title ? (
 							<p
+								id="title-error"
 								role="alert"
 								className="mt-1 text-sm text-red-500"
 								aria-live="polite"
+								aria-atomic="true"
 							>
 								{errors.title.message}
 							</p>
+						) : (
+							<span
+								id="title-help"
+								className="text-xs text-muted-foreground mt-1 block"
+							>
+								Give this item a clear, descriptive title
+							</span>
 						)}
 					</div>
 
@@ -251,8 +312,15 @@ export function CreateItemForm({
 							{...register("description")}
 							rows={3}
 							placeholder="Describe this item..."
-							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+							aria-describedby="description-help"
+							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						/>
+						<span
+							id="description-help"
+							className="text-xs text-muted-foreground mt-1 block"
+						>
+							Optional: Provide additional context or details
+						</span>
 					</div>
 
 					<div className="grid gap-4 sm:grid-cols-2">
@@ -262,10 +330,9 @@ export function CreateItemForm({
 							</label>
 							<select
 								id="status"
-								role="combobox"
-								aria-expanded="false"
+								aria-describedby="status-help"
 								{...register("status")}
-								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
 								{statusOptions.map((s) => (
 									<option key={s} value={s}>
@@ -273,6 +340,12 @@ export function CreateItemForm({
 									</option>
 								))}
 							</select>
+							<span
+								id="status-help"
+								className="text-xs text-muted-foreground mt-1 block"
+							>
+								Current status of this item
+							</span>
 						</div>
 						<div>
 							<label htmlFor="priority" className="block text-sm font-medium">
@@ -280,10 +353,9 @@ export function CreateItemForm({
 							</label>
 							<select
 								id="priority"
-								role="combobox"
-								aria-expanded="false"
+								aria-describedby="priority-help"
 								{...register("priority")}
-								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+								className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
 								{priorityOptions.map((p) => (
 									<option key={p} value={p}>
@@ -291,6 +363,12 @@ export function CreateItemForm({
 									</option>
 								))}
 							</select>
+							<span
+								id="priority-help"
+								className="text-xs text-muted-foreground mt-1 block"
+							>
+								Importance level
+							</span>
 						</div>
 					</div>
 
@@ -302,25 +380,38 @@ export function CreateItemForm({
 							id="owner"
 							{...register("owner")}
 							placeholder="Assigned to..."
-							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+							aria-describedby="owner-help"
+							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						/>
+						<span
+							id="owner-help"
+							className="text-xs text-muted-foreground mt-1 block"
+						>
+							Optional: Person responsible for this item
+						</span>
 					</div>
 
 					<div className="flex gap-3 pt-4">
 						<button
 							type="button"
 							onClick={onCancel}
-							className="flex-1 rounded-lg border px-4 py-2 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
+							aria-label="Discard changes and close dialog"
+							className="flex-1 rounded-lg border px-4 py-2 hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						>
 							Cancel
 						</button>
 						<button
-							ref={lastFocusableRef}
 							type="submit"
-							disabled={isLoading}
-							className="flex-1 rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary"
+							disabled={isLoading || isSubmitting}
+							aria-busy={isLoading || isSubmitting}
+							aria-label={
+								isLoading || isSubmitting
+									? submitBusyLabel
+									: submitLabel
+							}
+							className="flex-1 rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						>
-							{isLoading ? "Creating..." : "Create Item"}
+							{isLoading || isSubmitting ? submitBusyLabel : submitLabel}
 						</button>
 					</div>
 				</form>

@@ -1,6 +1,12 @@
 // EquivalenceExport.tsx - Export component for equivalence mappings and canonical concepts
 // Supports JSON/CSV export with filtering, confidence score inclusion, and shareable format generation
 
+import type {
+	CanonicalConcept,
+	CanonicalProjection,
+	EquivalenceLink,
+} from "@tracertm/types";
+import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
 	Card,
@@ -9,7 +15,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
-import { Badge } from "@tracertm/ui/components/Badge";
 import {
 	Dialog,
 	DialogContent,
@@ -18,35 +23,24 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@tracertm/ui/components/Select";
+import { Input } from "@tracertm/ui/components/Input";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import { Separator } from "@tracertm/ui/components/Separator";
 import {
-	Download,
-	Copy,
 	Check,
 	ChevronDown,
 	ChevronRight,
-	Filter,
+	Copy,
+	Download,
 	FileJson,
 	FileText,
+	Filter,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
-import type {
-	EquivalenceLink,
-	CanonicalConcept,
-	CanonicalProjection,
-} from "@tracertm/types";
 import {
-	serializeToJSON,
-	serializeToCSV,
 	createExportSummary,
+	serializeToCSV,
+	serializeToJSON,
 } from "./utils/equivalenceIO";
 
 // =============================================================================
@@ -231,7 +225,7 @@ function EquivalenceExportComponent({
 				setCopied(true);
 				setTimeout(() => setCopied(false), 2000);
 			})
-			.catch((err) => console.error("Failed to copy:", err));
+			.catch((err) => logger.error("Failed to copy:", err));
 	}, [createExportPackage]);
 
 	return (
@@ -295,7 +289,7 @@ function EquivalenceExportComponent({
 										id="include-links"
 										type="checkbox"
 										checked={options.includeLinks}
-										onChange={(e) =>
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 											setOptions({
 												...options,
 												includeLinks: e.currentTarget.checked,

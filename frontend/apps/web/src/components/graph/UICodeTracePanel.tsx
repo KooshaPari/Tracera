@@ -1,6 +1,26 @@
 // UICodeTracePanel.tsx - Visualize the traceability chain from UI to code to requirements
 
-import { memo, useState } from "react";
+import type {
+	CanonicalConcept,
+	CanonicalProjection,
+	CodeReference,
+	EquivalenceStrategy,
+} from "@tracertm/types";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@tracertm/ui/components/Card";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@tracertm/ui/components/Tooltip";
 import {
 	ArrowDown,
 	ArrowRight,
@@ -12,28 +32,7 @@ import {
 	Sparkles,
 	Zap,
 } from "lucide-react";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@tracertm/ui/components/Card";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import { Separator } from "@tracertm/ui/components/Separator";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@tracertm/ui/components/Tooltip";
-import type {
-	CanonicalConcept,
-	CanonicalProjection,
-	CodeReference,
-	EquivalenceStrategy,
-} from "@tracertm/types";
+import { memo, useState } from "react";
 
 // =============================================================================
 // TYPES

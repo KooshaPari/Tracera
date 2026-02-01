@@ -8,14 +8,18 @@ import {
 	FileCode,
 	FileText,
 	FolderOpen,
-	GitBranch,
 	Home,
 	Layers,
 	Settings,
 	Shield,
 	Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	announceToScreenReader,
+	restoreFocus,
+	saveFocus,
+} from "@/lib/focus-management";
 import { cn } from "@/lib/utils";
 
 interface CommandItem {
@@ -28,14 +32,18 @@ interface CommandItem {
 	category: "NAVIGATE" | "VIEWS" | "SYSTEM" | "ACTIONS" | "SPECS";
 }
 
-export function CommandPalette() {
+function CommandPaletteComponent() {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
 	const [selected, setSelected] = useState(0);
+	const savedFocusRef = useRef<HTMLElement | null>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const listboxRef = useRef<HTMLDivElement>(null);
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	const projectIdMatch = location.pathname.match(/\/projects\/([^/]+)/);
+	const pathname = location?.pathname ?? "";
+	const projectIdMatch = pathname.match(/\/projects\/([^/]+)/);
 	const currentProjectId = projectIdMatch ? projectIdMatch[1] : null;
 
 	const commands: CommandItem[] = useMemo(() => {
@@ -45,7 +53,7 @@ export function CommandPalette() {
 				title: "Mission Control",
 				description: "Main operational dashboard",
 				icon: Home,
-				action: () => navigate({ to: "/" }),
+				action: () => navigate({ to: "/home" }),
 				category: "NAVIGATE",
 				keywords: ["home", "dashboard"],
 			},
@@ -57,15 +65,6 @@ export function CommandPalette() {
 				action: () => navigate({ to: "/projects" }),
 				category: "NAVIGATE",
 				keywords: ["projects", "list"],
-			},
-			{
-				id: "view-graph",
-				title: "Neural Graph",
-				description: "Global traceability network",
-				icon: GitBranch,
-				action: () => navigate({ to: "/graph" }),
-				category: "NAVIGATE",
-				keywords: ["graph", "trace", "link"],
 			},
 			{
 				id: "sys-settings",
@@ -119,7 +118,7 @@ export function CommandPalette() {
 				{
 					id: "view-workflows",
 					title: "Workflow Runs",
-					description: "Hatchet runs and schedules",
+					description: "Temporal runs and schedules",
 					icon: Activity,
 					action: () =>
 						navigate({
@@ -186,6 +185,19 @@ export function CommandPalette() {
 					category: "SPECS",
 					keywords: ["compliance", "regulatory", "requirements"],
 				},
+				{
+					id: "specs-scenario-activity",
+					title: "Scenario Activity",
+					description: "Scenario execution and history",
+					icon: Activity,
+					action: () =>
+						navigate({
+							to: "/projects/$projectId/scenario-activity",
+							params: { projectId: currentProjectId },
+						}),
+					category: "SPECS",
+					keywords: ["scenario", "activity", "history", "execution"],
+				},
 			];
 
 			return [...baseCommands, ...projectViews, ...specCommands];
@@ -212,33 +224,82 @@ export function CommandPalette() {
 				setOpen((o) => !o);
 				setQuery("");
 				setSelected(0);
+				return;
 			}
 			if (!open) return;
-			if (e.key === "Escape") {
-				setOpen(false);
-				setQuery("");
-			}
-			if (e.key === "ArrowDown") {
-				e.preventDefault();
-				setSelected((s) => Math.min(s + 1, filtered.length - 1));
-			}
-			if (e.key === "ArrowUp") {
-				e.preventDefault();
-				setSelected((s) => Math.max(s - 1, 0));
-			}
-			if (e.key === "Enter" && filtered[selected]) {
-				filtered[selected].action();
-				setOpen(false);
-				setQuery("");
+
+			switch (e.key) {
+				case "Escape":
+					e.preventDefault();
+					setOpen(false);
+					setQuery("");
+					break;
+				case "ArrowDown":
+					e.preventDefault();
+					setSelected((s) => Math.min(s + 1, filtered.length - 1));
+					break;
+				case "ArrowUp":
+					e.preventDefault();
+					setSelected((s) => Math.max(s - 1, 0));
+					break;
+				case "Home":
+					e.preventDefault();
+					setSelected(0);
+					break;
+				case "End":
+					e.preventDefault();
+					setSelected(Math.max(filtered.length - 1, 0));
+					break;
+				case "Enter":
+					e.preventDefault();
+					if (filtered[selected]) {
+						filtered[selected].action();
+						setOpen(false);
+						setQuery("");
+					}
+					break;
+				case "Tab":
+					// Allow Tab to escape palette naturally
+					setOpen(false);
+					setQuery("");
+					break;
 			}
 		},
 		[open, filtered, selected],
 	);
 
+	// Handle focus management when opening/closing
 	useEffect(() => {
 		window.addEventListener("keydown", handleKeyDown);
+
+		if (open) {
+			// Save focus to restore later
+			savedFocusRef.current = saveFocus();
+			// Focus input after palette opens
+			setTimeout(() => {
+				inputRef.current?.focus();
+				announceToScreenReader(
+					`Command palette opened. Type to search commands. ${filtered.length} result${filtered.length !== 1 ? "s" : ""} available.`,
+					"polite",
+				);
+			}, 50);
+		} else if (savedFocusRef.current) {
+			// Restore focus when closing
+			restoreFocus(savedFocusRef.current);
+		}
+
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [handleKeyDown]);
+	}, [handleKeyDown, open, filtered.length]);
+
+	// Announce when search results change
+	useEffect(() => {
+		if (open && query) {
+			announceToScreenReader(
+				`${filtered.length} result${filtered.length !== 1 ? "s" : ""} found for "${query}". Use arrow keys to navigate, Enter to select.`,
+				"polite",
+			);
+		}
+	}, [filtered, query, open]);
 
 	if (!open) return null;
 
@@ -250,26 +311,62 @@ export function CommandPalette() {
 		"ACTIONS",
 	] as const;
 
+	const selectedItem = filtered[selected];
+	const selectedId = selectedItem ? `cmd-item-${selectedItem.id}` : "";
+
 	return (
 		<div
 			className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 animate-in fade-in duration-300"
 			onClick={() => setOpen(false)}
+			aria-hidden="true"
 		>
-			<div className="fixed inset-0 bg-background/80 backdrop-blur-sm" />
 			<div
-				className="relative w-full max-w-2xl bg-card border border-border/50 shadow-2xl rounded-[2rem] overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300 ring-1 ring-primary/20"
+				className="fixed inset-0 bg-background/80 backdrop-blur-sm"
+				aria-hidden="true"
+			/>
+			<div
+				className="relative w-full max-w-2xl bg-card border border-border/50 shadow-2xl rounded-[2rem] overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300 ring-1 ring-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 				onClick={(e) => e.stopPropagation()}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="command-palette-title"
 			>
 				{/* Top Command Bar */}
 				<div className="flex items-center gap-4 px-6 py-5 border-b bg-muted/30">
-					<Command className="h-6 w-6 text-primary animate-pulse" />
-					<input
-						type="text"
-						placeholder="Execute command or jump to view..."
-						value={query}
-						onChange={(e) => setQuery(e.target.value)}
-						className="flex-1 bg-transparent text-xl font-black uppercase tracking-tight outline-none placeholder:text-muted-foreground/50"
+					<Command
+						className="h-6 w-6 text-primary animate-pulse"
+						aria-hidden="true"
 					/>
+					<div className="flex-1 flex flex-col gap-1">
+						<label
+							htmlFor="command-input"
+							className="sr-only"
+							id="command-palette-title"
+						>
+							Command Palette
+						</label>
+						<input
+							ref={inputRef}
+							id="command-input"
+							type="text"
+							placeholder="Execute command or jump to view..."
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							aria-label="Search commands"
+							aria-describedby="command-hint"
+							aria-expanded={open}
+							aria-controls="command-listbox"
+							aria-activedescendant={selectedId}
+							role="combobox"
+							autoComplete="off"
+							className="flex-1 bg-transparent text-xl font-black uppercase tracking-tight outline-none placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+						/>
+						<span id="command-hint" className="sr-only">
+							{filtered.length > 0
+								? `${filtered.length} result${filtered.length !== 1 ? "s" : ""} found. Use arrow keys to navigate, Enter to select, Home/End to jump, Escape to close.`
+								: "Type to search. No results found."}
+						</span>
+					</div>
 					<div className="flex items-center gap-1.5">
 						<kbd className="h-6 px-2 rounded-lg border bg-background flex items-center justify-center text-[10px] font-black uppercase shadow-sm">
 							ESC
@@ -278,7 +375,12 @@ export function CommandPalette() {
 				</div>
 
 				{/* Results Surface */}
-				<div className="max-h-[50vh] overflow-y-auto p-3 custom-scrollbar">
+				<div
+					ref={listboxRef}
+					id="command-listbox"
+					role="listbox"
+					className="max-h-[50vh] overflow-y-auto p-3 custom-scrollbar"
+				>
 					{categories.map((cat) => {
 						const items = filtered.filter((c) => c.category === cat);
 						if (items.length === 0) return null;
@@ -291,18 +393,23 @@ export function CommandPalette() {
 								{items.map((cmd) => {
 									const globalIndex = filtered.indexOf(cmd);
 									const isSelected = globalIndex === selected;
+									const itemId = `cmd-item-${cmd.id}`;
 
 									return (
 										<button
 											key={cmd.id}
+											id={itemId}
 											onClick={() => {
 												cmd.action();
 												setOpen(false);
 												setQuery("");
 											}}
 											onMouseEnter={() => setSelected(globalIndex)}
+											role="option"
+											aria-selected={isSelected}
+											aria-describedby={`${itemId}-desc`}
 											className={cn(
-												"group flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left transition-all duration-200",
+												"group flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]",
 												isSelected
 													? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 translate-x-1"
 													: "hover:bg-muted/50",
@@ -315,6 +422,7 @@ export function CommandPalette() {
 														? "bg-primary-foreground/20"
 														: "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
 												)}
+												aria-hidden="true"
 											>
 												<cmd.icon className="h-5 w-5" />
 											</div>
@@ -324,6 +432,7 @@ export function CommandPalette() {
 												</div>
 												{cmd.description && (
 													<div
+														id={`${itemId}-desc`}
 														className={cn(
 															"text-[10px] font-bold uppercase tracking-widest leading-none mt-1",
 															isSelected
@@ -336,7 +445,10 @@ export function CommandPalette() {
 												)}
 											</div>
 											{isSelected && (
-												<div className="flex items-center gap-2 pr-2 animate-in slide-in-from-left-2">
+												<div
+													className="flex items-center gap-2 pr-2 animate-in slide-in-from-left-2"
+													aria-hidden="true"
+												>
 													<span className="text-[9px] font-black uppercase tracking-tighter opacity-60">
 														Execute
 													</span>
@@ -351,11 +463,21 @@ export function CommandPalette() {
 					})}
 
 					{filtered.length === 0 && (
-						<div className="flex flex-col items-center justify-center py-20 text-muted-foreground/40">
-							<Zap className="h-12 w-12 mb-4 opacity-10" />
+						<div
+							className="flex flex-col items-center justify-center py-20 text-muted-foreground/40"
+							role="status"
+							aria-live="polite"
+							aria-atomic="true"
+						>
+							<Zap className="h-12 w-12 mb-4 opacity-10" aria-hidden="true" />
 							<p className="text-xs font-black uppercase tracking-[0.2em]">
 								Zero Command Matches
 							</p>
+							{query && (
+								<p className="text-[10px] text-muted-foreground/30 mt-2">
+									No results for "{query}"
+								</p>
+							)}
 						</div>
 					)}
 				</div>
@@ -385,3 +507,5 @@ export function CommandPalette() {
 		</div>
 	);
 }
+
+export const CommandPalette = memo(CommandPaletteComponent);

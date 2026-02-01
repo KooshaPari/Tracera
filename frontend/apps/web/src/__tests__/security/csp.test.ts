@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { logger } from '@/lib/logger';
 
 // Test Content Security Policy implementation
 describe("Content Security Policy Tests", () => {
@@ -190,7 +191,7 @@ describe("Content Security Policy Tests", () => {
 				return `sha384-${hashBase64}`;
 			};
 
-			const scriptContent = 'console.log("Hello");';
+			const scriptContent = 'logger.info("Hello");';
 			const hash = await generateSRIHash(scriptContent);
 
 			expect(hash).toMatch(/^sha384-[A-Za-z0-9+/=]+$/);

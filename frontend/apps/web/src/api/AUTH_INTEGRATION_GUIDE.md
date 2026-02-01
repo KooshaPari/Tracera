@@ -73,7 +73,7 @@ async function refreshToken() {
   } catch (error) {
     // Token refresh failed, logout user
     authStore.logout();
-    navigate('/login');
+    navigate('/auth/login');
   }
 }
 ```
@@ -93,7 +93,7 @@ async function handleLogout() {
     // Always clear local state
     localStorage.removeItem('auth_token');
     authStore.logout();
-    navigate('/login');
+    navigate('/auth/login');
   }
 }
 ```
@@ -266,7 +266,7 @@ await authApi.confirmPasswordReset({
 });
 
 // Redirect to login
-navigate('/login');
+navigate('/auth/login');
 ```
 
 ---
@@ -350,9 +350,28 @@ try {
 }
 ```
 
+### User-Initiated Login (Recommended)
+
+Use `loginWithToast()` or `loginWithToastStore()` so login failures always show a toast (invalid credentials, rate limit, etc.):
+
+```typescript
+import { loginWithToast } from '@/api/auth';
+
+try {
+  const res = await loginWithToast({ email, password });
+  authStore.getState().setUser(res.user);
+  authStore.getState().setToken(res.token);
+  navigate({ to: '/home' });
+} catch {
+  // Toast already shown
+}
+```
+
+If your form uses `authStore.login(email, password)` directly, use `loginWithToastStore(email, password)` instead for the same toast-on-failure behavior.
+
 ### Error Messages
 
-Use `getAuthErrorMessage()` to get user-friendly error messages:
+Use `getAuthErrorMessage()` to get user-friendly error messages when handling errors manually:
 
 ```typescript
 import { getAuthErrorMessage } from '@/api/auth';
@@ -383,7 +402,7 @@ try {
   if (isAuthError(error) && shouldLogoutOnError(error)) {
     // Session expired or token invalid
     authStore.logout();
-    navigate('/login');
+    navigate('/auth/login');
   }
 }
 ```
@@ -514,7 +533,7 @@ describe('authApi.login', () => {
 import { test, expect } from '@playwright/test';
 
 test('login flow', async ({ page }) => {
-  await page.goto('/login');
+  await page.goto('/auth/login');
   await page.fill('input[type="email"]', 'user@example.com');
   await page.fill('input[type="password"]', 'password');
   await page.click('button:has-text("Login")');
@@ -539,7 +558,7 @@ async function logout() {
   } finally {
     // Always clear local state
     authStore.logout();
-    navigate('/login');
+    navigate('/auth/login');
   }
 }
 ```
@@ -606,7 +625,7 @@ export function useProtectedRoute() {
 
   useEffect(() => {
     if (!authStore.isAuthenticated) {
-      navigate('/login');
+      navigate('/auth/login');
     }
   }, [authStore.isAuthenticated, navigate]);
 }

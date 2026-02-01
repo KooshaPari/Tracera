@@ -2,20 +2,19 @@
  * GitHub App installation component.
  */
 
-import { useState } from "react";
+import { Badge, Card } from "@tracertm/ui";
 import { Github, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/enterprise-button";
-import { Card } from "@tracertm/ui";
-import { Badge } from "@tracertm/ui";
-import {
-	useGitHubAppInstallUrl,
-	useGitHubAppInstallations,
-	useDeleteGitHubAppInstallation,
-} from "@/hooks/useGitHub";
+import { useState } from "react";
 import { toast } from "sonner";
+import type { GitHubRepo } from "@/api/github";
+import { Button } from "@/components/ui/enterprise-button";
+import {
+	useDeleteGitHubAppInstallation,
+	useGitHubAppInstallations,
+	useGitHubAppInstallUrl,
+} from "@/hooks/useGitHub";
 import { CreateRepoModal } from "./CreateRepoModal";
 import { RepoSearchCombobox } from "./RepoSearchCombobox";
-import type { GitHubRepo } from "@/api/github";
 
 export interface GitHubAppInstallProps {
 	accountId: string;

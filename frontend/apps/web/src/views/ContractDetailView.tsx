@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
+import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
-import { ContractCard } from "@/components/specifications/contracts/ContractCard";
 import { ConditionList } from "@/components/specifications/contracts/ConditionList";
+import { ContractCard } from "@/components/specifications/contracts/ContractCard";
 import { StateMachineViewer } from "@/components/specifications/contracts/StateMachineViewer";
 import { useContract, useContractActivities } from "@/hooks/useSpecifications";
-import { format } from "date-fns";
 
 export function ContractDetailView() {
 	const params = useParams({ strict: false }) as {

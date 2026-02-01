@@ -1,5 +1,4 @@
 import { expect, test } from "./global-setup";
-import type { Page, BrowserContext } from "@playwright/test";
 
 /**
  * Comprehensive Authentication Flow E2E Tests

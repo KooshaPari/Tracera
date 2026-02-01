@@ -15,13 +15,13 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	authApi,
 	AuthError,
-	isAuthError,
-	getAuthErrorMessage,
-	shouldLogoutOnError,
-	type LoginRequest,
 	type AuthResponse,
+	authApi,
+	getAuthErrorMessage,
+	isAuthError,
+	type LoginRequest,
+	shouldLogoutOnError,
 	type User,
 } from "@/api/auth";
 import { ApiError } from "@/api/client";

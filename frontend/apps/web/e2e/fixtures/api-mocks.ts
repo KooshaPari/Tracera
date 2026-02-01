@@ -88,27 +88,30 @@ export const mockItems = [
 export const mockAgents = [
 	{
 		id: "agent-1",
-		name: "Code Analyzer",
-		type: "analyzer",
-		status: "idle",
-		capabilities: ["code-analysis", "dependency-check"],
-		lastHeartbeat: new Date().toISOString(),
+		name: "Sync Agent",
+		type: "sync",
+		status: "active",
+		capabilities: ["sync", "dependency-check"],
+		tasksCompleted: 24,
+		lastRun: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
 	},
 	{
 		id: "agent-2",
-		name: "Test Runner",
-		type: "executor",
-		status: "busy",
-		capabilities: ["test-execution", "coverage-report"],
-		lastHeartbeat: new Date().toISOString(),
+		name: "Validation Agent",
+		type: "validator",
+		status: "idle",
+		capabilities: ["validation", "quality-checks"],
+		tasksCompleted: 12,
+		lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
 	},
 	{
 		id: "agent-3",
-		name: "Documentation Generator",
-		type: "generator",
-		status: "idle",
-		capabilities: ["doc-generation", "api-docs"],
-		lastHeartbeat: new Date().toISOString(),
+		name: "Coverage Agent",
+		type: "coverage",
+		status: "running",
+		capabilities: ["coverage-report", "test-execution"],
+		tasksCompleted: 7,
+		lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
 	},
 ];
 
@@ -141,20 +144,94 @@ export const mockSystemStatus = {
  * Uses a single route handler with URL parsing for reliable interception
  */
 export async function setupApiMocks(page: Page): Promise<void> {
-	const apiUrl = "http://localhost:8000";
+	const apiUrls = [
+		"http://localhost:4000",
+		"http://127.0.0.1:4000",
+		"http://127.0.0.1:8080",
+	];
 
 	// Single comprehensive route handler for all API calls
-	await page.route(`${apiUrl}/**`, async (route: Route) => {
+	const handler = async (route: Route) => {
 		const url = route.request().url();
 		const method = route.request().method();
 		const pathname = new URL(url).pathname;
 
 		// Health endpoint
-		if (pathname === "/api/v1/health") {
+		if (pathname === "/health" || pathname === "/api/v1/health") {
 			await route.fulfill({
 				status: 200,
 				contentType: "application/json",
 				body: JSON.stringify({ status: "healthy" }),
+			});
+			return;
+		}
+
+		// CSRF token
+		if (pathname === "/api/v1/csrf-token") {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({ token: "csrf-test-token" }),
+			});
+			return;
+		}
+
+		// Auth endpoints
+		if (pathname === "/api/v1/auth/login" && method === "POST") {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({
+					user: { id: "test-user", email: "test@example.com", name: "Test User" },
+					access_token: "test-token",
+				}),
+			});
+			return;
+		}
+		if (pathname === "/api/v1/auth/logout" && method === "POST") {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({ status: "ok" }),
+			});
+			return;
+		}
+		if (pathname === "/api/v1/auth/me" && method === "GET") {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({
+					user: { id: "test-user", email: "test@example.com", name: "Test User" },
+					account: {
+						id: "test-account",
+						name: "Test Account",
+						slug: "test-account",
+						account_type: "personal",
+					},
+					accounts: [],
+				}),
+			});
+			return;
+		}
+
+		// MCP endpoints
+		if (pathname === "/api/v1/mcp/health") {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({ service: "mcp", status: "ok" }),
+			});
+			return;
+		}
+		if (pathname === "/api/v1/mcp/config") {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({
+					mcp_base_url: "http://localhost:4000/api/v1/mcp",
+					auth_mode: "oauth",
+					requires_auth: true,
+				}),
 			});
 			return;
 		}
@@ -260,7 +337,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
 				await route.fulfill({
 					status: 200,
 					contentType: "application/json",
-					body: JSON.stringify(mockAgents),
+					body: JSON.stringify({ agents: mockAgents, total: mockAgents.length }),
 				});
 			} else {
 				await route.fulfill({
@@ -359,6 +436,19 @@ export async function setupApiMocks(page: Page): Promise<void> {
 			return;
 		}
 
+		// Notifications endpoint
+		if (
+			pathname === "/api/v1/notifications" ||
+			pathname === "/api/v1/notifications/"
+		) {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify([]),
+			});
+			return;
+		}
+
 		// Default fallback for unhandled API routes
 		console.log(`Unhandled API route: ${method} ${url}`);
 		await route.fulfill({
@@ -366,5 +456,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
 			contentType: "application/json",
 			body: JSON.stringify({}),
 		});
-	});
+	};
+
+	for (const apiUrl of apiUrls) {
+		await page.route(`${apiUrl}/**`, handler);
+	}
 }

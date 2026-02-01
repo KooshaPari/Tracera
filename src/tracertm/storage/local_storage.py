@@ -742,7 +742,7 @@ class LocalStorageManager:
 
     def get_project_storage(self, project_name: str) -> "ProjectStorage":
         """
-        Get storage interface for a specific project (legacy mode).
+        Get storage interface for a specific project (global projects dir).
 
         Args:
             project_name: Name of the project

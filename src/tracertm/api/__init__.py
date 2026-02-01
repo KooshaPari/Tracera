@@ -6,6 +6,12 @@ Provides:
 - ApiClient: HTTP client for sync operations with backend API
 """
 
+import os
+
+# Disable optional Pydantic plugins that are not part of this repo (ex: logfire).
+if os.getenv("PYDANTIC_DISABLE_PLUGINS") is None:
+    os.environ["PYDANTIC_DISABLE_PLUGINS"] = "logfire-plugin"
+
 from tracertm.api.client import TraceRTMClient
 from tracertm.api.sync_client import (
     ApiClient,

@@ -132,15 +132,15 @@ export function useVirtualization(
 					// Only show ID and type for very zoomed out
 					return {
 						id: nodeId,
-						type: data["type"],
+						type: data.type,
 					};
 				}
 				case "medium": {
 					// Show ID, type, and label
 					return {
 						id: nodeId,
-						type: data["type"],
-						label: data["label"],
+						type: data.type,
+						label: data.label,
 					};
 				}
 				case "high": {
@@ -176,7 +176,7 @@ export function useVirtualization(
 		});
 
 		return () => cancelAnimationFrame(timer);
-	}, [viewport]);
+	}, []);
 
 	return {
 		// Rendered nodes
@@ -218,7 +218,7 @@ export function useIntersectionVisibility(
 				setVisibleIds((prev) => {
 					const next = new Set(prev);
 					for (const entry of entries) {
-						const nodeId = (entry.target as HTMLElement).dataset["nodeId"];
+						const nodeId = (entry.target as HTMLElement).dataset.nodeId;
 						if (nodeId) {
 							if (entry.isIntersecting) {
 								next.add(nodeId);
@@ -244,7 +244,7 @@ export function useIntersectionVisibility(
 			observer.disconnect();
 			observerRef.current = null;
 		};
-	}, [containerRef]);
+	}, [containerRef, options]);
 
 	const registerNode = useCallback((nodeId: string, element: Element) => {
 		nodeRefsMap.current.set(nodeId, element);

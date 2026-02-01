@@ -1,19 +1,13 @@
 // Journey Explorer Component Tests
 // Tests visualization, filtering, overlay, and export functionality
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-	render,
-	screen,
-	fireEvent,
-	within,
-	waitFor,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Item, Link } from "@tracertm/types";
+import { describe, expect, it, vi } from "vitest";
 import {
-	JourneyExplorer,
 	type DerivedJourney,
+	JourneyExplorer,
 } from "@/components/graph/JourneyExplorer";
 
 // =============================================================================

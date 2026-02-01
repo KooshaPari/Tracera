@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/authStore";
 
 export interface Notification {
@@ -14,7 +14,7 @@ export interface Notification {
 export function useNotifications() {
 	const { token } = useAuthStore();
 	const queryClient = useQueryClient();
-	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 	const query = useQuery({
 		queryKey: ["notifications"],
@@ -23,6 +23,8 @@ export function useNotifications() {
 			const response = await fetch(`${API_URL}/api/v1/notifications/`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
+			// 404 = notifications API not implemented yet; treat as empty list
+			if (response.status === 404) return [];
 			if (!response.ok) throw new Error("Failed to fetch notifications");
 			return response.json() as Promise<Notification[]>;
 		},

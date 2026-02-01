@@ -2,9 +2,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ProcessView } from "@/pages/projects/views/ProcessView";
 
 export function ProcessViewRoute() {
-	const { projectId } = useParams({
-		from: "/projects/$projectId/views/process",
-	});
+	const { projectId } = useParams({ from: "/projects/$projectId" });
 	return <ProcessView projectId={projectId} />;
 }
 

@@ -1,25 +1,26 @@
+import type {
+	AutomationStatus,
+	TestCase,
+	TestCasePriority,
+	TestCaseStatus,
+	TestCaseType,
+} from "@tracertm/types";
 import {
 	CheckCircle,
 	Clock,
+	Cog,
 	FileCheck,
+	Filter,
 	FlaskConical,
+	PlayCircle,
 	Plus,
 	Search,
-	Filter,
-	PlayCircle,
 	XCircle,
-	Cog,
 } from "lucide-react";
-import { useState } from "react";
-import { useTestCases, useTestCaseStats } from "../../../hooks/useTestCases";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { CreateTestCaseForm } from "../../../components/forms/CreateTestCaseForm";
-import type {
-	TestCase,
-	TestCaseStatus,
-	TestCaseType,
-	TestCasePriority,
-	AutomationStatus,
-} from "@tracertm/types";
+import { useTestCaseStats, useTestCases } from "../../../hooks/useTestCases";
 
 const statusColors: Record<TestCaseStatus, string> = {
 	draft: "bg-gray-100 text-gray-700",
@@ -105,10 +106,28 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 		setShowCreateModal(false);
 	};
 
+	// Surface load failures to the user via toast
+	useEffect(() => {
+		if (error) {
+			toast.error("Failed to load test cases", {
+				description: error.message,
+				action: {
+					label: "Retry",
+					onClick: () => window.location.reload(),
+				},
+			});
+		}
+	}, [error]);
+
 	if (error) {
 		return (
 			<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-				Error loading test cases: {error.message}
+				<p className="font-medium">Error loading test cases</p>
+				<p className="mt-1 text-sm">{error.message}</p>
+				<p className="mt-2 text-sm text-red-600">
+					If the API reports missing tables, run Python migrations:{" "}
+					<code className="rounded bg-red-100 px-1">./scripts/run_python_migrations.sh</code>
+				</p>
 			</div>
 		);
 	}
@@ -158,7 +177,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 							Approved
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["approved"] || 0}
+							{stats.byStatus?.approved || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -167,7 +186,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 							Automated
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byAutomationStatus?.["automated"] || 0}
+							{stats.byAutomationStatus?.automated || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">

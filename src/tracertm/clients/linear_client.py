@@ -1,9 +1,15 @@
-"""Linear API client using GraphQL."""
+"""Linear API client using GraphQL with wait+retry."""
 
 from datetime import datetime
 from typing import Any, Optional
 
 import httpx
+from tenacity import (
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 
 class LinearClientError(Exception):
@@ -74,18 +80,40 @@ class LinearClient:
             await self._client.aclose()
             self._client = None
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception(
+            lambda e: isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
+            or (
+                isinstance(e, httpx.HTTPStatusError)
+                and e.response.status_code >= 500
+            )
+        ),
+        reraise=True,
+    )
+    async def _query_once(
+        self,
+        query: str,
+        variables: dict | None = None,
+    ) -> httpx.Response:
+        """Execute one GraphQL request; raises on 5xx so tenacity can retry."""
+        client = await self._get_client()
+        response = await client.post(
+            self.GRAPHQL_URL,
+            json={"query": query, "variables": variables or {}},
+        )
+        if response.status_code >= 500:
+            response.raise_for_status()
+        return response
+
     async def _query(
         self,
         query: str,
         variables: dict | None = None,
     ) -> dict:
-        """Execute a GraphQL query."""
-        client = await self._get_client()
-
-        response = await client.post(
-            self.GRAPHQL_URL,
-            json={"query": query, "variables": variables or {}},
-        )
+        """Execute a GraphQL query (with wait+retry on 5xx/network)."""
+        response = await self._query_once(query, variables)
 
         # Handle rate limiting
         if response.status_code == 429:

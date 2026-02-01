@@ -2,9 +2,10 @@
 Graph model for TraceRTM.
 """
 
+from sqlalchemy import ForeignKey, Index, Integer, String, Text
 import uuid
 
-from sqlalchemy import ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,7 +34,7 @@ class Graph(Base, TimestampMixin):
         String(255), primary_key=True, default=generate_graph_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -43,7 +44,7 @@ class Graph(Base, TimestampMixin):
     graph_type: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     root_item_id: Mapped[str | None] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="SET NULL"),
         nullable=True,
         index=True,

@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 
 interface ComplianceGaugeProps {

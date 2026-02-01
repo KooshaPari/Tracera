@@ -1,7 +1,15 @@
 // Progress Dashboard - Comprehensive milestone and sprint tracking with burndown and velocity
 // Provides 4 main views: Overview, Milestones, Sprints, and Velocity metrics
 
-import { useState, useMemo } from "react";
+import type {
+	BurndownDataPoint,
+	HealthStatus,
+	Milestone,
+	ProgressSnapshot,
+	Sprint,
+	VelocityMetrics,
+} from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -10,29 +18,19 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
-import { cn } from "@tracertm/ui";
 import {
 	AlertCircle,
+	AlertTriangle,
+	CalendarDays,
 	CheckCircle2,
+	ChevronRight,
 	Clock,
+	Target,
 	TrendingDown,
 	TrendingUp,
-	Target,
 	Zap,
-	AlertTriangle,
-	ChevronRight,
-	CalendarDays,
 } from "lucide-react";
-import type {
-	Milestone,
-	Sprint,
-	ProgressSnapshot,
-	VelocityMetrics,
-	HealthStatus,
-	MilestoneStatus,
-	SprintStatus,
-	BurndownDataPoint,
-} from "@tracertm/types";
+import { useMemo, useState } from "react";
 
 // ============================================================================
 // INTERFACES
@@ -206,7 +204,7 @@ interface MilestoneRowProps {
 
 function MilestoneRow({ milestone, onClickMilestone }: MilestoneRowProps) {
 	const daysRemaining = Math.ceil(
-		(new Date(milestone.targetDate).getTime() - new Date().getTime()) /
+		(new Date(milestone.targetDate).getTime() - Date.now()) /
 			(1000 * 60 * 60 * 24),
 	);
 	const isOverdue = daysRemaining < 0;
@@ -786,8 +784,7 @@ export function ProgressDashboard({
 								completed={activeSprint.completedPoints}
 								planned={activeSprint.plannedPoints}
 								daysRemaining={Math.ceil(
-									(new Date(activeSprint.endDate).getTime() -
-										new Date().getTime()) /
+									(new Date(activeSprint.endDate).getTime() - Date.now()) /
 										(1000 * 60 * 60 * 24),
 								)}
 								durationDays={activeSprint.durationDays}

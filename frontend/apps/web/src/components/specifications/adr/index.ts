@@ -5,7 +5,7 @@
 
 export { ADRCard } from "./ADRCard";
 export { ADREditor } from "./ADREditor";
-export { ADRTimeline } from "./ADRTimeline";
 export { ADRGraph } from "./ADRGraph";
-export { DecisionMatrix } from "./DecisionMatrix";
+export { ADRTimeline } from "./ADRTimeline";
 export { ComplianceGauge } from "./ComplianceGauge";
+export { DecisionMatrix } from "./DecisionMatrix";

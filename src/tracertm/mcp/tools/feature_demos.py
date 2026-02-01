@@ -7,7 +7,7 @@ import json
 import os
 from typing import Any
 
-from fastmcp import Context
+from fastmcp.server.dependencies import Progress
 
 from tracertm.mcp.core import mcp
 
@@ -19,14 +19,14 @@ def _truthy(value: str | None) -> bool:
 
 
 @mcp.tool(description="Report MCP feature flags and runtime configuration")
-async def mcp_feature_status(ctx: Context | None = None) -> dict[str, Any]:
+async def mcp_feature_status(ctx: Any | None = None) -> dict[str, Any]:
     """Return server feature flags and runtime config derived from env."""
     tool_transforms = os.getenv("TRACERTM_MCP_TOOL_TRANSFORMS")
     return {
         "providers": {
             "filesystem": os.getenv("TRACERTM_MCP_FILESYSTEM_ROOT"),
             "filesystem_reload": _truthy(os.getenv("TRACERTM_MCP_FILESYSTEM_RELOAD")),
-            "skills_enabled": _truthy(os.getenv("TRACERTM_MCP_ENABLE_SKILLS")),
+            "skills_roots": os.getenv("TRACERTM_MCP_SKILLS_ROOTS") or "default (.codex/skills)",
             "skills_provider": os.getenv("TRACERTM_MCP_SKILLS_PROVIDER") or "directory",
             "skills_roots": os.getenv("TRACERTM_MCP_SKILLS_ROOTS"),
             "skills_reload": _truthy(os.getenv("TRACERTM_MCP_SKILLS_RELOAD")),
@@ -35,14 +35,12 @@ async def mcp_feature_status(ctx: Context | None = None) -> dict[str, Any]:
         },
         "transforms": {
             "namespace": os.getenv("TRACERTM_MCP_NAMESPACE"),
-            "resources_as_tools": _truthy(os.getenv("TRACERTM_MCP_RESOURCES_AS_TOOLS")),
-            "prompts_as_tools": _truthy(os.getenv("TRACERTM_MCP_PROMPTS_AS_TOOLS")),
             "tool_transforms": json.loads(tool_transforms) if tool_transforms else None,
             "version_gte": os.getenv("TRACERTM_MCP_VERSION_GTE"),
             "version_lt": os.getenv("TRACERTM_MCP_VERSION_LT"),
         },
         "tasks": {
-            "default_task_mode": _truthy(os.getenv("TRACERTM_MCP_TASKS_DEFAULT")),
+            "tasks": True,
         },
         "session_state": {
             "redis_url": os.getenv("TRACERTM_MCP_SESSION_STATE_REDIS"),
@@ -81,15 +79,15 @@ def demo_versioned_tool(x: int, y: int, z: int = 0, mode: str = "sum") -> dict[s
 async def demo_long_task(
     steps: int = 5,
     delay_seconds: float = 0.2,
-    ctx: Context | None = None,
+    progress: Progress = Progress(),
 ) -> dict[str, Any]:
     total = max(1, steps)
+    await progress.set_total(total)
     for index in range(total):
-        if ctx:
-            await ctx.report_progress(index, total, f"Step {index + 1} of {total}")
+        await progress.set_message(f"Step {index + 1} of {total}")
         await asyncio.sleep(delay_seconds)
-    if ctx:
-        await ctx.report_progress(total, total, "Complete")
+        await progress.increment(1)
+    await progress.set_message("Complete")
     return {"status": "done", "steps": total, "delay_seconds": delay_seconds}
 
 

@@ -243,7 +243,12 @@ export interface Feature {
 	updatedAt: string;
 }
 
-export type ScenarioStatus = "draft" | "pending" | "passing" | "failing" | "skipped";
+export type ScenarioStatus =
+	| "draft"
+	| "pending"
+	| "passing"
+	| "failing"
+	| "skipped";
 
 export interface ScenarioStep {
 	stepNumber: number;
@@ -433,9 +438,20 @@ export interface SpecificationLink {
 	projectId: string;
 	sourceType: "adr" | "contract" | "feature" | "scenario";
 	sourceId: string;
-	targetType: "item" | "adr" | "contract" | "feature" | "scenario" | "test_case";
+	targetType:
+		| "item"
+		| "adr"
+		| "contract"
+		| "feature"
+		| "scenario"
+		| "test_case";
 	targetId: string;
-	linkType: "implements" | "verifies" | "depends_on" | "supersedes" | "related_to";
+	linkType:
+		| "implements"
+		| "verifies"
+		| "depends_on"
+		| "supersedes"
+		| "related_to";
 	description?: string;
 	createdAt: string;
 }

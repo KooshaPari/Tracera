@@ -1,0 +1,489 @@
+---
+title: Database Guide
+description: Database management and best practices
+---
+
+# Database Guide
+
+TraceRTM uses PostgreSQL as the primary database with SQLAlchemy ORM and Alembic for migrations.
+
+## Database Schema
+
+### Core Tables
+
+#### Items Table
+
+Stores all traceability items:
+
+```sql
+CREATE TABLE items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    type VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    metadata JSONB,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+CREATE INDEX idx_items_project ON items(project_id);
+CREATE INDEX idx_items_type ON items(type);
+CREATE INDEX idx_items_status ON items(status);
+CREATE INDEX idx_items_metadata ON items USING gin(metadata);
+```
+
+#### Links Table
+
+Stores relationships between items:
+
+```sql
+CREATE TABLE links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_id UUID NOT NULL REFERENCES items(id),
+    target_id UUID NOT NULL REFERENCES items(id),
+    link_type VARCHAR(50) NOT NULL,
+    metadata JSONB,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_links_source ON links(source_id);
+CREATE INDEX idx_links_target ON links(target_id);
+CREATE INDEX idx_links_type ON links(link_type);
+```
+
+## Migrations
+
+### Creating Migrations
+
+```bash
+# Auto-generate migration from model changes
+alembic revision --autogenerate -m "Add new column"
+
+# Create empty migration
+alembic revision -m "Add custom index"
+```
+
+### Migration File
+
+```python
+# alembic/versions/001_add_items_table.py
+from alembic import op
+import sqlalchemy as sa
+
+revision = '001'
+down_revision = None
+
+def upgrade():
+    op.create_table(
+        'items',
+        sa.Column('id', sa.UUID(), nullable=False),
+        sa.Column('title', sa.String(255), nullable=False),
+        sa.Column('description', sa.Text()),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('idx_items_title', 'items', ['title'])
+
+def downgrade():
+    op.drop_index('idx_items_title')
+    op.drop_table('items')
+```
+
+### Running Migrations
+
+```bash
+# Apply all pending migrations
+alembic upgrade head
+
+# Apply specific migration
+alembic upgrade +1
+
+# Rollback one migration
+alembic downgrade -1
+
+# Rollback to specific version
+alembic downgrade 001
+
+# View current version
+alembic current
+
+# View migration history
+alembic history
+```
+
+## Querying
+
+### Basic Queries
+
+```python
+from sqlalchemy import select
+from tracertm.models import Item
+
+# Select all items
+stmt = select(Item)
+items = await session.execute(stmt)
+
+# Filter items
+stmt = select(Item).where(Item.type == 'requirement')
+items = await session.execute(stmt)
+
+# Order results
+stmt = select(Item).order_by(Item.created_at.desc())
+items = await session.execute(stmt)
+
+# Limit results
+stmt = select(Item).limit(10)
+items = await session.execute(stmt)
+```
+
+### Joins
+
+```python
+# Join with links
+stmt = (
+    select(Item, Link)
+    .join(Link, Item.id == Link.source_id)
+    .where(Item.type == 'requirement')
+)
+results = await session.execute(stmt)
+```
+
+### Eager Loading
+
+```python
+from sqlalchemy.orm import selectinload
+
+# Load related links
+stmt = (
+    select(Item)
+    .options(selectinload(Item.links))
+    .where(Item.id == item_id)
+)
+item = await session.scalar(stmt)
+```
+
+### Aggregations
+
+```python
+from sqlalchemy import func
+
+# Count items by type
+stmt = (
+    select(Item.type, func.count(Item.id))
+    .group_by(Item.type)
+)
+counts = await session.execute(stmt)
+```
+
+## Indexes
+
+### Creating Indexes
+
+```python
+# In migration
+op.create_index(
+    'idx_items_title_lower',
+    'items',
+    [sa.text('LOWER(title)')]
+)
+
+# Partial index
+op.create_index(
+    'idx_active_items',
+    'items',
+    ['id'],
+    postgresql_where=sa.text('deleted_at IS NULL')
+)
+
+# Full-text search index
+op.execute("""
+    CREATE INDEX idx_items_fts ON items
+    USING gin(to_tsvector('english', title || ' ' || description))
+""")
+```
+
+### Index Usage
+
+```sql
+-- Check index usage
+SELECT
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan,
+    idx_tup_read,
+    idx_tup_fetch
+FROM pg_stat_user_indexes
+WHERE schemaname = 'public'
+ORDER BY idx_scan DESC;
+
+-- Find unused indexes
+SELECT
+    schemaname,
+    tablename,
+    indexname
+FROM pg_stat_user_indexes
+WHERE idx_scan = 0
+AND schemaname = 'public';
+```
+
+## Performance Optimization
+
+### Query Optimization
+
+```python
+# Bad - N+1 query problem
+items = await session.execute(select(Item))
+for item in items:
+    links = await session.execute(
+        select(Link).where(Link.source_id == item.id)
+    )  # Queries in loop!
+
+# Good - Eager loading
+items = await session.execute(
+    select(Item).options(selectinload(Item.links))
+)
+```
+
+### Connection Pooling
+
+```python
+from sqlalchemy.ext.asyncio import create_async_engine
+
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_size=20,          # Number of connections in pool
+    max_overflow=10,       # Additional connections if pool full
+    pool_pre_ping=True,    # Verify connection before use
+    pool_recycle=3600,     # Recycle connections after 1 hour
+)
+```
+
+### Batch Operations
+
+```python
+# Insert multiple items efficiently
+items = [
+    Item(title=f"Item {i}", type="requirement")
+    for i in range(1000)
+]
+session.add_all(items)
+await session.commit()
+
+# Bulk update
+await session.execute(
+    update(Item)
+    .where(Item.type == 'requirement')
+    .values(status='active')
+)
+```
+
+## JSONB Queries
+
+PostgreSQL JSONB support for flexible metadata:
+
+```python
+# Query JSONB field
+stmt = select(Item).where(
+    Item.metadata['priority'].astext == 'high'
+)
+
+# Check key existence
+stmt = select(Item).where(
+    Item.metadata.has_key('assignee')
+)
+
+# Contains operator
+stmt = select(Item).where(
+    Item.metadata.contains({'status': 'active'})
+)
+```
+
+## Full-Text Search
+
+```python
+from sqlalchemy import func
+
+# Simple full-text search
+stmt = select(Item).where(
+    func.to_tsvector('english', Item.title + ' ' + Item.description)
+    .op('@@')(func.plainto_tsquery('english', 'search query'))
+)
+
+# Ranked search
+stmt = (
+    select(
+        Item,
+        func.ts_rank(
+            func.to_tsvector('english', Item.title + ' ' + Item.description),
+            func.plainto_tsquery('english', 'search query')
+        ).label('rank')
+    )
+    .where(
+        func.to_tsvector('english', Item.title + ' ' + Item.description)
+        .op('@@')(func.plainto_tsquery('english', 'search query'))
+    )
+    .order_by(sa.desc('rank'))
+)
+```
+
+## Backup and Restore
+
+### Backup
+
+```bash
+# Full database backup
+pg_dump -U tracertm tracertm > backup.sql
+
+# Compressed backup
+pg_dump -U tracertm tracertm | gzip > backup.sql.gz
+
+# Specific tables
+pg_dump -U tracertm -t items -t links tracertm > backup.sql
+
+# Schema only
+pg_dump -U tracertm --schema-only tracertm > schema.sql
+```
+
+### Restore
+
+```bash
+# Restore from backup
+psql -U tracertm tracertm < backup.sql
+
+# Restore compressed backup
+gunzip -c backup.sql.gz | psql -U tracertm tracertm
+```
+
+### Automated Backups
+
+```bash
+#!/bin/bash
+# backup.sh
+DATE=$(date +%Y%m%d_%H%M%S)
+pg_dump -U tracertm tracertm | gzip > /backups/backup_$DATE.sql.gz
+
+# Keep only last 7 days
+find /backups -name "backup_*.sql.gz" -mtime +7 -delete
+```
+
+Add to crontab:
+
+```bash
+# Daily backup at 2 AM
+0 2 * * * /path/to/backup.sh
+```
+
+## Monitoring
+
+### Query Performance
+
+```sql
+-- Enable query logging
+ALTER DATABASE tracertm SET log_min_duration_statement = 1000;
+
+-- View slow queries
+SELECT
+    query,
+    calls,
+    total_time,
+    mean_time,
+    max_time
+FROM pg_stat_statements
+ORDER BY mean_time DESC
+LIMIT 10;
+```
+
+### Connection Stats
+
+```sql
+-- Active connections
+SELECT
+    datname,
+    count(*) as connections
+FROM pg_stat_activity
+GROUP BY datname;
+
+-- Long-running queries
+SELECT
+    pid,
+    now() - query_start as duration,
+    query
+FROM pg_stat_activity
+WHERE state = 'active'
+AND now() - query_start > interval '5 minutes';
+```
+
+### Table Statistics
+
+```sql
+-- Table sizes
+SELECT
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+-- Dead tuples (need VACUUM)
+SELECT
+    schemaname,
+    tablename,
+    n_dead_tup
+FROM pg_stat_user_tables
+WHERE n_dead_tup > 1000
+ORDER BY n_dead_tup DESC;
+```
+
+## Maintenance
+
+### VACUUM
+
+```sql
+-- Manual vacuum
+VACUUM ANALYZE items;
+
+-- Full vacuum (locks table)
+VACUUM FULL items;
+
+-- Auto-vacuum settings (in postgresql.conf)
+autovacuum = on
+autovacuum_vacuum_threshold = 50
+autovacuum_analyze_threshold = 50
+```
+
+### REINDEX
+
+```sql
+-- Reindex table
+REINDEX TABLE items;
+
+-- Reindex specific index
+REINDEX INDEX idx_items_title;
+
+-- Reindex concurrently (no locks)
+REINDEX INDEX CONCURRENTLY idx_items_title;
+```
+
+## Best Practices
+
+1. **Use transactions** - Wrap related operations
+2. **Add indexes** - For frequently queried columns
+3. **Eager load relationships** - Avoid N+1 queries
+4. **Use connection pooling** - Reuse connections
+5. **Monitor query performance** - Identify slow queries
+6. **Regular backups** - Automate database backups
+7. **Use migrations** - Version control schema changes
+8. **VACUUM regularly** - Keep database healthy
+9. **Use JSONB** - For flexible metadata
+10. **Enable query logging** - Debug performance issues
+
+## Related Documentation
+
+- [Backend Architecture](/01-architecture/backend-architecture)
+- [Deployment Guide](/02-guides/deployment)
+- [Performance Guide](/02-guides/performance)

@@ -11,7 +11,7 @@
 - **[TRACERTM_MCP_TOOLS_SUMMARY.md](TRACERTM_MCP_TOOLS_SUMMARY.md)** – Tools by category with quick reference
 
 ### Implementation
-- **[tracertm_mcp_server.py](tracertm_mcp_server.py)** – The actual MCP server (1015 lines, 21 tools)
+- **`src/tracertm/mcp/server.py`** – Unified MCP server (FastMCP) with registered tools/resources
 - **[TRACE_RTM_MCP_DESIGN.md](TRACE_RTM_MCP_DESIGN.md)** – Original design document (phases 1–4)
 
 ## Tool Categories (21 Total)
@@ -72,7 +72,7 @@ tracertm-mcp (FastMCP 3.0.0b1)
 ## Running
 
 ```bash
-python scripts/mcp/tracertm_mcp_server.py
+python -m tracertm.mcp
 ```
 
 Then configure in your MCP host (Claude Desktop, droid, etc.) to point to this server.
@@ -88,4 +88,3 @@ All 12 core tests pass. MCP-specific tests (Phase 2).
 ## Questions?
 
 See the implementation guide or tool reference for details on any specific tool.
-
