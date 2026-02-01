@@ -112,3 +112,42 @@ processes:
         path: /-/ready
       initial_delay_seconds: 3
       period_seconds: 10
+
+  #############################################################################
+  # Layer 3: Exporters
+  #############################################################################
+
+  postgres-exporter:
+    command: "postgres_exporter"
+    depends_on:
+      postgres:
+        condition: process_healthy
+    environment:
+      - "DATA_SOURCE_NAME=postgresql://tracertm:${DB_PASSWORD:-tracertm_password}@localhost:5432/tracertm?sslmode=disable"
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: 9187
+        path: /metrics
+      initial_delay_seconds: 2
+
+  redis-exporter:
+    command: "redis_exporter --redis.addr=redis://localhost:6379"
+    depends_on:
+      redis:
+        condition: process_healthy
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: 9121
+        path: /metrics
+      initial_delay_seconds: 2
+
+  node-exporter:
+    command: "node_exporter"
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: 9100
+        path: /metrics
+      initial_delay_seconds: 1
