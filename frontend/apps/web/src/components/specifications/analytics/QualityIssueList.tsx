@@ -3,11 +3,11 @@
  * Displays a list of quality issues with severity indicators and suggestions
  */
 
-import { cn } from "@/lib/utils";
 import type {
 	AnalyticsQualityIssue,
 	QualityDimension,
 } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface QualityIssueListProps {
 	issues: AnalyticsQualityIssue[];

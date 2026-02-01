@@ -4,11 +4,12 @@ Execution model for QA Integration system.
 Tracks test/recording execution runs with Docker containers.
 """
 
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin
@@ -42,7 +43,7 @@ class Execution(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_execution_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -53,7 +54,7 @@ class Execution(Base, TimestampMixin):
         index=True,
     )
     item_id: Mapped[str | None] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
@@ -130,7 +131,7 @@ class ExecutionArtifact(Base):
         nullable=False,
     )
     item_id: Mapped[str | None] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="SET NULL"),
         nullable=True,
     )
@@ -155,7 +156,7 @@ class ExecutionArtifact(Base):
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default="now()",
+        default=datetime.utcnow,
         nullable=False,
     )
 

@@ -43,6 +43,8 @@ export interface ChatConversation {
 	id: string;
 	title: string;
 	projectId?: string;
+	/** Backend agent session ID for per-session sandbox; set when creating session for this conversation */
+	sessionId?: string | null;
 	model: AIModel;
 	messages: ChatMessage[];
 	createdAt: string;

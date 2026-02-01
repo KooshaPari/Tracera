@@ -1,21 +1,8 @@
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import {
-	Bell,
-	Moon,
-	Search,
-	Sun,
-	Activity,
-	LogOut,
-	Settings,
-	Shield,
-	Info,
-	AlertTriangle,
-	CheckCircle,
-	XCircle,
-} from "lucide-react";
-import { useTheme } from "@/providers/ThemeProvider";
-import { Breadcrumbs } from "./Breadcrumb";
-import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
 	Button,
 	DropdownMenu,
 	DropdownMenuContent,
@@ -23,22 +10,33 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-	Avatar,
-	AvatarImage,
-	AvatarFallback,
 	ScrollArea,
 } from "@tracertm/ui";
-import { useProject } from "@/hooks/useProjects";
-import { useAuthStore } from "@/stores/authStore";
-import { useNotifications } from "@/hooks/useNotifications";
+import {
+	Activity,
+	AlertTriangle,
+	Bell,
+	CheckCircle,
+	Info,
+	LogIn,
+	LogOut,
+	Search,
+	Settings,
+	Shield,
+	XCircle,
+} from "lucide-react";
 import { useMemo } from "react";
+import { MobileMenu } from "@/components/mobile";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useProject } from "@/hooks/useProjects";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
+import { Breadcrumbs } from "./Breadcrumb";
 
 export function Header() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const params = useParams({ strict: false });
-	const { theme, toggleTheme } = useTheme();
 	const { user, logout } = useAuthStore();
 	const { notifications, unreadCount, markAsRead, markAllRead } =
 		useNotifications();
@@ -47,7 +45,7 @@ export function Header() {
 
 	const handleLogout = () => {
 		logout();
-		navigate({ to: "/auth/login" });
+		navigate({ to: "/home" });
 	};
 
 	// Get initials for avatar
@@ -89,15 +87,15 @@ export function Header() {
 			return {
 				type: "projects-list",
 				title: "Projects",
-				subtitle: "Manage your traceability projects",
+				subtitle: "",
 			};
 		}
 
-		if (path === "/") {
+		if (path === "/" || path === "/home") {
 			return {
 				type: "dashboard",
 				title: "Dashboard",
-				subtitle: "Overview and recent activity",
+				subtitle: undefined,
 			};
 		}
 
@@ -124,10 +122,11 @@ export function Header() {
 	return (
 		<header
 			role="banner"
-			className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-background/60 backdrop-blur-xl px-4 sm:px-6 transition-all duration-300"
+			className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/0 bg-[linear-gradient(90deg,rgba(2,6,23,0.65),rgba(2,6,23,0.35)_60%,rgba(15,23,42,0.25))] backdrop-blur-2xl shadow-[0_1px_0_rgba(15,23,42,0.6)] pl-4 pr-4 sm:pl-6 sm:pr-6 transition-all duration-300"
 		>
-			{/* Left: Context & Breadcrumbs */}
-			<div className="flex items-center gap-4 overflow-hidden flex-1 min-w-0">
+			{/* Left: Mobile menu & Context & Breadcrumbs */}
+			<div className="flex items-center gap-2 sm:gap-4 overflow-hidden flex-1 min-w-0">
+				<MobileMenu />
 				{/* Dynamic Context Info */}
 				{headerContext.type === "project" ||
 				headerContext.type === "project-view" ? (
@@ -136,9 +135,9 @@ export function Header() {
 							<Activity className="h-4 w-4 text-primary" />
 						</div>
 						<div className="min-w-0">
-							<h1 className="text-sm font-bold truncate">
+							<h2 className="text-sm font-bold truncate">
 								{headerContext.title}
-							</h1>
+							</h2>
 							{headerContext.subtitle && (
 								<p className="text-xs text-muted-foreground truncate">
 									{headerContext.subtitle}
@@ -154,7 +153,7 @@ export function Header() {
 					</div>
 				) : (
 					<div className="flex items-center gap-3 min-w-0">
-						<h1 className="text-sm font-bold">{headerContext.title}</h1>
+						<h2 className="text-sm font-bold">{headerContext.title}</h2>
 						{headerContext.subtitle && (
 							<p className="text-xs text-muted-foreground hidden sm:block">
 								{headerContext.subtitle}
@@ -180,33 +179,21 @@ export function Header() {
 					/>
 				</div>
 
-				{/* Theme toggle */}
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={toggleTheme}
-					className="h-9 w-9 rounded-full"
-				>
-					{theme === "dark" ? (
-						<Sun className="h-4 w-4" />
-					) : (
-						<Moon className="h-4 w-4" />
-					)}
-				</Button>
-
 				{/* Notifications Dropdown */}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="h-9 w-9 rounded-full relative"
-						>
-							<Bell className="h-4 w-4" />
-							{unreadCount > 0 && (
-								<span className="absolute right-2 top-2 flex h-2 w-2 items-center justify-center rounded-full bg-primary ring-2 ring-background animate-pulse" />
-							)}
-						</Button>
+						<span>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-9 w-9 rounded-full relative"
+							>
+								<Bell className="h-4 w-4" />
+								{unreadCount > 0 && (
+									<span className="absolute right-2 top-2 flex h-2 w-2 items-center justify-center rounded-full bg-primary ring-2 ring-background animate-pulse" />
+								)}
+							</Button>
+						</span>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="w-80">
 						<div className="flex items-center justify-between px-2 py-1.5">
@@ -288,53 +275,63 @@ export function Header() {
 					</DropdownMenuContent>
 				</DropdownMenu>
 
-				{/* User Profile Dropdown */}
+				{/* User Profile / Sign in */}
 				<div className="h-8 w-px bg-border mx-1 hidden sm:block" />
 
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="ghost"
-							size="sm"
-							className="gap-2 px-1 hover:bg-muted rounded-full ml-1"
-						>
-							<Avatar className="h-8 w-8 border border-border">
-								<AvatarImage src={user?.avatar} alt={user?.name || "User"} />
-								<AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-									{initials}
-								</AvatarFallback>
-							</Avatar>
-							<div className="flex flex-col items-start text-left hidden md:flex mr-1">
-								<span className="text-xs font-semibold leading-none max-w-[100px] truncate">
-									{user?.name || "User"}
-								</span>
-								<span className="text-[10px] text-muted-foreground leading-none mt-0.5 max-w-[100px] truncate">
-									{user?.email || "user@example.com"}
-								</span>
-							</div>
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="w-56">
-						<DropdownMenuLabel>
-							<div className="flex flex-col space-y-1">
-								<p className="text-sm font-medium leading-none">
-									{user?.name || "Guest User"}
-								</p>
-								<p className="text-xs leading-none text-muted-foreground">
-									{user?.email || "Not logged in"}
-								</p>
-							</div>
-						</DropdownMenuLabel>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							className="cursor-pointer"
-							onClick={() => navigate({ to: "/settings" })}
-						>
-							<Settings className="mr-2 h-4 w-4" />
-							<span>Settings</span>
-						</DropdownMenuItem>
-						{user?.role === "admin" && (
-							<>
+				{!user ? (
+					<Button
+						variant="default"
+						size="sm"
+						className="gap-2 rounded-full font-semibold"
+						onClick={() => navigate({ to: "/auth/login" })}
+					>
+						<LogIn className="h-4 w-4" />
+						<span className="hidden sm:inline">Sign in</span>
+					</Button>
+				) : (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="gap-2 px-1 hover:bg-muted rounded-full ml-1"
+							>
+								<Avatar className="h-8 w-8 border border-border">
+									<AvatarImage src={user?.avatar} alt={user?.name || "User"} />
+									<AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+										{initials}
+									</AvatarFallback>
+								</Avatar>
+								<div className="flex flex-col items-start text-left hidden md:flex mr-1">
+									<span className="text-xs font-semibold leading-none max-w-[100px] truncate">
+										{user?.name || "User"}
+									</span>
+									<span className="text-[10px] text-muted-foreground leading-none mt-0.5 max-w-[100px] truncate">
+										{user?.email}
+									</span>
+								</div>
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-56">
+							<DropdownMenuLabel>
+								<div className="flex flex-col space-y-1">
+									<p className="text-sm font-medium leading-none">
+										{user?.name || "User"}
+									</p>
+									<p className="text-xs leading-none text-muted-foreground">
+										{user?.email}
+									</p>
+								</div>
+							</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="cursor-pointer"
+								onClick={() => navigate({ to: "/settings" })}
+							>
+								<Settings className="mr-2 h-4 w-4" />
+								<span>Settings</span>
+							</DropdownMenuItem>
+							{user?.role === "admin" && (
 								<DropdownMenuItem
 									className="cursor-pointer"
 									onClick={() => navigate({ to: "/admin" })}
@@ -342,18 +339,18 @@ export function Header() {
 									<Shield className="mr-2 h-4 w-4" />
 									<span>Admin Panel</span>
 								</DropdownMenuItem>
-							</>
-						)}
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							className="cursor-pointer text-destructive focus:text-destructive"
-							onClick={handleLogout}
-						>
-							<LogOut className="mr-2 h-4 w-4" />
-							<span>Log out</span>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+							)}
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="cursor-pointer text-destructive focus:text-destructive"
+								onClick={handleLogout}
+							>
+								<LogOut className="mr-2 h-4 w-4" />
+								<span>Log out</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
 			</div>
 		</header>
 	);

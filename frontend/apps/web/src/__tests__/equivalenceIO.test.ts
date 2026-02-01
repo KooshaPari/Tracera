@@ -1,26 +1,26 @@
 // equivalenceIO.test.ts - Tests for equivalence import/export utilities
 
-import { describe, it, expect, beforeEach } from "vitest";
 import type {
-	EquivalenceLink,
 	CanonicalConcept,
 	CanonicalProjection,
+	EquivalenceLink,
 } from "@tracertm/types";
-import {
-	serializeToJSON,
-	deserializeFromJSON,
-	serializeToCSV,
-	deserializeLinksFromCSV,
-	deserializeConceptsFromCSV,
-	deserializeProjectionsFromCSV,
-	validateExportPackage,
-	validateImportOptions,
-	mergeExportPackages,
-	createExportSummary,
-} from "../components/graph/utils/equivalenceIO";
+import { describe, expect, it } from "vitest";
 import type {
 	EquivalenceExportPackage,
 	EquivalenceImportOptions,
+} from "../components/graph/utils/equivalenceIO";
+import {
+	createExportSummary,
+	deserializeConceptsFromCSV,
+	deserializeFromJSON,
+	deserializeLinksFromCSV,
+	deserializeProjectionsFromCSV,
+	mergeExportPackages,
+	serializeToCSV,
+	serializeToJSON,
+	validateExportPackage,
+	validateImportOptions,
 } from "../components/graph/utils/equivalenceIO";
 
 // =============================================================================

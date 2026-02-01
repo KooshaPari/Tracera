@@ -1,11 +1,11 @@
 // DesignTokenBrowser.test.tsx - Test suite for DesignTokenBrowser component
 // Tests token display, filtering, search, categorization, and interactions
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DesignTokenBrowser } from "@/components/graph";
 import type { DesignToken } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DesignTokenBrowser } from "@/components/graph";
 
 // =============================================================================
 // MOCK DATA

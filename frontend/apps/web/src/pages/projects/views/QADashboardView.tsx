@@ -1,31 +1,22 @@
-import { useState } from "react";
 import {
+	Badge,
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-	Badge,
 	Progress,
-	Skeleton,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Skeleton,
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import {
 	AlertTriangle,
 	BarChart3,
@@ -38,13 +29,22 @@ import {
 	TrendingUp,
 	Zap,
 } from "lucide-react";
+import { useState } from "react";
 import {
-	useQAMetricsSummary,
-	usePassRateTrend,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import {
 	useCoverageMetrics,
 	useDefectDensity,
-	useFlakyTests,
 	useExecutionHistory,
+	useFlakyTests,
+	usePassRateTrend,
+	useQAMetricsSummary,
 } from "@/hooks/useQAMetrics";
 
 interface QADashboardViewProps {
@@ -96,7 +96,7 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 				</div>
 				<Select
 					value={String(trendDays)}
-					onValueChange={(v) => setTrendDays(parseInt(v))}
+					onValueChange={(v) => setTrendDays(parseInt(v, 10))}
 				>
 					<SelectTrigger className="w-[140px]">
 						<SelectValue placeholder="Time range" />

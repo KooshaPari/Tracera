@@ -10,123 +10,116 @@
 export {
 	ADRCard,
 	ADREditor,
-	ADRTimeline,
 	ADRGraph,
-	DecisionMatrix,
+	ADRTimeline,
 	ComplianceGauge,
+	DecisionMatrix,
 } from "./adr";
-
-// ============================================================================
-// BDD (Behavior-Driven Development) Components
-// ============================================================================
-export {
-	FeatureCard,
-	ScenarioCard,
-	GherkinEditor,
-	type ValidationError,
-	GherkinViewer,
-	StepBadge,
-	ExamplesTable,
-	type TableExample,
-} from "./bdd";
-
-// ============================================================================
-// Contract Components
-// ============================================================================
-export {
-	ContractCard,
-	ContractEditor,
-	ConditionList,
-	StateMachineViewer,
-	VerificationBadge,
-	PassVerificationBadge,
-	FailVerificationBadge,
-	PendingVerificationBadge,
-	UnverifiedBadge,
-} from "./contracts";
-
-// ============================================================================
-// Specification Dashboard Components
-// ============================================================================
-export {
-	SpecificationDashboard,
-	HealthScoreRing,
-	CoverageHeatmap,
-	GapAnalysis,
-	ComplianceGaugeFull,
-} from "./dashboard";
-
-// ============================================================================
-// Quality Components
-// ============================================================================
-export { SmellIndicator } from "./quality/SmellIndicator";
-
 // ============================================================================
 // Analytics Components (Blockchain/NFT-like)
 // ============================================================================
 export {
-	EARSPatternBadge,
-	EARSPatternDetail,
-	QualityDimensionRadar,
-	QualityDimensionBars,
-	QualityIssueList,
-	QualityIssueItem,
-	QualityIssueSummary,
-	FlakinessIndicator,
-	FlakinessDetailCard,
-	ODCClassificationCard,
-	ODCBadge,
-	ODCTriggerBadge,
+	CVSSDetailCard,
 	CVSSScoreBadge,
 	CVSSScoreGauge,
-	CVSSDetailCard,
+	EARSPatternBadge,
+	EARSPatternDetail,
+	FlakinessDetailCard,
+	FlakinessIndicator,
 	ImpactAnalysisGraph,
 	ImpactSummaryBadge,
+	ODCBadge,
+	ODCClassificationCard,
+	ODCTriggerBadge,
+	QualityDimensionBars,
+	QualityDimensionRadar,
+	QualityIssueItem,
+	QualityIssueList,
+	QualityIssueSummary,
 } from "./analytics";
-
+// ============================================================================
+// BDD (Behavior-Driven Development) Components
+// ============================================================================
+export {
+	ExamplesTable,
+	FeatureCard,
+	GherkinEditor,
+	GherkinViewer,
+	ScenarioCard,
+	StepBadge,
+	type TableExample,
+	type ValidationError,
+} from "./bdd";
 // ============================================================================
 // Blockchain Components
 // ============================================================================
 export {
-	VersionChainTimeline,
-	VersionChainBadge,
-	MerkleProofViewer,
-	MerkleVerificationBadge,
-	ContentAddressCard,
 	ContentAddressBadge,
+	ContentAddressCard,
 	ContentHashComparison,
 	DigitalSignatureBadge,
-	SignatureVerificationStatus,
+	MerkleProofViewer,
+	MerkleVerificationBadge,
 	SignatureHistory,
+	SignatureVerificationStatus,
+	VersionChainBadge,
+	VersionChainTimeline,
 } from "./blockchain";
+// ============================================================================
+// Contract Components
+// ============================================================================
+export {
+	ConditionList,
+	ContractCard,
+	ContractEditor,
+	FailVerificationBadge,
+	PassVerificationBadge,
+	PendingVerificationBadge,
+	StateMachineViewer,
+	UnverifiedBadge,
+	VerificationBadge,
+} from "./contracts";
+// ============================================================================
+// Specification Dashboard Components
+// ============================================================================
+export {
+	ComplianceGaugeFull,
+	CoverageHeatmap,
+	GapAnalysis,
+	HealthScoreRing,
+	SpecificationDashboard,
+} from "./dashboard";
+// ============================================================================
+// Item Specification Components
+// ============================================================================
+export {
+	DefectSpecCard,
+	EpicSpecCard,
+	ItemSpecsOverview,
+	ItemSpecTabs,
+	QualityScoreGauge,
+	RequirementSpecCard,
+	SpecMetadataPanel,
+	TaskSpecCard,
+	TestSpecCard,
+	UserStorySpecCard,
+} from "./items";
 
 // ============================================================================
 // Prioritization Components
 // ============================================================================
 export {
-	WSJFCalculator,
-	WSJFScoreBadge,
-	RICEScoreCard,
-	RICEScoreBadge,
-	RICEBreakdown,
-	PriorityMatrix,
-	ValueEffortMatrix,
 	MoSCoWBadge,
 	PrioritizationSummary,
+	PriorityMatrix,
+	RICEBreakdown,
+	RICEScoreBadge,
+	RICEScoreCard,
+	ValueEffortMatrix,
+	WSJFCalculator,
+	WSJFScoreBadge,
 } from "./prioritization";
-
 // ============================================================================
-// Item Specification Components
+// Quality Components
 // ============================================================================
-export {
-	RequirementSpecCard,
-	TestSpecCard,
-	EpicSpecCard,
-	UserStorySpecCard,
-	TaskSpecCard,
-	DefectSpecCard,
-	QualityScoreGauge,
-	SpecMetadataPanel,
-	ItemSpecTabs,
-	ItemSpecsOverview,
-} from "./items";
+export { SmellIndicator } from "./quality/SmellIndicator";

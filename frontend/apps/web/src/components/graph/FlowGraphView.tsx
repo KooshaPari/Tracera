@@ -1,6 +1,7 @@
 // Flow Graph View - React Flow based graph with rich custom nodes
 // Provides block pill nodes with embedded previews and interactive widgets
 
+import type { Item, Link, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -13,22 +14,21 @@ import {
 } from "@tracertm/ui/components/Select";
 import { Separator } from "@tracertm/ui/components/Separator";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import type { Item, Link, LinkType } from "@tracertm/types";
 import {
-	ReactFlow,
 	Background,
 	BackgroundVariant,
 	Controls,
-	MiniMap,
-	Panel,
-	useNodesState,
-	useEdgesState,
-	type Node,
 	type Edge,
-	type NodeTypes,
 	MarkerType,
-	useReactFlow,
+	MiniMap,
+	type Node,
+	type NodeTypes,
+	Panel,
+	ReactFlow,
 	ReactFlowProvider,
+	useEdgesState,
+	useNodesState,
+	useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
@@ -44,9 +44,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NodeDetailPanel } from "./NodeDetailPanel";
-import { PerspectiveSelector } from "./PerspectiveSelector";
-import { RichNodePill, type RichNodeData } from "./RichNodePill";
 import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
+import { PerspectiveSelector } from "./PerspectiveSelector";
+import { type RichNodeData, RichNodePill } from "./RichNodePill";
 import type { EnhancedNodeData, GraphPerspective } from "./types";
 import {
 	ENHANCED_TYPE_COLORS,
@@ -152,14 +152,14 @@ function FlowGraphViewInner({
 				depth,
 				hasChildren,
 				parentId: item.parentId,
-				uiPreview: item.metadata?.["screenshotUrl"]
+				uiPreview: item.metadata?.['screenshotUrl']
 					? {
-							screenshotUrl: item.metadata["screenshotUrl"] as string,
-							thumbnailUrl: item.metadata["thumbnailUrl"] as string | undefined,
-							interactiveWidgetUrl: item.metadata["interactiveUrl"] as
+							screenshotUrl: item.metadata['screenshotUrl'] as string,
+							thumbnailUrl: item.metadata['thumbnailUrl'] as string | undefined,
+							interactiveWidgetUrl: item.metadata['interactiveUrl'] as
 								| string
 								| undefined,
-							componentCode: item.metadata["code"] as string | undefined,
+							componentCode: item.metadata['code'] as string | undefined,
 						}
 					: undefined,
 			} as EnhancedNodeData;
@@ -213,6 +213,36 @@ function FlowGraphViewInner({
 
 		return counts;
 	}, [enhancedNodes]);
+
+	// Create node data from enhanced node
+	const createNodeData = useCallback(
+		(node: EnhancedNodeData): RichNodeData => {
+			const data: RichNodeData = {
+				id: node.id,
+				item: node.item,
+				type: node.type,
+				status: node.status,
+				label: node.label,
+				description: node.item.description ?? undefined,
+				uiPreview: node.uiPreview ?? undefined,
+				connections: node.connections,
+				isExpanded: expandedNodes.has(node.id),
+				showPreview: perspective === "ui",
+				onSelect: setSelectedNodeId,
+				onExpand: (id) => {
+					setExpandedNodes((prev) => {
+						const next = new Set(prev);
+						if (next.has(id)) next.delete(id);
+						else next.add(id);
+						return next;
+					});
+				},
+				onNavigate: onNavigateToItem ?? undefined,
+			};
+			return data;
+		},
+		[expandedNodes, perspective, onNavigateToItem],
+	);
 
 	// Layout calculation
 	const calculateLayout = useCallback(
@@ -307,8 +337,6 @@ function FlowGraphViewInner({
 						data: createNodeData(node),
 					}));
 				}
-
-				case "force":
 				default: {
 					// Force-directed simulation (simplified)
 					const cols = Math.ceil(Math.sqrt(nodes.length));
@@ -331,37 +359,7 @@ function FlowGraphViewInner({
 				}
 			}
 		},
-		[],
-	);
-
-	// Create node data from enhanced node
-	const createNodeData = useCallback(
-		(node: EnhancedNodeData): RichNodeData => {
-			const data: RichNodeData = {
-				id: node.id,
-				item: node.item,
-				type: node.type,
-				status: node.status,
-				label: node.label,
-				description: node.item.description ?? undefined,
-				uiPreview: node.uiPreview ?? undefined,
-				connections: node.connections,
-				isExpanded: expandedNodes.has(node.id),
-				showPreview: perspective === "ui",
-				onSelect: setSelectedNodeId,
-				onExpand: (id) => {
-					setExpandedNodes((prev) => {
-						const next = new Set(prev);
-						if (next.has(id)) next.delete(id);
-						else next.add(id);
-						return next;
-					});
-				},
-				onNavigate: onNavigateToItem ?? undefined,
-			};
-			return data;
-		},
-		[expandedNodes, perspective, onNavigateToItem],
+		[createNodeData],
 	);
 
 	// Convert to React Flow nodes and edges
@@ -582,8 +580,8 @@ function FlowGraphViewInner({
 							value={layout}
 							onValueChange={(v) => setLayout(v as LayoutType)}
 						>
-							<SelectTrigger className="w-[160px] h-9">
-								<Layers className="h-4 w-4 mr-2" />
+							<SelectTrigger className="w-[160px] h-9" aria-label="Graph layout selection">
+								<Layers className="h-4 w-4 mr-2" aria-hidden="true" />
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -594,7 +592,7 @@ function FlowGraphViewInner({
 							</SelectContent>
 						</Select>
 
-						<Separator orientation="vertical" className="h-6" />
+						<Separator orientation="vertical" className="h-6" aria-hidden="true" />
 
 						{/* UI Tree toggle */}
 						<Button
@@ -629,32 +627,40 @@ function FlowGraphViewInner({
 								size="sm"
 								onClick={() => zoomIn()}
 								className="h-7 w-7 p-0"
+								aria-label="Zoom in"
+								title="Zoom in (Ctrl/Cmd + Plus)"
 							>
-								<ZoomIn className="h-4 w-4" />
+								<ZoomIn className="h-4 w-4" aria-hidden="true" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								onClick={() => zoomOut()}
 								className="h-7 w-7 p-0"
+								aria-label="Zoom out"
+								title="Zoom out (Ctrl/Cmd + Minus)"
 							>
-								<ZoomOut className="h-4 w-4" />
+								<ZoomOut className="h-4 w-4" aria-hidden="true" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								onClick={handleFit}
 								className="h-7 w-7 p-0"
+								aria-label="Fit view to content"
+								title="Fit all nodes in view"
 							>
-								<Maximize2 className="h-4 w-4" />
+								<Maximize2 className="h-4 w-4" aria-hidden="true" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								onClick={handleReset}
 								className="h-7 w-7 p-0"
+								aria-label="Reset graph view"
+								title="Reset to default view"
 							>
-								<RotateCcw className="h-4 w-4" />
+								<RotateCcw className="h-4 w-4" aria-hidden="true" />
 							</Button>
 						</div>
 					</div>

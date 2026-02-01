@@ -1,0 +1,348 @@
+"""Tests for agent event streaming infrastructure.
+
+This test module verifies that all agent lifecycle events are properly
+published to NATS with correct payload formats and subject patterns.
+"""
+
+import asyncio
+import json
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from tracertm.agent.events import (
+    AgentEventPublisher,
+    BaseEvent,
+    EventSource,
+    EventType,
+    SessionStatus,
+)
+
+
+class MockNATSClient:
+    """Mock NATS client for testing event publishing."""
+
+    def __init__(self):
+        self.published_events: list[dict[str, Any]] = []
+        self._js = MagicMock()
+        self._js.publish = AsyncMock(side_effect=self._mock_publish)
+        self.is_connected = True
+
+    async def _mock_publish(self, subject: str, payload: bytes):
+        """Mock publish that captures events."""
+        event_data = json.loads(payload.decode("utf-8"))
+        self.published_events.append({
+            "subject": subject,
+            "payload": event_data,
+        })
+        # Return mock ACK
+        mock_ack = MagicMock()
+        mock_ack.stream = "TRACERTM_BRIDGE"
+        mock_ack.seq = len(self.published_events)
+        return mock_ack
+
+
+@pytest.fixture
+def mock_nats():
+    """Fixture providing mock NATS client."""
+    return MockNATSClient()
+
+
+@pytest.fixture
+def publisher(mock_nats):
+    """Fixture providing event publisher with mock NATS."""
+    return AgentEventPublisher(mock_nats)
+
+
+@pytest.mark.asyncio
+async def test_publish_session_created(publisher, mock_nats):
+    """Test session created event publishing."""
+    await publisher.publish_session_created(
+        session_id="sess-123",
+        project_id="proj-456",
+        sandbox_root="/tmp/sandbox/sess-123",
+        provider="claude",
+        model="claude-3-opus",
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.sessions.sess-123.created"
+    assert event["payload"]["event_type"] == EventType.SESSION_CREATED
+    assert event["payload"]["session_id"] == "sess-123"
+    assert event["payload"]["project_id"] == "proj-456"
+    assert event["payload"]["data"]["sandbox_root"] == "/tmp/sandbox/sess-123"
+    assert event["payload"]["data"]["provider"] == "claude"
+    assert event["payload"]["data"]["model"] == "claude-3-opus"
+    assert event["payload"]["metadata"]["source"] == EventSource.AGENT_SERVICE
+
+
+@pytest.mark.asyncio
+async def test_publish_session_checkpoint(publisher, mock_nats):
+    """Test session checkpoint event publishing."""
+    await publisher.publish_session_checkpoint(
+        session_id="sess-123",
+        project_id="proj-456",
+        checkpoint_id="ckpt-789",
+        turn_number=5,
+        s3_key="checkpoints/sess-123/ckpt-789.json",
+        metadata={"notes": "checkpoint after code generation"},
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.sessions.sess-123.checkpoint"
+    assert event["payload"]["event_type"] == EventType.SESSION_CHECKPOINT
+    assert event["payload"]["data"]["checkpoint_id"] == "ckpt-789"
+    assert event["payload"]["data"]["turn_number"] == 5
+    assert event["payload"]["data"]["s3_key"] == "checkpoints/sess-123/ckpt-789.json"
+    assert event["payload"]["data"]["metadata"]["notes"] == "checkpoint after code generation"
+
+
+@pytest.mark.asyncio
+async def test_publish_session_destroyed(publisher, mock_nats):
+    """Test session destroyed event publishing."""
+    await publisher.publish_session_destroyed(
+        session_id="sess-123",
+        project_id="proj-456",
+        reason="User requested cleanup",
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.sessions.sess-123.destroyed"
+    assert event["payload"]["event_type"] == EventType.SESSION_DESTROYED
+    assert event["payload"]["data"]["reason"] == "User requested cleanup"
+
+
+@pytest.mark.asyncio
+async def test_publish_session_status_changed(publisher, mock_nats):
+    """Test session status change event publishing."""
+    await publisher.publish_session_status_changed(
+        session_id="sess-123",
+        project_id="proj-456",
+        old_status=SessionStatus.ACTIVE,
+        new_status=SessionStatus.COMPLETED,
+        details={"final_turn": 10},
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.sessions.sess-123.status_changed"
+    assert event["payload"]["event_type"] == EventType.SESSION_STATUS_CHANGED
+    assert event["payload"]["data"]["old_status"] == "ACTIVE"
+    assert event["payload"]["data"]["new_status"] == "COMPLETED"
+    assert event["payload"]["data"]["details"]["final_turn"] == 10
+
+
+@pytest.mark.asyncio
+async def test_publish_chat_message(publisher, mock_nats):
+    """Test chat message event publishing."""
+    long_content = "A" * 1000
+    await publisher.publish_chat_message(
+        session_id="sess-123",
+        project_id="proj-456",
+        role="user",
+        content=long_content,
+        turn_number=3,
+        metadata={"source": "web_ui"},
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.chat.sess-123.message"
+    assert event["payload"]["event_type"] == EventType.CHAT_MESSAGE
+    assert event["payload"]["data"]["role"] == "user"
+    # Content should be truncated to 500 chars
+    assert len(event["payload"]["data"]["content_preview"]) == 500
+    assert event["payload"]["data"]["content_length"] == 1000
+    assert event["payload"]["data"]["turn_number"] == 3
+
+
+@pytest.mark.asyncio
+async def test_publish_chat_tool_use(publisher, mock_nats):
+    """Test tool use event publishing."""
+    await publisher.publish_chat_tool_use(
+        session_id="sess-123",
+        project_id="proj-456",
+        tool_name="read_file",
+        tool_input={"path": "/tmp/test.py"},
+        tool_output="file contents here",
+        success=True,
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.chat.sess-123.tool_use"
+    assert event["payload"]["event_type"] == EventType.CHAT_TOOL_USE
+    assert event["payload"]["data"]["tool_name"] == "read_file"
+    assert event["payload"]["data"]["success"] is True
+    assert event["payload"]["data"]["error"] is None
+
+
+@pytest.mark.asyncio
+async def test_publish_chat_error(publisher, mock_nats):
+    """Test chat error event publishing."""
+    await publisher.publish_chat_error(
+        session_id="sess-123",
+        project_id="proj-456",
+        error_type="ValueError",
+        error_message="Invalid input format",
+        stack_trace="Traceback...",
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.chat.sess-123.error"
+    assert event["payload"]["event_type"] == EventType.CHAT_ERROR
+    assert event["payload"]["data"]["error_type"] == "ValueError"
+    assert event["payload"]["data"]["error_message"] == "Invalid input format"
+
+
+@pytest.mark.asyncio
+async def test_publish_snapshot_created(publisher, mock_nats):
+    """Test snapshot created event publishing."""
+    await publisher.publish_snapshot_created(
+        session_id="sess-123",
+        project_id="proj-456",
+        snapshot_id="snap-789",
+        s3_key="snapshots/sess-123/snap-789.tar.gz",
+        size_bytes=1024000,
+        file_count=150,
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.sandbox.sess-123.snapshot_created"
+    assert event["payload"]["event_type"] == EventType.SNAPSHOT_CREATED
+    assert event["payload"]["data"]["snapshot_id"] == "snap-789"
+    assert event["payload"]["data"]["s3_key"] == "snapshots/sess-123/snap-789.tar.gz"
+    assert event["payload"]["data"]["size_bytes"] == 1024000
+    assert event["payload"]["data"]["file_count"] == 150
+
+
+@pytest.mark.asyncio
+async def test_publish_snapshot_restored(publisher, mock_nats):
+    """Test snapshot restored event publishing."""
+    await publisher.publish_snapshot_restored(
+        session_id="sess-123",
+        project_id="proj-456",
+        snapshot_id="snap-789",
+        s3_key="snapshots/sess-123/snap-789.tar.gz",
+        restored_to="/tmp/sandbox/sess-123-restored",
+    )
+
+    assert len(mock_nats.published_events) == 1
+    event = mock_nats.published_events[0]
+
+    assert event["subject"] == "tracertm.sandbox.sess-123.snapshot_restored"
+    assert event["payload"]["event_type"] == EventType.SNAPSHOT_RESTORED
+    assert event["payload"]["data"]["restored_to"] == "/tmp/sandbox/sess-123-restored"
+
+
+@pytest.mark.asyncio
+async def test_event_payload_structure(publisher, mock_nats):
+    """Test that all events follow standard payload structure."""
+    await publisher.publish_session_created(
+        session_id="sess-123",
+        project_id="proj-456",
+        sandbox_root="/tmp/sandbox",
+        provider="claude",
+    )
+
+    event = mock_nats.published_events[0]["payload"]
+
+    # Verify standard fields
+    assert "event_id" in event
+    assert "event_type" in event
+    assert "timestamp" in event
+    assert "session_id" in event
+    assert "project_id" in event
+    assert "data" in event
+    assert "metadata" in event
+
+    # Verify metadata structure
+    assert "source" in event["metadata"]
+    assert "version" in event["metadata"]
+    assert event["metadata"]["version"] == "1.0"
+
+
+@pytest.mark.asyncio
+async def test_fire_and_forget_on_error(mock_nats):
+    """Test that event publishing errors don't raise exceptions."""
+    # Make publish fail
+    mock_nats._js.publish = AsyncMock(side_effect=Exception("NATS error"))
+
+    publisher = AgentEventPublisher(mock_nats)
+
+    # Should not raise exception
+    await publisher.publish_session_created(
+        session_id="sess-123",
+        project_id="proj-456",
+        sandbox_root="/tmp/sandbox",
+        provider="claude",
+    )
+
+
+@pytest.mark.asyncio
+async def test_publisher_disabled_when_no_nats():
+    """Test that publisher gracefully handles missing NATS client."""
+    publisher = AgentEventPublisher(None)
+
+    # Should not raise exception
+    await publisher.publish_session_created(
+        session_id="sess-123",
+        project_id="proj-456",
+        sandbox_root="/tmp/sandbox",
+        provider="claude",
+    )
+
+
+@pytest.mark.asyncio
+async def test_health_check(publisher, mock_nats):
+    """Test event publisher health check."""
+    health = await publisher.health_check()
+
+    assert health["enabled"] is True
+    assert health["nats_connected"] is True
+    assert health["jetstream_ready"] is True
+
+
+@pytest.mark.asyncio
+async def test_health_check_no_nats():
+    """Test health check with no NATS client."""
+    publisher = AgentEventPublisher(None)
+    health = await publisher.health_check()
+
+    assert health["enabled"] is False
+    assert "reason" in health
+
+
+def test_event_type_enum():
+    """Test event type enumeration."""
+    assert EventType.SESSION_CREATED.value == "session.created"
+    assert EventType.CHAT_MESSAGE.value == "chat.message"
+    assert EventType.SNAPSHOT_CREATED.value == "snapshot.created"
+
+
+def test_session_status_enum():
+    """Test session status enumeration."""
+    assert SessionStatus.ACTIVE.value == "ACTIVE"
+    assert SessionStatus.COMPLETED.value == "COMPLETED"
+    assert SessionStatus.FAILED.value == "FAILED"
+
+
+def test_event_source_enum():
+    """Test event source enumeration."""
+    assert EventSource.AGENT_SERVICE.value == "agent_service"
+    assert EventSource.WORKFLOW_EXECUTOR.value == "workflow_executor"
+    assert EventSource.SNAPSHOT_SERVICE.value == "snapshot_service"

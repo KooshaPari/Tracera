@@ -2,19 +2,19 @@ import { expect, expectTypeOf, test } from "vitest";
 import * as z from "zod/v4";
 
 test("preprocess", () => {
-  const schema = z.preprocess((data) => [data], z.string().array());
-  const value = schema.parse("asdf");
-  expect(value).toEqual(["asdf"]);
-  expectTypeOf<(typeof schema)["_input"]>().toEqualTypeOf<unknown>();
+	const schema = z.preprocess((data) => [data], z.string().array());
+	const value = schema.parse("asdf");
+	expect(value).toEqual(["asdf"]);
+	expectTypeOf<(typeof schema)["_input"]>().toEqualTypeOf<unknown>();
 });
 
 test("async preprocess", async () => {
-  const schema = z.preprocess(async (data) => {
-    return [data];
-  }, z.string().array());
-  const value = await schema.safeParseAsync("asdf");
-  expect(value.data).toEqual(["asdf"]);
-  expect(value).toMatchInlineSnapshot(`
+	const schema = z.preprocess(async (data) => {
+		return [data];
+	}, z.string().array());
+	const value = await schema.safeParseAsync("asdf");
+	expect(value.data).toEqual(["asdf"]);
+	expect(value).toMatchInlineSnapshot(`
     {
       "data": [
         "asdf",
@@ -25,12 +25,12 @@ test("async preprocess", async () => {
 });
 
 test("ctx.addIssue accepts string", () => {
-  const schema = z.preprocess((_, ctx) => {
-    ctx.addIssue("bad stuff");
-  }, z.string());
-  const result = schema.safeParse("asdf");
-  expect(result.error!.issues).toHaveLength(1);
-  expect(result).toMatchInlineSnapshot(`
+	const schema = z.preprocess((_, ctx) => {
+		ctx.addIssue("bad stuff");
+	}, z.string());
+	const result = schema.safeParse("asdf");
+	expect(result.error!.issues).toHaveLength(1);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -45,21 +45,21 @@ test("ctx.addIssue accepts string", () => {
 });
 
 test("preprocess ctx.addIssue with parse", () => {
-  const a = z.preprocess((data, ctx) => {
-    ctx.addIssue({
-      input: data,
-      code: "custom",
-      message: `${data} is not one of our allowed strings`,
-    });
-    return data;
-  }, z.string());
+	const a = z.preprocess((data, ctx) => {
+		ctx.addIssue({
+			input: data,
+			code: "custom",
+			message: `${data} is not one of our allowed strings`,
+		});
+		return data;
+	}, z.string());
 
-  const result = a.safeParse("asdf");
+	const result = a.safeParse("asdf");
 
-  // expect(result.error!.toJSON()).toContain("not one of our allowed strings");
+	// expect(result.error!.toJSON()).toContain("not one of our allowed strings");
 
-  expect(result.error!.issues).toHaveLength(1);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(1);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -74,18 +74,18 @@ test("preprocess ctx.addIssue with parse", () => {
 });
 
 test("preprocess ctx.addIssue fatal by default", () => {
-  const schema = z.preprocess((data, ctx) => {
-    ctx.addIssue({
-      code: "custom",
-      message: `custom error`,
-    });
+	const schema = z.preprocess((data, ctx) => {
+		ctx.addIssue({
+			code: "custom",
+			message: `custom error`,
+		});
 
-    return data;
-  }, z.string());
-  const result = schema.safeParse(1234);
+		return data;
+	}, z.string());
+	const result = schema.safeParse(1234);
 
-  expect(result.error!.issues).toHaveLength(1);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(1);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -100,21 +100,21 @@ test("preprocess ctx.addIssue fatal by default", () => {
 });
 
 test("preprocess ctx.addIssue fatal true", () => {
-  const schema = z.preprocess((data, ctx) => {
-    ctx.addIssue({
-      input: data,
-      code: "custom",
-      origin: "custom",
-      message: `custom error`,
-      fatal: true,
-    });
-    return data;
-  }, z.string());
+	const schema = z.preprocess((data, ctx) => {
+		ctx.addIssue({
+			input: data,
+			code: "custom",
+			origin: "custom",
+			message: `custom error`,
+			fatal: true,
+		});
+		return data;
+	}, z.string());
 
-  const result = schema.safeParse(1234);
+	const result = schema.safeParse(1234);
 
-  expect(result.error!.issues).toHaveLength(1);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(1);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -131,19 +131,19 @@ test("preprocess ctx.addIssue fatal true", () => {
 });
 
 test("async preprocess ctx.addIssue with parseAsync", async () => {
-  const schema = z.preprocess(async (data, ctx) => {
-    ctx.addIssue({
-      input: data,
-      code: "custom",
-      message: `${data} is not one of our allowed strings`,
-    });
-    return data;
-  }, z.string());
+	const schema = z.preprocess(async (data, ctx) => {
+		ctx.addIssue({
+			input: data,
+			code: "custom",
+			message: `${data} is not one of our allowed strings`,
+		});
+		return data;
+	}, z.string());
 
-  const result = await schema.safeParseAsync("asdf");
+	const result = await schema.safeParseAsync("asdf");
 
-  expect(result.error!.issues).toHaveLength(1);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(1);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -158,20 +158,20 @@ test("async preprocess ctx.addIssue with parseAsync", async () => {
 });
 
 test("z.NEVER in preprocess", () => {
-  const foo = z.preprocess((val, ctx) => {
-    if (!val) {
-      ctx.addIssue({ input: val, code: "custom", message: "bad" });
-      return z.NEVER;
-    }
-    return val;
-  }, z.number());
+	const foo = z.preprocess((val, ctx) => {
+		if (!val) {
+			ctx.addIssue({ input: val, code: "custom", message: "bad" });
+			return z.NEVER;
+		}
+		return val;
+	}, z.number());
 
-  type foo = z.infer<typeof foo>;
-  expectTypeOf<foo>().toEqualTypeOf<number>();
-  const result = foo.safeParse(undefined);
+	type foo = z.infer<typeof foo>;
+	expectTypeOf<foo>().toEqualTypeOf<number>();
+	const result = foo.safeParse(undefined);
 
-  expect(result.error!.issues).toHaveLength(1);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(1);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -186,17 +186,17 @@ test("z.NEVER in preprocess", () => {
 });
 
 test("preprocess as the second property of object", () => {
-  const schema = z.object({
-    nonEmptyStr: z.string().min(1),
-    positiveNum: z.preprocess((v) => Number(v), z.number().positive()),
-  });
-  const result = schema.safeParse({
-    nonEmptyStr: "",
-    positiveNum: "",
-  });
+	const schema = z.object({
+		nonEmptyStr: z.string().min(1),
+		positiveNum: z.preprocess((v) => Number(v), z.number().positive()),
+	});
+	const result = schema.safeParse({
+		nonEmptyStr: "",
+		positiveNum: "",
+	});
 
-  expect(result.error!.issues).toHaveLength(2);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(2);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -226,15 +226,18 @@ test("preprocess as the second property of object", () => {
 });
 
 test("preprocess validates with sibling errors", () => {
-  const schema = z.object({
-    missing: z.string().refine(() => false),
-    preprocess: z.preprocess((data: any) => data?.trim(), z.string().regex(/ asdf/)),
-  });
+	const schema = z.object({
+		missing: z.string().refine(() => false),
+		preprocess: z.preprocess(
+			(data: any) => data?.trim(),
+			z.string().regex(/ asdf/),
+		),
+	});
 
-  const result = schema.safeParse({ preprocess: " asdf" });
+	const result = schema.safeParse({ preprocess: " asdf" });
 
-  expect(result.error!.issues).toHaveLength(2);
-  expect(result).toMatchInlineSnapshot(`
+	expect(result.error!.issues).toHaveLength(2);
+	expect(result).toMatchInlineSnapshot(`
     {
       "error": [ZodError: [
       {
@@ -262,15 +265,15 @@ test("preprocess validates with sibling errors", () => {
 });
 
 test("perform transform with non-fatal issues", () => {
-  const A = z
-    .string()
-    .refine((_) => false)
-    .min(4)
-    .transform((val) => val.length)
-    .pipe(z.number())
-    .refine((_) => false);
-  expect(A.safeParse("asdfasdf").error!.issues).toHaveLength(1);
-  expect(A.safeParse("asdfasdf").error).toMatchInlineSnapshot(`
+	const A = z
+		.string()
+		.refine((_) => false)
+		.min(4)
+		.transform((val) => val.length)
+		.pipe(z.number())
+		.refine((_) => false);
+	expect(A.safeParse("asdfasdf").error!.issues).toHaveLength(1);
+	expect(A.safeParse("asdfasdf").error).toMatchInlineSnapshot(`
     [ZodError: [
       {
         "code": "custom",

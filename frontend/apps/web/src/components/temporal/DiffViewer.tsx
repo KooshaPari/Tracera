@@ -9,9 +9,9 @@
  * - JSON value formatting
  */
 
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Copy, CheckCircle } from "lucide-react";
-import type { DiffItem, FieldDiffChange, DiffViewerState } from "@repo/types";
+import type { DiffItem, DiffViewerState, FieldDiffChange } from "@repo/types";
+import { CheckCircle, ChevronDown, ChevronUp, Copy } from "lucide-react";
+import { useState } from "react";
 
 interface DiffViewerProps {
 	item: DiffItem;

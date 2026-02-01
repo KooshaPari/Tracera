@@ -3,13 +3,16 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Branch, Version } from "@/components/temporal/TemporalNavigator";
+import { getAuthHeaders } from "@/api/client";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // FETCH BRANCHES
 async function fetchBranches(projectId: string): Promise<Branch[]> {
-	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/branches`);
+	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/branches`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch branches");
 	const data = await res.json();
 	return Array.isArray(data) ? data : data.branches || [];
@@ -25,7 +28,9 @@ export function useBranches(projectId: string) {
 
 // FETCH VERSIONS
 async function fetchVersions(branchId: string): Promise<Version[]> {
-	const res = await fetch(`${API_URL}/api/v1/branches/${branchId}/versions`);
+	const res = await fetch(`${API_URL}/api/v1/branches/${branchId}/versions`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch versions");
 	const data = await res.json();
 	return Array.isArray(data) ? data : data.versions || [];
@@ -52,7 +57,7 @@ async function createBranch(input: CreateBranchInput): Promise<Branch> {
 		`${API_URL}/api/v1/projects/${input.projectId}/branches`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(input),
 		},
 	);
@@ -86,7 +91,7 @@ async function createVersion(input: CreateVersionInput): Promise<Version> {
 		`${API_URL}/api/v1/branches/${input.branchId}/versions`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(input),
 		},
 	);
@@ -120,7 +125,7 @@ async function mergeBranch(
 		`${API_URL}/api/v1/branches/${input.targetBranchId}/merge`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				sourceBranchId: input.sourceBranchId,
 				conflictResolution: input.conflictResolution || "manual",
@@ -155,7 +160,9 @@ export interface VersionSnapshot {
 
 // GET VERSION SNAPSHOT
 async function getVersionSnapshot(versionId: string): Promise<VersionSnapshot> {
-	const res = await fetch(`${API_URL}/api/v1/versions/${versionId}/snapshot`);
+	const res = await fetch(`${API_URL}/api/v1/versions/${versionId}/snapshot`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch version snapshot");
 	return res.json();
 }
@@ -179,7 +186,7 @@ interface UpdateBranchInput {
 async function updateBranch(input: UpdateBranchInput): Promise<Branch> {
 	const res = await fetch(`${API_URL}/api/v1/branches/${input.branchId}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			name: input.name,
 			description: input.description,
@@ -214,7 +221,7 @@ interface UpdateVersionInput {
 async function updateVersion(input: UpdateVersionInput): Promise<Version> {
 	const res = await fetch(`${API_URL}/api/v1/versions/${input.versionId}`, {
 		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			title: input.title,
 			description: input.description,
@@ -242,6 +249,7 @@ export function useUpdateVersion() {
 async function deleteBranch(branchId: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/branches/${branchId}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete branch");
 }
@@ -273,6 +281,7 @@ async function compareBranches(
 ): Promise<ComparisonResult> {
 	const res = await fetch(
 		`${API_URL}/api/v1/branches/${sourceBranchId}/compare/${targetBranchId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to compare branches");
 	return res.json();

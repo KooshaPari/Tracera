@@ -7,15 +7,16 @@ from datetime import datetime
 from typing import Any, ClassVar
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, synonym
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
 
 
-def generate_item_uuid() -> str:
-    """Generate a UUID string for item ID."""
-    return str(uuid.uuid4())
+def generate_item_uuid() -> uuid.UUID:
+    """Generate a UUID for item ID."""
+    return uuid.uuid4()
 
 
 class Item(Base, TimestampMixin):
@@ -29,18 +30,16 @@ class Item(Base, TimestampMixin):
 
     # Ensure existing table options are preserved if re-defining
     __table_args__ = (
-        Index("idx_items_project_view", "project_id", "view"),
         Index("idx_items_project_status", "project_id", "status"),
-        Index("idx_items_project_type", "project_id", "item_type"),
-        Index("idx_items_project_node_kind", "project_id", "node_kind_id"),
+        Index("idx_items_project_type", "project_id", "type"),
         {"extend_existing": True},  # Allow re-definition if table exists
     )
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_item_uuid
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=generate_item_uuid
     )
-    project_id: Mapped[str] = mapped_column(
-        String(255),
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -49,34 +48,24 @@ class Item(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    view: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    item_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    node_kind_id: Mapped[str | None] = mapped_column(
-        String(255),
-        ForeignKey("node_kinds.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-    )
+    view: Mapped[str] = mapped_column("type", String(50), nullable=False, index=True)
+    item_type: Mapped[str] = synonym("view")
     status: Mapped[str] = mapped_column(
         String(50), nullable=False, default="todo", index=True
     )
 
-    priority: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="medium", index=True
-    )
+    priority: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
 
-    owner: Mapped[str | None] = mapped_column(
-        String(255), nullable=True, index=True
-    )
-
-    parent_id: Mapped[str | None] = mapped_column(
-        String(255),
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
 
-    item_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    item_metadata: Mapped[dict[str, object]] = mapped_column(
+        "metadata", JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -96,11 +85,14 @@ class Item(Base, TimestampMixin):
             kwargs["item_type"] = kwargs.pop("type")
         if "metadata" in kwargs and "item_metadata" not in kwargs:
             kwargs["item_metadata"] = kwargs.pop("metadata")
+        # Drop fields not present in the Go-backed schema
+        kwargs.pop("owner", None)
+        kwargs.pop("node_kind_id", None)
         super().__init__(**kwargs)
 
     def __getattribute__(self, name: str) -> object:
         if name == "type":
-            return object.__getattribute__(self, "item_type")
+            return object.__getattribute__(self, "view")
         if name == "metadata":
             return object.__getattribute__(self, "item_metadata")
         return super().__getattribute__(name)
@@ -111,6 +103,14 @@ class Item(Base, TimestampMixin):
         if name == "metadata":
             name = "item_metadata"
         super().__setattr__(name, value)
+
+    @property
+    def node_kind_id(self) -> None:
+        return None
+
+    @property
+    def owner(self) -> None:
+        return None
 
     def __getitem__(self, key: str) -> object:
         """Allow dict-style access used by some tests."""

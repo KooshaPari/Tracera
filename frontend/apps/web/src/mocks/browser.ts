@@ -18,8 +18,8 @@ export async function startMockServiceWorker() {
 				url: "/mockServiceWorker.js",
 			},
 		});
-		console.log("[MSW] Mock Service Worker started successfully");
+		logger.info("[MSW] Mock Service Worker started successfully");
 	} catch (error) {
-		console.error("[MSW] Failed to start Mock Service Worker:", error);
+		logger.error("[MSW] Failed to start Mock Service Worker:", error);
 	}
 }

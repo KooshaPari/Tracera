@@ -1,10 +1,14 @@
 import {
 	createFileRoute,
+	Outlet,
 	useLoaderData,
+	useLocation,
 	useParams,
 } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
+import { logger } from '@/lib/logger';
+import { requireAuth } from "@/lib/route-guards";
 import { API_VIEW } from "@/routes/projects.$projectId.views.api";
 import { ARCHITECTURE_VIEW } from "@/routes/projects.$projectId.views.architecture";
 import { CODE_VIEW } from "@/routes/projects.$projectId.views.code";
@@ -27,47 +31,127 @@ import { WIREFRAME_VIEW } from "@/routes/projects.$projectId.views.wireframe";
 // Lazy load heavy components that use graph visualization
 // These components import elkjs, cytoscape, @xyflow which are all heavy
 const GraphViewLazy = lazy(() =>
-	import("@/pages/projects/views/GraphView").then((m) => ({
-		default: m.GraphView,
-	})),
+	import("@/pages/projects/views/GraphView")
+		.then((m) => {
+			const Comp = m?.GraphView;
+			if (typeof Comp !== "function") {
+				logger.error("GraphView module did not export GraphView", m);
+				return { default: () => <LazyFallback message="Failed to load Graph view." /> };
+			}
+			return { default: Comp as React.ComponentType<{ projectId: string }> };
+		})
+		.catch((err) => {
+			logger.error("GraphView chunk failed to load", err);
+			return { default: () => <LazyFallback message="Failed to load Graph view." /> };
+		}),
 );
-const IntegrationsViewLazy = lazy(
-	() => import("@/pages/projects/views/IntegrationsView"),
+function LazyFallback({ message }: { message: string }) {
+	return (
+		<div className="p-6 text-destructive" role="alert">
+			{message}
+		</div>
+	);
+}
+
+const IntegrationsViewLazy = lazy(() =>
+	import("@/pages/projects/views/IntegrationsView").then((m) => {
+		const Comp = m.default ?? (m as { IntegrationsView?: unknown }).IntegrationsView;
+		if (typeof Comp !== "function" && typeof Comp !== "object") {
+			logger.error("IntegrationsView module did not export a component", m);
+			return { default: () => <LazyFallback message="Failed to load Integrations view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const CoverageMatrixViewLazy = lazy(() =>
-	import("@/pages/projects/views/CoverageMatrixView").then((m) => ({
-		default: m.CoverageMatrixView,
-	})),
+	import("@/pages/projects/views/CoverageMatrixView").then((m) => {
+		const Comp = m?.CoverageMatrixView;
+		if (typeof Comp !== "function") {
+			logger.error("CoverageMatrixView module did not export CoverageMatrixView", m);
+			return { default: () => <LazyFallback message="Failed to load Coverage view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const QADashboardViewLazy = lazy(() =>
-	import("@/pages/projects/views/QADashboardView").then((m) => ({
-		default: m.QADashboardView,
-	})),
+	import("@/pages/projects/views/QADashboardView").then((m) => {
+		const Comp = m?.QADashboardView;
+		if (typeof Comp !== "function") {
+			logger.error("QADashboardView module did not export QADashboardView", m);
+			return { default: () => <LazyFallback message="Failed to load QA Dashboard view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const TestCaseViewLazy = lazy(() =>
-	import("@/pages/projects/views/TestCaseView").then((m) => ({
-		default: m.TestCaseView,
-	})),
+	import("@/pages/projects/views/TestCaseView").then((m) => {
+		const Comp = m?.TestCaseView ?? m?.default;
+		if (typeof Comp !== "function") {
+			logger.error("TestCaseView module did not export TestCaseView", m);
+			return { default: () => <LazyFallback message="Failed to load Test Cases view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const TestRunViewLazy = lazy(() =>
-	import("@/pages/projects/views/TestRunView").then((m) => ({
-		default: m.TestRunView,
-	})),
+	import("@/pages/projects/views/TestRunView").then((m) => {
+		const Comp = m?.TestRunView ?? m?.default;
+		if (typeof Comp !== "function") {
+			logger.error("TestRunView module did not export TestRunView", m);
+			return { default: () => <LazyFallback message="Failed to load Test Runs view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const TestSuiteViewLazy = lazy(() =>
-	import("@/pages/projects/views/TestSuiteView").then((m) => ({
-		default: m.TestSuiteView,
-	})),
+	import("@/pages/projects/views/TestSuiteView").then((m) => {
+		const Comp = m?.TestSuiteView ?? m?.default;
+		if (typeof Comp !== "function") {
+			logger.error("TestSuiteView module did not export TestSuiteView", m);
+			return { default: () => <LazyFallback message="Failed to load Test Suites view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const WebhookIntegrationsViewLazy = lazy(() =>
-	import("@/pages/projects/views/WebhookIntegrationsView").then((m) => ({
-		default: m.WebhookIntegrationsView,
-	})),
+	import("@/pages/projects/views/WebhookIntegrationsView").then((m) => {
+		const Comp = m?.WebhookIntegrationsView;
+		if (typeof Comp !== "function") {
+			logger.error("WebhookIntegrationsView module did not export WebhookIntegrationsView", m);
+			return { default: () => <LazyFallback message="Failed to load Webhooks view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 const WorkflowRunsViewLazy = lazy(() =>
-	import("@/pages/projects/views/WorkflowRunsView").then((m) => ({
-		default: m.WorkflowRunsView,
-	})),
+	import("@/pages/projects/views/WorkflowRunsView").then((m) => {
+		const Comp = m?.WorkflowRunsView;
+		if (typeof Comp !== "function") {
+			logger.error("WorkflowRunsView module did not export WorkflowRunsView", m);
+			return { default: () => <LazyFallback message="Failed to load Workflows view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
+);
+const ImpactAnalysisViewLazy = lazy(() =>
+	import("@/views/ImpactAnalysisView").then((m) => {
+		const Comp = m?.ImpactAnalysisView;
+		if (typeof Comp !== "function") {
+			logger.error("ImpactAnalysisView module did not export ImpactAnalysisView", m);
+			return { default: () => <LazyFallback message="Failed to load Impact Analysis view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
+);
+const TraceabilityMatrixViewLazy = lazy(() =>
+	import("@/views/TraceabilityMatrixView").then((m) => {
+		const Comp = m?.TraceabilityMatrixView;
+		if (typeof Comp !== "function") {
+			logger.error("TraceabilityMatrixView module did not export TraceabilityMatrixView", m);
+			return { default: () => <LazyFallback message="Failed to load Traceability view." /> };
+		}
+		return { default: Comp as React.ComponentType<{ projectId: string }> };
+	}),
 );
 
 function LoadingFallback() {
@@ -81,10 +165,22 @@ function ViewTypeComponent() {
 	const { projectId } = useParams({
 		from: "/projects/$projectId/views/$viewType",
 	});
+	const location = useLocation();
 
-	// Based on viewType, render the appropriate view component
+	// When URL has an itemId (e.g. /projects/x/views/feature/y), render the item-detail child route instead of the list/registry
+	const pathParts = location.pathname.split("/").filter(Boolean);
+	const isItemDetailRoute =
+		pathParts[0] === "projects" &&
+		pathParts[2] === "views" &&
+		pathParts.length >= 5;
+	if (isItemDetailRoute) {
+		return <Outlet />;
+	}
+
+	// Based on viewType, render the appropriate view component (list/registry)
 	switch (viewType) {
 		case "feature":
+		case "story":
 			return <FEATURE_VIEW />;
 		case "code":
 			return <CODE_VIEW />;
@@ -121,9 +217,20 @@ function ViewTypeComponent() {
 		case "process":
 			return <PROCESS_VIEW />;
 		case "graph":
+			if (!projectId) {
+				return (
+					<div className="p-6">
+						<h1 className="text-2xl font-semibold">Project required</h1>
+						<p className="text-muted-foreground">
+							Graph view requires a project. Go to Projects and open a project,
+							then use Graph from the sidebar.
+						</p>
+					</div>
+				);
+			}
 			return (
 				<Suspense fallback={<LoadingFallback />}>
-					<GraphViewLazy />
+					<GraphViewLazy projectId={projectId} />
 				</Suspense>
 			);
 		case "integrations":
@@ -174,6 +281,19 @@ function ViewTypeComponent() {
 					<WorkflowRunsViewLazy projectId={projectId} />
 				</Suspense>
 			);
+		case "impact-analysis":
+			return (
+				<Suspense fallback={<LoadingFallback />}>
+					<ImpactAnalysisViewLazy projectId={projectId} />
+				</Suspense>
+			);
+		case "traceability":
+		case "matrix":
+			return (
+				<Suspense fallback={<LoadingFallback />}>
+					<TraceabilityMatrixViewLazy projectId={projectId} />
+				</Suspense>
+			);
 		default:
 			return (
 				<div className="p-6">
@@ -185,6 +305,7 @@ function ViewTypeComponent() {
 }
 
 export const Route = createFileRoute("/projects/$projectId/views/$viewType")({
+	beforeLoad: () => requireAuth(),
 	component: ViewTypeComponent,
 	loader: async ({ params }: { params: { viewType: string } }) => {
 		return { viewType: params.viewType };

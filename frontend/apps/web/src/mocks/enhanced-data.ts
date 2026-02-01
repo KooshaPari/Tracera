@@ -163,7 +163,7 @@ const uiItems: Item[] = [
 		createdAt: twoWeeksAgo,
 		updatedAt: lastWeek,
 		metadata: {
-			route: "/login",
+			route: "/auth/login",
 			screenshotUrl: "/screenshots/login.png",
 		},
 	},

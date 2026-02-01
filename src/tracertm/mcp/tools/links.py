@@ -11,7 +11,6 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.core import mcp
@@ -86,7 +85,7 @@ async def create_link(
     target_id: str,
     link_type: str,
     metadata: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a link between two items.
 
@@ -150,7 +149,7 @@ async def list_links(
     item_id: str | None = None,
     link_type: str | None = None,
     limit: int = 50,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """List links with optional filters.
 
@@ -198,7 +197,7 @@ async def list_links(
 async def show_links(
     item_id: str,
     view: str | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Show all links for an item, grouped as incoming and outgoing.
 

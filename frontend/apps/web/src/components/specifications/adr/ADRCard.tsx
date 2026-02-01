@@ -1,3 +1,4 @@
+import type { ADR } from "@tracertm/types";
 import {
 	Badge,
 	Button,
@@ -7,18 +8,17 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui";
-import type { ADR } from "@tracertm/types";
 import { format } from "date-fns";
 import {
-	CheckCircle,
 	AlertTriangle,
-	XCircle,
+	ArrowRight,
+	CheckCircle,
 	Clock,
 	FileText,
-	ArrowRight,
-	Link2,
 	GitBranch,
+	Link2,
 	TrendingUp,
+	XCircle,
 } from "lucide-react";
 import { ComplianceGauge } from "./ComplianceGauge";
 

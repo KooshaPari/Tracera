@@ -3,67 +3,61 @@
  * Comprehensive collection of all application views
  */
 
-// ============================================================================
-// Core Views
-// ============================================================================
-export { DashboardView } from "./DashboardView";
-export { ProjectsListView } from "./ProjectsListView";
-export { ProjectDetailView } from "./ProjectDetailView";
-export { ProjectSettingsView } from "./ProjectSettingsView";
-export { ProjectMappingGraphView } from "./ProjectMappingGraphView";
-
-// ============================================================================
-// Item Management Views
-// ============================================================================
-export { ItemDetailView } from "./ItemDetailView";
-export { ItemsTableView } from "./ItemsTableView";
-export { ItemsTreeView } from "./ItemsTreeView";
-export { ItemsKanbanView } from "./ItemsKanbanView";
-
+export { ADRDetailView } from "./ADRDetailView";
+// New comprehensive specification views
+export { ADRListView } from "./ADRListView";
 // ============================================================================
 // Specification Views (ADR, Contracts, BDD Features)
 // ============================================================================
 export { ADRView } from "./ADRView";
-export { ContractView } from "./ContractView";
+export { AdvancedSearchView } from "./AdvancedSearchView";
+// ============================================================================
+// Workflow & Automation Views
+// ============================================================================
+export { AgentsView } from "./AgentsView";
+export { AgentWorkflowView } from "./AgentWorkflowView";
 export { ComplianceView } from "./ComplianceView";
-export { FeatureDetailView } from "./FeatureDetailView";
-
-// New comprehensive specification views
-export { ADRListView } from "./ADRListView";
-export { ADRDetailView } from "./ADRDetailView";
 export { ContractListView } from "./ContractListView";
-export { FeatureListView } from "./FeatureListView";
+export { ContractView } from "./ContractView";
+// ============================================================================
+// Core Views
+// ============================================================================
+export { DashboardView } from "./DashboardView";
+export { EventsTimelineView } from "./EventsTimelineView";
+export { ExportView } from "./ExportView";
+export { FeatureDetailView } from "./FeatureDetailView";
 export { FeatureDetailView as FeatureDetailViewV2 } from "./FeatureDetailView2";
-export { SpecificationsDashboardView } from "./SpecificationsDashboardView";
-
+export { FeatureListView } from "./FeatureListView";
 // ============================================================================
 // Analysis & Reporting Views
 // ============================================================================
 export { GraphView } from "./GraphView";
-export { SearchView } from "./SearchView";
-export { AdvancedSearchView } from "./AdvancedSearchView";
-export { TraceabilityMatrixView } from "./TraceabilityMatrixView";
 export { ImpactAnalysisView } from "./ImpactAnalysisView";
-export { EventsTimelineView } from "./EventsTimelineView";
-export { ReportsView } from "./ReportsView";
-
-// ============================================================================
-// Link Management Views
-// ============================================================================
-export { LinksView } from "./LinksView";
-
 // ============================================================================
 // Import/Export Views
 // ============================================================================
 export { ImportView } from "./ImportView";
-export { ExportView } from "./ExportView";
-
+// ============================================================================
+// Item Management Views
+// ============================================================================
+export { ItemDetailView } from "./ItemDetailView";
+export { ItemsKanbanView } from "./ItemsKanbanView";
+export { ItemsTableView } from "./ItemsTableView";
+export { ItemsTreeView } from "./ItemsTreeView";
+export { LandingPage } from "./LandingPage";
+// ============================================================================
+// Link Management Views
+// ============================================================================
+export { LinksView } from "./LinksView";
+export { ProjectDetailView } from "./ProjectDetailView";
+export { ProjectMappingGraphView } from "./ProjectMappingGraphView";
+export { ProjectSettingsView } from "./ProjectSettingsView";
+export { ProjectsListView } from "./ProjectsListView";
+export { ReportsView } from "./ReportsView";
+export { SearchView } from "./SearchView";
 // ============================================================================
 // Settings & Configuration Views
 // ============================================================================
 export { SettingsView } from "./SettingsView";
-
-// ============================================================================
-// Workflow & Automation Views
-// ============================================================================
-export { AgentWorkflowView } from "./AgentWorkflowView";
+export { SpecificationsDashboardView } from "./SpecificationsDashboardView";
+export { TraceabilityMatrixView } from "./TraceabilityMatrixView";

@@ -39,7 +39,7 @@ def upgrade() -> None:
         # Spec reference
         sa.Column("spec_id", sa.String(255), nullable=False),
         sa.Column("spec_type", sa.String(50), nullable=False),
-        sa.Column("project_id", sa.String(255), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), nullable=False),
         # Block content
         sa.Column("version_number", sa.Integer, nullable=False),
         sa.Column(
@@ -94,7 +94,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("spec_id", sa.String(255), nullable=False),
         sa.Column("spec_type", sa.String(50), nullable=False),
-        sa.Column("project_id", sa.String(255), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), nullable=False),
         # Chain state
         sa.Column("chain_head_id", sa.String(64), nullable=False),
         sa.Column("chain_length", sa.Integer, nullable=False, server_default="1"),
@@ -139,7 +139,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("baseline_id", sa.String(64), unique=True, nullable=False),
         # Scope
-        sa.Column("project_id", sa.String(255), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("spec_type", sa.String(50), nullable=True),  # null = all types
         # Merkle tree
         sa.Column("merkle_root", sa.String(64), nullable=False),
@@ -184,7 +184,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         # Item reference
-        sa.Column("item_id", sa.String(255), nullable=False),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("item_type", sa.String(50), nullable=False),
         # Merkle data
         sa.Column("content_hash", sa.String(64), nullable=False),
@@ -225,7 +225,7 @@ def upgrade() -> None:
             postgresql.UUID(as_uuid=True),
             nullable=False,
         ),
-        sa.Column("item_id", sa.String(255), nullable=False),
+        sa.Column("item_id", postgresql.UUID(as_uuid=True), nullable=False),
         # Proof data
         sa.Column("leaf_hash", sa.String(64), nullable=False),
         sa.Column("proof_path", postgresql.JSONB, nullable=False),
@@ -260,7 +260,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("spec_id", sa.String(255), nullable=False),
         sa.Column("spec_type", sa.String(50), nullable=False),
-        sa.Column("project_id", sa.String(255), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), nullable=False),
         # Embedding data
         sa.Column("embedding", sa.LargeBinary, nullable=False),
         sa.Column("embedding_dimension", sa.Integer, nullable=False),

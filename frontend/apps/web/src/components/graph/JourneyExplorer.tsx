@@ -2,23 +2,16 @@
 // Displays user flows, data paths, call chains, and test traces
 // Supports filtering, overlay, coverage metrics, and export
 
-import { Button } from "@tracertm/ui/components/Button";
+import type { Item, Link } from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 import {
 	Card,
 	CardContent,
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
-import { Input } from "@tracertm/ui/components/Input";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import { Separator } from "@tracertm/ui/components/Separator";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@tracertm/ui/components/Tooltip";
 import {
 	Dialog,
 	DialogContent,
@@ -27,7 +20,9 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
+import { Input } from "@tracertm/ui/components/Input";
 import { Progress } from "@tracertm/ui/components/Progress";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import {
 	Select,
 	SelectContent,
@@ -35,8 +30,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { cn } from "@tracertm/ui";
-import type { Item, Link } from "@tracertm/types";
+import { Separator } from "@tracertm/ui/components/Separator";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@tracertm/ui/components/Tooltip";
 import {
 	Activity,
 	ArrowRight,

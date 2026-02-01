@@ -10,10 +10,10 @@ from typing import Any
 import jwt
 from jwt import PyJWKClient
 
-try:  # Optional dependency for refresh/user lookups
-    from workos import WorkOS
+try:
+    from workos import WorkOSClient
 except Exception:  # pragma: no cover - optional for environments without WorkOS
-    WorkOS = None  # type: ignore[assignment]
+    WorkOSClient = None  # type: ignore[assignment]
 
 
 @dataclass(frozen=True)
@@ -159,12 +159,12 @@ def verify_access_token(token: str) -> dict[str, Any]:
 def get_logout_url(session_id: str, return_to: str | None = None) -> str:
     """Generate a logout URL for the given session ID."""
     settings = get_workos_settings()
-    if WorkOS is None:
+    if WorkOSClient is None:
         raise RuntimeError("workos SDK is not available")
-    
-    # Use api_key from settings if available, otherwise just use dummy for URL generation
-    # get_logout_url typically doesn't need a real API key as it just constructs a URL
-    workos_client = WorkOS(settings.api_key or "sk_dummy")
+    workos_client = WorkOSClient(
+        api_key=settings.api_key or "sk_dummy",
+        client_id=settings.client_id,
+    )
     return workos_client.user_management.get_logout_url(
         session_id=session_id,
         return_to=return_to,
@@ -176,19 +176,15 @@ def authenticate_with_code(code: str) -> dict[str, Any]:
     settings = get_workos_settings()
     if not settings.api_key:
         raise ValueError("WORKOS_API_KEY is required for code exchange")
-    if WorkOS is None:
+    if WorkOSClient is None:
         raise RuntimeError("workos SDK is not available")
-
-    workos_client = WorkOS(settings.api_key)
-    # The SDK usually returns an AuthenticationResponse object
-    result = workos_client.user_management.authenticate_with_code(
-        code=code,
+    workos_client = WorkOSClient(
+        api_key=settings.api_key,
         client_id=settings.client_id,
     )
-    
-    # Handle different return types (obj with .to_dict() or just a dict)
-    if hasattr(result, "to_dict"):
-        return result.to_dict()
+    result = workos_client.user_management.authenticate_with_code(code=code)
+    if hasattr(result, "model_dump"):
+        return result.model_dump()
     if hasattr(result, "dict"):
         return result.dict()
     if isinstance(result, dict):
@@ -200,11 +196,17 @@ def authenticate_with_refresh_token(refresh_token: str) -> dict[str, Any]:
     settings = get_workos_settings()
     if not settings.api_key:
         raise ValueError("WORKOS_API_KEY is required for refresh token exchange")
-    if WorkOS is None:
+    if WorkOSClient is None:
         raise RuntimeError("workos SDK is not available")
-
-    workos = WorkOS(settings.api_key)
-    result = workos.user_management.authenticate_with_refresh_token(refresh_token)
+    workos_client = WorkOSClient(
+        api_key=settings.api_key,
+        client_id=settings.client_id,
+    )
+    result = workos_client.user_management.authenticate_with_refresh_token(
+        refresh_token=refresh_token,
+    )
+    if hasattr(result, "model_dump"):
+        return result.model_dump()
     if hasattr(result, "dict"):
         return result.dict()
     if isinstance(result, dict):
@@ -232,11 +234,15 @@ def get_user(user_id: str) -> dict[str, Any]:
     settings = get_workos_settings()
     if not settings.api_key:
         raise ValueError("WORKOS_API_KEY is required to fetch user data")
-    if WorkOS is None:
+    if WorkOSClient is None:
         raise RuntimeError("workos SDK is not available")
-
-    workos = WorkOS(settings.api_key)
-    user = workos.user_management.get_user(user_id)
+    workos_client = WorkOSClient(
+        api_key=settings.api_key,
+        client_id=settings.client_id,
+    )
+    user = workos_client.user_management.get_user(user_id)
+    if hasattr(user, "model_dump"):
+        return user.model_dump()
     if hasattr(user, "dict"):
         return user.dict()
     if isinstance(user, dict):

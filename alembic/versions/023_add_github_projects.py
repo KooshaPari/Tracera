@@ -5,7 +5,9 @@ Revises: 022_github_app_installations
 Create Date: 2026-01-28 13:00:00.000000
 """
 from alembic import op
+from alembic import context
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
 
@@ -18,17 +20,23 @@ depends_on = None
 
 def upgrade() -> None:
     # Determine JSON type based on database
-    json_type = JSON if op.get_bind().dialect.name == "postgresql" else SQLiteJSON
+    bind = op.get_bind()
+    dialect_name = (
+        bind.dialect.name
+        if bind is not None
+        else context.get_context().dialect.name
+    )
+    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
 
     # Create github_projects table
     op.create_table(
         "github_projects",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("project_id", sa.String(255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
         sa.Column("github_repo_id", sa.Integer(), nullable=False),
         sa.Column("github_repo_owner", sa.String(255), nullable=False),
         sa.Column("github_repo_name", sa.String(255), nullable=False),
-        sa.Column("github_project_id", sa.String(255), nullable=False),
+        sa.Column("github_project_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("github_project_number", sa.Integer(), nullable=False),
         sa.Column("auto_sync", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("sync_config", json_type, nullable=False, server_default="{}"),

@@ -1,4 +1,4 @@
-import { expect, test } from "./global-setup";
+import { test } from "./global-setup";
 
 /**
  * Journey Overlay Tests

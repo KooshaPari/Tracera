@@ -17,6 +17,7 @@ from sqlalchemy import (
     Text,
     event,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 import uuid
@@ -49,7 +50,7 @@ class TestSuite(Base, TimestampMixin):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     suite_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     project_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
 
     # Basic info

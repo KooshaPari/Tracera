@@ -140,7 +140,7 @@ function getAncestors(
 	let current = hierarchyMap.get(nodeId);
 	const visited = new Set<string>();
 
-	while (current && current.parentId) {
+	while (current?.parentId) {
 		if (visited.has(current.id)) break; // Cycle detection
 		visited.add(current.id);
 

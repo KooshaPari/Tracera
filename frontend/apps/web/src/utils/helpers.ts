@@ -243,7 +243,7 @@ export function setToStorage<T>(key: string, value: T): void {
 	try {
 		localStorage.setItem(key, JSON.stringify(value));
 	} catch (error) {
-		console.error("Error saving to localStorage:", error);
+		logger.error("Error saving to localStorage:", error);
 	}
 }
 
@@ -252,7 +252,7 @@ export function removeFromStorage(key: string): void {
 	try {
 		localStorage.removeItem(key);
 	} catch (error) {
-		console.error("Error removing from localStorage:", error);
+		logger.error("Error removing from localStorage:", error);
 	}
 }
 

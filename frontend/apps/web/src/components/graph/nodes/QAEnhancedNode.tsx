@@ -1,6 +1,7 @@
 // QA Enhanced Node - Graph node with QA metrics and expandable popup
 // Extends RichNodePill with QA-specific features: pass rate, artifacts, demo runner
 
+import type { Item } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Card } from "@tracertm/ui/components/Card";
 import {
@@ -8,9 +9,8 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
-import type { Item } from "@tracertm/types";
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { CheckCircle2, XCircle, Clock, Image, Play, Link2 } from "lucide-react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
+import { CheckCircle2, Clock, Image, Link2, Play, XCircle } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { NodeExpandPopup } from "./NodeExpandPopup";
 

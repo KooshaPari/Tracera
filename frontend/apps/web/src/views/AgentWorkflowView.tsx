@@ -6,7 +6,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui";
-import { Bot, GitMerge, FileText, Zap } from "lucide-react";
+import { Bot, FileText, GitMerge, Zap } from "lucide-react";
 
 export function AgentWorkflowView() {
 	return (

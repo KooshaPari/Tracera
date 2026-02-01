@@ -7,6 +7,7 @@ Revises: 020_specifications
 Create Date: 2026-01-28 12:00:00.000000
 """
 from alembic import op
+from alembic import context
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
@@ -20,7 +21,13 @@ depends_on = None
 
 def upgrade() -> None:
     # Determine JSON type based on database
-    json_type = JSON if op.get_bind().dialect.name == "postgresql" else SQLiteJSON
+    bind = op.get_bind()
+    dialect_name = (
+        bind.dialect.name
+        if bind is not None
+        else context.get_context().dialect.name
+    )
+    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
 
     # Create accounts table
     op.create_table(
@@ -65,18 +72,29 @@ def upgrade() -> None:
     # Remove unique constraint on projects.name since accounts can have projects with same name
     # First check if constraint exists
     conn = op.get_bind()
-    inspector = sa.inspect(conn)
-    unique_constraints = [c["name"] for c in inspector.get_unique_constraints("projects")]
-    if "projects_name_key" in unique_constraints or any("name" in str(c) for c in unique_constraints):
-        # Try to drop the constraint - exact name may vary
-        try:
-            op.drop_constraint("projects_name_key", "projects", type_="unique")
-        except Exception:
-            # Constraint might have different name, try alternative
+    if conn is None or context.is_offline_mode():
+        for constraint_name in ("projects_name_key", "uq_projects_name"):
             try:
-                op.drop_constraint("uq_projects_name", "projects", type_="unique")
+                op.drop_constraint(constraint_name, "projects", type_="unique")
             except Exception:
-                pass  # Constraint might not exist or have different name
+                pass
+    else:
+        inspector = sa.inspect(conn)
+        unique_constraints = [
+            c["name"] for c in inspector.get_unique_constraints("projects")
+        ]
+        if "projects_name_key" in unique_constraints or any(
+            "name" in str(c) for c in unique_constraints
+        ):
+            # Try to drop the constraint - exact name may vary
+            try:
+                op.drop_constraint("projects_name_key", "projects", type_="unique")
+            except Exception:
+                # Constraint might have different name, try alternative
+                try:
+                    op.drop_constraint("uq_projects_name", "projects", type_="unique")
+                except Exception:
+                    pass  # Constraint might not exist or have different name
 
 
 def downgrade() -> None:

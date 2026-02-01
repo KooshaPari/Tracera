@@ -46,5 +46,12 @@
 
 		"noUncheckedSideEffectImports": true
 	},
-	"exclude": ["node_modules", "dist", "build", "coverage", ".turbo"]
+	"exclude": ["node_modules", "dist", "build", "coverage", ".turbo"],
+	"references": [
+		{ "path": "./packages/types" },
+		{ "path": "./packages/state" },
+		{ "path": "./packages/ui" },
+		{ "path": "./packages/api-client" },
+		{ "path": "./packages/config" }
+	]
 }

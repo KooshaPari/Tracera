@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
-	Problem,
-	ProblemStatus,
-	ProblemActivity,
 	ImpactLevel,
+	Problem,
+	ProblemActivity,
+	ProblemStatus,
 	RCAMethod,
-	RootCauseCategory,
 	ResolutionType,
+	RootCauseCategory,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformProblem(data: any): Problem {
@@ -86,6 +87,7 @@ async function fetchProblems(
 	const res = await fetch(`${API_URL}/api/v1/problems?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -100,7 +102,9 @@ async function fetchProblems(
 }
 
 async function fetchProblem(id: string): Promise<Problem> {
-	const res = await fetch(`${API_URL}/api/v1/problems/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/problems/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch problem");
 	const data = await res.json();
 	return transformProblem(data);
@@ -133,7 +137,7 @@ async function createProblem(
 		`${API_URL}/api/v1/problems?project_id=${data.projectId}`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				title: data.title,
 				description: data.description,
@@ -165,7 +169,7 @@ async function updateProblem(
 ): Promise<{ id: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/problems/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			title: data.title,
 			description: data.description,
@@ -196,7 +200,7 @@ async function transitionProblemStatus(
 ): Promise<{ id: string; status: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/problems/${id}/status`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			to_status: toStatus,
 			reason,
@@ -229,7 +233,7 @@ async function recordRCA(
 }> {
 	const res = await fetch(`${API_URL}/api/v1/problems/${id}/rca`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			rca_method: data.rcaMethod,
 			rca_notes: data.rcaNotes,
@@ -256,7 +260,7 @@ async function closeProblem(
 ): Promise<{ id: string; status: string; resolutionType: string }> {
 	const res = await fetch(`${API_URL}/api/v1/problems/${id}/close`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			resolution_type: resolutionType,
 			closure_notes: closureNotes,
@@ -274,6 +278,7 @@ async function closeProblem(
 async function deleteProblem(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/problems/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete problem");
 }
@@ -284,6 +289,7 @@ async function fetchProblemActivities(
 ): Promise<{ problemId: string; activities: ProblemActivity[] }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/problems/${problemId}/activities?limit=${limit}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();
@@ -311,6 +317,7 @@ async function fetchProblemStats(projectId: string): Promise<{
 }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/problems/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch problem stats");
 	const data = await res.json();

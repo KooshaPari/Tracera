@@ -23,7 +23,7 @@ async def create_adr(
 ):
     service = ADRService(db)
     return await service.create_adr(
-        project_id=adr.project_id,  # Note: ADRCreate schema might be missing project_id based on previous file read, verify later if needed
+        project_id=adr.project_id,
         title=adr.title,
         context=adr.context,
         decision=adr.decision,

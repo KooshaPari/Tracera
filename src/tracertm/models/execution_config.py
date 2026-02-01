@@ -4,10 +4,11 @@ Execution Environment Configuration model for QA Integration system.
 Per-project settings for Docker containers, VHS, Playwright, and Codex.
 """
 
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text
 import uuid
 from typing import Any
 
-from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -38,7 +39,7 @@ class ExecutionEnvironmentConfig(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_config_uuid
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         unique=True,

@@ -105,6 +105,13 @@ class AuthMiddleware(Middleware):
         expires_in = exp - now
 
         if expires_in < 0:
+            # Track auth failure in metrics if available
+            try:
+                from tracertm.mcp.metrics import track_auth_failure
+                track_auth_failure("expired_token")
+            except ImportError:
+                pass
+
             raise PermissionError(f"Token expired {abs(expires_in):.0f}s ago")
 
         # Warn if expiring soon (within 5 minutes)
@@ -149,6 +156,13 @@ class AuthMiddleware(Middleware):
         missing_scopes = set(required_scopes) - set(token_scopes)
 
         if missing_scopes:
+            # Track auth failure in metrics if available
+            try:
+                from tracertm.mcp.metrics import track_auth_failure
+                track_auth_failure("missing_scopes")
+            except ImportError:
+                pass
+
             raise PermissionError(
                 f"Tool '{tool_name}' requires scopes {missing_scopes}, "
                 f"but token has {set(token_scopes)}"
@@ -270,11 +284,25 @@ class RateLimitMiddleware(Middleware):
         recent_calls = [t for t in call_times if t > one_minute_ago]
 
         if len(recent_calls) >= self.calls_per_minute:
+            # Track rate limit hit in metrics if available
+            try:
+                from tracertm.mcp.metrics import track_rate_limit_hit
+                track_rate_limit_hit(key, "per_minute")
+            except ImportError:
+                pass
+
             raise PermissionError(
                 f"Rate limit exceeded: {self.calls_per_minute} calls/minute for {key}"
             )
 
         if len(call_times) >= self.calls_per_hour:
+            # Track rate limit hit in metrics if available
+            try:
+                from tracertm.mcp.metrics import track_rate_limit_hit
+                track_rate_limit_hit(key, "per_hour")
+            except ImportError:
+                pass
+
             raise PermissionError(
                 f"Rate limit exceeded: {self.calls_per_hour} calls/hour for {key}"
             )

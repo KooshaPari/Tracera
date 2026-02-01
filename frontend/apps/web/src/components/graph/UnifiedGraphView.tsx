@@ -2,14 +2,17 @@
 // Supports multiple perspectives, dimension filtering, and equivalence display
 // Implements: Single, Split, Layered, Unified, and Pivot display modes
 
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@tracertm/ui/components/Card";
+import type {
+	CanonicalConcept,
+	CanonicalProjection,
+	EquivalenceLink,
+	Item,
+	Link,
+} from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
 import {
 	Select,
 	SelectContent,
@@ -23,23 +26,11 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Tabs, TabsList, TabsTrigger } from "@tracertm/ui/components/Tabs";
-import { cn } from "@tracertm/ui";
-import type {
-	Item,
-	Link,
-	EquivalenceLink,
-	CanonicalConcept,
-	CanonicalProjection,
-	ItemDimensions,
-	DimensionFilter as CoreDimensionFilter,
-} from "@tracertm/types";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
 	ArrowLeftRight,
 	Columns2,
 	Component,
-	Eye,
 	EyeOff,
 	Filter,
 	Focus,
@@ -48,27 +39,21 @@ import {
 	Link2,
 	Maximize2,
 	Merge,
-	Network,
-	SquareStack,
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
+import {
+	applyDimensionFilters,
+	type DimensionFilter,
+	DimensionFilters,
+} from "./DimensionFilters";
 import { FlowGraphViewInner } from "./FlowGraphViewInner";
 import { GraphViewContainer, type GraphViewMode } from "./GraphViewContainer";
+import type { LayoutType } from "./layouts/useDAGLayout";
 import { PageInteractionFlow } from "./PageInteractionFlow";
-import { UIComponentTree } from "./UIComponentTree";
-import {
-	DimensionFilters,
-	type DimensionFilter,
-	applyDimensionFilters,
-} from "./DimensionFilters";
-import { EquivalencePanel } from "./EquivalencePanel";
-import {
-	PivotNavigation,
-	type PivotTarget,
-	buildPivotTargets,
-} from "./PivotNavigation";
+import { buildPivotTargets, PivotNavigation } from "./PivotNavigation";
 import type { GraphPerspective } from "./types";
-import { TYPE_TO_PERSPECTIVE, PERSPECTIVE_CONFIGS } from "./types";
+import { PERSPECTIVE_CONFIGS, TYPE_TO_PERSPECTIVE } from "./types";
+import { UIComponentTree } from "./UIComponentTree";
 
 // =============================================================================
 // TYPES
@@ -771,6 +756,7 @@ function ComponentLibraryView({
 interface ViewRendererProps {
 	viewMode: GraphViewMode;
 	perspective: GraphPerspective | null;
+	layoutPreference?: LayoutType;
 	items: Item[];
 	links: Link[];
 	displayMode: DisplayMode;
@@ -787,6 +773,7 @@ interface ViewRendererProps {
 function ViewRenderer({
 	viewMode,
 	perspective,
+	layoutPreference,
 	items,
 	links,
 	displayMode,
@@ -875,14 +862,6 @@ function ViewRenderer({
 					onNavigateToItem={onNavigateToItem}
 				/>
 			);
-
-		case "traceability":
-		case "perspective-product":
-		case "perspective-business":
-		case "perspective-technical":
-		case "perspective-ui":
-		case "perspective-security":
-		case "perspective-performance":
 		default:
 			return (
 				<div className="h-full p-4">
@@ -891,6 +870,7 @@ function ViewRenderer({
 							items={journeyItems}
 							links={journeyLinks}
 							perspective={perspective ?? "all"}
+							defaultLayout={layoutPreference}
 							onNavigateToItem={onNavigateToItem}
 						/>
 					</ReactFlowProvider>
@@ -1152,6 +1132,7 @@ export function UnifiedGraphView({
 					{({
 						viewMode,
 						perspective,
+						layoutPreference,
 						items: viewItems,
 						links: viewLinks,
 						onNavigateToItem,
@@ -1159,6 +1140,7 @@ export function UnifiedGraphView({
 						<ViewRenderer
 							viewMode={viewMode}
 							perspective={perspective}
+							layoutPreference={layoutPreference}
 							items={viewItems}
 							links={viewLinks}
 							displayMode={displayMode}

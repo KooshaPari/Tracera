@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SettingsView } from "@/views/SettingsView";
+import { requireAuth } from "@/lib/route-guards";
 
 export const Route = createFileRoute("/settings/")({
+	beforeLoad: () => requireAuth(),
 	component: SettingsComponent,
 	loader: async () => {
 		// SettingsView fetches its own data

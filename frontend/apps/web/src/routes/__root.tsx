@@ -1,19 +1,17 @@
 import {
-	Link as RouterLink,
 	createRootRoute,
-	Outlet,
-	useRouter,
+	Link as RouterLink,
 	useLocation,
-	redirect,
+	useRouter,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { CommandPalette } from "@/components/CommandPalette";
-import { Layout } from "@/components/layout/Layout";
-import { Toaster } from "sonner";
-import { AlertCircle, FileQuestion, Home, RefreshCcw } from "lucide-react";
 import { Button } from "@tracertm/ui";
-import { useAuthStore } from "@/stores/authStore";
-import { isPublicRoute } from "@/lib/auth-utils";
+import { AlertCircle, FileQuestion, Home, RefreshCcw } from "lucide-react";
+import { useEffect } from "react";
+import { Toaster } from "sonner";
+import { CommandPalette } from "@/components/CommandPalette";
+import { LostConnectionBanner } from "@/components/LostConnectionBanner";
+import { useConnectionHealth } from "@/hooks/useConnectionHealth";
+import Layout from "@/components/layout/Layout";
 
 // Not found component for 404 pages
 function NotFoundComponent() {
@@ -39,7 +37,7 @@ function NotFoundComponent() {
 
 				<div className="flex flex-col sm:flex-row gap-3 justify-center">
 					<Button asChild className="gap-2">
-						<RouterLink to="/">
+						<RouterLink to="/home">
 							<Home className="w-4 h-4" />
 							Back to Dashboard
 						</RouterLink>
@@ -100,13 +98,12 @@ function RootErrorComponent({ error }: { error: Error }) {
 const RootComponent = () => {
 	const router = useRouter();
 	const location = useLocation();
-	const isAuthRoute = location.pathname.startsWith("/auth");
-	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+	// Background health polling; updates connection status store on loss/recovery
+	useConnectionHealth();
 
 	// Prefetch likely navigation targets for faster perceived performance
 	useEffect(() => {
-		if (!isAuthenticated || isAuthRoute) return;
-
 		// Prefetch common routes after initial render
 		const prefetchRoutes = async () => {
 			try {
@@ -133,12 +130,13 @@ const RootComponent = () => {
 		// Delay prefetch to not block initial render
 		const timeoutId = setTimeout(prefetchRoutes, 1000);
 		return () => clearTimeout(timeoutId);
-	}, [router, isAuthenticated, isAuthRoute, location.pathname]);
+	}, [router, location.pathname]);
 
 	return (
 		<>
+			<LostConnectionBanner />
 			<CommandPalette />
-			{isAuthRoute ? <Outlet /> : <Layout />}
+			<Layout />
 			<Toaster position="top-right" richColors />
 		</>
 	);
@@ -148,53 +146,7 @@ export const Route = createRootRoute({
 	component: RootComponent,
 	errorComponent: RootErrorComponent,
 	notFoundComponent: NotFoundComponent,
-	beforeLoad: ({ location }) => {
-		const pathname = location.pathname;
-
-		// CRITICAL: Always allow /auth/callback - don't redirect it EVER
-		// WorkOS handles authentication and the callback page manages the flow
-		// This must be checked FIRST before any auth state checks
-		if (pathname === "/auth/callback") {
-			console.log("[__root] Allowing /auth/callback to load");
-			return; // Allow callback page to load unconditionally
-		}
-
-		// Get auth state - but be aware it might be stale during callback processing
-		const { isAuthenticated, user } = useAuthStore.getState();
-
-		console.log("[__root] Auth check:", {
-			pathname,
-			isAuthenticated,
-			hasUser: !!user,
-		});
-
-		// If user is authenticated and trying to access auth routes, redirect to home
-		if (isAuthenticated && user && isPublicRoute(pathname)) {
-			console.log(
-				"[__root] Authenticated user accessing auth route, redirecting to home",
-			);
-			throw redirect({ to: "/" });
-		}
-
-		// If user is not authenticated and trying to access protected routes, redirect to login
-		if (!isAuthenticated && !isPublicRoute(pathname)) {
-			console.log(
-				"[__root] Unauthenticated user accessing protected route, redirecting to login",
-			);
-			// Build returnTo URL properly - location.search is an object in TanStack Router
-			// Serialize it to a string for the returnTo parameter
-			// IMPORTANT: Only include pathname, not query params (to avoid including auth codes)
-			const returnTo = pathname;
-
-			// Don't include search params in returnTo to avoid including auth codes
-			// The original search params will be preserved by the redirect if needed
-
-			throw redirect({
-				to: "/auth/login",
-				search: { returnTo },
-			});
-		}
-	},
+	beforeLoad: () => {},
 	head: () => ({
 		meta: [
 			{

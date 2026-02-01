@@ -3,8 +3,9 @@
  * Integrates all dashboard components with health score, coverage, and gap analysis
  */
 
-import { useMemo } from "react";
+import type { SpecificationSummary } from "@tracertm/types";
 import {
+	Button,
 	Card,
 	CardContent,
 	CardDescription,
@@ -14,26 +15,25 @@ import {
 	TabsContent,
 	TabsList,
 	TabsTrigger,
-	Button,
 } from "@tracertm/ui";
 import { motion } from "framer-motion";
+import {
+	Activity,
+	AlertCircle,
+	BookOpen,
+	CheckCircle2,
+	FileText,
+	Plus,
+	Shield,
+	TrendingUp,
+} from "lucide-react";
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { ComplianceGauge } from "../adr/ComplianceGauge";
-import { HealthScoreRing } from "./HealthScoreRing";
+import { ComplianceGaugeFull } from "./ComplianceGaugeFull";
 import { CoverageHeatmap } from "./CoverageHeatmap";
 import { GapAnalysis } from "./GapAnalysis";
-import { ComplianceGaugeFull } from "./ComplianceGaugeFull";
-import {
-	FileText,
-	Shield,
-	BookOpen,
-	Activity,
-	TrendingUp,
-	AlertCircle,
-	CheckCircle2,
-	Plus,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { SpecificationSummary } from "@tracertm/types";
+import { HealthScoreRing } from "./HealthScoreRing";
 
 interface SpecificationDashboardProps {
 	summary: SpecificationSummary;

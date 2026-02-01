@@ -12,12 +12,14 @@ import importlib
 # Import tool modules to register them with the mcp instance.
 # Some environments (tests) don't have FastMCP dependencies available, so
 # we tolerate import failures to keep unit tests focused on local logic.
+# param is NOT loaded here: server.py loads split modules (params.project, params.system, etc.)
+# which register each tool once. Loading param.py here would duplicate tool registration
+# and trigger "Component already exists" (FastMCP LocalProvider on_duplicate=warn).
 _MODULES = [
     "base",
     "core_tools",
     "bmm_workflows",
     "specifications",
-    "param",
     "auth_config_db",
     "design_ingest_migration",
     "optional_features",

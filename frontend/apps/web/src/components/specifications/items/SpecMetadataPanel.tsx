@@ -5,7 +5,6 @@
  * timestamps, traceability info, and custom metadata fields.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Card,
@@ -14,6 +13,7 @@ import {
 	CardTitle,
 	Separator,
 } from "@tracertm/ui";
+import { format } from "date-fns";
 import {
 	Calendar,
 	Clock,
@@ -25,7 +25,7 @@ import {
 	TrendingDown,
 	TrendingUp,
 } from "lucide-react";
-import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface SpecMetadataPanelProps {
 	createdAt: string;

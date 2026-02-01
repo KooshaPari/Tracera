@@ -1,7 +1,7 @@
 // React hooks for Codex agent integration
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { codexApi, type CodexReviewRequest } from "../api/codex";
+import { type CodexReviewRequest, codexApi } from "../api/codex";
 
 export function useCodexInteractions(
 	projectId: string,

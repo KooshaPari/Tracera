@@ -1,11 +1,9 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { ItemsTableView } from "@/views/ItemsTableView";
+import { MonitoringView as MonitoringViewPage } from "@/pages/projects/views/MonitoringView";
 
 export function MonitoringView() {
-	const { projectId } = useParams({
-		from: "/projects/$projectId/views/monitoring",
-	});
-	return <ItemsTableView projectId={projectId} view="monitoring" />;
+	const { projectId } = useParams({ from: "/projects/$projectId" });
+	return <MonitoringViewPage projectId={projectId} />;
 }
 
 export const MONITORING_VIEW = MonitoringView;

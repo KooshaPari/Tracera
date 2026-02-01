@@ -1,14 +1,14 @@
 // Timeline View - Horizontal version timeline with markers and zoom controls
 
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
-import { cn } from "@tracertm/ui";
 import {
+	CalendarDays,
 	ChevronLeft,
 	ChevronRight,
 	ZoomIn,
 	ZoomOut,
-	CalendarDays,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Version } from "./TemporalNavigator";
@@ -51,10 +51,10 @@ export function TimelineView({
 
 		if (days === 0) return "Today";
 		if (days === 1) return "Yesterday";
-		if (days < 7) return days + " days ago";
-		if (days < 30) return Math.floor(days / 7) + " weeks ago";
-		if (days < 365) return Math.floor(days / 30) + " months ago";
-		return Math.floor(days / 365) + " years ago";
+		if (days < 7) return `${days} days ago`;
+		if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+		if (days < 365) return `${Math.floor(days / 30)} months ago`;
+		return `${Math.floor(days / 365)} years ago`;
 	};
 
 	const handleScroll = (direction: "left" | "right") => {
@@ -118,7 +118,7 @@ export function TimelineView({
 				<div
 					className="flex gap-4 overflow-x-auto pb-2"
 					style={{
-						transform: "translateX(-" + scrollOffset + "px)",
+						transform: `translateX(-${scrollOffset}px)`,
 						transition: "transform 0.3s ease-out",
 					}}
 				>

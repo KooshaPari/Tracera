@@ -1,18 +1,15 @@
 /**
- * ChatPanel - Main chat interface with header, messages, and input
+ * ChatPanel - Main chat interface with header, messages, and input.
+ * Includes a Chat history button that opens a history panel (search, sort, delete).
  */
 
-import { useRef, useEffect, useState, type KeyboardEvent } from "react";
-import { cn, Button, Textarea, ScrollArea } from "@tracertm/ui";
-import {
-	X,
-	Send,
-	Square,
-	MessageSquarePlus,
-	PanelRightOpen,
-} from "lucide-react";
+import { Button, cn, ScrollArea, Textarea } from "@tracertm/ui";
+import { History, MessageSquarePlus, Send, Settings, Square, X } from "lucide-react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useChat } from "@/hooks/useChat";
+import { ChatHistoryPanel } from "./ChatHistoryPanel";
 import { ChatMessage } from "./ChatMessage";
+import { ChatSettingsPanel } from "./ChatSettingsPanel";
 import { ModelSelector } from "./ModelSelector";
 
 interface ChatPanelProps {
@@ -33,6 +30,9 @@ export function ChatPanel({
 		selectedModel,
 		activeConversation,
 		conversations,
+		context,
+		systemPromptOverride,
+		setSystemPromptOverride,
 		setSelectedModel,
 		sendMessage,
 		stopStreaming,
@@ -42,18 +42,24 @@ export function ChatPanel({
 	} = useChat();
 
 	const [inputValue, setInputValue] = useState("");
+	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	// Auto-scroll to bottom when messages change
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [activeConversation?.messages]);
-
-	// Focus textarea when panel opens
-	useEffect(() => {
-		textareaRef.current?.focus();
 	}, []);
+
+	// Avoid stealing initial focus when the sidebar is mounted
+	useEffect(() => {
+		if (mode !== "bubble") return;
+		if (typeof document !== "undefined" && document.activeElement !== document.body) {
+			return;
+		}
+		textareaRef.current?.focus();
+	}, [mode]);
 
 	const handleSend = () => {
 		const content = inputValue.trim();
@@ -102,6 +108,24 @@ export function ChatPanel({
 						variant="ghost"
 						size="icon"
 						className="h-7 w-7"
+						onClick={() => setIsHistoryOpen(true)}
+						title="Chat history"
+					>
+						<History className="h-4 w-4" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-7 w-7"
+						onClick={() => setIsSettingsOpen(true)}
+						title="Chat settings & system prompt"
+					>
+						<Settings className="h-4 w-4" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-7 w-7"
 						onClick={handleNewChat}
 						title="New chat"
 					>
@@ -110,6 +134,31 @@ export function ChatPanel({
 				</div>
 			</div>
 
+			{/* Settings panel (replaces messages when open) */}
+			{isSettingsOpen ? (
+				<div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+					<ChatSettingsPanel
+						context={context ?? null}
+						systemPromptOverride={systemPromptOverride}
+						onSystemPromptOverrideChange={setSystemPromptOverride}
+						onClose={() => setIsSettingsOpen(false)}
+						className="flex-1 min-h-0"
+					/>
+				</div>
+			) : isHistoryOpen ? (
+				<div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+					<ChatHistoryPanel
+						conversations={conversations}
+						activeConversationId={activeConversation?.id ?? null}
+						projectId={context?.project?.id ?? null}
+						onSelectConversation={setActiveConversation}
+						onDeleteConversation={deleteConversation}
+						onClose={() => setIsHistoryOpen(false)}
+						className="flex-1 min-h-0"
+					/>
+				</div>
+			) : (
+				<>
 			{/* Conversation tabs (if multiple) */}
 			{conversations.length > 1 && (
 				<div className="flex items-center gap-1 px-2 py-1.5 border-b bg-muted/20 overflow-x-auto shrink-0 min-w-0 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
@@ -210,6 +259,8 @@ export function ChatPanel({
 					Press Enter to send, Shift+Enter for new line
 				</div>
 			</div>
+				</>
+			)}
 		</div>
 	);
 }

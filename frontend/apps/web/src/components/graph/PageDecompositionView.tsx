@@ -1,14 +1,11 @@
 // PageDecompositionView.tsx - Hierarchical page → element breakdown
 // Shows UI structure: Site → Page → Layout → Section → Component → Element
 
+import type { Item, Link, UIEntityType } from "@tracertm/types";
+import { ENTITY_DEPTH_LEVELS } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@tracertm/ui/components/Card";
+import { Card, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
 import { Input } from "@tracertm/ui/components/Input";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import { Separator } from "@tracertm/ui/components/Separator";
@@ -18,24 +15,12 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Progress } from "@tracertm/ui/components/Progress";
-import type { Item, Link } from "@tracertm/types";
-import type { UIItem, UIEntityType } from "@tracertm/types";
-import {
-	ENTITY_DEPTH_LEVELS,
-	ENTITY_HIERARCHY,
-	isUIEntityType,
-} from "@tracertm/types";
 import {
 	Box,
 	ChevronDown,
 	ChevronRight,
 	Code,
 	Component,
-	ExternalLink,
-	Eye,
-	FileCode,
-	Folder,
 	FolderOpen,
 	Globe,
 	Grid3x3,
@@ -44,7 +29,6 @@ import {
 	LayoutGrid,
 	LayoutPanelLeft,
 	Maximize2,
-	Minimize2,
 	Monitor,
 	MousePointer2,
 	PanelLeft,
@@ -53,8 +37,7 @@ import {
 	Square,
 	SquareStack,
 } from "lucide-react";
-import { memo, useMemo, useState, useCallback } from "react";
-import { ENHANCED_TYPE_COLORS } from "./types";
+import { memo, useCallback, useMemo, useState } from "react";
 
 // =============================================================================
 // TYPES

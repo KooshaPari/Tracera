@@ -1,21 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@tracertm/ui/components/Button";
 import { Input } from "@tracertm/ui/components/Input";
 import { Label } from "@tracertm/ui/components/Label";
-import { Textarea } from "@tracertm/ui/components/Textarea";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
-import { Separator } from "@tracertm/ui/components/Separator";
+import { Textarea } from "@tracertm/ui/components/Textarea";
 import { Save } from "lucide-react";
-import { useProject, useUpdateProject } from "@/hooks/useProjects";
-import IntegrationsView from "@/pages/projects/views/IntegrationsView";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useProject, useUpdateProject } from "@/hooks/useProjects";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
+import IntegrationsView from "@/pages/projects/views/IntegrationsView";
 
 export function ProjectSettingsView({ projectId }: { projectId: string }) {
 	const { data: project } = useProject(projectId);

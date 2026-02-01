@@ -9,30 +9,28 @@
  * - Expandable diff details
  */
 
-import type React from "react";
-import { useState, useMemo } from "react";
-import {
-	Plus,
-	Minus,
-	RefreshCw,
-	ChevronDown,
-	ChevronRight,
-	Tag,
-	Calendar,
-	Filter,
-	ArrowRight,
-	AlertCircle,
-	CheckCircle,
-	FileText,
-	Code,
-	Database,
-	Layout,
-} from "lucide-react";
 import type {
+	DiffItem,
 	Version,
 	VersionDiff as VersionDiffType,
-	DiffItem,
 } from "@tracertm/types/temporal";
+import {
+	ArrowRight,
+	CheckCircle,
+	ChevronDown,
+	ChevronRight,
+	Code,
+	Database,
+	FileText,
+	Filter,
+	Layout,
+	Minus,
+	Plus,
+	RefreshCw,
+	Tag,
+} from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
 
 // =============================================================================
 // TYPES

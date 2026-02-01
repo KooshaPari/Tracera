@@ -1423,8 +1423,8 @@ class TestAdditionalCoverage:
         result = manager.get_current_project_path()
         assert result is None or isinstance(result, Path)
 
-    def test_get_project_storage_legacy_mode(self, temp_base_dir):
-        """Test ProjectStorage in legacy mode (without .trace/)."""
+    def test_get_project_storage_global_projects_dir(self, temp_base_dir):
+        """Test ProjectStorage via global projects dir (get_project_storage)."""
         manager = LocalStorageManager(base_dir=temp_base_dir / "storage")
         project_storage = manager.get_project_storage("MyProject")
 

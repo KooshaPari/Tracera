@@ -1,6 +1,7 @@
 // Enhanced Graph View - Multi-perspective traceability visualization
 // Features: Multiple views, rich node pills, Storybook-like UI view
 
+import type { Item, Link, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -13,7 +14,6 @@ import {
 } from "@tracertm/ui/components/Select";
 import { Separator } from "@tracertm/ui/components/Separator";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import type { Item, Link, LinkType } from "@tracertm/types";
 import cytoscape, { type Core } from "cytoscape";
 import {
 	Download,
@@ -27,7 +27,7 @@ import {
 	ZoomIn,
 	ZoomOut,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NodeDetailPanel } from "./NodeDetailPanel";
 import { PerspectiveSelector } from "./PerspectiveSelector";
 import type { EnhancedNodeData, GraphPerspective } from "./types";
@@ -48,7 +48,7 @@ interface EnhancedGraphViewProps {
 	onNavigateToItem?: (itemId: string) => void;
 }
 
-export function EnhancedGraphView({
+function EnhancedGraphViewComponent({
 	items,
 	links,
 	isLoading = false,
@@ -137,13 +137,13 @@ export function EnhancedGraphView({
 				depth,
 				hasChildren,
 				parentId: item.parentId,
-				uiPreview: item.metadata?.["screenshotUrl"]
+				uiPreview: item.metadata?.['screenshotUrl']
 					? {
-							screenshotUrl: item.metadata["screenshotUrl"] as string,
-							interactiveWidgetUrl: item.metadata["interactiveUrl"] as
+							screenshotUrl: item.metadata['screenshotUrl'] as string,
+							interactiveWidgetUrl: item.metadata['interactiveUrl'] as
 								| string
 								| undefined,
-							componentCode: item.metadata["code"] as string | undefined,
+							componentCode: item.metadata['code'] as string | undefined,
 						}
 					: undefined,
 			} as EnhancedNodeData;

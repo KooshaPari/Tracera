@@ -2,7 +2,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ItemsTableView } from "@/views/ItemsTableView";
 
 export function CodeView() {
-	const { projectId } = useParams({ from: "/projects/$projectId/views/code" });
+	const { projectId } = useParams({ from: "/projects/$projectId" });
 	return (
 		<div className="flex-1 p-6 space-y-6">
 			<div className="flex items-center justify-between">

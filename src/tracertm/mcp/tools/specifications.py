@@ -2,16 +2,17 @@
 Specification tools for MCP.
 """
 
-from typing import List, Optional
-from fastmcp import Context
+from typing import List, Optional, Any
+
+from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.core import mcp
-from tracertm.api.deps import get_db
-from tracertm.services.adr_service import ADRService
-from tracertm.services.contract_service import ContractService
-from tracertm.services.feature_service import FeatureService
-from tracertm.services.scenario_service import ScenarioService
-from tracertm.services.requirement_quality_service import RequirementQualityService
+from tracertm.mcp.api_client import get_api_client
+from tracertm.api.http_client import TraceRTMHttpClient, TraceRTMHttpError
+
+
+def _api_client() -> TraceRTMHttpClient:
+    return get_api_client()
 
 # =============================================================================
 # ADR Tools
@@ -28,43 +29,55 @@ async def create_adr(
     decision_drivers: List[str] = [],
     tags: List[str] = [],
 ) -> dict:
-    async for session in get_db():
-        service = ADRService(session)
-        adr = await service.create_adr(
-            project_id=project_id,
-            title=title,
-            context=context,
-            decision=decision,
-            consequences=consequences,
-            status=status,
-            decision_drivers=decision_drivers,
-            tags=tags,
+    client = _api_client()
+    try:
+        adr = client.post(
+            "/api/v1/adrs",
+            json={
+                "project_id": project_id,
+                "title": title,
+                "context": context,
+                "decision": decision,
+                "consequences": consequences,
+                "status": status,
+                "decision_drivers": decision_drivers,
+                "tags": tags,
+            },
         )
-        return {
-            "id": adr.id,
-            "adr_number": adr.adr_number,
-            "title": adr.title,
-            "status": adr.status
-        }
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return {
+        "id": adr.get("id"),
+        "adr_number": adr.get("adr_number"),
+        "title": adr.get("title", title),
+        "status": adr.get("status", status),
+    }
 
 @mcp.tool(description="List ADRs for a project")
 async def list_adrs(
     project_id: str,
     status: Optional[str] = None,
 ) -> List[dict]:
-    async for session in get_db():
-        service = ADRService(session)
-        adrs = await service.list_adrs(project_id, status)
-        return [
-            {
-                "id": a.id,
-                "adr_number": a.adr_number,
-                "title": a.title,
-                "status": a.status,
-                "date": a.date.isoformat() if a.date else None
-            }
-            for a in adrs
-        ]
+    client = _api_client()
+    try:
+        adrs = client.get(
+            "/api/v1/adrs",
+            params={"project_id": project_id, "status": status},
+        )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return [
+        {
+            "id": a.get("id"),
+            "adr_number": a.get("adr_number"),
+            "title": a.get("title"),
+            "status": a.get("status"),
+            "date": a.get("date"),
+        }
+        for a in adrs
+    ]
 
 # =============================================================================
 # Contract Tools
@@ -78,20 +91,26 @@ async def create_contract(
     contract_type: str,
     status: str = "draft",
 ) -> dict:
-    async for session in get_db():
-        service = ContractService(session)
-        contract = await service.create_contract(
-            project_id=project_id,
-            item_id=item_id,
-            title=title,
-            contract_type=contract_type,
-            status=status,
+    client = _api_client()
+    try:
+        contract = client.post(
+            "/api/v1/contracts",
+            json={
+                "project_id": project_id,
+                "item_id": item_id,
+                "title": title,
+                "contract_type": contract_type,
+                "status": status,
+            },
         )
-        return {
-            "id": contract.id,
-            "contract_number": contract.contract_number,
-            "title": contract.title
-        }
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return {
+        "id": contract.get("id"),
+        "contract_number": contract.get("contract_number"),
+        "title": contract.get("title", title),
+    }
 
 # =============================================================================
 # Feature & Scenario Tools
@@ -106,21 +125,27 @@ async def create_feature(
     i_want: str = None,
     so_that: str = None,
 ) -> dict:
-    async for session in get_db():
-        service = FeatureService(session)
-        feature = await service.create_feature(
-            project_id=project_id,
-            name=name,
-            description=description,
-            as_a=as_a,
-            i_want=i_want,
-            so_that=so_that,
+    client = _api_client()
+    try:
+        feature = client.post(
+            "/api/v1/features",
+            json={
+                "project_id": project_id,
+                "name": name,
+                "description": description,
+                "as_a": as_a,
+                "i_want": i_want,
+                "so_that": so_that,
+            },
         )
-        return {
-            "id": feature.id,
-            "feature_number": feature.feature_number,
-            "name": feature.name
-        }
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return {
+        "id": feature.get("id"),
+        "feature_number": feature.get("feature_number"),
+        "name": feature.get("name", name),
+    }
 
 @mcp.tool(description="Create a new BDD Scenario for a Feature")
 async def create_scenario(
@@ -128,18 +153,20 @@ async def create_scenario(
     title: str,
     gherkin_text: str,
 ) -> dict:
-    async for session in get_db():
-        service = ScenarioService(session)
-        scenario = await service.create_scenario(
-            feature_id=feature_id,
-            title=title,
-            gherkin_text=gherkin_text,
+    client = _api_client()
+    try:
+        scenario = client.post(
+            f"/api/v1/features/{feature_id}/scenarios",
+            json={"title": title, "gherkin_text": gherkin_text},
         )
-        return {
-            "id": scenario.id,
-            "scenario_number": scenario.scenario_number,
-            "title": scenario.title
-        }
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return {
+        "id": scenario.get("id"),
+        "scenario_number": scenario.get("scenario_number"),
+        "title": scenario.get("title", title),
+    }
 
 # =============================================================================
 # Quality Tools
@@ -149,14 +176,17 @@ async def create_scenario(
 async def analyze_quality(
     item_id: str,
 ) -> dict:
-    async for session in get_db():
-        service = RequirementQualityService(session)
-        quality = await service.analyze_quality(item_id)
-        return {
-            "id": quality.id,
-            "item_id": quality.item_id,
-            "smells": quality.smells,
-            "ambiguity_score": quality.ambiguity_score,
-            "completeness_score": quality.completeness_score,
-            "suggestions": quality.suggestions,
-        }
+    client = _api_client()
+    try:
+        quality = client.post(f"/api/v1/quality/items/{item_id}/analyze")
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return {
+        "id": quality.get("id"),
+        "item_id": quality.get("item_id", item_id),
+        "smells": quality.get("smells"),
+        "ambiguity_score": quality.get("ambiguity_score"),
+        "completeness_score": quality.get("completeness_score"),
+        "suggestions": quality.get("suggestions"),
+    }

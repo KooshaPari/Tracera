@@ -3,11 +3,14 @@
  */
 
 import { useCallback, useRef } from "react";
-import { useChatStore } from "@/stores/chatStore";
+import { createAgentSession } from "@/api/agent";
+import { getAuthHeaders } from "@/api/client";
 import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
+import { logger } from '@/lib/logger';
 import type { SSEEvent, ToolCall } from "@/lib/ai/types";
+import { useChatStore } from "@/stores/chatStore";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 interface SendMessageOptions {
 	onChunk?: (chunk: string) => void;
@@ -24,6 +27,7 @@ export function useChat() {
 		isStreaming,
 		selectedModel,
 		context,
+		systemPromptOverride,
 		conversations,
 		activeConversationId,
 		toggleOpen,
@@ -31,14 +35,17 @@ export function useChat() {
 		setMode,
 		createConversation,
 		setActiveConversation,
+		setConversationSessionId,
 		deleteConversation,
 		addMessage,
 		updateMessage,
+		updateMessageToolCalls,
 		setMessageStreaming,
 		setStreaming,
 		setAbortController,
 		stopStreaming,
 		setSelectedModel,
+		setSystemPromptOverride,
 		setContext,
 		getActiveConversation,
 	} = useChatStore();
@@ -54,20 +61,37 @@ export function useChat() {
 				conversationId = createConversation(context?.project?.id);
 			}
 
+			// Ensure agent session for this conversation (per-session sandbox)
+			let conversation = getActiveConversation();
+			if (!conversation?.sessionId && context?.project?.id) {
+				try {
+					const session = await createAgentSession({
+						project_id: context.project.id,
+						session_id: conversationId,
+					});
+					setConversationSessionId(conversationId, session.session_id);
+					conversation = { ...conversation!, sessionId: session.session_id };
+				} catch (_e) {
+					// Proceed without session_id; backend will run without sandbox
+				}
+			}
+			// Re-fetch in case we just set sessionId
+			conversation = getActiveConversation();
+
 			// Add user message
 			addMessage(conversationId, "user", content);
 
 			// Add placeholder assistant message
 			const assistantMessageId = addMessage(conversationId, "assistant", "");
 
-			// Build messages for API
-			const conversation = getActiveConversation();
-			if (!conversation) {
+			// Build messages for API (conversation already resolved above)
+			const conv = getActiveConversation();
+			if (!conv) {
 				options?.onError?.(new Error("No active conversation"));
 				return;
 			}
 
-			const messagesForApi = conversation.messages
+			const messagesForApi = conv.messages
 				.filter((m) => m.id !== assistantMessageId)
 				.map((m) => ({
 					role: m.role,
@@ -77,8 +101,10 @@ export function useChat() {
 			// Add the new user message
 			messagesForApi.push({ role: "user", content });
 
-			// Build system prompt with context
-			const systemPrompt = buildSystemPrompt(context ?? undefined);
+			// Build system prompt: override if set, else built-in with context
+			const systemPrompt =
+				(systemPromptOverride?.trim() && systemPromptOverride) ||
+				buildSystemPrompt(context ?? undefined);
 
 			// Create abort controller
 			const abortController = new AbortController();
@@ -92,6 +118,7 @@ export function useChat() {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
+						...getAuthHeaders(),
 					},
 					body: JSON.stringify({
 						messages: messagesForApi,
@@ -106,6 +133,7 @@ export function useChat() {
 									current_view: context.currentView,
 								}
 							: undefined,
+						session_id: conv.sessionId ?? undefined,
 					}),
 					signal: abortController.signal,
 				});
@@ -122,163 +150,202 @@ export function useChat() {
 				const decoder = new TextDecoder();
 				let buffer = "";
 
+				const processSSELine = (line: string) => {
+					if (!line.startsWith("data: ")) return;
+					const data = line.slice(6).trim();
+					if (data === "[DONE]") {
+						updateMessageToolCalls(
+							conversationId,
+							assistantMessageId,
+							Array.from(toolCalls.current.values()),
+						);
+						setMessageStreaming(conversationId, assistantMessageId, false);
+						options?.onComplete?.(accumulatedContent.current);
+						return;
+					}
+					try {
+						const event: SSEEvent = JSON.parse(data);
+						switch (event.type) {
+							case "text":
+								if (event.data.content) {
+									accumulatedContent.current += event.data.content;
+									updateMessage(
+										conversationId,
+										assistantMessageId,
+										formatMessageContent(
+											accumulatedContent.current,
+											toolCalls.current,
+										),
+									);
+									options?.onChunk?.(event.data.content);
+								}
+								break;
+							case "tool_use_start":
+								if (event.data.tool_name && event.data.tool_use_id) {
+									const toolCall: ToolCall = {
+										id: event.data.tool_use_id,
+										name: event.data.tool_name,
+										input: {},
+										isExecuting: true,
+									};
+									toolCalls.current.set(event.data.tool_use_id, toolCall);
+									updateMessage(
+										conversationId,
+										assistantMessageId,
+										formatMessageContent(
+											accumulatedContent.current,
+											toolCalls.current,
+										),
+									);
+									updateMessageToolCalls(
+										conversationId,
+										assistantMessageId,
+										Array.from(toolCalls.current.values()),
+									);
+									options?.onToolStart?.(
+										event.data.tool_name,
+										event.data.tool_use_id,
+									);
+								}
+								break;
+							case "tool_use_input":
+								if (event.data.tool_use_id && event.data.input) {
+									const existingCall = toolCalls.current.get(
+										event.data.tool_use_id,
+									);
+									if (existingCall) {
+										existingCall.input = event.data.input;
+										toolCalls.current.set(
+											event.data.tool_use_id,
+											existingCall,
+										);
+										updateMessage(
+											conversationId,
+											assistantMessageId,
+											formatMessageContent(
+												accumulatedContent.current,
+												toolCalls.current,
+											),
+										);
+										updateMessageToolCalls(
+											conversationId,
+											assistantMessageId,
+											Array.from(toolCalls.current.values()),
+										);
+									}
+								}
+								break;
+							case "tool_result":
+								if (event.data.tool_use_id && event.data.result) {
+									const existingCall = toolCalls.current.get(
+										event.data.tool_use_id,
+									);
+									if (existingCall) {
+										existingCall.result = event.data.result;
+										existingCall.isExecuting = false;
+										toolCalls.current.set(
+											event.data.tool_use_id,
+											existingCall,
+										);
+										updateMessage(
+											conversationId,
+											assistantMessageId,
+											formatMessageContent(
+												accumulatedContent.current,
+												toolCalls.current,
+											),
+										);
+										updateMessageToolCalls(
+											conversationId,
+											assistantMessageId,
+											Array.from(toolCalls.current.values()),
+										);
+										options?.onToolResult?.(
+											event.data.tool_use_id,
+											event.data.result,
+										);
+									}
+								}
+								break;
+							case "error":
+								if (event.data.error) {
+									throw new Error(event.data.error);
+								}
+								break;
+							case "done":
+								updateMessageToolCalls(
+									conversationId,
+									assistantMessageId,
+									Array.from(toolCalls.current.values()),
+								);
+								setMessageStreaming(
+									conversationId,
+									assistantMessageId,
+									false,
+								);
+								options?.onComplete?.(accumulatedContent.current);
+								break;
+						}
+					} catch (parseError) {
+						try {
+							const legacyData = JSON.parse(data);
+							if (legacyData.content) {
+								accumulatedContent.current += legacyData.content;
+								updateMessage(
+									conversationId,
+									assistantMessageId,
+									accumulatedContent.current,
+								);
+								options?.onChunk?.(legacyData.content);
+							}
+						} catch {
+							logger.warn("Failed to parse SSE chunk:", data);
+						}
+					}
+				};
+
 				while (true) {
 					const { done, value } = await reader.read();
 
 					if (done) {
+						// Process any remaining buffer (last SSE event may be in here)
+						const lines = buffer.split("\n");
+						for (const line of lines) {
+							if (line.trim()) processSSELine(line);
+						}
 						break;
 					}
 
 					buffer += decoder.decode(value, { stream: true });
-
-					// Process SSE events in buffer
 					const lines = buffer.split("\n");
-					buffer = lines.pop() || ""; // Keep incomplete line in buffer
+					buffer = lines.pop() || "";
 
 					for (const line of lines) {
-						if (line.startsWith("data: ")) {
-							const data = line.slice(6).trim();
-
-							if (data === "[DONE]") {
-								// Legacy done signal
-								setMessageStreaming(conversationId, assistantMessageId, false);
-								options?.onComplete?.(accumulatedContent.current);
-								continue;
-							}
-
-							try {
-								const event: SSEEvent = JSON.parse(data);
-
-								switch (event.type) {
-									case "text":
-										if (event.data.content) {
-											accumulatedContent.current += event.data.content;
-											updateMessage(
-												conversationId,
-												assistantMessageId,
-												formatMessageContent(
-													accumulatedContent.current,
-													toolCalls.current,
-												),
-											);
-											options?.onChunk?.(event.data.content);
-										}
-										break;
-
-									case "tool_use_start":
-										if (event.data.tool_name && event.data.tool_use_id) {
-											const toolCall: ToolCall = {
-												id: event.data.tool_use_id,
-												name: event.data.tool_name,
-												input: {},
-												isExecuting: true,
-											};
-											toolCalls.current.set(event.data.tool_use_id, toolCall);
-											updateMessage(
-												conversationId,
-												assistantMessageId,
-												formatMessageContent(
-													accumulatedContent.current,
-													toolCalls.current,
-												),
-											);
-											options?.onToolStart?.(
-												event.data.tool_name,
-												event.data.tool_use_id,
-											);
-										}
-										break;
-
-									case "tool_use_input":
-										if (event.data.tool_use_id && event.data.input) {
-											const existingCall = toolCalls.current.get(
-												event.data.tool_use_id,
-											);
-											if (existingCall) {
-												existingCall.input = event.data.input;
-												toolCalls.current.set(
-													event.data.tool_use_id,
-													existingCall,
-												);
-												updateMessage(
-													conversationId,
-													assistantMessageId,
-													formatMessageContent(
-														accumulatedContent.current,
-														toolCalls.current,
-													),
-												);
-											}
-										}
-										break;
-
-									case "tool_result":
-										if (event.data.tool_use_id && event.data.result) {
-											const existingCall = toolCalls.current.get(
-												event.data.tool_use_id,
-											);
-											if (existingCall) {
-												existingCall.result = event.data.result;
-												existingCall.isExecuting = false;
-												toolCalls.current.set(
-													event.data.tool_use_id,
-													existingCall,
-												);
-												updateMessage(
-													conversationId,
-													assistantMessageId,
-													formatMessageContent(
-														accumulatedContent.current,
-														toolCalls.current,
-													),
-												);
-												options?.onToolResult?.(
-													event.data.tool_use_id,
-													event.data.result,
-												);
-											}
-										}
-										break;
-
-									case "error":
-										if (event.data.error) {
-											throw new Error(event.data.error);
-										}
-										break;
-
-									case "done":
-										setMessageStreaming(
-											conversationId,
-											assistantMessageId,
-											false,
-										);
-										options?.onComplete?.(accumulatedContent.current);
-										break;
-								}
-							} catch (parseError) {
-								// Try legacy format
-								try {
-									const legacyData = JSON.parse(data);
-									if (legacyData.content) {
-										accumulatedContent.current += legacyData.content;
-										updateMessage(
-											conversationId,
-											assistantMessageId,
-											accumulatedContent.current,
-										);
-										options?.onChunk?.(legacyData.content);
-									}
-								} catch {
-									console.warn("Failed to parse SSE chunk:", data);
-								}
-							}
-						}
+						if (line.trim()) processSSELine(line);
 					}
 				}
 
-				// Ensure streaming state is cleaned up
+				// Ensure streaming state is cleaned up and tool calls persisted
+				updateMessageToolCalls(
+					conversationId,
+					assistantMessageId,
+					Array.from(toolCalls.current.values()),
+				);
 				setMessageStreaming(conversationId, assistantMessageId, false);
+				// If we never got any content, show a fallback so the user knows the request finished
+				if (!accumulatedContent.current) {
+					updateMessage(
+						conversationId,
+						assistantMessageId,
+						"No response received. Check that the AI provider is configured (e.g. ANTHROPIC_API_KEY for Claude) and try again.",
+					);
+				}
 			} catch (error) {
+				updateMessageToolCalls(
+					conversationId,
+					assistantMessageId,
+					Array.from(toolCalls.current.values()),
+				);
 				if ((error as Error).name === "AbortError") {
 					// Request was aborted, mark as complete
 					setMessageStreaming(conversationId, assistantMessageId, false);
@@ -286,7 +353,7 @@ export function useChat() {
 						updateMessage(
 							conversationId,
 							assistantMessageId,
-							accumulatedContent.current + "\n\n*[Response stopped]*",
+							`${accumulatedContent.current}\n\n*[Response stopped]*`,
 						);
 					}
 				} else {
@@ -308,9 +375,12 @@ export function useChat() {
 			activeConversationId,
 			context,
 			selectedModel,
+			systemPromptOverride,
 			createConversation,
+			setConversationSessionId,
 			addMessage,
 			updateMessage,
+			updateMessageToolCalls,
 			setMessageStreaming,
 			setStreaming,
 			setAbortController,
@@ -351,6 +421,7 @@ export function useChat() {
 		isStreaming,
 		selectedModel,
 		context,
+		systemPromptOverride,
 		conversations,
 		activeConversationId,
 		activeConversation: getActiveConversation(),
@@ -370,6 +441,9 @@ export function useChat() {
 
 		// Context Actions
 		setContext,
+
+		// System prompt
+		setSystemPromptOverride,
 
 		// Chat Actions
 		sendMessage,

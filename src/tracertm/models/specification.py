@@ -9,12 +9,13 @@ Provides comprehensive models for:
 - Step Definitions - Gherkin step implementations and patterns
 """
 
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Index, Integer, String, Table, Text
 import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, Boolean, Table, Column
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin
@@ -66,7 +67,7 @@ class ADR(Base, TimestampMixin):
         String(50), nullable=False, index=True
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -201,13 +202,13 @@ class Contract(Base, TimestampMixin):
         String(50), nullable=False, index=True
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     item_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -341,7 +342,7 @@ class Feature(Base, TimestampMixin):
         String(50), nullable=False, index=True
     )
     project_id: Mapped[str] = mapped_column(
-        String(255),
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

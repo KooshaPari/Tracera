@@ -5,31 +5,31 @@ import {
 	Button,
 	Card,
 	Input,
-	Skeleton,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Skeleton,
 } from "@tracertm/ui";
 import {
 	AlertCircle,
+	ArrowRight,
 	CheckCircle2,
 	ClipboardList,
 	Clock,
+	Filter,
 	List,
 	MoreVertical,
 	Plus,
 	Search,
 	User,
-	Filter,
-	ArrowRight,
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-import { useItems, useUpdateItem } from "../hooks/useItems";
-import { useProjects } from "../hooks/useProjects";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useItems, useUpdateItem } from "../hooks/useItems";
+import { useProjects } from "../hooks/useProjects";
 
 interface KanbanColumn {
 	status: ItemStatus;
@@ -68,10 +68,11 @@ const columns: KanbanColumn[] = [
 interface ItemCardProps {
 	item: Item;
 	onDragStart: (item: Item) => void;
+	projectFilter?: string;
 }
 
 const ItemCard = memo(
-	function ItemCard({ item, onDragStart }: ItemCardProps) {
+	function ItemCard({ item, onDragStart, projectFilter }: ItemCardProps) {
 		const handleDragStart = useCallback(() => {
 			onDragStart(item);
 		}, [item, onDragStart]);
@@ -82,7 +83,13 @@ const ItemCard = memo(
 				onDragStart={handleDragStart}
 				className="group bg-card hover:bg-accent/5 transition-all cursor-grab active:cursor-grabbing border border-border/50 rounded-xl p-4 shadow-sm hover:shadow-md"
 			>
-				<Link to={`/items/${item.id}`}>
+				<Link
+					to={
+						projectFilter
+							? `/projects/${projectFilter}/views/${String(item.view || "feature").toLowerCase()}/${item.id}`
+							: "/projects"
+					}
+				>
 					<div className="space-y-3">
 						<div className="flex justify-between items-start gap-2">
 							<Badge
@@ -146,7 +153,119 @@ const ItemCard = memo(
 			prev.item.type === next.item.type &&
 			prev.item.status === next.item.status &&
 			prev.item.priority === next.item.priority &&
-			prev.item.owner === next.item.owner
+			prev.item.owner === next.item.owner &&
+			prev.projectFilter === next.projectFilter
+		);
+	},
+);
+
+const ColumnHeader = memo(function ColumnHeader({
+	column,
+	itemCount,
+	isOver,
+}: {
+	column: KanbanColumn;
+	itemCount: number;
+	isOver: boolean;
+}) {
+	return (
+		<div
+			className={cn(
+				"flex items-center justify-between p-3 rounded-2xl border-t-4 transition-all",
+				column.color,
+				isOver ? "bg-primary/5 scale-[1.02]" : "bg-muted/30",
+			)}
+		>
+			<div className="flex items-center gap-2">
+				<column.icon className="h-4 w-4 text-muted-foreground" />
+				<h2 className="text-[10px] font-black uppercase tracking-[0.2em]">
+					{column.title}
+				</h2>
+			</div>
+			<Badge
+				variant="secondary"
+				className="text-[10px] font-black rounded-full h-5 px-2"
+			>
+				{itemCount}
+			</Badge>
+		</div>
+	);
+});
+
+const EmptyDropZone = memo(function EmptyDropZone() {
+	return (
+		<div className="flex flex-col items-center justify-center py-12 text-muted-foreground/30 border-2 border-dashed border-border/50 rounded-2xl">
+			<ArrowRight className="h-8 w-8 mb-2 rotate-90" />
+			<p className="text-[10px] font-bold uppercase tracking-widest text-center">
+				Empty Drop Zone
+			</p>
+		</div>
+	);
+});
+
+const ColumnDropZone = memo(
+	function ColumnDropZone({
+		column,
+		items,
+		isOver,
+		onDrop,
+		onDragOver,
+		onDragLeave,
+		onDragStart,
+		projectFilter,
+	}: {
+		column: KanbanColumn;
+		items: Item[];
+		isOver: boolean;
+		onDrop: () => void;
+		onDragOver: (e: React.DragEvent) => void;
+		onDragLeave: () => void;
+		onDragStart: (item: Item) => void;
+		projectFilter?: string;
+	}) {
+		return (
+			<div
+				key={column.status}
+				className="flex-1 min-w-[320px] flex flex-col space-y-4"
+				onDragOver={onDragOver}
+				onDragLeave={onDragLeave}
+				onDrop={onDrop}
+			>
+				<ColumnHeader
+					column={column}
+					itemCount={items.length}
+					isOver={isOver}
+				/>
+
+				<div
+					className={cn(
+						"flex-1 flex flex-col gap-3 p-2 rounded-2xl transition-colors duration-200",
+						isOver
+							? "bg-primary/5 ring-2 ring-primary/20 ring-dashed"
+							: "transparent",
+					)}
+				>
+					{items.map((item) => (
+						<ItemCard key={item.id} item={item} onDragStart={onDragStart} projectFilter={projectFilter} />
+					))}
+					{items.length === 0 && <EmptyDropZone />}
+				</div>
+			</div>
+		);
+	},
+	(prev, next) => {
+		// Memoization comparison: re-render only if items, column, or drag state changes
+		return (
+			prev.column.status === next.column.status &&
+			prev.items.length === next.items.length &&
+			prev.items.every(
+				(item, idx) =>
+					next.items[idx] &&
+					item.id === next.items[idx].id &&
+					item.status === next.items[idx].status,
+			) &&
+			prev.isOver === next.isOver &&
+			prev.projectFilter === next.projectFilter
 		);
 	},
 );
@@ -159,7 +278,10 @@ export function ItemsKanbanView() {
 
 	const { data: itemsData, isLoading } = useItems({ projectId: projectFilter });
 	const { data: projects } = useProjects();
-	const projectsArray = Array.isArray(projects) ? projects : [];
+	const projectsArray = useMemo(
+		() => (Array.isArray(projects) ? projects : []),
+		[projects],
+	);
 	const items = itemsData?.items ?? [];
 	const updateItem = useUpdateItem();
 
@@ -198,6 +320,8 @@ export function ItemsKanbanView() {
 		return grouped;
 	}, [filteredItems]);
 
+	const columnsWithStatus = useMemo(() => columns, []);
+
 	const handleDrop = useCallback(
 		async (newStatus: ItemStatus) => {
 			setIsDraggingOver(null);
@@ -224,6 +348,66 @@ export function ItemsKanbanView() {
 	const handleDragStart = useCallback((item: Item) => {
 		setDraggedItem(item);
 	}, []);
+
+	const handleDragOver = useCallback(
+		(status: ItemStatus, e: React.DragEvent) => {
+			e.preventDefault();
+			setIsDraggingOver(status);
+		},
+		[],
+	);
+
+	const handleDragLeave = useCallback(() => {
+		setIsDraggingOver(null);
+	}, []);
+
+	const handleProjectFilterChange = useCallback(
+		(v: string) => {
+			navigate({
+				search: (prev: any) => ({
+					...prev,
+					project: v === "all" ? undefined : v,
+				}),
+			} as any);
+		},
+		[navigate],
+	);
+
+	const handleTypeFilterChange = useCallback(
+		(v: string) => {
+			navigate({
+				search: (prev: any) => ({
+					...prev,
+					type: v === "all" ? undefined : v,
+				}),
+			} as any);
+		},
+		[navigate],
+	);
+
+	const handleNavigateToTable = useCallback(() => {
+		if (!projectFilter) {
+			navigate({ to: "/projects" });
+			return;
+		}
+		navigate({
+			to: "/projects/$projectId/views/$viewType",
+			params: { projectId: projectFilter, viewType: "feature" },
+			search: searchParams,
+		});
+	}, [navigate, searchParams, projectFilter]);
+
+	const handleNavigateToCreate = useCallback(() => {
+		if (!projectFilter) {
+			navigate({ to: "/projects" });
+			return;
+		}
+		navigate({
+			to: "/projects/$projectId/views/$viewType",
+			params: { projectId: projectFilter, viewType: "feature" },
+			search: { ...searchParams, action: "create" } as any,
+		});
+	}, [navigate, searchParams, projectFilter]);
 
 	if (isLoading) {
 		return (
@@ -257,21 +441,14 @@ export function ItemsKanbanView() {
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() =>
-							navigate({ to: "/items", search: searchParams } as any)
-						}
+						onClick={handleNavigateToTable}
 						className="gap-2 rounded-xl"
 					>
 						<List className="h-4 w-4" /> Table
 					</Button>
 					<Button
 						size="sm"
-						onClick={() =>
-							navigate({
-								to: "/items",
-								search: { ...searchParams, action: "create" } as any,
-							})
-						}
+						onClick={handleNavigateToCreate}
 						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
 					>
 						<Plus className="h-4 w-4" /> New Item
@@ -293,14 +470,7 @@ export function ItemsKanbanView() {
 				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
 				<Select
 					value={projectFilter || "all"}
-					onValueChange={(v) =>
-						navigate({
-							search: (prev: any) => ({
-								...prev,
-								project: v === "all" ? undefined : v,
-							}),
-						} as any)
-					}
+					onValueChange={handleProjectFilterChange}
 				>
 					<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
 						<div className="flex items-center gap-2">
@@ -319,14 +489,7 @@ export function ItemsKanbanView() {
 				</Select>
 				<Select
 					value={typeFilter || "all"}
-					onValueChange={(v) =>
-						navigate({
-							search: (prev: any) => ({
-								...prev,
-								type: v === "all" ? undefined : v,
-							}),
-						} as any)
-					}
+					onValueChange={handleTypeFilterChange}
 				>
 					<SelectTrigger className="w-[150px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
 						<SelectValue placeholder="All Types" />
@@ -344,67 +507,22 @@ export function ItemsKanbanView() {
 
 			{/* Kanban Board */}
 			<div className="flex gap-6 overflow-x-auto pb-8 min-h-[70vh] -mx-6 px-6 custom-scrollbar">
-				{columns.map((column) => {
+				{columnsWithStatus.map((column) => {
 					const colItems = itemsByStatus[column.status] || [];
 					const isOver = isDraggingOver === column.status;
 
 					return (
-						<div
+						<ColumnDropZone
 							key={column.status}
-							className="flex-1 min-w-[320px] flex flex-col space-y-4"
-							onDragOver={(e) => {
-								e.preventDefault();
-								setIsDraggingOver(column.status);
-							}}
-							onDragLeave={() => setIsDraggingOver(null)}
+							column={column}
+							items={colItems}
+							isOver={isOver}
 							onDrop={() => handleDrop(column.status)}
-						>
-							<div
-								className={cn(
-									"flex items-center justify-between p-3 rounded-2xl border-t-4 transition-all",
-									column.color,
-									isOver ? "bg-primary/5 scale-[1.02]" : "bg-muted/30",
-								)}
-							>
-								<div className="flex items-center gap-2">
-									<column.icon className="h-4 w-4 text-muted-foreground" />
-									<h2 className="text-[10px] font-black uppercase tracking-[0.2em]">
-										{column.title}
-									</h2>
-								</div>
-								<Badge
-									variant="secondary"
-									className="text-[10px] font-black rounded-full h-5 px-2"
-								>
-									{colItems.length}
-								</Badge>
-							</div>
-
-							<div
-								className={cn(
-									"flex-1 flex flex-col gap-3 p-2 rounded-2xl transition-colors duration-200",
-									isOver
-										? "bg-primary/5 ring-2 ring-primary/20 ring-dashed"
-										: "transparent",
-								)}
-							>
-								{colItems.map((item) => (
-									<ItemCard
-										key={item.id}
-										item={item}
-										onDragStart={handleDragStart}
-									/>
-								))}
-								{colItems.length === 0 && (
-									<div className="flex flex-col items-center justify-center py-12 text-muted-foreground/30 border-2 border-dashed border-border/50 rounded-2xl">
-										<ArrowRight className="h-8 w-8 mb-2 rotate-90" />
-										<p className="text-[10px] font-bold uppercase tracking-widest text-center">
-											Empty Drop Zone
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
+							onDragOver={(e) => handleDragOver(column.status, e)}
+							onDragLeave={handleDragLeave}
+							onDragStart={handleDragStart}
+							projectFilter={projectFilter}
+						/>
 					);
 				})}
 			</div>

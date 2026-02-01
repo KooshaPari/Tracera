@@ -1,5 +1,5 @@
 // API Types - Re-exported from @tracertm/types with additional types
-import type { paths } from "./schema";
+
 import type {
 	Item,
 	ItemStatus,
@@ -7,6 +7,7 @@ import type {
 	Priority,
 	ViewType,
 } from "@tracertm/types";
+import type { paths } from "./schema";
 
 export type {
 	Item,

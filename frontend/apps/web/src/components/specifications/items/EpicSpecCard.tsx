@@ -5,7 +5,6 @@
  * story tracking, and risk visualization.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -15,6 +14,7 @@ import {
 	CardTitle,
 	Progress,
 } from "@tracertm/ui";
+import { differenceInDays, format } from "date-fns";
 import {
 	AlertTriangle,
 	ArrowRight,
@@ -29,7 +29,7 @@ import {
 	Users,
 } from "lucide-react";
 import type { EpicSpec } from "@/hooks/useItemSpecs";
-import { format, differenceInDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface EpicSpecCardProps {
 	spec: EpicSpec;
@@ -74,7 +74,7 @@ export function EpicSpecCard({
 
 	// Calculate progress based on objectives completed (if tracked in metrics)
 	const storiesCompleted =
-		(spec.metrics as Record<string, number>)?.["stories_completed"] ?? 0;
+		(spec.metrics as Record<string, number>)?.stories_completed ?? 0;
 	const storiesTotal =
 		spec.child_stories_count || spec.user_stories.length || 1;
 	const progressPercent = Math.min(

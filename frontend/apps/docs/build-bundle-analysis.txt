@@ -1,0 +1,5 @@
+ ⨯ Failed to load next.config.mjs, see more info here https://nextjs.org/docs/messages/next-config-error
+
+> Build error occurred
+SyntaxError: The requested module 'fumadocs-mdx/config' does not provide an export named 'default'
+    at <unknown> (next.config.mjs:1)

@@ -5,15 +5,16 @@ Agent Event model for TraceRTM - represents events from agents.
 import uuid
 
 from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
 
 
-def generate_event_uuid() -> str:
-    """Generate a UUID string for event ID."""
-    return str(uuid.uuid4())
+def generate_event_uuid() -> uuid.UUID:
+    """Generate a UUID for event ID."""
+    return uuid.uuid4()
 
 
 class AgentEvent(Base, TimestampMixin):
@@ -29,22 +30,22 @@ class AgentEvent(Base, TimestampMixin):
 
     __tablename__ = "agent_events"
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_event_uuid
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=generate_event_uuid
     )
-    project_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("projects.id"), nullable=False, index=True
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
     )
-    agent_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("agents.id"), nullable=False, index=True
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False, index=True
     )
 
     # Event details
     event_type: Mapped[str] = mapped_column(
         String(50), nullable=False
     )  # item_created, item_updated, conflict, etc.
-    item_id: Mapped[str | None] = mapped_column(
-        String(255), ForeignKey("items.id"), nullable=True, index=True
+    item_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("items.id"), nullable=True, index=True
     )
 
     # Event data

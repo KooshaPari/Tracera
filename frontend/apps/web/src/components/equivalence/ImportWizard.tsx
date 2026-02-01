@@ -1,25 +1,26 @@
+import {
+	AlertCircle,
+	AlertTriangle,
+	CheckCircle2,
+	FileText,
+	Loader2,
+	Upload,
+} from "lucide-react";
 import type React from "react";
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getAuthHeaders } from "@/api/client";
 import { Label } from "@/components/ui/label";
-import {
-	AlertCircle,
-	Upload,
-	Loader2,
-	CheckCircle2,
-	AlertTriangle,
-	FileText,
-} from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ImportWizardProps {
@@ -97,6 +98,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 				`/api/v1/projects/${projectId}/equivalence/validate`,
 				{
 					method: "POST",
+					headers: getAuthHeaders(),
 					body: formData,
 				},
 			);
@@ -145,6 +147,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 					`/api/v1/projects/${projectId}/equivalence/import`,
 					{
 						method: "POST",
+						headers: getAuthHeaders(),
 						body: formData,
 					},
 				);

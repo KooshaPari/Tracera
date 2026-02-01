@@ -2,42 +2,38 @@ import { expect, test } from "vitest";
 import * as z from "zod/mini";
 
 declare module "zod/v4/core" {
-  interface $ZodType {
-    /** @deprecated */
-    _core(): string;
-  }
+	interface $ZodType {
+		/** @deprecated */
+		_core(): string;
+	}
 }
 
 test("prototype extension", () => {
-  z.core.$ZodType.prototype._core = function () {
-    return "_core";
-  };
+	z.core.$ZodType.prototype._core = () => "_core";
 
-  // should pass
-  const result = z.string()._core();
-  expect(result).toBe("_core");
-  // expectTypeOf<typeof result>().toEqualTypeOf<string>();
+	// should pass
+	const result = z.string()._core();
+	expect(result).toBe("_core");
+	// expectTypeOf<typeof result>().toEqualTypeOf<string>();
 
-  // clean up
-  z.ZodMiniType.prototype._core = undefined;
+	// clean up
+	z.ZodMiniType.prototype._core = undefined;
 });
 
 declare module "zod/v4/mini" {
-  interface ZodMiniType {
-    /** @deprecated */
-    _mini(): string;
-  }
+	interface ZodMiniType {
+		/** @deprecated */
+		_mini(): string;
+	}
 }
 
 test("prototype extension", () => {
-  z.ZodMiniType.prototype._mini = function () {
-    return "_mini";
-  };
+	z.ZodMiniType.prototype._mini = () => "_mini";
 
-  // should pass
-  const result = z.string()._mini();
-  expect(result).toBe("_mini");
+	// should pass
+	const result = z.string()._mini();
+	expect(result).toBe("_mini");
 
-  // clean up
-  z.ZodMiniType.prototype._mini = undefined;
+	// clean up
+	z.ZodMiniType.prototype._mini = undefined;
 });

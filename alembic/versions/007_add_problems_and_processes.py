@@ -26,7 +26,7 @@ def upgrade() -> None:
         # Core Identification
         sa.Column('id', sa.String(255), primary_key=True),
         sa.Column('problem_number', sa.String(50), unique=True, nullable=False),
-        sa.Column('project_id', sa.String(255), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
         sa.Column('title', sa.String(500), nullable=False),
         sa.Column('description', sa.Text, nullable=True),
 
@@ -139,7 +139,7 @@ def upgrade() -> None:
         # Core Identification
         sa.Column('id', sa.String(255), primary_key=True),
         sa.Column('process_number', sa.String(50), unique=True, nullable=False),
-        sa.Column('project_id', sa.String(255), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
         sa.Column('name', sa.String(500), nullable=False),
         sa.Column('description', sa.Text, nullable=True),
         sa.Column('purpose', sa.Text, nullable=True),
@@ -239,7 +239,7 @@ def upgrade() -> None:
         sa.Column('completed_by', sa.String(255), nullable=True),
 
         # Context
-        sa.Column('trigger_item_id', sa.String(255), nullable=True),
+        sa.Column('trigger_item_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('context_data', postgresql.JSONB, nullable=False, server_default='{}'),
 
         # Output

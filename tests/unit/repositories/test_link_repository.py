@@ -243,3 +243,764 @@ async def test_link_with_metadata(db_session: AsyncSession):
 
     assert link.metadata["priority"] == "high"
     assert link.metadata["verified"] is True
+
+
+# =============================================================================
+# Graph ID Resolution Tests (lines 28-59)
+# =============================================================================
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
+    """Test creating a link with an explicit graph_id (skips resolution logic)."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    # Create a custom graph (not default)
+    custom_graph = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="custom-graph",
+        graph_type="custom",
+        description="Custom graph for testing",
+    )
+    db_session.add(custom_graph)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    link = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+        graph_id=custom_graph.id,  # Explicit graph_id
+    )
+
+    assert link.graph_id == custom_graph.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_link_resolves_graph_from_source_item_view(db_session: AsyncSession):
+    """Test that graph_id is resolved from source item's primary view."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+    from tracertm.models.view import View
+
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    # Create a View with name "FEATURE" - ItemRepository.create will use this view
+    # when creating an item with view="FEATURE"
+    view = View(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="FEATURE",
+        description="Feature view",
+    )
+    db_session.add(view)
+    await db_session.flush()
+
+    # Create a Graph with graph_type matching the view name
+    feature_graph = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="feature-graph",
+        graph_type="FEATURE",  # Matches view name
+        description="Feature graph",
+    )
+    db_session.add(feature_graph)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    # ItemRepository.create will automatically create ItemView with is_primary=True
+    # linking source item to the "FEATURE" view we created above
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    # Now create link without graph_id - should resolve from source item's view
+    link_repo = LinkRepository(db_session)
+    link = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+        # No graph_id - should be resolved
+    )
+
+    assert link.graph_id == feature_graph.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession):
+    """Test that link creation falls back to 'default' graph when source view lookup fails."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+
+    # Create project WITHOUT auto-creating default graph (don't use link_test_setup)
+    from tracertm.repositories.project_repository import ProjectRepository as RealProjectRepo
+
+    # Manually create project
+    from tracertm.models.project import Project
+    project = Project(
+        id=str(uuid4()),
+        name="Test Project",
+        description="Test",
+    )
+    db_session.add(project)
+    await db_session.flush()
+
+    # Create ONLY a default graph (no view-based graph)
+    default_graph = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="default",
+        graph_type="default",
+        description="Default graph",
+    )
+    db_session.add(default_graph)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    # No ItemView exists for source, so view-based lookup will fail
+    # Should fall back to default graph
+    link_repo = LinkRepository(db_session)
+    link = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+    )
+
+    assert link.graph_id == default_graph.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSession):
+    """Test that link creation raises ValueError when no graph can be resolved."""
+    from uuid import uuid4
+    from tracertm.models.project import Project
+
+    # Create project without any graphs
+    project = Project(
+        id=str(uuid4()),
+        name="Test Project",
+        description="Test",
+    )
+    db_session.add(project)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+
+    with pytest.raises(ValueError, match="graph_id is required and could not be resolved"):
+        await link_repo.create(
+            project_id=project.id,
+            source_item_id=source.id,
+            target_item_id=target.id,
+            link_type="implements",
+        )
+
+
+# =============================================================================
+# Graph ID Filter Tests for Query Methods (lines 87, 95, 103, 113)
+# =============================================================================
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
+    """Test get_by_project with graph_id filter."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    # Create two graphs
+    graph1 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph1",
+        graph_type="type1",
+    )
+    graph2 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph2",
+        graph_type="type2",
+    )
+    db_session.add(graph1)
+    db_session.add(graph2)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+
+    # Create links in different graphs
+    link1 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+        graph_id=graph1.id,
+    )
+    link2 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="references",
+        graph_id=graph2.id,
+    )
+
+    # Test: get_by_project without filter returns all links
+    all_links = await link_repo.get_by_project(project.id)
+    assert len(all_links) == 2
+
+    # Test: get_by_project with graph_id filter returns only matching links
+    graph1_links = await link_repo.get_by_project(project.id, graph_id=graph1.id)
+    assert len(graph1_links) == 1
+    assert graph1_links[0].id == link1.id
+
+    graph2_links = await link_repo.get_by_project(project.id, graph_id=graph2.id)
+    assert len(graph2_links) == 1
+    assert graph2_links[0].id == link2.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
+    """Test get_by_source with graph_id filter."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    # Create two graphs
+    graph1 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph1",
+        graph_type="type1",
+    )
+    graph2 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph2",
+        graph_type="type2",
+    )
+    db_session.add(graph1)
+    db_session.add(graph2)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target1 = await item_repo.create(
+        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+    )
+    target2 = await item_repo.create(
+        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+
+    # Create links from same source in different graphs
+    link1 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target1.id,
+        link_type="implements",
+        graph_id=graph1.id,
+    )
+    link2 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target2.id,
+        link_type="references",
+        graph_id=graph2.id,
+    )
+
+    # Test: get_by_source without filter returns all links from source
+    all_links = await link_repo.get_by_source(source.id)
+    assert len(all_links) == 2
+
+    # Test: get_by_source with graph_id filter
+    graph1_links = await link_repo.get_by_source(source.id, graph_id=graph1.id)
+    assert len(graph1_links) == 1
+    assert graph1_links[0].id == link1.id
+
+    graph2_links = await link_repo.get_by_source(source.id, graph_id=graph2.id)
+    assert len(graph2_links) == 1
+    assert graph2_links[0].id == link2.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
+    """Test get_by_target with graph_id filter."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    # Create two graphs
+    graph1 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph1",
+        graph_type="type1",
+    )
+    graph2 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph2",
+        graph_type="type2",
+    )
+    db_session.add(graph1)
+    db_session.add(graph2)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    source1 = await item_repo.create(
+        project_id=project.id, title="Source 1", view="FEATURE", item_type="feature", status="todo"
+    )
+    source2 = await item_repo.create(
+        project_id=project.id, title="Source 2", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+
+    # Create links to same target in different graphs
+    link1 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source1.id,
+        target_item_id=target.id,
+        link_type="implements",
+        graph_id=graph1.id,
+    )
+    link2 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source2.id,
+        target_item_id=target.id,
+        link_type="references",
+        graph_id=graph2.id,
+    )
+
+    # Test: get_by_target without filter returns all links to target
+    all_links = await link_repo.get_by_target(target.id)
+    assert len(all_links) == 2
+
+    # Test: get_by_target with graph_id filter
+    graph1_links = await link_repo.get_by_target(target.id, graph_id=graph1.id)
+    assert len(graph1_links) == 1
+    assert graph1_links[0].id == link1.id
+
+    graph2_links = await link_repo.get_by_target(target.id, graph_id=graph2.id)
+    assert len(graph2_links) == 1
+    assert graph2_links[0].id == link2.id
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
+    """Test get_by_item with graph_id filter."""
+    from uuid import uuid4
+    from tracertm.models.graph import Graph
+
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    # Create two graphs
+    graph1 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph1",
+        graph_type="type1",
+    )
+    graph2 = Graph(
+        id=str(uuid4()),
+        project_id=project.id,
+        name="graph2",
+        graph_type="type2",
+    )
+    db_session.add(graph1)
+    db_session.add(graph2)
+    await db_session.flush()
+
+    item_repo = ItemRepository(db_session)
+    item = await item_repo.create(
+        project_id=project.id, title="Central Item", view="FEATURE", item_type="feature", status="todo"
+    )
+    other1 = await item_repo.create(
+        project_id=project.id, title="Other 1", view="CODE", item_type="file", status="todo"
+    )
+    other2 = await item_repo.create(
+        project_id=project.id, title="Other 2", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+
+    # Create links where item is source (graph1) and target (graph2)
+    link1 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=item.id,
+        target_item_id=other1.id,
+        link_type="implements",
+        graph_id=graph1.id,
+    )
+    link2 = await link_repo.create(
+        project_id=project.id,
+        source_item_id=other2.id,
+        target_item_id=item.id,
+        link_type="references",
+        graph_id=graph2.id,
+    )
+
+    # Test: get_by_item without filter returns all links connected to item
+    all_links = await link_repo.get_by_item(item.id)
+    assert len(all_links) == 2
+
+    # Test: get_by_item with graph_id filter
+    graph1_links = await link_repo.get_by_item(item.id, graph_id=graph1.id)
+    assert len(graph1_links) == 1
+    assert graph1_links[0].id == link1.id
+
+    graph2_links = await link_repo.get_by_item(item.id, graph_id=graph2.id)
+    assert len(graph2_links) == 1
+    assert graph2_links[0].id == link2.id
+
+
+# =============================================================================
+# Additional Edge Case Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_project_with_none_graph_id(db_session: AsyncSession):
+    """Test get_by_project explicitly passing graph_id=None returns all links."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+    )
+
+    # Explicitly pass graph_id=None
+    links = await link_repo.get_by_project(project.id, graph_id=None)
+    assert len(links) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_source_with_none_graph_id(db_session: AsyncSession):
+    """Test get_by_source explicitly passing graph_id=None returns all links."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+    )
+
+    # Explicitly pass graph_id=None
+    links = await link_repo.get_by_source(source.id, graph_id=None)
+    assert len(links) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_target_with_none_graph_id(db_session: AsyncSession):
+    """Test get_by_target explicitly passing graph_id=None returns all links."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+    )
+
+    # Explicitly pass graph_id=None
+    links = await link_repo.get_by_target(target.id, graph_id=None)
+    assert len(links) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_item_with_none_graph_id(db_session: AsyncSession):
+    """Test get_by_item explicitly passing graph_id=None returns all links."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+    )
+
+    # Explicitly pass graph_id=None
+    links = await link_repo.get_by_item(source.id, graph_id=None)
+    assert len(links) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_delete_by_item(db_session: AsyncSession):
+    """Test deleting all links connected to an item."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    item = await item_repo.create(
+        project_id=project.id, title="Central Item", view="FEATURE", item_type="feature", status="todo"
+    )
+    other1 = await item_repo.create(
+        project_id=project.id, title="Other 1", view="CODE", item_type="file", status="todo"
+    )
+    other2 = await item_repo.create(
+        project_id=project.id, title="Other 2", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+
+    # Create links where item is both source and target
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=item.id,
+        target_item_id=other1.id,
+        link_type="implements",
+    )
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=other2.id,
+        target_item_id=item.id,
+        link_type="references",
+    )
+
+    # Verify links exist
+    links_before = await link_repo.get_by_item(item.id)
+    assert len(links_before) == 2
+
+    # Delete all links connected to item
+    deleted_count = await link_repo.delete_by_item(item.id)
+    assert deleted_count == 2
+
+    # Verify links are deleted
+    links_after = await link_repo.get_by_item(item.id)
+    assert len(links_after) == 0
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_all(db_session: AsyncSession):
+    """Test getting all links in the database."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target1 = await item_repo.create(
+        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+    )
+    target2 = await item_repo.create(
+        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target1.id,
+        link_type="implements",
+    )
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target2.id,
+        link_type="references",
+    )
+
+    all_links = await link_repo.get_all()
+    assert len(all_links) == 2
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_type(db_session: AsyncSession):
+    """Test getting links by link type."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target1 = await item_repo.create(
+        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+    )
+    target2 = await item_repo.create(
+        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target1.id,
+        link_type="implements",
+    )
+    await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target2.id,
+        link_type="references",
+    )
+
+    # Get by type
+    implements_links = await link_repo.get_by_type("implements")
+    assert len(implements_links) == 1
+    assert implements_links[0].link_type == "implements"
+
+    references_links = await link_repo.get_by_type("references")
+    assert len(references_links) == 1
+    assert references_links[0].link_type == "references"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession):
+    """Test creating link using link_metadata parameter (alternative to metadata)."""
+    project_repo = ProjectRepository(db_session)
+    project = await project_repo.create(name="Test Project", description="Test")
+
+    item_repo = ItemRepository(db_session)
+    source = await item_repo.create(
+        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+    )
+    target = await item_repo.create(
+        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
+    )
+
+    link_repo = LinkRepository(db_session)
+    link = await link_repo.create(
+        project_id=project.id,
+        source_item_id=source.id,
+        target_item_id=target.id,
+        link_type="implements",
+        link_metadata={"confidence": 0.95, "automated": True},  # Using link_metadata
+    )
+
+    assert link.link_metadata["confidence"] == 0.95
+    assert link.link_metadata["automated"] is True
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_delete_returns_false_for_nonexistent_link(db_session: AsyncSession):
+    """Test that delete returns False when link doesn't exist."""
+    link_repo = LinkRepository(db_session)
+
+    result = await link_repo.delete("nonexistent-link-id")
+    assert result is False
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_by_id_returns_none_for_nonexistent_link(db_session: AsyncSession):
+    """Test that get_by_id returns None when link doesn't exist."""
+    link_repo = LinkRepository(db_session)
+
+    result = await link_repo.get_by_id("nonexistent-link-id")
+    assert result is None

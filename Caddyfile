@@ -1,0 +1,157 @@
+# ==============================================================================
+# TraceRTM Unified API Gateway - Caddy Configuration
+# ==============================================================================
+# This configuration routes incoming requests to the appropriate backend:
+# - Python FastAPI: Specifications, Executions, MCP, Quality, Auth, Notifications
+# - Go Backend: Projects, Items, Links, Graph, Search, Agents, Temporal, Code, WebSocket
+# - Frontend: Default route for UI
+# ==============================================================================
+
+# Global options
+{
+	# Disable auto-https for local development
+	auto_https off
+
+	# Enable admin API for runtime configuration
+	admin localhost:2019
+
+	# Logging configuration
+	log {
+		output file /tmp/caddy-tracertm.log
+		format json
+		level INFO
+	}
+}
+
+# Main server block
+localhost {
+	# ==============================================================================
+	# Response Compression Configuration
+	# ==============================================================================
+	# Enable response compression for gzip and zstd to reduce bandwidth usage
+	# Compresses HTML, JSON, JavaScript, CSS, and other text-based responses
+	# Rate limiting is handled at the backend application layer
+
+	# Enable response compression (gzip and zstd)
+	encode gzip zstd
+
+	# Enable request logging
+	log {
+		output file /tmp/caddy-tracertm-access.log
+		format json
+	}
+
+	# ==============================================================================
+	# Health Check Routes
+	# ==============================================================================
+
+	# Python backend health check
+	handle /health/python {
+		reverse_proxy localhost:8000
+	}
+
+	# Go backend health check
+	handle /health/go {
+		reverse_proxy localhost:8080
+	}
+
+	# Gateway health check
+	handle /health {
+		respond "OK - TraceRTM Gateway v1.0" 200
+	}
+
+	# ==============================================================================
+	# Python FastAPI Backend Routes
+	# ==============================================================================
+
+	# Specifications API
+	handle /api/v1/specifications/* {
+		reverse_proxy localhost:8000
+	}
+
+	# Executions API
+	handle /api/v1/executions/* {
+		reverse_proxy localhost:8000
+	}
+
+	# MCP (Model Context Protocol) API
+	handle /api/v1/mcp/* {
+		reverse_proxy localhost:8000
+	}
+
+	# Quality API
+	handle /api/v1/quality/* {
+		reverse_proxy localhost:8000
+	}
+
+	# Notifications API
+	handle /api/v1/notifications/* {
+		reverse_proxy localhost:8000
+	}
+
+	# Authentication API
+	handle /api/v1/auth/* {
+		reverse_proxy localhost:8000
+	}
+
+	# ==============================================================================
+	# Go Backend Routes
+	# ==============================================================================
+
+	# Projects API
+	handle /api/v1/projects/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Items API
+	handle /api/v1/items/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Links API
+	handle /api/v1/links/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Graph API
+	handle /api/v1/graph/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Search API
+	handle /api/v1/search/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Agents API
+	handle /api/v1/agents/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Temporal API
+	handle /api/v1/temporal/* {
+		reverse_proxy localhost:8080
+	}
+
+	# Code API
+	handle /api/v1/code/* {
+		reverse_proxy localhost:8080
+	}
+
+	# WebSocket endpoint (upgrade headers for ws)
+	handle /api/v1/ws {
+		reverse_proxy localhost:8080 {
+			header_up Connection {>Connection}
+			header_up Upgrade {>Upgrade}
+		}
+	}
+
+	# ==============================================================================
+	# Frontend Default Route
+	# ==============================================================================
+
+	# All other requests go to the frontend
+	handle /* {
+		reverse_proxy localhost:5173
+	}
+}

@@ -10,6 +10,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -27,7 +28,7 @@ def upgrade() -> None:
         sa.Column("suite_number", sa.String(50), nullable=False, unique=True),
         sa.Column(
             "project_id",
-            sa.String(36),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("projects.id", ondelete="CASCADE"),
             nullable=False,
         ),
@@ -153,7 +154,7 @@ def upgrade() -> None:
         sa.Column("run_number", sa.String(50), nullable=False, unique=True),
         sa.Column(
             "project_id",
-            sa.String(36),
+            postgresql.UUID(as_uuid=True),
             sa.ForeignKey("projects.id", ondelete="CASCADE"),
             nullable=False,
         ),

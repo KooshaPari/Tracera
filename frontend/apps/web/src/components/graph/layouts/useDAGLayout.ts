@@ -1,11 +1,18 @@
 // DAG Layout Hook using ELKjs for proper directed acyclic graph visualization
 // Provides intuitive layout names and algorithms
+// D2: When node count > LAYOUT_WORKER_THRESHOLD and layout is ELK, runs layout in Web Worker
 
-import ELK from "elkjs/lib/elk.bundled.js";
-import type { ElkNode, ElkExtendedEdge } from "elkjs";
-import type { Node, Edge } from "@xyflow/react";
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
+import type { Edge, Node } from "@xyflow/react";
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
+import * as ELKModule from "elkjs/lib/elk.bundled.js";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ElkOptionsPayload, LayoutResponse } from "./graphLayout.worker";
 
+// D2: Use worker for ELK layout when node count exceeds this (keeps main thread responsive)
+const LAYOUT_WORKER_THRESHOLD = 150;
+
+// Handle CJS/ESM interop - elkjs exports as CJS but Vite expects ESM
+const ELK = (ELKModule as any).default || ELKModule;
 const elk = new ELK();
 
 // Direction mapping from dagre convention to ELK
@@ -177,6 +184,55 @@ async function applyElkLayout<T extends Record<string, unknown>>(
 				y: pos.y,
 			},
 		};
+	});
+}
+
+// D2: Run ELK layout in Web Worker (off main thread)
+function runElkLayoutInWorker<T extends Record<string, unknown>>(
+	nodes: Node<T>[],
+	edges: Edge[],
+	options: ElkOptions,
+): Promise<Node<T>[]> {
+	if (typeof Worker === "undefined") {
+		return applyElkLayout(nodes, edges, options);
+	}
+
+	return new Promise((resolve, reject) => {
+		const worker = new Worker(
+			new URL("./graphLayout.worker.ts", import.meta.url),
+			{ type: "module" },
+		);
+
+		const onMessage = (ev: MessageEvent<LayoutResponse | { type: "error"; error: string }>) => {
+			worker.terminate();
+			if (ev.data.type === "result") {
+				const positionMap = new Map(
+					ev.data.positions.map((p) => [p.id, { x: p.x, y: p.y }]),
+				);
+				resolve(
+					nodes.map((node) => {
+						const pos = positionMap.get(node.id);
+						if (!pos) return node;
+						return { ...node, position: pos };
+					}),
+				);
+			} else {
+				reject(new Error(ev.data.error ?? "Layout worker error"));
+			}
+		};
+
+		worker.addEventListener("message", onMessage);
+		worker.addEventListener("error", () => {
+			worker.terminate();
+			reject(new Error("Layout worker failed"));
+		});
+
+		worker.postMessage({
+			type: "layout",
+			nodes: nodes.map((n) => ({ id: n.id })),
+			edges: edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
+			options: options as ElkOptionsPayload,
+		});
 	});
 }
 
@@ -592,15 +648,19 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 			return;
 		}
 
-		// Use async ELK layout
+		// Use async ELK layout (D2: in worker when node count is high)
 		if (elkOptions) {
 			setIsLayouting(true);
-			applyElkLayout(nodes, edges, elkOptions)
+			const layoutPromise =
+				nodes.length > LAYOUT_WORKER_THRESHOLD
+					? runElkLayoutInWorker(nodes, edges, elkOptions)
+					: applyElkLayout(nodes, edges, elkOptions);
+			layoutPromise
 				.then((result) => {
 					setLayoutedNodes(result);
 				})
 				.catch((err) => {
-					console.error("ELK layout failed:", err);
+					logger.error("ELK layout failed:", err);
 					// Fallback to grid layout
 					setLayoutedNodes(
 						applyGridLayout(nodes, {
@@ -623,6 +683,7 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 		nodeWidth,
 		nodeHeight,
 		nodeSep,
+		layout,
 	]);
 
 	// Calculate layout function for external use
@@ -636,12 +697,14 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 				return syncResult;
 			}
 
-			// Use async ELK layout
+			// Use async ELK layout (D2: in worker when node count is high)
 			if (elkOptions) {
 				try {
-					return await applyElkLayout(inputNodes, inputEdges, elkOptions);
+					return inputNodes.length > LAYOUT_WORKER_THRESHOLD
+						? await runElkLayoutInWorker(inputNodes, inputEdges, elkOptions)
+						: await applyElkLayout(inputNodes, inputEdges, elkOptions);
 				} catch (err) {
-					console.error("ELK layout failed:", err);
+					logger.error("ELK layout failed:", err);
 					// Fallback to grid layout
 					return applyGridLayout(inputNodes, {
 						nodeWidth,

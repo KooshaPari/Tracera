@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
-	TestRun,
-	TestRunStatus,
-	TestRunType,
 	TestResult,
 	TestResultStatus,
+	TestRun,
 	TestRunActivity,
 	TestRunStats,
+	TestRunStatus,
+	TestRunType,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformTestRun(data: any): TestRun {
@@ -110,6 +111,7 @@ async function fetchTestRuns(
 	const res = await fetch(`${API_URL}/api/v1/test-runs?${params}`, {
 		headers: {
 			"X-Bulk-Operation": "true",
+			...getAuthHeaders(),
 		},
 	});
 	if (!res.ok) {
@@ -124,7 +126,9 @@ async function fetchTestRuns(
 }
 
 async function fetchTestRun(id: string): Promise<TestRun> {
-	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}`);
+	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch test run");
 	const data = await res.json();
 	return transformTestRun(data);
@@ -156,7 +160,7 @@ async function createTestRun(
 		`${API_URL}/api/v1/test-runs?project_id=${data.projectId}`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				name: data.name,
 				description: data.description,
@@ -187,7 +191,7 @@ async function updateTestRun(
 ): Promise<{ id: string; version: number }> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			name: data.name,
 			description: data.description,
@@ -211,7 +215,7 @@ async function startTestRun(
 ): Promise<{ id: string; status: string; startedAt: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}/start`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			executed_by: executedBy,
 		}),
@@ -240,7 +244,7 @@ async function completeTestRun(
 }> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}/complete`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			failure_summary: failureSummary,
 			notes,
@@ -265,7 +269,7 @@ async function cancelTestRun(
 ): Promise<{ id: string; status: string }> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}/cancel`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			reason,
 		}),
@@ -280,6 +284,7 @@ async function cancelTestRun(
 async function deleteTestRun(id: string): Promise<void> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${id}`, {
 		method: "DELETE",
+		headers: getAuthHeaders(),
 	});
 	if (!res.ok) throw new Error("Failed to delete test run");
 }
@@ -315,7 +320,7 @@ async function submitTestResult(
 ): Promise<TestResult> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${runId}/results`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			test_case_id: data.testCaseId,
 			status: data.status,
@@ -352,7 +357,7 @@ async function submitBulkTestResults(
 }> {
 	const res = await fetch(`${API_URL}/api/v1/test-runs/${runId}/results/bulk`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			results: results.map((r) => ({
 				test_case_id: r.testCaseId,
@@ -381,7 +386,9 @@ async function submitBulkTestResults(
 }
 
 async function fetchTestRunResults(runId: string): Promise<TestResult[]> {
-	const res = await fetch(`${API_URL}/api/v1/test-runs/${runId}/results`);
+	const res = await fetch(`${API_URL}/api/v1/test-runs/${runId}/results`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch test run results");
 	const data = await res.json();
 	return (data.results || []).map(transformTestResult);
@@ -393,6 +400,7 @@ async function fetchTestRunActivities(
 ): Promise<{ runId: string; activities: TestRunActivity[] }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/test-runs/${runId}/activities?limit=${limit}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();
@@ -415,6 +423,7 @@ async function fetchTestRunActivities(
 async function fetchTestRunStats(projectId: string): Promise<TestRunStats> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/test-runs/stats`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch test run stats");
 	const data = await res.json();

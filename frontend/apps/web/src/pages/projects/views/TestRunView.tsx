@@ -1,15 +1,15 @@
+import type { TestRun, TestRunStatus, TestRunType } from "@tracertm/types";
 import {
-	Play,
+	BarChart3,
 	CheckCircle,
-	XCircle,
+	Filter,
+	Play,
 	Plus,
 	Search,
-	Filter,
-	BarChart3,
+	XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { useTestRuns, useTestRunStats } from "../../../hooks/useTestRuns";
-import type { TestRun, TestRunStatus, TestRunType } from "@tracertm/types";
+import { useTestRunStats, useTestRuns } from "../../../hooks/useTestRuns";
 
 const statusColors: Record<TestRunStatus, string> = {
 	pending: "bg-gray-100 text-gray-700",
@@ -108,7 +108,7 @@ export function TestRunView({ projectId }: TestRunViewProps) {
 							Passed
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["passed"] || 0}
+							{stats.byStatus?.passed || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -117,7 +117,7 @@ export function TestRunView({ projectId }: TestRunViewProps) {
 							Failed
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["failed"] || 0}
+							{stats.byStatus?.failed || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -242,11 +242,61 @@ export function TestRunView({ projectId }: TestRunViewProps) {
 			{/* Create Modal - placeholder */}
 			{showCreateModal && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-					<div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg">
-						<h2 className="text-lg font-semibold">Create Test Run</h2>
-						<p className="mt-2 text-sm text-muted-foreground">
-							Test run creation form coming soon...
-						</p>
+					<div
+						className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="create-test-run-title"
+					>
+						<div className="flex items-center justify-between mb-4">
+							<h2 id="create-test-run-title" className="text-lg font-semibold">
+								Create Test Run
+							</h2>
+							<button
+								type="button"
+								onClick={() => setShowCreateModal(false)}
+								aria-label="Close dialog"
+								className="rounded-lg p-1 hover:bg-accent"
+							>
+								✕
+							</button>
+						</div>
+						<div className="space-y-3">
+							<div>
+								<label className="text-xs font-semibold uppercase">
+									Run Name
+								</label>
+								<input
+									type="text"
+									placeholder="e.g. Regression Tests - Build 123"
+									className="mt-1 w-full rounded-lg border bg-muted/50 px-3 py-2 text-sm"
+									defaultValue="New Test Run"
+								/>
+							</div>
+							<div>
+								<label className="text-xs font-semibold uppercase">
+									Test Suite
+								</label>
+								<select className="mt-1 w-full rounded-lg border bg-muted/50 px-3 py-2 text-sm">
+									<option>Select a test suite...</option>
+									<option>Unit Tests</option>
+									<option>Integration Tests</option>
+									<option>E2E Tests</option>
+								</select>
+							</div>
+							<div>
+								<label className="text-xs font-semibold uppercase">
+									Status
+								</label>
+								<select className="mt-1 w-full rounded-lg border bg-muted/50 px-3 py-2 text-sm">
+									<option>Pending</option>
+									<option>Running</option>
+									<option>Passed</option>
+									<option>Failed</option>
+									<option>Quarantined</option>
+								</select>
+							</div>
+						</div>
 						<div className="mt-6 flex justify-end gap-2">
 							<button
 								onClick={() => setShowCreateModal(false)}

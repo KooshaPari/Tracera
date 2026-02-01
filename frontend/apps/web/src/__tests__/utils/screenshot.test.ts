@@ -3,18 +3,18 @@
  * Focuses on input validation, error handling, and caching logic
  */
 
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	uploadScreenshot,
-	deleteScreenshot,
-	clearScreenshotCache,
-	getScreenshotCacheStats,
 	cacheScreenshot,
-	getScreenshotFromCache,
+	clearScreenshotCache,
+	deleteScreenshot,
 	getComponentScreenshots,
+	getScreenshotCacheStats,
+	getScreenshotFromCache,
+	type ScreenshotMetadata,
 	screenshotNeedsUpdate,
 	updateItemWithScreenshot,
-	type ScreenshotMetadata,
+	uploadScreenshot,
 } from "../../utils/screenshot";
 
 global.fetch = vi.fn();

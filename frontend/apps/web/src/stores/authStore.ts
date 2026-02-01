@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { logger } from '@/lib/logger';
 import { createJSONStorage, persist } from "zustand/middleware";
 
 // SSR-safe storage that only accesses localStorage on the client
@@ -87,6 +88,24 @@ export const useAuthStore = create<AuthState>()(
 			},
 
 			setToken: (token) => {
+				/**
+				 * Token Storage Strategy:
+				 *
+				 * Development (devMode=true):
+				 * - WorkOS SDK manages tokens in localStorage
+				 * - This store mirrors the token for state management
+				 * - Acceptable for development without custom domain
+				 *
+				 * Production (devMode=false):
+				 * - WorkOS SDK uses HttpOnly cookies (requires custom auth domain)
+				 * - This localStorage token becomes a fallback/cache
+				 * - Backend validates actual HttpOnly cookie tokens
+				 *
+				 * The token here is primarily for:
+				 * 1. State management (isAuthenticated checks)
+				 * 2. Development mode compatibility
+				 * 3. Backwards compatibility with existing code
+				 */
 				// Treat empty string as null
 				const normalizedToken = token?.trim() ? token : null;
 				if (typeof localStorage !== "undefined") {
@@ -107,7 +126,7 @@ export const useAuthStore = create<AuthState>()(
 					}
 
 					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:8000";
+						import.meta.env.VITE_API_URL || "http://localhost:4000";
 					const response = await fetch(`${API_URL}/api/v1/auth/login`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
@@ -143,7 +162,7 @@ export const useAuthStore = create<AuthState>()(
 					get().initializeAutoRefresh();
 				} catch (error) {
 					set({ user: null, token: null, isAuthenticated: false });
-					console.error("Login failed:", error);
+					logger.error("Login failed:", error);
 					throw error;
 				} finally {
 					set({ isLoading: false });
@@ -157,7 +176,7 @@ export const useAuthStore = create<AuthState>()(
 
 					// Call logout endpoint to clear server-side session
 					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:8000";
+						import.meta.env.VITE_API_URL || "http://localhost:4000";
 					await fetch(`${API_URL}/api/v1/auth/logout`, {
 						method: "POST",
 						credentials: "include",
@@ -166,10 +185,10 @@ export const useAuthStore = create<AuthState>()(
 						},
 					}).catch(() => {
 						// Ignore errors during logout - proceed with local cleanup
-						console.warn("Logout API call failed, clearing local state");
+						logger.warn("Logout API call failed, clearing local state");
 					});
 				} catch (error) {
-					console.error("Logout error:", error);
+					logger.error("Logout error:", error);
 				} finally {
 					// Clear local state regardless of API success
 					get().setToken(null);
@@ -180,14 +199,21 @@ export const useAuthStore = create<AuthState>()(
 
 			validateSession: async () => {
 				try {
+					const token = get().token?.trim();
+					// Don't call /auth/me without a token — backend returns 401
+					if (!token) {
+						return false;
+					}
 					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:8000";
+						import.meta.env.VITE_API_URL || "http://localhost:4000";
+					const headers: Record<string, string> = {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					};
 					const res = await fetch(`${API_URL}/api/v1/auth/me`, {
 						method: "GET",
 						credentials: "include", // Send HttpOnly cookies
-						headers: {
-							"Content-Type": "application/json",
-						},
+						headers,
 					});
 
 					if (res.status === 401) {
@@ -210,7 +236,7 @@ export const useAuthStore = create<AuthState>()(
 
 					return true;
 				} catch (error) {
-					console.error("Session validation error:", error);
+					logger.error("Session validation error:", error);
 					await get().logout();
 					return false;
 				}
@@ -219,7 +245,7 @@ export const useAuthStore = create<AuthState>()(
 			refreshToken: async () => {
 				try {
 					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:8000";
+						import.meta.env.VITE_API_URL || "http://localhost:4000";
 					const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
 						method: "POST",
 						credentials: "include",
@@ -246,7 +272,7 @@ export const useAuthStore = create<AuthState>()(
 						get().setToken(data.access_token);
 					}
 				} catch (error) {
-					console.error("Token refresh failed:", error);
+					logger.error("Token refresh failed:", error);
 					await get().logout();
 				}
 			},
@@ -280,7 +306,7 @@ export const useAuthStore = create<AuthState>()(
 
 				try {
 					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:8000";
+						import.meta.env.VITE_API_URL || "http://localhost:4000";
 					const res = await fetch(
 						`${API_URL}/api/v1/accounts/${accountId}/switch`,
 						{
@@ -301,7 +327,7 @@ export const useAuthStore = create<AuthState>()(
 						get().setAccount(data.account);
 					}
 				} catch (error) {
-					console.error("Failed to switch account:", error);
+					logger.error("Failed to switch account:", error);
 					throw error;
 				}
 			},

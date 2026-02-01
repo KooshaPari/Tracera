@@ -44,7 +44,7 @@ class MockWebSocket {
 global.window = {
 	location: {
 		protocol: "ws:",
-		host: "localhost:8000",
+		host: "localhost:4000",
 	},
 	setInterval: vi.fn((_fn, _delay) => {
 		return 1 as any;

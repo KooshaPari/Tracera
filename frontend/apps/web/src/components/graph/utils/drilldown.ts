@@ -1,7 +1,7 @@
 // Drill-down navigation utilities for graph visualization
 // Supports progressive disclosure: Project → Repository → Module → File → Function
 
-import type { Item, Link } from "@tracertm/types";
+import type { Item } from "@tracertm/types";
 import type { HierarchyNode } from "./hierarchy";
 
 /**

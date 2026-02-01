@@ -1,36 +1,43 @@
+import type { Item, Link, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Separator } from "@tracertm/ui/components/Separator";
-import type { Item, Link, LinkType } from "@tracertm/types";
 import {
-	ReactFlow,
 	Background,
 	BackgroundVariant,
 	Controls,
-	Panel,
-	useNodesState,
-	useEdgesState,
-	type Node,
 	type Edge,
-	type NodeTypes,
 	MarkerType,
+	type Node,
+	type NodeTypes,
+	Panel,
+	ReactFlow,
+	useEdgesState,
+	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
+	Activity,
 	Maximize2,
 	PanelRight,
 	PanelRightClose,
 	RotateCcw,
 	ZoomIn,
 	ZoomOut,
-	Activity,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useGraphWorker } from "./hooks/useGraphWorker";
+import {
+	type NodePosition,
+	useVirtualization,
+} from "./hooks/useVirtualization";
+import { LayoutSelector } from "./layouts/LayoutSelector";
+import { type LayoutType, useDAGLayout } from "./layouts/useDAGLayout";
 import { NodeDetailPanel } from "./NodeDetailPanel";
-import { RichNodePill, type RichNodeData } from "./RichNodePill";
 import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
+import { type RichNodeData, RichNodePill } from "./RichNodePill";
 import type { EnhancedNodeData, GraphPerspective } from "./types";
 import {
 	ENHANCED_TYPE_COLORS,
@@ -38,13 +45,6 @@ import {
 	PERSPECTIVE_CONFIGS,
 	TYPE_TO_PERSPECTIVE,
 } from "./types";
-import { useDAGLayout, type LayoutType } from "./layouts/useDAGLayout";
-import { LayoutSelector } from "./layouts/LayoutSelector";
-import {
-	useVirtualization,
-	type NodePosition,
-} from "./hooks/useVirtualization";
-import { useGraphWorker } from "./hooks/useGraphWorker";
 
 // Simplified node component for LOD rendering
 function SimplifiedNodePill({ data }: { data: { id: string; type: string } }) {
@@ -114,7 +114,7 @@ interface VirtualizedGraphViewProps {
  * Virtualized graph view for handling 1000+ nodes
  * Uses viewport culling and level-of-detail rendering
  */
-export function VirtualizedGraphView({
+function VirtualizedGraphViewComponent({
 	items,
 	links,
 	perspective: externalPerspective,
@@ -209,14 +209,14 @@ export function VirtualizedGraphView({
 				depth,
 				hasChildren,
 				parentId: item.parentId,
-				uiPreview: item.metadata?.["screenshotUrl"]
+				uiPreview: item.metadata?.screenshotUrl
 					? {
-							screenshotUrl: item.metadata["screenshotUrl"] as string,
-							thumbnailUrl: item.metadata["thumbnailUrl"] as string | undefined,
-							interactiveWidgetUrl: item.metadata["interactiveUrl"] as
+							screenshotUrl: item.metadata.screenshotUrl as string,
+							thumbnailUrl: item.metadata.thumbnailUrl as string | undefined,
+							interactiveWidgetUrl: item.metadata.interactiveUrl as
 								| string
 								| undefined,
-							componentCode: item.metadata["code"] as string | undefined,
+							componentCode: item.metadata.code as string | undefined,
 						}
 					: undefined,
 			} as EnhancedNodeData;
@@ -639,3 +639,5 @@ export function VirtualizedGraphView({
 		</div>
 	);
 }
+
+export const VirtualizedGraphView = memo(VirtualizedGraphViewComponent);

@@ -4,9 +4,11 @@ SQLAlchemy models for TraceRTM.
 
 from tracertm.models.agent import Agent
 from tracertm.models.agent_event import AgentEvent
+from tracertm.models.agent_session import AgentSession
 from tracertm.models.agent_lock import AgentLock
 from tracertm.models.base import Base
 from tracertm.models.event import Event
+from tracertm.models.user import User
 from tracertm.models.external_link import ExternalLink
 from tracertm.models.graph_change import GraphChange
 from tracertm.models.graph_snapshot import GraphSnapshot
@@ -20,6 +22,7 @@ from tracertm.models.link_type import LinkType
 from tracertm.models.node_kind import NodeKind
 from tracertm.models.node_kind_rule import NodeKindRule
 from tracertm.models.workflow_run import WorkflowRun
+from tracertm.models.workflow_schedule import WorkflowSchedule
 from tracertm.models.problem import Problem, ProblemActivity
 from tracertm.models.process import Process, ProcessExecution
 from tracertm.models.project import Project
@@ -161,9 +164,11 @@ except Exception:  # Avoid hard import failures during migrations or partial set
 __all__ = [
     "Agent",
     "AgentEvent",
+    "AgentSession",
     "AgentLock",
     "Base",
     "Event",
+    "User",
     "ExternalLink",
     "GraphChange",
     "GraphSnapshot",
@@ -177,6 +182,7 @@ __all__ = [
     "NodeKind",
     "NodeKindRule",
     "WorkflowRun",
+    "WorkflowSchedule",
     "Problem",
     "ProblemActivity",
     "Process",

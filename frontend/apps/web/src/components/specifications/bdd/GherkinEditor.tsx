@@ -1,8 +1,7 @@
 import Editor, { useMonaco } from "@monaco-editor/react";
-import { Card } from "@tracertm/ui";
+import { Card, cn } from "@tracertm/ui";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "@tracertm/ui";
 
 interface GherkinEditorProps {
 	content: string;
@@ -83,14 +82,14 @@ export function GherkinEditor({
 							label: keyword,
 							kind: monaco.languages.CompletionItemKind.Keyword,
 							insertText: keyword,
-							sortText: "1-" + keyword,
+							sortText: `1-${keyword}`,
 							range: wordRange,
 						})),
 						...STEP_DEFINITIONS.map((step) => ({
 							label: step,
 							kind: monaco.languages.CompletionItemKind.Snippet,
 							insertText: step,
-							sortText: "2-" + step,
+							sortText: `2-${step}`,
 							range: wordRange,
 						})),
 					];
@@ -264,7 +263,7 @@ export function GherkinEditor({
 								<button
 									key={step}
 									onClick={() => {
-										const newContent = content + "\n" + step;
+										const newContent = `${content}\n${step}`;
 										handleEditorChange(newContent);
 									}}
 									className="text-left text-xs px-2 py-1 rounded border border-border/50 hover:bg-muted/50 transition-colors truncate"

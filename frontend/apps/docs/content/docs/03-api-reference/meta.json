@@ -1,0 +1,6 @@
+{
+  "title": "API Reference",
+  "description": "Complete REST API documentation",
+  "icon": "Book",
+  "pages": ["index"]
+}

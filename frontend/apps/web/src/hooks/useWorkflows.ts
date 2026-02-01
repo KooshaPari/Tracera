@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WorkflowRun, WorkflowSchedule } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 function transformRun(data: any): WorkflowRun {
 	return {
@@ -47,7 +48,7 @@ export function useWorkflowRuns(
 			if (workflowName) params.set("workflow_name", workflowName);
 			const res = await fetch(
 				`${API_URL}/api/v1/projects/${projectId}/workflows/runs?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch workflow runs: ${res.status}`);
@@ -69,7 +70,7 @@ export function useWorkflowSchedules(projectId: string) {
 		queryFn: async () => {
 			const res = await fetch(
 				`${API_URL}/api/v1/projects/${projectId}/workflows/schedules`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch workflow schedules: ${res.status}`);
@@ -91,7 +92,7 @@ export function useBootstrapWorkflowSchedules() {
 		mutationFn: async (projectId: string) => {
 			const res = await fetch(
 				`${API_URL}/api/v1/projects/${projectId}/workflows/schedules/bootstrap`,
-				{ method: "POST", headers: { "Content-Type": "application/json" } },
+				{ method: "POST", headers: { "Content-Type": "application/json", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to bootstrap schedules: ${res.status}`);
@@ -118,7 +119,7 @@ export function useDeleteWorkflowSchedule() {
 		}) => {
 			const res = await fetch(
 				`${API_URL}/api/v1/projects/${projectId}/workflows/schedules/${cronId}`,
-				{ method: "DELETE" },
+				{ method: "DELETE", headers: getAuthHeaders() },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to delete schedule: ${res.status}`);

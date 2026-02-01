@@ -30,7 +30,7 @@ def upgrade() -> None:
         sa.Column('test_case_number', sa.String(50), unique=True, nullable=False),
 
         # Foreign key with cascade delete
-        sa.Column('project_id', sa.String(255), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('project_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False),
 
         # Basic information
         sa.Column('title', sa.String(500), nullable=False),

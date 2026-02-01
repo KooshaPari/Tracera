@@ -1,29 +1,29 @@
 // Page Interaction Flow - Storybook-like visualization of UI page flows
 // Maps page-to-page interactions with cross-linking and visual flow diagrams
 
+import type { Item, Link } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Input } from "@tracertm/ui/components/Input";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import { Tabs, TabsList, TabsTrigger } from "@tracertm/ui/components/Tabs";
-import type { Item, Link } from "@tracertm/types";
 import {
-	ReactFlow,
 	Background,
 	BackgroundVariant,
 	Controls,
-	MiniMap,
-	useNodesState,
-	useEdgesState,
-	type Node,
 	type Edge,
-	type NodeTypes,
 	Handle,
-	Position,
-	type NodeProps,
 	MarkerType,
+	MiniMap,
+	type Node,
+	type NodeProps,
+	type NodeTypes,
+	Position,
+	ReactFlow,
 	ReactFlowProvider,
+	useEdgesState,
+	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -314,6 +314,28 @@ function PageInteractionFlowInner({
 		return matrix.sort((a, b) => b.interactions - a.interactions);
 	}, [uiPages, pageLinks]);
 
+	const createNodeData = useCallback(
+		(page: Item): PageNodeData => {
+			const data: PageNodeData = {
+				id: page.id,
+				item: page,
+				label: page.title || "Untitled",
+				description: page.description ?? undefined,
+				screenshotUrl: (page.metadata?.screenshotUrl as string) ?? undefined,
+				thumbnailUrl: (page.metadata?.thumbnailUrl as string) ?? undefined,
+				deviceType:
+					((page.metadata?.deviceType as "desktop" | "tablet" | "mobile") ??
+						undefined) ||
+					"desktop",
+				interactionCount: interactionCounts.get(page.id) || 0,
+				onSelect: onSelectItem ?? undefined,
+				onPreview: onPreviewItem ?? undefined,
+			};
+			return data;
+		},
+		[interactionCounts, onSelectItem, onPreviewItem],
+	);
+
 	// Calculate layout for pages
 	const calculateLayout = useCallback(
 		(pages: Item[], journey?: UserJourney): Node<PageNodeData>[] => {
@@ -349,30 +371,7 @@ function PageInteractionFlowInner({
 				data: createNodeData(page),
 			}));
 		},
-		[],
-	);
-
-	const createNodeData = useCallback(
-		(page: Item): PageNodeData => {
-			const data: PageNodeData = {
-				id: page.id,
-				item: page,
-				label: page.title || "Untitled",
-				description: page.description ?? undefined,
-				screenshotUrl:
-					(page.metadata?.["screenshotUrl"] as string) ?? undefined,
-				thumbnailUrl: (page.metadata?.["thumbnailUrl"] as string) ?? undefined,
-				deviceType:
-					((page.metadata?.["deviceType"] as "desktop" | "tablet" | "mobile") ??
-						undefined) ||
-					"desktop",
-				interactionCount: interactionCounts.get(page.id) || 0,
-				onSelect: onSelectItem ?? undefined,
-				onPreview: onPreviewItem ?? undefined,
-			};
-			return data;
-		},
-		[interactionCounts, onSelectItem, onPreviewItem],
+		[createNodeData],
 	);
 
 	// Filter pages by search

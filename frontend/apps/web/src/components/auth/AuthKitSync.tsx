@@ -1,7 +1,9 @@
 import { useAuth } from "@workos-inc/authkit-react";
+import { logger } from '@/lib/logger';
 import { useEffect, useMemo, useRef } from "react";
-import { useAuthStore, type User } from "../../stores/authStore";
-import { getReturnTo } from "../../lib/auth-utils";
+import { AUTH_ROUTES } from "../../config/constants";
+import { getReturnTo, isPublicRoute } from "../../lib/auth-utils";
+import { type User, useAuthStore } from "../../stores/authStore";
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -40,30 +42,32 @@ export function AuthKitSync() {
 				const token = await getAccessToken();
 				if (!active) return;
 				setAuthFromWorkOS(mappedUser, token ?? null);
+				// Hydrate user from /auth/me only when we have a token (avoids 401)
+				if (token?.trim()) {
+					await useAuthStore.getState().validateSession();
+				}
 
 				// Handle redirect after successful authentication
-				// BUT: Don't handle redirects on /auth/callback - let the callback page handle it
-				// This prevents double redirects and race conditions
+				// IMPORTANT: Don't redirect on /auth/callback - WorkOS handles that flow
+				// Only redirect when user is authenticated on other auth pages (login/register)
+				const currentPath = window.location.pathname;
+
 				if (
 					!hasRedirectedRef.current &&
-					window.location.pathname.startsWith("/auth") &&
-					window.location.pathname !== "/auth/callback"
+					isPublicRoute(currentPath) &&
+					currentPath !== AUTH_ROUTES.CALLBACK
 				) {
 					hasRedirectedRef.current = true;
 					const searchParams = new URLSearchParams(window.location.search);
 					const returnTo = getReturnTo(searchParams);
-					if (
-						returnTo !== "/auth/login" &&
-						returnTo !== "/auth/register" &&
-						returnTo !== "/auth/callback"
-					) {
-						window.location.href = returnTo;
-					} else {
-						window.location.href = "/";
-					}
+
+					// getReturnTo already filters out auth routes and returns "/home" as default
+					// If returnTo is "/home", user will be sent to dashboard
+					// Otherwise, they'll be sent to their intended destination
+					window.location.href = returnTo;
 				}
 			} catch (error) {
-				console.error("Failed to sync AuthKit token:", error);
+				logger.error("Failed to sync AuthKit token:", error);
 				logout();
 			}
 		};

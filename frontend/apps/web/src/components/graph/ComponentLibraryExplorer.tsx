@@ -1,6 +1,12 @@
 // ComponentLibraryExplorer.tsx - Browse and search component libraries
 // Shows components, props, variants, and usage locations
 
+import type {
+	ComponentCategory,
+	ComponentLibrary,
+	DesignToken,
+	LibraryComponent,
+} from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -9,9 +15,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@tracertm/ui/components/Collapsible";
 import { Input } from "@tracertm/ui/components/Input";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import { Separator } from "@tracertm/ui/components/Separator";
 import {
 	Tabs,
 	TabsContent,
@@ -24,19 +34,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@tracertm/ui/components/Collapsible";
-import type {
-	ComponentLibrary,
-	LibraryComponent,
-	ComponentCategory,
-	ComponentProp,
-	ComponentVariant,
-	DesignToken,
-} from "@tracertm/types";
 import {
 	AlertCircle,
 	Archive,
@@ -62,10 +59,9 @@ import {
 	Search,
 	Settings,
 	Square,
-	Tag,
 	Zap,
 } from "lucide-react";
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 // =============================================================================
 // TYPES

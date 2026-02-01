@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // ==================== Types ====================
 
@@ -246,6 +247,7 @@ async function fetchQAMetricsSummary(
 ): Promise<QAMetricsSummary> {
 	const res = await fetch(
 		`${API_URL}/api/v1/qa/metrics/summary?project_id=${projectId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch QA metrics summary");
 	const data = await res.json();
@@ -258,6 +260,7 @@ async function fetchPassRateTrend(
 ): Promise<PassRateTrend> {
 	const res = await fetch(
 		`${API_URL}/api/v1/qa/metrics/pass-rate?project_id=${projectId}&days=${days}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch pass rate trend");
 	const data = await res.json();
@@ -269,6 +272,7 @@ async function fetchCoverageMetrics(
 ): Promise<CoverageMetrics> {
 	const res = await fetch(
 		`${API_URL}/api/v1/qa/metrics/coverage?project_id=${projectId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch coverage metrics");
 	const data = await res.json();
@@ -278,6 +282,7 @@ async function fetchCoverageMetrics(
 async function fetchDefectDensity(projectId: string): Promise<DefectDensity> {
 	const res = await fetch(
 		`${API_URL}/api/v1/qa/metrics/defect-density?project_id=${projectId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch defect density");
 	const data = await res.json();
@@ -287,6 +292,7 @@ async function fetchDefectDensity(projectId: string): Promise<DefectDensity> {
 async function fetchFlakyTests(projectId: string): Promise<FlakyTests> {
 	const res = await fetch(
 		`${API_URL}/api/v1/qa/metrics/flaky-tests?project_id=${projectId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch flaky tests");
 	const data = await res.json();
@@ -299,6 +305,7 @@ async function fetchExecutionHistory(
 ): Promise<ExecutionHistory> {
 	const res = await fetch(
 		`${API_URL}/api/v1/qa/metrics/execution-history?project_id=${projectId}&days=${days}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch execution history");
 	const data = await res.json();

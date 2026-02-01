@@ -1,6 +1,8 @@
 // FigmaSyncPanel.tsx - Display and manage Figma integration status
 // Shows sync status, last sync time, Figma file info, and diff indicators
 
+import type { FigmaSyncState, LibraryComponent } from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -9,28 +11,26 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { Separator } from "@tracertm/ui/components/Separator";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import { cn } from "@tracertm/ui";
-import type { FigmaSyncState, LibraryComponent } from "@tracertm/types";
 import {
 	AlertCircle,
+	AlertTriangle,
 	CheckCircle2,
 	Clock,
 	ExternalLink,
 	FileJson,
 	Gauge,
 	Link2,
+	Loader2,
 	RefreshCw,
 	Unlink,
-	AlertTriangle,
-	Loader2,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
@@ -148,7 +148,7 @@ function FigmaSyncPanelComponent({
 		try {
 			await onSync();
 		} catch (error) {
-			console.error("Sync failed:", error);
+			logger.error("Sync failed:", error);
 		}
 	}, [onSync, isSyncing]);
 
@@ -164,7 +164,8 @@ function FigmaSyncPanelComponent({
 	const syncedCount = enrichedComponents.filter(
 		(c) => c.figmaStatus === "synced",
 	).length;
-	const unlinkedCount = enrichedComponents.filter(
+	// Track unlinked count for future use
+	const _unlinkedCount = enrichedComponents.filter(
 		(c) => c.figmaStatus === "unlinked",
 	).length;
 

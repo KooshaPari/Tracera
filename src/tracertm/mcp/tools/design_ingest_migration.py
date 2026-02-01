@@ -12,7 +12,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.core import mcp
@@ -21,7 +20,7 @@ from tracertm.database.connection import DatabaseConnection
 from tracertm.storage.local_storage import LocalStorageManager
 
 
-def _wrap(result: Any, ctx: Context | None, action: str) -> dict[str, Any]:
+def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     """Wrap result in standard MCP response format."""
     actor = None
     if ctx is not None:
@@ -62,7 +61,7 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 @mcp.tool()
 async def design_init(
-    ctx: Context,
+    ctx: Any,
     figma_token: str,
     figma_file_id: str,
     trace_dir: str | None = None,
@@ -109,7 +108,7 @@ async def design_init(
 
 @mcp.tool()
 async def design_link(
-    ctx: Context,
+    ctx: Any,
     component_name: str,
     figma_url: str,
     trace_dir: str | None = None,
@@ -159,7 +158,7 @@ async def design_link(
 
 @mcp.tool()
 async def design_sync(
-    ctx: Context,
+    ctx: Any,
     trace_dir: str | None = None,
 ) -> Dict[str, Any]:
     """Sync designs from Figma to project.
@@ -190,7 +189,7 @@ async def design_sync(
 
 @mcp.tool()
 async def design_generate(
-    ctx: Context,
+    ctx: Any,
     component_pattern: str | None = None,
     trace_dir: str | None = None,
 ) -> Dict[str, Any]:
@@ -222,7 +221,7 @@ async def design_generate(
 
 @mcp.tool()
 async def design_status(
-    ctx: Context,
+    ctx: Any,
     trace_dir: str | None = None,
 ) -> Dict[str, Any]:
     """Show design integration status.
@@ -269,7 +268,7 @@ async def design_status(
 
 @mcp.tool()
 async def design_list(
-    ctx: Context,
+    ctx: Any,
     trace_dir: str | None = None,
 ) -> Dict[str, Any]:
     """List linked design components.
@@ -317,7 +316,7 @@ async def design_list(
 
 @mcp.tool()
 async def ingest_directory(
-    ctx: Context,
+    ctx: Any,
     directory_path: str,
     project_name: str | None = None,
     recursive: bool = True,
@@ -360,7 +359,7 @@ async def ingest_directory(
 
 @mcp.tool()
 async def ingest_markdown(
-    ctx: Context,
+    ctx: Any,
     file_path: str,
     project_name: str | None = None,
 ) -> Dict[str, Any]:
@@ -403,7 +402,7 @@ async def ingest_markdown(
 
 @mcp.tool()
 async def ingest_yaml(
-    ctx: Context,
+    ctx: Any,
     file_path: str,
     project_name: str | None = None,
 ) -> Dict[str, Any]:
@@ -437,7 +436,7 @@ async def ingest_yaml(
 
 @mcp.tool()
 async def ingest_file(
-    ctx: Context,
+    ctx: Any,
     file_path: str,
     file_type: str,
     project_name: str | None = None,
@@ -479,7 +478,7 @@ async def ingest_file(
 
 @mcp.tool()
 async def migrate_project(
-    ctx: Context,
+    ctx: Any,
     source_path: str,
     project_name: str | None = None,
     backup_existing: bool = True,
@@ -522,7 +521,7 @@ async def migrate_project(
 
 @mcp.tool()
 async def link_detect_missing(
-    ctx: Context,
+    ctx: Any,
     project_id: str | None = None,
 ) -> Dict[str, Any]:
     """Detect missing traceability links in project.
@@ -556,7 +555,7 @@ async def link_detect_missing(
 
 @mcp.tool()
 async def link_detect_orphans(
-    ctx: Context,
+    ctx: Any,
     project_id: str | None = None,
 ) -> Dict[str, Any]:
     """Detect orphaned items with no links.
@@ -590,7 +589,7 @@ async def link_detect_orphans(
 
 @mcp.tool()
 async def link_auto_link(
-    ctx: Context,
+    ctx: Any,
     project_id: str | None = None,
     threshold: float = 0.8,
 ) -> Dict[str, Any]:

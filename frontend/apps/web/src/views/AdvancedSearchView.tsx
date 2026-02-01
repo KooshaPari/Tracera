@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { getAuthHeaders } from "@/api/client";
+import { CardErrorFallback } from "@/lib/lazy-loading";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -55,7 +57,7 @@ export function AdvancedSearchView() {
 				`/api/v1/projects/${filters.project_id || "all"}/search/advanced`,
 				{
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
+					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 					body: JSON.stringify({
 						query: query || undefined,
 						filters: filters,
@@ -349,10 +351,14 @@ export function AdvancedSearchView() {
 									key={result.id}
 									to={
 										result.type === "item"
-											? `/items/${result.id}`
+											? result.project_id
+												? `/projects/${result.project_id}/views/${String(result.view || result.view_type || "feature").toLowerCase()}/${result.id}`
+												: "/projects"
 											: result.type === "project"
 												? `/projects/${result.id}`
-												: `/links/${result.id}`
+												: result.project_id
+													? `/projects/${result.project_id}/views/feature`
+													: "/projects"
 									}
 								>
 									<Card className="p-4 hover:shadow-md transition-shadow">
@@ -395,10 +401,14 @@ export function AdvancedSearchView() {
 			)}
 
 			{searchQuery.isError && (
-				<Card className="p-6 border-red-200 bg-red-50">
-					<p className="text-red-800">
-						Error performing search. Please try again.
-					</p>
+				<Card className="p-0 overflow-hidden">
+					<CardErrorFallback
+						title="Search failed"
+						message={searchQuery.error?.message ?? "Error performing search. Please try again."}
+						error={searchQuery.error ?? undefined}
+						retry={() => searchQuery.refetch()}
+						className="p-6 border-0 rounded-none"
+					/>
 				</Card>
 			)}
 		</div>

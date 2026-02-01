@@ -1,0 +1,180 @@
+{
+  "timestamp": "2026-02-01T04:33:48.124Z",
+  "results": [
+    {
+      "nodeCount": 100,
+      "edgeCount": 30,
+      "algorithm": "dagre",
+      "syncDuration": 17.371166000000002,
+      "workerDuration": 14.207499999999996
+    },
+    {
+      "nodeCount": 100,
+      "edgeCount": 30,
+      "algorithm": "elk",
+      "syncDuration": 12.183374999999991,
+      "workerDuration": 16.0895
+    },
+    {
+      "nodeCount": 100,
+      "edgeCount": 30,
+      "algorithm": "grid",
+      "syncDuration": 6.617916999999991,
+      "workerDuration": 8.055999999999997
+    },
+    {
+      "nodeCount": 100,
+      "edgeCount": 30,
+      "algorithm": "force",
+      "syncDuration": 1.258708999999996,
+      "workerDuration": 6.973042000000007
+    },
+    {
+      "nodeCount": 500,
+      "edgeCount": 150,
+      "algorithm": "dagre",
+      "syncDuration": 47.237832999999995,
+      "workerDuration": 54.537833000000006
+    },
+    {
+      "nodeCount": 500,
+      "edgeCount": 150,
+      "algorithm": "elk",
+      "syncDuration": 68.19158300000001,
+      "workerDuration": 76.01024999999998
+    },
+    {
+      "nodeCount": 500,
+      "edgeCount": 150,
+      "algorithm": "grid",
+      "syncDuration": 1.1879579999999805,
+      "workerDuration": 8.443416000000013
+    },
+    {
+      "nodeCount": 500,
+      "edgeCount": 150,
+      "algorithm": "force",
+      "syncDuration": 26.106457999999975,
+      "workerDuration": 32.11583400000001
+    },
+    {
+      "nodeCount": 1000,
+      "edgeCount": 250,
+      "algorithm": "dagre",
+      "syncDuration": 100.03950000000003,
+      "workerDuration": 111.18883399999993
+    },
+    {
+      "nodeCount": 1000,
+      "edgeCount": 250,
+      "algorithm": "elk",
+      "syncDuration": 151.95100000000002,
+      "workerDuration": 158.39887499999998
+    },
+    {
+      "nodeCount": 1000,
+      "edgeCount": 250,
+      "algorithm": "grid",
+      "syncDuration": 5.459042000000068,
+      "workerDuration": 11.637583999999947
+    },
+    {
+      "nodeCount": 1000,
+      "edgeCount": 250,
+      "algorithm": "force",
+      "syncDuration": 102.20124999999996,
+      "workerDuration": 106.98166700000002
+    },
+    {
+      "nodeCount": 5000,
+      "edgeCount": 1000,
+      "algorithm": "dagre",
+      "syncDuration": 616.1640420000001,
+      "workerDuration": 621.2427910000001
+    },
+    {
+      "nodeCount": 5000,
+      "edgeCount": 1000,
+      "algorithm": "elk",
+      "syncDuration": 923.0391669999999,
+      "workerDuration": 928.3781249999997
+    },
+    {
+      "nodeCount": 5000,
+      "edgeCount": 1000,
+      "algorithm": "grid",
+      "syncDuration": 11.167042000000038,
+      "workerDuration": 18.09387499999957
+    },
+    {
+      "nodeCount": 5000,
+      "edgeCount": 1000,
+      "algorithm": "force",
+      "syncDuration": 2508.7753329999996,
+      "workerDuration": 2508.6743339999994
+    },
+    {
+      "nodeCount": 10000,
+      "edgeCount": 1500,
+      "algorithm": "dagre",
+      "syncDuration": 1332.396041,
+      "workerDuration": 1337.4462079999994
+    },
+    {
+      "nodeCount": 10000,
+      "edgeCount": 1500,
+      "algorithm": "elk",
+      "syncDuration": 1994.2135829999988,
+      "workerDuration": 2004.0202090000002
+    },
+    {
+      "nodeCount": 10000,
+      "edgeCount": 1500,
+      "algorithm": "grid",
+      "syncDuration": 29.831083000000945,
+      "workerDuration": 31.369832999998835
+    },
+    {
+      "nodeCount": 50000,
+      "edgeCount": 5000,
+      "algorithm": "dagre",
+      "syncDuration": 7806.1064590000005,
+      "workerDuration": 7815.970792
+    },
+    {
+      "nodeCount": 50000,
+      "edgeCount": 5000,
+      "algorithm": "elk",
+      "syncDuration": 11709.595875000003,
+      "workerDuration": 11718.436875
+    },
+    {
+      "nodeCount": 50000,
+      "edgeCount": 5000,
+      "algorithm": "grid",
+      "syncDuration": 101.24162500000239,
+      "workerDuration": 115.14658300000156
+    },
+    {
+      "nodeCount": 100000,
+      "edgeCount": 5000,
+      "algorithm": "dagre",
+      "syncDuration": 16612.342375,
+      "workerDuration": 16619.106333000003
+    },
+    {
+      "nodeCount": 100000,
+      "edgeCount": 5000,
+      "algorithm": "elk",
+      "syncDuration": 24915.38462499999,
+      "workerDuration": 24923.005875000017
+    },
+    {
+      "nodeCount": 100000,
+      "edgeCount": 5000,
+      "algorithm": "grid",
+      "syncDuration": 201.55408299999544,
+      "workerDuration": 208.20495800001663
+    }
+  ]
+}

@@ -47,7 +47,7 @@ describe("ImpactAnalysisView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ImpactAnalysisView />
+				<ImpactAnalysisView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 
@@ -102,7 +102,7 @@ describe("ImpactAnalysisView", () => {
 
 		render(
 			<QueryClientProvider client={queryClient}>
-				<ImpactAnalysisView />
+				<ImpactAnalysisView projectId="proj-test" />
 			</QueryClientProvider>,
 		);
 

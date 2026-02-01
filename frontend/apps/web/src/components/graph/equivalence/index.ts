@@ -1,25 +1,22 @@
 // equivalence/index.ts - Central export for equivalence import/export functionality
 
-export { EquivalenceExport } from "../EquivalenceExport";
 export type { EquivalenceExportProps } from "../EquivalenceExport";
-
-export { EquivalenceImport } from "../EquivalenceImport";
+export { EquivalenceExport } from "../EquivalenceExport";
 export type { EquivalenceImportProps } from "../EquivalenceImport";
-
-export {
-	serializeToJSON,
-	deserializeFromJSON,
-	serializeToCSV,
-	deserializeLinksFromCSV,
-	deserializeConceptsFromCSV,
-	deserializeProjectionsFromCSV,
-	validateExportPackage,
-	validateImportOptions,
-	mergeExportPackages,
-	createExportSummary,
-} from "../utils/equivalenceIO";
-
+export { EquivalenceImport } from "../EquivalenceImport";
 export type {
 	EquivalenceExportPackage,
 	EquivalenceImportOptions,
+} from "../utils/equivalenceIO";
+export {
+	createExportSummary,
+	deserializeConceptsFromCSV,
+	deserializeFromJSON,
+	deserializeLinksFromCSV,
+	deserializeProjectionsFromCSV,
+	mergeExportPackages,
+	serializeToCSV,
+	serializeToJSON,
+	validateExportPackage,
+	validateImportOptions,
 } from "../utils/equivalenceIO";

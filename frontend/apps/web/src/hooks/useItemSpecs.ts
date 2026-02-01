@@ -7,8 +7,9 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // =============================================================================
 // Types
@@ -604,7 +605,7 @@ async function fetchRequirementSpecs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements?${params}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -621,6 +622,7 @@ async function fetchRequirementSpec(
 ): Promise<RequirementSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch requirement spec");
 	return res.json();
@@ -632,6 +634,7 @@ async function fetchRequirementSpecByItem(
 ): Promise<RequirementSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/by-item/${itemId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch requirement spec by item");
 	return res.json();
@@ -643,7 +646,7 @@ async function fetchUnverifiedRequirements(
 ): Promise<{ specs: RequirementSpec[]; total: number }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/unverified?limit=${limit}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) throw new Error("Failed to fetch unverified requirements");
 	return res.json();
@@ -655,7 +658,7 @@ async function fetchHighRiskRequirements(
 ): Promise<{ specs: RequirementSpec[]; total: number }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/high-risk?limit=${limit}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) throw new Error("Failed to fetch high-risk requirements");
 	return res.json();
@@ -669,7 +672,7 @@ async function createRequirementSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -686,7 +689,7 @@ async function updateRequirementSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -700,7 +703,7 @@ async function deleteRequirementSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
-		{ method: "DELETE" },
+		{ method: "DELETE", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to delete requirement spec");
 }
@@ -711,7 +714,7 @@ async function analyzeRequirementQuality(
 ): Promise<RequirementSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/analyze-quality`,
-		{ method: "POST" },
+		{ method: "POST", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to analyze requirement quality");
 	return res.json();
@@ -723,7 +726,7 @@ async function analyzeRequirementImpact(
 ): Promise<RequirementSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/analyze-impact`,
-		{ method: "POST" },
+		{ method: "POST", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to analyze requirement impact");
 	return res.json();
@@ -743,7 +746,7 @@ async function verifyRequirement(
 	});
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/verify?${params}`,
-		{ method: "POST" },
+		{ method: "POST", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to verify requirement");
 	return res.json();
@@ -768,7 +771,7 @@ async function fetchTestSpecs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests?${params}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -783,6 +786,7 @@ async function fetchTestSpec(
 ): Promise<TestSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch test spec");
 	return res.json();
@@ -794,6 +798,7 @@ async function fetchTestSpecByItem(
 ): Promise<TestSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/by-item/${itemId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch test spec by item");
 	return res.json();
@@ -806,7 +811,7 @@ async function fetchFlakyTests(
 ): Promise<{ specs: TestSpec[]; total: number }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/flaky?threshold=${threshold}&limit=${limit}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) throw new Error("Failed to fetch flaky tests");
 	return res.json();
@@ -818,7 +823,7 @@ async function fetchQuarantinedTests(
 ): Promise<{ specs: TestSpec[]; total: number }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/quarantined?limit=${limit}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) throw new Error("Failed to fetch quarantined tests");
 	return res.json();
@@ -835,6 +840,7 @@ async function fetchTestHealthReport(projectId: string): Promise<{
 }> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/health-report`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch test health report");
 	return res.json();
@@ -848,7 +854,7 @@ async function createTestSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -865,7 +871,7 @@ async function updateTestSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -879,7 +885,7 @@ async function deleteTestSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`,
-		{ method: "DELETE" },
+		{ method: "DELETE", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to delete test spec");
 }
@@ -901,7 +907,7 @@ async function recordTestRun(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/record-run?${params}`,
-		{ method: "POST" },
+		{ method: "POST", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to record test run");
 	return res.json();
@@ -914,7 +920,7 @@ async function quarantineTest(
 ): Promise<TestSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/quarantine?reason=${encodeURIComponent(reason)}`,
-		{ method: "POST" },
+		{ method: "POST", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to quarantine test");
 	return res.json();
@@ -926,7 +932,7 @@ async function unquarantineTest(
 ): Promise<TestSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/unquarantine`,
-		{ method: "POST" },
+		{ method: "POST", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to unquarantine test");
 	return res.json();
@@ -948,7 +954,7 @@ async function fetchEpicSpecs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics?${params}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -963,6 +969,7 @@ async function fetchEpicSpec(
 ): Promise<EpicSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch epic spec");
 	return res.json();
@@ -974,6 +981,7 @@ async function fetchEpicSpecByItem(
 ): Promise<EpicSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/by-item/${itemId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch epic spec by item");
 	return res.json();
@@ -987,7 +995,7 @@ async function createEpicSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1004,7 +1012,7 @@ async function updateEpicSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1018,7 +1026,7 @@ async function deleteEpicSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`,
-		{ method: "DELETE" },
+		{ method: "DELETE", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to delete epic spec");
 }
@@ -1041,7 +1049,7 @@ async function fetchUserStorySpecs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories?${params}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -1058,6 +1066,7 @@ async function fetchUserStorySpec(
 ): Promise<UserStorySpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch user story spec");
 	return res.json();
@@ -1069,6 +1078,7 @@ async function fetchUserStorySpecByItem(
 ): Promise<UserStorySpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/by-item/${itemId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch user story spec by item");
 	return res.json();
@@ -1082,7 +1092,7 @@ async function createUserStorySpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1099,7 +1109,7 @@ async function updateUserStorySpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1113,7 +1123,7 @@ async function deleteUserStorySpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
-		{ method: "DELETE" },
+		{ method: "DELETE", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to delete user story spec");
 }
@@ -1136,7 +1146,7 @@ async function fetchTaskSpecs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks?${params}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -1151,6 +1161,7 @@ async function fetchTaskSpec(
 ): Promise<TaskSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/${specId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch task spec");
 	return res.json();
@@ -1162,6 +1173,7 @@ async function fetchTaskSpecByItem(
 ): Promise<TaskSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/by-item/${itemId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch task spec by item");
 	return res.json();
@@ -1175,7 +1187,7 @@ async function createTaskSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1192,7 +1204,7 @@ async function updateTaskSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/${specId}`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1206,7 +1218,7 @@ async function deleteTaskSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/tasks/${specId}`,
-		{ method: "DELETE" },
+		{ method: "DELETE", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to delete task spec");
 }
@@ -1229,7 +1241,7 @@ async function fetchDefectSpecs(
 
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects?${params}`,
-		{ headers: { "X-Bulk-Operation": "true" } },
+		{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 	);
 	if (!res.ok) {
 		const errorText = await res.text();
@@ -1244,6 +1256,7 @@ async function fetchDefectSpec(
 ): Promise<DefectSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch defect spec");
 	return res.json();
@@ -1255,6 +1268,7 @@ async function fetchDefectSpecByItem(
 ): Promise<DefectSpec> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/by-item/${itemId}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch defect spec by item");
 	return res.json();
@@ -1268,7 +1282,7 @@ async function createDefectSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects`,
 		{
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1285,7 +1299,7 @@ async function updateDefectSpec(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`,
 		{
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify(data),
 		},
 	);
@@ -1299,7 +1313,7 @@ async function deleteDefectSpec(
 ): Promise<void> {
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`,
-		{ method: "DELETE" },
+		{ method: "DELETE", headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to delete defect spec");
 }

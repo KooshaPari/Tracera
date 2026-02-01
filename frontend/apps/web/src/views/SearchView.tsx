@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import type { Item } from "@tracertm/types";
+import { Button, Separator } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Card } from "@tracertm/ui/components/Card";
 import { Input } from "@tracertm/ui/components/Input";
@@ -11,15 +13,14 @@ import {
 } from "@tracertm/ui/components/Select";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import {
-	Search as SearchIcon,
-	Layers,
-	Box,
 	ArrowRight,
+	Box,
 	Command,
+	Layers,
+	Search as SearchIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { useSearch } from "../hooks/useSearch";
-import { Button, Separator } from "@tracertm/ui";
 
 export function SearchView() {
 	const [query, setQuery] = useState("");
@@ -32,7 +33,7 @@ export function SearchView() {
 	const { results, isLoading } = useSearch({ q: query, ...filters });
 
 	return (
-		<div className="p-6 space-y-8 max-w-5xl mx-auto animate-in fade-in duration-500">
+		<div className="p-6 space-y-8 max-w-5xl mx-auto animate-in-fade-up">
 			{/* Header */}
 			<div className="flex flex-col items-center text-center space-y-4 mb-12">
 				<div className="h-16 w-16 rounded-[2rem] bg-primary/10 flex items-center justify-center shadow-inner">
@@ -108,51 +109,64 @@ export function SearchView() {
 							</Badge>
 						</div>
 
-						<div className="grid grid-cols-1 gap-4">
-							{results.items.map((item) => (
-								<Link key={item.id} to={`/items/${item.id}`}>
-									<Card className="p-6 border-none bg-card/50 hover:bg-card shadow-sm hover:shadow-xl transition-all group rounded-[2rem]">
-										<div className="flex flex-col md:flex-row md:items-center gap-6">
-											<div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-												<Box className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-											</div>
-											<div className="flex-1 space-y-1">
-												<div className="flex items-center gap-2 flex-wrap">
-													<h3 className="font-bold text-lg leading-none group-hover:text-primary transition-colors">
-														{item.title}
-													</h3>
-													<Badge
-														variant="outline"
-														className="text-[8px] font-black uppercase tracking-tighter h-4 border-primary/20 text-primary"
-													>
-														{item.type}
-													</Badge>
+						<div className="grid grid-cols-1 gap-4 stagger-children">
+							{results.items.map((item) => {
+								const raw = item as Item & { project_id?: string; view_type?: string; item_view?: string };
+								const projectId = item.projectId ?? raw.project_id;
+								const viewType =
+									item.view ?? raw.view_type ?? raw.item_view ?? "feature";
+								return (
+									<Link
+										key={item.id}
+										to={
+											projectId
+												? `/projects/${projectId}/views/${String(viewType).toLowerCase()}/${item.id}`
+												: "/projects"
+										}
+									>
+										<Card className="p-6 border-none bg-card/50 hover:bg-card shadow-sm hover:shadow-xl active:scale-[0.99] transition-all duration-200 ease-out group rounded-[2rem]">
+											<div className="flex flex-col md:flex-row md:items-center gap-6">
+												<div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+													<Box className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
 												</div>
-												<p className="text-sm text-muted-foreground line-clamp-1 font-medium">
-													{item.description ||
-														"No registry description provided for this node."}
-												</p>
-											</div>
-											<div className="flex items-center gap-6 shrink-0">
-												<div className="text-right hidden sm:block">
-													<p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-														Status
+												<div className="flex-1 space-y-1">
+													<div className="flex items-center gap-2 flex-wrap">
+														<h3 className="font-bold text-lg leading-none group-hover:text-primary transition-colors">
+															{item.title}
+														</h3>
+														<Badge
+															variant="outline"
+															className="text-[8px] font-black uppercase tracking-tighter h-4 border-primary/20 text-primary"
+														>
+															{item.type}
+														</Badge>
+													</div>
+													<p className="text-sm text-muted-foreground line-clamp-1 font-medium">
+														{item.description ||
+															"No registry description provided for this node."}
 													</p>
-													<div className="flex items-center justify-end gap-1 mt-0.5">
-														<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-														<span className="text-[10px] font-bold uppercase">
-															{item.status}
-														</span>
+												</div>
+												<div className="flex items-center gap-6 shrink-0">
+													<div className="text-right hidden sm:block">
+														<p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+															Status
+														</p>
+														<div className="flex items-center justify-end gap-1 mt-0.5">
+															<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+															<span className="text-[10px] font-bold uppercase">
+																{item.status}
+															</span>
+														</div>
+													</div>
+													<div className="h-10 w-10 rounded-full border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-4 transition-all">
+														<ArrowRight className="h-4 w-4 text-primary" />
 													</div>
 												</div>
-												<div className="h-10 w-10 rounded-full border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-4 transition-all">
-													<ArrowRight className="h-4 w-4 text-primary" />
-												</div>
 											</div>
-										</div>
-									</Card>
-								</Link>
-							))}
+										</Card>
+									</Link>
+								);
+							})}
 						</div>
 					</div>
 				) : query ? (

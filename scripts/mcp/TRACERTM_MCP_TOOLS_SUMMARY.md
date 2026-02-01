@@ -1,7 +1,7 @@
 # TraceRTM MCP Server – Tools Summary
 
 **Server:** `tracertm-mcp` (FastMCP 3.0.0b1)  
-**Location:** `scripts/mcp/tracertm_mcp_server.py`  
+**Location:** `src/tracertm/mcp/server.py`  
 **Status:** Complete tools section (Phase 1)
 
 ## Tools by Category
@@ -49,4 +49,3 @@
 - **Phase 2:** Resources (tracertm://current-project, .../summary, .../trace-matrix, .../gaps, .../activity-log)
 - **Phase 3:** Prompts (plan_iteration, groom_backlog, analyze_risk, implement_feature_with_traceability)
 - **Phase 4:** Production features (auth, caching, storage, advanced filtering)
-

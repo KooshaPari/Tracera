@@ -2,12 +2,11 @@
  * Tests for VersionDiff component
  */
 
-import { describe, it, expect, vi } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import VersionDiff from "@/components/temporal/VersionDiff";
 import type { VersionDiff as VersionDiffType } from "@repo/types";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import VersionDiff from "@/components/temporal/VersionDiff";
 
 const mockDiff: VersionDiffType = {
 	versionA: "v1",

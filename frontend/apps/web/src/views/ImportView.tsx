@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { logger } from '@/lib/logger';
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Label } from "@tracertm/ui/components/Label";
@@ -45,13 +46,13 @@ export function ImportView() {
 				`Import completed!\nImported: ${result.imported_count}\nErrors: ${result.error_count}`,
 			);
 			if (result.errors.length > 0) {
-				console.error("Import errors:", result.errors);
+				logger.error("Import errors:", result.errors);
 			}
 			setData("");
 			setFile(null);
 		},
 		onError: (error) => {
-			console.error("Import failed:", error);
+			logger.error("Import failed:", error);
 			alert("Import failed. Please check your data format and try again.");
 		},
 	});

@@ -25,12 +25,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	cullEdges,
-	extractNodePositions,
-	getViewportBounds,
-	getCullingStats,
 	type CullingStats,
+	cullEdges,
 	type Edge,
+	extractNodePositions,
+	getCullingStats,
+	getViewportBounds,
 	type ViewportBounds,
 } from "@/lib/viewportCulling";
 
@@ -136,7 +136,7 @@ export function useViewportCulling({
  * Usage:
  * ```
  * const stats = useViewportCullingStats(cullingStats);
- * console.log(`Rendering ${stats.visibleEdges} of ${stats.totalEdges} edges`);
+ * logger.info(`Rendering ${stats.visibleEdges} of ${stats.totalEdges} edges`);
  * ```
  */
 export function useViewportCullingStats(stats: CullingStats | null): {

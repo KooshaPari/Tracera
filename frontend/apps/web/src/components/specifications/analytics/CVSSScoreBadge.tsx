@@ -3,8 +3,8 @@
  * Displays Common Vulnerability Scoring System scores for security defects
  */
 
-import { cn } from "@/lib/utils";
 import type { CVSSSeverity } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface CVSSScoreBadgeProps {
 	baseScore: number;

@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { logger } from '@/lib/logger';
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -90,7 +91,7 @@ export function CreateProblemForm({
 			await createProblem.mutateAsync(payload);
 			onSuccess();
 		} catch (error) {
-			console.error("Failed to create problem:", error);
+			logger.error("Failed to create problem:", error);
 		}
 	};
 
@@ -100,10 +101,22 @@ export function CreateProblemForm({
 				className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 				onClick={onCancel}
 			/>
-			<div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl">
+			<div
+				className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="report-problem-title"
+			>
 				<div className="flex items-center justify-between">
-					<h2 className="text-lg font-semibold">Report Problem</h2>
-					<button onClick={onCancel} className="rounded-lg p-1 hover:bg-accent">
+					<h2 id="report-problem-title" className="text-lg font-semibold">
+						Report Problem
+					</h2>
+					<button
+						type="button"
+						onClick={onCancel}
+						aria-label="Close dialog"
+						className="rounded-lg p-1 hover:bg-accent"
+					>
 						<X className="h-5 w-5" />
 					</button>
 				</div>

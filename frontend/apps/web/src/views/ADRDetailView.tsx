@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import type { ADR } from "@tracertm/types";
 import {
 	Badge,
 	Button,
@@ -11,26 +12,25 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui";
+import { format } from "date-fns";
 import {
+	AlertTriangle,
 	ArrowLeft,
+	CheckCircle,
 	Edit2,
-	Save,
-	X,
+	FileText,
 	GitBranch,
 	Link2,
-	FileText,
-	CheckCircle,
-	AlertTriangle,
+	Save,
 	Trash2,
 	TrendingUp,
+	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { ComplianceGauge } from "@/components/specifications/adr/ComplianceGauge";
 import { DecisionMatrix } from "@/components/specifications/adr/DecisionMatrix";
 import { useADR, useADRActivities } from "@/hooks/useSpecifications";
-import type { ADR } from "@tracertm/types";
 
 // Mock data - replace with actual API call
 const mockADR: ADR = {
@@ -95,6 +95,13 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 	const [editedADR, setEditedADR] = useState<ADR>(adrData || mockADR);
 	const [isLoading, setIsLoading] = useState(false);
 
+	useEffect(() => {
+		if (adrData) {
+			setAdr(adrData);
+			setEditedADR(adrData);
+		}
+	}, [adrData]);
+
 	if (adrLoading && !adrData) {
 		return (
 			<div className="p-6 space-y-6">
@@ -104,13 +111,6 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 			</div>
 		);
 	}
-
-	useEffect(() => {
-		if (adrData) {
-			setAdr(adrData);
-			setEditedADR(adrData);
-		}
-	}, [adrData]);
 
 	const handleSave = async () => {
 		setIsLoading(true);

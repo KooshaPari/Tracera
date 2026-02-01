@@ -44,7 +44,7 @@ describe.skip("API Endpoints", () => {
 			const urlNormalized =
 				urlStr.replace(/^https?:\/\/[^/]+/, "").split("?")[0] || "";
 
-			console.log(`[Mock Fetch] ${method} ${urlNormalized}`);
+			logger.info(`[Mock Fetch] ${method} ${urlNormalized}`);
 
 			// Projects - GET list
 			if (urlNormalized === "/api/v1/projects" && method === "GET") {
@@ -159,7 +159,7 @@ describe.skip("API Endpoints", () => {
 
 			// Search
 			if (urlNormalized === "/api/v1/search" && method === "GET") {
-				const urlObj = new URL(urlStr, "http://localhost:8000");
+				const urlObj = new URL(urlStr, "http://localhost:4000");
 				const query = urlObj.searchParams.get("q") || "";
 				return createMockApiResponse({ items: [], total: 0, query });
 			}
@@ -170,7 +170,7 @@ describe.skip("API Endpoints", () => {
 			}
 
 			// Default 404 for unmocked endpoints
-			console.warn(`[WARN] Unmocked fetch: ${method} ${urlNormalized}`);
+			logger.warn(`[WARN] Unmocked fetch: ${method} ${urlNormalized}`);
 			return createMockApiResponse({ error: "Not mocked" }, 404);
 		};
 

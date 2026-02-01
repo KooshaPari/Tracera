@@ -446,7 +446,7 @@ describe("CommandPalette Component", () => {
 			fireEvent.keyDown(window, { key: "Enter" });
 
 			await waitFor(() => {
-				expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
+				expect(mockNavigate).toHaveBeenCalledWith({ to: "/home" });
 			});
 		});
 
@@ -457,7 +457,7 @@ describe("CommandPalette Component", () => {
 			const dashboardCommand = await screen.findByText("Go to Dashboard");
 			fireEvent.click(dashboardCommand);
 
-			expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
+			expect(mockNavigate).toHaveBeenCalledWith({ to: "/home" });
 		});
 
 		it("should close palette after command execution via Enter", async () => {

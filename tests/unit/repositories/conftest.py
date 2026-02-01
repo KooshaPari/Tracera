@@ -40,6 +40,49 @@ from tracertm.models.problem import Problem, ProblemActivity
 from tracertm.models.process import Process, ProcessExecution
 # Test coverage model
 from tracertm.models.test_coverage import TestCoverage, CoverageActivity
+# Specification models
+from tracertm.models.specification import ADR, Contract, Feature, Scenario
+# Item Specification models (enhanced spec types)
+from tracertm.models.item_spec import (
+    RequirementSpec,
+    TestSpec,
+    EpicSpec,
+    UserStorySpec,
+    TaskSpec,
+    DefectSpec,
+)
+# Webhook models
+from tracertm.models.webhook_integration import WebhookIntegration, WebhookLog
+# Execution models
+from tracertm.models.execution import Execution, ExecutionArtifact
+from tracertm.models.execution_config import ExecutionEnvironmentConfig
+# Account models
+from tracertm.models.account import Account
+from tracertm.models.account_user import AccountUser
+# GitHub Project model
+from tracertm.models.github_project import GitHubProject
+# Linear App model
+from tracertm.models.linear_app import LinearAppInstallation
+# GitHub App Installation model
+from tracertm.models.github_app_installation import GitHubAppInstallation
+# Integration models
+from tracertm.models.integration import (
+    IntegrationCredential,
+    IntegrationMapping,
+    IntegrationSyncQueue,
+    IntegrationSyncLog,
+    IntegrationConflict,
+    IntegrationRateLimit,
+)
+# Blockchain models
+from tracertm.models.blockchain import (
+    VersionBlock,
+    VersionChainIndex,
+    Baseline,
+    BaselineItem,
+    MerkleProofCache,
+    SpecEmbedding,
+)
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -70,7 +113,7 @@ async def async_session_factory():
 
     # Create tables
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
 
     # Create session factory
     async_session = async_sessionmaker(

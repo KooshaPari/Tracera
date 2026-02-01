@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from tracertm.models.types import JSONType
 
@@ -34,7 +35,7 @@ def upgrade() -> None:
     op.create_table(
         "graph_types",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("type_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -46,7 +47,7 @@ def upgrade() -> None:
     op.create_table(
         "edge_types",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("edge_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -58,7 +59,7 @@ def upgrade() -> None:
     op.create_table(
         "node_kind_rules",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("node_kind_id", sa.String(length=255), sa.ForeignKey("node_kinds.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
@@ -71,7 +72,7 @@ def upgrade() -> None:
     op.create_table(
         "graph_snapshots",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("graph_id", sa.String(length=255), sa.ForeignKey("graphs.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("version", sa.Integer(), nullable=False),
         sa.Column("snapshot_json", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -87,7 +88,7 @@ def upgrade() -> None:
     op.create_table(
         "graph_changes",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", sa.String(length=255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("graph_id", sa.String(length=255), sa.ForeignKey("graphs.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("change_type", sa.String(length=100), nullable=False),
         sa.Column("change_payload", JSONType, nullable=False, server_default=sa.text("'{}'")),

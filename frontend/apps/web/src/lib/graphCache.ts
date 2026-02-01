@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * LRU Cache for Graph Data
  *
@@ -12,8 +13,6 @@
  * - Pattern-based invalidation
  * - Prewarming support
  */
-
-import { create } from "zustand";
 
 /**
  * Cache entry metadata
@@ -189,7 +188,7 @@ class GraphCacheImpl<T = any> {
 	 */
 	invalidatePattern(pattern: string): number {
 		const regex = new RegExp(
-			"^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
+			`^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
 		);
 		let count = 0;
 
@@ -217,7 +216,7 @@ class GraphCacheImpl<T = any> {
 	 */
 	keysMatching(pattern: string): string[] {
 		const regex = new RegExp(
-			"^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
+			`^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
 		);
 		return Array.from(this.entries.keys()).filter((key) => regex.test(key));
 	}
@@ -456,7 +455,7 @@ export async function prewarmCache(graphId: string): Promise<void> {
 	// Implement prewarming strategies based on your application's needs
 
 	if (process.env.NODE_ENV === "development") {
-		console.debug(
+		logger.debug(
 			"[GraphCache] Cache prewarming initiated for graph:",
 			graphId,
 		);
@@ -472,6 +471,6 @@ export function clearAllCaches(): void {
 	searchCache.clear();
 
 	if (process.env.NODE_ENV === "development") {
-		console.debug("[GraphCache] All caches cleared");
+		logger.debug("[GraphCache] All caches cleared");
 	}
 }

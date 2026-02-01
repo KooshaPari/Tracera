@@ -3,10 +3,11 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tracertm/ui/components/Alert";
+import { logger } from '@/lib/logger';
 import { Button } from "@tracertm/ui/components/Button";
 import { AlertCircle } from "lucide-react";
-import React from "react";
 import type { ReactNode } from "react";
+import React from "react";
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -32,7 +33,7 @@ export class ErrorBoundary extends React.Component<
 	}
 
 	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error("Error caught by boundary:", error, errorInfo);
+		logger.error("Error caught by boundary:", error, errorInfo);
 	}
 
 	reset = () => {

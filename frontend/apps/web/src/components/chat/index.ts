@@ -3,6 +3,8 @@
  */
 
 export { ChatBubble } from "./ChatBubble";
-export { ChatPanel } from "./ChatPanel";
+export { ChatHistoryPanel } from "./ChatHistoryPanel";
+export { ChatSettingsPanel } from "./ChatSettingsPanel";
 export { ChatMessage } from "./ChatMessage";
+export { ChatPanel } from "./ChatPanel";
 export { ModelSelector } from "./ModelSelector";

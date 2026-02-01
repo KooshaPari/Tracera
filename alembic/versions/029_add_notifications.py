@@ -6,6 +6,7 @@ Create Date: 2026-01-29 02:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 revision = "029_add_notifications"
 down_revision = "028_add_item_specifications"
@@ -18,7 +19,7 @@ def upgrade() -> None:
         "notifications",
         sa.Column("id", sa.String(36), primary_key=True),
         sa.Column("user_id", sa.String(255), nullable=False),
-        sa.Column("project_id", sa.String(255), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True),
+        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True),
         sa.Column("type", sa.String(50), nullable=False, server_default="info"),
         sa.Column("title", sa.String(255), nullable=False),
         sa.Column("message", sa.Text, nullable=False),

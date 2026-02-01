@@ -1,11 +1,11 @@
 // UI Component Tree - Storybook-like view for UI components and pages
 
+import type { Item, Link } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Input } from "@tracertm/ui/components/Input";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
-import type { Item, Link } from "@tracertm/types";
 import {
 	ChevronDown,
 	ChevronRight,

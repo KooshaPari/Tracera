@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import { getAuthHeaders } from "@/api/client";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 /**
  * Graph node data structure
@@ -35,7 +36,9 @@ export interface GraphProjection {
 }
 
 async function fetchGraphs(projectId: string): Promise<GraphSummary[]> {
-	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/graphs`);
+	const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/graphs`, {
+		headers: getAuthHeaders(),
+	});
 	if (!res.ok) throw new Error("Failed to fetch graphs");
 	const data = await res.json();
 	const graphs = data.graphs || [];
@@ -61,6 +64,7 @@ async function fetchGraphProjection(
 	if (graphType) params.set("graph_type", graphType);
 	const res = await fetch(
 		`${API_URL}/api/v1/projects/${projectId}/graph?${params}`,
+		{ headers: getAuthHeaders() },
 	);
 	if (!res.ok) throw new Error("Failed to fetch graph projection");
 	const data = await res.json();

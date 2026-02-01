@@ -1,19 +1,24 @@
 // PivotNavigation.tsx - Navigate between equivalent nodes across perspectives
 // When viewing an item, shows clickable badges for its projections in other perspectives
 
-import { Button } from "@tracertm/ui/components/Button";
+import type {
+	CanonicalProjection,
+	EquivalenceLink,
+	Item,
+} from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@tracertm/ui/components/Popover";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@tracertm/ui/components/Popover";
 import {
 	ArrowRight,
 	Briefcase,
@@ -26,8 +31,6 @@ import {
 	Users,
 } from "lucide-react";
 import { memo, useMemo } from "react";
-import type { Item } from "@tracertm/types";
-import type { EquivalenceLink, CanonicalProjection } from "@tracertm/types";
 import type { GraphPerspective } from "./types";
 import { PERSPECTIVE_CONFIGS } from "./types";
 

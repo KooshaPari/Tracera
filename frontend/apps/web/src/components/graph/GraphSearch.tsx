@@ -1,6 +1,8 @@
 // Graph Search Component
 // Filter nodes by name/type, highlight matching nodes, show result count
 
+import type { Item } from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -12,9 +14,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { cn } from "@tracertm/ui";
-import type { Item } from "@tracertm/types";
-import { Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 
 /**

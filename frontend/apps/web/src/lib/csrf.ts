@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * CSRF Token Management
  *
@@ -12,7 +13,7 @@
  * 5. On 403 errors, refresh token and retry
  */
 
-const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:4000";
 const CSRF_HEADER = "X-CSRF-Token";
 const CSRF_COOKIE_NAME = "csrf_token";
 
@@ -57,11 +58,11 @@ export async function fetchCSRFToken(): Promise<string> {
 			}
 
 			csrfToken = data.token;
-			console.debug("[CSRF] Token fetched successfully");
+			logger.debug("[CSRF] Token fetched successfully");
 
 			return csrfToken;
 		} catch (error) {
-			console.error("[CSRF] Failed to fetch token:", error);
+			logger.error("[CSRF] Failed to fetch token:", error);
 			throw error;
 		} finally {
 			// Reset promise so next call will attempt fresh fetch
@@ -85,7 +86,7 @@ export function getCSRFToken(): string | null {
  */
 export function setCSRFToken(token: string): void {
 	csrfToken = token;
-	console.debug("[CSRF] Token updated");
+	logger.debug("[CSRF] Token updated");
 }
 
 /**
@@ -104,9 +105,9 @@ export async function refreshCSRFToken(): Promise<string> {
 export async function initializeCSRF(): Promise<void> {
 	try {
 		await fetchCSRFToken();
-		console.log("[CSRF] Initialized successfully");
+		logger.info("[CSRF] Initialized successfully");
 	} catch (error) {
-		console.error("[CSRF] Failed to initialize:", error);
+		logger.error("[CSRF] Failed to initialize:", error);
 		// Don't throw - CSRF is optional in dev mode
 		// In production, requests will fail if token is missing
 	}
@@ -129,7 +130,7 @@ export function getCSRFHeaders(method: string): Record<string, string> {
 	}
 
 	if (!csrfToken) {
-		console.warn("[CSRF] Token not available for state-changing request");
+		logger.warn("[CSRF] Token not available for state-changing request");
 		return {};
 	}
 
@@ -154,9 +155,9 @@ export function extractCSRFTokenFromResponse(
 
 	// Try to extract from Set-Cookie header (cookie pattern)
 	const setCookie = response.headers.get("set-cookie");
-	if (setCookie && setCookie.includes(CSRF_COOKIE_NAME)) {
+	if (setCookie?.includes(CSRF_COOKIE_NAME)) {
 		// Cookie is automatically set by browser, no action needed
-		console.debug("[CSRF] New token cookie received");
+		logger.debug("[CSRF] New token cookie received");
 		return null; // Token will be in cookie, fetch it when needed
 	}
 
@@ -179,7 +180,7 @@ export function createCSRFRequestInterceptor() {
 				try {
 					await fetchCSRFToken();
 				} catch (error) {
-					console.warn("[CSRF] Failed to fetch token before request:", error);
+					logger.warn("[CSRF] Failed to fetch token before request:", error);
 				}
 			}
 
@@ -209,7 +210,7 @@ export async function handleCSRFError(response: Response): Promise<boolean> {
 					data.error?.toLowerCase().includes("token");
 
 				if (isCsrfError) {
-					console.warn("[CSRF] Token validation failed, refreshing...");
+					logger.warn("[CSRF] Token validation failed, refreshing...");
 
 					try {
 						// Refresh token
@@ -218,7 +219,7 @@ export async function handleCSRFError(response: Response): Promise<boolean> {
 						// Caller should retry the request
 						return true;
 					} catch (error) {
-						console.error("[CSRF] Failed to refresh token:", error);
+						logger.error("[CSRF] Failed to refresh token:", error);
 						return false;
 					}
 				}
@@ -259,16 +260,16 @@ export function getCSRFCookies(): Record<string, string> {
 export function clearCSRFToken(): void {
 	csrfToken = null;
 	tokenFetchPromise = null;
-	console.debug("[CSRF] Token cleared");
+	logger.debug("[CSRF] Token cleared");
 }
 
 /**
  * Debug helper to log CSRF state
  */
 export function logCSRFState(): void {
-	console.group("[CSRF] Current State");
-	console.log("Token in memory:", csrfToken ? "Yes" : "No");
-	console.log("Token value:", csrfToken?.substring(0, 20) + "..." || "None");
-	console.log("Cookies:", getCSRFCookies());
-	console.groupEnd();
+	logger.group("[CSRF] Current State");
+	logger.info("Token in memory:", csrfToken ? "Yes" : "No");
+	logger.info("Token value:", `${csrfToken?.substring(0, 20)}...` || "None");
+	logger.info("Cookies:", getCSRFCookies());
+	logger.groupEnd();
 }

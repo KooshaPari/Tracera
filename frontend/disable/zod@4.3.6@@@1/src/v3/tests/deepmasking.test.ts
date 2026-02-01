@@ -1,10 +1,10 @@
-// @ts-ignore TS6133
+// @ts-expect-error TS6133
 import { test } from "vitest";
 
 import * as z from "zod/v3";
 
 test("test", () => {
-  z;
+	z;
 });
 
 // const fish = z.object({

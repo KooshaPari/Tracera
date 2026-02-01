@@ -9,6 +9,11 @@
 		"./tsconfig": "./tsconfig.base.json",
 		"./biome": "./biome.config.json"
 	},
+	"scripts": {
+		"build": "tsc --build",
+		"clean": "tsc --build --clean",
+		"typecheck": "tsc --noEmit"
+	},
 	"devDependencies": {
 		"typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
 	}

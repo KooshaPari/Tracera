@@ -1,26 +1,58 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ItemDetailView } from "@/views/ItemDetailView";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { FullScreenPage } from "@/components/layout/FullScreenPage";
+import { useItem } from "@/hooks/useItems";
+import { requireAuth } from "@/lib/route-guards";
+import { ItemDetailRouter } from "@/views/details";
 
 function ItemDetailComponent() {
-	return <ItemDetailView />;
+	const { projectId, itemId } = useParams({ strict: false });
+	const { data: item, isLoading, error } = useItem(projectId, itemId);
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center min-h-screen bg-background">
+				<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+			</div>
+		);
+	}
+
+	if (error || !item) {
+		return (
+			<FullScreenPage>
+				<div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+					<h1 className="text-2xl font-bold text-destructive mb-4">
+						Item Not Found
+					</h1>
+					<p className="text-muted-foreground">
+						The item you're looking for doesn't exist.
+					</p>
+				</div>
+			</FullScreenPage>
+		);
+	}
+
+	return <ItemDetailRouter item={item} projectId={projectId} />;
 }
 
 export const Route = createFileRoute(
 	"/projects/$projectId/views/$viewType/$itemId" as any,
 )({
+	beforeLoad: () => requireAuth(),
 	component: ItemDetailComponent,
 	loader: async () => {
 		// ItemDetailView fetches its own data
 		return {};
 	},
 	errorComponent: () => (
-		<div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
-			<h1 className="text-2xl font-bold text-destructive mb-4">
-				Item Not Found
-			</h1>
-			<p className="text-muted-foreground">
-				The item you're looking for doesn't exist.
-			</p>
-		</div>
+		<FullScreenPage>
+			<div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+				<h1 className="text-2xl font-bold text-destructive mb-4">
+					Item Not Found
+				</h1>
+				<p className="text-muted-foreground">
+					The item you're looking for doesn't exist.
+				</p>
+			</div>
+		</FullScreenPage>
 	),
 });

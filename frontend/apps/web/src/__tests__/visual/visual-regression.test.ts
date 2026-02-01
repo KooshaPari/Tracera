@@ -3,16 +3,16 @@
  * Tests for snapshot generation, baseline updates, and regression detection
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
+	createInteractionStories,
+	createThemeStories,
+	createViewportStories,
 	generateSnapshotName,
-	validateComponentVisualTests,
+	generateVisualTestParameters,
 	VisualRegressionTracker,
 	VisualTestMetrics,
-	generateVisualTestParameters,
-	createViewportStories,
-	createThemeStories,
-	createInteractionStories,
+	validateComponentVisualTests,
 } from "../../components/graph/__stories__/visual-regression-automation";
 
 describe("Visual Regression Testing Automation", () => {

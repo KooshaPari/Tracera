@@ -1,3 +1,5 @@
+import type { Item, ItemStatus, Link } from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -9,23 +11,20 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { cn } from "@tracertm/ui";
-import type { Item, ItemStatus, Link } from "@tracertm/types";
 import {
-	Search,
-	X,
 	ChevronDown,
 	ChevronUp,
 	Link as LinkIcon,
 	Network,
+	Search,
+	X,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import {
-	useCrossPerspectiveSearch,
-	type GroupedSearchResults,
 	type CrossPerspectiveSearchResult,
+	type GroupedSearchResults,
 	type SearchFilters,
-	type SavedSearch,
+	useCrossPerspectiveSearch,
 } from "./hooks/useCrossPerspectiveSearch";
 
 interface CrossPerspectiveSearchProps {
@@ -305,7 +304,7 @@ function CrossPerspectiveSearchComponent({
 	const [filters, setFilters] = useState<SearchFilters>({});
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [selectedResultIndex, setSelectedResultIndex] = useState(0);
-	const { performSearch, addToHistory, getHistory, clearHistory } =
+	const { performSearch, addToHistory, getHistory } =
 		useCrossPerspectiveSearch();
 
 	const results = useMemo(() => {

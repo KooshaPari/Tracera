@@ -1,11 +1,7 @@
 // Core domain types matching TraceRTM backend
 
 // Import multi-dimensional traceability types
-import type {
-	ItemDimensions,
-	CodeReference,
-	DocReference,
-} from "./canonical";
+import type { CodeReference, DocReference, ItemDimensions } from "./canonical";
 
 export type ViewType =
 	| "FEATURE"
@@ -53,19 +49,19 @@ export type LinkType =
 	| "blocks"
 	| "parent_of"
 	// Multi-dimensional traceability link types
-	| "same_as"           // Equivalence: same concept in different views
-	| "represents"        // Code/UI represents a requirement
-	| "manifests_as"      // Abstract concept manifests as concrete item
-	| "documents"         // Documentation describes an item
-	| "mentions"          // Documentation mentions an item
-	| "calls"             // Code calls another code entity
-	| "imports"           // Code imports another module
-	| "derives_from"      // Derived requirement/item
-	| "alternative_to"    // Alternative approach
-	| "conflicts_with"    // Conflicting items
-	| "supersedes"        // Newer version supersedes older
-	| "validates"         // Test validates requirement
-	| "traces_to";        // General traceability link
+	| "same_as" // Equivalence: same concept in different views
+	| "represents" // Code/UI represents a requirement
+	| "manifests_as" // Abstract concept manifests as concrete item
+	| "documents" // Documentation describes an item
+	| "mentions" // Documentation mentions an item
+	| "calls" // Code calls another code entity
+	| "imports" // Code imports another module
+	| "derives_from" // Derived requirement/item
+	| "alternative_to" // Alternative approach
+	| "conflicts_with" // Conflicting items
+	| "supersedes" // Newer version supersedes older
+	| "validates" // Test validates requirement
+	| "traces_to"; // General traceability link
 
 export interface Project {
 	id: string;
@@ -112,6 +108,141 @@ export interface Item {
 	equivalentItemIds?: string[];
 }
 
+// =============================================================================
+// Type-Aware Node System - Discriminated Unions
+// =============================================================================
+
+/**
+ * Requirement-specific properties (imported from specification.ts)
+ */
+export interface RequirementItem extends Item {
+	type: "requirement";
+	// Specification-specific fields
+	adrId?: string; // Link to ADR
+	contractId?: string; // Link to Contract
+	qualityMetrics?: {
+		ambiguityScore: number;
+		completenessScore: number;
+		smells: string[];
+	};
+}
+
+/**
+ * Test-specific properties
+ */
+export interface TestItem extends Item {
+	type: "test" | "test_case" | "test_suite";
+	testType?: TestCaseType;
+	automationStatus?: AutomationStatus;
+	testSteps?: TestStep[];
+	expectedResult?: string;
+	lastExecutionResult?: TestResultStatus;
+}
+
+/**
+ * Epic-specific properties
+ */
+export interface EpicItem extends Item {
+	type: "epic";
+	acceptanceCriteria?: string[];
+	businessValue?: string;
+	targetRelease?: string;
+}
+
+/**
+ * User Story-specific properties
+ */
+export interface UserStoryItem extends Item {
+	type: "user_story" | "story";
+	asA?: string; // As a [role]
+	iWant?: string; // I want [capability]
+	soThat?: string; // So that [benefit]
+	acceptanceCriteria?: string[];
+	storyPoints?: number;
+}
+
+/**
+ * Task-specific properties
+ */
+export interface TaskItem extends Item {
+	type: "task";
+	estimatedHours?: number;
+	actualHours?: number;
+	assignee?: string;
+	dueDate?: string;
+}
+
+/**
+ * Defect/Bug-specific properties
+ */
+export interface DefectItem extends Item {
+	type: "bug" | "defect";
+	severity?: "critical" | "high" | "medium" | "low";
+	reproducible?: boolean;
+	stepsToReproduce?: string[];
+	environment?: string;
+	foundInVersion?: string;
+	fixedInVersion?: string;
+}
+
+/**
+ * Generic item for other types
+ */
+export interface GenericItem extends Item {
+	type: string; // Any other type not covered above
+}
+
+/**
+ * Discriminated union of all typed items
+ */
+export type TypedItem =
+	| RequirementItem
+	| TestItem
+	| EpicItem
+	| UserStoryItem
+	| TaskItem
+	| DefectItem
+	| GenericItem;
+
+// =============================================================================
+// Type Guards
+// =============================================================================
+
+export function isRequirementItem(item: Item): item is RequirementItem {
+	return item.type === "requirement";
+}
+
+export function isTestItem(item: Item): item is TestItem {
+	return (
+		item.type === "test" ||
+		item.type === "test_case" ||
+		item.type === "test_suite"
+	);
+}
+
+export function isEpicItem(item: Item): item is EpicItem {
+	return item.type === "epic";
+}
+
+export function isUserStoryItem(item: Item): item is UserStoryItem {
+	return item.type === "user_story" || item.type === "story";
+}
+
+export function isTaskItem(item: Item): item is TaskItem {
+	return item.type === "task";
+}
+
+export function isDefectItem(item: Item): item is DefectItem {
+	return item.type === "bug" || item.type === "defect";
+}
+
+/**
+ * Type guard for items that have specification-related properties
+ */
+export function hasSpec(item: Item): item is RequirementItem {
+	return isRequirementItem(item);
+}
+
 export interface Link {
 	id: string;
 	projectId: string;
@@ -121,6 +252,8 @@ export interface Link {
 	description?: string;
 	metadata?: Record<string, unknown>;
 	createdAt: string;
+	updatedAt: string;
+	version: number;
 
 	// Multi-dimensional traceability extensions
 	// Confidence score for inferred links (0-1)
@@ -140,13 +273,13 @@ export interface Link {
  * How a link was created/detected
  */
 export type LinkProvenance =
-	| "manual"              // User created
-	| "imported"            // Imported from external system
-	| "inferred_naming"     // Inferred from naming patterns
-	| "inferred_semantic"   // Inferred from semantic similarity
+	| "manual" // User created
+	| "imported" // Imported from external system
+	| "inferred_naming" // Inferred from naming patterns
+	| "inferred_semantic" // Inferred from semantic similarity
 	| "inferred_structural" // Inferred from code structure
-	| "inferred_api"        // Inferred from API contracts
-	| "annotation";         // From code annotations
+	| "inferred_api" // Inferred from API contracts
+	| "annotation"; // From code annotations
 
 export interface Agent {
 	id: string;
@@ -1122,17 +1255,14 @@ export interface ApiError {
 	details?: Record<string, unknown>;
 }
 
-// Re-export specification types
-export * from "./specification";
-
-// Re-export temporal types
-export * from "./temporal";
-
-// Temporal dimension types
-export * from "./progress";
-
 // Re-export multi-dimensional traceability types
 export * from "./canonical";
-export * from "./ui-entities";
 export * from "./component-library";
 export * from "./entity-hierarchy";
+// Temporal dimension types
+export * from "./progress";
+// Re-export specification types
+export * from "./specification";
+// Re-export temporal types
+export * from "./temporal";
+export * from "./ui-entities";

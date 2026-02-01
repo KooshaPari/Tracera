@@ -2,12 +2,7 @@
  * Create GitHub repository modal component.
  */
 
-import { useState } from "react";
-import { Github, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/enterprise-button";
 import { Input } from "@tracertm/ui";
-import { Label } from "@tracertm/ui/components/Label";
-import { Textarea } from "@tracertm/ui/components/Textarea";
 import {
 	Dialog,
 	DialogContent,
@@ -16,9 +11,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@tracertm/ui/components/Dialog";
-import { useCreateGitHubRepo } from "@/hooks/useGitHub";
+import { Label } from "@tracertm/ui/components/Label";
+import { Textarea } from "@tracertm/ui/components/Textarea";
+import { Github, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { GitHubAppInstallation } from "@/api/github";
+import { Button } from "@/components/ui/enterprise-button";
+import { useCreateGitHubRepo } from "@/hooks/useGitHub";
 
 export interface CreateRepoModalProps {
 	open: boolean;

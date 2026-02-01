@@ -1,10 +1,10 @@
-import { motion } from "framer-motion";
 import { Badge } from "@tracertm/ui";
+import { motion } from "framer-motion";
 import {
-	CheckCircle,
 	AlertCircle,
-	Clock,
 	AlertTriangle,
+	CheckCircle,
+	Clock,
 	HelpCircle,
 } from "lucide-react";
 

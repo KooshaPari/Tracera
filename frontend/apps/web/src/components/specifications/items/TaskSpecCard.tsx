@@ -5,7 +5,6 @@
  * blockers, and completion status.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -15,6 +14,7 @@ import {
 	CardTitle,
 	Progress,
 } from "@tracertm/ui";
+import { differenceInDays, format } from "date-fns";
 import {
 	AlertTriangle,
 	ArrowRight,
@@ -30,7 +30,7 @@ import {
 	XCircle,
 } from "lucide-react";
 import type { TaskSpec } from "@/hooks/useItemSpecs";
-import { format, differenceInDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface TaskSpecCardProps {
 	spec: TaskSpec;

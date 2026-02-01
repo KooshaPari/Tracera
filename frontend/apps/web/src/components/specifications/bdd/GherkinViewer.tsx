@@ -1,10 +1,9 @@
 import Editor from "@monaco-editor/react";
-import { Badge, Button, Card } from "@tracertm/ui";
+import { Badge, Button, Card, cn } from "@tracertm/ui";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@tracertm/ui";
-import { StepBadge } from "./StepBadge";
 import type { StepType } from "./StepBadge";
+import { StepBadge } from "./StepBadge";
 
 interface GherkinViewerProps {
 	content: string;

@@ -1,0 +1,41 @@
+# Quality checks in a loop: each sub-service restarts after completion so the TUI
+# keeps a live feed (output visible on each run complete; TUI not empty when left open).
+# Use: make quality-pc-watch   (same port 18080 as quality-pc)
+#
+# For one-shot run: use process-compose.quality.yaml and make quality-pc.
+
+version: "0.5"
+
+log_location: .quality/logs
+log_level: info
+shell:
+  shell_command: "/bin/bash"
+  shell_argument: "-c"
+
+processes:
+  quality-go:
+    command: "make quality-go"
+    working_dir: "."
+    availability:
+      restart: "always"
+      backoff_seconds: 5
+    environment:
+      - "GO_ENV=development"
+      - "PORT=18080"
+
+  quality-python:
+    command: "make quality-python"
+    working_dir: "."
+    availability:
+      restart: "always"
+      backoff_seconds: 5
+    environment:
+      - "PYTHONUNBUFFERED=1"
+      - "PYTHONPATH=./src"
+
+  quality-frontend:
+    command: "cd frontend && bun run quality"
+    working_dir: "."
+    availability:
+      restart: "always"
+      backoff_seconds: 5

@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-	equivalenceQueryKeys,
-	type EquivalenceLink,
-	type DetectEquivalencesInput,
 	type ConfirmEquivalenceInput,
+	type DetectEquivalencesInput,
+	type EquivalenceLink,
+	equivalenceQueryKeys,
 	type RejectEquivalenceInput,
 } from "../../api/equivalence";
 

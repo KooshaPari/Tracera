@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	fetchCSRFToken,
-	getCSRFToken,
-	setCSRFToken,
-	refreshCSRFToken,
-	initializeCSRF,
-	getCSRFHeaders,
-	extractCSRFTokenFromResponse,
-	handleCSRFError,
 	clearCSRFToken,
+	extractCSRFTokenFromResponse,
+	fetchCSRFToken,
+	getCSRFHeaders,
+	getCSRFToken,
+	handleCSRFError,
+	initializeCSRF,
+	refreshCSRFToken,
+	setCSRFToken,
 } from "./csrf";
 
 // Mock fetch globally

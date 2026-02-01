@@ -10,16 +10,24 @@ from datetime import datetime
 from pathlib import Path
 
 import typer
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from tracertm.config.manager import ConfigManager
 from tracertm.storage import LocalStorageManager
+from tracertm.cli.ui import (
+    console,
+    success_panel,
+    error_panel,
+    warning_panel,
+    info_panel,
+    spinner,
+    progress_bar,
+    format_filesize,
+    format_datetime,
+)
 
 app = typer.Typer(help="Backup and restore commands")
-console = Console()
 
 
 @app.command("backup")
@@ -63,9 +71,10 @@ def backup_project(
         if not project_id:
             project_id = config_manager.get("current_project_id")
             if not project_id:
-                console.print(
-                    "[red]✗[/red] No current project. Specify --project-id or initialize a project."
-                )
+                console.print(error_panel(
+                    "No current project",
+                    "Specify --project-id or initialize a project with 'rtm project init'"
+                ))
                 raise typer.Exit(code=1)
 
         # Generate output filename if not provided
@@ -76,13 +85,7 @@ def backup_project(
 
         storage = LocalStorageManager()
 
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Creating backup...", total=None)
-
+        with spinner("Creating backup"):
             # Export all data
             backup_data = {
                 "version": "1.0",
@@ -98,11 +101,12 @@ def backup_project(
                 )
                 tables = [row[0] for row in result]
 
-                # Export each table
-                for table in tables:
-                    if table.startswith("alembic"):
-                        continue
+                # Export each table with progress
+                table_list = [t for t in tables if not t.startswith("alembic")]
 
+        with progress_bar(len(table_list), "Exporting tables") as (prog, task):
+            with storage.get_session() as session:
+                for table in table_list:
                     result = session.execute(text(f"SELECT * FROM {table}"))
                     rows = [dict(row._mapping) for row in result]
 
@@ -113,9 +117,9 @@ def backup_project(
                                 row[key] = value.isoformat()
 
                     backup_data["tables"][table] = rows
+                    prog.update(task, advance=1)
 
-            progress.update(task, description="Writing backup file...")
-
+        with spinner("Writing backup file"):
             # Write backup
             if compress:
                 with gzip.open(output, "wt", encoding="utf-8") as f:
@@ -124,14 +128,14 @@ def backup_project(
                 with open(output, "w", encoding="utf-8") as f:
                     json.dump(backup_data, f, indent=2, default=str)
 
-        file_size = output.stat().st_size / 1024  # KB
-        console.print("[green]✓[/green] Backup created successfully!")
-        console.print(f"[dim]File: {output}[/dim]")
-        console.print(f"[dim]Size: {file_size:.2f} KB[/dim]")
-        console.print(f"[dim]Tables: {len(backup_data['tables'])}[/dim]")
+        file_size = output.stat().st_size
+        console.print(success_panel(
+            f"Backup created: {output}",
+            f"Size: {format_filesize(file_size)} | Tables: {len(backup_data['tables'])} | Compressed: {compress}"
+        ))
 
     except Exception as e:
-        console.print(f"[red]✗[/red] Backup failed: {e}")
+        console.print(error_panel(f"Backup failed: {e}", "Check project configuration and permissions"))
         raise typer.Exit(code=1)
 
 
@@ -156,26 +160,26 @@ def restore_project(
     """
     try:
         if not backup_file.exists():
-            console.print(f"[red]✗[/red] Backup file not found: {backup_file}")
+            console.print(error_panel(
+                f"Backup file not found: {backup_file}",
+                "Verify the file path is correct"
+            ))
             raise typer.Exit(code=1)
 
         # Confirm restore
         if not force:
-            confirm = typer.confirm(
-                "⚠️  This will overwrite existing data. Continue?", default=False
-            )
+            console.print(warning_panel(
+                "This will overwrite existing data",
+                "All current data will be replaced with backup data"
+            ))
+            confirm = typer.confirm("Continue?", default=False)
             if not confirm:
-                console.print("[yellow]Restore cancelled.[/yellow]")
+                console.print(info_panel("Restore cancelled", "No changes were made"))
                 raise typer.Exit(code=0)
 
         config_manager = ConfigManager()
 
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Loading backup...", total=None)
+        with spinner("Loading backup"):
 
             # Load backup
             if backup_file.suffix == ".gz":
@@ -185,18 +189,17 @@ def restore_project(
                 with open(backup_file, encoding="utf-8") as f:
                     backup_data = json.load(f)
 
-            progress.update(task, description="Validating backup...")
-
+        with spinner("Validating backup"):
             # Validate backup format
             if not isinstance(backup_data, dict) or "version" not in backup_data:
-                console.print("[red]✗[/red] Invalid backup file format")
+                console.print(error_panel("Invalid backup file format", "Backup file is corrupted or incompatible"))
                 raise typer.Exit(code=1)
 
             if "tables" not in backup_data or not isinstance(backup_data["tables"], dict):
-                console.print("[red]✗[/red] Backup missing table data")
+                console.print(error_panel("Backup missing table data", "Backup file is incomplete"))
                 raise typer.Exit(code=1)
 
-            progress.update(task, description="Clearing existing data...")
+        with spinner("Clearing existing data"):
 
             # Restore tables in correct order (respecting foreign keys)
             storage = LocalStorageManager()
@@ -213,18 +216,17 @@ def restore_project(
                         try:
                             session.execute(text(f"DELETE FROM {table}"))
                         except Exception as e:
-                            console.print(f"[yellow]⚠[/yellow] Could not clear {table}: {e}")
+                            console.print(warning_panel(f"Could not clear {table}", str(e)))
 
                 session.commit()
 
-                progress.update(task, description="Restoring data...")
+        # Restore tables with progress
+        tables_to_restore = [(table, rows) for table, rows in backup_data.get("tables", {}).items() if rows]
 
-                # Restore tables
+        with progress_bar(len(tables_to_restore), "Restoring tables") as (prog, task):
+            with storage.get_session() as session:
                 tables_restored = 0
-                for table, rows in backup_data.get("tables", {}).items():
-                    if not rows:
-                        continue
-
+                for table, rows in tables_to_restore:
                     try:
                         # Get column names from first row
                         columns = list(rows[0].keys())
@@ -243,15 +245,17 @@ def restore_project(
 
                         tables_restored += 1
                     except Exception as e:
-                        console.print(f"[yellow]⚠[/yellow] Error restoring {table}: {e}")
+                        console.print(warning_panel(f"Error restoring {table}", str(e)))
+
+                    prog.update(task, advance=1)
 
                 session.commit()
 
-            console.print("[green]✓[/green] Restore completed successfully!")
-            console.print(f"[dim]Project ID: {backup_data.get('project_id')}[/dim]")
-            console.print(f"[dim]Backup date: {backup_data.get('timestamp')}[/dim]")
-            console.print(f"[dim]Tables restored: {tables_restored}[/dim]")
+        console.print(success_panel(
+            "Restore completed successfully",
+            f"Project ID: {backup_data.get('project_id')}\nBackup date: {backup_data.get('timestamp')}\nTables restored: {tables_restored}"
+        ))
 
     except Exception as e:
-        console.print(f"[red]✗[/red] Restore failed: {e}")
+        console.print(error_panel(f"Restore failed: {e}", "Check backup file integrity and permissions"))
         raise typer.Exit(code=1)

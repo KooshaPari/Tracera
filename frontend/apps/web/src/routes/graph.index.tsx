@@ -1,40 +1,34 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
-import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-const GraphView = lazy(() =>
-	import("@/views/GraphView").then((m) => ({ default: m.GraphView })),
-);
+/**
+ * Redirect handler for old graph URL (/graph)
+ * Redirects to projects page where users can select a project to view its graph
+ */
+function GraphRedirectComponent() {
+	const navigate = useNavigate();
 
-export const Route = createFileRoute("/graph/")({
-	component: GraphComponent,
-	loader: async () => {
-		// GraphView fetches its own data
-		return {};
-	},
-});
+	useEffect(() => {
+		// Redirect to projects list with a hint to select a project
+		navigate({
+			to: "/projects",
+			replace: true, // Replace history entry to prevent back button issues
+		});
+	}, [navigate]);
 
-function GraphComponent() {
 	return (
-		<div className="flex-1 p-6 space-y-6">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
-						Graph Visualization
-					</h1>
-					<p className="text-muted-foreground">
-						Interactive graph of project relationships and dependencies
-					</p>
-				</div>
-			</div>
-
-			<Suspense
-				fallback={
-					<ChunkLoadingSkeleton message="Loading graph visualization..." />
-				}
-			>
-				<GraphView />
-			</Suspense>
+		<div className="flex flex-col items-center justify-center min-h-screen bg-background">
+			<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+			<p className="mt-4 text-sm text-muted-foreground">
+				Redirecting to projects...
+			</p>
+			<p className="mt-2 text-xs text-muted-foreground">
+				Please select a project to view its graph
+			</p>
 		</div>
 	);
 }
+
+export const Route = createFileRoute("/graph/")({
+	component: GraphRedirectComponent,
+});

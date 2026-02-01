@@ -1,23 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
-	IntegrationCredential,
-	IntegrationMapping,
-	SyncQueueItem,
-	SyncLog,
-	SyncConflict,
-	IntegrationStats,
-	SyncStatusSummary,
-	IntegrationProvider,
-	MappingDirection,
-	GitHubRepo,
 	GitHubIssue,
 	GitHubProject,
-	LinearTeam,
+	GitHubRepo,
+	IntegrationCredential,
+	IntegrationMapping,
+	IntegrationProvider,
+	IntegrationStats,
 	LinearIssue,
 	LinearProject,
+	LinearTeam,
+	MappingDirection,
+	SyncConflict,
+	SyncLog,
+	SyncQueueItem,
+	SyncStatusSummary,
 } from "@tracertm/types";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformCredential(data: any): IntegrationCredential {
@@ -171,7 +172,7 @@ async function fetchCredentials(
 	const res = await fetch(
 		`${API_URL}/api/v1/integrations/credentials?project_id=${projectId}`,
 		{
-			headers: { "X-Bulk-Operation": "true" },
+			headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
 		},
 	);
 	if (!res.ok) {
@@ -200,7 +201,7 @@ export function useValidateCredential() {
 				`${API_URL}/api/v1/integrations/credentials/${credentialId}/validate`,
 				{
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
+					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				},
 			);
 			if (!res.ok) {
@@ -222,7 +223,7 @@ export function useDeleteCredential() {
 		mutationFn: async (credentialId: string) => {
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/credentials/${credentialId}`,
-				{ method: "DELETE" },
+				{ method: "DELETE", headers: getAuthHeaders() },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to delete credential: ${res.status}`);
@@ -250,7 +251,7 @@ export function useStartOAuth() {
 		}) => {
 			const res = await fetch(`${API_URL}/api/v1/integrations/oauth/start`, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
 					project_id: data.projectId,
 					provider: data.provider,
@@ -277,7 +278,7 @@ export function useCompleteOAuth() {
 		}) => {
 			const res = await fetch(`${API_URL}/api/v1/integrations/oauth/callback`, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
 					code: data.code,
 					state: data.state,
@@ -307,7 +308,7 @@ async function fetchMappings(
 	if (provider) params.set("provider", provider);
 
 	const res = await fetch(`${API_URL}/api/v1/integrations/mappings?${params}`, {
-		headers: { "X-Bulk-Operation": "true" },
+		headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
 	});
 	if (!res.ok) {
 		throw new Error(`Failed to fetch mappings: ${res.status}`);
@@ -346,7 +347,7 @@ export function useCreateMapping() {
 		}) => {
 			const res = await fetch(`${API_URL}/api/v1/integrations/mappings`, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
 					credential_id: data.credentialId,
 					project_id: data.projectId,
@@ -390,7 +391,7 @@ export function useUpdateMapping() {
 				`${API_URL}/api/v1/integrations/mappings/${mappingId}`,
 				{
 					method: "PUT",
-					headers: { "Content-Type": "application/json" },
+					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 					body: JSON.stringify({
 						direction: data.direction,
 						field_mappings: data.fieldMappings,
@@ -416,7 +417,7 @@ export function useDeleteMapping() {
 		mutationFn: async (mappingId: string) => {
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/mappings/${mappingId}`,
-				{ method: "DELETE" },
+				{ method: "DELETE", headers: getAuthHeaders() },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to delete mapping: ${res.status}`);
@@ -437,7 +438,7 @@ export function useSyncStatus(projectId: string) {
 		queryFn: async () => {
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/sync/status?project_id=${projectId}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch sync status: ${res.status}`);
@@ -464,7 +465,7 @@ export function useSyncQueue(
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/sync/queue?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch sync queue: ${res.status}`);
@@ -490,7 +491,7 @@ export function useTriggerSync() {
 		}) => {
 			const res = await fetch(`${API_URL}/api/v1/integrations/sync/trigger`, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
 					mapping_id: data.mappingId,
 					credential_id: data.credentialId,
@@ -520,7 +521,7 @@ export function useConflicts(projectId: string, status?: string) {
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/conflicts?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch conflicts: ${res.status}`);
@@ -551,7 +552,7 @@ export function useResolveConflict() {
 				`${API_URL}/api/v1/integrations/conflicts/${conflictId}/resolve`,
 				{
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
+					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 					body: JSON.stringify({
 						resolution,
 						merged_value: mergedValue,
@@ -579,7 +580,7 @@ export function useIntegrationStats(projectId: string) {
 		queryFn: async () => {
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/stats?project_id=${projectId}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch integration stats: ${res.status}`);
@@ -607,7 +608,7 @@ export function useGitHubRepos(
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/github/repos?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch GitHub repos: ${res.status}`);
@@ -661,7 +662,7 @@ export function useGitHubIssues(
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/github/repos/${owner}/${repo}/issues?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch GitHub issues: ${res.status}`);
@@ -715,7 +716,7 @@ export function useGitHubProjects(
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/github/projects?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch GitHub projects: ${res.status}`);
@@ -746,7 +747,7 @@ export function useLinearTeams(credentialId: string) {
 		queryFn: async () => {
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/linear/teams?credential_id=${credentialId}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch Linear teams: ${res.status}`);
@@ -780,7 +781,7 @@ export function useLinearIssues(
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/linear/teams/${teamId}/issues?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch Linear issues: ${res.status}`);
@@ -815,7 +816,7 @@ export function useLinearProjects(credentialId: string, first?: number) {
 
 			const res = await fetch(
 				`${API_URL}/api/v1/integrations/linear/projects?${params}`,
-				{ headers: { "X-Bulk-Operation": "true" } },
+				{ headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
 			);
 			if (!res.ok) {
 				throw new Error(`Failed to fetch Linear projects: ${res.status}`);

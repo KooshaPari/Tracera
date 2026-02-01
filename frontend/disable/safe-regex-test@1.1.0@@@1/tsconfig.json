@@ -3,7 +3,5 @@
 	"compilerOptions": {
 		// "target": "es2021",
 	},
-	"exclude": [
-		"coverage",
-	],
+	"exclude": ["coverage"]
 }

@@ -1,22 +1,4 @@
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
-import {
-	Link2,
-	Trash2,
-	Plus,
-	Search,
-	ArrowRight,
-	ExternalLink,
-	Network,
-	Activity,
-	Layers,
-	Shield,
-} from "lucide-react";
-import { useState, useMemo } from "react";
-import { useDeleteLink, useLinks } from "../hooks/useLinks";
-import { useItems } from "../hooks/useItems";
+import { Link } from "@tanstack/react-router";
 import {
 	Input,
 	Select,
@@ -25,9 +7,27 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
+import {
+	Activity,
+	ArrowRight,
+	ExternalLink,
+	Layers,
+	Link2,
+	Network,
+	Plus,
+	Search,
+	Trash2,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Link } from "@tanstack/react-router";
+import { CardErrorFallback } from "@/lib/lazy-loading";
 import { cn } from "@/lib/utils";
+import { useItems } from "../hooks/useItems";
+import { useDeleteLink, useLinks } from "../hooks/useLinks";
 
 export function LinksView() {
 	const { data: linksData, isLoading: linksLoading, error } = useLinks();
@@ -51,6 +51,14 @@ export function LinksView() {
 		});
 	}, [links, searchQuery, typeFilter]);
 
+	const buildItemLink = (itemId: string, item?: any) => {
+		const projectId = item?.projectId || item?.project_id;
+		const viewType = item?.view || item?.view_type || "feature";
+		return projectId
+			? `/projects/${projectId}/views/${String(viewType).toLowerCase()}/${itemId}`
+			: "/projects";
+	};
+
 	const handleDelete = async (id: string) => {
 		try {
 			await deleteLink.mutateAsync(id);
@@ -59,6 +67,19 @@ export function LinksView() {
 			toast.error("Failed to delete link");
 		}
 	};
+
+	// Surface load failures to the user via toast
+	useEffect(() => {
+		if (error) {
+			toast.error("Failed to load links", {
+				description: error.message,
+				action: {
+					label: "Retry",
+					onClick: () => window.location.reload(),
+				},
+			});
+		}
+	}, [error]);
 
 	if (linksLoading) {
 		return (
@@ -76,25 +97,20 @@ export function LinksView() {
 
 	if (error) {
 		return (
-			<div className="p-20 flex flex-col items-center justify-center text-center">
-				<Shield className="h-12 w-12 text-destructive opacity-20 mb-4" />
-				<h2 className="text-xl font-bold">Traceability Interrupted</h2>
-				<p className="text-muted-foreground mt-2">
-					Failed to synchronize relationship graph.
-				</p>
-				<Button
-					variant="outline"
-					className="mt-6"
-					onClick={() => window.location.reload()}
-				>
-					Re-establish Link
-				</Button>
+			<div className="p-6 max-w-md mx-auto">
+				<CardErrorFallback
+					title="Traceability interrupted"
+					message="Failed to synchronize relationship graph."
+					error={error}
+					retry={() => window.location.reload()}
+					className="flex flex-col items-center justify-center text-center p-8 rounded-lg border border-destructive/20 bg-destructive/5"
+				/>
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-6 space-y-8 max-w-[1400px] mx-auto animate-in fade-in duration-500">
+		<div className="p-6 space-y-8 max-w-[1400px] mx-auto animate-in-fade-up">
 			{/* Header */}
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
@@ -108,14 +124,16 @@ export function LinksView() {
 				<Button
 					size="sm"
 					className="gap-2 rounded-xl shadow-lg shadow-primary/20"
-					onClick={() => toast.info("Link editor coming soon")}
+					onClick={() =>
+						toast.info("Create a link by selecting source and target items")
+					}
 				>
 					<Plus className="h-4 w-4" /> Create Connection
 				</Button>
 			</div>
 
 			{/* Executive Summary */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-children">
 				{[
 					{
 						label: "Total Connections",
@@ -141,7 +159,7 @@ export function LinksView() {
 				].map((s, i) => (
 					<Card
 						key={i}
-						className="p-5 border-none bg-card/50 shadow-sm flex items-center justify-between group hover:bg-card transition-colors"
+						className="p-5 border-none bg-card/50 shadow-sm flex items-center justify-between group hover:bg-card hover:shadow-md active:scale-[0.99] transition-all duration-200 ease-out"
 					>
 						<div>
 							<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -189,7 +207,7 @@ export function LinksView() {
 			</Card>
 
 			{/* Links List */}
-			<div className="space-y-3">
+			<div className="space-y-3 stagger-children">
 				{filteredLinks.length > 0 ? (
 					filteredLinks.map((link) => {
 						const sourceItem = items.find((i) => i.id === link.sourceId);
@@ -198,12 +216,12 @@ export function LinksView() {
 						return (
 							<Card
 								key={link.id}
-								className="p-4 border-none bg-card/50 hover:bg-card transition-all group overflow-hidden relative"
+								className="p-4 border-none bg-card/50 hover:bg-card hover:shadow-md active:scale-[0.99] transition-all duration-200 ease-out group overflow-hidden relative"
 							>
 								<div className="flex flex-col md:flex-row md:items-center gap-6 relative z-10">
 									{/* Source */}
 									<Link
-										to={`/items/${link.sourceId}`}
+										to={buildItemLink(link.sourceId, sourceItem)}
 										className="flex-1 min-w-0"
 									>
 										<div className="p-3 rounded-xl border bg-background/50 hover:border-primary/50 transition-colors group/node">
@@ -239,7 +257,7 @@ export function LinksView() {
 
 									{/* Target */}
 									<Link
-										to={`/items/${link.targetId}`}
+										to={buildItemLink(link.targetId, targetItem)}
 										className="flex-1 min-w-0"
 									>
 										<div className="p-3 rounded-xl border bg-background/50 hover:border-primary/50 transition-colors group/node">

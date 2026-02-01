@@ -448,43 +448,41 @@ export class TestHelpers {
 /**
  * Data Generators
  */
-export class TestDataGenerator {
-	static randomString(length = 10): string {
-		return Math.random()
-			.toString(36)
-			.substring(2, length + 2);
-	}
+export function randomString(length = 10): string {
+	return Math.random()
+		.toString(36)
+		.substring(2, length + 2);
+}
 
-	static randomEmail(): string {
-		return `test-${TestDataGenerator.randomString()}@example.com`;
-	}
+export function randomEmail(): string {
+	return `test-${randomString()}@example.com`;
+}
 
-	static randomItem() {
-		return {
-			title: `Test Item ${TestDataGenerator.randomString()}`,
-			description: `Description for test item ${TestDataGenerator.randomString()}`,
-			type: ["requirement", "task", "bug", "feature"][
-				Math.floor(Math.random() * 4)
-			],
-			status: ["open", "in-progress", "done"][Math.floor(Math.random() * 3)],
-		};
-	}
+export function randomItem() {
+	return {
+		title: `Test Item ${randomString()}`,
+		description: `Description for test item ${randomString()}`,
+		type: ["requirement", "task", "bug", "feature"][
+			Math.floor(Math.random() * 4)
+		],
+		status: ["open", "in-progress", "done"][Math.floor(Math.random() * 3)],
+	};
+}
 
-	static randomProject() {
-		return {
-			name: `Test Project ${TestDataGenerator.randomString()}`,
-			description: `Description for test project ${TestDataGenerator.randomString()}`,
-		};
-	}
+export function randomProject() {
+	return {
+		name: `Test Project ${randomString()}`,
+		description: `Description for test project ${randomString()}`,
+	};
+}
 
-	static randomAgent() {
-		return {
-			name: `Test Agent ${TestDataGenerator.randomString()}`,
-			role: ["developer", "designer", "tester", "manager"][
-				Math.floor(Math.random() * 4)
-			],
-		};
-	}
+export function randomAgent() {
+	return {
+		name: `Test Agent ${randomString()}`,
+		role: ["developer", "designer", "tester", "manager"][
+			Math.floor(Math.random() * 4)
+		],
+	};
 }
 
 /**

@@ -3,15 +3,15 @@
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
-	Camera,
-	Video,
-	FileText,
 	BarChart3,
-	Settings,
-	Play,
+	Camera,
 	Download,
-	RefreshCw,
 	ExternalLink,
+	FileText,
+	Play,
+	RefreshCw,
+	Settings,
+	Video,
 } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -177,7 +177,9 @@ function DemoTab({ preview }: { preview?: QANodePreview }) {
 				</div>
 			) : preview.videoUrl ? (
 				<div className="border rounded-lg overflow-hidden">
-					<video src={preview.videoUrl} controls className="w-full" />
+					<video src={preview.videoUrl} controls className="w-full">
+						<track kind="captions" />
+					</video>
 				</div>
 			) : (
 				<p className="text-muted-foreground">No demo media available</p>

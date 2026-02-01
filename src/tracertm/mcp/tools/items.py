@@ -11,14 +11,13 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.mcp.core import mcp
-from tracertm.mcp.tools.base import (
-    get_session,
+from tracertm.mcp.tools.base_async import (
+    get_mcp_session,
     require_project,
     wrap_success,
 )
@@ -55,7 +54,7 @@ async def create_item(
     owner: str | None = None,
     parent_id: str | None = None,
     metadata: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a new traceable item.
 
@@ -73,20 +72,21 @@ async def create_item(
     Returns:
         Created item details
     """
-    project_id = require_project()
+    project_id = await require_project()
 
     if not title or not view or not item_type:
         raise ToolError("title, view, and item_type are required.")
 
     view = view.upper()
 
-    with get_session() as session:
+    async with get_mcp_session() as session:
         # Generate external ID
-        count = (
-            session.query(func.count(Item.id))
-            .filter(Item.project_id == project_id, Item.view == view)
-            .scalar()
+        count_result = await session.execute(
+            select(func.count(Item.id)).filter(
+                Item.project_id == project_id, Item.view == view
+            )
         )
+        count = count_result.scalar()
         external_id = f"{view[:3].upper()}-{count + 1}"
 
         item = Item(
@@ -106,7 +106,7 @@ async def create_item(
             updated_at=datetime.utcnow(),
         )
         session.add(item)
-        session.commit()
+        await session.commit()
 
         return wrap_success(_item_to_dict(item), "create", ctx)
 
@@ -114,7 +114,7 @@ async def create_item(
 @mcp.tool(description="Get an item by ID")
 async def get_item(
     item_id: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get a single item by ID (supports prefix matching).
 
@@ -127,31 +127,29 @@ async def get_item(
     if not item_id:
         raise ToolError("item_id is required.")
 
-    project_id = require_project()
+    project_id = await require_project()
 
-    with get_session() as session:
+    async with get_mcp_session() as session:
         # Try exact ID match
-        item = (
-            session.query(Item)
-            .filter(
+        result = await session.execute(
+            select(Item).filter(
                 Item.project_id == project_id,
                 Item.id == item_id,
                 Item.deleted_at.is_(None),
             )
-            .first()
         )
+        item = result.scalar_one_or_none()
 
         # Try external_id prefix match
         if not item:
-            item = (
-                session.query(Item)
-                .filter(
+            result = await session.execute(
+                select(Item).filter(
                     Item.project_id == project_id,
                     Item.external_id.ilike(f"{item_id}%"),
                     Item.deleted_at.is_(None),
                 )
-                .first()
             )
+            item = result.scalar_one_or_none()
 
         if not item:
             raise ToolError(f"Item not found: {item_id}")
@@ -168,7 +166,7 @@ async def update_item(
     priority: str | None = None,
     owner: str | None = None,
     metadata: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Update an existing item's fields.
 
@@ -236,7 +234,7 @@ async def update_item(
 @mcp.tool(description="Delete an item (soft delete)")
 async def delete_item(
     item_id: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Soft-delete an item by setting deleted_at timestamp.
 
@@ -285,7 +283,7 @@ async def query_items(
     status: str | None = None,
     owner: str | None = None,
     limit: int = 50,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Query items with optional filters.
 
@@ -333,7 +331,7 @@ async def query_items(
 @mcp.tool(description="Summarize items in a view")
 async def summarize_view(
     view: str,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get a summary of items in a view, grouped by status.
 
@@ -392,7 +390,7 @@ async def bulk_update_items(
     view: str | None = None,
     status: str | None = None,
     new_status: str | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Bulk update item status by filter.
 

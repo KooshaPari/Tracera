@@ -1,18 +1,16 @@
+import type { VelocityDataPoint } from "@atoms/types";
 import type React from "react";
-import { useState, useEffect } from "react";
-import { type VelocityDataPoint, calculateVelocity } from "@atoms/types";
+import { useEffect, useState } from "react";
 import {
-	BarChart,
 	Bar,
+	CartesianGrid,
+	ComposedChart,
+	Legend,
+	Line,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
-	LineChart,
-	Line,
-	ComposedChart,
 } from "recharts";
 
 export interface VelocityChartProps {

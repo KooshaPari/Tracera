@@ -1,32 +1,34 @@
-import { useSearch } from "@tanstack/react-router";
+import { Badge, Input } from "@tracertm/ui";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import {
+	Activity,
+	Box,
 	CheckCircle2,
 	Download,
-	Search,
-	Layers,
-	Activity,
 	FileText,
-	Box,
+	Layers,
+	Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useItems } from "../hooks/useItems";
 import { useLinks } from "../hooks/useLinks";
-import { Input, Badge } from "@tracertm/ui";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
-export function TraceabilityMatrixView() {
-	const searchParams = useSearch({ strict: false }) as any;
-	const projectFilter = searchParams?.project;
+interface TraceabilityMatrixViewProps {
+	projectId: string;
+}
 
+export function TraceabilityMatrixView({
+	projectId,
+}: TraceabilityMatrixViewProps) {
 	const { data: itemsData, isLoading } = useItems({
-		projectId: projectFilter || undefined,
+		projectId,
 	});
 	const { data: linksData } = useLinks({
-		projectId: projectFilter || undefined,
+		projectId,
 	});
 
 	const [searchQuery, setSearchQuery] = useState("");

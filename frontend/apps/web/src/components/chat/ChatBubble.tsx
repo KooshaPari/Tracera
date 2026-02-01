@@ -2,15 +2,10 @@
  * ChatSidebar - Permanent right sidebar with resize functionality
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { Button, cn } from "@tracertm/ui";
 import { motion } from "framer-motion";
-import { cn, Button } from "@tracertm/ui";
-import {
-	GripVertical,
-	ChevronRight,
-	ChevronLeft,
-	MessageCircle,
-} from "lucide-react";
+import { ChevronRight, MessageCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useChatStore } from "@/stores/chatStore";
 import { ChatPanel } from "./ChatPanel";
 
@@ -37,7 +32,7 @@ export function ChatBubble() {
 
 			const handleMouseMove = (e: MouseEvent) => {
 				e.preventDefault();
-				const delta = e.clientX - startX; // Normal direction for right sidebar
+				const delta = startX - e.clientX;
 				const newWidth = Math.max(300, Math.min(800, startWidth + delta));
 				setSidebarWidth(newWidth);
 				localStorage.setItem("chat-sidebar-width", newWidth.toString());
@@ -132,7 +127,11 @@ export function ChatBubble() {
 							width: `${sidebarWidth}px`,
 							opacity: 1,
 						}}
-						transition={{ type: "spring", damping: 25, stiffness: 300 }}
+						transition={
+							isResizing
+								? { type: "tween", duration: 0 }
+								: { type: "spring", damping: 25, stiffness: 300 }
+						}
 						className="relative flex flex-col border-l border-white/10 bg-card/60 backdrop-blur-xl shrink-0 overflow-hidden h-full min-w-0"
 						style={{
 							width: `${sidebarWidth}px`,

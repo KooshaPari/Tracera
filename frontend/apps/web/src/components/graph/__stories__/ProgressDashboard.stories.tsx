@@ -82,7 +82,7 @@ export const Completed: Story = {
 /**
  * Error state
  */
-export const Error: Story = {
+export const ErrorState: Story = {
 	args: {
 		progress: 35,
 		status: "error",

@@ -1,0 +1,44 @@
+version: v1
+# buf.gen.yaml - Code generation configuration for buf
+# This is an alternative to using protoc directly
+#
+# Usage: buf generate
+#
+# Install buf plugins:
+#   go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+#   go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+#   pip install grpcio-tools
+
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/kooshapari/tracertm-backend/pkg/proto
+
+plugins:
+  # Go protobuf generation
+  - plugin: go
+    out: backend/pkg/proto
+    opt:
+      - paths=source_relative
+
+  # Go gRPC generation
+  - plugin: go-grpc
+    out: backend/pkg/proto
+    opt:
+      - paths=source_relative
+
+  # Python protobuf generation
+  - plugin: python
+    out: src/tracertm/proto
+
+  # Python gRPC generation
+  - plugin: python-grpc
+    out: src/tracertm/proto
+
+  # Optional: TypeScript grpc-web (uncomment if needed)
+  # Requires: brew install protoc-gen-grpc-web
+  # - plugin: grpc-web
+  #   out: frontend/apps/web/src/api/grpc
+  #   opt:
+  #     - import_style=typescript
+  #     - mode=grpcwebtext

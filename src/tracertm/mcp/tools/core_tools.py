@@ -24,16 +24,8 @@ from fastmcp.exceptions import ToolError
 
 from tracertm.config.manager import ConfigManager
 from tracertm.mcp.core import mcp
-from tracertm.database.connection import DatabaseConnection
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.project import Project
-from tracertm.services.traceability_service import TraceabilityService
-from tracertm.services.traceability_matrix_service import TraceabilityMatrixService
-from tracertm.services.impact_analysis_service import ImpactAnalysisService
-from tracertm.services.performance_service import PerformanceService
-from tracertm.services.cycle_detection_service import CycleDetectionService
-from tracertm.services.shortest_path_service import ShortestPathService
+from tracertm.mcp.api_client import get_api_client
+from tracertm.api.http_client import TraceRTMHttpClient, TraceRTMHttpError
 
 # ==========================================================================
 # Utilities
@@ -49,21 +41,9 @@ def _get_config_manager() -> ConfigManager:
     return ConfigManager()
 
 
-def _get_db_for_config(config: ConfigManager) -> DatabaseConnection:
-    """Create and connect a DatabaseConnection from ConfigManager.
-
-    Falls back to a per-user local SQLite DB if database_url is missing.
-    """
-
-    database_url = config.get("database_url")
-    if not database_url:
-        base_dir = Path.home() / ".tracertm"
-        base_dir.mkdir(parents=True, exist_ok=True)
-        database_url = f"sqlite:///{base_dir / 'tracertm.db'}"
-
-    db = DatabaseConnection(database_url)
-    db.connect()
-    return db
+def _api_client() -> TraceRTMHttpClient:
+    """Get HTTP API client for canonical backend operations."""
+    return get_api_client()
 
 
 # ==========================================================================
@@ -80,28 +60,28 @@ async def create_project(name: str, description: Optional[str] = None) -> Dict[s
     """
 
     config = _get_config_manager()
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        project = Project(
-            name=name,
-            description=description or f"TraceRTM project: {name}",
-            project_metadata={"created_via": "mcp"},
+    client = _api_client()
+    try:
+        project = client.post(
+            "/api/v1/projects",
+            json={
+                "name": name,
+                "description": description or f"TraceRTM project: {name}",
+                "metadata": {"created_via": "mcp"},
+            },
         )
-        session.add(project)
-        session.commit()
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        # Set as current project
-        config.set("current_project_id", str(project.id))
-        config.set("current_project_name", project.name)
+    project_id = str(project.get("id") or project.get("project_id"))
+    config.set("current_project_id", project_id)
+    config.set("current_project_name", project.get("name", name))
 
-        return {
-            "project_id": str(project.id),
-            "name": project.name,
-            "description": project.description or "",
-        }
+    return {
+        "project_id": project_id,
+        "name": project.get("name", name),
+        "description": project.get("description") or "",
+    }
 
 
 @mcp.tool()
@@ -111,27 +91,14 @@ async def list_projects() -> Dict[str, Any]:
     Returns a structured list of projects: id, name, description, created_at.
     """
 
-    config = _get_config_manager()
-    db = _get_db_for_config(config)
+    client = _api_client()
+    try:
+        result = client.get("/api/v1/projects")
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        projects: List[Project] = session.query(Project).all()
-
-        return {
-            "projects": [
-                {
-                    "id": str(p.id),
-                    "name": p.name,
-                    "description": p.description or "",
-                    "created_at": p.created_at.isoformat()
-                    if getattr(p, "created_at", None)
-                    else None,
-                }
-                for p in projects
-            ]
-        }
+    projects = result.get("projects", result if isinstance(result, list) else [])
+    return {"projects": projects}
 
 
 @mcp.tool()
@@ -143,22 +110,27 @@ async def select_project(project_id: str) -> Dict[str, Any]:
     """
 
     config = _get_config_manager()
-    db = _get_db_for_config(config)
+    client = _api_client()
+    project: dict[str, Any] | None = None
+    try:
+        project = client.get(f"/api/v1/projects/{project_id}")
+    except TraceRTMHttpError:
+        # Fallback: prefix match from list
+        try:
+            listed = client.get("/api/v1/projects")
+        except TraceRTMHttpError as exc:
+            raise ToolError(str(exc)) from exc
+        candidates = listed.get("projects", [])
+        for cand in candidates:
+            if str(cand.get("id", "")).startswith(project_id):
+                project = cand
+                break
+    if not project:
+        raise ToolError(f"Project not found: {project_id}")
 
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        project: Optional[Project] = (
-            session.query(Project).filter(Project.id == project_id).first()
-        )
-
-        if not project:
-            raise ToolError(f"Project not found: {project_id}")
-
-        config.set("current_project_id", str(project.id))
-        config.set("current_project_name", project.name)
-
-        return {"project_id": str(project.id), "name": project.name}
+    config.set("current_project_id", str(project.get("id")))
+    config.set("current_project_name", project.get("name"))
+    return {"project_id": str(project.get("id")), "name": project.get("name")}
 
 
 @mcp.tool()
@@ -170,18 +142,11 @@ async def snapshot_project(project_id: str, label: str) -> Dict[str, Any]:
     """
 
     config = _get_config_manager()
-    db = _get_db_for_config(config)
-
-    from pathlib import Path
-    from sqlalchemy.orm import Session
-
-    # Verify the project exists
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        project: Optional[Project] = (
-            session.query(Project).filter(Project.id == project_id).first()
-        )
-        if not project:
-            raise ToolError(f"Project not found: {project_id}")
+    client = _api_client()
+    try:
+        project = client.get(f"/api/v1/projects/{project_id}")
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
     project_dir = Path(config.projects_dir) / project_id
     project_dir.mkdir(parents=True, exist_ok=True)
@@ -227,41 +192,38 @@ async def create_item(
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError(
-            "No current project. Call select_project first or use the CLI to initialize."
+        raise ToolError("No current project. Call select_project first.")
+
+    client = _api_client()
+    try:
+        item = client.post(
+            "/api/v1/items",
+            json={
+                "project_id": project_id,
+                "title": title,
+                "type": item_type,
+                "view": view.upper(),
+                "description": description,
+                "status": status,
+                "priority": priority,
+                "parent_id": parent_id,
+                "metadata": metadata or {},
+            },
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        item = Item(
-            project_id=project_id,
-            title=title,
-            description=description,
-            view=view.upper(),
-            item_type=item_type,
-            status=status,
-            priority=priority,
-            owner=owner,
-            parent_id=parent_id,
-            item_metadata=metadata or {},
-        )
-        session.add(item)
-        session.commit()
-
-        return {
-            "id": str(item.id),
-            "project_id": str(item.project_id),
-            "title": item.title,
-            "view": item.view,
-            "item_type": item.item_type,
-            "status": item.status,
-            "priority": item.priority,
-            "owner": item.owner,
-            "parent_id": item.parent_id,
-        }
+    return {
+        "id": item.get("id"),
+        "project_id": project_id,
+        "title": item.get("title", title),
+        "view": item.get("view", view.upper()),
+        "item_type": item.get("type", item_type),
+        "status": item.get("status", status),
+        "priority": item.get("priority", priority),
+        "owner": owner,
+        "parent_id": parent_id,
+    }
 
 
 @mcp.tool()
@@ -282,48 +244,36 @@ async def query_items(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        query = session.query(Item).filter(
-            Item.project_id == project_id, Item.deleted_at.is_(None)
-        )
-
-        if view:
-            query = query.filter(Item.view == view.upper())
-        if item_type:
-            query = query.filter(Item.item_type == item_type)
-        if status:
-            query = query.filter(Item.status == status)
-        if owner:
-            query = query.filter(Item.owner == owner)
-
-        items = query.limit(max(1, min(limit, 500))).all()
-
-        return {
-            "project_id": str(project_id),
-            "filters": {
-                "view": view.upper() if view else None,
-                "item_type": item_type,
+    client = _api_client()
+    try:
+        result = client.get(
+            "/api/v1/items",
+            params={
+                "project_id": project_id,
+                "view": view,
                 "status": status,
-                "owner": owner,
-                "limit": limit,
+                "limit": max(1, min(limit, 500)),
             },
-            "items": [
-                {
-                    "id": str(i.id),
-                    "title": i.title,
-                    "view": i.view,
-                    "item_type": i.item_type,
-                    "status": i.status,
-                    "priority": i.priority,
-                    "owner": i.owner,
-                }
-                for i in items
-            ],
-        }
+        )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    items = result.get("items", result if isinstance(result, list) else [])
+    if item_type:
+        items = [item for item in items if item.get("type") == item_type or item.get("item_type") == item_type]
+    if owner:
+        items = [item for item in items if item.get("owner") == owner]
+    return {
+        "project_id": str(project_id),
+        "filters": {
+            "view": view.upper() if view else None,
+            "item_type": item_type,
+            "status": status,
+            "owner": owner,
+            "limit": limit,
+        },
+        "items": items,
+    }
 
 
 @mcp.tool()
@@ -338,59 +288,16 @@ async def summarize_view(view: str) -> Dict[str, Any]:
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy import func
-    from sqlalchemy.orm import Session
-
-    view_upper = view.upper()
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        # Counts by status
-        rows = (
-            session.query(Item.status, func.count(Item.id))
-            .filter(
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),
-                Item.view == view_upper,
-            )
-            .group_by(Item.status)
-            .all()
+    client = _api_client()
+    try:
+        summary = client.get(
+            "/api/v1/items/summary",
+            params={"project_id": project_id, "view": view},
         )
-        counts_by_status = {status: count for status, count in rows}
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        total_items = int(sum(counts_by_status.values()))
-
-        # Sample of items (up to 20)
-        sample_items = (
-            session.query(Item)
-            .filter(
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),
-                Item.view == view_upper,
-            )
-            .order_by(Item.created_at.desc())
-            .limit(20)
-            .all()
-        )
-
-        return {
-            "project_id": str(project_id),
-            "view": view_upper,
-            "total_items": total_items,
-            "counts_by_status": counts_by_status,
-            "sample_items": [
-                {
-                    "id": str(i.id),
-                    "title": i.title,
-                    "item_type": i.item_type,
-                    "status": i.status,
-                    "priority": i.priority,
-                    "owner": i.owner,
-                }
-                for i in sample_items
-            ],
-        }
+    return summary
 
 
 @mcp.tool()
@@ -402,36 +309,26 @@ async def get_item(item_id: str) -> Dict[str, Any]:
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        item = (
-            session.query(Item)
-            .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            .first()
-        )
-
-        if not item:
-            raise ToolError(f"Item not found: {item_id}")
-
-        return {
-            "id": str(item.id),
-            "project_id": str(item.project_id),
-            "title": item.title,
-            "description": item.description,
-            "view": item.view,
-            "item_type": item.item_type,
-            "status": item.status,
-            "priority": item.priority,
-            "owner": item.owner,
-            "parent_id": item.parent_id,
-            "version": item.version,
-            "created_at": item.created_at.isoformat() if item.created_at else None,
-            "updated_at": item.updated_at.isoformat() if item.updated_at else None,
-            "metadata": item.item_metadata,
-        }
+    client = _api_client()
+    try:
+        item = client.get(f"/api/v1/items/{item_id}")
+        return item
+    except TraceRTMHttpError:
+        # Fallback: prefix/external_id match via list
+        try:
+            result = client.get(
+                "/api/v1/items",
+                params={"project_id": project_id, "limit": 500},
+            )
+        except TraceRTMHttpError as exc:
+            raise ToolError(str(exc)) from exc
+        items = result.get("items", [])
+        for entry in items:
+            candidate_id = str(entry.get("id", ""))
+            external_id = str(entry.get("external_id", ""))
+            if candidate_id.startswith(item_id) or external_id.startswith(item_id):
+                return entry
+        raise ToolError(f"Item not found: {item_id}")
 
 
 @mcp.tool()
@@ -451,83 +348,102 @@ async def update_item(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
+    client = _api_client()
+    payload = {
+        key: value
+        for key, value in {
+            "title": title,
+            "description": description,
+            "status": status,
+            "priority": priority,
+            "owner": owner,
+            "metadata": metadata,
+        }.items()
+        if value is not None
+    }
 
-    from sqlalchemy.orm import Session
-    from sqlalchemy.orm.exc import StaleDataError
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        item = (
-            session.query(Item)
-            .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            .first()
-        )
-
-        if not item:
-            raise ToolError(f"Item not found: {item_id}")
-
-        if title is not None:
-            item.title = title
-        if description is not None:
-            item.description = description
-        if status is not None:
-            item.status = status
-        if priority is not None:
-            item.priority = priority
-        if owner is not None:
-            item.owner = owner
-        if metadata is not None:
-            item.item_metadata = metadata
-
+    resolved_id = item_id
+    try:
+        item = client.put(f"/api/v1/items/{resolved_id}", json=payload)
+    except TraceRTMHttpError as exc:
+        if exc.status != 404:
+            raise ToolError(str(exc)) from exc
         try:
-            session.commit()
-        except StaleDataError as exc:
-            raise ToolError(
-                f"Update conflict for item {item_id}: modified by another process"
-            ) from exc
+            result = client.get(
+                "/api/v1/items",
+                params={"project_id": project_id, "limit": 500},
+            )
+        except TraceRTMHttpError as inner_exc:
+            raise ToolError(str(inner_exc)) from inner_exc
+        candidates = result.get("items", [])
+        resolved_id = None
+        for entry in candidates:
+            candidate_id = str(entry.get("id", ""))
+            external_id = str(entry.get("external_id", ""))
+            if candidate_id.startswith(item_id) or external_id.startswith(item_id):
+                resolved_id = candidate_id
+                break
+        if not resolved_id:
+            raise ToolError(f"Item not found: {item_id}")
+        try:
+            item = client.put(f"/api/v1/items/{resolved_id}", json=payload)
+        except TraceRTMHttpError as inner_exc:
+            raise ToolError(str(inner_exc)) from inner_exc
 
-        return {
-            "id": str(item.id),
-            "project_id": str(item.project_id),
-            "title": item.title,
-            "view": item.view,
-            "item_type": item.item_type,
-            "status": item.status,
-            "priority": item.priority,
-            "owner": item.owner,
-            "version": item.version,
-        }
+    return {
+        "id": item.get("id", resolved_id),
+        "project_id": item.get("project_id", project_id),
+        "title": item.get("title", title),
+        "view": item.get("view"),
+        "item_type": item.get("type") or item.get("item_type"),
+        "status": item.get("status", status),
+        "priority": item.get("priority", priority),
+        "owner": item.get("owner", owner),
+        "version": item.get("version"),
+    }
 
 
 @mcp.tool()
 async def delete_item(item_id: str) -> Dict[str, Any]:
     """Soft-delete an item in the current project (sets deleted_at)."""
 
-    from datetime import datetime as _dt
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        item = (
-            session.query(Item)
-            .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            .first()
-        )
-
-        if not item:
+    client = _api_client()
+    resolved_id = item_id
+    try:
+        result = client.delete(f"/api/v1/items/{resolved_id}")
+    except TraceRTMHttpError as exc:
+        if exc.status != 404:
+            raise ToolError(str(exc)) from exc
+        try:
+            items = client.get(
+                "/api/v1/items",
+                params={"project_id": project_id, "limit": 500},
+            )
+        except TraceRTMHttpError as inner_exc:
+            raise ToolError(str(inner_exc)) from inner_exc
+        resolved_id = None
+        for entry in items.get("items", []):
+            candidate_id = str(entry.get("id", ""))
+            external_id = str(entry.get("external_id", ""))
+            if candidate_id.startswith(item_id) or external_id.startswith(item_id):
+                resolved_id = candidate_id
+                break
+        if not resolved_id:
             raise ToolError(f"Item not found: {item_id}")
+        try:
+            result = client.delete(f"/api/v1/items/{resolved_id}")
+        except TraceRTMHttpError as inner_exc:
+            raise ToolError(str(inner_exc)) from inner_exc
 
-        item.deleted_at = _dt.utcnow()
-        session.commit()
-
-        return {"id": str(item.id), "deleted_at": item.deleted_at.isoformat()}
+    return {
+        "id": result.get("id", resolved_id) if isinstance(result, dict) else resolved_id,
+        "status": result.get("status") if isinstance(result, dict) else "deleted",
+    }
 
 
 @mcp.tool()
@@ -549,32 +465,22 @@ async def bulk_update_items(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        query = session.query(Item).filter(
-            Item.project_id == project_id, Item.deleted_at.is_(None)
+    client = _api_client()
+    try:
+        result = client.post(
+            "/api/v1/items/bulk-update",
+            json={
+                "project_id": project_id,
+                "view": view.upper() if view else None,
+                "status": status,
+                "new_status": new_status,
+                "preview": False,
+            },
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        if view:
-            query = query.filter(Item.view == view.upper())
-        if status:
-            query = query.filter(Item.status == status)
-
-        items = query.all()
-
-        for item in items:
-            item.status = new_status
-
-        session.commit()
-
-        return {
-            "project_id": str(project_id),
-            "updated_count": len(items),
-            "new_status": new_status,
-        }
+    return result
 
 
 # ==========================================================================
@@ -594,25 +500,20 @@ async def find_gaps(from_view: str, to_view: str) -> Dict[str, Any]:
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    # Use async engine/session from core.database for services
-    from tracertm.core.database import get_session
-
-    async with get_session() as session:
-        service = TraceabilityService(session)
-        matrix = await service.generate_matrix(
-            project_id=str(project_id),
-            source_view=from_view.upper(),
-            target_view=to_view.upper(),
+    client = _api_client()
+    try:
+        result = client.get(
+            "/api/v1/analysis/gaps",
+            params={
+                "project_id": project_id,
+                "from_view": from_view.upper(),
+                "to_view": to_view.upper(),
+            },
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        return {
-            "project_id": str(project_id),
-            "from_view": matrix.source_view,
-            "to_view": matrix.target_view,
-            "coverage_percentage": matrix.coverage_percentage,
-            "gaps": matrix.gaps,
-            "link_count": len(matrix.links),
-        }
+    return result
 
 
 @mcp.tool()
@@ -630,24 +531,20 @@ async def get_trace_matrix(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    from tracertm.core.database import get_session
-
-    async with get_session() as session:
-        service = TraceabilityMatrixService(session)
-        matrix = await service.generate_matrix(
-            project_id=str(project_id),
-            source_view=source_view.upper() if source_view else None,
-            target_view=target_view.upper() if target_view else None,
+    client = _api_client()
+    try:
+        result = client.get(
+            "/api/v1/analysis/trace-matrix",
+            params={
+                "project_id": project_id,
+                "source_view": source_view.upper() if source_view else None,
+                "target_view": target_view.upper() if target_view else None,
+            },
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        return {
-            "project_id": matrix.project_id,
-            "rows": matrix.rows,
-            "columns": matrix.columns,
-            "matrix": matrix.matrix,
-            "coverage": matrix.coverage,
-            "total_links": matrix.total_links,
-        }
+    return result
 
 
 @mcp.tool()
@@ -658,26 +555,23 @@ async def analyze_impact(
 ) -> Dict[str, Any]:
     """Analyze downstream impact of changing an item (BFS)."""
 
-    from tracertm.core.database import get_session
+    config = _get_config_manager()
+    project_id = config.get("current_project_id")
+    if not project_id:
+        raise ToolError("No current project. Call select_project first.")
 
-    async with get_session() as session:
-        service = ImpactAnalysisService(session)
-        result = await service.analyze_impact(
-            item_id=item_id,
-            max_depth=max_depth,
-            link_types=link_types,
+    client = _api_client()
+    try:
+        result = client.get(
+            f"/api/v1/analysis/impact/{item_id}",
+            params={"project_id": project_id, "max_depth": max_depth},
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        return {
-            "root_item_id": result.root_item_id,
-            "root_item_title": result.root_item_title,
-            "total_affected": result.total_affected,
-            "max_depth_reached": result.max_depth_reached,
-            "affected_by_depth": result.affected_by_depth,
-            "affected_by_view": result.affected_by_view,
-            "affected_items": result.affected_items,
-            "critical_paths": result.critical_paths,
-        }
+    if link_types:
+        result["link_types"] = link_types
+    return result
 
 
 @mcp.tool()
@@ -687,25 +581,21 @@ async def analyze_reverse_impact(
 ) -> Dict[str, Any]:
     """Analyze reverse impact (what depends on this item)."""
 
-    from tracertm.core.database import get_session
+    config = _get_config_manager()
+    project_id = config.get("current_project_id")
+    if not project_id:
+        raise ToolError("No current project. Call select_project first.")
 
-    async with get_session() as session:
-        service = ImpactAnalysisService(session)
-        result = await service.analyze_reverse_impact(
-            item_id=item_id,
-            max_depth=max_depth,
+    client = _api_client()
+    try:
+        result = client.get(
+            f"/api/v1/analysis/reverse-impact/{item_id}",
+            params={"project_id": project_id, "max_depth": max_depth},
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        return {
-            "root_item_id": result.root_item_id,
-            "root_item_title": result.root_item_title,
-            "total_affected": result.total_affected,
-            "max_depth_reached": result.max_depth_reached,
-            "affected_by_depth": result.affected_by_depth,
-            "affected_by_view": result.affected_by_view,
-            "affected_items": result.affected_items,
-            "critical_paths": result.critical_paths,
-        }
+    return result
 
 
 @mcp.tool()
@@ -720,21 +610,13 @@ async def project_health() -> Dict[str, Any]:
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    from tracertm.core.database import get_session
+    client = _api_client()
+    try:
+        result = client.get(f"/api/v1/analysis/health/{project_id}")
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-    async with get_session() as session:
-        perf = PerformanceService(session)
-        stats = await perf.get_project_statistics(str(project_id))
-
-        return {
-            "project_id": str(project_id),
-            "item_count": stats["item_count"],
-            "link_count": stats["link_count"],
-            "density": stats["density"],
-            "complexity": stats["complexity"],
-            "views": stats["views"],
-            "statuses": stats["statuses"],
-        }
+    return result
 
 
 @mcp.tool()
@@ -749,27 +631,13 @@ async def detect_cycles() -> Dict[str, Any]:
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    from tracertm.core.database import get_session
+    client = _api_client()
+    try:
+        result = client.get(f"/api/v1/analysis/cycles/{project_id}")
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-    async with get_session() as session:
-        service = CycleDetectionService(session)
-        result = await service.detect_cycles(project_id=str(project_id))
-
-        return {
-            "project_id": str(project_id),
-            "has_cycles": result.has_cycles,
-            "cycle_count": result.total_cycles,
-            "severity": result.severity,
-            "affected_items": list(result.affected_items),
-            "cycles": [
-                {
-                    "items": c.items,
-                    "length": c.length,
-                    "link_types": c.link_types,
-                }
-                for c in result.cycles
-            ],
-        }
+    return result
 
 
 @mcp.tool()
@@ -786,22 +654,20 @@ async def shortest_path(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    async with get_session() as session:
-        service = ShortestPathService(session)
-        result = await service.find_shortest_path(
-            project_id=str(project_id),
-            source_id=source_id,
-            target_id=target_id,
+    client = _api_client()
+    try:
+        result = client.get(
+            "/api/v1/analysis/shortest-path",
+            params={
+                "project_id": project_id,
+                "source_id": source_id,
+                "target_id": target_id,
+            },
         )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        return {
-            "source_id": result.source_id,
-            "target_id": result.target_id,
-            "path": result.path,
-            "distance": result.distance,
-            "link_types": result.link_types,
-            "exists": result.exists,
-        }
+    return result
 
 
 @mcp.tool()
@@ -820,44 +686,29 @@ async def create_link(
             "No current project. Call select_project first or use the CLI to initialize."
         )
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        # Verify source and target exist in project
-        source = (
-            session.query(Item)
-            .filter(Item.id == source_id, Item.project_id == project_id)
-            .first()
+    client = _api_client()
+    try:
+        link = client.post(
+            "/api/v1/links",
+            json={
+                "project_id": project_id,
+                "source_id": source_id,
+                "target_id": target_id,
+                "type": link_type,
+                "metadata": metadata or {},
+            },
         )
-        target = (
-            session.query(Item)
-            .filter(Item.id == target_id, Item.project_id == project_id)
-            .first()
-        )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        if not source or not target:
-            raise ToolError("Source or target item not found in current project.")
-
-        link = Link(
-            project_id=project_id,
-            source_item_id=source_id,
-            target_item_id=target_id,
-            link_type=link_type,
-            link_metadata=metadata or {},
-        )
-        session.add(link)
-        session.commit()
-
-        return {
-            "id": str(link.id),
-            "project_id": str(link.project_id),
-            "source_id": str(link.source_item_id),
-            "target_id": str(link.target_item_id),
-            "link_type": link.link_type,
-            "metadata": link.link_metadata,
-        }
+    return {
+        "id": link.get("id"),
+        "project_id": project_id,
+        "source_id": link.get("source_id"),
+        "target_id": link.get("target_id"),
+        "link_type": link.get("type"),
+        "metadata": link.get("metadata"),
+    }
 
 
 @mcp.tool()
@@ -873,36 +724,63 @@ async def list_links(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        query = session.query(Link).filter(Link.project_id == project_id)
-
-        if item_id:
-            query = query.filter(
-                (Link.source_item_id == item_id) | (Link.target_item_id == item_id)
+    client = _api_client()
+    resolved_id = None
+    if item_id:
+        try:
+            items = client.get(
+                "/api/v1/items",
+                params={"project_id": project_id, "limit": 500},
             )
-        if link_type:
-            query = query.filter(Link.link_type == link_type)
+        except TraceRTMHttpError as exc:
+            raise ToolError(str(exc)) from exc
+        for entry in items.get("items", []):
+            candidate_id = str(entry.get("id", ""))
+            external_id = str(entry.get("external_id", ""))
+            if candidate_id.startswith(item_id) or external_id.startswith(item_id):
+                resolved_id = candidate_id
+                break
+        if not resolved_id:
+            raise ToolError(f"Item not found: {item_id}")
 
-        links = query.limit(max(1, min(limit, 500))).all()
+    links: list[dict[str, Any]] = []
+    try:
+        if resolved_id:
+            for params in (
+                {"source_id": resolved_id, "limit": max(1, min(limit, 500))},
+                {"target_id": resolved_id, "limit": max(1, min(limit, 500))},
+            ):
+                result = client.get("/api/v1/links", params=params)
+                links.extend(result.get("links", []))
+        else:
+            result = client.get(
+                "/api/v1/links",
+                params={
+                    "project_id": project_id,
+                    "limit": max(1, min(limit, 500)),
+                },
+            )
+            links = result.get("links", [])
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
 
-        return {
-            "project_id": str(project_id),
-            "count": len(links),
-            "links": [
-                {
-                    "id": str(l.id),
-                    "source_id": str(l.source_item_id),
-                    "target_id": str(l.target_item_id),
-                    "link_type": l.link_type,
-                    "metadata": l.link_metadata,
-                }
-                for l in links
-            ],
-        }
+    if link_type:
+        links = [link for link in links if link.get("type") == link_type or link.get("link_type") == link_type]
+
+    return {
+        "project_id": str(project_id),
+        "count": len(links),
+        "links": [
+            {
+                "id": str(l.get("id")),
+                "source_id": str(l.get("source_id")),
+                "target_id": str(l.get("target_id")),
+                "link_type": l.get("type") or l.get("link_type"),
+                "metadata": l.get("metadata", {}),
+            }
+            for l in links
+        ],
+    }
 
 
 @mcp.tool()
@@ -917,70 +795,20 @@ async def show_links(
     if not project_id:
         raise ToolError("No current project. Call select_project first.")
 
-    db = _get_db_for_config(config)
-
-    from sqlalchemy.orm import Session
-
-    view_upper = view.upper() if view else None
-
-    with Session(db.engine) as session:  # type: ignore[arg-type]
-        # Resolve item by prefix
-        item = (
-            session.query(Item)
-            .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-            .first()
-        )
-
-        if not item:
-            raise ToolError(f"Item not found: {item_id}")
-
-        links = (
-            session.query(Link)
-            .filter(
-                ((Link.source_item_id == item.id) | (Link.target_item_id == item.id)),
-                Link.project_id == project_id,
-            )
-            .all()
-        )
-
-        outgoing = []
-        incoming = []
-
-        for link in links:
-            if link.source_item_id == item.id:
-                target = session.query(Item).filter(Item.id == link.target_item_id).first()
-                if target and (not view_upper or target.view == view_upper):
-                    outgoing.append(
-                        {
-                            "link_id": str(link.id),
-                            "type": link.link_type,
-                            "target_id": str(target.id),
-                            "target_title": target.title,
-                            "target_view": target.view,
-                        }
-                    )
-            else:
-                source = session.query(Item).filter(Item.id == link.source_item_id).first()
-                if source and (not view_upper or source.view == view_upper):
-                    incoming.append(
-                        {
-                            "link_id": str(link.id),
-                            "type": link.link_type,
-                            "source_id": str(source.id),
-                            "source_title": source.title,
-                            "source_view": source.view,
-                        }
-                    )
-
-        return {
-            "item": {
-                "id": str(item.id),
-                "title": item.title,
-                "view": item.view,
+    client = _api_client()
+    try:
+        result = client.get(
+            "/api/v1/links/grouped",
+            params={
+                "project_id": project_id,
+                "item_id": item_id,
+                "view": view.upper() if view else None,
             },
-            "outgoing": outgoing,
-            "incoming": incoming,
-        }
+        )
+    except TraceRTMHttpError as exc:
+        raise ToolError(str(exc)) from exc
+
+    return result
 
 
 # ==========================================================================

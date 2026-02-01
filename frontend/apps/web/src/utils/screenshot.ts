@@ -2,6 +2,7 @@
 // Handles component screenshots, thumbnail generation, versioning, and S3 upload
 // Features: image compression, presigned URL upload, progress tracking, error handling
 
+import { getAuthHeaders } from "@/api/client";
 import type { Item } from "@tracertm/types";
 
 /**
@@ -192,7 +193,7 @@ export async function captureComponentScreenshot(
 
 		return canvas.toDataURL("image/png");
 	} catch (error) {
-		console.error("Failed to capture screenshot:", error);
+		logger.error("Failed to capture screenshot:", error);
 		throw new Error("Screenshot capture failed");
 	}
 }
@@ -280,7 +281,7 @@ export async function generateThumbnail(
 
 		return promise;
 	} catch (error) {
-		console.error("Failed to generate thumbnail:", error);
+		logger.error("Failed to generate thumbnail:", error);
 		throw error;
 	}
 }
@@ -312,7 +313,7 @@ async function getPresignedUploadUrl(
 	try {
 		const response = await fetch("/api/v1/storage/presigned-upload", {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			credentials: "include",
 			body: JSON.stringify({
 				filename,
@@ -367,7 +368,7 @@ async function uploadToS3(
 			} else {
 				reject(
 					Object.assign(
-						new Error("S3 upload failed with status " + xhr.status),
+						new Error(`S3 upload failed with status ${xhr.status}`),
 						{
 							code: "UPLOAD_FAILED" as const,
 							statusCode: xhr.status,
@@ -474,7 +475,7 @@ export async function uploadScreenshot(
 
 		return { url, key, fileSize: file.size };
 	} catch (error) {
-		console.error("Screenshot upload failed:", error);
+		logger.error("Screenshot upload failed:", error);
 
 		// Ensure error has proper structure
 		if (error instanceof Error && "code" in error) {
@@ -497,6 +498,7 @@ export async function deleteScreenshot(key: string): Promise<void> {
 	try {
 		const response = await fetch(`/api/v1/storage/${key}`, {
 			method: "DELETE",
+			headers: getAuthHeaders(),
 			credentials: "include",
 		});
 
@@ -509,7 +511,7 @@ export async function deleteScreenshot(key: string): Promise<void> {
 			});
 		}
 	} catch (error) {
-		console.error("Failed to delete screenshot:", error);
+		logger.error("Failed to delete screenshot:", error);
 		if (error instanceof Error && "code" in error) {
 			throw error as UploadError;
 		}
@@ -603,7 +605,7 @@ export async function createScreenshot(
 		thumbnailUrl = await generateThumbnail(uploadResult.url, "medium");
 	} catch (error) {
 		// Thumbnail generation is optional, don't fail if it errors
-		console.warn("Thumbnail generation failed:", error);
+		logger.warn("Thumbnail generation failed:", error);
 	}
 
 	// Create metadata
@@ -701,7 +703,7 @@ export async function batchCaptureScreenshots(
 			);
 			results.push(screenshot);
 		} catch (error) {
-			console.error(`Failed to capture screenshot for ${componentId}:`, error);
+			logger.error(`Failed to capture screenshot for ${componentId}:`, error);
 			// Continue with next screenshot even if one fails
 		}
 	}

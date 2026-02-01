@@ -53,13 +53,13 @@ export const useEnterpriseHotkeys = () => {
 	});
 
 	useHotkeys("shift+s", () => {
-		// Navigate to search
-		window.location.href = "/search";
+		// Navigate to projects
+		window.location.href = "/projects";
 	});
 
 	useHotkeys("shift+g", () => {
-		// Navigate to graph
-		window.location.href = "/graph";
+		// Navigate to projects
+		window.location.href = "/projects";
 	});
 
 	// Table shortcuts
@@ -438,7 +438,7 @@ export class EnterpriseError extends Error {
 export const useErrorReporter = () => {
 	const reportError = useCallback((error: EnterpriseError) => {
 		// Log to monitoring service
-		console.error("Enterprise Error:", {
+		logger.error("Enterprise Error:", {
 			message: error.message,
 			code: error.code,
 			severity: error.severity,

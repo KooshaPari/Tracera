@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css";
 import { Copy, Download, Moon, Sun } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface SwaggerUIWrapperProps {
 	specUrl?: string;
@@ -44,7 +45,7 @@ export function SwaggerUIWrapper({
 			fetch(specUrl)
 				.then((res) => res.json())
 				.then((data) => setSpecData(data))
-				.catch((err) => console.error("Failed to load OpenAPI spec:", err));
+				.catch((err) => logger.error("Failed to load OpenAPI spec:", err));
 		} else if (spec) {
 			setSpecData(spec);
 		}
@@ -112,7 +113,7 @@ export function SwaggerUIWrapper({
 	// Default response interceptor for logging
 	const defaultResponseInterceptor = (res: any) => {
 		// Log response for debugging
-		console.log("API Response:", {
+		logger.info("API Response:", {
 			url: res.url,
 			status: res.status,
 			duration: res.duration,

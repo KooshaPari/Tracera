@@ -1,11 +1,11 @@
 // Hook to fetch and transform QA data for QAEnhancedNode components
 
-import { useExecutionArtifacts, useExecutions } from "./useExecutions";
 import type {
 	QANodeArtifact,
 	QANodeMetrics,
 	QANodePreview,
 } from "../components/graph/nodes/QAEnhancedNode";
+import { useExecutionArtifacts, useExecutions } from "./useExecutions";
 
 interface UseQAEnhancedNodeDataOptions {
 	projectId: string;

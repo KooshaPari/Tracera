@@ -15,6 +15,7 @@ from sqlalchemy import (
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 import uuid as uuid_module
@@ -53,7 +54,7 @@ class TestCoverage(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
 
     # The test case providing coverage
@@ -63,7 +64,7 @@ class TestCoverage(Base, TimestampMixin):
 
     # The requirement/item being covered
     requirement_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
     )
 
     # Coverage details

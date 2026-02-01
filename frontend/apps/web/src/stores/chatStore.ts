@@ -4,15 +4,16 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { getDefaultModel } from "@/lib/ai/modelRegistry";
 import type {
 	AIModel,
+	ChatContext,
 	ChatConversation,
 	ChatMessage,
-	ChatContext,
 	ChatUIState,
+	ToolCall,
 } from "@/lib/ai/types";
 import { generateId } from "@/lib/ai/types";
-import { getDefaultModel } from "@/lib/ai/modelRegistry";
 
 // SSR-safe storage
 const noopStorage = {
@@ -44,6 +45,9 @@ interface ChatState extends ChatUIState {
 	// Model selection
 	selectedModel: AIModel;
 
+	// System prompt override (optional custom prompt; empty = use built-in)
+	systemPromptOverride: string | null;
+
 	// Context
 	context: ChatContext | null;
 
@@ -57,6 +61,7 @@ interface ChatState extends ChatUIState {
 	// Conversation Actions
 	createConversation: (projectId?: string) => string;
 	setActiveConversation: (id: string | null) => void;
+	setConversationSessionId: (conversationId: string, sessionId: string | null) => void;
 	deleteConversation: (id: string) => void;
 	clearConversations: () => void;
 	updateConversationTitle: (id: string, title: string) => void;
@@ -72,6 +77,11 @@ interface ChatState extends ChatUIState {
 		messageId: string,
 		content: string,
 	) => void;
+	updateMessageToolCalls: (
+		conversationId: string,
+		messageId: string,
+		toolCalls: ToolCall[],
+	) => void;
 	setMessageStreaming: (
 		conversationId: string,
 		messageId: string,
@@ -85,6 +95,9 @@ interface ChatState extends ChatUIState {
 
 	// Model Actions
 	setSelectedModel: (model: AIModel) => void;
+
+	// System prompt override
+	setSystemPromptOverride: (value: string | null) => void;
 
 	// Context Actions
 	setContext: (context: ChatContext | null) => void;
@@ -108,6 +121,7 @@ export const useChatStore = create<ChatState>()(
 			isStreaming: false,
 			abortController: null,
 			selectedModel: getDefaultModel(),
+			systemPromptOverride: null,
 			context: null,
 
 			// UI Actions
@@ -138,6 +152,13 @@ export const useChatStore = create<ChatState>()(
 			},
 
 			setActiveConversation: (id) => set({ activeConversationId: id }),
+
+			setConversationSessionId: (conversationId, sessionId) =>
+				set((state) => ({
+					conversations: state.conversations.map((c) =>
+						c.id === conversationId ? { ...c, sessionId } : c,
+					),
+				})),
 
 			deleteConversation: (id) =>
 				set((state) => {
@@ -217,6 +238,21 @@ export const useChatStore = create<ChatState>()(
 					),
 				})),
 
+			updateMessageToolCalls: (conversationId, messageId, toolCalls) =>
+				set((state) => ({
+					conversations: state.conversations.map((c) =>
+						c.id === conversationId
+							? {
+									...c,
+									messages: c.messages.map((m) =>
+										m.id === messageId ? { ...m, toolCalls } : m,
+									),
+									updatedAt: new Date().toISOString(),
+								}
+							: c,
+					),
+				})),
+
 			setMessageStreaming: (conversationId, messageId, isStreaming) =>
 				set((state) => ({
 					conversations: state.conversations.map((c) =>
@@ -245,6 +281,9 @@ export const useChatStore = create<ChatState>()(
 			// Model Actions
 			setSelectedModel: (model) => set({ selectedModel: model }),
 
+			// System prompt override
+			setSystemPromptOverride: (value) => set({ systemPromptOverride: value }),
+
 			// Context Actions
 			setContext: (context) => set({ context }),
 
@@ -267,6 +306,8 @@ export const useChatStore = create<ChatState>()(
 				activeConversationId: state.activeConversationId,
 				// Persist model selection
 				selectedModel: state.selectedModel,
+				// Persist system prompt override
+				systemPromptOverride: state.systemPromptOverride,
 				// Don't persist: isOpen, isStreaming, abortController, context
 			}),
 		},

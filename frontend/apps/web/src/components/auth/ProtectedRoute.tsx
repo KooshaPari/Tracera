@@ -1,11 +1,11 @@
 /**
  * Protected route wrapper component.
  * Redirects to login if user is not authenticated.
+ * Uses WorkOS AuthKit for authentication state.
  */
 
+import { useAuth } from "@workos-inc/authkit-react";
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/authStore";
 
 export interface ProtectedRouteProps {
 	children: React.ReactNode;
@@ -13,23 +13,30 @@ export interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const { isAuthenticated, user } = useAuthStore();
+	const { user, isLoading } = useAuth();
 
 	useEffect(() => {
-		if (!isAuthenticated || !user) {
-			// Store the attempted location for redirect after login
-			const returnTo = location.pathname + location.search;
-			navigate({
-				to: "/auth/login",
-				search: { returnTo },
-			});
+		// Wait for auth check to complete before redirecting
+		if (!isLoading && !user) {
+			// Not authenticated, redirect to login
+			window.location.href = "/auth/login";
 		}
-	}, [isAuthenticated, user, navigate, location]);
+	}, [user, isLoading]);
 
-	if (!isAuthenticated || !user) {
-		return null; // Will redirect
+	// Show loading state while checking authentication
+	if (isLoading) {
+		return (
+			<div className="flex min-h-screen items-center justify-center">
+				<div className="text-center">
+					<p className="text-lg">Loading...</p>
+				</div>
+			</div>
+		);
+	}
+
+	// If not authenticated, return null (will redirect via useEffect)
+	if (!user) {
+		return null;
 	}
 
 	return <>{children}</>;

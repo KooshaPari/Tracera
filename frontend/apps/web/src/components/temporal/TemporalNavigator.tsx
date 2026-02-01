@@ -2,6 +2,7 @@
 // Provides: timeline, branches, comparison, progress views
 // Enables switching between versions and branches
 
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -12,7 +13,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { cn } from "@tracertm/ui";
 import {
 	ChevronDown,
 	ChevronRight,

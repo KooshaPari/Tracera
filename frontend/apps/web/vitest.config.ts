@@ -1,5 +1,5 @@
+import path from "node:path";
 import react from "@vitejs/plugin-react";
-import path from "path";
 import type { PluginOption } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -39,7 +39,7 @@ export default defineConfig({
 		},
 		poolOptions: {
 			threads: {
-				singleThread: true,
+				singleThread: false,
 			},
 		},
 		css: false, // Disable CSS processing to avoid Tailwind v4 PostCSS issues in tests
@@ -77,9 +77,6 @@ export default defineConfig({
 			"node_modules",
 			"dist",
 			".turbo",
-			// Page and route tests require full router integration - use view tests for component coverage
-			"src/__tests__/pages/**",
-			"src/__tests__/routes/**",
 		],
 	},
 	resolve: {
@@ -89,6 +86,16 @@ export default defineConfig({
 				"./src/__tests__/mocks/routeTree.mock.ts",
 			),
 			"@": path.resolve(__dirname, "./src"),
+			// Mock elkjs to avoid worker issues in tests
+			"elkjs/lib/elk.bundled.js": path.resolve(
+				__dirname,
+				"./src/__tests__/mocks/elk.mock.ts",
+			),
+			// Mock sigma.js to avoid WebGL issues in tests
+			"sigma": path.resolve(
+				__dirname,
+				"./src/__tests__/mocks/sigma.mock.ts",
+			),
 		},
 	},
 });

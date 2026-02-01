@@ -1,0 +1,242 @@
+"""Storage, sync, backup, and file watch MCP tools."""
+
+from __future__ import annotations
+
+from datetime import datetime
+import gzip
+import json
+from pathlib import Path
+from typing import Any
+
+from fastmcp.exceptions import ToolError
+
+try:
+    from tracertm.mcp.core import mcp
+except Exception:  # pragma: no cover
+    class _StubMCP:
+        def tool(self, *args: Any, **kwargs: Any):
+            def decorator(fn):
+                return fn
+            return decorator
+    mcp = _StubMCP()  # type: ignore[assignment]
+
+from tracertm.storage.local_storage import LocalStorageManager
+from tracertm.storage.file_watcher import TraceFileWatcher
+from .common import _wrap, _build_sync_engine, _WATCHERS
+
+
+@mcp.tool(description="Unified sync operations")
+async def sync_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Any | None = None,
+) -> dict[str, Any]:
+    """
+    Unified sync management tool.
+
+    Actions:
+    - status: Get sync status
+    - sync: Synchronize changes (optional: force)
+    - pull: Pull changes from remote
+    """
+    return await _sync_manage_impl(action, payload, ctx)
+
+
+async def _sync_manage_impl(
+    action: str,
+    payload: dict[str, Any] | None,
+    ctx: Any | None,
+) -> dict[str, Any]:
+    """Implementation of sync management."""
+    payload = payload or {}
+    action = action.lower()
+    sync_engine = _build_sync_engine()
+
+    if action == "status":
+        state = sync_engine.get_status()
+        return _wrap(
+            {
+                "status": state.status.value,
+                "last_sync": state.last_sync.isoformat() if state.last_sync else None,
+                "pending_changes": state.pending_changes,
+                "conflicts_count": state.conflicts_count,
+                "last_error": state.last_error,
+            },
+            ctx,
+            action,
+        )
+    if action == "sync":
+        force = bool(payload.get("force", False))
+        result = await sync_engine.sync(force=force)
+        return _wrap(
+            {
+                "success": result.success,
+                "entities_synced": result.entities_synced,
+                "conflicts": result.conflicts,
+                "errors": result.errors,
+                "duration_seconds": result.duration_seconds,
+            },
+            ctx,
+            action,
+        )
+    if action == "pull":
+        result = await sync_engine.pull_changes()
+        return _wrap(
+            {
+                "success": result.success,
+                "entities_synced": result.entities_synced,
+                "conflicts": result.conflicts,
+                "errors": result.errors,
+                "duration_seconds": result.duration_seconds,
+            },
+            ctx,
+            action,
+        )
+
+    raise ToolError(f"Unknown sync action: {action}")
+
+
+@mcp.tool(description="Unified backup operations")
+async def backup_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Any | None = None,
+) -> dict[str, Any]:
+    """
+    Unified backup management tool.
+
+    Actions:
+    - backup: Create backup (optional: project_id, output, compress)
+    - restore: Restore from backup (requires: path)
+    """
+    payload = payload or {}
+    action = action.lower()
+
+    storage = LocalStorageManager()
+
+    if action == "backup":
+        project_id = payload.get("project_id")
+        output = payload.get("output")
+        compress = bool(payload.get("compress", True))
+
+        if not output:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            suffix = ".json.gz" if compress else ".json"
+            output = f"tracertm_backup_{timestamp}{suffix}"
+
+        backup_data: dict[str, Any] = {
+            "version": "1.0",
+            "timestamp": datetime.now().isoformat(),
+            "project_id": project_id,
+            "tables": {},
+        }
+
+        with storage.get_session() as session:
+            result = session.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+            tables = [row[0] for row in result]
+            for table in tables:
+                if table.startswith("alembic"):
+                    continue
+                rows = session.execute(f"SELECT * FROM {table}").all()
+                records = [dict(row._mapping) for row in rows]
+                for row in records:
+                    for key, value in row.items():
+                        if isinstance(value, datetime):
+                            row[key] = value.isoformat()
+                backup_data["tables"][table] = records
+
+        output_path = Path(output)
+        if compress:
+            with gzip.open(output_path, "wt", encoding="utf-8") as f:
+                json.dump(backup_data, f, indent=2, default=str)
+        else:
+            output_path.write_text(json.dumps(backup_data, indent=2, default=str), encoding="utf-8")
+
+        return _wrap({"output": str(output_path), "tables": len(backup_data["tables"])}, ctx, action)
+
+    if action == "restore":
+        path = payload.get("path")
+        if not path:
+            raise ToolError("path is required for restore.")
+        backup_file = Path(path)
+        if not backup_file.exists():
+            raise ToolError(f"Backup file not found: {path}")
+        if backup_file.suffix == ".gz":
+            with gzip.open(backup_file, "rt", encoding="utf-8") as f:
+                backup_data = json.load(f)
+        else:
+            backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
+
+        if not isinstance(backup_data, dict) or "tables" not in backup_data:
+            raise ToolError("Invalid backup format.")
+
+        with storage.get_session() as session:
+            for table, rows in backup_data["tables"].items():
+                session.execute(f"DELETE FROM {table}")
+                for row in rows:
+                    columns = ", ".join(row.keys())
+                    placeholders = ", ".join([f":{k}" for k in row.keys()])
+                    session.execute(
+                        f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
+                        row,
+                    )
+            session.commit()
+
+        return _wrap({"restored": True, "tables": len(backup_data["tables"])}, ctx, action)
+
+    raise ToolError(f"Unknown backup action: {action}")
+
+
+@mcp.tool(description="Unified file watch operations")
+async def file_watch_manage(
+    action: str,
+    payload: dict[str, Any] | None = None,
+    ctx: Any | None = None,
+) -> dict[str, Any]:
+    """
+    Unified file watch management tool.
+
+    Actions:
+    - start: Start watching directory (optional: path, debounce, auto_sync, watch_id)
+    - stop: Stop watching (requires: watch_id)
+    - status: Get watch status (optional: watch_id for specific watcher, or all if omitted)
+    """
+    payload = payload or {}
+    action = action.lower()
+
+    if action == "start":
+        path = Path(payload.get("path") or Path.cwd())
+        debounce = int(payload.get("debounce", 500))
+        auto_sync = bool(payload.get("auto_sync", False))
+        storage = LocalStorageManager()
+        watcher = TraceFileWatcher(
+            project_path=path,
+            storage=storage,
+            debounce_ms=debounce,
+            auto_sync=auto_sync,
+        )
+        watcher.start()
+        watch_id = payload.get("watch_id") or f"watch-{len(_WATCHERS) + 1}"
+        _WATCHERS[watch_id] = watcher
+        return _wrap({"watch_id": watch_id, "path": str(path)}, ctx, action)
+
+    if action == "stop":
+        watch_id = payload.get("watch_id")
+        if not watch_id or watch_id not in _WATCHERS:
+            raise ToolError("watch_id not found.")
+        watcher = _WATCHERS.pop(watch_id)
+        watcher.stop()
+        return _wrap({"watch_id": watch_id, "stopped": True}, ctx, action)
+
+    if action == "status":
+        watch_id = payload.get("watch_id")
+        if watch_id:
+            watcher = _WATCHERS.get(watch_id)
+            if not watcher:
+                raise ToolError("watch_id not found.")
+            return _wrap({"watch_id": watch_id, "stats": watcher.get_stats()}, ctx, action)
+        return _wrap({k: v.get_stats() for k, v in _WATCHERS.items()}, ctx, action)
+
+    raise ToolError(f"Unknown watch action: {action}")

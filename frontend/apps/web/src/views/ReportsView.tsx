@@ -10,18 +10,18 @@ import {
 } from "@tracertm/ui/components/Select";
 import {
 	ClipboardList,
-	TrendingUp,
-	FileText,
 	Download,
-	Layers,
 	FileSearch,
-	ShieldCheck,
+	FileText,
 	History as HistoryIcon,
+	Layers,
+	ShieldCheck,
+	TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
-import { api } from "../api/endpoints";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { api } from "../api/endpoints";
 
 type ReportFormat = "json" | "csv" | "pdf" | "xlsx";
 
@@ -92,8 +92,12 @@ export function ReportsView() {
 		}) => {
 			if (format === "json" || format === "csv") {
 				if (!projectId) throw new Error("Select project context");
-				const blob = await api.exportImport.export(projectId, format);
-				const url = window.URL.createObjectURL(blob);
+				const out = await api.exportImport.export(projectId, format);
+				if (!(out instanceof Blob)) {
+					toast.error("Export did not return a downloadable file");
+					return { success: false };
+				}
+				const url = window.URL.createObjectURL(out);
 				const a = document.createElement("a");
 				a.href = url;
 				a.download = `${templateId}-export.${format}`;
@@ -135,7 +139,7 @@ export function ReportsView() {
 	};
 
 	return (
-		<div className="p-6 space-y-8 max-w-6xl mx-auto animate-in fade-in duration-500 pb-20">
+		<div className="p-6 space-y-8 max-w-6xl mx-auto animate-in-fade-up pb-20">
 			{/* Header */}
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
@@ -184,11 +188,11 @@ export function ReportsView() {
 			</Card>
 
 			{/* Templates Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
 				{reportTemplates.map((template) => (
 					<Card
 						key={template.id}
-						className="p-8 border-none bg-card/50 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative"
+						className="p-8 border-none bg-card/50 shadow-sm hover:shadow-xl active:scale-[0.99] transition-all duration-200 ease-out group overflow-hidden relative"
 					>
 						{/* Subtle Icon Background */}
 						<div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">

@@ -1,4 +1,9 @@
-"""Parameterized MCP tools (atoms-style) for TraceRTM."""
+"""Parameterized MCP tools (atoms-style) for TraceRTM.
+
+This module provides implementation functions only. Tool registration (@mcp.tool) is done
+in tracertm.mcp.tools.params.* so each tool is registered once. Registering here would
+cause "Component already exists" when server.py loads the params modules.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +15,6 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
 try:
@@ -36,16 +40,16 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 # Import tool modules (tolerate missing FastMCP deps in tests)
 try:
-    from tracertm.mcp.tools import core_tools as legacy
+    from tracertm.mcp.tools import core_tools as core
 except Exception:  # pragma: no cover - test fallback
-    async def _legacy_unavailable(*_args: Any, **_kwargs: Any):
-        raise ToolError("Legacy MCP tools are unavailable in this environment.")
+    async def _core_unavailable(*_args: Any, **_kwargs: Any):
+        raise ToolError("MCP core tools are unavailable in this environment.")
 
-    class _LegacyStub:
-        select_project = _legacy_unavailable
-        query_items = _legacy_unavailable
+    class _CoreStub:
+        select_project = _core_unavailable
+        query_items = _core_unavailable
 
-    legacy = _LegacyStub()  # type: ignore[assignment]
+    core = _CoreStub()  # type: ignore[assignment]
 
 try:
     from tracertm.mcp.tools import specifications as spec_tools
@@ -65,15 +69,15 @@ from tracertm.models.item import Item
 from tracertm.services.benchmark_service import BenchmarkService
 from tracertm.services.chaos_mode_service import ChaosModeService
 
-# Temporary wiring: map unified dispatch to legacy tool implementations.
-project_tools = legacy
-item_tools = legacy
-link_tools = legacy
-trace_tools = legacy
-graph_tools = legacy
+# Wire unified dispatch to core tool implementations.
+project_tools = core
+item_tools = core
+link_tools = core
+trace_tools = core
+graph_tools = core
 
 
-def _actor_from_context(ctx: Context | None) -> dict[str, Any] | None:
+def _actor_from_context(ctx: Any | None) -> dict[str, Any] | None:
     if ctx is None:
         return None
     try:
@@ -97,7 +101,7 @@ def _actor_from_context(ctx: Context | None) -> dict[str, Any] | None:
     }
 
 
-def _wrap(result: Any, ctx: Context | None, action: str) -> dict[str, Any]:
+def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     return {
         "ok": True,
         "action": action,
@@ -114,7 +118,7 @@ def _get_access_token_from_ctx() -> Any | None:
     return get_access_token()
 
 
-def _resolve_project_id(payload: dict[str, Any], ctx: Context | None) -> str | None:
+def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
     project_id = payload.get("project_id")
     token = _get_access_token_from_ctx() if ctx else None
     if token is None:
@@ -142,7 +146,7 @@ def _resolve_project_id(payload: dict[str, Any], ctx: Context | None) -> str | N
     return project_id
 
 
-async def _maybe_select_project(payload: dict[str, Any], ctx: Context | None) -> None:
+async def _maybe_select_project(payload: dict[str, Any], ctx: Any | None) -> None:
     project_id = _resolve_project_id(payload, ctx)
     if project_id:
         payload["project_id"] = project_id
@@ -220,11 +224,10 @@ async def _get_async_session() -> AsyncSession:
     return session
 
 
-@mcp.tool(description="Unified project operations")
 async def project_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -256,11 +259,10 @@ async def project_manage(
     raise ToolError(f"Unknown project action: {action}")
 
 
-@mcp.tool(description="Unified item operations")
 async def item_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     return await _item_manage_impl(action, payload, ctx)
 
@@ -268,7 +270,7 @@ async def item_manage(
 async def _item_manage_impl(
     action: str,
     payload: dict[str, Any] | None,
-    ctx: Context | None,
+    ctx: Any | None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -341,11 +343,10 @@ async def _item_manage_impl(
     raise ToolError(f"Unknown item action: {action}")
 
 
-@mcp.tool(description="Unified link operations")
 async def link_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -380,11 +381,10 @@ async def link_manage(
     raise ToolError(f"Unknown link action: {action}")
 
 
-@mcp.tool(description="Unified traceability analysis")
 async def trace_analyze(
     kind: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     kind = kind.lower()
@@ -427,11 +427,10 @@ async def trace_analyze(
     raise ToolError(f"Unknown trace analysis kind: {kind}")
 
 
-@mcp.tool(description="Unified graph analysis")
 async def graph_analyze(
     kind: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     kind = kind.lower()
@@ -452,12 +451,11 @@ async def graph_analyze(
     raise ToolError(f"Unknown graph analysis kind: {kind}")
 
 
-@mcp.tool(description="Unified specification operations")
 async def spec_manage(
     kind: str,
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     kind = kind.lower()
@@ -517,21 +515,19 @@ async def spec_manage(
     raise ToolError(f"Unknown spec action: {kind}.{action}")
 
 
-@mcp.tool(description="Unified quality analysis")
 async def quality_analyze(
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     result = await spec_tools.analyze_quality(item_id=payload.get("item_id"))
     return _wrap(result, ctx, "quality.analyze")
 
 
-@mcp.tool(description="Unified configuration operations")
 async def config_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     return await _config_manage_impl(action, payload, ctx)
 
@@ -539,7 +535,7 @@ async def config_manage(
 async def _config_manage_impl(
     action: str,
     payload: dict[str, Any] | None,
-    ctx: Context | None,
+    ctx: Any | None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -584,11 +580,10 @@ async def _config_manage_impl(
     raise ToolError(f"Unknown config action: {action}")
 
 
-@mcp.tool(description="Unified sync operations")
 async def sync_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     return await _sync_manage_impl(action, payload, ctx)
 
@@ -596,7 +591,7 @@ async def sync_manage(
 async def _sync_manage_impl(
     action: str,
     payload: dict[str, Any] | None,
-    ctx: Context | None,
+    ctx: Any | None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -646,11 +641,10 @@ async def _sync_manage_impl(
     raise ToolError(f"Unknown sync action: {action}")
 
 
-@mcp.tool(description="Unified export operations")
 async def export_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -685,11 +679,10 @@ async def export_manage(
     return _wrap({"format": action, "content": content}, ctx, action)
 
 
-@mcp.tool(description="Unified import operations")
 async def import_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -755,11 +748,10 @@ async def import_manage(
     raise ToolError(f"Unknown import action: {action}")
 
 
-@mcp.tool(description="Unified ingestion operations")
 async def ingest_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -814,11 +806,10 @@ async def ingest_manage(
     return _wrap(result, ctx, action)
 
 
-@mcp.tool(description="Unified backup operations")
 async def backup_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -900,11 +891,10 @@ async def backup_manage(
     raise ToolError(f"Unknown backup action: {action}")
 
 
-@mcp.tool(description="Unified file watch operations")
 async def watch_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -945,11 +935,10 @@ async def watch_manage(
     raise ToolError(f"Unknown watch action: {action}")
 
 
-@mcp.tool(description="Unified database operations")
 async def db_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     from tracertm.database.connection import DatabaseConnection
 
@@ -997,11 +986,10 @@ async def db_manage(
     raise ToolError(f"Unknown db action: {action}")
 
 
-@mcp.tool(description="Unified agent operations")
 async def agents_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -1174,11 +1162,10 @@ async def agents_manage(
     raise ToolError(f"Unknown agents action: {action}")
 
 
-@mcp.tool(description="Unified progress operations")
 async def progress_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -1270,11 +1257,10 @@ async def progress_manage(
     raise ToolError(f"Unknown progress action: {action}")
 
 
-@mcp.tool(description="Unified saved query operations")
 async def saved_queries_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     return await _saved_queries_manage_impl(action, payload, ctx)
 
@@ -1282,7 +1268,7 @@ async def saved_queries_manage(
 async def _saved_queries_manage_impl(
     action: str,
     payload: dict[str, Any] | None,
-    ctx: Context | None,
+    ctx: Any | None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -1326,11 +1312,10 @@ async def _saved_queries_manage_impl(
     raise ToolError(f"Unknown saved-queries action: {action}")
 
 
-@mcp.tool(description="Unified test operations")
 async def test_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     return await _test_manage_impl(action, payload, ctx)
 
@@ -1338,7 +1323,7 @@ async def test_manage(
 async def _test_manage_impl(
     action: str,
     payload: dict[str, Any] | None,
-    ctx: Context | None,
+    ctx: Any | None,
 ) -> dict[str, Any]:
     from tracertm.cli.commands.test.discovery import TestDiscovery
     from tracertm.cli.commands.test.runner import TestRunner
@@ -1393,11 +1378,10 @@ async def _test_manage_impl(
     raise ToolError(f"Unknown test action: {action}")
 
 
-@mcp.tool(description="Unified TUI operations")
 async def tui_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -1417,14 +1401,11 @@ async def tui_manage(
 
     if action == "launch":
         app_name = payload.get("app", "dashboard")
-        legacy = bool(payload.get("legacy", False))
         watch = bool(payload.get("watch", False))
         project_path = payload.get("path")
         spawn = bool(payload.get("spawn", False))
 
         cmd = ["rtm", "tui", app_name]
-        if legacy:
-            cmd.append("--legacy")
         if watch:
             cmd.append("--watch")
         if project_path:
@@ -1439,11 +1420,10 @@ async def tui_manage(
     raise ToolError(f"Unknown tui action: {action}")
 
 
-@mcp.tool(description="Unified benchmark operations")
 async def benchmark_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -1493,11 +1473,10 @@ async def benchmark_manage(
     raise ToolError(f"Unknown benchmark action: {action}")
 
 
-@mcp.tool(description="Unified chaos operations")
 async def chaos_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()
@@ -1560,11 +1539,10 @@ async def chaos_manage(
     raise ToolError(f"Unknown chaos action: {action}")
 
 
-@mcp.tool(description="Unified design integration operations")
 async def design_manage(
     action: str,
     payload: dict[str, Any] | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
     action = action.lower()

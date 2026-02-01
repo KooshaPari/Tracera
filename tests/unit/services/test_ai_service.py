@@ -557,6 +557,80 @@ class TestSimpleChat:
 
 
 # =============================================================================
+# run_chat_turn_with_tools Tests
+# =============================================================================
+
+
+class TestRunChatTurnWithTools:
+    """Test non-streaming run_chat_turn_with_tools (tool loop, returns final text)."""
+
+    @pytest.mark.asyncio
+    async def test_run_chat_turn_with_tools_returns_text(self, ai_service, mock_anthropic_client, sample_messages):
+        """run_chat_turn_with_tools returns final assistant text when no tool use."""
+        mock_response = MagicMock()
+        mock_response.content = [MagicMock(type="text", text="Here is the answer.")]
+        mock_anthropic_client.messages.create = AsyncMock(return_value=mock_response)
+
+        result = await ai_service.run_chat_turn_with_tools(
+            messages=sample_messages,
+            model="claude-sonnet-4-20250514",
+        )
+
+        assert result == "Here is the answer."
+        mock_anthropic_client.messages.create.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_run_chat_turn_with_tools_tool_use_then_text(
+        self, ai_service, mock_anthropic_client, sample_messages
+    ):
+        """run_chat_turn_with_tools runs tool loop and returns final text after tool result."""
+        tool_block = MagicMock()
+        tool_block.type = "tool_use"
+        tool_block.id = "tu_1"
+        tool_block.name = "read_file"
+        tool_block.input = {"path": "/tmp/foo.txt"}
+
+        text_block = MagicMock()
+        text_block.type = "text"
+        text_block.text = "File content: hello"
+
+        # First call: tool use
+        response1 = MagicMock()
+        response1.content = [tool_block]
+        # Second call: text (after tool result)
+        response2 = MagicMock()
+        response2.content = [text_block]
+
+        mock_anthropic_client.messages.create = AsyncMock(side_effect=[response1, response2])
+
+        with patch("tracertm.services.ai_service.execute_tool", new_callable=AsyncMock) as mock_execute:
+            mock_execute.return_value = {"success": True, "result": {"content": "hello"}}
+
+            result = await ai_service.run_chat_turn_with_tools(
+                messages=sample_messages,
+                model="claude-sonnet-4-20250514",
+                working_directory="/tmp",
+            )
+
+        assert result == "File content: hello"
+        assert mock_anthropic_client.messages.create.call_count == 2
+        mock_execute.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_run_chat_turn_with_tools_handles_error(self, ai_service, mock_anthropic_client, sample_messages):
+        """run_chat_turn_with_tools returns error message on API exception."""
+        mock_anthropic_client.messages.create = AsyncMock(side_effect=Exception("API error"))
+
+        result = await ai_service.run_chat_turn_with_tools(
+            messages=sample_messages,
+            model="claude-sonnet-4-20250514",
+        )
+
+        assert "[Error:" in result
+        assert "API error" in result
+
+
+# =============================================================================
 # Message Conversion Tests
 # =============================================================================
 

@@ -3,23 +3,22 @@
  * Components for WSJF, RICE, and MoSCoW prioritization
  */
 
+// Priority Matrix
+export {
+	MoSCoWBadge,
+	PrioritizationSummary,
+	PriorityMatrix,
+	ValueEffortMatrix,
+} from "./PriorityMatrix";
+
+// RICE (Reach, Impact, Confidence, Effort)
+export {
+	RICEBreakdown,
+	RICEScoreBadge,
+	RICEScoreCard,
+} from "./RICEScoreCard";
 // WSJF (Weighted Shortest Job First)
 export {
 	WSJFCalculator,
 	WSJFScoreBadge,
 } from "./WSJFCalculator";
-
-// RICE (Reach, Impact, Confidence, Effort)
-export {
-	RICEScoreCard,
-	RICEScoreBadge,
-	RICEBreakdown,
-} from "./RICEScoreCard";
-
-// Priority Matrix
-export {
-	PriorityMatrix,
-	ValueEffortMatrix,
-	MoSCoWBadge,
-	PrioritizationSummary,
-} from "./PriorityMatrix";

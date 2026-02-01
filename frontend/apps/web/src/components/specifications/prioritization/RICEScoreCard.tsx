@@ -3,8 +3,8 @@
  * Reach, Impact, Confidence, Effort scoring for product prioritization
  */
 
-import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface RICEScore {
 	reach: number;
@@ -111,7 +111,7 @@ export function RICEScoreCard({
 							type="number"
 							value={reach}
 							onChange={(e) =>
-								setReach(Math.max(0, parseInt(e.target.value) || 0))
+								setReach(Math.max(0, parseInt(e.target.value, 10) || 0))
 							}
 							className="w-full px-3 py-2 border rounded-md text-sm"
 							min={0}

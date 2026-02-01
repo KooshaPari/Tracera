@@ -115,6 +115,7 @@ project_root = Path("{self.project_root}")
 sys.path.insert(0, str(project_root))
 
 from fastmcp import FastMCP, Context
+from fastmcp.server.dependencies import Progress
 from fastmcp.exceptions import ToolError
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 
@@ -132,7 +133,13 @@ class WorkflowMiddleware(Middleware):
 mcp.add_middleware(WorkflowMiddleware())
 
 @mcp.tool()
-async def execute_workflow(ctx: Context, workflow_command: str, workflow_id: str, auto: bool = False) -> str:
+async def execute_workflow(
+    ctx: Context,
+    workflow_command: str,
+    workflow_id: str,
+    auto: bool = False,
+    progress: Progress = Progress(),
+) -> str:
     """
     Execute a workflow step using FastMCP features (elicitation, sampling, middleware).
     
@@ -146,8 +153,10 @@ async def execute_workflow(ctx: Context, workflow_command: str, workflow_id: str
     Architecture:
     Droid Exec -> MCP Server -> FastMCP Client -> This Server -> Sub-agent execution
     """
-    # Report progress (supported by FastMCP Client, not droid exec)
-    await ctx.report_progress(0, 100, f"Starting workflow: {{workflow_id}}")
+    # Report progress (worker-safe via Progress dependency)
+    current_progress = 0
+    await progress.set_total(100)
+    await progress.set_message(f"Starting workflow: {{workflow_id}}")
     
     # Elicit user input if needed (unless auto mode)
     # This is a FastMCP feature not available in droid exec
@@ -161,7 +170,11 @@ async def execute_workflow(ctx: Context, workflow_command: str, workflow_id: str
         elif confirm == "skip":
             return f"SKIPPED:  Skipped: {{workflow_id}}"
     
-    await ctx.report_progress(25, 100, "Preparing workflow execution...")
+    increment = 25 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 25
+    await progress.set_message("Preparing workflow execution...")
     
     # Use sampling to execute workflow with the agent
     # Sampling provides full FastMCP features during LLM execution
@@ -177,7 +190,11 @@ async def execute_workflow(ctx: Context, workflow_command: str, workflow_id: str
         }}
     )
     
-    await ctx.report_progress(100, 100, "Complete")
+    increment = 100 - current_progress
+    if increment > 0:
+        await progress.increment(increment)
+        current_progress = 100
+    await progress.set_message("Complete")
     
     # Extract content from result
     content = result.content if hasattr(result, 'content') else str(result)

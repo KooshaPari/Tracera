@@ -5,15 +5,16 @@ Agent model for TraceRTM.
 import uuid
 
 from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
 
 
-def generate_agent_uuid() -> str:
-    """Generate a UUID string for agent ID."""
-    return str(uuid.uuid4())
+def generate_agent_uuid() -> uuid.UUID:
+    """Generate a UUID for agent ID."""
+    return uuid.uuid4()
 
 
 class Agent(Base, TimestampMixin):
@@ -25,11 +26,11 @@ class Agent(Base, TimestampMixin):
 
     __tablename__ = "agents"
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_agent_uuid
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=generate_agent_uuid
     )
-    project_id: Mapped[str] = mapped_column(
-        String(255),
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=True,
         index=True,

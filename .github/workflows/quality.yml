@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --all
 
+      - name: Install pytest-xdist for parallelization
+        run: uv pip install pytest-xdist
+
       - name: Format check
         run: uv run ruff format --check .
 

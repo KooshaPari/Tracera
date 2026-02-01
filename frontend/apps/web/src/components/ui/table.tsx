@@ -1,18 +1,32 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const Table = React.forwardRef<
-	HTMLTableElement,
-	React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-	<div className="relative w-full overflow-auto">
-		<table
-			ref={ref}
-			className={cn("w-full caption-bottom text-sm", className)}
-			{...props}
-		/>
-	</div>
-));
+interface AccessibleTableProps extends React.HTMLAttributes<HTMLTableElement> {
+	/** ARIA label for the table */
+	ariaLabel?: string;
+	/** ARIA label ID for the table */
+	ariaLabelledBy?: string;
+	/** Accessible description of the table */
+	ariaDescribedBy?: string;
+}
+
+const Table = React.forwardRef<HTMLTableElement, AccessibleTableProps>(
+	(
+		{ className, ariaLabel, ariaLabelledBy, ariaDescribedBy, ...props },
+		ref,
+	) => (
+		<div className="relative w-full overflow-auto">
+			<table
+				ref={ref}
+				className={cn("w-full caption-bottom text-sm", className)}
+				aria-label={ariaLabel}
+				aria-labelledby={ariaLabelledBy}
+				aria-describedby={ariaDescribedBy}
+				{...props}
+			/>
+		</div>
+	),
+);
 Table.displayName = "Table";
 
 const TableHeader = React.forwardRef<
@@ -50,43 +64,80 @@ const TableFooter = React.forwardRef<
 ));
 TableFooter.displayName = "TableFooter";
 
-const TableRow = React.forwardRef<
-	HTMLTableRowElement,
-	React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
-	<tr
-		ref={ref}
-		className={cn(
-			"border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-			className,
-		)}
-		{...props}
-	/>
-));
+interface AccessibleTableRowProps
+	extends React.HTMLAttributes<HTMLTableRowElement> {
+	/** Whether this row is selected */
+	isSelected?: boolean;
+	/** Row index for aria-rowindex */
+	rowIndex?: number;
+}
+
+const TableRow = React.forwardRef<HTMLTableRowElement, AccessibleTableRowProps>(
+	({ className, isSelected, rowIndex, ...props }, ref) => (
+		<tr
+			ref={ref}
+			className={cn(
+				"border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+				className,
+			)}
+			aria-rowindex={rowIndex}
+			aria-selected={isSelected}
+			{...props}
+		/>
+	),
+);
 TableRow.displayName = "TableRow";
+
+interface AccessibleTableHeadProps
+	extends React.ThHTMLAttributes<HTMLTableCellElement> {
+	/** Sort direction for aria-sort */
+	sortDirection?: "ascending" | "descending" | "none" | "other";
+	/** Column index for aria-colindex */
+	colIndex?: number;
+	/** Whether this column is sortable */
+	isSortable?: boolean;
+}
 
 const TableHead = React.forwardRef<
 	HTMLTableCellElement,
-	React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+	AccessibleTableHeadProps
+>(({ className, sortDirection, colIndex, isSortable, ...props }, ref) => (
 	<th
 		ref={ref}
 		className={cn(
 			"h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+			isSortable && "cursor-pointer hover:bg-muted/30",
 			className,
 		)}
+		role="columnheader"
+		aria-colindex={colIndex}
+		aria-sort={sortDirection || "none"}
 		{...props}
 	/>
 ));
 TableHead.displayName = "TableHead";
 
+interface AccessibleTableCellProps
+	extends React.TdHTMLAttributes<HTMLTableCellElement> {
+	/** Cell content label for screen readers */
+	ariaLabel?: string;
+	/** Column index for aria-colindex */
+	colIndex?: number;
+	/** Header text for this cell */
+	headerText?: string;
+}
+
 const TableCell = React.forwardRef<
 	HTMLTableCellElement,
-	React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+	AccessibleTableCellProps
+>(({ className, ariaLabel, colIndex, headerText, ...props }, ref) => (
 	<td
 		ref={ref}
 		className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+		aria-label={
+			ariaLabel || (headerText ? `${headerText}: ${props.children}` : undefined)
+		}
+		aria-colindex={colIndex}
 		{...props}
 	/>
 ));

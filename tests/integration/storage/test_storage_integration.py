@@ -581,23 +581,23 @@ Test item {i}
 class TestProjectStorageIntegration:
     """Integration tests for ProjectStorage with real filesystem."""
 
-    def test_create_project_in_legacy_mode(self, storage_manager):
-        """Given: ProjectStorage in legacy mode
+    def test_create_project_in_global_projects_dir(self, storage_manager):
+        """Given: ProjectStorage (global projects dir)
         When: create_or_update_project called
         Then: Project created in database and filesystem
         """
-        project_storage = storage_manager.get_project_storage("LegacyProject")
+        project_storage = storage_manager.get_project_storage("GlobalProject")
         project = project_storage.create_or_update_project(
-            name="LegacyProject", description="Test legacy mode"
+            name="GlobalProject", description="Test global projects dir"
         )
 
-        assert project.name == "LegacyProject"
-        assert project.description == "Test legacy mode"
+        assert project.name == "GlobalProject"
+        assert project.description == "Test global projects dir"
 
         # Verify README generated
         readme = project_storage.project_dir / "README.md"
         assert readme.exists()
-        assert "LegacyProject" in readme.read_text()
+        assert "GlobalProject" in readme.read_text()
 
     def test_create_project_in_project_local_mode(self, temp_project_dir, storage_manager):
         """Given: ProjectStorage in project-local mode

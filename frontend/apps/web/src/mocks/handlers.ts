@@ -35,7 +35,7 @@ const USE_ENHANCED_DATA = true;
 const mockItems = USE_ENHANCED_DATA ? enhancedItems : mockItemsBaseline;
 const mockLinks = USE_ENHANCED_DATA ? enhancedLinks : mockLinksBaseline;
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://localhost:4000";
 
 // Helper to simulate delays
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -1,3 +1,4 @@
+import type { Scenario, ScenarioStatus } from "@tracertm/types";
 import {
 	Badge,
 	Button,
@@ -5,18 +6,17 @@ import {
 	CardContent,
 	CardHeader,
 	CardTitle,
+	cn,
 } from "@tracertm/ui";
 import {
-	Play,
-	CheckCircle2,
-	XCircle,
-	Clock,
-	FileText,
 	ArrowRight,
 	BarChart3,
+	CheckCircle2,
+	Clock,
+	FileText,
+	Play,
+	XCircle,
 } from "lucide-react";
-import { cn } from "@tracertm/ui";
-import type { Scenario, ScenarioStatus } from "@tracertm/types";
 
 interface ScenarioCardProps {
 	scenario: Scenario;

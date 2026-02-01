@@ -1,3 +1,4 @@
+import type { Feature, FeatureStatus } from "@tracertm/types";
 import {
 	Badge,
 	Button,
@@ -9,13 +10,12 @@ import {
 	Progress,
 } from "@tracertm/ui";
 import {
-	BookOpen,
 	ArrowRight,
+	BookOpen,
 	CheckCircle2,
-	XCircle,
 	ListTodo,
+	XCircle,
 } from "lucide-react";
-import type { Feature, FeatureStatus } from "@tracertm/types";
 
 interface FeatureCardProps {
 	feature: Feature;

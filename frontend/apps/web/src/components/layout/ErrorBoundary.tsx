@@ -1,4 +1,5 @@
 import { Button } from "@tracertm/ui";
+import { logger } from '@/lib/logger';
 import { AlertTriangle, RefreshCcw, RotateCw } from "lucide-react";
 import { Component, type ReactNode } from "react";
 
@@ -27,7 +28,7 @@ export class ErrorBoundary extends Component<
 	}
 
 	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error("ErrorBoundary caught error:", error, errorInfo);
+		logger.error("ErrorBoundary caught error:", error, errorInfo);
 		this.props.onError?.(error, errorInfo);
 	}
 

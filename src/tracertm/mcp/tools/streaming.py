@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
+from fastmcp.server.dependencies import Progress
+
+logger = logging.getLogger(__name__)
 
 try:
     from tracertm.mcp.core import mcp
@@ -37,17 +40,17 @@ def _get_project_id(project_id: str | None = None) -> str:
 async def stream_impact_analysis(
     item_id: str,
     max_depth: int = 5,
-    ctx: Context | None = None,
+    progress: Progress = Progress(),
 ) -> dict[str, Any]:
     """Analyze impact depth-by-depth with progress updates.
 
     Performs impact analysis in stages, returning results at each depth level.
-    Use ctx.report_progress() to stream progress updates to the client.
+    Uses Progress() to stream progress updates to the client.
 
     Args:
         item_id: The item ID to analyze impact for.
         max_depth: Maximum depth to traverse (default 5).
-        ctx: MCP context for progress reporting.
+        progress: Progress tracker for worker-safe updates.
 
     Returns:
         Complete impact analysis results with items at each depth level.
@@ -99,20 +102,26 @@ async def stream_impact_analysis(
         visited: set[str] = set()
         current_level: set[str] = {str(item.id)}
 
+        current_progress = 0
+        await progress.set_total(max_depth)
+
         for depth in range(max_depth + 1):
             if not current_level:
                 break
 
-            # Report progress if context available
-            if ctx:
-                try:
-                    await ctx.report_progress(
-                        progress=depth,
-                        total=max_depth,
-                        message=f"Analyzing depth {depth}, found {len(current_level)} items",
-                    )
-                except Exception:
-                    pass  # Progress reporting is optional
+            # Report progress via worker-safe dependency
+            try:
+                increment = depth - current_progress
+                if increment > 0:
+                    await progress.increment(increment)
+                    current_progress = depth
+                await progress.set_message(
+                    f"Analyzing depth {depth}: found {len(current_level)} items, "
+                    f"total visited: {len(visited)}"
+                )
+            except Exception as e:
+                # Progress reporting is optional, but log failures
+                logger.debug(f"Progress reporting failed: {e}")
 
             # Record items at this depth
             level_items = []
@@ -159,7 +168,7 @@ async def get_matrix_page(
     page_size: int = 50,
     source_view: str | None = None,
     target_view: str | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get paginated matrix rows.
 
@@ -249,7 +258,7 @@ async def get_matrix_page(
 async def get_impact_by_depth(
     item_id: str,
     depth: int,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get impact results for a single depth level.
 
@@ -367,7 +376,7 @@ async def get_items_page(
     item_type: str | None = None,
     sort_by: str = "created_at",
     sort_order: str = "desc",
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get paginated items list with filtering.
 
@@ -457,7 +466,7 @@ async def get_links_page(
     link_type: str | None = None,
     source_id: str | None = None,
     target_id: str | None = None,
-    ctx: Context | None = None,
+    ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get paginated links list with filtering.
 

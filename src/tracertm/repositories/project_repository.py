@@ -19,6 +19,7 @@ class ProjectRepository:
         name: str,
         description: str | None = None,
         metadata: dict | None = None,
+        account_id: str | None = None,
     ) -> Project:
         """Create new project."""
         project = Project(
@@ -26,6 +27,7 @@ class ProjectRepository:
             name=name,
             description=description,
             project_metadata=metadata or {},
+            account_id=account_id,
         )
         self.session.add(project)
         await self.session.flush()

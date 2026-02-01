@@ -13,14 +13,16 @@ import logging
 import secrets
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 
-from tracertm.database.connection import get_db_session
-from tracertm.services.workos_auth_service import WorkOSAuthService
+from tracertm.api.deps import get_db, auth_guard
+from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
+from tracertm.services.user_repository import UserRepository
+from tracertm.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -98,6 +100,13 @@ class RevokeTokenRequest(BaseModel):
     )
 
 
+class LogoutResponse(BaseModel):
+    """Logout success response."""
+
+    success: bool = Field(default=True, description="Logout successful")
+    message: Optional[str] = Field(None, description="Optional message")
+
+
 def _generate_user_code(length: int = 8) -> str:
     """Generate a user-friendly device code."""
     chars = "BCDFGHJKMNPQRTVWXYZ0123456789"
@@ -165,7 +174,7 @@ async def request_device_code(
 @router.post("/device/token", response_model=TokenResponse)
 async def exchange_device_code(
     request: TokenRequest,
-    db: AsyncSession = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
     """Exchange device code for access token.
 
@@ -225,8 +234,8 @@ async def exchange_device_code(
     # Create JWT token
     token_data = {
         "sub": user_id,
-        "iat": datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(hours=1),
+        "iat": datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=1),
         "scope": " ".join(flow["scope"]),
         "client_id": request.client_id,
     }
@@ -252,71 +261,89 @@ async def exchange_device_code(
 
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
-    authorization: Optional[str] = None,
-    db: AsyncSession = Depends(get_db_session),
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
 ) -> MeResponse:
-    """Get current authenticated user.
+    """Get current authenticated user from WorkOS.
 
     Requires valid JWT access token in Authorization header.
+    Token is verified via auth_guard dependency.
 
     Args:
-        authorization: Authorization header value
+        claims: JWT claims from auth_guard (includes 'sub' with user_id)
         db: Database session
 
     Returns:
         Current user information and claims
+
+    Raises:
+        HTTPException: 401 if token invalid/missing, 404 if user not found, 500 if API error
     """
-    if not authorization:
+    user_id = claims.get("sub")
+    if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header",
+            detail="Invalid token: missing user ID",
         )
-
-    # Parse bearer token
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format",
-        )
-
-    token = authorization[7:]
-
-    # Verify token using WorkOS
-    workos_service = _get_workos_service()
 
     try:
-        # In production, verify JWT using JWKS
-        # For now, accept any token
-        user_id = "user_id_from_token"
-        claims = {
-            "sub": user_id,
-            "iat": int(time.time()),
-            "exp": int(time.time()) + 3600,
-        }
+        # Fetch user from WorkOS API
+        user_data = get_user(user_id)
 
+        # Extract user fields from WorkOS response
+        # WorkOS user object typically has: id, email, first_name, last_name,
+        # email_verified, created_at, updated_at, profile_picture_url
         return MeResponse(
             user={
-                "id": user_id,
-                "email": "user@example.com",
+                "id": user_data.get("id", user_id),
+                "email": user_data.get("email"),
+                "firstName": user_data.get("first_name"),
+                "lastName": user_data.get("last_name"),
+                "emailVerified": user_data.get("email_verified", False),
+                "createdAt": user_data.get("created_at"),
+                "updatedAt": user_data.get("updated_at"),
+                "profilePictureUrl": user_data.get("profile_picture_url"),
             },
             claims=claims,
+            # TODO (Task B4): Add account lookup from database if needed
+            # For now, extract organization from JWT claims if available
             account={
-                "id": "account_id",
-                "name": "Default Account",
-            },
+                "id": claims.get("org_id"),
+                "name": claims.get("org_name"),
+            } if claims.get("org_id") else None,
+        )
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except ValueError as e:
+        # API key or configuration error
+        logger.error(f"WorkOS configuration error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Authentication service not configured",
         )
     except Exception as e:
-        logger.error(f"Failed to verify token: {e}")
+        # WorkOS API error or user not found
+        logger.error(f"Failed to fetch user {user_id} from WorkOS: {e}")
+
+        # Check if it's a 404 (user not found)
+        if "404" in str(e) or "not found" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User {user_id} not found",
+            )
+
+        # Other API errors
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch user information",
         )
 
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_access_token(
     request: RefreshTokenRequest,
-    db: AsyncSession = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
     """Refresh an access token using refresh token.
 
@@ -350,13 +377,14 @@ async def refresh_access_token(
         token_type="bearer",
         expires_in=3600,
         refresh_token=refresh_token,
+        user=None,  # User info not included in refresh response
     )
 
 
 @router.post("/revoke")
 async def revoke_token(
     request: RevokeTokenRequest,
-    db: AsyncSession = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Revoke an access or refresh token.
 
@@ -373,20 +401,71 @@ async def revoke_token(
     return {"success": True}
 
 
-@router.post("/logout")
+@router.post("/logout", response_model=LogoutResponse)
 async def logout(
-    authorization: Optional[str] = None,
-    db: AsyncSession = Depends(get_db_session),
-) -> dict:
-    """Log out current user (revoke tokens).
+    response: Response,
+    claims: dict = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+) -> LogoutResponse:
+    """Log out current user.
+
+    For stateless JWT tokens, this endpoint primarily clears HttpOnly cookies
+    used in production. The frontend also handles clearing localStorage tokens.
+
+    Optional: Token can be added to a blocklist for enhanced security.
 
     Args:
-        authorization: Authorization header value
+        response: FastAPI response for cookie manipulation
+        claims: JWT claims from auth_guard (validates token)
         db: Database session
 
     Returns:
-        Success response
+        LogoutResponse: Success response
     """
-    # In production, revoke user's tokens
-    logger.info("User logged out")
-    return {"success": True}
+    user_id = claims.get("sub")
+
+    # Clear HttpOnly cookies (production environment)
+    # These settings match the cookie settings used during login
+    response.delete_cookie(
+        key="workos_session",
+        httponly=True,
+        secure=True,  # HTTPS only in production
+        samesite="lax",
+        path="/",
+    )
+
+    # Optional: Add token to blocklist if using token invalidation
+    # token_jti = claims.get("jti")
+    # if token_jti:
+    #     await add_to_token_blocklist(db, token_jti, claims.get("exp"))
+
+    logger.info(f"User {user_id} logged out successfully")
+
+    return LogoutResponse(success=True, message=None)
+
+
+@router.post("/logout-expired", response_model=LogoutResponse)
+async def logout_expired(response: Response) -> LogoutResponse:
+    """Log out when token is expired (no auth required).
+
+    This endpoint allows clients to clear cookies even when their token has expired.
+    Used as a fallback when normal /logout fails with 401 Unauthorized.
+
+    Args:
+        response: FastAPI response for cookie manipulation
+
+    Returns:
+        LogoutResponse: Success response
+    """
+    # Clear HttpOnly cookies
+    response.delete_cookie(
+        key="workos_session",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        path="/",
+    )
+
+    logger.info("Expired token logout completed")
+
+    return LogoutResponse(success=True, message="Logged out (expired token cleared)")

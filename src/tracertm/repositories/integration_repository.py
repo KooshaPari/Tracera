@@ -1,10 +1,10 @@
 """Repository for external integrations."""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 
-from sqlalchemy import func, select, update
+from sqlalchemy import case, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.integration import (
@@ -59,7 +59,7 @@ class IntegrationCredentialRepository:
             provider_metadata=provider_metadata or {},
             created_by_user_id=created_by_user_id,
             provider_user_id=provider_user_id,
-            last_validated_at=datetime.utcnow(),
+            last_validated_at=datetime.now(UTC),
         )
         self.session.add(credential)
         await self.session.flush()
@@ -166,8 +166,8 @@ class IntegrationCredentialRepository:
         """Update encrypted token."""
         update_data: dict[str, Any] = {
             "encrypted_token": self.encryption.encrypt(new_token),
-            "updated_at": datetime.utcnow(),
-            "rotated_at": datetime.utcnow(),
+            "updated_at": datetime.now(UTC),
+            "rotated_at": datetime.now(UTC),
             "status": "active",
             "validation_error": None,
         }
@@ -195,7 +195,7 @@ class IntegrationCredentialRepository:
     ) -> None:
         """Update credential fields with encryption."""
         update_data: dict[str, Any] = {
-            "updated_at": datetime.utcnow(),
+            "updated_at": datetime.now(UTC),
         }
         if token is not None:
             update_data["encrypted_token"] = self.encryption.encrypt(token)
@@ -225,9 +225,9 @@ class IntegrationCredentialRepository:
         error: str | None = None,
     ) -> None:
         """Update credential validation status."""
-        update_data = {
-            "last_validated_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
+        update_data: dict[str, Any] = {
+            "last_validated_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
         if valid:
             update_data["status"] = "active"
@@ -247,7 +247,7 @@ class IntegrationCredentialRepository:
         await self.session.execute(
             update(IntegrationCredential)
             .where(IntegrationCredential.id == credential_id)
-            .values(status="revoked", updated_at=datetime.utcnow())
+            .values(status="revoked", updated_at=datetime.now(UTC))
         )
 
     async def delete(self, credential_id: str) -> None:
@@ -368,7 +368,7 @@ class IntegrationMappingRepository:
         **kwargs: Any,
     ) -> None:
         """Update mapping fields."""
-        kwargs["updated_at"] = datetime.utcnow()
+        kwargs["updated_at"] = datetime.now(UTC)
         await self.session.execute(
             update(IntegrationMapping)
             .where(IntegrationMapping.id == mapping_id)
@@ -384,9 +384,9 @@ class IntegrationMappingRepository:
     ) -> None:
         """Update last sync status."""
         update_data: dict[str, Any] = {
-            "last_sync_at": datetime.utcnow(),
+            "last_sync_at": datetime.now(UTC),
             "last_sync_direction": direction,
-            "updated_at": datetime.utcnow(),
+            "updated_at": datetime.now(UTC),
         }
         if success:
             update_data["sync_error_message"] = None
@@ -454,7 +454,7 @@ class IntegrationSyncQueueRepository:
 
     async def get_pending(self, limit: int = 100) -> list[IntegrationSyncQueue]:
         """Get pending items ordered by priority and creation time."""
-        priority_order = func.case(
+        priority_order = case(
             (IntegrationSyncQueue.priority == "critical", 1),
             (IntegrationSyncQueue.priority == "high", 2),
             (IntegrationSyncQueue.priority == "normal", 3),
@@ -474,7 +474,7 @@ class IntegrationSyncQueueRepository:
         result = await self.session.execute(
             select(IntegrationSyncQueue).where(
                 IntegrationSyncQueue.status == "retried",
-                IntegrationSyncQueue.next_retry_at <= datetime.utcnow(),
+                IntegrationSyncQueue.next_retry_at <= datetime.now(UTC),
             )
         )
         return list(result.scalars().all())
@@ -513,8 +513,8 @@ class IntegrationSyncQueueRepository:
             .where(IntegrationSyncQueue.id == queue_id)
             .values(
                 status="processing",
-                started_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                started_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
             )
         )
 
@@ -525,9 +525,9 @@ class IntegrationSyncQueueRepository:
             .where(IntegrationSyncQueue.id == queue_id)
             .values(
                 status="completed",
-                completed_at=datetime.utcnow(),
+                completed_at=datetime.now(UTC),
                 processing_time_ms=processing_time_ms,
-                updated_at=datetime.utcnow(),
+                updated_at=datetime.now(UTC),
             )
         )
 
@@ -545,7 +545,7 @@ class IntegrationSyncQueueRepository:
             status = "retried"
             # Exponential backoff: 60 * 2^attempts seconds
             backoff = 60 * (2**new_attempts)
-            next_retry_at = datetime.utcnow() + timedelta(seconds=backoff)
+            next_retry_at = datetime.now(UTC) + timedelta(seconds=backoff)
 
         await self.session.execute(
             update(IntegrationSyncQueue)
@@ -556,7 +556,7 @@ class IntegrationSyncQueueRepository:
                 error_message=error,
                 error_code=error_code,
                 next_retry_at=next_retry_at,
-                updated_at=datetime.utcnow(),
+                updated_at=datetime.now(UTC),
             )
         )
 
@@ -567,8 +567,8 @@ class IntegrationSyncQueueRepository:
             .where(IntegrationSyncQueue.id == queue_id)
             .values(
                 status="retried",
-                next_retry_at=datetime.utcnow() + timedelta(seconds=delay_seconds),
-                updated_at=datetime.utcnow(),
+                next_retry_at=datetime.now(UTC) + timedelta(seconds=delay_seconds),
+                updated_at=datetime.now(UTC),
             )
         )
 
@@ -580,7 +580,7 @@ class IntegrationSyncQueueRepository:
                 IntegrationSyncQueue.id == queue_id,
                 IntegrationSyncQueue.status.in_(["pending", "retried"]),
             )
-            .values(status="failed", error_message="Cancelled by user", updated_at=datetime.utcnow())
+            .values(status="failed", error_message="Cancelled by user", updated_at=datetime.now(UTC))
         )
 
 
@@ -746,7 +746,7 @@ class IntegrationConflictRepository:
                 resolution_status="resolved",
                 resolved_value=resolved_value,
                 resolution_strategy_used=strategy_used,
-                resolved_at=datetime.utcnow(),
+                resolved_at=datetime.now(UTC),
             )
         )
 
@@ -757,7 +757,7 @@ class IntegrationConflictRepository:
             .where(IntegrationConflict.id == conflict_id)
             .values(
                 resolution_status="ignored",
-                resolved_at=datetime.utcnow(),
+                resolved_at=datetime.now(UTC),
             )
         )
 
@@ -787,9 +787,14 @@ class IntegrationRateLimitRepository:
 
         if rate_limit:
             # Check if window expired
-            if rate_limit.window_end_at <= datetime.utcnow():
+            # Ensure timezone-aware comparison
+            window_end = rate_limit.window_end_at
+            if window_end.tzinfo is None:
+                window_end = window_end.replace(tzinfo=UTC)
+
+            if window_end <= datetime.now(UTC):
                 # Reset window
-                now = datetime.utcnow()
+                now = datetime.now(UTC)
                 await self.session.execute(
                     update(IntegrationRateLimit)
                     .where(IntegrationRateLimit.id == rate_limit.id)
@@ -806,7 +811,7 @@ class IntegrationRateLimitRepository:
             return rate_limit
 
         # Create new
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         rate_limit = IntegrationRateLimit(
             id=str(uuid.uuid4()),
             integration_credential_id=credential_id,
@@ -836,7 +841,7 @@ class IntegrationRateLimitRepository:
             .values(
                 requests_used=new_used,
                 is_rate_limited=is_limited,
-                updated_at=datetime.utcnow(),
+                updated_at=datetime.now(UTC),
             )
         )
         return new_used, rate_limit.requests_limit
@@ -848,7 +853,7 @@ class IntegrationRateLimitRepository:
             .where(IntegrationRateLimit.id == rate_limit_id)
             .values(
                 is_rate_limited=True,
-                backoff_until=datetime.utcnow() + timedelta(seconds=backoff_seconds),
-                updated_at=datetime.utcnow(),
+                backoff_until=datetime.now(UTC) + timedelta(seconds=backoff_seconds),
+                updated_at=datetime.now(UTC),
             )
         )

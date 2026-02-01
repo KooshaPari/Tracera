@@ -1,15 +1,15 @@
+import type { TestSuite, TestSuiteStatus } from "@tracertm/types";
 import {
-	FolderKanban,
 	CheckCircle,
 	Clock,
+	Filter,
+	FolderKanban,
+	Layers,
 	Plus,
 	Search,
-	Filter,
-	Layers,
 } from "lucide-react";
 import { useState } from "react";
-import { useTestSuites, useTestSuiteStats } from "../../../hooks/useTestSuites";
-import type { TestSuite, TestSuiteStatus } from "@tracertm/types";
+import { useTestSuiteStats, useTestSuites } from "../../../hooks/useTestSuites";
 
 const statusColors: Record<TestSuiteStatus, string> = {
 	draft: "bg-gray-100 text-gray-700",
@@ -95,7 +95,7 @@ export function TestSuiteView({ projectId }: TestSuiteViewProps) {
 							Active
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.["active"] || 0}
+							{stats.byStatus?.active || 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -221,11 +221,61 @@ export function TestSuiteView({ projectId }: TestSuiteViewProps) {
 			{/* Create Modal - placeholder */}
 			{showCreateModal && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-					<div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg">
-						<h2 className="text-lg font-semibold">Create Test Suite</h2>
-						<p className="mt-2 text-sm text-muted-foreground">
-							Test suite creation form coming soon...
-						</p>
+					<div
+						className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="create-test-suite-title"
+					>
+						<div className="flex items-center justify-between mb-4">
+							<h2 id="create-test-suite-title" className="text-lg font-semibold">
+								Create Test Suite
+							</h2>
+							<button
+								type="button"
+								onClick={() => setShowCreateModal(false)}
+								aria-label="Close dialog"
+								className="rounded-lg p-1 hover:bg-accent"
+							>
+								✕
+							</button>
+						</div>
+						<div className="space-y-3">
+							<div>
+								<label className="text-xs font-semibold uppercase">
+									Suite Name
+								</label>
+								<input
+									type="text"
+									placeholder="e.g. Unit Tests, Integration Tests"
+									className="mt-1 w-full rounded-lg border bg-muted/50 px-3 py-2 text-sm"
+									defaultValue="New Test Suite"
+								/>
+							</div>
+							<div>
+								<label className="text-xs font-semibold uppercase">
+									Description
+								</label>
+								<textarea
+									placeholder="Test suite description and scope..."
+									className="mt-1 w-full rounded-lg border bg-muted/50 px-3 py-2 text-sm min-h-[60px]"
+									defaultValue=""
+								/>
+							</div>
+							<div>
+								<label className="text-xs font-semibold uppercase">
+									Test Type
+								</label>
+								<select className="mt-1 w-full rounded-lg border bg-muted/50 px-3 py-2 text-sm">
+									<option>Unit Tests</option>
+									<option>Integration Tests</option>
+									<option>E2E Tests</option>
+									<option>Performance Tests</option>
+									<option>Security Tests</option>
+									<option>Accessibility Tests</option>
+								</select>
+							</div>
+						</div>
 						<div className="mt-6 flex justify-end gap-2">
 							<button
 								onClick={() => setShowCreateModal(false)}

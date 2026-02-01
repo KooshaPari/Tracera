@@ -2,13 +2,13 @@
 // Provides DAG layout algorithms with intuitive naming
 
 export {
-	useDAGLayout,
-	LAYOUT_CONFIGS,
-	type LayoutType,
-	type LayoutConfig,
-} from "./useDAGLayout";
-export {
-	LayoutSelector,
 	getRecommendedLayout,
+	LayoutSelector,
 	PERSPECTIVE_RECOMMENDED_LAYOUTS,
 } from "./LayoutSelector";
+export {
+	LAYOUT_CONFIGS,
+	type LayoutConfig,
+	type LayoutType,
+	useDAGLayout,
+} from "./useDAGLayout";

@@ -4,7 +4,7 @@
 
 import type { CreateItemInput, LinkType, Project } from "./types";
 
-const API_URL = process.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = process.env.VITE_API_URL || "http://localhost:4000";
 
 export function getApiUrl(): string {
 	return API_URL;

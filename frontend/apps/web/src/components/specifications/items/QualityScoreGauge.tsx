@@ -5,18 +5,18 @@
  * Implements ISO 29148 quality dimensions visualization.
  */
 
-import { cn } from "@/lib/utils";
 import { Badge, Progress } from "@tracertm/ui";
 import {
+	AlertCircle,
 	AlertTriangle,
 	CheckCircle2,
-	AlertCircle,
+	Eye,
 	Info,
 	Shield,
 	Target,
 	Zap,
-	Eye,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface QualityDimension {
 	dimension: string;

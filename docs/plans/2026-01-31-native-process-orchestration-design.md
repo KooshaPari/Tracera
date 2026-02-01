@@ -854,7 +854,7 @@ dev: ## Start all services (detached)
 	@echo '$(GREEN)Services available at:$(NC)'
 	@echo '  Gateway:    http://localhost:4000'
 	@echo '  Go API:     http://localhost:8080'
-	@echo '  Python API: http://localhost:8000'
+	@echo '  Python API: http://localhost:4000'
 	@echo '  Grafana:    http://localhost:3000'
 	@echo '  Prometheus: http://localhost:9090'
 	@echo '  Neo4j:      http://localhost:7474'

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.core import mcp
@@ -20,7 +19,7 @@ from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
 
 
-def _wrap(result: Any, ctx: Context | None, action: str) -> dict[str, Any]:
+def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     """Wrap result in standard MCP response format."""
     actor = None
     if ctx is not None:
@@ -60,7 +59,7 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 
 @mcp.tool()
-async def view_list(ctx: Context) -> Dict[str, Any]:
+async def view_list(ctx: Any) -> Dict[str, Any]:
     """List available views.
 
     Returns:
@@ -86,7 +85,7 @@ async def view_list(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def view_switch(ctx: Context, view_name: str) -> Dict[str, Any]:
+async def view_switch(ctx: Any, view_name: str) -> Dict[str, Any]:
     """Switch to a different view.
 
     Args:
@@ -113,7 +112,7 @@ async def view_switch(ctx: Context, view_name: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def view_current(ctx: Context) -> Dict[str, Any]:
+async def view_current(ctx: Any) -> Dict[str, Any]:
     """Get currently active view.
 
     Returns:
@@ -135,7 +134,7 @@ async def view_current(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def view_stats(ctx: Context) -> Dict[str, Any]:
+async def view_stats(ctx: Any) -> Dict[str, Any]:
     """Get view statistics.
 
     Returns:
@@ -157,7 +156,7 @@ async def view_stats(ctx: Context) -> Dict[str, Any]:
 
 @mcp.tool()
 async def view_show(
-    ctx: Context,
+    ctx: Any,
     view_name: str,
     project_id: str | None = None,
 ) -> Dict[str, Any]:
@@ -195,7 +194,7 @@ async def view_show(
 
 @mcp.tool()
 async def history_show(
-    ctx: Context,
+    ctx: Any,
     project_id: str | None = None,
     limit: int = 10,
 ) -> Dict[str, Any]:
@@ -229,7 +228,7 @@ async def history_show(
 
 @mcp.tool()
 async def history_version(
-    ctx: Context,
+    ctx: Any,
     item_id: str,
 ) -> Dict[str, Any]:
     """Get version history for specific item.
@@ -257,7 +256,7 @@ async def history_version(
 
 @mcp.tool()
 async def history_rollback(
-    ctx: Context,
+    ctx: Any,
     item_id: str,
     version: int,
     confirm: bool = False,
@@ -301,7 +300,7 @@ async def history_rollback(
 
 @mcp.tool()
 async def agent_list(
-    ctx: Context,
+    ctx: Any,
     project_id: str | None = None,
 ) -> Dict[str, Any]:
     """List active agents in project.
@@ -333,7 +332,7 @@ async def agent_list(
 
 @mcp.tool()
 async def agent_activity(
-    ctx: Context,
+    ctx: Any,
     agent_id: str | None = None,
 ) -> Dict[str, Any]:
     """Get agent activity log.
@@ -361,7 +360,7 @@ async def agent_activity(
 
 @mcp.tool()
 async def agent_metrics(
-    ctx: Context,
+    ctx: Any,
     agent_id: str | None = None,
 ) -> Dict[str, Any]:
     """Get agent performance metrics.
@@ -393,7 +392,7 @@ async def agent_metrics(
 
 @mcp.tool()
 async def agent_workload(
-    ctx: Context,
+    ctx: Any,
     agent_id: str | None = None,
 ) -> Dict[str, Any]:
     """Get agent workload status.
@@ -422,7 +421,7 @@ async def agent_workload(
 
 @mcp.tool()
 async def agent_health(
-    ctx: Context,
+    ctx: Any,
     agent_id: str | None = None,
 ) -> Dict[str, Any]:
     """Check agent health status.
@@ -455,7 +454,7 @@ async def agent_health(
 
 
 @mcp.tool()
-async def state_show(ctx: Context) -> Dict[str, Any]:
+async def state_show(ctx: Any) -> Dict[str, Any]:
     """Show current system state.
 
     Returns:
@@ -479,7 +478,7 @@ async def state_show(ctx: Context) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def state_get(ctx: Context, key: str) -> Dict[str, Any]:
+async def state_get(ctx: Any, key: str) -> Dict[str, Any]:
     """Get a specific state value.
 
     Args:
@@ -512,7 +511,7 @@ async def state_get(ctx: Context, key: str) -> Dict[str, Any]:
 
 @mcp.tool()
 async def drill_item(
-    ctx: Context,
+    ctx: Any,
     item_id: str,
     depth: int = 2,
     project_id: str | None = None,
@@ -554,7 +553,7 @@ async def drill_item(
 
 @mcp.tool()
 async def dashboard_show(
-    ctx: Context,
+    ctx: Any,
     project_id: str | None = None,
 ) -> Dict[str, Any]:
     """Show project dashboard.

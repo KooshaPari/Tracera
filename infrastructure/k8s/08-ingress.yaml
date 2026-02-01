@@ -1,0 +1,294 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: ingress
+  annotations:
+    # Annotations for cloud load balancers (uncomment based on your provider)
+    # AWS:
+    # service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+    # GCP:
+    # cloud.google.com/load-balancer-type: "External"
+    # Azure:
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+spec:
+  selector:
+    app: nginx
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  type: LoadBalancer
+  sessionAffinity: None
+  externalTrafficPolicy: Local  # Preserves source IP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: ingress
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        app.kubernetes.io/name: tracertm
+        app.kubernetes.io/component: ingress
+        version: latest
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: nginx-main-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: tls-cert
+          mountPath: /etc/nginx/certs
+          readOnly: true
+        - name: cache
+          mountPath: /var/cache/nginx
+        - name: run
+          mountPath: /var/run
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 101
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+      - name: nginx-main-config
+        configMap:
+          name: nginx-main-config
+      - name: tls-cert
+        secret:
+          secretName: tls-cert
+      - name: cache
+        emptyDir: {}
+      - name: run
+        emptyDir: {}
+      securityContext:
+        fsGroup: 101
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-main-config
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: ingress
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /dev/stderr warn;
+    pid /var/run/nginx.pid;
+
+    events {
+        worker_connections 4096;
+        use epoll;
+        multi_accept on;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for" '
+                        'rt=$request_time uct="$upstream_connect_time" '
+                        'uht="$upstream_header_time" urt="$upstream_response_time"';
+
+        access_log /dev/stdout main;
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        server_tokens off;
+
+        client_body_buffer_size 128k;
+        client_max_body_size 100M;
+        client_header_buffer_size 1k;
+        large_client_header_buffers 4 16k;
+
+        gzip on;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types text/plain text/css text/xml text/javascript
+                   application/json application/javascript application/xml+rss
+                   application/rss+xml font/truetype font/opentype
+                   application/vnd.ms-fontobject image/svg+xml;
+        gzip_disable "msie6";
+
+        include /etc/nginx/conf.d/*.conf;
+    }
+
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx-pdb
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: ingress
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+
+---
+# Horizontal Pod Autoscaler for Nginx
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: ingress
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Alternative: Kubernetes Ingress resource (if using ingress controller instead of nginx deployment)
+# Uncomment if you want to use an existing ingress controller like nginx-ingress, traefik, etc.
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: tracertm-ingress
+#   namespace: tracertm
+#   labels:
+#     app.kubernetes.io/name: tracertm
+#   annotations:
+#     kubernetes.io/ingress.class: nginx
+#     cert-manager.io/cluster-issuer: letsencrypt-prod
+#     nginx.ingress.kubernetes.io/rate-limit: "100"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+# spec:
+#   tls:
+#   - hosts:
+#     - tracertm.com
+#     - app.tracertm.com
+#     secretName: tracertm-tls
+#   rules:
+#   - host: app.tracertm.com
+#     http:
+#       paths:
+#       - path: /api/projects
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: python-backend-service
+#             port:
+#               number: 8000
+#       - path: /api/health
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: go-backend-service
+#             port:
+#               number: 8080
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: frontend-service
+#             port:
+#               number: 80

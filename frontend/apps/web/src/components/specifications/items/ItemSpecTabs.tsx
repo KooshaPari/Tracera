@@ -6,7 +6,6 @@
  * available spec types.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -28,19 +27,20 @@ import {
 	Users,
 } from "lucide-react";
 import {
-	useRequirementSpecByItem,
-	useTestSpecByItem,
-	useEpicSpecByItem,
-	useUserStorySpecByItem,
-	useTaskSpecByItem,
 	useDefectSpecByItem,
+	useEpicSpecByItem,
+	useRequirementSpecByItem,
+	useTaskSpecByItem,
+	useTestSpecByItem,
+	useUserStorySpecByItem,
 } from "@/hooks/useItemSpecs";
-import { RequirementSpecCard } from "./RequirementSpecCard";
-import { TestSpecCard } from "./TestSpecCard";
-import { EpicSpecCard } from "./EpicSpecCard";
-import { UserStorySpecCard } from "./UserStorySpecCard";
-import { TaskSpecCard } from "./TaskSpecCard";
+import { cn } from "@/lib/utils";
 import { DefectSpecCard } from "./DefectSpecCard";
+import { EpicSpecCard } from "./EpicSpecCard";
+import { RequirementSpecCard } from "./RequirementSpecCard";
+import { TaskSpecCard } from "./TaskSpecCard";
+import { TestSpecCard } from "./TestSpecCard";
+import { UserStorySpecCard } from "./UserStorySpecCard";
 
 interface ItemSpecTabsProps {
 	projectId: string;

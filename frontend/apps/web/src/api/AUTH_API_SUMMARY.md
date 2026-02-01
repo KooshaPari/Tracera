@@ -41,6 +41,8 @@ authApi.deleteAccount()                       // DELETE /api/v1/auth/account
 - `isAuthError(error)` - Type guard for AuthError instances
 - `getAuthErrorMessage(error)` - User-friendly error messages
 - `shouldLogoutOnError(error)` - Determines if user should be logged out
+- **`loginWithToast(credentials)`** - User-initiated login via authApi; shows toast on failure (invalid credentials, rate limit, etc.)
+- **`loginWithToastStore(email, password)`** - User-initiated login via authStore; shows toast on failure
 
 #### Key Features
 - **Type Safety**: Full TypeScript support with strict types

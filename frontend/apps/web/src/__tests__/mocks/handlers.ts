@@ -1,7 +1,7 @@
 import { HttpResponse, http } from "msw";
 import { mockItems, mockLinks, mockProjects } from "./data";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://localhost:4000";
 
 export const handlers = [
 	http.get(`${API_BASE}/api/v1/projects`, () => {

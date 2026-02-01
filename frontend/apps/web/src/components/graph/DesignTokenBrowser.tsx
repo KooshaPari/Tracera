@@ -1,6 +1,7 @@
 // DesignTokenBrowser.tsx - Browse, search, and manage design tokens
 // Displays design tokens organized by category with previews and component usage
 
+import type { DesignToken, DesignTokenType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -9,6 +10,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@tracertm/ui/components/Collapsible";
 import { Input } from "@tracertm/ui/components/Input";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import { Separator } from "@tracertm/ui/components/Separator";
@@ -19,20 +25,13 @@ import {
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
 import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@tracertm/ui/components/Collapsible";
-import type { DesignToken } from "@tracertm/types";
-import type { DesignTokenType } from "@tracertm/types";
-import {
 	AlertCircle,
 	ChevronDown,
 	ChevronRight,
 	Code,
 	Copy,
-	Eye,
 	ExternalLink,
+	Eye,
 	Figma,
 	FileCode,
 	Hash,
@@ -44,7 +43,7 @@ import {
 	Search,
 	Zap,
 } from "lucide-react";
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 // =============================================================================
 // TYPES
@@ -756,14 +755,6 @@ function TokenPreview({ token }: TokenPreviewProps) {
 					}}
 				/>
 			);
-
-		case "spacing":
-		case "opacity":
-		case "z-index":
-		case "breakpoint":
-		case "animation":
-		case "typography":
-		case "custom":
 		default:
 			return (
 				<div className="w-8 h-8 rounded border border-muted bg-muted flex items-center justify-center shrink-0">

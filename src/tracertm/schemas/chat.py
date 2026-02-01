@@ -47,6 +47,10 @@ class ChatRequest(BaseModel):
     system_prompt: Optional[str] = None
     context: Optional[ChatContext] = None
     max_tokens: int = Field(default=4096, ge=1, le=100000)
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Optional session/chat ID for per-session sandbox; tools run under this sandbox path.",
+    )
 
 
 class ChatStreamChunk(BaseModel):

@@ -29,6 +29,7 @@ import {
 	List,
 	ListChecks,
 	Loader,
+	type LucideIcon,
 	Maximize,
 	MessageSquare,
 	Monitor,
@@ -48,7 +49,6 @@ import {
 	User,
 	Workflow,
 	Zap,
-	type LucideIcon,
 } from "lucide-react";
 
 // ============================================================================
@@ -233,7 +233,7 @@ export const CATEGORY_COLORS = {
  */
 export function getTypeIcon(type: string): LucideIcon {
 	const normalizedType = type.toLowerCase().replace(/[_-]/g, "_");
-	return (TYPE_ICONS[normalizedType] ?? TYPE_ICONS["default"])!;
+	return (TYPE_ICONS[normalizedType] ?? TYPE_ICONS.default)!;
 }
 
 /**
@@ -241,7 +241,7 @@ export function getTypeIcon(type: string): LucideIcon {
  */
 export function getTypeColor(type: string): string {
 	const normalizedType = type.toLowerCase().replace(/[_-]/g, "_");
-	return (TYPE_COLORS[normalizedType] ?? TYPE_COLORS["default"])!;
+	return (TYPE_COLORS[normalizedType] ?? TYPE_COLORS.default)!;
 }
 
 /**

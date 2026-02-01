@@ -6,7 +6,7 @@ A production-ready **TraceRTM MCP server** (FastMCP 3.0.0b1) with **21 fully imp
 
 ### Files Created/Modified
 
-1. **scripts/mcp/tracertm_mcp_server.py** (1013 lines)
+1. **src/tracertm/mcp/server.py** (unified MCP server)
    - Complete FastMCP 3.0.0b1 server implementation
    - All 21 tools with full error handling
    - Logging middleware for debugging
@@ -76,10 +76,10 @@ A production-ready **TraceRTM MCP server** (FastMCP 3.0.0b1) with **21 fully imp
 
 ```bash
 # Run the server
-python scripts/mcp/tracertm_mcp_server.py
+python -m tracertm.mcp
 
 # Configure in Claude Desktop / droid
-# Point to: scripts/mcp/tracertm_mcp_server.py
+# Point to: src/tracertm/mcp/server.py
 # Transport: STDIO
 ```
 
@@ -91,4 +91,3 @@ Then call any of the 21 tools via your MCP client.
 - **Tool Signatures:** TRACERTM_MCP_TOOL_REFERENCE.md
 - **Summary:** TRACERTM_MCP_TOOLS_SUMMARY.md
 - **Design:** TRACE_RTM_MCP_DESIGN.md
-

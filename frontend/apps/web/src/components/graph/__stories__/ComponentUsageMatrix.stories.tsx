@@ -1,7 +1,7 @@
 // ComponentUsageMatrix.stories.tsx - Storybook stories for ComponentUsageMatrix
 
 import type { Meta, StoryObj } from "@storybook/react";
-import type { LibraryComponent, ComponentUsage } from "@tracertm/types";
+import type { ComponentUsage, LibraryComponent } from "@tracertm/types";
 import { ComponentUsageMatrix } from "../ComponentUsageMatrix";
 
 const meta = {

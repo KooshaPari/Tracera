@@ -3,8 +3,8 @@
  * Visual prioritization matrix with MoSCoW and value/effort quadrants
  */
 
-import { cn } from "@/lib/utils";
 import type { MoSCoWPriority } from "@/hooks/useItemSpecAnalytics";
+import { cn } from "@/lib/utils";
 
 interface PriorityItem {
 	id: string;

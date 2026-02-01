@@ -1,19 +1,12 @@
-import { useState } from "react";
+import type { WebhookProvider, WebhookStatus } from "@tracertm/types";
 import {
+	Badge,
+	Button,
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-	Button,
-	Badge,
-	Input,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	Skeleton,
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -21,9 +14,32 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
+	Input,
 	Label,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Skeleton,
 	Textarea,
 } from "@tracertm/ui";
+import {
+	Activity,
+	CheckCircle2,
+	Copy,
+	Eye,
+	EyeOff,
+	PauseCircle,
+	Plus,
+	RefreshCw,
+	Search,
+	Trash2,
+	Webhook,
+	XCircle,
+} from "lucide-react";
+import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Table,
 	TableBody,
@@ -32,30 +48,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
-	Plus,
-	Search,
-	Webhook,
-	Activity,
-	CheckCircle2,
-	XCircle,
-	PauseCircle,
-	RefreshCw,
-	Copy,
-	Trash2,
-	Eye,
-	EyeOff,
-} from "lucide-react";
-import type { WebhookProvider, WebhookStatus } from "@tracertm/types";
-import {
-	useWebhooks,
-	useWebhookStats,
-	useCreateWebhook,
-	useSetWebhookStatus,
-	useRegenerateWebhookSecret,
-	useDeleteWebhook,
 	type CreateWebhookData,
+	useCreateWebhook,
+	useDeleteWebhook,
+	useRegenerateWebhookSecret,
+	useSetWebhookStatus,
+	useWebhookStats,
+	useWebhooks,
 } from "@/hooks/useWebhooks";
 
 interface WebhookIntegrationsViewProps {
@@ -131,8 +131,8 @@ export function WebhookIntegrationsView({
 			autoCompleteRun: formData.autoCompleteRun,
 			verifySignatures: formData.verifySignatures,
 		};
-		if (formData.description) payload["description"] = formData.description;
-		if (formData.callbackUrl) payload["callbackUrl"] = formData.callbackUrl;
+		if (formData.description) payload.description = formData.description;
+		if (formData.callbackUrl) payload.callbackUrl = formData.callbackUrl;
 
 		await createMutation.mutateAsync(payload);
 		setShowCreateDialog(false);
@@ -276,7 +276,7 @@ export function WebhookIntegrationsView({
 									onChange={(e) =>
 										setFormData((prev) => ({
 											...prev,
-											rateLimitPerMinute: parseInt(e.target.value) || 60,
+											rateLimitPerMinute: parseInt(e.target.value, 10) || 60,
 										}))
 									}
 								/>

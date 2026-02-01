@@ -1,6 +1,17 @@
 // EquivalenceImport.tsx - Import component for equivalence mappings and canonical concepts
 // Supports JSON/CSV import with validation, preview, and merge/replace options
 
+import type {
+	CanonicalConcept,
+	CanonicalProjection,
+	EquivalenceLink,
+} from "@tracertm/types";
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from "@tracertm/ui/components/Alert";
+import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
 	Card,
@@ -9,7 +20,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui/components/Card";
-import { Badge } from "@tracertm/ui/components/Badge";
 import {
 	Dialog,
 	DialogContent,
@@ -18,6 +28,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
+import { Input } from "@tracertm/ui/components/Input";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import {
 	Select,
 	SelectContent,
@@ -25,34 +37,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import { Separator } from "@tracertm/ui/components/Separator";
 import {
-	Alert,
-	AlertDescription,
-	AlertTitle,
-} from "@tracertm/ui/components/Alert";
-import {
-	Upload,
 	AlertTriangle,
 	ChevronDown,
 	ChevronRight,
 	Trash2,
+	Upload,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import type {
-	EquivalenceLink,
-	CanonicalConcept,
-	CanonicalProjection,
-} from "@tracertm/types";
-import {
-	deserializeFromJSON,
-	validateExportPackage,
-	mergeExportPackages,
-} from "./utils/equivalenceIO";
-import type {
 	EquivalenceExportPackage,
 	EquivalenceImportOptions,
+} from "./utils/equivalenceIO";
+import {
+	deserializeFromJSON,
+	mergeExportPackages,
+	validateExportPackage,
 } from "./utils/equivalenceIO";
 
 // =============================================================================

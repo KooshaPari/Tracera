@@ -2,10 +2,11 @@
 Requirement Quality model for ISO 29148 analysis and derived metrics.
 """
 
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String
 from datetime import datetime
 from typing import Any, List, Optional
 
-from sqlalchemy import Float, ForeignKey, String, DateTime, Boolean, Integer, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.types import JSONType
@@ -38,9 +39,9 @@ class RequirementQuality(Base, TimestampMixin):
         String(36), primary_key=True, default=generate_uuid
     )
     item_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("items.id", ondelete="CASCADE"), nullable=False, unique=True
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False, unique=True
     )
-    project_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
 
     # ISO 29148 Quality Dimensions (0-1 scale)
     quality_scores: Mapped[dict[str, float]] = mapped_column(

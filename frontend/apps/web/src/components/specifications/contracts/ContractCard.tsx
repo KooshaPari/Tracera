@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import type { Contract } from "@tracertm/types";
 import {
 	Badge,
 	Button,
@@ -8,16 +8,16 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tracertm/ui";
+import { motion } from "framer-motion";
 import {
-	ShieldCheck,
-	ShieldAlert,
-	Shield,
 	ArrowRight,
 	Code,
 	FileCode,
 	GitBranch,
+	Shield,
+	ShieldAlert,
+	ShieldCheck,
 } from "lucide-react";
-import type { Contract, ContractStatus } from "@tracertm/types";
 import { VerificationBadge } from "./VerificationBadge";
 
 interface ContractCardProps {

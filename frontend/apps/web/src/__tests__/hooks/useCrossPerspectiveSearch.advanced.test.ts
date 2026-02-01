@@ -1,12 +1,12 @@
-import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-	useCrossPerspectiveSearch,
-	performCrossPerspectiveSearch,
-	type CrossPerspectiveSearchResult,
-	type SearchFilters,
-} from "../../components/graph/hooks/useCrossPerspectiveSearch";
+import { act, renderHook } from "@testing-library/react";
 import type { Item, Link } from "@tracertm/types";
+import { describe, expect, it, vi } from "vitest";
+import {
+	type CrossPerspectiveSearchResult,
+	performCrossPerspectiveSearch,
+	type SearchFilters,
+	useCrossPerspectiveSearch,
+} from "../../components/graph/hooks/useCrossPerspectiveSearch";
 
 /**
  * Test suite for advanced search features

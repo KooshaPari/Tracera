@@ -3,10 +3,10 @@
  * Shows coverage intensity with hover details and click navigation
  */
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface CoverageCell {
 	id: string;

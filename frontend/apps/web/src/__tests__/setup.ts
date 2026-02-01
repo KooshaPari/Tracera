@@ -2,6 +2,21 @@
  * Test setup and configuration
  */
 
+// Mock WebGL2RenderingContext FIRST before any imports
+if (typeof globalThis !== "undefined") {
+	class WebGL2RenderingContextMock {
+		static BOOL = 35670;
+		static BYTE = 5120;
+		static UNSIGNED_BYTE = 5121;
+		static SHORT = 5122;
+		static UNSIGNED_SHORT = 5123;
+		static INT = 5124;
+		static UNSIGNED_INT = 5125;
+		static FLOAT = 5126;
+	}
+	(globalThis as any).WebGL2RenderingContext = WebGL2RenderingContextMock;
+}
+
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import "@testing-library/jest-dom";
@@ -19,6 +34,30 @@ vi.mock("@tanstack/react-router", async () => {
 		createAPIFileRoute: () => () => ({ GET: vi.fn(), POST: vi.fn() }),
 	};
 });
+
+// Mock elkjs to avoid worker initialization issues in tests
+vi.mock("elkjs", () => ({
+	default: class MockELK {
+		layout() {
+			return Promise.resolve({ children: [], edges: [] });
+		}
+	},
+}));
+
+// Already defined at top of file
+
+// Mock sigma.js to avoid WebGL initialization issues
+vi.mock("sigma", () => ({
+	default: class MockSigma {
+		on = vi.fn();
+		off = vi.fn();
+		kill = vi.fn();
+		getGraph = vi.fn(() => ({
+			nodes: vi.fn(() => []),
+			edges: vi.fn(() => []),
+		}));
+	},
+}));
 
 // Setup localStorage mock BEFORE importing MSW
 const localStorageMock = (() => {
@@ -68,6 +107,17 @@ if (typeof globalThis.window !== "undefined") {
 			removeEventListener: vi.fn(),
 			dispatchEvent: vi.fn(),
 		})),
+	});
+}
+
+// Mock navigator.clipboard
+if (typeof navigator !== "undefined") {
+	Object.defineProperty(navigator, "clipboard", {
+		writable: true,
+		value: {
+			writeText: vi.fn(() => Promise.resolve()),
+			readText: vi.fn(() => Promise.resolve("")),
+		},
 	});
 }
 // Mock IntersectionObserver
@@ -189,7 +239,7 @@ if (typeof globalThis !== "undefined") {
 // Mock fetch globally for API tests
 // Use a delegating mock so tests can override it in beforeEach
 let globalFetchImpl: typeof fetch = async (url) => {
-	console.warn(`[WARN] Unmocked fetch to ${url}`);
+	logger.warn(`[WARN] Unmocked fetch to ${url}`);
 	return new Response(JSON.stringify({ error: "Not mocked" }), {
 		status: 404,
 		headers: { "Content-Type": "application/json" },

@@ -5,12 +5,12 @@ import {
 	Button,
 	Card,
 	Input,
-	Skeleton,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Skeleton,
 } from "@tracertm/ui";
 import {
 	ChevronDown,
@@ -21,15 +21,15 @@ import {
 	List,
 	Maximize2,
 	Minimize2,
+	Network,
 	Plus,
 	Search,
-	Network,
 	Target,
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import { useItems } from "../hooks/useItems";
 import { useProjects } from "../hooks/useProjects";
-import { cn } from "@/lib/utils";
 
 interface TreeNode {
 	item: Item;
@@ -41,10 +41,129 @@ interface TreeItemProps {
 	node: TreeNode;
 	expandedIds: Set<string>;
 	onToggleExpand: (id: string) => void;
+	projectFilter?: string;
 }
 
+const TreeExpandButton = memo(function TreeExpandButton({
+	isExpanded,
+	onClick,
+}: {
+	isExpanded: boolean;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			onClick={onClick}
+			className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+		>
+			{isExpanded ? (
+				<ChevronDown className="h-4 w-4" />
+			) : (
+				<ChevronRight className="h-4 w-4" />
+			)}
+		</button>
+	);
+});
+
+const TreeItemIcon = memo(function TreeItemIcon({
+	isExpanded,
+}: {
+	isExpanded: boolean;
+}) {
+	return (
+		<div
+			className={cn(
+				"h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+				isExpanded
+					? "bg-primary text-primary-foreground"
+					: "bg-muted text-muted-foreground group-hover/link:bg-primary/10 group-hover/link:text-primary",
+			)}
+		>
+			<FileText className="h-4 w-4" />
+		</div>
+	);
+});
+
+const TreeItemContent = memo(
+	function TreeItemContent({
+		item,
+		isExpanded,
+		childCount,
+		projectFilter,
+	}: {
+		item: Item;
+		isExpanded: boolean;
+		childCount: number;
+		projectFilter?: string;
+	}) {
+		return (
+			<div className="flex-1 min-w-0 flex items-center gap-4">
+				<Link
+					to={
+						projectFilter
+							? `/projects/${projectFilter}/views/${String(item.view || "feature").toLowerCase()}/${item.id}`
+							: "/projects"
+					}
+					className="flex-1 flex items-center gap-3 min-w-0 group/link"
+				>
+					<TreeItemIcon isExpanded={isExpanded} />
+					<div className="flex flex-col min-w-0">
+						<span className="text-sm font-bold truncate group-hover/link:text-primary transition-colors">
+							{item.title}
+						</span>
+						<div className="flex items-center gap-2 mt-0.5">
+							<Badge
+								variant="outline"
+								className="text-[8px] h-3.5 px-1 uppercase font-black tracking-tighter"
+							>
+								{item.type}
+							</Badge>
+							<span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+								{item.status}
+							</span>
+						</div>
+					</div>
+				</Link>
+
+				<div className="hidden md:flex items-center gap-6 shrink-0 mr-4">
+					{item.owner && (
+						<div className="flex items-center gap-1.5">
+							<div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-black uppercase">
+								{item.owner.charAt(0)}
+							</div>
+							<span className="text-[10px] font-bold text-muted-foreground uppercase">
+								{item.owner}
+							</span>
+						</div>
+					)}
+					{childCount > 0 && (
+						<Badge
+							variant="secondary"
+							className="text-[9px] font-black rounded-full px-1.5 h-4"
+						>
+							{childCount}
+						</Badge>
+					)}
+				</div>
+			</div>
+		);
+	},
+	(prev, next) => {
+		return (
+			prev.item.id === next.item.id &&
+			prev.item.title === next.item.title &&
+			prev.item.type === next.item.type &&
+			prev.item.status === next.item.status &&
+			prev.item.owner === next.item.owner &&
+			prev.isExpanded === next.isExpanded &&
+			prev.childCount === next.childCount &&
+			prev.projectFilter === next.projectFilter
+		);
+	},
+);
+
 const TreeItem = memo(
-	function TreeItem({ node, expandedIds, onToggleExpand }: TreeItemProps) {
+	function TreeItem({ node, expandedIds, onToggleExpand, projectFilter }: TreeItemProps) {
 		const { item, children, level } = node;
 		const hasChildren = children.length > 0;
 		const isExpanded = expandedIds.has(item.id);
@@ -65,76 +184,19 @@ const TreeItem = memo(
 					style={{ marginLeft: `${level * 20}px` }}
 				>
 					{hasChildren ? (
-						<button
-							onClick={handleToggle}
-							className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground"
-						>
-							{isExpanded ? (
-								<ChevronDown className="h-4 w-4" />
-							) : (
-								<ChevronRight className="h-4 w-4" />
-							)}
-						</button>
+						<TreeExpandButton isExpanded={isExpanded} onClick={handleToggle} />
 					) : (
 						<div className="w-6 h-6 flex items-center justify-center">
 							<div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
 						</div>
 					)}
 
-					<div className="flex-1 min-w-0 flex items-center gap-4">
-						<Link
-							to={`/items/${item.id}`}
-							className="flex-1 flex items-center gap-3 min-w-0 group/link"
-						>
-							<div
-								className={cn(
-									"h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-									isExpanded
-										? "bg-primary text-primary-foreground"
-										: "bg-muted text-muted-foreground group-hover/link:bg-primary/10 group-hover/link:text-primary",
-								)}
-							>
-								<FileText className="h-4 w-4" />
-							</div>
-							<div className="flex flex-col min-w-0">
-								<span className="text-sm font-bold truncate group-hover/link:text-primary transition-colors">
-									{item.title}
-								</span>
-								<div className="flex items-center gap-2 mt-0.5">
-									<Badge
-										variant="outline"
-										className="text-[8px] h-3.5 px-1 uppercase font-black tracking-tighter"
-									>
-										{item.type}
-									</Badge>
-									<span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-										{item.status}
-									</span>
-								</div>
-							</div>
-						</Link>
-
-						<div className="hidden md:flex items-center gap-6 shrink-0 mr-4">
-							{item.owner && (
-								<div className="flex items-center gap-1.5">
-									<div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-black uppercase">
-										{item.owner.charAt(0)}
-									</div>
-									<span className="text-[10px] font-bold text-muted-foreground uppercase">
-										{item.owner}
-									</span>
-								</div>
-							)}
-							{hasChildren && (
-								<Badge
-									variant="secondary"
-									className="text-[9px] font-black rounded-full px-1.5 h-4"
-								>
-									{children.length}
-								</Badge>
-							)}
-						</div>
-					</div>
+					<TreeItemContent
+						item={item}
+						isExpanded={isExpanded}
+						childCount={children.length}
+						{...(projectFilter != null ? { projectFilter } : {})}
+					/>
 				</div>
 
 				{hasChildren && isExpanded && (
@@ -145,6 +207,7 @@ const TreeItem = memo(
 								node={child}
 								expandedIds={expandedIds}
 								onToggleExpand={onToggleExpand}
+								{...(projectFilter != null ? { projectFilter } : {})}
 							/>
 						))}
 					</div>
@@ -155,12 +218,23 @@ const TreeItem = memo(
 	(prev, next) => {
 		// Custom comparison for memoization
 		// Return true if props are equal (skip re-render), false if different
+		// Only re-render if the node's critical properties or expansion state changes
 		return (
 			prev.node.item.id === next.node.item.id &&
+			prev.node.item.title === next.node.item.title &&
+			prev.node.item.type === next.node.item.type &&
+			prev.node.item.status === next.node.item.status &&
+			prev.node.item.owner === next.node.item.owner &&
 			prev.node.level === next.node.level &&
 			prev.node.children.length === next.node.children.length &&
 			prev.expandedIds.has(prev.node.item.id) ===
-				next.expandedIds.has(next.node.item.id)
+				next.expandedIds.has(next.node.item.id) &&
+			// Compare child IDs to detect structural changes
+			prev.node.children.every(
+				(child, idx) =>
+					next.node.children[idx] &&
+					child.item.id === next.node.children[idx].item.id,
+			)
 		);
 	},
 );
@@ -202,7 +276,10 @@ export function ItemsTreeView() {
 
 	const { data: itemsData, isLoading } = useItems({ projectId: projectFilter });
 	const { data: projects } = useProjects();
-	const projectsArray = Array.isArray(projects) ? projects : [];
+	const projectsArray = useMemo(
+		() => (Array.isArray(projects) ? projects : []),
+		[projects],
+	);
 	const items = itemsData?.items ?? [];
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -225,19 +302,58 @@ export function ItemsTreeView() {
 
 	const treeNodes = useMemo(() => buildTree(filteredItems), [filteredItems]);
 
-	const handleToggleExpand = (id: string) => {
+	const handleToggleExpand = useCallback((id: string) => {
 		setExpandedIds((prev) => {
 			const next = new Set(prev);
 			if (next.has(id)) next.delete(id);
 			else next.add(id);
 			return next;
 		});
-	};
+	}, []);
 
-	const toggleAll = (expand: boolean) => {
-		if (expand) setExpandedIds(new Set(filteredItems.map((i) => i.id)));
-		else setExpandedIds(new Set());
-	};
+	const toggleAll = useCallback(
+		(expand: boolean) => {
+			if (expand) setExpandedIds(new Set(filteredItems.map((i) => i.id)));
+			else setExpandedIds(new Set());
+		},
+		[filteredItems],
+	);
+
+	const handleNavigateToTable = useCallback(() => {
+		if (!projectFilter) {
+			navigate({ to: "/projects" });
+			return;
+		}
+		navigate({
+			to: "/projects/$projectId/views/$viewType",
+			params: { projectId: projectFilter, viewType: "feature" },
+			search: searchParams,
+		});
+	}, [navigate, searchParams, projectFilter]);
+
+	const handleNavigateToCreate = useCallback(() => {
+		if (!projectFilter) {
+			navigate({ to: "/projects" });
+			return;
+		}
+		navigate({
+			to: "/projects/$projectId/views/$viewType",
+			params: { projectId: projectFilter, viewType: "feature" },
+			search: { ...searchParams, action: "create" } as any,
+		});
+	}, [navigate, searchParams, projectFilter]);
+
+	const handleProjectFilterChange = useCallback(
+		(v: string) => {
+			navigate({
+				search: (prev: any) => ({
+					...prev,
+					project: v === "all" ? undefined : v,
+				}),
+			} as any);
+		},
+		[navigate],
+	);
 
 	if (isLoading) {
 		return (
@@ -269,21 +385,14 @@ export function ItemsTreeView() {
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() =>
-							navigate({ to: "/items", search: searchParams } as any)
-						}
+						onClick={handleNavigateToTable}
 						className="gap-2 rounded-xl"
 					>
 						<List className="h-4 w-4" /> Table
 					</Button>
 					<Button
 						size="sm"
-						onClick={() =>
-							navigate({
-								to: "/items",
-								search: { ...searchParams, action: "create" } as any,
-							})
-						}
+						onClick={handleNavigateToCreate}
 						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
 					>
 						<Plus className="h-4 w-4" /> New Node
@@ -305,14 +414,7 @@ export function ItemsTreeView() {
 				<div className="h-6 w-px bg-border/50 mx-2 hidden md:block" />
 				<Select
 					value={projectFilter || "all"}
-					onValueChange={(v) =>
-						navigate({
-							search: (prev: any) => ({
-								...prev,
-								project: v === "all" ? undefined : v,
-							}),
-						} as any)
-					}
+					onValueChange={handleProjectFilterChange}
 				>
 					<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
 						<div className="flex items-center gap-2">
@@ -361,6 +463,7 @@ export function ItemsTreeView() {
 								node={node}
 								expandedIds={expandedIds}
 								onToggleExpand={handleToggleExpand}
+								{...(projectFilter != null ? { projectFilter } : {})}
 							/>
 						))}
 					</div>

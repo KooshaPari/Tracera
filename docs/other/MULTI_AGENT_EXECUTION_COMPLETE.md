@@ -6,6 +6,8 @@
 **Code Coverage**: 50.14% (from 36.27% baseline)
 **Improvement**: +584 tests fixed, +13.87% coverage
 
+**Governance (planner vs executor):** Planner agents must never write code in documentation or plans; they equip engineer/executor agents or humans to create code or act on docs. Avoid stuffing docs/plans with code where not relevant.
+
 ---
 
 ## 🎯 MISSION ACCOMPLISHED

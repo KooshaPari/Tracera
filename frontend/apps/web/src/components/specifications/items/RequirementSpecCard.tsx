@@ -6,7 +6,6 @@
  * Implements ISO 29148 quality visualization.
  */
 
-import { cn } from "@/lib/utils";
 import {
 	Badge,
 	Button,
@@ -17,7 +16,9 @@ import {
 	Progress,
 	Separator,
 } from "@tracertm/ui";
+import { format } from "date-fns";
 import {
+	AlertTriangle,
 	ArrowRight,
 	CheckCircle2,
 	Clock,
@@ -28,11 +29,10 @@ import {
 	TrendingDown,
 	TrendingUp,
 	XCircle,
-	AlertTriangle,
 } from "lucide-react";
 import type { RequirementSpec } from "@/hooks/useItemSpecs";
+import { cn } from "@/lib/utils";
 import { QualityScoreGauge } from "./QualityScoreGauge";
-import { format } from "date-fns";
 
 interface RequirementSpecCardProps {
 	spec: RequirementSpec;

@@ -3,11 +3,20 @@
 export const APP_NAME = "TraceRTM";
 export const APP_VERSION = "0.1.0";
 
-// API Configuration
+// Authentication Routes (managed by WorkOS AuthKit)
+export const AUTH_ROUTES = {
+	LOGIN: "/auth/login",
+	REGISTER: "/auth/register",
+	LOGOUT: "/auth/logout",
+	CALLBACK: "/auth/callback",
+	RESET_PASSWORD: "/auth/reset-password",
+} as const;
+
+// API Configuration (gateway-only; no direct backend URLs)
 export const API_BASE_URL =
-	import.meta.env?.VITE_API_URL || "http://localhost:8000";
+	import.meta.env?.VITE_API_URL || "http://localhost:4000";
 export const WS_BASE_URL =
-	import.meta.env?.VITE_WS_URL || "ws://localhost:8000";
+	import.meta.env?.VITE_WS_URL || "ws://localhost:4000";
 export const API_TIMEOUT = 30000; // 30 seconds
 
 // Pagination

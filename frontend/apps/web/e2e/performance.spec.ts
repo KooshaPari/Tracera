@@ -318,7 +318,7 @@ test.describe("Performance - Bundle Size", () => {
 			if (response.url().endsWith(".js")) {
 				responses.push({
 					url: response.url(),
-					size: parseInt(response.headers()["content-length"] || "0"),
+					size: parseInt(response.headers()["content-length"] || "0", 10),
 				});
 			}
 		});
@@ -418,7 +418,7 @@ test.describe("Performance - Network Optimization", () => {
 
 		page.on("response", (response) => {
 			const cacheControl = response.headers()["cache-control"];
-			if (cacheControl && cacheControl.includes("max-age")) {
+			if (cacheControl?.includes("max-age")) {
 				hasCacheHeaders = true;
 			}
 		});
@@ -490,7 +490,7 @@ test.describe("Performance - Rendering Optimization", () => {
 				const items = document.querySelectorAll('[data-testid="item-card"]');
 				items.forEach((item) => {
 					const height = item.clientHeight;
-					(item as HTMLElement).style.height = height + "px";
+					(item as HTMLElement).style.height = `${height}px`;
 				});
 
 				requestAnimationFrame(() => {
@@ -650,6 +650,7 @@ test.describe("Performance - Database and API", () => {
 			if (url.includes("/graphql") || url.includes("/api/graphql")) {
 				totalGraphqlSize += parseInt(
 					response.headers()["content-length"] || "0",
+					10,
 				);
 			}
 		});

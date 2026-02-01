@@ -1,15 +1,14 @@
 // equivalenceIO.ts - Serialization, validation, and conversion utilities for equivalence data
 // Handles import/export of equivalence mappings and canonical concepts with format conversion
 
-import { z } from "zod";
 import type {
+	CanonicalConcept,
+	CanonicalProjection,
 	EquivalenceLink,
 	EquivalenceLinkType,
 	EquivalenceStrategy,
-	EquivalenceEvidence,
-	CanonicalConcept,
-	CanonicalProjection,
 } from "@tracertm/types";
+import { z } from "zod";
 
 // =============================================================================
 // VALIDATION SCHEMAS
@@ -242,29 +241,29 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 
 		try {
 			const link: EquivalenceLink = {
-				id: record["id"],
-				projectId: record["projectId"],
-				sourceItemId: record["sourceItemId"],
-				targetItemId: record["targetItemId"],
-				equivalenceType: record["equivalenceType"] as EquivalenceLinkType,
-				confidence: parseFloat(record["confidence"]),
-				strategies: JSON.parse(record["strategies"] || "[]"),
-				canonicalId: record["canonicalId"],
-				status: record["status"] as
+				id: record.id,
+				projectId: record.projectId,
+				sourceItemId: record.sourceItemId,
+				targetItemId: record.targetItemId,
+				equivalenceType: record.equivalenceType as EquivalenceLinkType,
+				confidence: parseFloat(record.confidence),
+				strategies: JSON.parse(record.strategies || "[]"),
+				canonicalId: record.canonicalId,
+				status: record.status as
 					| "suggested"
 					| "confirmed"
 					| "rejected"
 					| "auto_confirmed",
-				confirmedBy: record["confirmedBy"],
-				confirmedAt: record["confirmedAt"],
-				rejectedReason: record["rejectedReason"],
-				createdAt: record["createdAt"],
-				updatedAt: record["updatedAt"],
+				confirmedBy: record.confirmedBy,
+				confirmedAt: record.confirmedAt,
+				rejectedReason: record.rejectedReason,
+				createdAt: record.createdAt,
+				updatedAt: record.updatedAt,
 			};
 			EquivalenceLinkSchema.parse(link);
 			links.push(link);
 		} catch (error) {
-			console.warn(`Failed to parse CSV line ${i}:`, error);
+			logger.warn(`Failed to parse CSV line ${i}:`, error);
 		}
 	}
 
@@ -292,41 +291,39 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 
 		try {
 			const concept: CanonicalConcept = {
-				id: record["id"],
-				projectId: record["projectId"],
-				name: record["name"],
-				slug: record["slug"],
-				description: record["description"],
-				domain: record["domain"],
-				category: record["category"],
-				tags: record["tags"] ? record["tags"].split("|") : undefined,
-				embedding: record["embedding"]
-					? JSON.parse(record["embedding"])
+				id: record.id,
+				projectId: record.projectId,
+				name: record.name,
+				slug: record.slug,
+				description: record.description,
+				domain: record.domain,
+				category: record.category,
+				tags: record.tags ? record.tags.split("|") : undefined,
+				embedding: record.embedding ? JSON.parse(record.embedding) : undefined,
+				embeddingModel: record.embeddingModel,
+				embeddingUpdatedAt: record.embeddingUpdatedAt,
+				projectionCount: parseInt(record.projectionCount, 10),
+				projectionIds: record.projectionIds
+					? record.projectionIds.split("|")
 					: undefined,
-				embeddingModel: record["embeddingModel"],
-				embeddingUpdatedAt: record["embeddingUpdatedAt"],
-				projectionCount: parseInt(record["projectionCount"], 10),
-				projectionIds: record["projectionIds"]
-					? record["projectionIds"].split("|")
+				relatedConceptIds: record.relatedConceptIds
+					? record.relatedConceptIds.split("|")
 					: undefined,
-				relatedConceptIds: record["relatedConceptIds"]
-					? record["relatedConceptIds"].split("|")
+				parentConceptId: record.parentConceptId,
+				childConceptIds: record.childConceptIds
+					? record.childConceptIds.split("|")
 					: undefined,
-				parentConceptId: record["parentConceptId"],
-				childConceptIds: record["childConceptIds"]
-					? record["childConceptIds"].split("|")
-					: undefined,
-				confidence: parseFloat(record["confidence"]),
-				source: record["source"] as "manual" | "inferred" | "imported",
-				createdBy: record["createdBy"],
-				createdAt: record["createdAt"],
-				updatedAt: record["updatedAt"],
-				version: parseInt(record["version"], 10),
+				confidence: parseFloat(record.confidence),
+				source: record.source as "manual" | "inferred" | "imported",
+				createdBy: record.createdBy,
+				createdAt: record.createdAt,
+				updatedAt: record.updatedAt,
+				version: parseInt(record.version, 10),
 			};
 			CanonicalConceptSchema.parse(concept);
 			concepts.push(concept);
 		} catch (error) {
-			console.warn(`Failed to parse CSV line ${i}:`, error);
+			logger.warn(`Failed to parse CSV line ${i}:`, error);
 		}
 	}
 
@@ -356,27 +353,25 @@ export function deserializeProjectionsFromCSV(
 
 		try {
 			const projection: CanonicalProjection = {
-				id: record["id"],
-				canonicalId: record["canonicalId"],
-				itemId: record["itemId"],
-				projectId: record["projectId"],
-				perspective: record["perspective"],
-				confidence: parseFloat(record["confidence"]),
-				strategy: record["strategy"] as EquivalenceStrategy,
-				isConfirmed: record["isConfirmed"] === "true",
-				isRejected: record["isRejected"] === "true",
-				confirmedBy: record["confirmedBy"],
-				confirmedAt: record["confirmedAt"],
-				metadata: record["metadata"]
-					? JSON.parse(record["metadata"])
-					: undefined,
-				createdAt: record["createdAt"],
-				updatedAt: record["updatedAt"],
+				id: record.id,
+				canonicalId: record.canonicalId,
+				itemId: record.itemId,
+				projectId: record.projectId,
+				perspective: record.perspective,
+				confidence: parseFloat(record.confidence),
+				strategy: record.strategy as EquivalenceStrategy,
+				isConfirmed: record.isConfirmed === "true",
+				isRejected: record.isRejected === "true",
+				confirmedBy: record.confirmedBy,
+				confirmedAt: record.confirmedAt,
+				metadata: record.metadata ? JSON.parse(record.metadata) : undefined,
+				createdAt: record.createdAt,
+				updatedAt: record.updatedAt,
 			};
 			CanonicalProjectionSchema.parse(projection);
 			projections.push(projection);
 		} catch (error) {
-			console.warn(`Failed to parse CSV line ${i}:`, error);
+			logger.warn(`Failed to parse CSV line ${i}:`, error);
 		}
 	}
 
@@ -534,7 +529,7 @@ function formatAsCSV(headers: string[], rows: string[][]): string {
 	const csvRows = rows
 		.map((row) => row.map(escapeCSVField).join(","))
 		.join("\n");
-	return csvHeaders + "\n" + csvRows;
+	return `${csvHeaders}\n${csvRows}`;
 }
 
 /**

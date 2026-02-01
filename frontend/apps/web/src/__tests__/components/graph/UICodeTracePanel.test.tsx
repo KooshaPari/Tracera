@@ -5,12 +5,12 @@
 
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CanonicalConcept, CodeReference } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	UICodeTracePanel,
-	type UICodeTraceChain,
 	type TraceLevel,
+	type UICodeTraceChain,
+	UICodeTracePanel,
 } from "../../../components/graph/UICodeTracePanel";
 
 // =============================================================================

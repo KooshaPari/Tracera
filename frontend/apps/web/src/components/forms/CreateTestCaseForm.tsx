@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, Plus, Trash2 } from "lucide-react";
+import { logger } from '@/lib/logger';
+import { Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCreateTestCase } from "../../hooks/useTestCases";
@@ -162,7 +163,7 @@ export function CreateTestCaseForm({
 			await createTestCase.mutateAsync(payload);
 			onSuccess();
 		} catch (error) {
-			console.error("Failed to create test case:", error);
+			logger.error("Failed to create test case:", error);
 		}
 	};
 
@@ -172,10 +173,22 @@ export function CreateTestCaseForm({
 				className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 				onClick={onCancel}
 			/>
-			<div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl">
+			<div
+				className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="create-test-case-title"
+			>
 				<div className="flex items-center justify-between">
-					<h2 className="text-lg font-semibold">Create Test Case</h2>
-					<button onClick={onCancel} className="rounded-lg p-1 hover:bg-accent">
+					<h2 id="create-test-case-title" className="text-lg font-semibold">
+						Create Test Case
+					</h2>
+					<button
+						type="button"
+						onClick={onCancel}
+						aria-label="Close dialog"
+						className="rounded-lg p-1 hover:bg-accent"
+					>
 						<X className="h-5 w-5" />
 					</button>
 				</div>

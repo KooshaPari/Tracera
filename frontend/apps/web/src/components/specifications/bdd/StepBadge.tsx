@@ -1,6 +1,5 @@
-import { Badge } from "@tracertm/ui";
+import { Badge, cn } from "@tracertm/ui";
 import { AlertCircle, CheckCircle2, GitBranch, Zap } from "lucide-react";
-import { cn } from "@tracertm/ui";
 
 export type StepType = "Given" | "When" | "Then" | "And" | "But" | "Background";
 

@@ -1,4 +1,4 @@
-"""Caching service for TraceRTM using Redis."""
+"""Caching service for TraceRTM using Redis. Redis is required; fail clearly when unavailable (CLAUDE.md)."""
 
 import hashlib
 import json
@@ -15,6 +15,12 @@ try:
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
+
+
+class RedisUnavailableError(RuntimeError):
+    """Raised when Redis is required but unavailable. Fail clearly; do not degrade silently."""
+
+    pass
 
 
 @dataclass
@@ -90,9 +96,7 @@ class CacheService:
             redis_url: Redis connection URL (default: redis://localhost:6379)
         """
         if not REDIS_AVAILABLE:
-            self.redis_client = None
-            logger.warning("Redis not available - caching disabled")
-            return
+            raise RuntimeError("Redis client library not available (redis.asyncio)")
 
         redis_url = redis_url or "redis://localhost:6379"
         try:
@@ -102,10 +106,10 @@ class CacheService:
                 decode_responses=True,
                 max_connections=20,  # Connection pooling
             )
-            logger.info(f"CacheService initialized with Redis at {redis_url}")
+            logger.info("CacheService initialized with Redis at %s", redis_url)
         except Exception as e:
-            self.redis_client = None
-            logger.warning(f"Failed to connect to Redis: {e} - caching disabled")
+            # Required dependency: fail clearly, do not degrade silently (CLAUDE.md).
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
         self.stats = {
             "hits": 0,
@@ -140,30 +144,20 @@ class CacheService:
 
     async def get(self, key: str) -> Any | None:
         """
-        Get value from cache.
-
-        Args:
-            key: Cache key
-
-        Returns:
-            Cached value or None if not found
+        Get value from cache. Raises RedisUnavailableError on connection failure (required service).
         """
-        if not self.redis_client:
-            self.stats["misses"] += 1
-            return None
-
         try:
             value = await self.redis_client.get(key)
             if value:
                 self.stats["hits"] += 1
                 return json.loads(value)
-            else:
-                self.stats["misses"] += 1
-                return None
-        except Exception as e:
-            logger.debug(f"Cache get error: {e}")
             self.stats["misses"] += 1
             return None
+        except (RedisUnavailableError, RuntimeError):
+            raise
+        except Exception as e:
+            # Redis connection/timeout: fail clearly, do not return None (CLAUDE.md).
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
     async def set(
         self,
@@ -173,21 +167,8 @@ class CacheService:
         cache_type: str | None = None,
     ) -> bool:
         """
-        Set value in cache.
-
-        Args:
-            key: Cache key
-            value: Value to cache
-            ttl_seconds: Time to live in seconds (overrides cache_type config)
-            cache_type: Cache type for default TTL lookup
-
-        Returns:
-            True if successful, False otherwise
+        Set value in cache. Raises RedisUnavailableError on connection failure (required service).
         """
-        if not self.redis_client:
-            return False
-
-        # Determine TTL
         if ttl_seconds is None and cache_type:
             ttl_seconds = self._get_ttl(cache_type)
         elif ttl_seconds is None:
@@ -200,29 +181,22 @@ class CacheService:
                 json.dumps(value, default=str),
             )
             return True
+        except (RedisUnavailableError, RuntimeError):
+            raise
         except Exception as e:
-            logger.debug(f"Cache set error: {e}")
-            return False
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
     async def delete(self, key: str) -> bool:
         """
-        Delete value from cache.
-
-        Args:
-            key: Cache key
-
-        Returns:
-            True if successful, False otherwise
+        Delete value from cache. Raises RedisUnavailableError on connection failure (required service).
         """
-        if not self.redis_client:
-            return False
-
         try:
             await self.redis_client.delete(key)
             return True
+        except (RedisUnavailableError, RuntimeError):
+            raise
         except Exception as e:
-            logger.debug(f"Cache delete error: {e}")
-            return False
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
     async def invalidate(self, cache_type: str, **kwargs: Any) -> bool:
         """
@@ -240,35 +214,21 @@ class CacheService:
 
     async def clear(self) -> bool:
         """
-        Clear all cache entries.
-
-        Returns:
-            True if successful, False otherwise
+        Clear all cache entries. Raises RedisUnavailableError on connection failure (required service).
         """
-        if not self.redis_client:
-            return False
-
         try:
             await self.redis_client.flushdb()
             self.stats = {"hits": 0, "misses": 0, "evictions": 0}
             return True
+        except (RedisUnavailableError, RuntimeError):
+            raise
         except Exception as e:
-            logger.debug(f"Cache clear error: {e}")
-            return False
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
     async def clear_prefix(self, prefix: str) -> int:
         """
-        Clear all cache entries with given prefix.
-
-        Args:
-            prefix: Cache key prefix
-
-        Returns:
-            Number of keys deleted
+        Clear all cache entries with given prefix. Raises RedisUnavailableError on connection failure (required service).
         """
-        if not self.redis_client:
-            return 0
-
         try:
             pattern = f"tracertm:{prefix}:*"
             keys = []
@@ -279,23 +239,15 @@ class CacheService:
                 deleted: int = await self.redis_client.delete(*keys)
                 return deleted
             return 0
+        except (RedisUnavailableError, RuntimeError):
+            raise
         except Exception as e:
-            logger.debug(f"Cache clear_prefix error: {e}")
-            return 0
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
     async def invalidate_project(self, project_id: str) -> int:
         """
-        Invalidate all cache entries for a project.
-
-        Args:
-            project_id: Project ID
-
-        Returns:
-            Number of keys deleted
+        Invalidate all cache entries for a project. Raises RedisUnavailableError on connection failure (required service).
         """
-        if not self.redis_client:
-            return 0
-
         total_deleted = 0
 
         # Invalidate project-specific caches
@@ -320,13 +272,13 @@ class CacheService:
         total = self.stats["hits"] + self.stats["misses"]
         hit_rate = (self.stats["hits"] / total * 100) if total > 0 else 0
 
-        total_size = 0
-        if self.redis_client:
-            try:
-                info = await self.redis_client.info("memory")
-                total_size = info.get("used_memory", 0)
-            except Exception:
-                pass
+        try:
+            info = await self.redis_client.info("memory")
+            total_size = info.get("used_memory", 0)
+        except (RedisUnavailableError, RuntimeError):
+            raise
+        except Exception as e:
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
         return CacheStats(
             hits=self.stats["hits"],
@@ -337,15 +289,14 @@ class CacheService:
         )
 
     async def health_check(self) -> bool:
-        """Check if Redis is healthy."""
-        if not self.redis_client:
-            return False
-
+        """Check if Redis is healthy. Raises RedisUnavailableError when Redis is down (required service)."""
         try:
             await self.redis_client.ping()
             return True
-        except Exception:
-            return False
+        except (RedisUnavailableError, RuntimeError):
+            raise
+        except Exception as e:
+            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
 
 
 # Cached operations helper functions

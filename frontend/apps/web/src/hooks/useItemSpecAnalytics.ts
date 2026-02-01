@@ -17,8 +17,9 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAuthHeaders } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // =============================================================================
 // Types
@@ -430,7 +431,7 @@ export interface AnalyzeSimilarityRequest {
 async function apiPost<T>(url: string, data?: unknown): Promise<T> {
 	const requestInit: RequestInit = {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 	};
 	if (data !== undefined) {
 		requestInit.body = JSON.stringify(data);
@@ -444,7 +445,7 @@ async function apiPost<T>(url: string, data?: unknown): Promise<T> {
 }
 
 async function apiGet<T>(url: string): Promise<T> {
-	const res = await fetch(`${API_URL}${url}`);
+	const res = await fetch(`${API_URL}${url}`, { headers: getAuthHeaders() });
 	if (!res.ok) {
 		const errorText = await res.text();
 		throw new Error(`API Error: ${res.status} ${errorText}`);

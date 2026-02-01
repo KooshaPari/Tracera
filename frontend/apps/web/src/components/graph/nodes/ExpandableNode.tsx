@@ -1,6 +1,8 @@
 // Expandable Node - Rich interactive node with progressive disclosure
 // Supports: collapsed → preview → panel → full page expansion
 
+import type { Item } from "@tracertm/types";
+import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
@@ -12,10 +14,9 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import { cn } from "@tracertm/ui";
-import type { Item } from "@tracertm/types";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, type NodeProps, Position } from "@xyflow/react";
 import {
+	Bot,
 	ChevronRight,
 	Edit3,
 	ExternalLink,
@@ -27,10 +28,9 @@ import {
 	MoreHorizontal,
 	X,
 	Zap,
-	Bot,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
-import { getTypeIcon, getTypeColor } from "../utils/typeStyles";
+import { getTypeColor, getTypeIcon } from "../utils/typeStyles";
 
 // ============================================================================
 // TYPES
@@ -553,13 +553,13 @@ function isExpandableNodeData(data: unknown): data is ExpandableNodeData {
 // MAIN EXPANDABLE NODE
 // ============================================================================
 
-function ExpandableNodeComponent({ data: nodeData, selected }: NodeProps) {
-	if (!isExpandableNodeData(nodeData)) {
-		console.error("Invalid ExpandableNodeData structure:", nodeData);
-		return null;
-	}
-
-	const data = nodeData;
+function ExpandableNodeInner({
+	data,
+	selected,
+}: {
+	data: ExpandableNodeData;
+	selected: boolean;
+}) {
 	const [expansionState, setExpansionState] = useState<NodeExpansionState>(
 		data.expansionState ?? "collapsed",
 	);
@@ -636,6 +636,14 @@ function ExpandableNodeComponent({ data: nodeData, selected }: NodeProps) {
 			)}
 		</div>
 	);
+}
+
+function ExpandableNodeComponent({ data: nodeData, selected }: NodeProps) {
+	if (!isExpandableNodeData(nodeData)) {
+		logger.error("Invalid ExpandableNodeData structure:", nodeData);
+		return null;
+	}
+	return <ExpandableNodeInner data={nodeData} selected={selected} />;
 }
 
 export const ExpandableNode = memo(ExpandableNodeComponent);
