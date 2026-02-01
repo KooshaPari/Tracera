@@ -26,6 +26,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         run: uv sync --all
 
@@ -42,13 +50,15 @@ jobs:
         run: uv run basedpyright src/
 
       - name: Architecture check
-        run: tach check
+        run: uv run tach check
 
       - name: Security scan (Bandit)
         run: uv run bandit -r src/
 
+      - name: Install Semgrep (binary; project does not depend on semgrep package)
+        run: pip install semgrep
       - name: Security scan (Semgrep)
-        run: uv run semgrep --config=p/security-audit src/
+        run: semgrep --config=p/security-audit src/
 
       - name: Docstring coverage
         run: uv run interrogate -vv --fail-under=80 src/

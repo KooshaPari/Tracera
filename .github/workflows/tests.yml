@@ -26,11 +26,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         run: uv sync --all
 
       - name: Run unit tests
-        run: uv run pytest tests/ -m unit -v --cov=src/tracertm --cov-report=xml
+        run: uv run pytest tests/ -m unit -v --cov=src/tracertm --cov-report=xml --cov-fail-under=90
 
       - name: Run integration tests
         run: uv run pytest tests/ -m integration -v
@@ -71,11 +79,19 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         run: uv sync --all
 
       - name: Run tests in parallel
-        run: uv run pytest tests/ -n auto -v --cov=src/tracertm
+        run: uv run pytest tests/ -n auto -v --cov=src/tracertm --cov-fail-under=90
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
