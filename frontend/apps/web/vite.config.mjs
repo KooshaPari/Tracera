@@ -248,7 +248,7 @@ export default defineConfig({
 				process.env.NODE_ENV === "production"
 					? ["logger.debug", "logger.info", "logger.table"]
 					: [],
-		}
+		},
 		rollupOptions: {
 			// Optimize tree-shaking
 			treeshake: {

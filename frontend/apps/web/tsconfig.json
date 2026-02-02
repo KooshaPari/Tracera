@@ -10,8 +10,7 @@
 		"isolatedModules": true,
 		"moduleDetection": "force",
 		"verbatimModuleSyntax": true,
-		"noEmit": false,
-		"emitDeclarationOnly": false,
+		"noEmit": true,
 		"jsx": "react-jsx",
 
 		"strict": true,
@@ -47,12 +46,5 @@
 		}
 	},
 	"include": ["src"],
-	"exclude": ["src/__tests__", "**/*.test.ts", "**/*.test.tsx"],
-	"references": [
-		{ "path": "../../packages/types" },
-		{ "path": "../../packages/state" },
-		{ "path": "../../packages/ui" },
-		{ "path": "../../packages/api-client" },
-		{ "path": "../../packages/config" }
-	]
+	"exclude": ["src/__tests__", "**/*.test.ts", "**/*.test.tsx"]
 }

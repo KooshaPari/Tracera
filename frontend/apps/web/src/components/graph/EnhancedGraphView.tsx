@@ -746,3 +746,5 @@ function EnhancedGraphViewComponent({
 		</div>
 	);
 }
+
+export const EnhancedGraphView = memo(EnhancedGraphViewComponent);
